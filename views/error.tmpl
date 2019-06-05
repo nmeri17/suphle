@@ -1,0 +1,30 @@
+<style type="text/css">
+	main > * {
+    flex: 1 45%;
+    max-width: 45%;
+    overflow-x: hidden;
+}
+
+p a {
+	color: #fd8cb3
+}
+
+div img {
+    max-height: 100%;
+    max-width: 100%
+}
+</style>
+
+<main>
+
+	<p>Could not find page {{url_error}}. Please <a href="/{{site_name}}"> head back home</a>. </p>
+	
+	<div>
+		<img src="\{{site_name}}\assets\imgs/404.jpg">
+	</div>
+</main>
+
+<script>
+	
+	$('link[href$="assets/.css"]').attr('href', '/{{site_name}}/assets/error.css')
+</script>

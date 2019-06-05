@@ -1,0 +1,36 @@
+table, form {
+    margin: 2% 3% 1%;
+}
+
+td input {
+    padding: 5% 8%;
+    font-size: 90%;
+    background: #80b443;
+    border: none;
+    color: #fff;
+    border-radius: 8%;
+    cursor: pointer;
+	transition: all .4s ease-in-out;
+}
+
+td input:hover {
+	background: #4caf50;
+	transition: all .4s ease-in-out;
+}
+
+h3 {
+	margin-top: 10%
+}
+
+section:last-child input, select {
+	height: 40px;
+	width: 50%;
+	border-radius: 5px;
+	margin: 0 0 5% -3%;
+	border: 1px solid #ccc
+}
+
+label {
+	font-weight: bold;
+	margin-left: -3%
+}

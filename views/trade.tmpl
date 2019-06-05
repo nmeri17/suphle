@@ -1,0 +1,84 @@
+<main>
+
+	<section>{{content}}</section>
+
+	<div>
+		<h3 class="trade-mode">Sell</h3>
+		<h3>Buy</h3>
+	</div>
+
+
+	{{__foreach-1-start__}}{{trade_notification}}{{__foreach-1-end__}}
+
+	<section>
+
+		{{__foreach-1-start__}}
+			<form class="trade-mode">
+
+				<label>Currency to sell</label>
+				
+				<select name="currencyFrom">
+					<option>----</option>
+						{{__foreach-2-start__}}
+
+							<option>{{currencyFrom}}</option>
+						{{__foreach-2-end__}}
+				</select>
+
+				<label>Where will you be paid?</label>
+				
+				<select name="currencyTo">
+					<option>----</option>
+						{{__foreach-2-start__}}
+
+							<option>{{currencyTo}}</option>
+						{{__foreach-2-end__}}
+				</select>
+
+				<label>Amount</label>
+				<input type="number" name="amount" max="300000" minlength="3" required="required">
+
+				<input type="submit" value="Sell">
+			</form>
+		{{__foreach-1-end__}}
+	</section>
+
+
+	<aside>
+		{{__foreach-1-start__}}
+			<form>
+			
+				<label>Select exchange currency:</label>
+				<select required="required" name="FromTo">
+					
+					<option>----</option>
+
+					{{__foreach-2-start__}}
+						<option
+
+							data-min="{{minimumTransactionCost}}"
+
+							data-max="{{maximumTransactionCost}}"
+
+							data-price='{{priceToday}}'
+						>
+							{{currencyFrom}} - {{currencyTo}}
+						</option>
+					{{__foreach-2-end__}}
+				</select>
+				
+				<label>Cost of this exchange:</label>
+				<input type="number" name="amount" min='' max='' required="required">
+
+				<label>Redeem coupon:</label>
+				<input type="text" name="coupon" placeholder="code">
+
+				<input type="submit" value="Buy">
+			</form>
+		{{__foreach-1-end__}}
+	</aside>
+
+	<span id="ub">{{__foreach-1-start__}}{{user_balance}}{{__foreach-1-end__}}</span>
+
+	<script src="/assets/trade.js"></script>
+</main>

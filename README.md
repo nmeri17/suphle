@@ -1,3 +1,0 @@
-# Tilwa
-
-Currency exchange platform.

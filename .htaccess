@@ -1,0 +1,41 @@
+RewriteEngine On
+
+php_value upload_max_filesize 10M
+
+php_value post_max_size 11M
+
+
+# condition1 - utilities
+RewriteCond %{QUERY_STRING} ^((cat=(\w+)&mode=(\w+)(&na=(\d))?(&code=(.+))?)?)?$
+
+
+# tacks the query string onto the target url
+RewriteRule ^/?([\w-]+)\/?([a-zA-Z0-9-'"]+)?\/?$ controllers/controller.php?url=$1&action=$2&%1 [NC,L]
+
+
+# extensioned requests, suck it!
+# RewriteCond %{REQUEST_URI} !^.+\.\w{3,4}$
+
+
+# external API postback?
+#RewriteRule ^/?postback-url\/?(\s+)?\/?$ controllers/controller.php?url=$1&action=$2 [NC,L]
+
+
+# index queries
+RewriteCond %{QUERY_STRING} ((cid=(\d+))?(mkt=(polls|football))?)
+
+RewriteRule ^/?$ controllers/controller.php?url=index&%1 [NC,L]
+
+
+# serve index
+RewriteRule ^/?$ controllers/controller.php?url=index [NC,L]
+
+
+# invalid file?
+RewriteCond %{REQUEST_FILENAME} !-f  
+
+
+# fuck off our dirs!
+RewriteCond %{REQUEST_FILENAME} -d  
+
+RewriteRule .? controllers/controller.php?url=error [L]

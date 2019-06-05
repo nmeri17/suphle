@@ -1,0 +1,48 @@
+main {
+	flex-flow: row wrap;
+	margin: 0 15% 5% 5%;
+	box-shadow: 0 0 10px #eee;
+}
+
+article {
+	margin: 5% 0 0 0;
+	font-size: 95%
+}
+
+h4, p:first-letter {
+	text-transform: capitalize
+}
+
+h4 {
+	color: #0c4c80;
+}
+
+i {
+	width: 10px;
+	height: 10px;
+	border: 1px solid #80deea;
+	border-radius: 50%;
+	display: inline-block;
+	margin: 0 10px 0 1%
+}
+
+/* iPhone 6 landscape */
+@media only screen and (max-width: 668px) {
+
+main {
+	box-shadow: initial
+}
+}
+
+/* Nexus 6P */
+@media only screen and (max-width: 412px) {
+
+main {
+	line-height: 25px;
+	margin: 0 5% 8% 3%;
+}
+
+article {
+	margin-top: 8%;
+}
+}

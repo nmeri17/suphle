@@ -1,0 +1,32 @@
+{
+    "name": "kornrunner/solidity",
+    "description": "Pure PHP implementation of Solidity",
+    "keywords": ["solidity", "ethereum", "eth"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Boris Momcilovic",
+            "homepage": "https://github.com/kornrunner/php-solidity"
+        }
+    ],
+    "require": {
+        "php": ">=7.1.0",
+        "kornrunner/keccak": "^1.0",
+        "simplito/bn-php": "^1.0",
+        "ext-mbstring": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "kornrunner\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "kornrunner\\": "test"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~7",
+        "php-coveralls/php-coveralls": "^2.1"
+    }
+}

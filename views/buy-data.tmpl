@@ -1,0 +1,67 @@
+<main>
+
+	<section>{{content}}</section>
+
+	<span>{{__foreach-1-start__}}{{trade_notification}}{{__foreach-1-end__}}</span>
+
+	<section>
+		<h3>buy data </h3>
+
+		<table>
+		
+			<tr>
+				<th>value</th>
+				<th>network</th>
+				<th>price</th>
+				<th>validity period</th>
+				<th colspan="2"></th>
+			</tr>
+
+			{{__foreach-1-start__}}
+				{{__foreach-2-start__}}
+					<tr>
+						<td>{{packageValue}}</td>
+						<td>{{network}}</td>
+						<td>{{price}}</td>
+						<td>{{validity}}</td>
+						<td>
+							<form method="post" action="/buy-data/data">
+								<input type="hidden" name="pkv" value="{{packageValue}}">
+								<input type="hidden" name="ntw" value="{{network}}">
+								<input type="hidden" name="type" value="2">
+								<input type="submit" value=BUY>
+							</form>
+						</td>
+					</tr>
+				{{__foreach-2-end__}}
+			{{__foreach-1-end__}}
+		</table>
+	</section>
+
+	<br>
+	<section>
+
+		<h3>buy airtime </h3>
+
+		<form method="post" action="/buy-data/airtime">
+			
+			<label>network provider</label><br>
+			<select name="ntw">
+				<option>--------</option>
+				<option value="2">mtn</option>
+				<option value="1">airtel</option>
+				<option value="4">9mobile</option>
+				<option value="3">glo</option>
+			</select><br>
+
+			<label>Airtime amount</label><br>
+			<input type="number" name="pkv"><br>
+
+			<input type="hidden" name="mode" value="buy">
+			<input type="hidden" name="type" value="1">
+
+			<input type="submit" value="buy">
+		</form>
+	</section>
+
+</main>

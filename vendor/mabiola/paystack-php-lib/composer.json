@@ -1,0 +1,34 @@
+{
+    "name": "mabiola/paystack-php-lib",
+    "version": "1.0.1",
+    "description": "A PHP Library for https://paystack.co",
+    "keywords": ["library", "Paystack"],
+    "type": "library",
+    "require": {
+        "vlucas/phpdotenv": "~2.2",
+        "illuminate/support": "~5.1-dev",
+        "illuminate/http": "~5.1-dev",
+        "guzzlehttp/guzzle": "~6.0",
+        "ramsey/uuid": "~3.5",
+        "moontoast/math": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~4.0",
+        "mockery/mockery": "~0.9",
+        "fzaninotto/faker" : "~1.0"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Malik Abiola",
+            "email": "abiola.malik@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "MAbiola\\Paystack\\": "src/",
+            "MAbiola\\Paystack\\Tests\\": "Tests/"
+        }
+    }
+
+}

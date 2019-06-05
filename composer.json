@@ -1,0 +1,6 @@
+{
+    "require": {
+        "mabiola/paystack-php-lib": "^1.0",
+        "padrio/php-electrum-api": "^1.6"
+    }
+}

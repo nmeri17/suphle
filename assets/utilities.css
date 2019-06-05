@@ -1,0 +1,59 @@
+main {
+	padding-left: 0
+}
+
+aside {
+	padding: 5% 2% 0 1%;
+	background: darkcyan;
+}
+
+details {
+	margin: 0 0 8% 0%;
+}
+
+summary {
+	font-weight: bold
+}
+
+aside li {
+	margin: 5% 0 0 25%;
+	font-size: 85%;
+	list-style-type: circle;
+	padding: 2%;
+}
+
+aside li a {
+	color: inherit
+}
+
+aside li.active-side-nav, aside li:hover {
+	background: #90143d;
+	color: #fff;
+	transition: all .4s ease-in;
+}
+
+main section {
+	line-height: 35px
+}
+
+main section form {
+	margin-top: 5%;
+}
+
+input {
+	height: 40px;
+	width: 50%;
+	margin-bottom: 5%;
+	border-radius: 5px;
+	border: 1px solid #ccc
+}
+
+label {
+	font-weight: bold
+}
+
+.get-this {
+	color: #55f;
+	border: none;
+	cursor: pointer
+}
