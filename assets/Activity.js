@@ -6,12 +6,12 @@ var FormActivity = (() => {
 * @param: {statusContainer} Selector where the status of next activity will be displayed
 * @param: {toRemove} fields in the returned data to not create inputs for
 * @param: {addMore} will place a button beside these inputs to append more
-* @param: {folderRoot} dir name at which back end lives
+* @param: {folderRoot} is dir name at which back end lives. set to null to use current domain
 *
 * @author: github.com/nmeri17
 */
 
-function FA ({statusContainer= '', toRemove =[], addMore =[], folderRoot=''}) {
+function FA ({statusContainer= '', toRemove =[], addMore =[], folderRoot=null}) {
 
 	// default props go to prototype but can be overridden in the constructor i.e final source of truth
 	this.statusContainer = $(statusContainer);
@@ -20,7 +20,7 @@ function FA ({statusContainer= '', toRemove =[], addMore =[], folderRoot=''}) {
 
 	this.addMore = addMore;
 
-	this.folderRoot = folderRoot;
+	this.folderRoot = folderRoot ? '/' + folderRoot : '';
 
 	this.version = 1.3;
 }
@@ -31,7 +31,7 @@ FA.prototype = {
 
 	getFields: function (type, callback) {
 
-		return $.get(`/${this.folderRoot}/get-fields/${type}`, (res) => callback(res, type));
+		return $.get(`${this.folderRoot}/get-fields/${type}`, (res) => callback(res, type));
 	},
 
 	// will get db data and send it to be paired against valid fields
@@ -39,7 +39,7 @@ FA.prototype = {
 
 		var h = this, d = h.nameCleanUp(itemToGet);
 		
-		return $.get(`/${h.folderRoot}/get-contents/${d}`, function (contents) {
+		return $.get(`${h.folderRoot}/get-contents/${d}`, function (contents) {
 
 			try {
 
@@ -114,7 +114,7 @@ FA.prototype = {
 	// @return: Promise
 	postToDb: function(form, {alteredStr}) {
 
-		var fd = new FormData(), h = this, url = `/${h.folderRoot}/${form.attr('action')}`/* || form.attr('formaction')*/,
+		var fd = new FormData(), h = this, url = `${h.folderRoot}/${form.attr('action')}`/* || form.attr('formaction')*/,
 
 		fileInp = form.find('[type="file"]').filter((i,e) => $(e).val().length);
 
