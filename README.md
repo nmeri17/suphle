@@ -4,7 +4,7 @@ Does not use any ORMs
 
 # TODO  
 -    Write service container for DI
--     Write CLI for programmatic creation of objects
+-    Write CLI for programmatic creation of data objects for templating engine
 
 # Template engine
 
