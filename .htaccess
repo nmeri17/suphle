@@ -10,7 +10,7 @@ RewriteCond %{QUERY_STRING} ^((cat=(\w+)&mode=(\w+)(&na=(\d))?(&code=(.+))?)?)?$
 
 
 # tacks the query string onto the target url
-RewriteRule ^/?([\w-]+)\/?([a-zA-Z0-9-'"]+)?\/?$ controllers/controller.php?url=$1&action=$2&%1 [NC,L]
+RewriteRule ^/?([\w-]+)\/?([a-zA-Z0-9-'"]+)?\/?$ controllers/front-controller.php?url=$1&action=$2&%1 [NC,L]
 
 
 # extensioned requests, suck it!
@@ -18,17 +18,17 @@ RewriteRule ^/?([\w-]+)\/?([a-zA-Z0-9-'"]+)?\/?$ controllers/controller.php?url=
 
 
 # external API postback?
-#RewriteRule ^/?postback-url\/?(\s+)?\/?$ controllers/controller.php?url=$1&action=$2 [NC,L]
+#RewriteRule ^/?postback-url\/?(\s+)?\/?$ controllers/front-controller.php?url=$1&action=$2 [NC,L]
 
 
 # index queries
 RewriteCond %{QUERY_STRING} ((cid=(\d+))?(mkt=(polls|football))?)
 
-RewriteRule ^/?$ controllers/controller.php?url=index&%1 [NC,L]
+RewriteRule ^/?$ controllers/front-controller.php?url=index&%1 [NC,L]
 
 
 # serve index
-RewriteRule ^/?$ controllers/controller.php?url=index [NC,L]
+RewriteRule ^/?$ controllers/front-controller.php?url=index [NC,L]
 
 
 # invalid file?
@@ -38,4 +38,4 @@ RewriteCond %{REQUEST_FILENAME} !-f
 # fuck off our dirs!
 RewriteCond %{REQUEST_FILENAME} -d  
 
-RewriteRule .? controllers/controller.php?url=error [L]
+RewriteRule .? controllers/front-controller.php?url=error [L]

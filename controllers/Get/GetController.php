@@ -140,7 +140,7 @@ class GetController {
 
 	    if (is_null($allTables)) {
 
-			$validTables = $conn->prepare("SHOW TABLES WHERE `Tables_in_dig-currency` NOT LIKE ?");
+			$validTables = $conn->prepare("SHOW TABLES WHERE `Tables_in_` NOT LIKE ?");
 
 			$validTables->execute(['contents']);
 

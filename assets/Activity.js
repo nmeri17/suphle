@@ -11,7 +11,7 @@ var FormActivity = (() => {
 * @author: github.com/nmeri17
 */
 
-function FA ({statusContainer= '', toRemove =[], addMore =[], folderRoot=null}) {
+function FA ({statusContainer= '', toRemove =[], addMore =[], folderRoot=null, textareaLib='richText'}) {
 
 	// default props go to prototype but can be overridden in the constructor i.e final source of truth
 	this.statusContainer = $(statusContainer);
@@ -21,6 +21,8 @@ function FA ({statusContainer= '', toRemove =[], addMore =[], folderRoot=null}) 
 	this.addMore = addMore;
 
 	this.folderRoot = folderRoot ? '/' + folderRoot : '';
+
+	this.textareaLib = textareaLib;
 
 	this.version = 1.3;
 }
@@ -218,7 +220,9 @@ FieldFormat.prototype = {
 		}).prevObject
 
 		// textarea present?
-		.find('textarea').richText();
+		.find('textarea');
+
+		$.fn[h.textareaLib].call(newForm);
 
 
 		$('main > section').html(formContainer);

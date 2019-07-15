@@ -41,7 +41,7 @@ $(document).ready(function() {
 		
 		thisButt.val('loading...').css('width', 'auto').attr('disabled', true);
 
-		new FormActivity({statusContainer, folderRoot: 'dig-currency'})
+		new FormActivity({statusContainer, folderRoot: null, textareaLib: 'richText'})
 
 		.postToDb(form, {alteredItem})
 

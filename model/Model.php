@@ -55,11 +55,9 @@
 
 	private static function adminProfile (PDO $conn, array $opts) {
 
-		$queriesMap = [
-			'transactions', 'testimonials', 'users', 'ecurrencies', 'coupons', 'vtu-data-catalog', 'settings'
-		];
+		$queriesMap = [];
 
-		$pageN = [$opts['transPN'], $opts['testPN'], $opts['userPN'], $opts['currPN'], $opts['couPN'], $opts['dataPN'], 0 ];
+		$paginationNames = [$opts['transPN'], $opts['testPN'], $opts['userPN'], $opts['currPN'], $opts['couPN'], $opts['dataPN'], 0 ];
 
 		$jsScripts = [['admin_script' => '<script src="/assets/admin-profile.js"></script>']];
 
@@ -74,7 +72,7 @@
 			
 			$pdo = $conn->prepare("SELECT * FROM `$value` WHERE id > ? LIMIT ?"); // ORDER BY `date` DESC
 
-			$pdo->execute([ $pageN[$key], $opts['limit']]);
+			$pdo->execute([ $paginationNames[$key], $opts['limit']]);
 
 			$pdo = $pdo->fetchAll(PDO::FETCH_ASSOC);
 
@@ -103,45 +101,16 @@
 			<a>Testimonials</a>
 			<a>Account Management</a>'];
 
-
-		$userTransactions = $conn->prepare('SELECT * FROM transactions WHERE initiator = ? AND id > ? ORDER BY `date` DESC');// LIMIT ?
-
-		$userTransactions->execute([$_SESSION['id'], $opts['transPN']/*, $opts['limit']*/]);
-
-		$userTransactions = $userTransactions->fetchAll(PDO::FETCH_ASSOC);
-
 		$userTransactions = self::formatForEngine($userTransactions, 'civili-trans');
-
-		// Testimonials
-		$testimonial = $conn->prepare('SELECT * FROM testimonials WHERE fromId = ?');
-
-		$testimonial->execute([$_SESSION['id']]);
-
-		$testimonial = $testimonial->fetch(PDO::FETCH_ASSOC);
-
-		if (!empty($testimonial)) {
-			if ($testimonial['approved'] == 1) {
-
-				$testimonial ['status'] = 'Your testimonial has been reviewed and accepted by the site administrators.';
-
-				$testimonial['approved'] = 'disabled';
-			}
-
-			else $testimonial ['status'] = 'Testimonial pending review.';
-
-			$userTestimonial = self::formatForEngine([$testimonial]);
-		}
-
-		else $userTestimonial = self::formatForEngine([['status' => '', 'content'=> '', 'approved' => '']]);
 
 		
 		// account section
 		$veriConfir = file_get_contents('../views/user-verify.tmpl');
 
-		$userVeriCrit = ['photoIds', 'utilityBills'];
+		$userVeriCrit = [];
 
 		$veriStat = array_filter($userVeriCrit, function ($loca) use ($opts) {
-			return file_exists("../assets/imgs/$loca/" . $opts['userData']['userId'] . '.png');
+			return true;
 		});
 
 		if (count($veriStat) == count($userVeriCrit)) $veriConfir = "<p>Account Verified</p>";
@@ -152,134 +121,7 @@
 		];
 
 
-		return [[$leftMenu], [], $userTransactions, $userTestimonial, [], [], $myAccount, [], [], [], [],[]];
-	}
-
-	public static function trade (PDO $conn, string $slug, array $opts) {
-
-		session_start();
-
-		$res = [[]];
-
-		$prevTrade = @$_SESSION['trade_notification'];
-
-		$userBal = isset($_SESSION['id']) ? json_decode(TilwaGet::getContents($conn, $_SESSION['id']), true)['balance'] : 0;
-
-		if (isset($prevTrade)) {
-
-			$res[0] = [['trade_notification' => $prevTrade]];
-
-			unset($_SESSION['trade_notification']); // against future iterations
-		}
-
-		// currencies
-		$currenList = $conn->prepare("SELECT * FROM ecurrencies");
-
-		$currenList->execute();
-
-		$currenList = array_filter($currenList->fetchAll(PDO::FETCH_ASSOC), function($arr) { return $arr['visible'] != 0;});
-
-		$buySelects = [
-			[0=> $currenList], [1=>$currenList]
-		];
-
-		array_push($res, $buySelects, self::formatForEngine($currenList));
-
-		// user balance
-		$res[] = [['user_balance' => $userBal]];
-
-		return $res;
-	}
-	
-	public static function buyData (PDO $conn, string $slug, array $opts) {
-
-		session_start();
-			
-		$dataBundles = $conn->prepare("SELECT * FROM `vtu-data-catalog`");
-
-		$dataBundles->execute();
-
-		$dataBundles = $dataBundles->fetchAll(PDO::FETCH_ASSOC);
-
-		$res = [[]];
-
-
-		if (($prevTrade = @$_SESSION['trade_notification']) && !is_null($prevTrade)) {
-
-			$res[0] = [['trade_notification' => $prevTrade]];
-
-			unset($_SESSION['trade_notification']); // against future iterations
-		}
-
-		$res[] = self::formatForEngine($dataBundles, 'buy-data');
-
-		return $res;
-	}
-	
-	public static function utilities (PDO $conn, string $slug, array $opts) {
-
-		session_start();
-
-		$res = [[]];
-
-		$airvendInstance =  new AirvendAccessor();
-
-		$pull_up = 'pull_up';
-
-
-		$prevTrade = @$_SESSION['trade_notification'];
-
-		if (isset($prevTrade)) {
-
-			$res[0] = [['trade_notification' => $prevTrade]];
-
-			unset($_SESSION['trade_notification']); // against future iterations
-		}
-
-		// multichoice products
-		if (!isset($opts['na'] )) {
-
-			$utilMode = $opts['mode'] ?? 'dstv';
-
-			/*$multiChoiceResp = $airvendInstance->airvendRequest('', 'vas/'. $utilMode . "/product/");
-
-			$multiChoiceResp = json_decode($multiChoiceResp, true)['details'];
-
-			$dataSet = $utilMode == 'smilebundle' ? $multiChoiceResp['bundles']: $multiChoiceResp['items'];*/
-			
-			$dataSet = [[['name'=> 34, 'price'=>324,'code'=>4123]]];
-
-			foreach ($dataSet[0] as &$row) {
-
-				$row['mode'] = $utilMode;
-
-				if ($utilMode == 'dstv') $row['nested'] = '&na=1';
-
-				else $row[$pull_up] = $pull_up;
-			}
-		}
-
-		else {
-
-			//$dataSet = new AirvendAccessor()->nestedAggregate($opts);
-
-			$dataSet = [[['name'=> 92, 'price'=>424,'code'=>'fhjg']]];
-
-			foreach ($dataSet[0] as &$row) $row[$pull_up] = $pull_up;
-		}
-			
-		$res[] = self::formatForEngine($dataSet);
-
-
-		// waec card prices
-		/*$waecResp = $airvendInstance->airvendRequest('', "waec/product/");
-
-		$waecResp = json_decode($waecResp, true)['details']['pinValues'];
-		}*/
-$waecResp = [['amount' => 44]];
-		$res[] = [['waec_amount'=> $waecResp[0]['amount']]];
-
-		return $res;
+		return [[$leftMenu], [], $userTransactions, [], [], [], $myAccount, [], [], [], [],[]];
 	}
 
 
