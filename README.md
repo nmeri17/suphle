@@ -1,3 +1,12 @@
+NOTES
+Does not use any ORMs
+
+TODO
+Write service container for DI
+Write CLI for programmatic creation of objects
+
+Template engine
+
 #Data driven parser against component blocks
 
 The objects in the first step are for each component. Step 1's size equals number of children on the root component.
