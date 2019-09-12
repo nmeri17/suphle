@@ -1,11 +1,24 @@
 # NOTES  
-Does not use any ORMs
+Does not ship with a default ORM.
 
 
 # TODO  
 -    Write service container for DI
 -    Write CLI for programmatic creation of data objects for templating engine
 -    Decouple the "model" from one file so multiple devs can push to one dir that'll be scanned
+
+# Installation
+
+# Who needs this?
+Tilwa wasn't built to carry every single developer along. It doesn't promise an exhaustive panacea to your every imaginable need in web development. If you're coming from such framework, you will be expecting the notables -- security concerns, ORMs, application containers and auth. We understand not every application requires these. Instead, we guarantee a very low learning curve in exchange for intuitive routing across web pages and api endpoints, templating, caching, administration panel.
+
+# File structure
+In seconds, your project setup puts you well on your well on your way to a robust, flexible application
+
+# Where the magic happens
+You're mostly going to be extending the Model or PostController classes, depending on your specific need.
+
+Template engine doesn't supports comments or front end frameworks with matching tags
 
 # Template engine
 
