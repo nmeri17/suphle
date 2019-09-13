@@ -6,7 +6,7 @@ var FormActivity = (() => {
 * @param: {statusContainer} Selector where the status of next activity will be displayed
 * @param: {toRemove} fields in the returned data to not create inputs for
 * @param: {addMore} will place a button beside these inputs to append more
-* @param: {folderRoot} is dir name at which back end lives. set to null to use current domain
+* @param: {folderRoot} set to remote url if your back end lives on another domain
 *
 * @author: github.com/nmeri17
 */

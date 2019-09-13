@@ -3,19 +3,19 @@
 	namespace Get;
 
 	
-	use \Monolog\Logger;
+	use Monolog\Logger;
 
-	use \Monolog\Handler\StreamHandler;
+	use Monolog\Handler\StreamHandler;
 
-	use \PDO; use \TypeError;
+	use PDO; use TypeError;
 
-	use \Model;
+	use Model;
 
-	use \Templating\TemplateEngine;
+	use Templating\TemplateEngine;
 
-	use \Phpfastcache\CacheManager;
+	use Phpfastcache\CacheManager;
 
-	use \Phpfastcache\Config\ConfigurationOption;
+	use Phpfastcache\Config\ConfigurationOption;
 
 /**
 * @description: This class is made up of regular and specific-purpose methods.
@@ -25,7 +25,7 @@
 */
 class GetController {
 
- 	// document names are formatted for url compatibilty. this method aims to reverse it to its original state
+ 	// in transit, document names are formatted for url compatibilty. this method aims to reverse it to its original state
  	public static function nameCleanUp ($name) {
  		
  		return preg_replace_callback("/-|_|~/", function ($match) {
@@ -38,11 +38,12 @@ class GetController {
 		}, $name);
  	}
 
+ 	// converts a string to a format callable as a method i.e. camelcase or snake cased
  	public static function nameDirty ($name, $dirtMode) {
  		
  		return preg_replace_callback('/\b(\s)|(-)(\w)?/', function($a) use ($dirtMode, $name) {
 
-	 		if ($dirtMode == 'dash-case') {
+	 		if ($dirtMode == 'dash-case') { // won't have any effect on strings containing underscores
 
 	 			if (!empty($a[1])) return '-';
 
@@ -98,9 +99,9 @@ class GetController {
 
 			try {
 
-				$contents = $conn->prepare('SELECT * FROM `'.$tableName.'` WHERE `'. $col .'`=?');
+				$contents = $conn->prepare('SELECT * FROM `'.$tableName.'` WHERE `'. $col .'`=? OR `'. $col .'`=?');
 
-				$contents->execute([$dataValue]);
+				$contents->execute([$dataValue, self::nameCleanUp($dataValue)]);
 
 				$contents = $contents->fetch(PDO::FETCH_ASSOC);
 
@@ -140,7 +141,7 @@ class GetController {
 
 	    if (is_null($allTables)) {
 
-			$validTables = $conn->prepare("SHOW TABLES WHERE `Tables_in_` NOT LIKE ?");
+			$validTables = $conn->prepare("SHOW TABLES WHERE `Tables_in_". getenv('DBNAME')."` NOT LIKE ?");
 
 			$validTables->execute(['contents']);
 
@@ -424,7 +425,7 @@ class GetController {
 
 			// add records to the log
 			$log->addError((string) $e);
-	    	return ['url_error' => '"' .explode('/', $_SERVER['REQUEST_URI'])[1] . '"']; // in production, change index to `1`
+	    	return ['url_error' => '"' .explode('/', $_SERVER['REQUEST_URI'])[getenv('ENV') == 'dev' ? 1 : 2] . '"'];
 		}
 
 		catch (Error $e) {
@@ -435,7 +436,7 @@ class GetController {
 
 			// add records to the log
 			$log->addError((string) $e);
-			return ['url_error' => '"' .explode('/', $_SERVER['REQUEST_URI'])[2] . '"'];
+			return ['url_error' => '"' .explode('/', $_SERVER['REQUEST_URI'])[getenv('ENV') == 'dev' ? 1 : 2] . '"'];
 		}
 	}
 
@@ -471,47 +472,6 @@ class GetController {
 		$opts['oldVars'] = $vars;
 
 		return $opts;
-	}
-
-
-	public static function search ($conn, $toSearch) {
-
-		$toSearch = self::nameCleanUp($toSearch);
-
-		$like = "%$toSearch%";
-
-		$conn->setAttribute( PDO::ATTR_EMULATE_PREPARES, false); // to retain int data type
-		
-		// this table has been deprecated. use getContents instead
-		$searchRes = $conn->prepare('SELECT name, variables FROM contents WHERE `type`= ? AND `name` LIKE ? LIMIT ?');
-
-		$searchRes->execute(['cart', $like, 10]);
-
-
-		$searchRes = array_map(function ($arr) {
-
-			$dir = json_decode($arr, true)['type'];
-
-			return "<a href=/dig-currency/$dir/". self::nameDirty($arr['name'], 'dash-case') . '> ' . $arr['name'] . '</a>';
-
-		}, $searchRes->fetchAll(PDO::FETCH_ASSOC));
-
-		if (empty($searchRes)) $searchRes = ['no result found'];
-
-		return json_encode($searchRes);
-	}
-
-	/**
-	* @desciption: some podcasts are uploaded several days in advance but only to be displayed on their due date. this method returns all podcasts whose due date is in the future
-	*
-	**/
-	public static function futurePosts ($conn, $address) {
-
-		// return json_encode(Model::afterToday($conn, $address, 'date', NULL));
-	}
-
-	public static function lazyLoad ($conn, $url) {
-		# invokes `key` method in `Model` with the $_GET keys `curr` {i+$curr} as parameter `opts`
 	}
 
 	// returns a global instance of phpfastcache manager

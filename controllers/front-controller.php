@@ -4,9 +4,9 @@
 
 	require_once 'autoload.php';
 
-	use \Get\TilwaGet;
+	use Get\TilwaGet;
 
-	use \Post\TilwaPost;
+	use Post\TilwaPost;
 	
 
 	$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -14,7 +14,7 @@
 	
 	$value = $_GET['url'];
 
-//var_dump($value); die();
+
 	if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
 		$key = @$_GET['action']; $handler = TilwaGet::nameDirty($value, 'camel-case');
@@ -36,15 +36,7 @@
 		}
 
 		else {
-/*$method = new \Electrum\Request\Method\Version();
 
-try {
-    $response = $method->execute();
-} catch(\Exception $exception) {
-    die($exception->getMessage());
-}
-
-$response->getVersion();*/
 			// get single pages
 			$query = $_GET;
 

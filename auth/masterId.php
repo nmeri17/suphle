@@ -1,1 +1,0 @@
-<?php $masterCred = 'user5c8fa27da2340'; ?>

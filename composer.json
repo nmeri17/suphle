@@ -1,6 +1,8 @@
 {
     "require": {
-        "mabiola/paystack-php-lib": "^1.0",
-        "padrio/php-electrum-api": "^1.6"
+        "nategood/commando": "^0.4.0",
+        "monolog/monolog": "*",
+        "phpfastcache/phpfastcache": "*",
+        "vlucas/phpdotenv": "*"
     }
 }

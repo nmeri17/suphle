@@ -2,15 +2,12 @@
 
 	namespace Get;
 
-	use \Get\GetController;
-
-	use \PDO;
+	use PDO;
 
 	
-	// Read operations on data not to be formatted -- json response via ajax call? string? Plug them here!
+	// Read operations on data not to be formatted -- json response via ajax call? string? API? Plug them here!
 	class TilwaGet extends GetController {
 
-		// conn is passed, whether we need it or not
 		public static function getFields (PDO $conn, string $rsxName, $dummy=[]) {
 			
 			$retain = [];
@@ -23,6 +20,28 @@
 		    $uniqCol = []; // 'id' here means we don't intend to `getContents` any rows here but don't want other table calls to complain when they can't find 'name'
 
 			return parent::getContents($conn, $rsxName, ['primaryColumns' => $uniqCol]);
+		}
+
+
+		public static function search ($conn, $toSearch) {
+
+			$toSearch = self::nameCleanUp($toSearch);
+
+			$like = "%$toSearch%";
+
+			$conn->setAttribute( PDO::ATTR_EMULATE_PREPARES, false); // to retain int data type
+			
+			// this table has been deprecated. use getContents instead
+			$searchRes = $conn->prepare('SELECT name, variables FROM contents WHERE `type`= ? AND `name` LIKE ? LIMIT ?');
+
+			$searchRes->execute(['table_name', $like, 10]);
+
+
+			$searchRes = $searchRes->fetchAll(PDO::FETCH_ASSOC);
+
+			if (empty($searchRes)) $searchRes = ['no result found'];
+
+			return json_encode($searchRes);
 		}
 	 }
 
