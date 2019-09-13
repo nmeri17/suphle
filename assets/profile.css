@@ -1,4 +1,4 @@
-main [data-init="testimonials"] input[name=content] {
+input[name=content] {
 	height: 100px;
 }
 

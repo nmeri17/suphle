@@ -9,10 +9,6 @@
 	cursor: pointer;
 }
 
-#mobile-view {
-	display: none;
-}
-
 a {
 	text-decoration: none;
 }
@@ -141,29 +137,6 @@ h3 a {
 	color: #000;
 }
 
-p.index-header {
-	text-align: center;
-	max-width: 36%;
-	margin: 0 auto;
-}
-
-p.index-header span:first-child {
-    background: #7ea25a;
-    color: #fff;
-    padding: 5%;
-    border-radius: 3px;
-    font-size: 90%;
-}
-
-p.index-header span:last-child {
-    font-size: 90%;
-    white-space: nowrap;
-}
-
-p.index-header span:last-child a {
-    color: #796320;
-}
-
 table {
 	box-shadow: 0 0 18px 3px #eee;
 	width: 100%;
@@ -185,7 +158,7 @@ td:first-child, th:first-child {
 	padding-left: 3%
 }
 
-th, td, .card h4 {
+th, td {
 	text-transform:capitalize;
 }
 
@@ -195,218 +168,6 @@ td {
 	font-size: 90%;
 }
 
-td.pointer:hover, .pointer.selected {
-	background: #e5e5e5;
-    transition: all .2s ease-in;
-}
-
-.countryRow {
-	background: #112;
-	border: none;
-	padding-top: 12px;
-	color: #fff;
-}
-
-.countryRow a {
-	color: #fff;
-}
-
-.country-more {
-	float: right;
-	margin: 2% 3% 0;
-	width: 4%;
-	display: flex;
-	justify-content: space-between;
-}
-
-.country-more i {
-	background: #e4bd48;
-	height: 5px;
-	width: 5px;
-	border-radius: 50%;
-	backface-visibility: hidden;
-}
-
-#more-selections {
-	background: #fff;
-	opacity: initial;
-	padding: 0 0 2%;
-	border: none;
-}
-
-#more-selections [data-role=header] {
-	font-size: 70%;
-	text-transform: uppercase;
-	padding: 0 3% 1%;
-	border: none;
-	background: #112;
-	color: #fff;
-	white-space: nowrap;
-}
-
-#more-selections ul {
-	list-style: none;
-	display: flex;
-	flex-flow: row wrap;
-	margin: 0 3%;
-}
-
-#more-selections li {
-	display: inlineblock;
-	padding: 6px 7px 4px;
-	margin: 2% 1% 0 0;
-	flex: 1 3%;
-	white-space: nowrap;
-	text-align: center;
-	text-transform: uppercase;
-	font-size: 55%;
-	max-width: fit-content;
-	background: #eee;
-	color: #aaa;
-}
-
-/* popup container */
-#more-selections-popup {
-	width: 35%;
-	box-shadow: 0 0 5px #aaa;
-}
-
-/* body coating on popup */
-.ui-popup-screen.in {
-	background: #aaa
-}
-
-.card {
-	background: #eee;
-	width: 30%;
-	font-size: 80%;
-	min-height: 400px;
-	height: fit-content;
-	position: relative;
-	overflow: hidden;
-	z-index: 27;
-	transition: .4s all .2s ease-in;
-}
-
-.card.index-fix {
-	position: fixed;
-	top: 5%;
-	right: 2%;
-	width: 25%;
-	transition: .4s all .2s ease-in-out;
-	display: none;
-}
-
-.card h4, .cart-info {
-	padding: 6% 5%;
-	 color: #484882; 
-	margin: 10% 5% 0;
-	background: #fafafa;
-	border-radius: 5px;
-	height: 50px;
-	box-shadow: 0 0 5px #e0e0e0
-}
-
-.card ul {
-	margin: 20% 5% 4%;
-	list-style: none;
-}
-
-.card li {
-	padding: 5% 7% 3px;
-	margin-top: 3%;
-	background: #bfbfbf77;
-	border-radius: 15px;
-	display:  flex;
-	flex-flow:  row nowrap;
-	justify-content:  space-between;
-}
-
-.card li span:last-child {
-	color: #888;
-	font-size: 65%;
-}
-
-/* .card h4:before, .cart-info:before {
-	content: '';
-	background: #154e8e;
-	position: absolute;
-	top: -6%;
-	left: -11%;
-	border-bottom-right-radius: 45%;
-	width: 110%;
-	height: 90px;
-	transform: rotate(4deg);
-	z-index: -1;
-	border-bottom: 8px solid #9996;
-	backface-visibility:  hidden;
-} */
-
-.price-container {
-	position: absolute;
-	bottom: 0;
-	background: #484882;
-	padding: 8% 2% 3%;
-	width: 100%;
-	color: #fff;
-}
-
-.price-container form {
-	display: flex;
-	flex-flow: row nowrap;
-}
-
-.price-container form input {
-	height: 25px;
-	background: #373765;
-	padding-left: 3%;
-	border: none;
-	color: #fff;
-	border-radius: 5px;
-	outline: none;
-	flex: 1 40%;
-}
-
-.price-container form button, select {
-	border: 0;
-	background: #eee;
-	color: #666;
-	padding: 2% 3% 1px;
-	margin-left:  3%;
-	border-radius: 3px;
-	transition: all .3s ease-in-out;
-}
-
-.price-container form button:hover {
-	background: #fcfcfc;
-	transition: all .3s ease-in-out
-}
-
-#countryMenu {
-	position: fixed;
-	bottom: 5%;
-	left: 7%;
-}
-
-button.kc_fab_main_btn {
-	font-size: 110% !important;
-	height: 40px !important;
-	width: 40px !important;
-	right: 1% !important;
-}
-
-.sub_fab_btns_wrapper {
-	bottom: 55px !important;
-}
-
-.sub_fab_btns_wrapper.show .sub_fab_btn {
-	width: 20px !important;
-	height: 20px !important;
-	font-size: 70%;
-	margin-right: 10px !important;
-	background: #112
-}
-
 footer {
 	padding: 2% 5%;
 	background: #112;
@@ -414,7 +175,6 @@ footer {
 	display:flex;
 	font-size: 75%;
 	justify-content: space-between;
-	border: none !important; /* jqm tries altering this*/
 }
 
 footer a, footer {
@@ -449,14 +209,6 @@ section {
 
 /* iPhone 6 landscape */
 @media only screen and (max-width: 720px) {
-    body.mobile-nav {
-        overflow-y: hidden
-    }
-
-    #bubble-cont {
-        display: none
-    }
-
     header, main, nav {
         flex-wrap: wrap
     }
@@ -473,16 +225,6 @@ section {
     nav {
         flex: 0 7%;
         margin-top: 9%;
-    }
-
-    nav.mobile-nav {
-        flex-flow: row wrap;
-        height: 100%;
-        width: 100%;
-        position: absolute;
-        top: 0;
-        z-index: 8888;
-        background: #484882;
     }
 
     [class^=active], nav > a:hover {
@@ -503,10 +245,6 @@ section {
         margin: 3% 0 3% 10%;
     }
 
-    nav.mobile-nav > i:first-child {
-    	margin-left: 90%
-    }
-
     nav a:not(:first-child) i {
         font-size: 250%;
         margin: 3% 0 3% 30%;
@@ -514,17 +252,6 @@ section {
 
     nav a, nav > span {
         display: none;
-    }
-
-    nav.mobile-nav > a, nav.mobile-nav > span {
-        display: inline-block;
-        flex: 1 35%;
-        min-height: 100px;
-        transform: initial;
-        font-size: 120%;
-        white-space: nowrap;
-        padding: 7px 0px 5px 15px;
-        margin-right: 5%;
     }
 
 	nav span:hover span {
@@ -562,81 +289,17 @@ section {
         display: none
     }
 
-    #mobile-view {
-        display: initial;
-    }
-
-    #mobile-view>* {
-        background: #fff
-    }
-
-    [data-role=header] {
-        border: 1px solid #eee
-    }
-
     p.index-header {
         margin: 8% 1% 5%;
-    }
-
-    /* collapsible list initials */
-    a.ui-collapsible-heading-toggle.ui-btn {
-        color: #666;
-        background: #ccc;
-        border-bottom: 1px solid;
-    }
-
-    a.ui-collapsible-heading-toggle.ui-btn:before {
-    	color: #673AB7;
-    	margin: 0 5% 0 -5%;
-    }
-
-    /* collapsible list items */
-    .ui-collapsible-content li {
-        border-bottom: 1px solid #ccc
-    }
-
-    .ui-collapsible-content li a {
-        color: #112;
-        border: none!important;
-        border-bottom: 1px solid #fff!important
-    }
-
-    .ui-table-cell-label {
-        border-right: 1px solid #eee
-    }
-
-    .country-more {
-        float: initial;
-        width: 8%;
-        margin-top: 5%
-    }
-
-    .country-more i {
-        width: 10px;
-        height: 10px;
-        box-shadow: 0 0 3px #bbb
     }
 
     table {
         margin: 1% 7% 3% 3%;
     }
-
-    #cart-screen h3 {
-        margin: 0 auto
-    }
-
-    #cart-screen .card {
-        margin: 5% auto;
-        min-width: 65%
-    }
 }
 
 /* Nexus 6P */
 @media only screen and (max-width: 412px) {
-
-#more-selections-popup {
-	width: 75%
-}
 
 footer {
 	flex-wrap: wrap-reverse;
