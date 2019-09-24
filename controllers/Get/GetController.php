@@ -9,8 +9,6 @@
 
 	use PDO; use TypeError;
 
-	use Model;
-
 	use Templating\TemplateEngine;
 
 	use Phpfastcache\CacheManager;
@@ -25,8 +23,23 @@
 */
 class GetController {
 
+	const PATH_INDEX = getenv('ENV') == 'dev' ? 1 : 2;
+
+	protected $controller;
+
+	private $contentOptions;
+
+	protected $cachedData;
+
+	function __construct (PDO $conn ) {
+
+		$this->contentOptions = $this->getContentOptions() ?? [];
+
+		$this->connection = $conn;
+	}
+
  	// in transit, document names are formatted for url compatibilty. this method aims to reverse it to its original state
- 	public static function nameCleanUp ($name) {
+ 	public function nameCleanUp ($name) {
  		
  		return preg_replace_callback("/-|_|~/", function ($match) {
 			
@@ -39,7 +52,7 @@ class GetController {
  	}
 
  	// converts a string to a format callable as a method i.e. camelcase or snake cased
- 	public static function nameDirty ($name, $dirtMode) {
+ 	public function nameDirty ($name, $dirtMode) {
  		
  		return preg_replace_callback('/\b(\s)|(-)(\w)?/', function($a) use ($dirtMode, $name) {
 
@@ -61,17 +74,13 @@ class GetController {
 	/**
 	* @description: returns a json string containing all info pertaining to the resource given in the name parameter. the encoded arrary returned is made up of a key-value pair of the fields/placeholders in the resource's view
 	*
-	* @param {config}: options for getting data from db. valid keys are ->
-
-		primaryColumns: Assoc array of primary columns mapped to their table. It will try to get a row where `name` is unique and TERMINATE EXECUTION IF A TABLE WITHOUT `name` or a suppied column exists
-
-		setNavIndicator: callback given the dataset should return a key-value pair for the nav to set a value your views can understand. default behaviour maps view name to nav_indicator column
-	*
-	* @return {String}: json encoded array of saved data or null otherwise
+	* @return {String}: json encoded array of saved data, or null otherwise
 	*/ 
-	static function getContents (PDO $conn, string $name, $config=[]) {
+	protected function getContents ( string $name ) {
 
-	    $cache = self::cacheManager();
+	    $cache = $this->cacheManager();
+
+	    $config = $this->contentOptions;
 
 	    // unacceptable cache characters
 	    $cachePermitted = substr(preg_replace('/[{}()\/\@:]/', 'INVALID_CHARACTER', $name), 0, 63);
@@ -83,65 +92,12 @@ class GetController {
 
 	    $cachedRequest = $cache->getItem($cachePermitted);
 
-		$cachedData = $cachedRequest->get();
-
-		/**
-	     * populates cachedData for us
-	     *
-	     * @return {Boolean}: True when a table match is found or false otherwise
-	     **/
-	    $getTablData = function ($conn, $tableName, $dataValue) use (&$cachedData, $cachedRequest, $config) {
-
-	    	$primaryColumns = $config['primaryColumns'] ?? [];
-
-	    	$col = in_array($tableName, array_keys($primaryColumns)) ? $primaryColumns[$tableName] : 'name';
-
-
-			try {
-
-				$contents = $conn->prepare('SELECT * FROM `'.$tableName.'` WHERE `'. $col .'`=? OR `'. $col .'`=?');
-
-				$contents->execute([$dataValue, self::nameCleanUp($dataValue)]);
-
-				$contents = $contents->fetch(PDO::FETCH_ASSOC);
-
-				if (!empty($contents)) {
-
-					if ($tableName == 'page') {
-
-						if (isset($config['setNavIndicator']) && is_callable($config['setNavIndicator'])) {
-
-							foreach ($config['setNavIndicator']($contents) as $key => $value) $contents[$key] = $value;
-						}
-
-						else {
-
-							$navName = 'active_'. self::nameDirty($contents['name'], 'dash-case');
-
-							$contents[preg_replace('/\s+/', '_', $navName)] = $contents['nav_indicator'];
-						}
-
-						$contents['type'] = $contents['name'];
-
-						unset($contents['nav_indicator']);
-					}
-//var_dump($contents, $tableName, $dataValue); die();
-					$cachedData = json_encode($contents);
-
-				    $cachedRequest->set($cachedData)->expiresAfter(120); //in seconds, also accepts Datetime
-
-					return true;
-				}
-			}
-			catch (PDOException $e) {
-				return false;
-			}
-		};
+		$this->cachedData = $cachedRequest->get();
 	 
 
 	    if (is_null($allTables)) {
 
-			$validTables = $conn->prepare("SHOW TABLES WHERE `Tables_in_". getenv('DBNAME')."` NOT LIKE ?");
+			$validTables = $this->connection->prepare("SHOW TABLES WHERE `Tables_in_". getenv('DBNAME')."` NOT LIKE ?");
 
 			$validTables->execute(['contents']);
 
@@ -157,8 +113,9 @@ class GetController {
 
 			$cache->save($cachedTables);
 		}
-// var_dump( $cachedData); //die();
-	    if (is_null($cachedData)) {
+
+		// var_dump( $this->cachedData); //die();
+	    if (is_null($this->cachedData)) {
 
 			$objTable = $cache->getItem('tableFor|'.$cachePermitted);
 
@@ -171,7 +128,7 @@ class GetController {
 
 		    	for ($i=0; $i < count($allTables); $i++) {
 
-					if (!$targetTable && $getTablData($conn, $allTables[$i], $name) === true) {
+					if (!$targetTable && $this->getTableData( $allTables[$i], $name, $cachedRequest ) === true) {
 
 						$targetTable = 1;
 
@@ -187,14 +144,14 @@ class GetController {
 			}
 
 			// set data in cache
-			else $getTablData($conn, $tableName, $name);
+			else $this->getTableData( $tableName, $name, $cachedRequest );
 
 			// if cache is still empty, `name` is either invalid or a this is a request from the cms for a view with no data initiated in the database yet
-			if (empty($cachedData)) {
+			if (empty($this->cachedData)) {
 
-				if ($tableName == 'page' && file_exists("../views/$name.tmpl")) {
+				if ($tableName == 'page' && file_exists(APP_ROOT . "views/$name.tmpl")) {
 				    
-				    $vars = json_decode(TilwaGet::getFields($name), true);
+				    $vars = json_decode($this->getFields($name), true);
     
     				$initialVars = [];
     
@@ -203,27 +160,81 @@ class GetController {
     					$initialVars[$el] = '';
     				});
     
-    				$cachedData = json_encode($initialVars);
+    				$this->cachedData = json_encode($initialVars);
 				}
-				else $cachedData = null;
+				else $this->cachedData = null;
 			}
 		}
 
 		//else $cache->deleteItem($name); die(); // for debugging
 		// or remove all
 		// $cache->clear();
-// var_dump($cachedData); die();
-		return $cachedData;
-	}	
+		// var_dump($this->cachedData); die();
+		return $this->cachedData;
+	}
+
+	/**
+     * populates cachedData for us
+     *
+     * @return {Boolean}: True when a table match is found or false otherwise
+     **/
+    private function getTableData( $tableName, $dataValue, $cachedRequest) {
+
+    	$config = $this->contentOptions;
+
+    	$primaryColumns = $config['primaryColumns'] ?? [];
+
+    	$col = in_array($tableName, array_keys($primaryColumns)) ? $primaryColumns[$tableName] : 'name';
+
+
+		try {
+
+			$contents = $this->connection->prepare('SELECT * FROM `'.$tableName.'` WHERE `'. $col .'`=? OR `'. $col .'`=?');
+
+			$contents->execute([$dataValue, $this->nameCleanUp($dataValue)]);
+
+			$contents = $contents->fetch(PDO::FETCH_ASSOC);
+
+			if (!empty($contents)) {
+
+				if ($tableName == 'page') {
+
+					if (isset($config['setNavIndicator']) && is_callable($config['setNavIndicator'])) {
+
+						foreach ($config['setNavIndicator']($contents) as $key => $value) $contents[$key] = $value;
+					}
+
+					else {
+
+						$navName = 'active_'. $this->nameDirty($contents['name'], 'dash-case');
+
+						$contents[preg_replace('/\s+/', '_', $navName)] = $contents['nav_indicator'];
+					}
+
+					$contents['type'] = $contents['name'];
+
+					unset($contents['nav_indicator']);
+				}
+				//var_dump($contents, $tableName, $dataValue); die();
+				$this->cachedData = json_encode($contents);
+
+			    $cachedRequest->set($this->cachedData)->expiresAfter(120); //in seconds. also accepts Datetime
+
+				return true;
+			}
+		}
+		catch (PDOException $e) {
+			return false;
+		}
+	}
 
 	
 	/**
 	* @description: cms helper function. Will NOT throw an error if you attempt to obtain an invalid resource, but will return an array with key url_error
 	*
-	* @param {dummy}: shoved down from child methods because PHP doesn't support method overloading
 	* @param {retain}: foreach blocks are usually for repeated components, so pass in the names of those you want to edit at the admin panel. They'll appear as single fields. Otherwise they'll all be omitted
 	*/
-	static function getFields (PDO $dummy, string $rsx, $retain=[]) {
+	private function getFields ( string $rsx, $retain=[]) {
 
 		$fields = [];
 
@@ -260,10 +271,10 @@ class GetController {
 		}
 	}
 	
-	public static function pairVarToFields ($conn, $tempName) {
+	protected function pairVarToFields ( $tempName) {
 		
 		// get an assoc array of components to be used in the foreach (if it's needed)
-		$options = TilwaGet::getContentsAsArray($conn, $tempName);
+		$options = $this->getContentsAsArray( $tempName);
 	
 
 		$type = $options['handler'] ?? 'error';
@@ -291,7 +302,7 @@ class GetController {
 
 			$engine = new TemplateEngine('error');
 
-			$vars['site_name'] = explode('/', $_SERVER['REQUEST_URI']) [1];
+			$vars['site_name'] = explode('/', $_SERVER['REQUEST_URI']) [self::PATH_INDEX];
 
 			return $engine->parseAll($vars);
 		}
@@ -302,13 +313,19 @@ class GetController {
 
 			try {
 
-				$additionalVars = self::getRecentByOpts($conn, $options);
+				/*$frontInstance = APP_ROOT . 'controllers' . DIRECTORY_SEPARATOR . __CLASS__;
+
+				if ( method_exists( $frontInstance, 'routeProvider') )
+					
+					$additionalVars = call_user_func([$frontInstance, 'routeProvider', $options]);
+
+				else */$additionalVars = $this->routeProvider( $options);
 			}
 			catch (PDOException $e) {
 			
 				$log = new Logger('query-input-syntax');
 
-				$log->pushHandler(new StreamHandler(__DIR__.'/404-error.log', Logger::ERROR ));
+				$log->pushHandler(new StreamHandler(APP_ROOT.'logs/404-error.log', Logger::ERROR ));
 
 				// add records to the log
 				$log->addError((string) $e);
@@ -353,22 +370,23 @@ class GetController {
 
 
 	/**
-	* @description: this can only be used to get most recent information about a resource. it does not return all data about a document (use `getContentsAsArray` instead). it's intended use is specified for directories/documents that read from other sources that can be updated [and therefore need a live list]
+	* @description: this can only be used to get most recent information about a resource. it does not return all data about a document (use `getContentsAsArray()` instead). it's intended use is specified for directories/documents that read from other sources that can be updated [and therefore need a live list]
 	*
 	* @return Array of raw data for plugging into live components
 	*/
-	public static function getRecentByOpts (PDO $conn, array $options) {
+	protected function routeProvider ( array $options) {
 
-		$handler= self::nameDirty($options['handler'], 'camel-case');
+		$handler= $this->nameDirty($options['handler'], 'camel-case');
 
 		$name = $options['for'];
 
-	    $cache = self::cacheManager();
+	    $cache = $this->cacheManager();
 
 
 		try	{
 			preg_match('/([\w=&,-:]+)$/', @urldecode($_GET['query']), $viewState);
 
+			$dataSrc = {new $this->findDataSource($handler)} ( $this->connection ); // consider a small store for this in case the need arises to glean more than one source at a time
 
 			if (!empty($viewState)) {
 
@@ -381,7 +399,7 @@ class GetController {
 
 					parse_str($viewState[1], $opts);
 
-					$freshCopy = Model::$handler($conn, $name, array_merge($options['oldVars'], $opts));
+					$freshCopy = $dataSrc->$handler( $name, array_merge($options['oldVars'], $opts));
 
 
 	    			$cachedOpts->set($freshCopy)->expiresAfter(60*10);
@@ -392,73 +410,70 @@ class GetController {
 				return $freshCopy;
 			}
 
-			/* this should run if 
+			/* this will run if 
 				*it's a valid document and isn't a subcategory i.e. sermons under "blog posts" handler
 				*it's a single page that requires live foreachs
 			*/
-			if ( method_exists('Model', $handler)) {
+			$cachedPage = $cache->getItem(__FUNCTION__."|$handler"); // prefix to avoid clash with other setters
 
-	    		$cachedPage = $cache->getItem(__FUNCTION__."|$handler"); // prefix to avoid clash with other setters
+    		$freshCopy = $cachedPage->get();
 
-	    		$freshCopy = $cachedPage->get();
+    		// if (is_null ($freshCopy)) {
 
-	    		// if (is_null ($freshCopy)) {
+    			$freshCopy = $dataSrc->$handler( $name, $options['oldVars']);
 
-	    			$freshCopy = Model::$handler($conn, $name, $options['oldVars']);
+    			$cachedPage->set($freshCopy)->expiresAfter(60*5);
 
-	    			$cachedPage->set($freshCopy)->expiresAfter(60*5);
+    			$cache->save($cachedPage);
+    		// }
 
-	    			$cache->save($cachedPage);
-	    		// }
-
-	    		return $freshCopy;
-	    	}
-
-			throw new TypeError('no suitable handler', 1);
+    		return $freshCopy;
 		}
 
+		// no suitable handler
 		catch (TypeError $e) {
 			
 			$log = new Logger('404-error');
 
-			$log->pushHandler(new StreamHandler(__DIR__.'/404-error.log', Logger::ERROR ));
+			$log->pushHandler(new StreamHandler(APP_ROOT.'logs/404-error.log', Logger::ERROR ));
 
 			// add records to the log
 			$log->addError((string) $e);
-	    	return ['url_error' => '"' .explode('/', $_SERVER['REQUEST_URI'])[getenv('ENV') == 'dev' ? 1 : 2] . '"'];
+	    	return ['url_error' => '"' .explode('/', $_SERVER['REQUEST_URI'])[ self::PATH_INDEX] . '"'];
 		}
 
 		catch (Error $e) {
 		
 			$log = new Logger('404-error');
 
-			$log->pushHandler(new StreamHandler(__DIR__.'/404-error.log', Logger::ERROR ));
+			$log->pushHandler(new StreamHandler(APP_ROOT.'logs/404-error.log', Logger::ERROR ));
 
 			// add records to the log
 			$log->addError((string) $e);
-			return ['url_error' => '"' .explode('/', $_SERVER['REQUEST_URI'])[getenv('ENV') == 'dev' ? 1 : 2] . '"'];
+			return ['url_error' => '"' .explode('/', $_SERVER['REQUEST_URI'])[ self::PATH_INDEX ] . '"'];
 		}
 	}
 
-	public static function getRecentByName (PDO $conn, string $rsxName)	{
+	// direct API call?
+	public function getRecentByName ( string $rsxName)	{
 
-		$options = TilwaGet::getContentsAsArray($conn, $rsxName);
+		$options = $this->getContentsAsArray( $rsxName);
 
-		return json_encode(self::getRecentByOpts($conn, $options));
+		return json_encode($this->routeProvider( $options));
 	}
 
 	/**
-	* @description: internal method identical to `getContents` but for the slight difference in their return values:
-	* 	- the latter returns a JSON string of static data
-	* 	- this pushes the return value of the latter to key 'oldVars' and adds additional keys
+	* @description: identical to `getContents` but for the slight difference in their return values:
+	* 	- the latter returns resource's db row
+	* 	- this pushes data from `getContents` to key 'oldVars', then adds additional keys
 	* @return Array of keys that'll guide `getRecent` in getting fresh data
 	*/
-	private static function getContentsAsArray (PDO $conn, string $rsxName):array {
+	private function getContentsAsArray ( string $rsxName):array {
 
-		$name = self::nameCleanUp($rsxName);
+		$name = $this->nameCleanUp($rsxName);
 
 
-		$contents = $vars = json_decode(TilwaGet::getContents($conn, $rsxName), true); // get variables for this temp from db
+		$contents = $vars = json_decode($this->getContents( $rsxName), true); // get variables for this temp from db
 
 		if ($contents == 'false') return [];
 
@@ -475,15 +490,43 @@ class GetController {
 	}
 
 	// returns a global instance of phpfastcache manager
-	public static function cacheManager() {
+	public function cacheManager() {
 
 		//Configuring PHP Fast Cache
 		CacheManager::setDefaultConfig(new ConfigurationOption([
 
-			"path" =>  dirname(__FILE__)."/files"
+			"path" =>  APP_ROOT ."/req-cache"
 		]));
 
 		return CacheManager::getInstance();
 	}
+
+	private function findDataSource ($action) {
+
+		$currDir = getcwd(); $srcDir = APP_ROOT . 'sources'; chdir($srcDir);
+
+		foreach (glob($srcDir . DIRECTORY_SEPARATOR .'*.php') as $fName) {
+			
+			$src = substr($fName, 0, strlen($fName)-4);
+
+			if (method_exists($src, $action)) {
+
+				chdir($currDir); return new $src;
+			}
+		}
+
+		chdir($currDir);
+	}
+
+	/**
+	*
+	*@description: options for getting data from db. valid keys are ->
+
+		primaryColumns: Assoc array of primary columns mapped to their table. It will try to get a row where `name` is unique and TERMINATE EXECUTION IF A TABLE WITHOUT `name` or a suppied column exists
+
+		setNavIndicator: callback given the dataset should return a key-value pair for the nav to set a value your views can understand. default behaviour maps view name to nav_indicator column
+	*
+	*/
+	protected function getContentOptions ( string $rsxName ):array {}
 }
 ?>

@@ -1,15 +1,15 @@
 <?php
 
-	require_once '../auth/conn.php';
-
 	require_once 'autoload.php';
+
+	require_once 'bootstrap.php';
+
+	require_once '../auth/conn.php';
 
 	use Get\TilwaGet;
 
 	use Post\TilwaPost;
 	
-
-	$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 	
 	$value = $_GET['url'];
@@ -17,7 +17,7 @@
 
 	if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
-		$key = @$_GET['action']; $handler = TilwaGet::nameDirty($value, 'camel-case');
+		$key = @$_GET['action']; $handler = TilwaGet::nameDirty($value, 'camel-case'); // LIFT THE GETCONTROLLER WE HAVE AT THIS LOCATION
 
 
 		if (!empty($key)) {
