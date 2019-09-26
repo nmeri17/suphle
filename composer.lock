@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0d36148afa863c292114470f890e4b92",
+    "content-hash": "1debc910f09f147e5799834a80cd1f7c",
     "packages": [
         {
             "name": "ccxt/ccxt",
@@ -1521,6 +1521,31 @@
                 "time"
             ],
             "time": "2019-04-17T08:51:36+00:00"
+        },
+        {
+            "name": "nmeri/tilwa",
+            "version": "dev-master",
+            "dist": {
+                "type": "path",
+                "url": "nmeri/tilwa",
+                "reference": "3960904a8b304cb46b0bf36733deb47e690e9295"
+            },
+            "require": {
+                "monolog/monolog": "*",
+                "nategood/commando": "^0.4.0",
+                "phpfastcache/phpfastcache": "*",
+                "vlucas/phpdotenv": "*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Nmeri\\Tilwa\\": "src"
+                }
+            },
+            "description": "Lightweight project starter",
+            "transport-options": {
+                "symlink": true
+            }
         },
         {
             "name": "padrio/php-electrum-api",
@@ -3127,7 +3152,9 @@
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "nmeri/tilwa": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],

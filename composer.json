@@ -1,8 +1,15 @@
 {
     "require": {
-        "nategood/commando": "^0.4.0",
-        "monolog/monolog": "*",
-        "phpfastcache/phpfastcache": "*",
-        "vlucas/phpdotenv": "*"
-    }
+        "nmeri/tilwa": "@dev"
+    },
+
+    "repositories": [
+    	{
+    		"type": "path",
+	        "url": "nmeri/tilwa",
+	        "options": {
+	          "symlink": true
+	        }
+	    }
+    ]
 }

@@ -1,0 +1,16 @@
+{
+    
+    "name": "nmeri/tilwa",
+    "description": "Lightweight project starter",
+    "autoload": {
+        "psr-4": {
+            "Nmeri\\Tilwa\\": "src"
+        }
+    },
+    "require": {
+        "nategood/commando": "^0.4.0",
+        "monolog/monolog": "*",
+        "phpfastcache/phpfastcache": "*",
+        "vlucas/phpdotenv": "*"
+    }
+}

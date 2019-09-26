@@ -6,11 +6,11 @@ php_value post_max_size 11M
 
 
 # condition1 - utilities
-RewriteCond %{QUERY_STRING} ^((cat=(\w+)&mode=(\w+)(&na=(\d))?(&code=(.+))?)?)?$
+# RewriteCond %{QUERY_STRING} ^((cat=(\w+)&mode=(\w+)(&na=(\d))?(&code=(.+))?)?)?$
 
 
 # tacks the query string onto the target url
-RewriteRule ^/?([\w-]+)\/?([a-zA-Z0-9-'"_]+)?\/?$ controllers/front-controller.php?url=$1&action=$2&%1 [NC,L]
+# RewriteRule ^/?([\w-]+)\/?([a-zA-Z0-9-'"_]+)?\/?$ controllers/front-controller.php?url=$1&action=$2&%1 [NC,L]
 
 
 # extensioned requests, suck it!

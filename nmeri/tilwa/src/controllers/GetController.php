@@ -1,13 +1,13 @@
 <?php
 
-	namespace Get;
+	namespace Nmeri\Tilwa\Controllers;
 
 	
 	use Monolog\Logger;
 
 	use Monolog\Handler\StreamHandler;
 
-	use PDO; use TypeError;
+	// use PDO; use TypeError;
 
 	use Templating\TemplateEngine;
 
