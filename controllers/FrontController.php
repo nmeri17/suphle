@@ -4,70 +4,53 @@
 
 	// require_once 'autoload.php';
 
-	require_once 'bootstrap.php';
-
-	require_once '../auth/conn.php';	
-
 	
 	class FrontController {
 
-		private $getCtrlInstc;
+		private $getCtrl;
 
 		private $value;
 
 		private $handler;
 
 		public $response;
+
+		public $routeRegister;
 		
 		function __construct() {
 
-			$this->getCtrlInstc = new GetController($conn);
+			$bts = new Bootstrap;
+
+			$app = $bts->appVariables();
+
+
+			$this->getCtrl = new GetController( $app );
 
 			$this->value = $_GET['url'];
 
-			$this->handlerMethod = $this->getCtrlInstc->nameDirty($this->value, 'camel-case');
+			$this->handlerMethod = $this->getCtrl->nameDirty($this->value, 'camel-case');
+
+			$bts->assignUser( $this->getCtrl );
 
 
-			if ($_SERVER['REQUEST_METHOD'] == 'GET') $this->response = $this->getHandler();
+			if ($_SERVER['REQUEST_METHOD'] == 'GET') $this->response = $this->getHandler(); // CHECK ROUTE REGISTER FOR THE PRESENCE OF REQUEST PATH AND IF MIDDLEWARED, HANDLE IT AND PASS APP VARS
 
 			else $this->response = $this->postHandler();
 		}
 
-		function getHandler () {
+		private function getHandler () {
 
-			$key = @$_GET['action'];
+			$query = $_GET;
 
+			unset($query['url']);
 
-			if (!empty($key)) {
+			$_GET = ['url' =>$this->value, 'query' => http_build_query($query)];
 
-				if (method_exists( 'GetController', $this->handlerMethod )) {
-
-					// get computable values i.e. for non-existent directories
-					return $this->getCtrlInstc->{$this->handlerMethod}( $key); // other keys sent along in this request arent discarded
-				}
-				else {
-
-					// requests here look like directory/xyz. `directory` will be auto detected inside the method. should there be need for more "directories", set their handler as `action` in GET so they land in the previous if block
-
-					return $this->getCtrlInstc->pairVarToFields( $key);
-				}
-			}
-
-			else {
-
-				// get single pages
-				$query = $_GET;
-
-				unset($query['url']);
-
-				$_GET = ['url' =>$this->value, 'query' => http_build_query($query)];
-
-				return $this->getCtrlInstc->pairVarToFields( $this->value);
-			}
+			return $this->getCtrl->pairVarToFields( $this->value);
 		}
 
 		// change the class names here
-		function postHandler () {
+		private function postHandler () {
 
 			if (method_exists('TilwaPost', $this->handlerMethod)) return TilwaPost::{$this->handlerMethod}( $_POST);
 
@@ -79,6 +62,8 @@
 
 			if (!empty($_FILES)) TilwaPost::fileUpload( ); // only upload if post action is complete
 		}
+
+		public function setRouteRegister () {}
 	}
 
 	$req = new FrontController;

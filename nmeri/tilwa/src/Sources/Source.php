@@ -1,5 +1,7 @@
 <?php
 
+	namespace Nmeri\Tilwa\Sources;
+
 	use Nmeri\Tilwa\Controllers\GetController;
 
 	/**
@@ -11,6 +13,8 @@
 
 		protected $cacheManager;
 
+		public $dataBlocks;
+
 		function __construct ( GetController $ctrl ) {
 
 			$this->getCtrl = $ctrl;
@@ -20,7 +24,7 @@
 		* @description: takes care of formatting multi-nested dataSet for templating
 		* @return: the transformed `dataSet`
 		*/
-		protected function formatForEngine (array $dataSet ):array {
+		public function formatForEngine (array $dataSet ):array {
 	 		
 	 		$anyAdditionalKeys = array_map(function (&$arr) {
 

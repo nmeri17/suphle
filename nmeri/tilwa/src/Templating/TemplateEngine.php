@@ -1,24 +1,42 @@
 <?php
 
-namespace Templating;
+namespace Nmeri\Tilwa\Templating;
 
-use \Get\GetController;
+use Nmeri\Tilwa\Controllers\GetController;
 
 
 class TemplateEngine {
 	
-	private $regex = '/\{\{(\w+)\}\}/';
+	private $regex;
 
-	private $forEachRegex = '/{{__foreach-1-start__}}([\s\S]+?){{__foreach-1-end__}}/';
+	private $forEachRegex;
 
-	private $fileComponent = '/{{__file-start__}}(?:\s+)?\{\{([\w]+)\}\}(?:\s+)?{{__file-end__}}/';
+	private $fileComponent;
 
 	public $file;
+
+	private $staticVars;
+
+	private $ctrl;
+
+	private $appContainer;
+
+	private $route;
 	
 
-	function __construct(string $name)	{
+	function __construct( GetController $ctrl, array $appVars, Route $route ) {
 
-		$this->file = file_get_contents('../views/header.tmpl') . file_get_contents("../views/$name.tmpl") . file_get_contents('../views/footer.tmpl');
+		$this->ctrl = $ctrl;
+
+		$this->appContainer = $appVars;
+
+		$this->route = $route;
+
+		$this->setNavActive();
+
+		$this->assignFile();
+
+		$this->assignRegex();
 	}
 
 
@@ -301,14 +319,16 @@ class TemplateEngine {
 
 	/**
 	*
-	* @param {dbVars}:Array 1D of string placeholders not to be repeated. Used for static content
-	* @param {repeatedComponents}:Array of data blocks. See README for format of each block. Used for dynamic content
+	* @param {staticVars}:Array 1D of string placeholders not to be repeated. Used for static content
+	* @param {src} Used for dynamic content. See README for format of each block contained here
 	*/
-	public function parseAll (array $dbVars, $repeatedComponents = []) {
+	public function parseAll (array $staticVars, Source $src = null) {
 
-		// var_dump($repeatedComponents); die();
+		$repeatedComponents = $src ? $src->dataBlocks : [];
 
 		$enoughData = count($repeatedComponents) == $this->fields()['blockCount'];
+
+		$this->staticVars = $staticVars;
 
 		function shutdown() {
 
@@ -407,12 +427,10 @@ class TemplateEngine {
 				}
 			}
 
-			$dbVars['type'] = $dbVars['view-name'];
 
-
-			return preg_replace_callback($this->regex, function ($match) use ($dbVars) {
+			return preg_replace_callback($this->regex, function ($match) use ($staticVars) {
 				
-				return @$dbVars[$match[1]];
+				return @$staticVars[$match[1]];
 			}, $this->file);
 		}
 		
@@ -426,14 +444,52 @@ class TemplateEngine {
 				$this->file = self::showMessage($msg) . preg_replace($this->forEachRegex, '', $this->file);
 			}
 
-			return preg_replace_callback($this->regex, function ($match) use ($dbVars) {
+			return preg_replace_callback($this->regex, function ($match) use ($staticVars) {
 				
-				return @$dbVars[$match[1]];
+				return @$staticVars[$match[1]];
 			}, $this->file);
 		}
 	}
 
 	static function showMessage (string $msg) { return '<p style="color: #f00; font-size: 150%; margin:5%">'. $msg . '.</p>';}
+
+
+	// set a key in the dataset corresponding to resource name, unless one has been supplied
+	private function setNavActive ( ) {
+
+		if ($this->route->appendHeader) {
+
+			$config = $this->ctrl->getContentOptions();
+
+			$sVars = $this->staticVars;
+
+			$key = 'navIndicator';
+			
+			if (isset($config[$key]) && is_callable($config[$key]))
+
+				$this->staticVars[$key] = $config[$key]($sVars);
+
+			else $this->staticVars[preg_replace('/\s+/', '_', $navName)] = 'active_'. $this->ctrl->nameDirty($sVars['name'], 'dash-case'); // request name
+		}
+	}
+
+	private function assignFile ( ) {
+
+		$viewPath = $this->appContainer['rootPath'] . 'views'. DIRECTORY_SEPARATOR;
+
+		$this->file = file_get_contents($viewPath . $this->route->viewName . '.tmpl');
+
+		if ($this->route->appendHeader) $this->file = file_get_contents($viewPath . 'header.tmpl') . $this->file . file_get_contents($viewPath . 'footer.tmpl');
+	}
+
+	private function assignRegex( ) {		
+
+		$this->regex = '/\{\{(\w+)\}\}/';
+
+		$this->forEachRegex = '/{{__foreach-1-start__}}([\s\S]+?){{__foreach-1-end__}}/';
+
+		$this->fileComponent = '/{{__file-start__}}(?:\s+)?\{\{([\w]+)\}\}(?:\s+)?{{__file-end__}}/';
+	}
 }
 
 ?>
