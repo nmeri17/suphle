@@ -13,9 +13,8 @@
 
 		private $namespaceMode;
 
+
 		function __construct( ) {
-			
-			//
 		}
 
 		public function register () {
@@ -31,11 +30,22 @@
 
 		public function findRoute ($reqPath) {
 
+			$regx = '/[^\/,\d]\{([\w]+)\}/'; $params = [];
+
 			// search register for route matching this pattern
-			array_filter($this->register, function ($route) {
-				// 
-				$temp = $route->pattern // preg or str replace
-			});
+			$target = @array_filter($this->register, function ($route) use (&$params, $regx) {
+
+				// convert /jui/{fsdf}/weeer to /jui/\w/weeer				
+				$tempPat = preg_replace($regx, '\w+', preg_quote($route->pattern) );
+				
+				$params = preg_grep($tempPat, $this->reqPath);
+
+				return preg_match($tempPat, $this->reqPath) && $route->method;
+			})[0];
+
+			if (!empty($target)) $target->parameters = $params;
+
+			return $target;
 		}
 
 		// every registration within this scope will first be prefixed
@@ -58,9 +68,11 @@
 			$this->namespaceMode = null;
 		}
 
+		// serve initial params for this route handler/source
 		public function initParams () {
 
-			// serve initial params for this route handler/source
+			// get a list of tokens from the actual request (not the pattern)
+			return ;
 		}
 	}
 

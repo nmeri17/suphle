@@ -4,20 +4,20 @@
 
 	class Dashboard extends Source {
 
-		public function dashboard ( string $urlSlug, array $opts) {
+		public function profile ( string $urlSlug, array $opts) {
 
-			$userData = json_decode($this->getCtrl->getContents(  ), true);
+			$userData = json_decode($this->container->getClass(GetController::class)->getContents(  ), true);
 
 			$opts['userData'] = $this->container->user;
 
-			if ($userData['role'] == 'user') $this->dataBlocks = $this->userProfile( $opts);
+			if ($userData['role'] == 'user') $this->dataBlocks = $this->user( $opts);
 
-			$this->dataBlocks = $this->adminProfile( $opts);
+			$this->dataBlocks = $this->admin( $opts);
 
 			return $this;
 		}
 
-		private function adminProfile ( array $opts) {
+		private function admin ( array $opts) {
 
 			$queriesMap = [];
 
@@ -57,7 +57,7 @@
 			return $finalRes;
 		}
 
-		private static function userProfile (PDO $conn, array $opts) {
+		private function user (PDO $conn, array $opts) {
 
 			$leftMenu = ['left_menu' => '<a>Transactions</a>
 				<a>Testimonials</a>

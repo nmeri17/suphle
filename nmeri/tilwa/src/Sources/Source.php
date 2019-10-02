@@ -15,9 +15,11 @@
 
 		public $dataBlocks;
 
-		function __construct ( GetController $ctrl ) {
+		protected $app;
 
-			$this->getCtrl = $ctrl;
+		function __construct ( $app ) {
+
+			$this->container = $app;
 		}
 
 		/** 
@@ -48,7 +50,7 @@
 		// restricted area
 	 	public function metaDetails ( $name) {
 
-	 		$vars = json_decode($this->getCtrl->getContents($conn, $name), true);
+	 		$vars = json_decode($this->container->getClass(GetController::class)->getContents($conn, $name), true);
 
 	 		$breadcrumbs = [];
 
@@ -70,7 +72,7 @@
 	 	// gets the last ID in a given table and increments it by 1
 		public function dbLastItem ( $table, $columnName='id') {
 
-			$cache = $this->getCtrl->cacheManager();
+			$cache = $this->container->getClass(GetController::class)->cacheManager();
 
 		    $cachedData = $cache->getItem(__FUNCTION__.'|'.$table);
 
@@ -79,7 +81,7 @@
 
 		    if (is_null($itemId )) {
 
-		 		$total = $this->getCtrl->conn->prepare('SELECT `'. $columnName. "` FROM $table ORDER BY `". $columnName."` DESC LIMIT 1");
+		 		$total = $this->container->getClass(GetController::class)->conn->prepare('SELECT `'. $columnName. "` FROM $table ORDER BY `". $columnName."` DESC LIMIT 1");
 
 		 		$total->execute();
 

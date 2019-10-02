@@ -1,24 +1,25 @@
-<?php	
+<?php
+
+	namespace Controllers;
 	
 	use Dotenv\Dotenv;
+
+	use Nmeri\Tilwa\Route\RouteRegister;
 	
 	class Bootstrap {
 
 		private $container;
 
-		function __construct ( ) {
+		function __construct ( string $path) {
 
-			$this->setStaticVars();
+			$this->setStaticVars( compact('path') );
 			
 			$this->setConnection();
+
+			$this->loadRoutes();
 		}
 
-		public function appVariables ( ) {
-			
-			return $container;
-		}
-
-		public function setConnection ( ) {
+		private function setConnection ( ) {
 
 			$dotenv = Dotenv::create( $this->container['rootPath'] );
 
@@ -40,33 +41,100 @@
 			}
 		}
 
-		public function setStaticVars ( ) {
+		private function setStaticVars ( $vars ) {
 
 			$this->container = [
 
 				'rootPath' => dirname(__DIR__, 1) . DIRECTORY_SEPARATOR, // up one folder
 
-				'sourceCache' => [] // instead of finding every time?
+				'router' => new RouteRegister, 'classes' => [],
+
+				'routesDirectory' => 'routes',
+
+				'middlewareDirectory' => 'Middleware',
+
+				'requestName' => $vars['path'],
 			];
 		}
 
-		// this runs on every request
-		public function assignUser (GetController $ctrl ) {
+		private function user () {
 
-			session_start();
+			if (!$this->container['user']) {
 
-			$sess = $_SESSION;
+				session_start();
 
-			if (empty($sess)) $user = null;
+				$sess = $_SESSION;
 
-			else {
+				if (empty($sess)) $user = null;
 
-				$uColumn = $ctrl->getContentOptions()['primaryColumns']['user'];
+				else {
 
-				$user = $ctrl->getContents($sess[$uColumn], 'user');
+					$ctrl = $this->getClass(GetController::class);
+
+					$uColumn = $ctrl->getContentOptions()['primaryColumns']['user'];
+
+					$user = $ctrl->getContents($sess[$uColumn], 'user');
+				}
+
+				$this->container['user'] = $user;
+			}
+		}
+
+		private function loadRoutes ( ) {
+
+			$registrar = $this->router;
+
+			$groups = array_filter(
+				scandir( $this->rootPath . $this->routesDirectory ), 
+
+				function ($name) { return !in_array($name, ['.', '..']);}
+			);
+
+			// scan dir for all route files and pass them the registrar
+			foreach ($groups as $file) require_once $file;
+		}
+
+		public function __get ($key) {
+
+			if (array_key_exists($key, $this->container)) return $this->container[$key];
+
+			if method_exists($this, $key) {
+
+				$this->$key(); return $this->container[$key];
+			}
+		}
+
+		public function getClass ( $fullName) {
+
+			// search in 
+			if (array_key_exists($fullName, $this->container['classes'])) return $this->container['classes'][$fullName];
+
+			// if not there, grab class and load their params recursively
+			$params = []; $constr =  new ReflectionMethod($fullName, '__construct'); $init = '';
+
+			foreach ($constr->getParameters() as $param) {
+				
+				if ($param->allowsNull() || $param->isOptional() || $param->isDefaultValueAvailable()) $params[] = null;
+
+				if ($param->hasType()) {
+
+					$type = $param->getType();
+
+					if ( $type->getName() == __CLASS__) $params[] = $this;
+
+					elseif ( $type->isBuiltin()) {
+
+						settype($init, $type); $params[] = $init;
+					}
+
+					else $params[] = $this->getClass($type);
+				}
 			}
 
-			$this->container['user'] = $user;
+			// params ready. instantiate and include in app container
+			$this->container['classes'][$fullName] = call_user_func_array([$fullName, '__construct'], $params);
+
+			return $this->container['classes'][$fullName];
 		}
 	}
 

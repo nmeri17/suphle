@@ -15,12 +15,9 @@
 
 	use Phpfastcache\Config\ConfigurationOption;
 
-	/**
-	* @description: This class is made up of regular and specific-purpose methods.
+	use Nmeri\Tilwa\Routes\Route;
 
-	-    Endpoints to be parsed automatically pass through this class's pairVarToFields. That method calls 'regular' methods who handle the nitty gritty of getting data and template for the requested string.
-	-    'Specific-purpose' methods exist for the purpose of performing operations that return raw data with no intention of being parsed against a view.
-	*/
+
 	class GetController {
 
 		private $contentOptions;
@@ -29,15 +26,14 @@
 
 		private $appContainer;
 
+		/* @param Nmeri\Tilwa\Routes\Route */
 		private $route;
 
-		function __construct (array $appVars, Route $reqRoute ) {
+		function __construct (Bootstrap $app ) {
 
 			$this->contentOptions = $this->getContentOptions();
 
-			$this->appContainer = $appVars;
-
-			$this->route = $reqRoute;
+			$this->appContainer = $app;
 		}
 
 	 	// in transit, document names are formatted for url compatibilty. this method aims to reverse it to its original state
@@ -101,7 +97,7 @@
 
 		    if ( !$allTables || !$tableName ) {
 
-				$validTables = $app['connection']->prepare("SHOW TABLES WHERE `Tables_in_". getenv('DBNAME')."` NOT LIKE ?");
+				$validTables = $app->connection->prepare("SHOW TABLES WHERE `Tables_in_". getenv('DBNAME')."` NOT LIKE ?");
 
 				$validTables->execute(['contents']);
 
@@ -191,7 +187,7 @@
 
 			try {
 
-				$contents = $app['connection']->prepare('SELECT * FROM `'.$tableName.'` WHERE `'. $col .'`=? OR `'. $col .'`=?');
+				$contents = $app->connection->prepare('SELECT * FROM `'.$tableName.'` WHERE `'. $col .'`=? OR `'. $col .'`=?');
 
 				$contents->execute([$dataValue, $this->nameCleanUp($dataValue)]);
 
@@ -251,33 +247,28 @@
 			}
 			catch(f $e) {
 
-				return json_encode(['url_error' => $this->route->reqName]);
+				return json_encode(['url_error' => $this->route->requestPath]);
 			}
 		}
 		
-		protected function pairVarToFields ( $tempName) {
+		protected function pairVarToFields ( string $requestedRsx, Route $requestedRoute) {
+
+			$route = $this->route = $requestedRoute;
 			
 			// get an assoc array of components to be used in the foreach (if it's needed)
-			$options = $this->getContentsAsArray( $tempName);
+			$options = $this->getContentsAsArray( $requestedRsx);
 
 			$app = $this->appContainer;
-
-			$route = $this->route;
 		
 
 			$vars = $options['oldVars'];
 
 			$vars['universal_date'] = date('Y');
 			
-			$vars['name'] = $tempName; // should either be name of the requested resource or the name its row is stored with
-
-			// should be passed from the front controller when no handler is found
-			// $errView = new TemplateEngine($this, $this->appContainer ); // on standby in case
+			$vars['name'] = $requestedRsx;
 
 			try {
 				
-				if ($this->route->reqName == 'error') throw new TypeError("Error Processing Request", 1);
-
 				$engine = new TemplateEngine($this, $this->appContainer, $route );
 
 				// check if repeated components are needed
@@ -285,9 +276,9 @@
 			}
 			catch (TypeError $e) {
 				
-				http_response_code(404);
+				http_response_code(404); // move this block into the error handler
 
-				$vars['site_name'] = $this->route->reqName;
+				$vars['site_name'] = $this->route->requestPath;
 
 				return $errView->parseAll($vars);
 			}
@@ -304,13 +295,13 @@
 				
 					$log = new Logger('query-input-syntax');
 
-					$log->pushHandler(new StreamHandler($app['rootPath'].'logs/404-error.log', Logger::ERROR ));
+					$log->pushHandler(new StreamHandler($app->rootPath .'logs/404-error.log', Logger::ERROR ));
 
 					// add records to the log
 					$log->addError((string) $e);
 				}
 				
-
+				// rewrite these parts
 				try {
 
 					if (isset($additionalVars['url_error'])) throw new TypeError("Invalid page", 1);
@@ -396,21 +387,21 @@
 				
 				$log = new Logger('404-error');
 
-				$log->pushHandler(new StreamHandler($app['rootPath'].'logs/404-error.log', Logger::ERROR ));
+				$log->pushHandler(new StreamHandler($app->rootPath .'logs/404-error.log', Logger::ERROR ));
 
 				// add records to the log
 				$log->addError((string) $e);
-		    	return ['url_error' => '"' .$this->route->reqName . '"'];
+		    	return ['url_error' => '"' .$this->route->requestPath . '"'];
 			}
 
 			catch (Error $e) {
 			
 				$log = new Logger('404-error');
 
-				$log->pushHandler(new StreamHandler($app['rootPath'].'logs/404-error.log', Logger::ERROR ));
+				$log->pushHandler(new StreamHandler($app->rootPath .'logs/404-error.log', Logger::ERROR ));
 
 				$log->addError((string) $e);
-				return ['url_error' => '"' . $this->route->reqName. '"'];
+				return ['url_error' => '"' . $this->route->requestPath. '"'];
 			}
 		}
 
@@ -453,7 +444,7 @@
 			//Configuring PHP Fast Cache
 			CacheManager::setDefaultConfig(new ConfigurationOption([
 
-				"path" =>  $this->appContainer['rootPath'] ."/req-cache"
+				"path" =>  $this->appContainer->rootPath ."/req-cache"
 			]));
 
 			return CacheManager::getInstance();
@@ -473,13 +464,13 @@
 
 			$nmspaces = implode($slash, $fulBreak);
 
-			$srcDir = $this->appContainer['rootPath'] . 'sources'. $slash. $nmspaces;
+			$srcDir = $this->appContainer->rootPath . 'sources'. $slash. $nmspaces;
 
 			chdir($srcDir);
 
 			if (file_exists( $clsName . '.php') ) {
 				
-				$clsInst = new $clsName($this);
+				$clsInst = new $clsName($this->appContainer);
 
 				chdir($currDir); return $clsInst;
 			}

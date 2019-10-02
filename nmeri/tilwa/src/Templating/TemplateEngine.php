@@ -24,11 +24,11 @@ class TemplateEngine {
 	private $route;
 	
 
-	function __construct( GetController $ctrl, array $appVars, Route $route ) {
+	function __construct( GetController $ctrl, $app, Route $route ) {
 
 		$this->ctrl = $ctrl;
 
-		$this->appContainer = $appVars;
+		$this->appContainer = $app;
 
 		$this->route = $route;
 
@@ -475,7 +475,7 @@ class TemplateEngine {
 
 	private function assignFile ( ) {
 
-		$viewPath = $this->appContainer['rootPath'] . 'views'. DIRECTORY_SEPARATOR;
+		$viewPath = $this->appContainer->rootPath . 'views'. DIRECTORY_SEPARATOR;
 
 		$this->file = file_get_contents($viewPath . $this->route->viewName . '.tmpl');
 

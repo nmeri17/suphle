@@ -2,7 +2,7 @@
 
 	namespace Controllers;
 
-	// require_once 'autoload.php';
+	use Nmeri\Tilwa\Route\Route;
 
 	
 	class FrontController {
@@ -15,59 +15,63 @@
 
 		public $response;
 
-		public $routeRegister;
-		
+		private $app;
+
 		function __construct() {
 
-			$bts = new Bootstrap;
+			$reqUrl = $_GET['url'];
 
-			$app = $bts->appVariables();
-
-
-			$this->getCtrl = new GetController( $app );
-
-			$this->value = $_GET['url'];
-
-			$this->handlerMethod = $this->getCtrl->nameDirty($this->value, 'camel-case');
-
-			$bts->assignUser( $this->getCtrl );
+			$app = new Bootstrap( $reqUrl );
 
 
-			if ($_SERVER['REQUEST_METHOD'] == 'GET') $this->response = $this->getHandler(); // CHECK ROUTE REGISTER FOR THE PRESENCE OF REQUEST PATH AND IF MIDDLEWARED, HANDLE IT AND PASS APP VARS
-
-			else $this->response = $this->postHandler();
-		}
-
-		private function getHandler () {
-
-			$query = $_GET;
-
-			unset($query['url']);
-
-			$_GET = ['url' =>$this->value, 'query' => http_build_query($query)];
-
-			return $this->getCtrl->pairVarToFields( $this->value);
-		}
-
-		// change the class names here
-		private function postHandler () {
-
-			if (method_exists('TilwaPost', $this->handlerMethod)) return TilwaPost::{$this->handlerMethod}( $_POST);
+			if ( $target = $app->router->findRoute($reqUrl )) $this->validRequest( $app, $target );
 
 			else {
-				http_response_code(404);
 
-				echo header('Location: '.$_SERVER['REQUEST_URI']);
+				$target = $app->router->findRoute( '404' );
+
+				$this->response = $app->getClass(GetController::class)->pairVarToFields( '404', $target );
 			}
-
-			if (!empty($_FILES)) TilwaPost::fileUpload( ); // only upload if post action is complete
 		}
 
-		public function setRouteRegister () {}
+		private function validRequest ( $app, $target ) {
+
+			if ($middlewares = $target->getMiddlewares())
+
+				$target = $this->runMiddleware( $middlewares, $app, $target) );
+
+			// if anything other than a Route object is returned, we will assume request couldn't make it past middleware
+			if ( !is_a($target, Route::class) ) $this->response = $target;
+
+			else {
+
+				$this->response = $app->getClass(GetController::class)
+
+				->pairVarToFields( end(@explode('/', $app->requestName)), $target );
+			}
+		}
+
+		// middleware delimited by commas. Middleware params delimited by colons
+		private function runMiddleware ( array $middlewares, array $app, Route $route) {
+
+			foreach ($middlewares as $mw ) {
+
+				[$clsName, $args] = explode(',', $mw);
+
+				$instance = new { $app->middlewareDirectory . '\\' . $clsName} ( $app, $route ); # assume all your middleware are namespaced
+
+				$route = $instance->handle(function ( $data ) {
+
+					return $data; // pass args to successive middleware
+				}, ...explode(':', $args));
+
+				if ( !is_a($route, Route::class) ) return $route; // terminate
+			}
+		}
 	}
 
-	$req = new FrontController;
+	$entrance = new FrontController;
 
-	echo $req->response;
+	echo $entrance->response;
 
 ?>
