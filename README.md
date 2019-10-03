@@ -3,9 +3,8 @@ Does not ship with a default ORM.
 
 
 # TODO  
--    Write service container for DI
+-    Write automated tests
 -    Write CLI for programmatic creation of data objects for templating engine
--    Decouple the "model" from one file so multiple devs can push to one dir that'll be scanned
 
 # Installation
 
