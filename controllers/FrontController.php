@@ -19,7 +19,7 @@
 
 		function __construct() {
 
-			$reqUrl = $_GET['url'];
+			$reqUrl = $_GET['tilwa_request'];
 
 			$app = new Bootstrap( $reqUrl );
 

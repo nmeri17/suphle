@@ -20,6 +20,7 @@
 
 	class GetController {
 
+		/* @param Array */
 		private $contentOptions;
 
 		protected $cachedData;
@@ -219,7 +220,7 @@
 			$fields = [];
 
 			try {
-				$engine = new TemplateEngine($this, $this->appContainer, $this->route );
+				$engine = new TemplateEngine( $this->appContainer, $this->route );
 
 				$placeholders = $engine->fields();
 
@@ -261,7 +262,7 @@
 			$app = $this->appContainer;
 		
 
-			$vars = $options['oldVars'];
+			$vars = $options['dbRow'];
 
 			$vars['universal_date'] = date('Y');
 			
@@ -269,7 +270,7 @@
 
 			try {
 				
-				$engine = new TemplateEngine($this, $this->appContainer, $route );
+				$engine = new TemplateEngine( $this->appContainer, $route );
 
 				// check if repeated components are needed
 				$dynamicFields = $engine->fields();
@@ -301,7 +302,7 @@
 					$log->addError((string) $e);
 				}
 				
-				// rewrite these parts
+				// REWRITE THESE PARTS
 				try {
 
 					if (isset($additionalVars['url_error'])) throw new TypeError("Invalid page", 1);
@@ -330,56 +331,34 @@
 
 			[$class, $method ]= explode('@', $this->route->source);
 
-			$name = $options['for'];
+			$name = $options['reqResource'];
 
 		    $cache = $this->cacheManager();
 
 		    $qParams = $this->route->queryVars;
 
+		    $nameInStore = $qParams ? preg_replace('/\W/', '_', implode(';', $qParams) ) : $method;
+
 
 			try	{
-				$dataSrc = $this->findDataSource($class);
+				$dataSrc = $this->appContainer->getClass('\\Source\\' .$class);// $this->findDataSource($class);
 
-				if (!empty( $qParams )) {
+				$cachedOpts = $cache->getItem(__FUNCTION__.'|'. $nameInStore ); // prefix to avoid clash with other setters
 
-		    		$cachedOpts = $cache->getItem(__FUNCTION__.'|'.preg_replace('/\W/', '_', $qParams ));
-
-		    		$freshCopy = $cachedOpts->get();
+	    		$freshCopy = $cachedOpts->get();
 
 
-					//if (is_null ($freshCopy)) {
+				//if (is_null ($freshCopy)) {
 
-						parse_str( $qParams, $opts);
-
-						$freshCopy = $dataSrc->$method( $name, array_merge($options['oldVars'], $opts));
+					$freshCopy = $dataSrc->$method( $name, array_merge($options['dbRow'], $qParams));
 
 
-		    			$cachedOpts->set($freshCopy)->expiresAfter(60*10);
+	    			$cachedOpts->set($freshCopy)->expiresAfter(60*10);
 
-		    			$cache->save($cachedOpts);
-					//}
+	    			$cache->save($cachedOpts);
+				//}
 
-					return $freshCopy;
-				}
-
-				/* this will run if 
-					*it's a valid document and isn't a subcategory i.e. sermons under "blog posts" handler
-					*it's a single page that requires live foreachs
-				*/
-				$cachedPage = $cache->getItem(__FUNCTION__."|$method"); // prefix to avoid clash with other setters
-
-	    		$freshCopy = $cachedPage->get();
-
-	    		// if (is_null ($freshCopy)) {
-
-	    			$freshCopy = $dataSrc->$method( $name, $options['oldVars']);
-
-	    			$cachedPage->set($freshCopy)->expiresAfter(60*5);
-
-	    			$cache->save($cachedPage);
-	    		// }
-
-	    		return $freshCopy;
+				return $freshCopy;
 			}
 
 			// no suitable handler
@@ -416,24 +395,20 @@
 		/**
 		* @description: identical to `getContents` but for the slight difference in their return values:
 		* 	- the latter returns resource's db row
-		* 	- this pushes data from `getContents` to key 'oldVars', then adds additional keys
+		* 	- this pushes data from `getContents` to key 'dbRow', then adds additional keys
 		* @return Array of keys that'll guide `getRecent` in getting fresh data
 		*/
 		private function getContentsAsArray ( string $rsxName):array {
 
-			$name = $this->nameCleanUp($rsxName);
+			$opts['reqResource'] = $this->nameCleanUp($rsxName);
 
 
 			$contents = $vars = json_decode($this->getContents( $rsxName), true); // get variables for this temp from db
 
 			if ($contents == 'false') return [];
 
-			$vars = $vars == 'false' ? [] : $vars;
 
-
-			$opts['for'] = $name;
-
-			$opts['oldVars'] = $vars;
+			$opts['dbRow'] = $vars;
 
 			return $opts;
 		}
@@ -452,7 +427,9 @@
 
 
 		// break up namespace if present, switch to that folder and init the source
-		private function findDataSource (string $fullName) {
+		/*private function findDataSource (string $fullName) {
+
+			if ($exists = $this->appContainer->getClass($fullName)) return $exists;
 
 			$currDir = getcwd();
 
@@ -476,7 +453,7 @@
 			}
 
 			chdir($currDir);
-		}
+		}*/
 
 		/**
 		*

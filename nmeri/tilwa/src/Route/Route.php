@@ -43,10 +43,11 @@
 		}
 
 		private function hasQuery () {
-			
-			preg_match('/([\w=&,-:]+)$/', @urldecode($_GET['query']), $viewState);
 
-			if (!empty($viewState)) $this->queryVars = $viewState[1];
+			$this->queryVars = array_filter($_GET, function ( $key) {
+
+				return $key !== 'tilwa_request';
+			}, ARRAY_FILTER_USE_KEY);
 		}
 
 		private function validateSource ( $src ) {

@@ -2,7 +2,7 @@
 
 namespace Nmeri\Tilwa\Templating;
 
-use Nmeri\Tilwa\Controllers\GetController;
+use Nmeri\Tilwa\Controllers\{Bootstrap, GetController};
 
 
 class TemplateEngine {
@@ -17,16 +17,12 @@ class TemplateEngine {
 
 	private $staticVars;
 
-	private $ctrl;
-
 	private $appContainer;
 
 	private $route;
 	
 
-	function __construct( GetController $ctrl, $app, Route $route ) {
-
-		$this->ctrl = $ctrl;
+	function __construct(Bootstrap $app, Route $route ) {
 
 		$this->appContainer = $app;
 
@@ -36,7 +32,7 @@ class TemplateEngine {
 
 		$this->assignFile();
 
-		$this->assignRegex();
+		$this->setRegex();
 	}
 
 
@@ -322,9 +318,7 @@ class TemplateEngine {
 	* @param {staticVars}:Array 1D of string placeholders not to be repeated. Used for static content
 	* @param {src} Used for dynamic content. See README for format of each block contained here
 	*/
-	public function parseAll (array $staticVars, Source $src = null) {
-
-		$repeatedComponents = $src ? $src->dataBlocks : [];
+	public function parseAll (array $staticVars, array $repeatedComponents = []) {
 
 		$enoughData = count($repeatedComponents) == $this->fields()['blockCount'];
 
@@ -338,12 +332,16 @@ class TemplateEngine {
 
 		    	$msg = $error['message']; preg_match('/TypeError: Argument (\d)/', $msg, $prob);
 
+		    	
 		    	$correct = ['array', 'string']; $args = ['dataSet', 'context']; $ind = +$prob[1]-1;
 
+		    	
 		    	preg_match('/((->matchRecursive)|(\{closure\}))\((.+?)\)/', $msg, $argVals);
 
+		    	
 		    	$params = explode(', ', $argVals[4]);
 
+		    	
 		    	$oppos = array_filter($params, function ($l) use ($ind) { return $l != $ind;}, ARRAY_FILTER_USE_KEY);
 
 		    	$fn = $argVals[1] == '->matchRecursive' ? 'matchRecursive': 'aggregate data set';
@@ -376,7 +374,9 @@ class TemplateEngine {
 				// store the parsed string for the file, then replace the placeholder in the current component with that variable
 				if (preg_match($this->fileComponent, $toMatch, $isFile)) {
 
-					$file = file_get_contents('../views/' . GetController::nameCleanUp($isFile[1]) . '.tmpl');
+					$ctrl = $this->appContainer->getClass(GetController::class);
+
+					$file = file_get_contents($this->appContainer->viewPath . $ctrl->nameCleanUp($isFile[1]) . '.tmpl');
 
 					$tempAccum = ''; // each file instance
 
@@ -459,7 +459,9 @@ class TemplateEngine {
 
 		if ($this->route->appendHeader) {
 
-			$config = $this->ctrl->getContentOptions();
+			$ctrl = $this->appContainer->getClass(GetController::class);
+
+			$config = $ctrl->getContentOptions();
 
 			$sVars = $this->staticVars;
 
@@ -469,20 +471,20 @@ class TemplateEngine {
 
 				$this->staticVars[$key] = $config[$key]($sVars);
 
-			else $this->staticVars[preg_replace('/\s+/', '_', $navName)] = 'active_'. $this->ctrl->nameDirty($sVars['name'], 'dash-case'); // request name
+			else $this->staticVars[preg_replace('/\s+/', '_', $navName)] = 'active_'. $ctrl->nameDirty($sVars['name'], 'dash-case'); // request name
 		}
 	}
 
 	private function assignFile ( ) {
 
-		$viewPath = $this->appContainer->rootPath . 'views'. DIRECTORY_SEPARATOR;
+		$viewPath = $this->appContainer->viewPath;
 
 		$this->file = file_get_contents($viewPath . $this->route->viewName . '.tmpl');
 
 		if ($this->route->appendHeader) $this->file = file_get_contents($viewPath . 'header.tmpl') . $this->file . file_get_contents($viewPath . 'footer.tmpl');
 	}
 
-	private function assignRegex( ) {		
+	private function setRegex( ) {		
 
 		$this->regex = '/\{\{(\w+)\}\}/';
 

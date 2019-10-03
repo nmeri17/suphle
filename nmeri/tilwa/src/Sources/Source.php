@@ -15,7 +15,7 @@
 
 		public $dataBlocks;
 
-		protected $app;
+		protected $container;
 
 		function __construct ( $app ) {
 

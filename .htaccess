@@ -5,30 +5,17 @@ php_value upload_max_filesize 10M
 php_value post_max_size 11M
 
 
-# condition1 - utilities
-# RewriteCond %{QUERY_STRING} ^((cat=(\w+)&mode=(\w+)(&na=(\d))?(&code=(.+))?)?)?$
-
-
-# tacks the query string onto the target url
-# RewriteRule ^/?([\w-]+)\/?([a-zA-Z0-9-'"_]+)?\/?$ controllers/front-controller.php?url=$1&action=$2&%1 [NC,L]
+# tacks the query string onto the target tilwa_request
+# RewriteRule ^/?(.+)$ controllers/FrontController.php?tilwa_request=$1 [NC,QSA,L]
 
 
 # extensioned requests, suck it!
-# RewriteCond %{REQUEST_URI} !^.+\.\w{3,4}$
+RewriteCond %{REQUEST_URI} !^.+\.\w{3,4}$
 
-
-# external API postback?
-#RewriteRule ^/?postback-url\/?(\s+)?\/?$ controllers/front-controller.php?url=$1&action=$2 [NC,L]
-
-
-# index queries
-RewriteCond %{QUERY_STRING} ((cid=(\d+))?(mkt=(polls|football))?)
-
-RewriteRule ^/?$ controllers/front-controller.php?url=index&%1 [NC,L]
-
+RewriteRule .? controllers/FrontController.php?tilwa_request=401 [L]
 
 # serve index
-RewriteRule ^/?$ controllers/front-controller.php?url=index [NC,L]
+RewriteRule ^/?$ controllers/FrontController.php?tilwa_request=index [NC,QSA,L]
 
 
 # invalid file?
@@ -38,4 +25,4 @@ RewriteCond %{REQUEST_FILENAME} !-f
 # fuck off our dirs!
 RewriteCond %{REQUEST_FILENAME} -d  
 
-RewriteRule .? controllers/front-controller.php?url=error [L]
+RewriteRule .? controllers/FrontController.php?tilwa_request=404 [L]

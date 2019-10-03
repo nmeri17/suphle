@@ -1,32 +1,34 @@
 <?php
 
+	namespace Sources;
+
 	use Nmeri\Tilwa\Sources\Source;
 
 	class Dashboard extends Source {
 
-		public function profile ( string $urlSlug, array $opts) {
+		public function profile ( string $urlSlug, array $rsxData) {
 
-			$userData = json_decode($this->container->getClass(GetController::class)->getContents(  ), true);
+			$rsxData['userData'] = $this->container->user;
 
-			$opts['userData'] = $this->container->user;
+			$conn = $this->container->connection;
 
-			if ($userData['role'] == 'user') $this->dataBlocks = $this->user( $opts);
+			if ($userData['role'] == 'user') $this->dataBlocks = $this->user($conn, $rsxData);
 
-			$this->dataBlocks = $this->admin( $opts);
+			$this->dataBlocks = $this->admin($conn, $rsxData);
 
-			return $this;
+			return $this->dataBlocks;
 		}
 
-		private function admin ( array $opts) {
+		private function admin (PDO $conn, array $rsxData) {
 
-			$queriesMap = [];
+			$queriesMap = []; // array of tables to fetch from
 
-			$paginationNames = [$opts['transPN'], $opts['testPN'], $opts['userPN'] ];
+			$paginationNames = [$rsxData['transPN'], $rsxData['testPN'], $rsxData['userPN'] ]; // passed from GET
 
 			$jsScripts = [['admin_script' => '<script src="/assets/admin-profile.js"></script>']];
 
 			$finalRes = [
-				[['left_menu' => file_get_contents('../views/admin-menu.tmpl')]]
+				[['left_menu' => file_get_contents($this->container->viewPath . 'admin-menu.tmpl')]]
 			];
 
 
@@ -34,15 +36,15 @@
 				
 				$pdo = $conn->prepare("SELECT * FROM `$value` WHERE id > ? LIMIT ?"); // ORDER BY `date` DESC
 
-				$pdo->execute([ $paginationNames[$key], $opts['limit']]);
+				$pdo->execute([ $paginationNames[$key], $rsxData['limit']]);
 
 				$pdo = $pdo->fetchAll(PDO::FETCH_ASSOC);
 
-				$finalRes[] = self::formatForEngine($pdo, $queriesMap[$key]);
+				$finalRes[] = $this->formatForEngine( $queriesMap[$key]);
 			}
 
 			$finalRes[1] = [
-				//[0=>[['current_balance'=> $opts['userData']['balance']]]],
+				//[0=>[['current_balance'=> $rsxData['userData']['balance']]]],
 
 				[/*1=>*/$finalRes[1]['fullTable']['allRows']]
 			];
@@ -57,28 +59,22 @@
 			return $finalRes;
 		}
 
-		private function user (PDO $conn, array $opts) {
+		private function user (PDO $conn, array $rsxData) {
 
-			$leftMenu = ['left_menu' => '<a>Transactions</a>
-				<a>Testimonials</a>
-				<a>Account Management</a>'];
+			$leftMenu = ['left_menu' => '
+				<a>Menu Item 1</a>
+				<a>Menu Item 2</a>
+				<a>Menu Item 3</a>
+			'];
 
-			$userTransactions = self::formatForEngine($userTransactions, 'civili-trans');
+			$userTransactions = $this->formatForEngine( $rsxData);
 
 			
 			// account section
-			$veriConfir = file_get_contents('../views/user-verify.tmpl');
-
-			$userVeriCrit = [];
-
-			$veriStat = array_filter($userVeriCrit, function ($loca) use ($opts) {
-				return true;
-			});
-
-			if (count($veriStat) == count($userVeriCrit)) $veriConfir = "<p>Account Verified</p>";
+			$veriConfir = file_get_contents($this->container->viewPath . 'user-verify.tmpl');
 
 			$myAccount = [
-				[ 0=> [$opts['userData'] ]
+				[ 0=> [$rsxData['userData'] ]
 			], [1=> [['verify_user' => $veriConfir]] ]
 			];
 
