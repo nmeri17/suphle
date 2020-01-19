@@ -1,6 +1,8 @@
 <?php
 
-	namespace Nmeri\Tilwa\Route;
+	namespace Tilwa\Route;
+
+	use Exception;
 
 	class Route {
 
@@ -23,7 +25,7 @@
 
 			string $pathPattern, string $source = null, string $viewName = null,
 
-			string $method = 'get', bool $appendHeader = true, $middleware = []
+			$method = 'get', $appendHeader = true, $middleware = []
 		) {
 
 			$this->hasQuery();
@@ -37,7 +39,7 @@
 
 			$this->appendHeader = $appendHeader;
 
-			$this->pattern = $pathPattern;
+			$this->pattern = !strlen($pathPattern) ? 'index' : $pathPattern;
 
 			$this->method = strtolower($method);
 		}
@@ -55,9 +57,9 @@
 			// 1st confirm a source was given to begin with. If none, assume path doesn't include dynamic vars
 			if ( !is_null($src) ) {
 
-				if ( preg_match('/([\w\\]+@\w+)/', $src, $res) ) $this->source = $src;
+				if ( preg_match('/([\w\\\\]+@\w+)/', $src, $res) ) $this->source = $src;
 
-				throw new Exception("Invalid source pattern given" );
+				else throw new Exception("Invalid source pattern given" );
 			}
 		}
 
@@ -72,7 +74,7 @@
 
 			elseif ( $source = $this->source ) $this->viewName = explode('@', $source)[1];
 
-			throw new Exception("Source and View cannot both be empty" );			
+			if (!$this->viewName) throw new Exception("Source and View cannot both be empty" );			
 		}
 	}
 

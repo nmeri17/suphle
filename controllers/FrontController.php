@@ -2,7 +2,9 @@
 
 	namespace Controllers;
 
-	use Nmeri\Tilwa\Route\Route;
+	use Tilwa\Route\Route;
+
+	require '../autoload.php';
 
 	
 	class FrontController {
@@ -20,15 +22,15 @@
 		function __construct() {
 
 			$reqUrl = $_GET['tilwa_request'];
-
+var_dump($_SERVER); die();
 			$app = new Bootstrap( $reqUrl );
 
 
-			if ( $target = $app->router->findRoute($reqUrl )) $this->validRequest( $app, $target );
+			if ( $target = $app->router->findRoute($reqUrl, $_SERVER['REQUEST_METHOD'] )) $this->validRequest( $app, $target );
 
 			else {
 
-				$target = $app->router->findRoute( '404' );
+				$target = $app->router->findRoute( '404', 'get' );
 
 				$this->response = $app->getClass(GetController::class)->pairVarToFields( '404', $target );
 			}
@@ -38,7 +40,7 @@
 
 			if ($middlewares = $target->getMiddlewares())
 
-				$target = $this->runMiddleware( $middlewares, $app, $target) );
+				$target = $this->runMiddleware( $middlewares, $app, $target);
 
 			// if anything other than a Route object is returned, we will assume request couldn't make it past middleware
 			if ( !is_a($target, Route::class) ) $this->response = $target;
@@ -47,7 +49,7 @@
 
 				$this->response = $app->getClass(GetController::class)
 
-				->pairVarToFields( end(@explode('/', $app->requestName)), $target );
+				->pairVarToFields( @end(explode('/', $app->requestSlug)), $target );
 			}
 		}
 
@@ -58,7 +60,9 @@
 
 				[$clsName, $args] = explode(',', $mw);
 
-				$instance = new { $app->middlewareDirectory . '\\' . $clsName} ( $app, $route ); # assume all your middleware are namespaced
+				$fullyQualified = $app->middlewareDirectory . '\\' . $clsName;
+// var_dump($fullyQualified); die();
+				$instance = new $fullyQualified ( $app, $route ); # assume all your middleware are namespaced
 
 				$route = $instance->handle(function ( $data ) {
 

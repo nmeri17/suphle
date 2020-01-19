@@ -1,8 +1,8 @@
 <?php
 	
-	namespace Nmeri\Tilwa\Routes;
+	namespace Tilwa\Routes;
 
-	use Nmeri\Tilwa\Controllers\Bootstrap;
+	use Tilwa\Controllers\Bootstrap;
 
 	class Middleware {
 

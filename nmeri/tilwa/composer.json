@@ -4,7 +4,7 @@
     "description": "Lightweight project starter",
     "autoload": {
         "psr-4": {
-            "Nmeri\\Tilwa\\": "src"
+            "Tilwa\\": "src/"
         }
     },
     "require": {

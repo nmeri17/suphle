@@ -2,12 +2,12 @@
 
 	namespace Controllers;
 
-	use Nmeri\Tilwa\Controllers\GetController as TilwaGet;
+	use Tilwa\Controllers\GetController as TilwaGet;
 
 	
 	class GetController extends TilwaGet {
 
-		public function getContentOptions ( ) {
+		public function getContentOptions ( ):array {
 
 		    $uniqCol = ['user' => 'email']; // 'id' here means we don't intend to `getContents` any rows here but don't want other table calls to complain when they can't find 'name'
 

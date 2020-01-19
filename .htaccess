@@ -5,24 +5,20 @@ php_value upload_max_filesize 10M
 php_value post_max_size 11M
 
 
-# tacks the query string onto the target tilwa_request
-# RewriteRule ^/?(.+)$ controllers/FrontController.php?tilwa_request=$1 [NC,QSA,L]
-
-
-# extensioned requests, suck it!
-RewriteCond %{REQUEST_URI} !^.+\.\w{3,4}$
-
-RewriteRule .? controllers/FrontController.php?tilwa_request=401 [L]
+# QSA = tack query string onto the target tilwa_request
+RewriteRule ^/?(.+)$ controllers/FrontController.php?tilwa_request=$1 [NC,QSA,L]
 
 # serve index
 RewriteRule ^/?$ controllers/FrontController.php?tilwa_request=index [NC,QSA,L]
 
 
 # invalid file?
-RewriteCond %{REQUEST_FILENAME} !-f  
-
+RewriteCond %{REQUEST_FILENAME} !-f
 
 # fuck off our dirs!
-RewriteCond %{REQUEST_FILENAME} -d  
+RewriteCond %{REQUEST_FILENAME} -d
+
+# extensioned requests, suck it!
+RewriteCond %{REQUEST_URI} ^(.+\.\w{3,4})$
 
 RewriteRule .? controllers/FrontController.php?tilwa_request=404 [L]

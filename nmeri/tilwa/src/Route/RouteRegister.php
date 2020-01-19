@@ -1,6 +1,6 @@
 <?php
 
-	namespace Nmeri\Tilwa\Route;
+	namespace Tilwa\Route;
 
 	/**
 	 * methods here are what we use to sift routes based off certain criteria
@@ -28,20 +28,22 @@
 			$this->register[] = new Route(...$args);
 		}
 
-		public function findRoute ($reqPath) {
+		public function findRoute ($reqPath, $reqMethod ) {
 
 			$regx = '/[^\/,\d]\{([\w]+)\}/'; $params = [];
 
 			// search register for route matching this pattern
-			$target = @array_filter($this->register, function ($route) use (&$params, $regx) {
+			$target = @array_filter($this->register, function ($route) use (&$params, $regx, $reqPath, $reqMethod) {
 
 				// convert /jui/{fsdf}/weeer to /jui/\w/weeer				
 				$tempPat = preg_replace($regx, '\w+', preg_quote($route->pattern) );
 				
-				$params = preg_grep($tempPat, $this->reqPath);
+				$params = preg_grep("/$tempPat/", $reqPath);
 
-				return preg_match($tempPat, $this->reqPath) && $route->method;
-			})[0];
+				return preg_match("/$tempPat/", $reqPath) && strtolower($route->method) == strtolower($reqMethod);
+			});
+
+			$target = current($target);
 
 			if (!empty($target)) $target->parameters = $params;
 
@@ -74,6 +76,8 @@
 			// get a list of tokens from the actual request (not the pattern)
 			return ;
 		}
+
+		public function redirect ($newPath ) {}
 	}
 
 ?>

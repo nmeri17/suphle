@@ -1,8 +1,8 @@
 <?php
 
-	namespace Nmeri\Tilwa\Sources;
+	namespace Tilwa\Sources;
 
-	use Nmeri\Tilwa\Controllers\GetController;
+	use Tilwa\Controllers\GetController;
 
 	/**
 	*	@description: Methods on this class are required to fetch live data from relevant sources and return them in a presentable format to be piped into their respective views. Except in the case of internally used methods, method names on this class correspond to the name of the view (directory/parent content type) they're gathering data for.

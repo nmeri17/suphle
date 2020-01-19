@@ -2,9 +2,9 @@
 
 	namespace Controllers;
 
-	use Nmeri\Tilwa\Route\RouteRegister;
+	use Tilwa\Route\RouteRegister;
 
-	use Nmeri\Tilwa\Controllers\Bootstrap as InitApp;
+	use Tilwa\Controllers\Bootstrap as InitApp;
 	
 	
 	class Bootstrap extends InitApp {
@@ -15,12 +15,15 @@
 
 			$this->container = [
 
-				'rootPath' => $rootPath, 'router' => new RouteRegister, 'classes' => [],
+				'router' => new RouteRegister, 'classes' => [], 'sourceNamespace' => 'Source\\',
 
 				'routesDirectory' => 'routes', 'middlewareDirectory' => 'Middleware',
 
-				'requestName' => $vars['path'], 'viewPath' => $rootPath . 'views'. $slash
-			];
+				'requestSlug' => $vars['path'], 'viewPath' => $rootPath . 'views'. $slash,
+
+				'site_name' => $_SERVER['SERVER_NAME'], 'this_year' => date('Y')
+
+			] + compact('rootPath', 'slash');
 		}
 	}
 

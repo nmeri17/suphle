@@ -2,7 +2,9 @@
 	
 	namespace Middleware;
 
-	class Authenticate {
+	use Tilwa\Routes\Middleware as TilwaMiddleware;
+
+	class Authenticate extends TilwaMiddleware {
 
 		/**
 		* @property $prevData

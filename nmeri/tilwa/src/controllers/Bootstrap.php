@@ -1,14 +1,16 @@
 <?php
 
-	namespace Controllers;
+	namespace Tilwa\Controllers;
 	
 	use Dotenv\Dotenv;
+
+	use PDO; use ReflectionMethod;
 
 	
 	class Bootstrap {
 
 		/* @param array */
-		private $container;
+		protected $container;
 
 		/* @param bool */
 		private $refresh;
@@ -65,7 +67,7 @@
 
 					$uColumn = $ctrl->getContentOptions()['primaryColumns']['user'];
 
-					$user = $ctrl->getContents($sess[$uColumn], 'user');
+					$user = //$ctrl->getContents($sess[$uColumn], 'user'); // replace with an actual model
 				}
 
 				$this->container['user'] = $user;
@@ -74,23 +76,22 @@
 
 		private function loadRoutes ( ) {
 
-			$registrar = $this->router;
+			$registrar = $this->router; $pathName = $this->rootPath . $this->routesDirectory;
 
-			$groups = array_filter(
-				scandir( $this->rootPath . $this->routesDirectory ), 
+			$groups = array_filter( scandir($pathName), function ($name) {
 
-				function ($name) { return !in_array($name, ['.', '..']);}
-			);
+				return !in_array($name, ['.', '..']);
+			});
 
 			// scan dir for all route files and pass them the registrar
-			foreach ($groups as $file) require_once $file;
+			foreach ($groups as $file) require_once $pathName . $this->container['slash'] . $file;
 		}
 
 		public function __get ($key) {
 
 			if (array_key_exists($key, $this->container) && $this->refresh !== true) return $this->container[$key];
 
-			if method_exists($this, $key) {
+			if (method_exists($this, $key)) {
 
 				$this->$key(); return $this->container[$key];
 			}
@@ -104,7 +105,7 @@
 		public function getClass ( $fullName) {
 
 			// search in 
-			if (array_key_exists($fullName, $this->container['classCache'])) return $this->container['classCache'][$fullName];
+			if (array_key_exists($fullName, $this->container['classes'])) return $this->container['classes'][$fullName];
 
 			// if not there, grab class and load their params recursively
 			$params = []; $constr =  new ReflectionMethod($fullName, '__construct'); $init = '';
@@ -131,9 +132,9 @@
 			}
 
 			// params ready. instantiate and include in app container
-			$this->container['classCache'][$fullName] = new $fullName ( ...$params);
+			$this->container['classes'][$fullName] = new $fullName ( ...$params);
 
-			return $this->container['classCache'][$fullName];
+			return $this->container['classes'][$fullName];
 		}
 
 		public function fresh ($prop) {

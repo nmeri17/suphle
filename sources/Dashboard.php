@@ -2,7 +2,7 @@
 
 	namespace Sources;
 
-	use Nmeri\Tilwa\Sources\Source;
+	use Tilwa\Sources\Source;
 
 	class Dashboard extends Source {
 
@@ -12,6 +12,7 @@
 
 			$conn = $this->container->connection;
 
+			var_dump($rsxData);
 			if ($userData['role'] == 'user') $this->dataBlocks = $this->user($conn, $rsxData);
 
 			$this->dataBlocks = $this->admin($conn, $rsxData);

@@ -1,21 +1,21 @@
 <?php
 
-	namespace Nmeri\Tilwa\Controllers;
+	namespace Tilwa\Controllers;
 
 	
 	use Monolog\Logger;
 
 	use Monolog\Handler\StreamHandler;
 
-	// use PDO; use TypeError;
+	use PDO; use TypeError;
 
-	use Nmeri\Tilwa\Templating\TemplateEngine;
+	use Tilwa\Templating\TemplateEngine;
 
 	use Phpfastcache\CacheManager;
 
 	use Phpfastcache\Config\ConfigurationOption;
 
-	use Nmeri\Tilwa\Routes\Route;
+	use Tilwa\Route\Route;
 
 
 	class GetController {
@@ -187,7 +187,7 @@
 
 
 			try {
-
+var_dump('SELECT * FROM `'.$tableName.'` WHERE `'. $col .'`=? OR `'. $col .'`=?');
 				$contents = $app->connection->prepare('SELECT * FROM `'.$tableName.'` WHERE `'. $col .'`=? OR `'. $col .'`=?');
 
 				$contents->execute([$dataValue, $this->nameCleanUp($dataValue)]);
@@ -252,7 +252,7 @@
 			}
 		}
 		
-		protected function pairVarToFields ( string $requestedRsx, Route $requestedRoute) {
+		public function pairVarToFields ( string $requestedRsx, Route $requestedRoute) {
 
 			$route = $this->route = $requestedRoute;
 			
@@ -398,7 +398,7 @@
 		* 	- this pushes data from `getContents` to key 'dbRow', then adds additional keys
 		* @return Array of keys that'll guide `getRecent` in getting fresh data
 		*/
-		private function getContentsAsArray ( string $rsxName):array {
+		protected function getContentsAsArray ( string $rsxName):array {
 
 			$opts['reqResource'] = $this->nameCleanUp($rsxName);
 
@@ -429,7 +429,9 @@
 		// break up namespace if present, switch to that folder and init the source
 		/*private function findDataSource (string $fullName) {
 
-			if ($exists = $this->appContainer->getClass($fullName)) return $exists;
+			$container = $this->appContainer;
+
+			if ($exists = $container->getClass($fullName)) return $exists;
 
 			$currDir = getcwd();
 
@@ -437,11 +439,11 @@
 
 			$clsName = array_shift($fulBreak);
 
-			$slash = DIRECTORY_SEPARATOR;
+			$slash = $container->slash;
 
 			$nmspaces = implode($slash, $fulBreak);
 
-			$srcDir = $this->appContainer->rootPath . 'sources'. $slash. $nmspaces;
+			$srcDir = $container->rootPath . 'sources'. $slash. $nmspaces;
 
 			chdir($srcDir);
 

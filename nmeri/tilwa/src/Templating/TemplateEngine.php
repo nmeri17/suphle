@@ -1,8 +1,8 @@
 <?php
 
-namespace Nmeri\Tilwa\Templating;
+namespace Tilwa\Templating;
 
-use Nmeri\Tilwa\Controllers\{Bootstrap, GetController};
+use Tilwa\Controllers\{Bootstrap, GetController};
 
 
 class TemplateEngine {
@@ -20,13 +20,17 @@ class TemplateEngine {
 	private $appContainer;
 
 	private $route;
+
+	private $pageLayoutVars;
 	
 
-	function __construct(Bootstrap $app, Route $route ) {
+	function __construct(Bootstrap $app, Route $route, array $pageLayoutVars = null ) {
 
 		$this->appContainer = $app;
 
 		$this->route = $route;
+
+		$this->pageLayoutVars = $pageLayoutVars;
 
 		$this->setNavActive();
 
@@ -319,6 +323,8 @@ class TemplateEngine {
 	* @param {src} Used for dynamic content. See README for format of each block contained here
 	*/
 	public function parseAll (array $staticVars, array $repeatedComponents = []) {
+
+		//if (!empty($this->fields['foreachs']) get repeated components
 
 		$enoughData = count($repeatedComponents) == $this->fields()['blockCount'];
 
