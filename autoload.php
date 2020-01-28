@@ -2,7 +2,7 @@
 
 	// this is the htaccess of php classes -- it tells the interpreter where/how to find our local classes
 
-	require_once "../vendor/autoload.php"; // for composer packages
+	require_once "vendor/autoload.php"; // for composer packages
 	
 	spl_autoload_register(function ($className) {
     

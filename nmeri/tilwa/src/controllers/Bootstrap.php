@@ -4,15 +4,19 @@
 	
 	use Dotenv\Dotenv;
 
-	use PDO; use ReflectionMethod;
+	use PDO;
+
+	use ReflectionMethod;
+
+	use ReflectionClass;
 
 	
 	class Bootstrap {
 
-		/* @param array */
+		/* @var array */
 		protected $container;
 
-		/* @param bool */
+		/* @var bool */
 		private $refresh;
 
 		function __construct ( string $path) {
@@ -24,26 +28,9 @@
 			$this->loadRoutes();
 		}
 
-		private function setConnection ( ) {
+		protected function setConnection ( ) {
 
-			$dotenv = Dotenv::create( $this->container['rootPath'] );
-
-			$dotenv->load();
-
-			try {
-
-				$conn = new PDO("mysql:host=localhost;dbname=". getenv('DBNAME') . ";charset=utf8", getenv('DBUSER'), getenv('DBPASS'), array(PDO::ATTR_PERSISTENT => true));
-
-				$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-				$conn->setAttribute( PDO::ATTR_EMULATE_PREPARES, false); // to retain int data type
-
-				$this->container['connection'] = $conn; 
-			}
-			catch (PDOException $e) {
-
-				var_dump("unable to connect to mysql server", $e->getMessage());
-			}
+			$this->container['connection'] = null;
 		}
 
 		protected function setStaticVars ( $vars ) {
@@ -67,7 +54,7 @@
 
 					$uColumn = $ctrl->getContentOptions()['primaryColumns']['user'];
 
-					$user = //$ctrl->getContents($sess[$uColumn], 'user'); // replace with an actual model
+					$user = null;//$ctrl->getContents($sess[$uColumn], 'user'); // replace with an actual model
 				}
 
 				$this->container['user'] = $user;
@@ -76,7 +63,9 @@
 
 		private function loadRoutes ( ) {
 
-			$registrar = $this->router; $pathName = $this->rootPath . $this->routesDirectory;
+			$registrar = $this->router;
+
+			$pathName = $this->rootPath . $this->routesDirectory;
 
 			$groups = array_filter( scandir($pathName), function ($name) {
 
@@ -102,39 +91,80 @@
 			return null;
 		}
 
-		public function getClass ( $fullName) {
+		/**
+		* @description Will load the instance in the app classes cache
+		*
+		*@return A class instance if found
+		*/
+		public function getClass (string $fullName) {
 
-			// search in 
-			if (array_key_exists($fullName, $this->container['classes'])) return $this->container['classes'][$fullName];
+			if (array_key_exists($fullName, $this->container['classes']))
 
-			// if not there, grab class and load their params recursively
-			$params = []; $constr =  new ReflectionMethod($fullName, '__construct'); $init = '';
+				return $this->container['classes'][$fullName];
 
-			foreach ($constr->getParameters() as $param) {
+			// if not there, grab class and load their constructorParams recursively
+			$constructorParams = [];
+
+			$init = '';
+
+			$refleClass = new ReflectionClass($fullName);
+
+			if ($refleClass->isInterface()) { // switch to an implementation
+
+				$fullName = $this->getInterfaceRepresentatives()[$fullName];
 				
-				if ($param->allowsNull() || $param->isOptional() || $param->isDefaultValueAvailable()) $params[] = null;
+				$refleClass = new ReflectionClass($fullName);
+			}
 
-				if ($param->hasType()) {
+			if ($refleClass->hasMethod('__construct'))
+
+				$constr = new ReflectionMethod($fullName, '__construct');
+
+			else $constr = null; // we'll assume this is an abstract class
+
+			if (!is_null($constr)) foreach ($constr->getParameters() as $param) {
+				
+				if ($param->allowsNull() )
+
+					$constructorParams[] = null;
+
+				elseif ($param->isOptional() ) {
+
+					if (!$param->isDefaultValueAvailable()) // is it possible for this to be false? may return true if default is null
+
+						$constructorParams[] = null;
+
+					else $constructorParams[] = $param->getDefaultValue();
+				}
+
+				elseif ($param->hasType()) {
 
 					$type = $param->getType();
 
-					if ( $type->getName() == __CLASS__) $params[] = $this;
+					$typeName = $type->getName();
+
+					if ( $typeName == __CLASS__) $constructorParams[] = $this;
 
 					elseif ( $type->isBuiltin()) {
 
-						settype($init, $type); $params[] = $init;
+						settype($init, $type); $constructorParams[] = $init;
 					}
 
-					elseif (($type === []) || $type->getName() == 'array' ) $params[] = [];
+					elseif (($type === []) || $type->getName() == 'array' ) $constructorParams[] = [];
 
-					else $params[] = $this->getClass($type);
+					else {
+						
+						$res = $this->getClass($typeName);
+						
+						$constructorParams[] = $res;
+					}
 				}
 			}
 
-			// params ready. instantiate and include in app container
-			$this->container['classes'][$fullName] = new $fullName ( ...$params);
-
-			return $this->container['classes'][$fullName];
+			// constructorParams ready. instantiate and include in app container
+			$classInst = new $fullName ( ...$constructorParams);
+			
+			return $this->container['classes'][$fullName] = $classInst;
 		}
 
 		public function fresh ($prop) {

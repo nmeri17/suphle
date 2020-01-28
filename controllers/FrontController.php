@@ -3,9 +3,6 @@
 	namespace Controllers;
 
 	use Tilwa\Route\Route;
-
-	require '../autoload.php';
-
 	
 	class FrontController {
 
@@ -22,7 +19,7 @@
 		function __construct() {
 
 			$reqUrl = $_GET['tilwa_request'];
-var_dump($_SERVER); die();
+
 			$app = new Bootstrap( $reqUrl );
 
 
@@ -74,6 +71,10 @@ var_dump($_SERVER); die();
 		}
 	}
 
+	chdir('../'); // changing to root so scripts at other locations can use that autoloader
+
+	require 'autoload.php';
+require 'config/cli-config.php';
 	$entrance = new FrontController;
 
 	echo $entrance->response;
