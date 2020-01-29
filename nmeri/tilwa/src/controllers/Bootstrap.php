@@ -40,22 +40,14 @@
 
 		private function user () {
 
-			if (!$this->container['user']) {
+			if (!isset($this->user)) {
 
-				session_start();
-
+				session_start(); // THIS SHOULD ONLY RUN IN THE ABSENCE OF A BEARER TOKEN
 				$sess = $_SESSION;
 
 				if (empty($sess)) $user = null;
 
-				else {
-
-					$ctrl = $this->getClass( GetController::class);
-
-					$uColumn = $ctrl->getContentOptions()['primaryColumns']['user'];
-
-					$user = null;//$ctrl->getContents($sess[$uColumn], 'user'); // replace with an actual model
-				}
+				else $user = $this->foundUser($sess, @getallheaders()['Authorization']);
 
 				$this->container['user'] = $user;
 			}
@@ -116,9 +108,9 @@
 				$refleClass = new ReflectionClass($fullName);
 			}
 
-			if ($refleClass->hasMethod('__construct'))
+			if ($refleClass->isInstantiable())
 
-				$constr = new ReflectionMethod($fullName, '__construct');
+				$constr = $refleClass->getConstructor();
 
 			else $constr = null; // we'll assume this is an abstract class
 
@@ -176,6 +168,19 @@
 			$this->refresh = false;
 
 			return $val;
+		}
+
+		/**
+		* @description defines the process of obtaining user
+		* @return a user model/entity streamline to your orm
+		*/
+		protected function foundUser (array $session, $apiToken = null) {}
+
+		/**
+		* @return an array containing what implementation to serve to the container when presented with multiple implementations of an interface*/
+		protected function getInterfaceRepresentatives ():array {
+
+			//
 		}
 	}
 

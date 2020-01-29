@@ -8,8 +8,6 @@ use Controllers\Bootstrap;
 
 use Symfony\Bundle\MakerBundle\Command\MakerCommand;
 
-use Symfony\Component\Console\Command\HelpCommand;
-
 $app = new Bootstrap('');
 
 $entityManager = $app->connection;

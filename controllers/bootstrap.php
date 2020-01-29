@@ -37,6 +37,7 @@
 
 				$isDevMode = true;
 
+				// custom edits
 				$config = Setup::createAnnotationMetadataConfiguration($paths, $isDevMode);
 
 				$entityManager = EntityManager::create($connectionParams, $config);
@@ -61,7 +62,7 @@
 
 				'router' => new RouteRegister, 'classes' => [],
 
-				'sourceNamespace' => 'Source\\',
+				'sourceNamespace' => 'Sources',
 
 				'routesDirectory' => 'routes',
 
@@ -77,14 +78,17 @@
 			] + compact('rootPath', 'slash');
 		}
 
-		/**
-		* @return an array containing what implementation to serve to the container when presented with multiple implementations of an interface*/
-		protected function getInterfaceFrontlines () {
+		protected function getInterfaceRepresentatives ():array {
 			
 			return [
 
-				'Symfony\Bundle\MakerBundle\MakerInterface' => 'Symfony\Bundle\MakerBundle\Maker\MakeEntity' // note: we actually need a way of knowing the maker component required, as well as a way of inecting that one into the container
+				'Symfony\Bundle\MakerBundle\MakerInterface' => 'Symfony\Bundle\MakerBundle\Maker\MakeEntity'
 			];
+		}
+
+		protected function foundUser (array $session, $apiToken = null) {
+
+			$repo = new BaseEntityRepository(User::class, ['id' => $session['tilwa_id']]);
 		}
 	}
 

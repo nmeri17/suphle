@@ -37,7 +37,7 @@
 
 			if ($middlewares = $target->getMiddlewares())
 
-				$target = $this->runMiddleware( $middlewares, $app, $target);
+				$target = $this->runMiddleware( $middlewares, $app, $target); // THIS IS UNTESTED
 
 			// if anything other than a Route object is returned, we will assume request couldn't make it past middleware
 			if ( !is_a($target, Route::class) ) $this->response = $target;
@@ -74,7 +74,7 @@
 	chdir('../'); // changing to root so scripts at other locations can use that autoloader
 
 	require 'autoload.php';
-require 'config/cli-config.php';
+
 	$entrance = new FrontController;
 
 	echo $entrance->response;

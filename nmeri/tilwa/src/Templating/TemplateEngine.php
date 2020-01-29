@@ -4,6 +4,8 @@ namespace Tilwa\Templating;
 
 use Tilwa\Controllers\{Bootstrap, GetController};
 
+use Tilwa\Route\Route;
+
 
 class TemplateEngine {
 	
@@ -363,8 +365,8 @@ class TemplateEngine {
 		}
 
 		//try/catch doesn't work for Fatal Errors so
-		register_shutdown_function('Templating\\shutdown');
-
+		register_shutdown_function(self::class .'\\shutdown');
+//var_dump('how do i now access repeated components'); die();
 		// if we're expecting dynamic variables, preprocess them before parsing
 		if (!empty($repeatedComponents) && $enoughData) {
 
@@ -459,17 +461,18 @@ class TemplateEngine {
 
 	static function showMessage (string $msg) { return '<p style="color: #f00; font-size: 150%; margin:5%">'. $msg . '.</p>';}
 
-
-	// set a key in the dataset corresponding to resource name, unless one has been supplied
+	/**
+	* @description set key 'navIndicator' in the dataset to correspond to resource name
+	*/
 	private function setNavActive ( ) {
 
 		if ($this->route->appendHeader) {
 
-			$ctrl = $this->appContainer->getClass(GetController::class);
+			$ctrl = $this->appContainer->getClass(GetController::class); // THIS WILL RETURN THE PARENT, WHICH WE DON'T WANT. PASS IN AN INTERFACE HERE INSTEAD. THAT INTERFACE WILL BE IMPLEMENTED BY THE PARENT AND THE CHILD WILL BE SET IN THE SERVICE PROVIDER
 
 			$config = $ctrl->getContentOptions();
 
-			$sVars = $this->staticVars;
+			$sVars = $this->staticVars; // expected to contain menu items on this page
 
 			$key = 'navIndicator';
 			
@@ -477,7 +480,7 @@ class TemplateEngine {
 
 				$this->staticVars[$key] = $config[$key]($sVars);
 
-			else $this->staticVars[preg_replace('/\s+/', '_', $navName)] = 'active_'. $ctrl->nameDirty($sVars['name'], 'dash-case'); // request name
+			else $this->staticVars[$key] = 'active_'. $ctrl->nameDirty(@$sVars['name'], 'dash-case'); // resource name
 		}
 	}
 

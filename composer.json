@@ -1,14 +1,10 @@
 {
     "require": {
         "nmeri/tilwa": "@dev",
-        "doctrine/orm": "^2.7",
-        "ocramius/proxy-manager": "^2.2",
-        "doctrine/doctrine-bundle": "^2.0"
+        "doctrine/orm": "^2.7"
     },
     
     "require-dev": {
-        "symfony/maker-bundle": "^1.14",
-        "symfony/orm-pack": "^1.0"
     },
 
     "repositories": [

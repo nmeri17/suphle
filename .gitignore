@@ -8,3 +8,4 @@ app structure.txt
 crypto-implementation-hints.txt
 /vendor
 dig-currency.sql
+config/cli-config.php

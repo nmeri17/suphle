@@ -18,12 +18,15 @@
 
 		private $middleware;
 
+		public $source;
 
-		// setting `viewName` to false skips the trip to parse
-		// setting it to null assigns the name of your source handler to it
+
+		/**
+		* @param {viewName} setting this to false skips the trip to parse, while setting it to null assigns the name of your source handler to it
+		*/
 		function __construct(
 
-			string $pathPattern, string $source = null, string $viewName = null,
+			string $pathPattern, string $source, $viewName = null,
 
 			$method = 'get', $appendHeader = true, $middleware = []
 		) {
@@ -54,13 +57,9 @@
 
 		private function validateSource ( $src ) {
 
-			// 1st confirm a source was given to begin with. If none, assume path doesn't include dynamic vars
-			if ( !is_null($src) ) {
+			if ( preg_match('/([\w\\\\]+@\w+)/', $src ) ) $this->source = $src;
 
-				if ( preg_match('/([\w\\\\]+@\w+)/', $src, $res) ) $this->source = $src;
-
-				else throw new Exception("Invalid source pattern given" );
-			}
+			else throw new Exception("Invalid source pattern given" );
 		}
 
 		public function getMiddlewares () {
