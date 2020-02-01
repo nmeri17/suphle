@@ -324,49 +324,17 @@ class TemplateEngine {
 	* @param {staticVars}:Array 1D of string placeholders not to be repeated. Used for static content
 	* @param {src} Used for dynamic content. See README for format of each block contained here
 	*/
-	public function parseAll (array $staticVars, array $repeatedComponents = []) {
+	public function parseAll (array $data) {
 
-		//if (!empty($this->fields['foreachs']) get repeated components
+		[$staticVars, $repeatedComponents ] = $this->findSingleAndGrouped($data);
 
-		$enoughData = count($repeatedComponents) == $this->fields()['blockCount'];
+		$enoughData = count($repeatedComponents) >= $this->fields()['blockCount'];
 
 		$this->staticVars = $staticVars;
 
-		function shutdown() {
-
-		    $error = error_get_last(); 
-		    
-		    if ($error['type'] === E_ERROR) {
-
-		    	$msg = $error['message']; preg_match('/TypeError: Argument (\d)/', $msg, $prob);
-
-		    	
-		    	$correct = ['array', 'string']; $args = ['dataSet', 'context']; $ind = +$prob[1]-1;
-
-		    	
-		    	preg_match('/((->matchRecursive)|(\{closure\}))\((.+?)\)/', $msg, $argVals);
-
-		    	
-		    	$params = explode(', ', $argVals[4]);
-
-		    	
-		    	$oppos = array_filter($params, function ($l) use ($ind) { return $l != $ind;}, ARRAY_FILTER_USE_KEY);
-
-		    	$fn = $argVals[1] == '->matchRecursive' ? 'matchRecursive': 'aggregate data set';
-
-				$z = ob_get_contents(); // notices or logs
-		    	
-		    	ob_end_clean();
-			var_dump($msg, $params, $oppos);
-		    	$errOutput = 'Invalid '. $args[$ind]. ' supplied to '. $fn .'. Expected '. $correct[$ind] . " but found \n\n". $params[$ind] . '. Does not match given ' . $args[key($oppos)] . ': '. $oppos[key($oppos)];
-
-		    	echo TemplateEngine::showMessage($errOutput), $z/*, $msg*/;
-		    }
-		}
-
 		//try/catch doesn't work for Fatal Errors so
-		register_shutdown_function(self::class .'\\shutdown');
-//var_dump('how do i now access repeated components'); die();
+		register_shutdown_function([$this, 'shutdown']);
+
 		// if we're expecting dynamic variables, preprocess them before parsing
 		if (!empty($repeatedComponents) && $enoughData) {
 
@@ -484,7 +452,7 @@ class TemplateEngine {
 		}
 	}
 
-	private function assignFile ( ) {
+	private function assignFile ( ):void {
 
 		$viewPath = $this->appContainer->viewPath;
 
@@ -500,6 +468,45 @@ class TemplateEngine {
 		$this->forEachRegex = '/{{__foreach-1-start__}}([\s\S]+?){{__foreach-1-end__}}/';
 
 		$this->fileComponent = '/{{__file-start__}}(?:\s+)?\{\{([\w]+)\}\}(?:\s+)?{{__file-end__}}/';
+	}
+
+	public function shutdown() {
+
+	    $error = error_get_last(); 
+	    
+	    if ($error['type'] === E_ERROR) {
+
+	    	$msg = $error['message']; preg_match('/TypeError: Argument (\d)/', $msg, $prob);
+
+	    	
+	    	$correct = ['array', 'string']; $args = ['dataSet', 'context']; $ind = +$prob[1]-1;
+
+	    	
+	    	preg_match('/((->matchRecursive)|(\{closure\}))\((.+?)\)/', $msg, $argVals);
+
+	    	
+	    	$params = explode(', ', $argVals[4]);
+
+	    	
+	    	$oppos = array_filter($params, function ($l) use ($ind) { return $l != $ind;}, ARRAY_FILTER_USE_KEY);
+
+	    	$fn = $argVals[1] == '->matchRecursive' ? 'matchRecursive': 'aggregate data set';
+
+			$z = ob_get_contents(); // notices or logs
+	    	
+	    	ob_end_clean();
+		var_dump($msg, $params, $oppos);
+	    	$errOutput = 'Invalid '. $args[$ind]. ' supplied to '. $fn .'. Expected '. $correct[$ind] . " but found \n\n". $params[$ind] . '. Does not match given ' . $args[key($oppos)] . ': '. $oppos[key($oppos)];
+
+	    	echo TemplateEngine::showMessage($errOutput), $z/*, $msg*/;
+	    }
+	}
+
+	private function findSingleAndGrouped ($data):array {
+		
+		$repeatedComponents = array_filter($data, "is_array");
+
+		return [@array_diff($data, $repeatedComponents), $repeatedComponents];
 	}
 }
 

@@ -44,9 +44,14 @@
 
 			else {
 
+				$payload = array_filter($_GET + $_POST, function ( $key) {
+
+					return $key !== 'tilwa_request';
+				}, ARRAY_FILTER_USE_KEY);
+
 				$this->response = $app->getClass(GetController::class)
 
-				->pairVarToFields( @end(explode('/', $app->requestSlug)), $target );
+				->pairVarToFields( @end(explode('/', $app->requestSlug)), $target, $payload );
 			}
 		}
 

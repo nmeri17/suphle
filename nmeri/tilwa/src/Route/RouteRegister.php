@@ -13,6 +13,8 @@
 
 		private $namespaceMode;
 
+		private $apiMode;
+
 
 		function __construct( ) {
 		}
@@ -30,22 +32,22 @@
 
 		public function findRoute ($reqPath, $reqMethod ) {
 
-			$regx = '/[^\/,\d]\{([\w]+)\}/'; $params = [];
+			$regx = '/\{(\w+)\}/'; $params = [];
 
 			// search register for route matching this pattern
 			$target = @array_filter($this->register, function ($route) use (&$params, $regx, $reqPath, $reqMethod) {
 
-				// convert /jui/{fsdf}/weeer to /jui/\w/weeer				
+				// convert /jui/{fsdf}/weeer to /jui/\w/weeer			
 				$tempPat = preg_replace($regx, '\w+', preg_quote($route->pattern) );
 				
-				$params = preg_grep("/$tempPat/", $reqPath);
+				$params = preg_grep("/$tempPat/", [$reqPath]); // log all placeholders for the matching pattern
 
-				return preg_match("/$tempPat/", $reqPath) && strtolower($route->method) == strtolower($reqMethod);
+				return preg_match("/^$tempPat$/", $reqPath) && strtolower($route->method) == strtolower($reqMethod);
 			});
 
 			$target = current($target);
 
-			if (!empty($target)) $target->parameters = $params;
+			if (count($params) > 1) $target->parameters = array_slice($params, 1); // [0]=original url
 
 			return $target;
 		}
@@ -78,6 +80,23 @@
 		}
 
 		public function redirect ($newPath ) {}
+
+		public function apiRoutes ($cbGroup ) {
+
+			$this->apiMode = true; // this mode should session, template headers etc on each route
+
+			$cbGroup();
+
+			$this->apiMode = null;
+		}
+
+		// should accept array or call back to map routes to methods under a source
+		public function groupBySource ($cbGroup ) {}
+		
+		public function registeredRoutes ( ) {
+
+			return $this->register;
+		}
 	}
 
 ?>

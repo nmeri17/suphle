@@ -6,8 +6,6 @@
 
 	class Route {
 
-		public $queryVars;
-
 		public $pattern;
 
 		public $parameters;
@@ -26,14 +24,12 @@
 		*/
 		function __construct(
 
-			string $pathPattern, string $source, $viewName = null,
+			string $pathPattern, ?string $source, $viewName = null,
 
-			$method = 'get', $appendHeader = true, $middleware = []
+			?string $method = 'get', ?bool $appendHeader = true, $middleware = []
 		) {
 
-			$this->hasQuery();
-
-			$this->validateSource($source);
+			$this->validateSource($source, !is_null($viewName));
 
 			$this->assignView($viewName);
 
@@ -47,19 +43,18 @@
 			$this->method = strtolower($method);
 		}
 
-		private function hasQuery () {
+		private function validateSource ( $src, bool $hasView ) {
 
-			$this->queryVars = array_filter($_GET, function ( $key) {
+			$isDatalessView = is_null($src) && $hasView;
 
-				return $key !== 'tilwa_request';
-			}, ARRAY_FILTER_USE_KEY);
-		}
+			if ($isDatalessView) return;
 
-		private function validateSource ( $src ) {
+			elseif (!is_null($src)) {
 
-			if ( preg_match('/([\w\\\\]+@\w+)/', $src ) ) $this->source = $src;
+				if ( preg_match('/([\w\\\\]+@\w+)/', $src ) ) $this->source = $src;
 
-			else throw new Exception("Invalid source pattern given" );
+				else throw new Exception("Invalid source pattern given" );
+			}
 		}
 
 		public function getMiddlewares () {
@@ -69,11 +64,15 @@
 
 		private function assignView ( $name ) {
 
-			if (!is_null($name)) $this->viewName = $name;
+			if (!is_null($name) || $name === false)
 
-			elseif ( $source = $this->source ) $this->viewName = explode('@', $source)[1];
+				$this->viewName = $name;
 
-			if (!$this->viewName) throw new Exception("Source and View cannot both be empty" );			
+			elseif ( $source = $this->source )
+
+				$this->viewName = explode('@', $source)[1]; // if no view is supplied, we assume view name matches source method
+
+			else throw new Exception("Source and View cannot both be empty" ); // likely null			
 		}
 	}
 

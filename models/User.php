@@ -2,10 +2,11 @@
 
 	namespace Models;
 
-	use Doctrine\ORM\Annotation\{Id, Column, GeneratedValue, Entity};
+	use Doctrine\ORM\Annotation\{Id, Column, GeneratedValue, Entity, Table};
 
 	/**
-	* @Entity(repositoryClass="Doctrine\ORM\Annotation\Id")
+	* @Entity(repositoryClass="Models\Repositories\Base")
+	* @Table(name="users")
 	*/
 	class User {
 		/**
@@ -13,24 +14,27 @@
 		* @Column(type="integer")
 		* @GeneratedValue
 		*/
-		private $id;
+		public $id;
 		
 		/** @Column(length=15) */
-		private $first_name;
+		public $first_name;
 		
 		/** @Column(length=15) */
-		private $last_name;
+		public $last_name;
 		
 		/** @Column(unique=true, length=30) */
-		private $email;
+		public $email;
 		
 		/** @Column(type="integer") */
-		private $password;
+		public $password;
 		
 		/** @Column(type="datetime", name="updated_at") */
-		private $createdAt;
+		public $createdAt;
 		
 		/** @Column(type="datetime", name="created_at") */
-		private $updatedAt;
+		public $updatedAt;
+		
+		/** @Column(type="datetime", name="email_verified_at") */
+		public $emailVerifiedAt;
 	}
 ?>

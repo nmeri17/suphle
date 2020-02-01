@@ -6,9 +6,9 @@
 
 	class Home extends BaseSource {
 
-		public function main ( string $urlSlug, array $rsxData) {
+		public function index ( string $urlSlug, array $rsxData) {
 
-			return ['data', func_get_args()];
+			return ['content' => "this is dynamic content", []];
 		}
 	}
 

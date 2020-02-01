@@ -118,15 +118,21 @@
 		}
 		
 		// assign a couple of default data before setting request on its merry way to a handler method
-		public function pairVarToFields ( string $resourceName, Route $requestedRoute) {
+		public function pairVarToFields ( string $resourceName, Route $requestedRoute, array $queryPayload ) {
 
 			$this->route = $requestedRoute;
+
+			if (!$requestedRoute->source) $viewData = [];
+
+			else $viewData = $this->routeProvider($pageVars );
+
+			if ($requestedRoute->viewName === false ) return json_encode($viewData);
 			
-			$pageVars = compact('resourceName');
+			$pageVars = compact('resourceName', 'queryPayload');
 
 			$engine = new TemplateEngine( $this->appContainer, $requestedRoute, $pageVars);
 
-			return $engine->parseAll( $this->routeProvider($pageVars) );
+			return $engine->parseAll( $viewData );
 		}
 
 
@@ -141,9 +147,9 @@
 
 			$name = $options['resourceName'];
 
-		    $cache = $this->cacheManager();
+			$qParams = $options['queryPayload'];
 
-		    $qParams = $this->route->queryVars;
+		    $cache = $this->cacheManager();
 
 		    $nameInStore = $qParams ? preg_replace('/\W/', '_', implode(';', $qParams) ) : $method;
 
