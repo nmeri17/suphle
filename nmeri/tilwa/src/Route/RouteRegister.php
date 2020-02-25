@@ -30,7 +30,7 @@
 			$this->register[] = new Route(...$args);
 		}
 
-		public function findRoute ($reqPath, $reqMethod ) {
+		public function findRoute (string $reqPath, int $reqMethod ) {
 
 			$regx = '/\{(\w+)\}/'; $params = [];
 
@@ -42,11 +42,13 @@
 				
 				$params = preg_grep("/$tempPat/", [$reqPath]); // log all placeholders for the matching pattern
 
-				return preg_match("/^$tempPat$/", $reqPath) && strtolower($route->method) == strtolower($reqMethod);
+				return preg_match("/^$tempPat$/", $reqPath) && $route->method === $reqMethod;
 			});
 
 			$target = current($target);
 
+			/**
+			* @see `$this->initParams()` */
 			if (count($params) > 1) $target->parameters = array_slice($params, 1); // [0]=original url
 
 			return $target;
@@ -76,14 +78,12 @@
 		public function initParams () {
 
 			// get a list of tokens from the actual request (not the pattern)
-			return ;
+			return ; // you might break slug at each placeholder point and key each placeholder to the value coming from `$this->parameters`
 		}
-
-		public function redirect ($newPath ) {}
 
 		public function apiRoutes ($cbGroup ) {
 
-			$this->apiMode = true; // this mode should session, template headers etc on each route
+			$this->apiMode = true; // this mode should disable session, template headers etc on each route
 
 			$cbGroup();
 

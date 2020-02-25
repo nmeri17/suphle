@@ -6,82 +6,95 @@
 	
 	class FrontController {
 
-		private $getCtrl;
-
-		private $value;
-
-		private $handler;
-
 		public $response;
 
 		private $app;
 
+		public $postResEventList;
+
+		/**
+		* @property array*/
+		private $reqPayload;
+
 		function __construct() {
 
-			$reqUrl = $_GET['tilwa_request'];
+			$this->postResEventList = [];
 
-			$app = new Bootstrap( $reqUrl );
+			$this->setPayload();
 
+			$app = $this->prepareRequest(new Bootstrap, $_GET['tilwa_request']);
 
-			if ( $target = $app->router->findRoute($reqUrl, $_SERVER['REQUEST_METHOD'] )) $this->validRequest( $app, $target );
+			$this->response = $app->getClass(GetController::class)
 
-			else {
-
-				$target = $app->router->findRoute( '404', 'get' );
-
-				$this->response = $app->getClass(GetController::class)->pairVarToFields( '404', $target );
-			}
+			->pairVarToFields( $this->reqPayload );
 		}
 
-		private function validRequest ( $app, $target ) {
+		// pimp route vars, designate handler etc
+		private function prepareRequest($app, $reqUrl):Bootstrap {
+			
+			$userMethod = constant(Route::class . '::'. $_SERVER['REQUEST_METHOD']);
 
-			if ($middlewares = $target->getMiddlewares())
+			if ( $target = $app->router->findRoute($reqUrl, $userMethod )) {
 
-				$target = $this->runMiddleware( $middlewares, $app, $target); // THIS IS UNTESTED
+				$app->setActiveRoute($target->setPath($reqUrl));
 
-			// if anything other than a Route object is returned, we will assume request couldn't make it past middleware
-			if ( !is_a($target, Route::class) ) $this->response = $target;
+				if ($middlewares = $app->getActiveRoute()->getMiddlewares())
+
+					$done = $this->runMiddleware( $middlewares, $app);
+			}
 
 			else {
 
-				$payload = array_filter($_GET + $_POST, function ( $key) {
+				$target = $app->router->findRoute( '404', Route::GET );
 
-					return $key !== 'tilwa_request';
-				}, ARRAY_FILTER_USE_KEY);
-
-				$this->response = $app->getClass(GetController::class)
-
-				->pairVarToFields( @end(explode('/', $app->requestSlug)), $target, $payload );
+				$app->setActiveRoute($target);
 			}
+
+			return $app;
 		}
 
 		// middleware delimited by commas. Middleware params delimited by colons
-		private function runMiddleware ( array $middlewares, array $app, Route $route) {
+		private function runMiddleware ( array $middlewares, array $app):bool {
 
 			foreach ($middlewares as $mw ) {
 
 				[$clsName, $args] = explode(',', $mw);
 
 				$fullyQualified = $app->middlewareDirectory . '\\' . $clsName;
-// var_dump($fullyQualified); die();
-				$instance = new $fullyQualified ( $app, $route ); # assume all your middleware are namespaced
 
-				$route = $instance->handle(function ( $data ) {
+				$instance = new $fullyQualified($app); # assumes all your middleware are namespaced
 
-					return $data; // pass args to successive middleware
-				}, ...explode(':', $args));
+				$passed = $instance->handle( explode(':', $args));
 
-				if ( !is_a($route, Route::class) ) return $route; // terminate
+				if (is_callable($instance->postSourceBehavior))
+
+					$this->postResEventList[] = $instance->postSourceBehavior;
+
+				if ( !$passed ) return false; // terminate
 			}
+
+			return true;
+		}
+
+		private function setPayload():void {
+			
+			$this->reqPayload = array_filter($_GET + $_POST, function ( $key) {
+
+				return $key !== 'tilwa_request';
+			}, ARRAY_FILTER_USE_KEY);
 		}
 	}
 
-	chdir('../'); // changing to root so scripts at other locations can use that autoloader
-
-	require 'autoload.php';
+	require '../autoload.php';
 
 	$entrance = new FrontController;
 
-	echo $entrance->response;
+	$preRespo = $entrance->response;
+
+	foreach ($entrance->postResEventList as $handler)
+
+		$preRespo = $handler($preRespo);
+
+	echo $preRespo;
 
 ?>

@@ -7,19 +7,16 @@
 	class Authenticate extends TilwaMiddleware {
 
 		/**
-		* @property $prevData
+		* @property $postSourceBehavior
 		* @property $app
 		*/
 
-		/**
-		* @param {args}:Array. Present if there's a colon separated list of parameters passed to this middleware
-		*/
-		public function handle (Closure $next, ...$args ) {
+		public function handle (array $args ) {
 
 			// perform some logic here, then
-			if ($this->app->user ) return $next($this->prevData); // pass data to next middleware for this route through here
+			if ($this->app->user ) return true;
 			
-			return $this->app->router->findRoute( '401' );
+			return $this->app->router->findRoute( '401' ); // reset the route in app
 			
 		}
 	}

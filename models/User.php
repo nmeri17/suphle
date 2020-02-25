@@ -5,7 +5,7 @@
 	use Doctrine\ORM\Annotation\{Id, Column, GeneratedValue, Entity, Table};
 
 	/**
-	* @Entity(repositoryClass="Models\Repositories\Base")
+	* @Entity(repositoryClass="Models\Repositories\User")
 	* @Table(name="users")
 	*/
 	class User {

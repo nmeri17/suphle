@@ -10,18 +10,29 @@
 
 	use ReflectionClass;
 
+	use Tilwa\Route\Route;
+
 	
 	class Bootstrap {
 
-		/* @var array */
+		/**
+		* @property array */
 		protected $container;
 
-		/* @var bool */
+		/* @property bool */
 		private $refresh;
 
-		function __construct ( string $path) {
+		/**
+		* @property Route */
+		private $activeRoute;
 
-			$this->setStaticVars( compact('path') );
+		/**
+		* @property array */
+		private $prevRequest;
+
+		function __construct ( array $config = []) {
+
+			$this->setStaticVars( $config );
 			
 			$this->setConnection();
 
@@ -42,12 +53,18 @@
 
 			if (!isset($this->user)) {
 
-				session_start(); // THIS SHOULD ONLY RUN IN THE ABSENCE OF A BEARER TOKEN
-				$sess = $_SESSION;
+				$bearer = @getallheaders()['Authorization'];
 
-				if (empty($sess)) $user = null;
+				if (!$bearer) {
 
-				else $user = $this->foundUser($sess, @getallheaders()['Authorization']);
+					session_start();
+
+					$sess = $_SESSION;
+				}
+
+				if (empty($sess) && !$bearer) $user = null;
+
+				else $user = $this->foundUser($sess, $bearer);
 
 				$this->container['user'] = $user;
 			}
@@ -142,7 +159,7 @@
 						settype($init, $type); $constructorParams[] = $init;
 					}
 
-					elseif (($type === []) || $type->getName() == 'array' ) $constructorParams[] = [];
+					elseif (($type === []) || $type->getName() == 'array' ) {$constructorParams[] = [];var_dump($fullName); die();} // wonder if we ever get here
 
 					else {
 						
@@ -181,6 +198,60 @@
 		protected function getInterfaceRepresentatives ():array {
 
 			//
+		}
+
+		// sets the current request as previous for the next request
+		public function setPrevRequest(Route $route, array $routeData):Bootstrap {
+
+			session_start();
+
+			$prev = @$_SESSION['prev_request'];
+
+			if (!empty($prev) ) { // retain data in-between requests with different methods
+
+				$this->prevRequest = [
+
+					'route' => $prev['next_prev'],
+
+					'data' => $prev['data']
+				];
+
+				if ( !$prev['next_prev']->equals($route) ) { // update ahead of next request only when current request changes
+
+					$_SESSION['prev_request'] = [
+
+						'next_prev' => $route, 'data' => $routeData,
+
+						'request_time' => date('H:i:s')
+					];
+				}
+			}
+
+			else $_SESSION['prev_request'] = [ // init
+
+				'next_prev' => $route, 'data' => $routeData,
+
+				'request_time' => date('H:i:s')
+			];
+
+			return $this;
+		}
+
+		public function getActiveRoute () {
+
+			return $this->activeRoute;
+		}
+
+		public function setActiveRoute (Route $route) {
+
+			$this->activeRoute = $route;
+
+			return $this;
+		}
+
+		public function getPrevRequest () {
+
+			return $this->prevRequest;
 		}
 	}
 

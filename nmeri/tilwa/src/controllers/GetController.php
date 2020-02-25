@@ -118,19 +118,29 @@
 		}
 		
 		// assign a couple of default data before setting request on its merry way to a handler method
-		public function pairVarToFields ( string $resourceName, Route $requestedRoute, array $queryPayload ) {
+		public function pairVarToFields ( array $queryPayload ) {
 
-			$this->route = $requestedRoute;
+			$container = $this->appContainer;
+
+			$requestedRoute = $container->getActiveRoute();
+
+			$pageVars = compact( 'queryPayload');
 
 			if (!$requestedRoute->source) $viewData = [];
 
 			else $viewData = $this->routeProvider($pageVars );
 
-			if ($requestedRoute->viewName === false ) return json_encode($viewData);
-			
-			$pageVars = compact('resourceName', 'queryPayload');
+			$container->setPrevRequest($requestedRoute, $viewData);
 
-			$engine = new TemplateEngine( $this->appContainer, $requestedRoute, $pageVars);
+			if ($requestedRoute->redirectTo || $requestedRoute->restorePrevVars) // redirection will take precedence over viewless routes
+
+				return $this->changeDestination($requestedRoute, $viewData);
+
+			if ($requestedRoute->viewName === false )
+
+				return json_encode($viewData);
+
+			$engine = new TemplateEngine( $container, $requestedRoute );
 
 			return $engine->parseAll( $viewData );
 		}
@@ -143,17 +153,17 @@
 		*/
 		protected function routeProvider ( array $options) {
 
-			[$class, $method ]= explode('@', $this->route->source);
+		    $container = $this->appContainer;
 
-			$name = $options['resourceName'];
+		    $currRoute = $container->getActiveRoute();
+
+			[$class, $method ]= explode('@', $currRoute->source);
 
 			$qParams = $options['queryPayload'];
 
 		    $cache = $this->cacheManager();
 
 		    $nameInStore = $qParams ? preg_replace('/\W/', '_', implode(';', $qParams) ) : $method;
-
-		    $container = $this->appContainer;
 
 			try	{
 				$dataSrc = $container->getClass('\\' . $container->sourceNamespace .'\\' .$class);
@@ -163,7 +173,7 @@
 
 				//if (is_null ($freshCopy)) {
 
-					$freshCopy = $dataSrc->$method( $name, $qParams);
+					$freshCopy = $dataSrc->$method( $qParams, $currRoute->parameters);
 
 	    			$cachedOpts->set($freshCopy)->expiresAfter(60*10);
 
@@ -178,21 +188,21 @@
 				
 				$log = new Logger('404-error');
 
-				$log->pushHandler(new StreamHandler($app->rootPath .'logs/404-error.log', Logger::ERROR ));
+				$log->pushHandler(new StreamHandler($container->rootPath .'logs/404-error.log', Logger::ERROR ));
 
 				// add records to the log
-				$log->addError((string) $e);
-		    	return ['url_error' => '"' .$this->route->requestPath . '"'];
+				$log->error($e);
+		    	return ['url_error' => '"' .$currRoute->requestSlug . '"'];
 			}
 
 			catch (Error $e) {
 			
 				$log = new Logger('404-error');
 
-				$log->pushHandler(new StreamHandler($app->rootPath .'logs/404-error.log', Logger::ERROR ));
+				$log->pushHandler(new StreamHandler($container->rootPath .'logs/404-error.log', Logger::ERROR ));
 
-				$log->addError((string) $e);
-				return ['url_error' => '"' . $this->route->requestPath. '"'];
+				$log->error($e);
+				return ['url_error' => '"' . $currRoute->requestSlug. '"'];
 			}
 		}
 
@@ -209,12 +219,32 @@
 		}
 
 		/**
-		*@description: options for getting data from db. valid keys are ->
+		*@description: semantic options after getting data from db. valid keys are ->
 			navIndicator: callback given the dataset should return a string that should be outstanding
 		*/
 		public function getContentOptions ( ):array {
 
 			return [];
+		}
+
+		// if it's 'reload', replace current route with that matching user previous request. then merge the view data with what we have now
+		private function changeDestination (Route $route, array $currViewData) {
+
+			$app = $this->appContainer;
+
+			if (!$route->restorePrevVars)
+
+				return header('Location: '. $route->redirectTo($currViewData));
+
+			$prevReq = $app->getPrevRequest();
+
+			$prevReqRoute = $prevReq['route'];
+
+			$newRoute = $app->router->findRoute($prevReqRoute->requestSlug, $prevReqRoute->method);
+
+			$engine = new TemplateEngine( $app, $newRoute );
+
+			return $engine->parseAll( $currViewData + $prevReq['data'] );
 		}
 	}
 

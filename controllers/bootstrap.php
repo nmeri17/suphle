@@ -68,8 +68,6 @@
 
 				'middlewareDirectory' => 'Middleware',
 
-				'requestSlug' => $vars['path'],
-
 				'viewPath' => $rootPath . 'views'. $slash,
 
 				'siteName' => @$_SERVER['SERVER_NAME'], // is empty when running from cli

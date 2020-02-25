@@ -6,24 +6,25 @@
 
 	class Middleware {
 
-		protected $prevData;
+		/**
+		* @property Callable */
+		public $postSourceBehavior; // used To enable operations after Source is obtained. Receives the app
 
 		protected $app;
 
-		/**
-		* @param {$prevData}:mixed Passed from previous middleware's `next()`. Initialized with Nmeri\Tilwa\Routes\Route
-		*/
-		function __construct( Bootstrap $app, $prevData ) {
-
-			$this->prevData = $prevData;
+		function __construct( Bootstrap $app ) {
 
 			$this->app = $app;
 		}
 
-		public function handle (Closure $next, ...$args ) {
+		/**
+		* @description: mutate app container
+		*
+		* @return false to quit middleware stack
+		*/
+		public function handle ( array $args ) {
 
-			// perform some logic here, then
-			return $next($this->prevData);
+			return true;// perform some logic here with app and args
 		}
 	}
 ?>

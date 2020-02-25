@@ -5,9 +5,7 @@
 	use Controllers\Bootstrap;
 
 	/**
-	*	@description: Methods on this class are required to fetch live data from relevant sources and return them in a presentable format to be piped into their respective views. Except in the case of internally used methods, method names on this class correspond to the name of the view of the route that called it.
-	*
-	*	In cases where a non-existent invalid resource or malformed parameters are requested, throwing `new TypeError`, will trigger a 404 error page
+	*	@Note: In cases where a non-existent invalid resource or malformed parameters are requested, throwing `new TypeError`, will trigger a 404 error page
 	 */
 	 class BaseSource {
 
@@ -20,25 +18,24 @@
 
 		/** 
 		* @description: takes care of formatting multi-nested dataSet for templating
-		* @return: the transformed `dataSet`
 		*/
 		public function formatForEngine (array $dataSet ):array {
 	 		
-	 		$anyAdditionalKeys = array_map(function (&$arr) {
+	 		$transformed = array_map(function (&$arr) {
 
-				return [$this->semantics($arr)];
+	 			return /*[*/$this->semantics($arr)/*]*/;
 			}, $dataSet);
 
 	 		return [			
 
-				'fullTable'=> [
-					'allRows' => $anyAdditionalKeys
-				],
+				/*'fullTable'=> [
+					'allRows' =>*/ $transformed
+				/*],*/
 			];
 		}
 
 		// bridge the gap between front end semantics & row data
-	 	protected function semantics (array $data):array {
+	 	protected function semantics ($data):array {
 
 	 		return $data;
 	 	}

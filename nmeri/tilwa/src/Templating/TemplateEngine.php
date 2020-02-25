@@ -22,17 +22,13 @@ class TemplateEngine {
 	private $appContainer;
 
 	private $route;
-
-	private $pageLayoutVars;
 	
 
-	function __construct(Bootstrap $app, Route $route, array $pageLayoutVars = null ) {
+	function __construct(Bootstrap $app, Route $route ) {
 
 		$this->appContainer = $app;
 
 		$this->route = $route;
-
-		$this->pageLayoutVars = $pageLayoutVars;
 
 		$this->setNavActive();
 
@@ -322,7 +318,7 @@ class TemplateEngine {
 	/**
 	*
 	* @param {staticVars}:Array 1D of string placeholders not to be repeated. Used for static content
-	* @param {src} Used for dynamic content. See README for format of each block contained here
+	* @param {repeatedComponents} Used for dynamic content. See README for format of each block contained here
 	*/
 	public function parseAll (array $data) {
 
@@ -339,9 +335,8 @@ class TemplateEngine {
 		if (!empty($repeatedComponents) && $enoughData) {
 
 			foreach ($repeatedComponents as $key => $components) { // components here is 2d arr of each row
-				
-				$accumulate = '';
 
+				$accumulate = '';
 
 				preg_match($this->forEachRegex, $this->file, $currentForEach);
 

@@ -1,14 +1,20 @@
 <main>
+
+	{{__foreach-1-start__}}
+
+		{{message}}
+	{{__foreach-1-end__}}
+
 	<form method="post" action="/signup">
 
 		<label>First Name</label>
-		<input type="text" name="first_name"> <br>
+		<input type="text" name="first_name" value="{{first_name}}"> <br>
 
 		<label>Last Name</label>
-		<input type="text" name="last_name"> <br>
+		<input type="text" name="last_name" value="{{last_name}}"> <br>
 		
 		<label>Email</label>
-		<input type="email" name="email"> <br>
+		<input type="email" name="email" value="{{email}}"> <br>
 
 		<label>Password</label>
 		<input type="password" name="password"> <br>
