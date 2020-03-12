@@ -22,9 +22,16 @@
 
 			$this->setPayload();
 
-			$app = $this->prepareRequest(new Bootstrap, $_GET['tilwa_request']);
+			$app = new Bootstrap;
 
-			$this->response = $app->getClass(GetController::class)
+			$this->response = $app->setSingleton( // once a valid route is found, bind the app instance in its container, before diving in to derive the proper response for it
+				Bootstrap::class, $this->prepareRequest(
+					
+					$app, $_GET['tilwa_request']
+				)
+			)
+
+			->getClass(GetController::class)
 
 			->pairVarToFields( $this->reqPayload );
 		}
@@ -40,7 +47,7 @@
 
 				if ($middlewares = $app->getActiveRoute()->getMiddlewares())
 
-					$done = $this->runMiddleware( $middlewares, $app);
+					$this->runMiddleware( $middlewares, $app);
 			}
 
 			else {

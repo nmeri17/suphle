@@ -6,7 +6,7 @@
 
 	class Home extends BaseSource {
 
-		public function index ( string $urlSlug, array $rsxData) {
+		public function index ( array $reqData, array $reqPlaceholders, array $validationErrors) {
 
 			return ['content' => "this is dynamic content", []];
 		}

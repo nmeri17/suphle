@@ -49,7 +49,9 @@
 
 			/**
 			* @see `$this->initParams()` */
-			if (count($params) > 1) $target->parameters = array_slice($params, 1); // [0]=original url
+			if (!empty($params) ) $params = array_slice($params, 1); // [0]=original url
+
+			$target->parameters = $params;
 
 			return $target;
 		}

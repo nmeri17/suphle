@@ -191,32 +191,44 @@
 		* @description defines the process of obtaining user
 		* @return a user model/entity streamline to your orm
 		*/
-		protected function foundUser (array $session, $apiToken = null) {}
+		protected function foundUser (array $session, $apiToken = null) {
+			// non-browser devices will be unable to retain session, so we expect to use a token to maintain user state
+		}
 
 		/**
 		* @return an array containing what implementation to serve to the container when presented with multiple implementations of an interface*/
 		protected function getInterfaceRepresentatives ():array {
 
-			//
+			return [];
 		}
 
 		// sets the current request as previous for the next request
 		public function setPrevRequest(Route $route, array $routeData):Bootstrap {
 
-			session_start();
+			if (session_status() == PHP_SESSION_NONE /*&& !headers_sent()*/)
 
+				session_start(); // session_destroy(); $_SESSION = [];
+			
 			$prev = @$_SESSION['prev_request'];
 
 			if (!empty($prev) ) { // retain data in-between requests with different methods
 
+				$oldRoute = $prev['next_prev'];
+
+				$oldData = $prev['data'];
+
 				$this->prevRequest = [
 
-					'route' => $prev['next_prev'],
-
-					'data' => $prev['data']
+					'route' => $oldRoute, 'data' => $oldData
 				];
 
-				if ( !$prev['next_prev']->equals($route) ) { // update ahead of next request only when current request changes
+				$samePayload = empty(array_diff_assoc($oldData, $routeData));
+
+				$matchesRoute = $oldRoute->equals($route);
+
+				if ( !$matchesRoute || !$samePayload) { // update ahead of next request only when current request changes
+
+					if ($matchesRoute) $route = $oldRoute; // we'll assume incoming route belongs to another method, and retain it
 
 					$_SESSION['prev_request'] = [
 
@@ -252,6 +264,13 @@
 		public function getPrevRequest () {
 
 			return $this->prevRequest;
+		}
+
+		public function setSingleton (string $typeName, $default) {
+
+			$this->container['classes'][$typeName] = $default;
+
+			return $this;
 		}
 	}
 

@@ -6,30 +6,51 @@
 
 	use Models\User;
 
+
 	class Authentication extends BaseSource {
 
-		public function showForm() {
+		public $validator = "Validators\Authentication";
 
-			return $this->formatForEngine([[]] ); // error container
+		public function showForm( array $reqData, array $reqPlaceholders, array $validationErrors) {
+
+			if (!empty($validationErrors)) {
+
+				$badInput[0] = $validationErrors;
+				var_dump($badInput);
+				return $this->formatForEngine($badInput);
+			}
+
+			return [[]];
 		}
 
 		// confirm user doesn't exist, create one and send verification email
-		public function signup ( array $reqData, ?array $reqPlaceholders = []) {
+		public function signup ( array $reqData, array $reqPlaceholders, array $validationErrors) {
 
 			$manager = $this->app->connection;
 
 			//$qb = $manager->createQueryBuilder();
 
-			$userExis = $manager->getRepository(User::class)->count( ['email'=> $reqData['email']]) > 0;
+			$userRepo = $manager->getRepository(User::class);
 
-			/*if (!$userExis) // create
+			$reqData['password'] = password_hash($reqData['password'], PASSWORD_DEFAULT);
 
-			else // populate error variable
-
-			var_dump($reqData, $userExis); die();*/
-
-			return $this->formatForEngine([['message' => 'user exists']] ) + $reqData;
+			$nUser = $userRepo->create(new User, $reqData);
+var_dump($nUser); // check if password was updated
+die();
+			
+			return $this->formatForEngine([['message' => 'user successfully created. kindly verify your account in your email']] ); // TODO: change the destination from reload to profile or homepage and alert
 		}
+
+	 	protected function semanticTransforms ():array {
+
+	 		return [
+
+	 			'validationErrors' => function ($val) {
+
+	 				return ['message' => $val];
+	 			}
+	 		];
+	 	}
 	}
 
 ?>

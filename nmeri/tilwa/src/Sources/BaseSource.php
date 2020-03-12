@@ -5,11 +5,13 @@
 	use Controllers\Bootstrap;
 
 	/**
-	*	@Note: In cases where a non-existent invalid resource or malformed parameters are requested, throwing `new TypeError`, will trigger a 404 error page
+	*	@Note: In cases where a non-existent invalid resource or malformed parameters are requested, throwing `new Error`, will trigger a 404 error page
 	 */
 	 class BaseSource {
 
 		// public $dataBlocks;
+
+		public $validator;
 
 		function __construct (Bootstrap $app ) {
 
@@ -19,25 +21,27 @@
 		/** 
 		* @description: takes care of formatting multi-nested dataSet for templating
 		*/
-		public function formatForEngine (array $dataSet ):array {
+		final public function formatForEngine ( array $dataSet ):array {
 	 		
-	 		$transformed = array_map(function (&$arr) {
+	 		return [ array_map( function ($block) {
 
-	 			return /*[*/$this->semantics($arr)/*]*/;
-			}, $dataSet);
+				if (is_array($block)) array_walk( $block, function (&$row, $key) {
+	 			var_dump($row);
+	 				$transforms = $this->semanticTransforms();
 
-	 		return [			
+		 			if (array_key_exists($key, $transforms))
 
-				/*'fullTable'=> [
-					'allRows' =>*/ $transformed
-				/*],*/
-			];
+		 				$row = $transforms[$key]($row);
+		 		});
+
+				return $block;
+			}, $dataSet) ];
 		}
 
 		// bridge the gap between front end semantics & row data
-	 	protected function semantics ($data):array {
+	 	protected function semanticTransforms ():array {
 
-	 		return $data;
+	 		return [];
 	 	}
 
 		// restricted area

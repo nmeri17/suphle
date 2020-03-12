@@ -4,11 +4,14 @@
 
 	use Doctrine\ORM\EntityRepository;
 
+	use Models\MassUpdate;
+
 
 	class User extends EntityRepository {
-		
-		/*how to get the repository in my controller -> em->getRepository(Article::class).
-*/
+
+		use MassUpdate;
+
+		protected $permit = ['email', 'first_name', 'last_name'];
 	}
 
 ?>

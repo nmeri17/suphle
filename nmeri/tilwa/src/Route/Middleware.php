@@ -22,9 +22,10 @@
 		*
 		* @return false to quit middleware stack
 		*/
-		public function handle ( array $args ) {
+		public function handle ( array $args ):bool {
 
-			return true;// perform some logic here with app and args
+			// do something interesting to `app` based on the contents of args. then
+			return true;
 		}
 	}
 ?>
