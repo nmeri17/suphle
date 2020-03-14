@@ -38,6 +38,10 @@
 		* @var bool */
 		private $failedValidation;
 
+		/**
+		* @var object */
+		private $dataSource;
+
 		function __construct (Bootstrap $app ) {
 
 			$this->contentOptions = $this->getContentOptions();
@@ -156,9 +160,9 @@
 
 				return json_encode($viewData);
 
-			$engine = new TemplateEngine( $container, $requestedRoute );
+			$engine = new TemplateEngine( $container, $this->dataSource, $viewData );
 
-			return $engine->parseAll( $viewData );
+			return $engine->parseAll();
 		}
 
 
@@ -180,14 +184,15 @@
 		    $nameInStore = $queryPayload ? preg_replace('/\W/', '_', implode(';', $queryPayload) ) : $method;
 
 			try	{
-				$dataSrc = $container->getClass('\\' . $container->sourceNamespace .'\\' .$class);
+				
+				$this->dataSource = $dataSrc = $container->getClass('\\' . $container->sourceNamespace .'\\' .$class);
 
 				$validator = @$dataSrc->validator;
 
-				$cachedOpts = $cache->getItem(__FUNCTION__.'|'. $nameInStore ); // prefix to avoid clash with other setters
+				/*$cachedOpts = $cache->getItem(__FUNCTION__.'|'. $nameInStore ); // prefix to avoid clash with other setters
 	    		$freshCopy = $cachedOpts->get();
 
-				//if (is_null ($freshCopy)) {
+				if (is_null ($freshCopy)) {*/
 
 	    			if (isset($validator) && method_exists($validator, $method)) {
 
@@ -204,10 +209,10 @@
 
 					$freshCopy = $dataSrc->$method( $queryPayload, $currRoute->parameters, $validationResp);
 
-	    			$cachedOpts->set($freshCopy)->expiresAfter(60*10);
+	    			/*$cachedOpts->set($freshCopy)->expiresAfter(60*10);
 
 	    			$cache->save($cachedOpts);
-				//}
+				}*/
 
 				return $freshCopy;
 			}
@@ -255,22 +260,22 @@
 
 			$prevReqRoute = $app->getPrevRequest()['route'];
 
-			if (!$prevReqRoute) {
+			if (is_null($prevReqRoute)) { // currently the 1st route
 
-				var_dump($_SESSION['prev_request'] ); die();
+				var_dump($_SESSION['prev_request'], $route );
+
+				$prevReqRoute = $route;
 			}
 
-			$newRoute = $app->router->findRoute($prevReqRoute->requestSlug, $prevReqRoute->method);
-
-			$app->setActiveRoute($newRoute); // in preparation for below call
+			$app->setActiveRoute($prevReqRoute); // in preparation for below call
 
 			$viewData = $this->routeProvider( $currViewData, $validationErr );
 
-			$app->setPrevRequest($newRoute, $viewData);
+			$app->setPrevRequest($prevReqRoute, $viewData);
 
-			$engine = new TemplateEngine( $app, $newRoute ); // TODO: if request was sent via ajax/api, just return the data
-var_dump($currViewData ); die();
-			return $engine->parseAll( $viewData);
+			$engine = new TemplateEngine( $app, $this->dataSource, $viewData ); // TODO: if request was sent via ajax/api, just return the data
+echo(/*$currViewData,*/ $engine->parseAll( ) ); die();
+			return $engine->parseAll();
 		}
 	}
 

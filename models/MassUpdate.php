@@ -6,11 +6,11 @@
 
 		public function create ($entity, array $properties) {
 			
-			foreach (array_intersect($this->exempt, array_keys($properties)) as $prop)
+			foreach (array_intersect($this->permit, array_keys($properties)) as $prop)
 
 			 	$entity->$prop = $properties[$prop];
 
-			$entity->createdAt = $entity->updatedAt = date('Y-m-d H:i:s');
+			$entity->createdAt = $entity->updatedAt = new \DateTime(date('Y-m-d H:i:s'));
 
 			return $entity;
 		}

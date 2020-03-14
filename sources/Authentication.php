@@ -15,9 +15,9 @@
 
 			if (!empty($validationErrors)) {
 
-				$badInput[0] = $validationErrors;
-				var_dump($badInput);
-				return $this->formatForEngine($badInput);
+				$reqData['validationErrors'] = $validationErrors;
+				
+				return $reqData;
 			}
 
 			return [[]];
@@ -32,16 +32,20 @@
 
 			$userRepo = $manager->getRepository(User::class);
 
-			$reqData['password'] = password_hash($reqData['password'], PASSWORD_DEFAULT);
-
 			$nUser = $userRepo->create(new User, $reqData);
-var_dump($nUser); // check if password was updated
+
+			$nUser->password = password_hash($reqData['password'], PASSWORD_DEFAULT);
+
+			$manager->persist($nUser);
+
+			$jnf = $manager->flush($nUser);
+var_dump($jnf);
 die();
 			
 			return $this->formatForEngine([['message' => 'user successfully created. kindly verify your account in your email']] ); // TODO: change the destination from reload to profile or homepage and alert
 		}
 
-	 	protected function semanticTransforms ():array {
+	 	public function semanticTransforms ():array {
 
 	 		return [
 

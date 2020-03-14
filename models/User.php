@@ -25,7 +25,7 @@
 		/** @Column(unique=true, length=30) */
 		public $email;
 		
-		/** @Column(type="integer") */
+		/** @Column */
 		public $password;
 		
 		/** @Column(type="datetime", name="updated_at") */
@@ -34,7 +34,10 @@
 		/** @Column(type="datetime", name="created_at") */
 		public $updatedAt;
 		
-		/** @Column(type="datetime", name="email_verified_at") */
+		/** @Column(type="datetime", name="email_verified_at", nullable=true) */
 		public $emailVerifiedAt;
+		
+		/** @Column( name="verification_code", nullable=true) */
+		public $verificationCode;
 	}
 ?>

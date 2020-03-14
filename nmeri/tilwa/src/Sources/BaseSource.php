@@ -18,28 +18,8 @@
 			$this->app = $app;
 		}
 
-		/** 
-		* @description: takes care of formatting multi-nested dataSet for templating
-		*/
-		final public function formatForEngine ( array $dataSet ):array {
-	 		
-	 		return [ array_map( function ($block) {
-
-				if (is_array($block)) array_walk( $block, function (&$row, $key) {
-	 			var_dump($row);
-	 				$transforms = $this->semanticTransforms();
-
-		 			if (array_key_exists($key, $transforms))
-
-		 				$row = $transforms[$key]($row);
-		 		});
-
-				return $block;
-			}, $dataSet) ];
-		}
-
 		// bridge the gap between front end semantics & row data
-	 	protected function semanticTransforms ():array {
+	 	public function semanticTransforms ():array {
 
 	 		return [];
 	 	}

@@ -82,7 +82,9 @@
 			});
 
 			// scan dir for all route files and pass them the registrar
-			foreach ($groups as $file) require_once $pathName . $this->container['slash'] . $file;
+			foreach ($groups as $file)
+
+				require_once $pathName . $this->container['slash'] . $file;
 		}
 
 		public function __get ($key) {
@@ -207,8 +209,8 @@
 
 			if (session_status() == PHP_SESSION_NONE /*&& !headers_sent()*/)
 
-				session_start(); // session_destroy(); $_SESSION = [];
-			
+				session_start(); //session_destroy(); $_SESSION = [];
+
 			$prev = @$_SESSION['prev_request'];
 
 			if (!empty($prev) ) { // retain data in-between requests with different methods
@@ -222,13 +224,16 @@
 					'route' => $oldRoute, 'data' => $oldData
 				];
 
-				$samePayload = empty(array_diff_assoc($oldData, $routeData));
+				$samePayload = strcasecmp(
+					json_encode($oldData), json_encode($routeData)
+				) === 0; // using this instead of array_diff_assoc cuz it throws errors on multidimensional arrays
 
 				$matchesRoute = $oldRoute->equals($route);
 
 				if ( !$matchesRoute || !$samePayload) { // update ahead of next request only when current request changes
 
 					if ($matchesRoute) $route = $oldRoute; // we'll assume incoming route belongs to another method, and retain it
+					//var_dump($route, $routeData);
 
 					$_SESSION['prev_request'] = [
 
@@ -239,12 +244,16 @@
 				}
 			}
 
-			else $_SESSION['prev_request'] = [ // init
+			else {
+				//var_dump($route);
 
-				'next_prev' => $route, 'data' => $routeData,
+				$_SESSION['prev_request'] = [ // init
 
-				'request_time' => date('H:i:s')
-			];
+					'next_prev' => $route, 'data' => $routeData,
+
+					'request_time' => date('H:i:s')
+				];
+			}
 
 			return $this;
 		}
@@ -256,7 +265,7 @@
 
 		public function setActiveRoute (Route $route) {
 
-			$this->activeRoute = $route;
+			$this->activeRoute = $route; // can't update app prev request with this route cuz view/validation data is unavailable at this point?
 
 			return $this;
 		}

@@ -4,7 +4,7 @@ namespace Tilwa\Templating;
 
 use Tilwa\Controllers\{Bootstrap, GetController};
 
-use Tilwa\Route\Route;
+use Tilwa\Sources\BaseSource;
 
 
 class TemplateEngine {
@@ -21,14 +21,18 @@ class TemplateEngine {
 
 	private $appContainer;
 
-	private $route;
+	private $sourceClass;
+
+	private $viewData;
 	
 
-	function __construct(Bootstrap $app, Route $route ) {
+	function __construct(Bootstrap $app, BaseSource $source, array $dataToParse ) {
 
 		$this->appContainer = $app;
 
-		$this->route = $route;
+		$this->sourceClass = $source;
+
+		$this->viewData = $dataToParse;
 
 		$this->setNavActive();
 
@@ -315,14 +319,14 @@ class TemplateEngine {
 	}
 
 
-	/**
-	*
-	* @param {staticVars}:Array 1D of string placeholders not to be repeated. Used for static content
-	* @param {repeatedComponents} Used for dynamic content. See README for format of each block contained here
-	*/
-	public function parseAll (array $data) {
+	public function parseAll () {
 
-		[$staticVars, $repeatedComponents ] = $this->findSingleAndGrouped($data);
+		[$staticVars, $repeatedComponents ] = $this
+
+		->findSingleAndGrouped(
+			
+			$this->formatToUsersView($this->viewData)
+		);
 
 		$enoughData = count($repeatedComponents) >= $this->fields()['blockCount'];
 
@@ -429,9 +433,9 @@ class TemplateEngine {
 	*/
 	private function setNavActive ( ) {
 
-		if ($this->route->appendHeader) {
+		if ($this->appContainer->getActiveRoute()->appendHeader) {
 
-			$ctrl = $this->appContainer->getClass(GetController::class); // THIS WILL RETURN THE PARENT, WHICH WE DON'T WANT. PASS IN AN INTERFACE HERE INSTEAD. THAT INTERFACE WILL BE IMPLEMENTED BY THE PARENT AND THE CHILD WILL BE SET IN THE SERVICE PROVIDER
+			$ctrl = $this->appContainer->getClass(GetController::class); // if this method should still be here, bind parent GetController to the child so fetching it here will return the proper ContentOptions
 
 			$config = $ctrl->getContentOptions();
 
@@ -451,9 +455,11 @@ class TemplateEngine {
 
 		$viewPath = $this->appContainer->viewPath;
 
-		$this->file = file_get_contents($viewPath . $this->route->viewName . '.tmpl');
+		$route = $this->appContainer->getActiveRoute();
 
-		if ($this->route->appendHeader) $this->file = file_get_contents($viewPath . 'header.tmpl') . $this->file . file_get_contents($viewPath . 'footer.tmpl');
+		$this->file = file_get_contents($viewPath . $route->viewName . '.tmpl');
+
+		if ($route->appendHeader) $this->file = file_get_contents($viewPath . 'header.tmpl') . $this->file . file_get_contents($viewPath . 'footer.tmpl');
 	}
 
 	private function setRegex( ) {		
@@ -502,6 +508,35 @@ class TemplateEngine {
 		$repeatedComponents = array_filter($data, "is_array");
 
 		return [@array_diff($data, $repeatedComponents), $repeatedComponents];
+	}
+
+	/** 
+	* @description: takes care of formatting multi-nested dataSet for templating
+	*/
+	protected function formatToUsersView ( array $dataSet ):array {
+
+		$newVals = [];
+
+		foreach ($dataSet as $formatName => $block) {
+			
+			if (is_array($block)) {
+
+				foreach ($block as &$row) {
+
+	 				$transforms = $this->sourceClass->semanticTransforms();
+
+		 			if (array_key_exists($formatName, $transforms))
+
+		 				$row = $transforms[$formatName]($row);
+				}
+
+				$newVals[] = $block;
+			}
+
+			else $newVals[$formatName] = $block;
+		}
+
+		return $newVals;
 	}
 }
 
