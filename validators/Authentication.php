@@ -29,7 +29,7 @@
 
 			$allErrors = $validator->errors()->all();
 
-			if (!$noSuchUser) $allErrors[] = 'User already has this email';
+			if (!$noSuchUser) $allErrors[] = 'Email already in use';
 
 			return $allErrors;
 		}

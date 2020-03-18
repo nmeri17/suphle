@@ -2,7 +2,7 @@
 	
 	namespace Middleware;
 
-	use Tilwa\Routes\Middleware as TilwaMiddleware;
+	use Tilwa\Route\Middleware as TilwaMiddleware;
 
 	class Authenticate extends TilwaMiddleware {
 
@@ -11,12 +11,11 @@
 		* @property $app
 		*/
 
-		public function handle (array $args ) {
+		public function handle (array $args ):bool {
 
-			// perform some logic here, then
 			if ($this->app->user ) return true;
 			
-			return $this->app->router->findRoute( '401' ); // reset the route in app
+			header('Location: /login?r=' . $this->app->getActiveRoute()->requestSlug ); // a better way: @see Get controller-line 260
 			
 		}
 	}

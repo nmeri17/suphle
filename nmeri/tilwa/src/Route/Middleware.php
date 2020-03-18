@@ -1,6 +1,6 @@
 <?php
 	
-	namespace Tilwa\Routes;
+	namespace Tilwa\Route;
 
 	use Tilwa\Controllers\Bootstrap;
 

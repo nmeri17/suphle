@@ -2,12 +2,12 @@
 
 	namespace Sources;
 
-	use Tilwa\Sources\Source;
+	use Tilwa\Sources\BaseSource;
 
-	class Dashboard extends Source {
+	class Dashboard extends BaseSource {
 
-		public function profile ( string $urlSlug, array $rsxData) {
-
+		public function profile ( array $reqData, array $reqPlaceholders, array $validationErrors) {
+var_dump($reqData); die();
 			$rsxData['userData'] = $this->container->user;
 
 			$conn = $this->container->connection;

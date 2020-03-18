@@ -32,21 +32,23 @@
 
 		function __construct ( array $config = []) {
 
-			$this->setStaticVars( $config );
-			
-			$this->setConnection();
+			$this->setStaticVars( $config )->loadEnv()
 
-			$this->loadRoutes();
+			->setConnection()->configMail()
+
+			->loadRoutes()->initSession();
 		}
 
 		protected function setConnection ( ) {
 
 			$this->container['connection'] = null;
+
+			return $this;
 		}
 
 		protected function setStaticVars ( $vars ) {
 
-			return $vars;
+			return $this;
 		}
 
 		private function user () {
@@ -56,8 +58,6 @@
 				$bearer = @getallheaders()['Authorization'];
 
 				if (!$bearer) {
-
-					session_start();
 
 					$sess = $_SESSION;
 				}
@@ -70,7 +70,7 @@
 			}
 		}
 
-		private function loadRoutes ( ) {
+		private function loadRoutes () {
 
 			$registrar = $this->router;
 
@@ -85,6 +85,8 @@
 			foreach ($groups as $file)
 
 				require_once $pathName . $this->container['slash'] . $file;
+
+			return $this;
 		}
 
 		public function __get ($key) {
@@ -191,9 +193,9 @@
 
 		/**
 		* @description defines the process of obtaining user
-		* @return a user model/entity streamline to your orm
+		* @return a user model/entity streamlined to your orm
 		*/
-		protected function foundUser (array $session, $apiToken = null) {
+		protected function foundUser ($session, string $apiToken = null) {
 			// non-browser devices will be unable to retain session, so we expect to use a token to maintain user state
 		}
 
@@ -204,55 +206,58 @@
 			return [];
 		}
 
-		// sets the current request as previous for the next request
-		public function setPrevRequest(Route $route, array $routeData):Bootstrap {
-
-			if (session_status() == PHP_SESSION_NONE /*&& !headers_sent()*/)
-
-				session_start(); //session_destroy(); $_SESSION = [];
+		// compares the current request with the one in session and if if different, sets the current request as 'previous' ahead of the next request
+		public function setPrevRequest( array $routeData):Bootstrap {
 
 			$prev = @$_SESSION['prev_request'];
 
-			if (!empty($prev) ) { // retain data in-between requests with different methods
+			if (http_response_code() !== 404) { // no need falling back to non existent paths
 
-				$oldRoute = $prev['next_prev'];
+				if (!empty($prev) ) { // retain data in-between requests with different methods
 
-				$oldData = $prev['data'];
+					$oldRoute = $prev['next_prev'];
 
-				$this->prevRequest = [
+					$oldData = $prev['data'];
 
-					'route' => $oldRoute, 'data' => $oldData
-				];
+					$this->prevRequest = [
 
-				$samePayload = strcasecmp(
-					json_encode($oldData), json_encode($routeData)
-				) === 0; // using this instead of array_diff_assoc cuz it throws errors on multidimensional arrays
+						'route' => $oldRoute, 'data' => $oldData
+					];
 
-				$matchesRoute = $oldRoute->equals($route);
+					$samePayload = strcasecmp(
+						json_encode($oldData), json_encode($routeData)
+					) === 0; // using this instead of array_diff_assoc cuz it throws errors on multidimensional arrays
 
-				if ( !$matchesRoute || !$samePayload) { // update ahead of next request only when current request changes
+					$matchesRoute = $oldRoute->equals($this->activeRoute);
 
-					if ($matchesRoute) $route = $oldRoute; // we'll assume incoming route belongs to another method, and retain it
-					//var_dump($route, $routeData);
+					if ( !$matchesRoute || !$samePayload) { // update ahead of next request only when current request changes
 
-					$_SESSION['prev_request'] = [
+						if ($matchesRoute) $this->activeRoute = $oldRoute; // we'll assume incoming route belongs to another method, and retain it
+						//var_dump($this->activeRoute, $routeData);
 
-						'next_prev' => $route, 'data' => $routeData,
+						$_SESSION['prev_request'] = [
+
+							'next_prev' => $this->activeRoute,
+
+							'data' => $routeData,
+
+							'request_time' => date('H:i:s')
+						];
+					}
+				}
+
+				else {
+					//var_dump($this->activeRoute);
+
+					$_SESSION['prev_request'] = [ // init
+
+						'next_prev' => $this->activeRoute,
+
+						'data' => $routeData,
 
 						'request_time' => date('H:i:s')
 					];
 				}
-			}
-
-			else {
-				//var_dump($route);
-
-				$_SESSION['prev_request'] = [ // init
-
-					'next_prev' => $route, 'data' => $routeData,
-
-					'request_time' => date('H:i:s')
-				];
 			}
 
 			return $this;
@@ -265,7 +270,7 @@
 
 		public function setActiveRoute (Route $route) {
 
-			$this->activeRoute = $route; // can't update app prev request with this route cuz view/validation data is unavailable at this point?
+			$this->activeRoute = $route;
 
 			return $this;
 		}
@@ -278,6 +283,35 @@
 		public function setSingleton (string $typeName, $default) {
 
 			$this->container['classes'][$typeName] = $default;
+
+			return $this;
+		}
+
+		protected function loadEnv () {		
+
+			$dotenv = Dotenv::createImmutable( $this->container['rootPath'] );
+
+			$dotenv->load();
+
+			return $this;
+		}
+
+		protected function configMail () {
+
+			ini_set("SMTP", getenv('MAILSMTP'));
+
+			ini_set("smtp_port", getenv('MAILPORT'));
+
+			ini_set('sendmail_from', getenv('MAILSENDER'));
+
+			return $this;
+		}
+
+		private function initSession () {
+
+			if (session_status() == PHP_SESSION_NONE /*&& !headers_sent()*/)
+
+				session_start(); //session_destroy(); $_SESSION = [];
 
 			return $this;
 		}

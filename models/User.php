@@ -37,7 +37,7 @@
 		/** @Column(type="datetime", name="email_verified_at", nullable=true) */
 		public $emailVerifiedAt;
 		
-		/** @Column( name="verification_code", nullable=true) */
+		/** @Column( name="verification_code") */
 		public $verificationCode;
 	}
 ?>

@@ -20,9 +20,9 @@
 
 		public $requestSlug;
 
-		public $restorePrevVars;
+		public $restorePrevPage;
 
-		public $redirectTo; // mixed => callable|string
+		public $redirectTo; // callable
 
 		const RELOAD = 10;
 
@@ -32,7 +32,7 @@
 
 
 		/**
-		* @param {viewName} setting this to false skips the trip to parse, while setting it to null assigns the name of your source handler to it
+		* @param {viewName} setting this to false skips the trip to parse. If null, it assigns the name of your source handler to it
 		*/
 		function __construct(
 
@@ -43,11 +43,11 @@
 			$redirectTo = null, ?bool $appendHeader = true
 		) {
 
-			$this->validateSource($source, !is_null($viewName));
+			$this->validateSource($source, !is_null($viewName))
 
-			$this->assignView($viewName);
+			->assignView($viewName)
 
-			$this->handleRedirects($redirectTo);
+			->handleRedirects($redirectTo);
 
 
 			$this->middleware = is_string($middleware) ? [$middleware] : $middleware;
@@ -56,21 +56,21 @@
 
 			$this->pattern = !strlen($pathPattern) ? 'index' : $pathPattern;
 
-			$this->method = $method;
+			$this->method = $method ?? self::GET;
 		}
 
 		private function validateSource ( $src, bool $hasView ) {
 
 			$isDatalessView = is_null($src) && $hasView;
 
-			if ($isDatalessView) return;
-
-			elseif (!is_null($src)) {
+			if (!is_null($src) && !$isDatalessView) {
 
 				if ( preg_match('/([\w\\\\]+@\w+)/', $src ) ) $this->source = $src;
 
 				else throw new Exception("Invalid source pattern given" );
 			}
+
+			return $this;
 		}
 
 		public function getMiddlewares () {
@@ -84,11 +84,18 @@
 
 				$this->viewName = $name;
 
-			elseif ( $source = $this->source )
+			elseif ( $source = $this->source ) { // if no view is supplied, we assume view name matches kebab-case source method
+				[$dir, $fileName ]= explode('@', $source);
 
-				$this->viewName = explode('@', $source)[1]; // if no view is supplied, we assume view name matches source method
+				$this->viewName = $dir . '/'. preg_replace_callback('/([a-z]+)([A-Z])/', function($m) {
 
-			else throw new Exception("Source and View cannot both be empty" ); // likely null			
+				  return $m[1] . '-' . strtolower($m[2]);
+				}, $fileName);
+			}
+
+			else throw new Exception("Source and View cannot both be empty" );
+
+			return $this;
 		}
 
 		public function setPath (string $name):Route {
@@ -100,9 +107,11 @@
 
 		public function handleRedirects($destination) {
 
-			if ($destination === self::RELOAD ) $this->restorePrevVars = true;
+			if ($destination === self::RELOAD ) $this->restorePrevPage = true;
 
 			else if (is_callable($destination)) $this->redirectTo = $destination; // will be passed data from the associated Source to build the new url
+
+			return $this;
 		}
 
 		public function equals (Route $route, bool $matchMethod =false) {

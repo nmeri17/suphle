@@ -6,20 +6,17 @@
 
 	use Tilwa\Controllers\Bootstrap as InitApp;
 
-	use Dotenv\Dotenv;
-
 	use Doctrine\ORM\Tools\Setup;
 
 	use Doctrine\ORM\EntityManager;
+
+	use Models\User;
 	
 	
 	class Bootstrap extends InitApp {
 
+		// the objective is to plant your desired orm connections on $this->container['connection']
 		protected function setConnection () {
-
-			$dotenv = Dotenv::createImmutable( $this->container['rootPath'] );
-
-			$dotenv->load();
 
 			try {
 
@@ -42,7 +39,9 @@
 
 				$entityManager = EntityManager::create($connectionParams, $config);
 
-				$this->container['connection'] = $entityManager; 
+				$this->container['connection'] = $entityManager;
+
+				return $this;
 			}
 			catch (PDOException $e) {
 
@@ -70,23 +69,25 @@
 
 				'viewPath' => $rootPath . 'views'. $slash,
 
-				'siteName' => @$_SERVER['SERVER_NAME'], // is empty when running from cli
-				'thisYear' => date('Y')
+				'siteName' => @$_SERVER['SERVER_NAME'] ?? getenv('SITENAME'), // server name will be empty when running from cli
 
 			] + compact('rootPath', 'slash');
+
+			return $this;
 		}
 
-		protected function getInterfaceRepresentatives ():array {
-			
-			return [
+		protected function foundUser ( $session, string $apiToken = null) {
+			$user = null; // guest
 
-				'Symfony\Bundle\MakerBundle\MakerInterface' => 'Symfony\Bundle\MakerBundle\Maker\MakeEntity'
-			];
-		}
+			if ($userId = @$session['tilwa_user_id'])
 
-		protected function foundUser (array $session, $apiToken = null) {
+				$user = $this->connection
 
-			$repo = new BaseEntityRepository(User::class, ['id' => $session['tilwa_id']]);
+				->getRepository(User::class)
+
+				->find($userId);
+
+			return $user;
 		}
 	}
 

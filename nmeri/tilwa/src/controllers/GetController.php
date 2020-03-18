@@ -141,17 +141,17 @@
 			if ($this->failedValidation)
 
 				[$viewData, $validationErr] = $viewData; // replace whatever data was stored in previous request with current payload
-			$container->setPrevRequest($requestedRoute, $viewData);
+			$container->setPrevRequest( $viewData);
 
 			if (
-				!empty($validationErr) || $requestedRoute->redirectTo
+				!empty($validationErr) ||
 
-				|| $requestedRoute->restorePrevVars
+				!is_null($requestedRoute->redirectTo)
 			) { // redirection will take precedence over viewless routes
 
 				if ($this->failedValidation)
 
-					$requestedRoute->restorePrevVars = true;
+					$requestedRoute->restorePrevPage = true;
 
 				return $this->changeDestination($requestedRoute, $viewData, $validationErr);
 			}
@@ -164,7 +164,6 @@
 
 			return $engine->parseAll();
 		}
-
 
 		/**
 		* @description: after validating request payload, find route's handler. If validation passes, call handler, passing the query (where present) and request payload. on failure, previous payload will be overridden by the bad data (in the app request memory). the previous route will equally be called with this bad data
@@ -179,7 +178,7 @@
 
 			[$class, $method ]= explode('@', $currRoute->source);
 
-			$cache = $this->cacheManager();
+			// $cache = $this->cacheManager();
 
 		    $nameInStore = $queryPayload ? preg_replace('/\W/', '_', implode(';', $queryPayload) ) : $method;
 
@@ -250,13 +249,9 @@
 		}
 
 		// if it's 'reload', replace current route with that matching user previous request. then merge the view data with what we have now
-		private function changeDestination (Route $route, array $currViewData, $validationErr) {
+		private function changeDestination (Route $route, array $currViewData, array $validationErr) {
 
 			$app = $this->appContainer;
-
-			if (!$route->restorePrevVars)
-
-				return header('Location: '. $route->redirectTo($currViewData));
 
 			$prevReqRoute = $app->getPrevRequest()['route'];
 
@@ -267,14 +262,40 @@
 				$prevReqRoute = $route;
 			}
 
-			$app->setActiveRoute($prevReqRoute); // in preparation for below call
+			if (!$route->restorePrevPage && !$this->failedValidation) {
+
+				$destination = $route->redirectTo;
+
+				$destination = $destination($currViewData);
+
+				if (strpos($destination,'://') !== false)
+
+					return header('Location: '. $destination); // external redirect
+
+				if (
+					$destinationRoute = $app->router
+
+					->findRoute( $destination, Route::GET)
+				)
+
+					$app->setActiveRoute(
+
+						$destinationRoute->setPath($destination)
+					);
+				/* Assumptions:
+					- this route doesn't care about middlewares, validation etc
+					- target route was registered as get request, considering dev will hardly redirect to a post route (no payload). Should the need arise for dynamic methods, inspect the contents `destination` for string|array
+				*/
+			}
+
+			else $app->setActiveRoute($prevReqRoute); // in preparation for below call
 
 			$viewData = $this->routeProvider( $currViewData, $validationErr );
 
-			$app->setPrevRequest($prevReqRoute, $viewData);
+			$app->setPrevRequest( $viewData);
 
 			$engine = new TemplateEngine( $app, $this->dataSource, $viewData ); // TODO: if request was sent via ajax/api, just return the data
-echo(/*$currViewData,*/ $engine->parseAll( ) ); die();
+
 			return $engine->parseAll();
 		}
 	}

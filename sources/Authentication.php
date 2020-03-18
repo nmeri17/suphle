@@ -28,21 +28,45 @@
 
 			$manager = $this->app->connection;
 
-			//$qb = $manager->createQueryBuilder();
+			$nUser = $manager->getRepository(User::class)
 
-			$userRepo = $manager->getRepository(User::class);
-
-			$nUser = $userRepo->create(new User, $reqData);
+			->create(new User, $reqData);
 
 			$nUser->password = password_hash($reqData['password'], PASSWORD_DEFAULT);
 
+			$nUser->verificationCode = bin2hex(openssl_random_pseudo_bytes(14));
+
+			$this->sendVerificationMail($nUser, $reqData); 
+
 			$manager->persist($nUser);
 
-			$jnf = $manager->flush($nUser);
-var_dump($jnf);
-die();
+			$manager->flush();
+
+			$_SESSION['tilwa_user_id'] = $nUser->id;
 			
-			return $this->formatForEngine([['message' => 'user successfully created. kindly verify your account in your email']] ); // TODO: change the destination from reload to profile or homepage and alert
+			return ['verify' => 'success']; // user successfully created. verify your account in your email
+		}
+
+		private function sendVerificationMail (User $user, array $reqData) {
+
+			$siteName = $this->app->siteName;
+
+			$email = $reqData['email'];
+
+			$url = 'http://' . $siteName . '/verify-email?' . http_build_query([
+
+				'email' => $user->email,
+
+				'code' => $user->verificationCode
+			]);
+
+			$oplf = [
+    'From' => 'webmaster@example.com',
+    'Reply-To' => 'webmaster@example.com',
+    'X-Mailer' => 'PHP/' . phpversion(), 'MIME-Version'=> '1.0',
+    'Content-type'=> 'text/html; charset=iso-8859-1'];
+
+			mail($email, 'Email Account Verification for ' . $siteName, "<a href=$url>Click here to verify your account</a>", $oplf); // can pull the template engine from the container and wire your template+data into it
 		}
 
 	 	public function semanticTransforms ():array {

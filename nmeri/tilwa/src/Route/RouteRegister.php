@@ -30,6 +30,11 @@
 			$this->register[] = new Route(...$args);
 		}
 
+		/**
+		 * @param {reqPath}: does not support query urls
+		 *
+		 * @return Route|false
+		 **/
 		public function findRoute (string $reqPath, int $reqMethod ) {
 
 			$regx = '/\{(\w+)\}/'; $params = [];
@@ -42,16 +47,19 @@
 				
 				$params = preg_grep("/$tempPat/", [$reqPath]); // log all placeholders for the matching pattern
 
-				return preg_match("/^$tempPat$/", $reqPath) && $route->method === $reqMethod;
+				return preg_match("/^\/?$tempPat$/", $reqPath) && $route->method === $reqMethod;
 			});
 
 			$target = current($target);
 
-			/**
-			* @see `$this->initParams()` */
-			if (!empty($params) ) $params = array_slice($params, 1); // [0]=original url
+			if ($target !== false) {
 
-			$target->parameters = $params;
+				/**
+				* @see `$this->initParams()` */
+				if (!empty($params) ) $params = array_slice($params, 1); // [0]=original url
+
+				$target->parameters = $params;
+			}
 
 			return $target;
 		}
