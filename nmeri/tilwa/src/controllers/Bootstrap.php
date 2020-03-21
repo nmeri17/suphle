@@ -22,14 +22,6 @@
 		/* @property bool */
 		private $refresh;
 
-		/**
-		* @property Route */
-		private $activeRoute;
-
-		/**
-		* @property array */
-		private $prevRequest;
-
 		function __construct ( array $config = []) {
 
 			$this->setStaticVars( $config )->loadEnv()
@@ -72,7 +64,7 @@
 
 		private function loadRoutes () {
 
-			$registrar = $this->router;
+			$registrar = $this->routeCatalog;
 
 			$pathName = $this->rootPath . $this->routesDirectory;
 
@@ -204,80 +196,6 @@
 		protected function getInterfaceRepresentatives ():array {
 
 			return [];
-		}
-
-		// compares the current request with the one in session and if if different, sets the current request as 'previous' ahead of the next request
-		public function setPrevRequest( array $routeData):Bootstrap {
-
-			$prev = @$_SESSION['prev_request'];
-
-			if (http_response_code() !== 404) { // no need falling back to non existent paths
-
-				if (!empty($prev) ) { // retain data in-between requests with different methods
-
-					$oldRoute = $prev['next_prev'];
-
-					$oldData = $prev['data'];
-
-					$this->prevRequest = [
-
-						'route' => $oldRoute, 'data' => $oldData
-					];
-
-					$samePayload = strcasecmp(
-						json_encode($oldData), json_encode($routeData)
-					) === 0; // using this instead of array_diff_assoc cuz it throws errors on multidimensional arrays
-
-					$matchesRoute = $oldRoute->equals($this->activeRoute);
-
-					if ( !$matchesRoute || !$samePayload) { // update ahead of next request only when current request changes
-
-						if ($matchesRoute) $this->activeRoute = $oldRoute; // we'll assume incoming route belongs to another method, and retain it
-						//var_dump($this->activeRoute, $routeData);
-
-						$_SESSION['prev_request'] = [
-
-							'next_prev' => $this->activeRoute,
-
-							'data' => $routeData,
-
-							'request_time' => date('H:i:s')
-						];
-					}
-				}
-
-				else {
-					//var_dump($this->activeRoute);
-
-					$_SESSION['prev_request'] = [ // init
-
-						'next_prev' => $this->activeRoute,
-
-						'data' => $routeData,
-
-						'request_time' => date('H:i:s')
-					];
-				}
-			}
-
-			return $this;
-		}
-
-		public function getActiveRoute () {
-
-			return $this->activeRoute;
-		}
-
-		public function setActiveRoute (Route $route) {
-
-			$this->activeRoute = $route;
-
-			return $this;
-		}
-
-		public function getPrevRequest () {
-
-			return $this->prevRequest;
 		}
 
 		public function setSingleton (string $typeName, $default) {

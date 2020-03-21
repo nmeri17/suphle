@@ -42,14 +42,13 @@
 
 			$app = $this->app;
 
-			if ( $target = $app->router
+			$router = $app->router;
 
-				->findRoute( $reqUrl, $userMethod )
-			) {
+			if ($target = $router->findRoute( $reqUrl, $userMethod ) ) {
 
-				$app->setActiveRoute($target->setPath($reqUrl));
+				$router->setActiveRoute($target);
 
-				if ($middlewares = $app->getActiveRoute()->getMiddlewares())
+				if ($middlewares = $target->getMiddlewares())
 
 					$this->runMiddleware( $middlewares );
 			}
@@ -58,9 +57,9 @@
 
 				http_response_code(404);
 
-				$target = $app->router->findRoute( '404', Route::GET );
+				$target = $router->findRoute( '404', Route::GET );
 
-				$app->setActiveRoute($target);
+				$router->setActiveRoute($target);
 
 				$this->reqPayload['error_url'] = $reqUrl; // use parameterized url for this instead
 			}
@@ -79,7 +78,7 @@
 
 				$instance = new $fullyQualified($this->app); # assumes all your middleware are namespaced
 
-				$passed = $instance->handle( explode(':', $args));
+				$passed = $instance->handle( explode(':', $args), $this->reqPayload );
 
 				if (is_callable($instance->postSourceBehavior)) // doubt this will ever be used
 

@@ -4,6 +4,8 @@
 
 	use Tilwa\Route\Middleware as TilwaMiddleware;
 
+	use Tilwa\Route\Route;
+
 	class Authenticate extends TilwaMiddleware {
 
 		/**
@@ -11,11 +13,21 @@
 		* @property $app
 		*/
 
-		public function handle (array $args ):bool {
+		public function handle (array $args, array $requestPayload ):bool {
 
-			if ($this->app->user ) return true;
-			
-			header('Location: /login?r=' . $this->app->getActiveRoute()->requestSlug ); // a better way: @see Get controller-line 260
+			$app = $this->app;
+
+			$router = $app->router;
+
+			if ($app->user ) return true;
+
+			$destination = $router->findRoute( '/login', Route::GET );
+
+			$router->pushPrevRequest($destination, $requestPayload, true )
+
+			->setActiveRoute($destination);
+
+			return false;
 			
 		}
 	}

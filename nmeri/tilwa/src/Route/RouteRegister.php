@@ -30,40 +30,6 @@
 			$this->register[] = new Route(...$args);
 		}
 
-		/**
-		 * @param {reqPath}: does not support query urls
-		 *
-		 * @return Route|false
-		 **/
-		public function findRoute (string $reqPath, int $reqMethod ) {
-
-			$regx = '/\{(\w+)\}/'; $params = [];
-
-			// search register for route matching this pattern
-			$target = @array_filter($this->register, function ($route) use (&$params, $regx, $reqPath, $reqMethod) {
-
-				// convert /jui/{fsdf}/weeer to /jui/\w/weeer			
-				$tempPat = preg_replace($regx, '\w+', preg_quote($route->pattern) );
-				
-				$params = preg_grep("/$tempPat/", [$reqPath]); // log all placeholders for the matching pattern
-
-				return preg_match("/^\/?$tempPat$/", $reqPath) && $route->method === $reqMethod;
-			});
-
-			$target = current($target);
-
-			if ($target !== false) {
-
-				/**
-				* @see `$this->initParams()` */
-				if (!empty($params) ) $params = array_slice($params, 1); // [0]=original url
-
-				$target->parameters = $params;
-			}
-
-			return $target;
-		}
-
 		// every registration within this scope will first be prefixed
 		public function prefix ($head, Closure $cbGroup) {
 
@@ -84,13 +50,6 @@
 			$this->namespaceMode = null;
 		}
 
-		// serve initial params for this route handler/source
-		public function initParams () {
-
-			// get a list of tokens from the actual request (not the pattern)
-			return ; // you might break slug at each placeholder point and key each placeholder to the value coming from `$this->parameters`
-		}
-
 		public function apiRoutes ($cbGroup ) {
 
 			$this->apiMode = true; // this mode should disable session, template headers etc on each route
@@ -103,7 +62,7 @@
 		// should accept array or call back to map routes to methods under a source
 		public function groupBySource ($cbGroup ) {}
 		
-		public function registeredRoutes ( ) {
+		public function registeredRoutes () {
 
 			return $this->register;
 		}

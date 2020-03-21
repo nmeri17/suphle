@@ -2,7 +2,7 @@
 
 	namespace Controllers;
 
-	use Tilwa\Route\RouteRegister;
+	use Tilwa\Route\{RouteRegister, RouteManager};
 
 	use Tilwa\Controllers\Bootstrap as InitApp;
 
@@ -59,7 +59,11 @@
 
 			$this->container = [
 
-				'router' => new RouteRegister, 'classes' => [],
+				'routeCatalog' => new RouteRegister,
+
+				'router' => new RouteManager($this),
+
+				'classes' => [],
 
 				'sourceNamespace' => 'Sources',
 

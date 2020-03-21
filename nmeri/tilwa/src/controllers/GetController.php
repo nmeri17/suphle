@@ -130,7 +130,9 @@
 
 			$container = $this->appContainer;
 
-			$requestedRoute = $container->getActiveRoute();
+			$router = $container->router;
+
+			$requestedRoute = $router->getActiveRoute();
 
 			$validationErr = [];
 
@@ -141,7 +143,7 @@
 			if ($this->failedValidation)
 
 				[$viewData, $validationErr] = $viewData; // replace whatever data was stored in previous request with current payload
-			$container->setPrevRequest( $viewData);
+			$router->pushPrevRequest($requestedRoute, $viewData);
 
 			if (
 				!empty($validationErr) ||
@@ -253,7 +255,9 @@
 
 			$app = $this->appContainer;
 
-			$prevReqRoute = $app->getPrevRequest()['route'];
+			$router = $app->router;
+
+			$prevReqRoute = $router->getPrevRequest()['route'];
 
 			if (is_null($prevReqRoute)) { // currently the 1st route
 
@@ -264,35 +268,42 @@
 
 			if (!$route->restorePrevPage && !$this->failedValidation) {
 
-				$destination = $route->redirectTo;
+				$destinationCallback = $route->redirectTo;
 
-				$destination = $destination($currViewData);
+				$destination = $destinationCallback($currViewData, function ($defaultRoute) {
 
-				if (strpos($destination,'://') !== false)
+					return $this->app->router->hinderedRequest($defaultRoute);
+				});
 
-					return header('Location: '. $destination); // external redirect
+				if (is_string($destination)) {
 
-				if (
-					$destinationRoute = $app->router
+					if (strpos($destination,'://') !== false)
 
-					->findRoute( $destination, Route::GET)
-				)
+						return header('Location: '. $destination); // external redirect
 
-					$app->setActiveRoute(
+					if (
+						$destinationRoute = $router
 
-						$destinationRoute->setPath($destination)
-					);
-				/* Assumptions:
-					- this route doesn't care about middlewares, validation etc
-					- target route was registered as get request, considering dev will hardly redirect to a post route (no payload). Should the need arise for dynamic methods, inspect the contents `destination` for string|array
-				*/
+						->findRoute( $destination, Route::GET)
+					)
+
+						$router->setActiveRoute( $destinationRoute );
+					/* Assumptions:
+						- this route doesn't care about middlewares, validation etc
+						- target route was registered as get request, considering dev will hardly redirect to a post route (no payload). Should the need arise for dynamic methods, inspect the contents `destination` for string|array
+					*/
+				}
+
+				elseif ($destination instanceof Route)
+
+					$router->setActiveRoute( $destination );
 			}
 
-			else $app->setActiveRoute($prevReqRoute); // in preparation for below call
+			else $router->setActiveRoute($prevReqRoute); // in preparation for below call
 
 			$viewData = $this->routeProvider( $currViewData, $validationErr );
 
-			$app->setPrevRequest( $viewData);
+			$app->pushPrevRequest($prevReqRoute, $viewData);
 
 			$engine = new TemplateEngine( $app, $this->dataSource, $viewData ); // TODO: if request was sent via ajax/api, just return the data
 
