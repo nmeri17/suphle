@@ -6,9 +6,19 @@
 
 	class Home extends BaseSource {
 
-		public function index ( array $reqData, array $reqPlaceholders, array $validationErrors) {
+		public function index ( array $reqData, array $reqPlaceholders) {
 
-			return ['content' => "this is dynamic content", []];
+			/*if (!empty($reqData) ) {
+
+				var_dump($reqData); die();}*/
+
+			$userContent = $strangerContent = [];
+
+			if ($this->app->user) $userContent = [['']];
+
+			else $strangerContent = [['']];
+
+			return [$strangerContent, $userContent];
 		}
 	}
 

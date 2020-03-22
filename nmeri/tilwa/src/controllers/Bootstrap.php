@@ -49,14 +49,9 @@
 
 				$bearer = @getallheaders()['Authorization'];
 
-				if (!$bearer) {
+				if (empty($_SESSION) && !$bearer) $user = null;
 
-					$sess = $_SESSION;
-				}
-
-				if (empty($sess) && !$bearer) $user = null;
-
-				else $user = $this->foundUser($sess, $bearer);
+				else $user = $this->foundUser( $bearer);
 
 				$this->container['user'] = $user;
 			}
@@ -83,11 +78,20 @@
 
 		public function __get ($key) {
 
-			if (array_key_exists($key, $this->container) && $this->refresh !== true) return $this->container[$key];
+			if (
+				array_key_exists($key, $this->container) &&
+
+				$this->refresh !== true
+			)
+				return $this->container[$key];
 
 			if (method_exists($this, $key)) {
 
-				$this->$key(); return $this->container[$key];
+				$this->refresh = false; // so other dependents don't try getting fresh copies too
+
+				$this->$key();
+
+				return $this->container[$key];
 			}
 
 			// lastly assume user trying to get class
@@ -178,8 +182,6 @@
 
 			$val = $this->$prop;
 
-			$this->refresh = false;
-
 			return $val;
 		}
 
@@ -187,7 +189,7 @@
 		* @description defines the process of obtaining user
 		* @return a user model/entity streamlined to your orm
 		*/
-		protected function foundUser ($session, string $apiToken = null) {
+		protected function foundUser ( string $apiToken = null) {
 			// non-browser devices will be unable to retain session, so we expect to use a token to maintain user state
 		}
 

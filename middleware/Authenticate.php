@@ -21,11 +21,13 @@
 
 			if ($app->user ) return true;
 
-			$destination = $router->findRoute( '/login', Route::GET );
+			$loginPage = $router->findRoute( '/login', Route::GET );
 
-			$router->pushPrevRequest($destination, $requestPayload, true )
+			$router->pushPrevRequest($router->getActiveRoute(), $requestPayload ) // save current request for later
 
-			->setActiveRoute($destination);
+			->pushPrevRequest($loginPage, [], true )
+
+			->setActiveRoute($loginPage); // display now
 
 			return false;
 			

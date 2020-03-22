@@ -11,17 +11,22 @@
 
 	$registrar->register('401', 'Errors@unauthorized');
 	
-	$registrar->register('signup', 'Authentication@showForm', 'auth/register/index'/*, null, null, 'Visitor'*/);
+	$registrar->register('signup', 'Authentication@showRegisterForm', 'auth/register/index', null, 'NoAccount');
 	
-	$registrar->register('signup', 'Authentication@signup', false, Route::POST, null/*'Visitor'*/, function () { // I _think_ closures are unserializable and can't be stored as prev request
+	$registrar->register('signup', 'Authentication@signup', false, Route::POST, 'NoAccount', function () {
 
 		return '/';
 	});
 	
-	$registrar->register('login', 'Authentication@showLogin', 'auth/login'/*, null, null, 'Visitor'*/);
+	$registrar->register('login', 'Authentication@showLoginForm', 'auth/login', null, 'NoAccount');
 	
-	$registrar->register('login', 'Authentication@signin', false, Route::POST, null/*'Visitor'*/, function ($payload, $forwardPop) {
+	$registrar->register('login', 'Authentication@signin', false, Route::POST, 'NoAccount', function ($payload, $forwardPop) {
 
 		return $forwardPop('/profile');
+	});
+	
+	$registrar->register('logout', 'Authentication@signout', false, Route::POST, null, function () {
+
+		return '/';
 	});
 ?>

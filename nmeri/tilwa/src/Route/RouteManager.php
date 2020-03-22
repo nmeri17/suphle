@@ -14,6 +14,10 @@
 		* @property Route */
 		private $activeRoute;
 
+		/**
+		* @property array */
+		private $requestLog; // use this to keep synchronic track of changes to the session request holder (which is only updated at the end of the request, i.e. updates of an altered session on another page fail to reflect)
+
 		function __construct(Bootstrap $app ) {
 
 			$this->app = $app;
@@ -25,6 +29,10 @@
 		 * @return Route|false
 		 **/
 		public function findRoute (string $reqPath, int $reqMethod ) {
+
+			if (preg_match('/^\/?$/', $reqPath))
+
+				return $this->findRoute('index', $reqMethod);
 
 			$regx = '/\{(\w+)?(\?)\}/';
 
@@ -72,8 +80,12 @@ var_dump($routeToken, $wordPlcholdr);
 
 			$destination = current($prevRequests)['next_prev'];
 
-			if (!$destination /*|| $this->activeRoute->equals($destination)*/) // check if there was no blocked request or if previous route failed some validations
-				$destination = $this->findRoute( $fallback, Route::GET );
+			if (!$destination )
+
+				$destination = $this->findRoute( $fallback, Route::GET);
+
+			$this->requestLog = $prevRequests;
+
 			return $destination;
 		}
 
@@ -138,12 +150,14 @@ var_dump($routeToken, $wordPlcholdr);
 				}
 			}
 
+			$this->requestLog = $_SESSION['prev_requests'];
+
 			return $this;
 		}
 
 		public function getPrevRequest () {
 
-			$prev = @$_SESSION['prev_requests'];
+			$prev = $this->requestLog; // this relies on the trust that every session altering method will update this property
 
 			if (!empty($prev) )
 

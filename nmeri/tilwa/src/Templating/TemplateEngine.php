@@ -431,9 +431,9 @@ class TemplateEngine {
 	/**
 	* @description set key 'navIndicator' in the dataset to correspond to resource name
 	*/
-	private function setNavActive ( ) {
+	private function setNavActive () {
 
-		if ($this->appContainer->getActiveRoute()->appendHeader) {
+		if ($this->appContainer->router->getActiveRoute()->appendHeader) {
 
 			$ctrl = $this->appContainer->getClass(GetController::class); // if this method should still be here, bind parent GetController to the child so fetching it here will return the proper ContentOptions
 
@@ -455,7 +455,7 @@ class TemplateEngine {
 
 		$viewPath = $this->appContainer->viewPath;
 
-		$route = $this->appContainer->getActiveRoute();
+		$route = $this->appContainer->router->getActiveRoute();
 
 		$this->file = file_get_contents($viewPath . $route->viewName . '.tmpl');
 

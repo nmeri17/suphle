@@ -33,6 +33,23 @@
 
 			return $allErrors;
 		}
+
+		public function signin ( array $reqData ) {
+
+			$manager = $this->app->connection;
+
+			$users = $manager->getRepository(User::class)->findBy([
+
+				'email' => $reqData['email']
+			]);
+
+			if (empty($users) || !password_verify(
+
+				$reqData['password'], $users[0]->password)
+			) return ['Username or password incorrect'];
+
+			return [];
+		}
 	}
 
 ?>

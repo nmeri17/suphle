@@ -2,6 +2,8 @@
 
 	namespace Tilwa\Route;
 
+	use SuperClosure\Serializer;
+
 	use Exception;
 
 	class Route {
@@ -22,7 +24,7 @@
 
 		public $restorePrevPage;
 
-		public $redirectTo; // callable
+		private $redirectTo; // callable
 
 		const RELOAD = 10;
 
@@ -109,16 +111,33 @@
 
 			if ($destination === self::RELOAD ) $this->restorePrevPage = true;
 
-			else if (is_callable($destination)) $this->redirectTo = $destination; // will be passed data from the associated Source to build the new url
+			else if (is_callable($destination)) {
+
+				// liquefy it so it can be cached if needed
+				$this->redirectTo = (new Serializer())->serialize($destination); // when called, it will be passed data from the associated Source to build the new url
+			}
 
 			return $this;
 		}
 
 		public function equals (Route $route, bool $matchMethod =false) {
 
-			$matchPath = $this->requestSlug == $route->requestSlug;
-			
+			$slug = preg_quote($this->requestSlug);
+
+			$leadingSlash = '/'. preg_replace('/^\//', '\/?', $slug). '/i';
+
+			$matchPath = preg_match($leadingSlash, $route->requestSlug);
+
 			return $matchPath && ($matchMethod ? $this->method == $route->method : true);
+		}
+
+		public function getRedirectDestination () {
+
+			$location = $this->redirectTo;
+
+			if (!$location) return null;
+
+			return (new Serializer())->unserialize($location);
 		}
 	}
 

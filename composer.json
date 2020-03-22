@@ -2,7 +2,8 @@
     "require": {
         "nmeri/tilwa": "@dev",
         "doctrine/orm": "^2.7",
-        "rakit/validation": "^1.2"
+        "rakit/validation": "^1.2",
+        "jeremeamia/superclosure": "^2.4"
     },
     
     "require-dev": {

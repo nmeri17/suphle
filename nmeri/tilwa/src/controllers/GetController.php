@@ -148,7 +148,7 @@
 			if (
 				!empty($validationErr) ||
 
-				!is_null($requestedRoute->redirectTo)
+				!is_null($requestedRoute->getRedirectDestination())
 			) { // redirection will take precedence over viewless routes
 
 				if ($this->failedValidation)
@@ -176,7 +176,7 @@
 
 		    $container = $this->appContainer;
 
-		    $currRoute = $container->getActiveRoute();
+		    $currRoute = $container->router->getActiveRoute();
 
 			[$class, $method ]= explode('@', $currRoute->source);
 
@@ -261,18 +261,18 @@
 
 			if (is_null($prevReqRoute)) { // currently the 1st route
 
-				var_dump($_SESSION['prev_request'], $route );
+				var_dump($_SESSION['prev_requests'], $route );
 
 				$prevReqRoute = $route;
 			}
 
 			if (!$route->restorePrevPage && !$this->failedValidation) {
 
-				$destinationCallback = $route->redirectTo;
+				$destinationCallback = $route->getRedirectDestination();
 
 				$destination = $destinationCallback($currViewData, function ($defaultRoute) {
 
-					return $this->app->router->hinderedRequest($defaultRoute);
+					return $this->appContainer->router->hinderedRequest($defaultRoute);
 				});
 
 				if (is_string($destination)) {
@@ -290,20 +290,25 @@
 						$router->setActiveRoute( $destinationRoute );
 					/* Assumptions:
 						- this route doesn't care about middlewares, validation etc
-						- target route was registered as get request, considering dev will hardly redirect to a post route (no payload). Should the need arise for dynamic methods, inspect the contents `destination` for string|array
+						- target route was registered as get request, considering dev will hardly redirect to a post route (cuz they have no payload)
 					*/
 				}
 
-				elseif ($destination instanceof Route)
+				elseif ( $destination instanceof Route ) {
 
-					$router->setActiveRoute( $destination );
+					$currViewData = $router
+
+					->setActiveRoute($destination )
+
+					->getPrevRequest()['data'];
+				}
 			}
 
 			else $router->setActiveRoute($prevReqRoute); // in preparation for below call
 
 			$viewData = $this->routeProvider( $currViewData, $validationErr );
 
-			$app->pushPrevRequest($prevReqRoute, $viewData);
+			$router->pushPrevRequest($prevReqRoute, $viewData);
 
 			$engine = new TemplateEngine( $app, $this->dataSource, $viewData ); // TODO: if request was sent via ajax/api, just return the data
 

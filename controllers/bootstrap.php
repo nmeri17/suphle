@@ -80,10 +80,10 @@
 			return $this;
 		}
 
-		protected function foundUser ( $session, string $apiToken = null) {
+		protected function foundUser ( string $apiToken = null) {
 			$user = null; // guest
 
-			if ($userId = @$session['tilwa_user_id'])
+			if ($userId = @$_SESSION['tilwa_user_id'])
 
 				$user = $this->connection
 

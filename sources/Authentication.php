@@ -11,7 +11,7 @@
 
 		public $validator = "Validators\Authentication";
 
-		public function showForm( array $reqData, array $reqPlaceholders, array $validationErrors) {
+		public function showRegisterForm( array $reqData, array $reqPlaceholders, array $validationErrors) {
 
 			if (!empty($validationErrors)) {
 
@@ -60,13 +60,12 @@
 				'code' => $user->verificationCode
 			]);
 
-			$oplf = [
-    'From' => 'webmaster@example.com',
-    'Reply-To' => 'webmaster@example.com',
-    'X-Mailer' => 'PHP/' . phpversion(), 'MIME-Version'=> '1.0',
-    'Content-type'=> 'text/html; charset=iso-8859-1'];
+			$meta = [
+			    'From' => 'webmaster@example.com',
+			    'Content-type'=> 'text/html; charset=iso-8859-1'
+			];
 
-			mail($email, 'Email Account Verification for ' . $siteName, "<a href=$url>Click here to verify your account</a>", $oplf); // can pull the template engine from the container and wire your template+data into it
+			mail($email, 'Email Account Verification for ' . $siteName, "<a href=$url>Click here to verify your account</a>", $meta); // can pull the template engine from the container and wire your template+data into it
 		}
 
 	 	public function semanticTransforms ():array {
@@ -79,6 +78,30 @@
 	 			}
 	 		];
 	 	}
+		
+		public function signin ( array $reqData) {
+
+			$_SESSION['tilwa_user_id'] = $this->app->connection
+
+			->getRepository(User::class)->findBy([
+
+				'email' => $reqData['email']
+			])[0]->id;
+
+			return [];
+		}
+		
+		public function showLoginForm ( array $reqData, array $reqPlaceholders, array $validationErrors) {
+
+			return $this->showRegisterForm(...func_get_args());
+		}
+		
+		public function signout () {
+
+			unset($_SESSION['tilwa_user_id']);
+
+			return [];
+		}
 	}
 
 ?>

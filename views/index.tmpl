@@ -2,6 +2,26 @@
 
 	<h1>Welcome to Tilwa! </h1>
 
-	<section>{{content}}</section>
+	<section>
+
+		{{__foreach-1-start__}}
+
+			<a href="/login">Sign in</a>
+
+			<a href="/signup">create account</a>
+
+			<p>This disappears after you authenticate yourself</p>
+		{{__foreach-1-end__}}
+
+		{{__foreach-1-start__}}
+
+			<a href="/profile">Visit your profile</a>
+
+			<form method="post" action="/logout">
+				<input type="submit" value='sign out'>
+			</form>
+		{{__foreach-1-end__}}
+		
+	</section>
 
 </main>
