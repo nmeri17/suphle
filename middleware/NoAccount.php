@@ -18,7 +18,7 @@
 			$app = $this->app;
 
 			$router = $app->router;
-//var_dump($app->user); die();
+
 			if (!$app->user ) return true;
 
 			$userPage = $router->findRoute( '/profile', Route::GET );

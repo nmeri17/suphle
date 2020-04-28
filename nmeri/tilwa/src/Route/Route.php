@@ -26,6 +26,8 @@
 
 		private $redirectTo; // callable
 
+		public $model;
+
 		const RELOAD = 10;
 
 		const GET = 1;
@@ -34,6 +36,7 @@
 
 
 		/**
+		* TODO: constructor parameter shouldn't be this long. the class should be the parent of sub-classes with their custom behavior or something (@see details in constructor body). The advantage of this is that those routes where presence of one field nullifies the other is expressed more declaratively
 		* @param {viewName} setting this to false skips the trip to parse. If null, it assigns the name of your source handler to it
 		*/
 		function __construct(
@@ -42,17 +45,19 @@
 
 			?int $method = 1, $middleware = [],
 
-			$redirectTo = null, ?bool $appendHeader = true
+			$redirectTo = null, ?bool $appendHeader = true,
+
+			string $model = null
 		) {
 
-			$this->validateSource($source, !is_null($viewName))
+			$this->validateSource($source, !is_null($viewName)) // TODO: create subclass if this fits that type i.e. SourceRoute (remember to create CrudRoute). Use factory pattern for the constructor of these types i.e. $router->register returns base route while $router->viewRoute registers and returns its related type
 
-			->assignView($viewName)
+			->assignView($viewName) // ViewRoute
 
-			->handleRedirects($redirectTo);
+			->handleRedirects($redirectTo); // RedirectRoute
 
 
-			$this->middleware = is_string($middleware) ? [$middleware] : $middleware;
+			$this->middleware = is_string($middleware) ? [$middleware] : $middleware; // TODO: Defaults for all `Route` types
 
 			$this->appendHeader = $appendHeader;
 

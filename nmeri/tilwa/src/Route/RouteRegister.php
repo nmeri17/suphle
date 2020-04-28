@@ -15,11 +15,7 @@
 
 		private $apiMode;
 
-
-		function __construct( ) {
-		}
-
-		public function register () {
+		public function register ():Route {
 
 			$args = func_get_args();
 
@@ -27,7 +23,7 @@
 
 			if ( $space = $this->namespaceMode ) $args[1] = $space . DIRECTORY_SEPARATOR . $args[1];
 
-			$this->register[] = new Route(...$args);
+			return $this->register[] = new Route(...$args);
 		}
 
 		// every registration within this scope will first be prefixed
@@ -50,13 +46,9 @@
 			$this->namespaceMode = null;
 		}
 
-		public function apiRoutes ($cbGroup ) {
+		public function apiMirror () {
 
-			$this->apiMode = true; // this mode should disable session, template headers etc on each route
-
-			$cbGroup();
-
-			$this->apiMode = null;
+			// duplicates contents of `register` with disabled session, no template headers, api authentication middleware etc
 		}
 
 		// should accept array or call back to map routes to methods under a source
@@ -65,6 +57,28 @@
 		public function registeredRoutes () {
 
 			return $this->register;
+		}
+
+		/**
+		 * assumes specific views exist at those locations
+		 *
+		 * @param {sourceHandler} when matches our CRUD source class, swap in `model` (meaning it can't be null here). Otherwise, will save the given source + crud method names
+		 * @return array
+		 **/
+		public function crudify (string $baseRoute, string $sourceHandler, /*object*/ $model = null):array {
+
+			$resourceTemplates = [
+
+				// register routes for the methods in `CrudSources`. Only point them those methods if $model is set
+			];
+
+			$customize = [];
+
+			foreach ($resourceTemplates as $action => $options)
+
+				$customize[] = $this->register(...$options);
+
+			return $customize; // for dev to modify to taste
 		}
 	}
 

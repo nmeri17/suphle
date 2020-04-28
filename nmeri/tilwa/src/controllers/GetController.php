@@ -186,7 +186,7 @@
 
 			try	{
 				
-				$this->dataSource = $dataSrc = $container->getClass('\\' . $container->sourceNamespace .'\\' .$class);
+				$this->dataSource = $dataSrc = $container->getClass('\\' . $container->sourceNamespace .'\\' .$class); // TODO: Plug in the model name here
 
 				$validator = @$dataSrc->validator;
 
