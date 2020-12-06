@@ -65,7 +65,7 @@
 
 				'classes' => [],
 
-				'sourceNamespace' => 'Sources',
+				'controllerNamespace' => 'Sources',
 
 				'routesDirectory' => 'routes',
 

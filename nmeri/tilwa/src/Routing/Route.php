@@ -1,6 +1,6 @@
 <?php
 
-	namespace Tilwa\Route;
+	namespace Tilwa\Routing;
 
 	use SuperClosure\Serializer;
 
@@ -34,6 +34,10 @@
 
 		const POST = 2;
 
+		private $rawResponse;
+
+		private $handler;
+
 
 		/**
 		* TODO: constructor parameter shouldn't be this long. the class should be the parent of sub-classes with their custom behavior or something (@see details in constructor body). The advantage of this is that those routes where presence of one field nullifies the other is expressed more declaratively
@@ -51,6 +55,8 @@
 		) {
 
 			$this->validateSource($source, !is_null($viewName)) // TODO: create subclass if this fits that type i.e. SourceRoute (remember to create CrudRoute). Use factory pattern for the constructor of these types i.e. $router->register returns base route while $router->viewRoute registers and returns its related type
+
+			->setHandler()
 
 			->assignView($viewName) // ViewRoute
 
@@ -143,6 +149,44 @@
 			if (!$location) return null;
 
 			return (new Serializer())->unserialize($location);
+		}
+
+		public function getRequest() {
+			
+			# returns request associated with this route's action or default if none found
+		}
+
+		public function renderResponse () {
+
+			return json_encode($this->rawResponse);
+		}
+
+		public function setRawResponse ($data) {
+			
+			$this->rawResponse = $data;
+		}
+
+		// sets that property to a closure that when called, passes in appropriate arguments to the action handler
+		public function setHandler () {
+
+		    $request = $this->app->router->getActiveRoute()->getRequest();
+
+			[$class, $method ]= explode('@', $currentRoute->source);
+
+			$dataSrc = $container->getClass('\\' . $container->controllerNamespace .'\\' .$class); // this wiring should be done earlier, since we are inferring request from the action method
+
+			$container->wireActionParameters($class, $method);
+			return $this;
+		}
+
+		public function publishHtml () {
+
+			return (new TemplateEngine( $this->app, $this->rawResponse ))->parseAll(); // review this call
+		}
+
+		public function executeHandler () {
+
+			return $this->handler();
 		}
 	}
 

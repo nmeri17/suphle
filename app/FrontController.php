@@ -1,52 +1,48 @@
 <?php
 
-	namespace Controllers;
+	namespace App;
 
-	use Tilwa\Route\Route;
+	use Tilwa\Routing\Route;
+
+	use Tilwa\Http\Response\ResponseManager;
 	
 	class FrontController {
 
-		public $response;
+		public $responseManager;
 
 		private $app;
 
 		public $postResEventList;
 
-		/**
-		* @property array*/
-		private $reqPayload;
-
 		function __construct() {
+
+			$this->initializeProps();
+
+			$this->assignRequestRoute( $_GET['tilwa_request'] );
+
+			$this->app->whenType("*")->needs( Bootstrap::class)
+
+			->give( $this->app);
+		}
+
+		public function initializeProps() {
 
 			$this->postResEventList = [];
 
-			$this->setPayload();
-
 			$this->app = new Bootstrap;
 
-			$this->response = $this->app->setSingleton( // once a valid route is found, bind the app instance in its container, before diving in to derive the proper response for it
-				Bootstrap::class,
-
-				$this->prepareRequest( $_GET['tilwa_request'] )
-			)
-
-			->getClass(GetController::class)
-
-			->pairVarToFields( $this->reqPayload );
+			$this->responseManager = new ResponseManager($this->app);
 		}
 
-		// pimp route vars, designate handler etc
-		private function prepareRequest( $reqUrl):Bootstrap {
+		private function assignRequestRoute( $requestUrl):Route {
 			
-			$userMethod = constant(Route::class . '::'. $_SERVER['REQUEST_METHOD']);
+			$userMethod = constant(Route::class . '::'. $_SERVER['REQUEST_METHOD']); // CORRECT THIS IMPL
 
-			$app = $this->app;
+			$router = $this->app->router;
 
-			$router = $app->router;
+			if ($target = $router->findRoute( $requestUrl, $userMethod ) ) {
 
-			if ($target = $router->findRoute( $reqUrl, $userMethod ) ) {
-
-				$router->setActiveRoute($target);
+				$router->setActiveRoute($target)->setPayload();
 
 				if ($middlewares = $target->getMiddlewares())
 
@@ -59,12 +55,13 @@
 
 				$target = $router->findRoute( '404', Route::GET );
 
-				$router->setActiveRoute($target);
+				$router->setActiveRoute($target)->setPayload([
 
-				$this->reqPayload['error_url'] = $reqUrl; // use parameterized url for this instead
+					'error_url' => $requestUrl
+				]);
 			}
 
-			return $app;
+			return $this;
 		}
 
 		// middleware delimited by commas. Middleware params delimited by colons
@@ -78,26 +75,19 @@
 
 				$instance = new $fullyQualified($this->app); # assumes all your middleware are namespaced
 
-				$passed = $instance->handle( explode(':', $args), $this->reqPayload );
-
-				if (is_callable($instance->postSourceBehavior)) // doubt this will ever be used
+				if (is_callable($instance->postSourceBehavior)) {
 
 					$this->postResEventList[] = $instance->postSourceBehavior;
+
+					$passed = true;
+				}
+
+				else $passed = $instance->handle( explode(':', $args) );
 
 				if ( !$passed ) return false; // terminate
 			}
 
 			return true;
-		}
-
-		private function setPayload() { // this should go to the route instead
-			
-			$this->reqPayload = array_filter($_GET + $_POST, function ( $key) {
-
-				return $key !== 'tilwa_request';
-			}, ARRAY_FILTER_USE_KEY);
-
-			return $this;
 		}
 	}
 
@@ -105,7 +95,7 @@
 
 	$entrance = new FrontController;
 
-	$preRespo = $entrance->response;
+	$preRespo = $entrance->responseManager->getResponse();
 
 	foreach ($entrance->postResEventList as $handler)
 

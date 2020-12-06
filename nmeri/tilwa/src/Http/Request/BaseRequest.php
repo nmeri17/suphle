@@ -2,13 +2,18 @@
 
 	namespace Tilwa\Http\Request;
 
-	// use Rakit\Validation\Validator;
+	use Rakit\Validation\Validator;
 
 	class BaseRequest {
 
 		private $parameterList;
 
-		public $validator;
+		private $validator;
+
+		public function __construct () {
+
+			$this->validator = new Validator;
+		}
 
 		public function __get (string $parameterName) {
 
@@ -34,4 +39,15 @@
 			
 			$this->parameterList = $payload;
 		}
+
+		public function validationErrors ():array {
+
+			return $this->validator->validate()->errors()->all();
+		}
+
+		public function validated (): bool {
+
+			return empty($this->validationErrors());
+		}
 	}
+?>
