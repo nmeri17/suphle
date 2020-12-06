@@ -1,10 +1,14 @@
 <?php
 
-namespace Tilwa\Templating;
+namespace Tilwa\Http\Response\Templating;
 
-use Tilwa\Controllers\{Bootstrap, GetController};
+use Tilwa\Controllers\{Bootstrap};
 
-use Tilwa\Sources\BaseSource;
+use Tilwa\Helpers\Strings;
+
+use Tilwa\Route\Route;
+
+use Tilwa\Http\Response\ViewModels\HTMLFormatter;
 
 
 class TemplateEngine {
@@ -26,15 +30,13 @@ class TemplateEngine {
 	private $viewData;
 	
 
-	function __construct(Bootstrap $app, BaseSource $source, array $dataToParse ) {
+	function __construct(Bootstrap $app, array $dataToParse ) {
 
 		$this->appContainer = $app;
 
-		$this->sourceClass = $source;
-
 		$this->viewData = $dataToParse;
 
-		$this->setNavActive();
+		// $this->setNavActive();
 
 		$this->assignFile();
 
@@ -349,9 +351,10 @@ class TemplateEngine {
 				// store the parsed string for the file, then replace the placeholder in the current component with that variable
 				if (preg_match($this->fileComponent, $toMatch, $isFile)) {
 
-					$ctrl = $this->appContainer->getClass(GetController::class);
+					$file = file_get_contents(
 
-					$file = file_get_contents($this->appContainer->viewPath . $ctrl->nameCleanUp($isFile[1]) . '.tmpl');
+						$this->appContainer->viewPath . Strings::nameCleanUp($isFile[1]) . '.tmpl'
+					);
 
 					$tempAccum = ''; // each file instance
 
@@ -428,27 +431,12 @@ class TemplateEngine {
 
 	static function showMessage (string $msg) { return '<p style="color: #f00; font-size: 150%; margin:5%">'. $msg . '.</p>';}
 
-	/**
-	* @description set key 'navIndicator' in the dataset to correspond to resource name
-	*/
-	private function setNavActive () {
+	// plug in dev's implementation of HTMLFormatter
+	public function setNavActive (Route $activeRoute, HTMLFormatter $formatter) {
 
-		if ($this->appContainer->router->getActiveRoute()->appendHeader) {
+		if ($activeRoute->appendHeader)
 
-			$ctrl = $this->appContainer->getClass(GetController::class); // if this method should still be here, bind parent GetController to the child so fetching it here will return the proper ContentOptions
-
-			$config = $ctrl->getContentOptions();
-
-			$sVars = $this->staticVars; // expected to contain menu items on this page
-
-			$key = 'navIndicator';
-			
-			if (isset($config[$key]) && is_callable($config[$key]))
-
-				$this->staticVars[$key] = $config[$key]($sVars);
-
-			else $this->staticVars[$key] = 'active_'. $ctrl->nameDirty(@$sVars['name'], 'dash-case'); // resource name
-		}
+			$this->staticVars = $formatter->setNavIndicator($this->staticVars);
 	}
 
 	private function assignFile ( ):void {
@@ -508,35 +496,6 @@ class TemplateEngine {
 		$repeatedComponents = array_filter($data, "is_array");
 
 		return [@array_diff($data, $repeatedComponents), $repeatedComponents];
-	}
-
-	/** 
-	* @description: takes care of formatting multi-nested dataSet for templating
-	*/
-	protected function formatToUsersView ( array $dataSet ):array {
-
-		$newVals = [];
-
-		foreach ($dataSet as $formatName => $block) {
-			
-			if (is_array($block)) {
-
-				foreach ($block as &$row) {
-
-	 				$transforms = $this->sourceClass->semanticTransforms();
-
-		 			if (array_key_exists($formatName, $transforms))
-
-		 				$row = $transforms[$formatName]($row);
-				}
-
-				$newVals[] = $block;
-			}
-
-			else $newVals[$formatName] = $block;
-		}
-
-		return $newVals;
 	}
 }
 

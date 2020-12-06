@@ -1,12 +1,12 @@
 <?php
 
-	namespace Sources;
+	namespace Controllers;
 
-	use Tilwa\Sources\BaseSource;
+	use Tilwa\Http\Request\{CrudActions, BaseRequest};
 
-	class Dashboard extends BaseSource {
+	class Dashboard extends CrudActions {
 
-		public function profile ( array $reqData, array $reqPlaceholders, array $validationErrors) {
+		public function profile ( BaseRequest $request) {
 
 			$reqData['userData'] = $this->app->fresh('user');
 
@@ -14,11 +14,11 @@
 
 			var_dump($reqData ); die();
 
-			if ($userData['role'] == 'user') $this->dataBlocks = $this->user( $reqData);
+			if ($userData['role'] == 'user')
 
-			$this->dataBlocks = $this->admin( $reqData);
+				return $this->user( $reqData);
 
-			return $this->dataBlocks;
+			return $this->admin( $reqData);
 		}
 
 		private function admin ( array $reqData) {
@@ -83,8 +83,6 @@
 
 			return [[$leftMenu], [], $userTransactions, [], [], [], $myAccount, [], [], [], [],[]];
 		}
-
-		protected function semantics (array $data):array {}
 	}
 
 ?>

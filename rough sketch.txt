@@ -1,0 +1,11 @@
+install eloquent
+
+open an avenue for swapping in as a driver (see methods on the client facing bootstrap class)
+
+use it to derive an authenticated user
+
+move over to the reconstructing the controller actions
+
+breakdown the routes into their various types
+
+open another avenue for swapping in template engine as a driver. The driver class will contain an action method that receives the template, file and data as arguments

@@ -22,7 +22,7 @@
 		*
 		* @return false to quit middleware stack
 		*/
-		public function handle ( array $args, array $requestPayload ):bool {
+		public function handle ( array $args ):bool {
 
 			// do something interesting to `app` based on the contents of args. then
 			return true;

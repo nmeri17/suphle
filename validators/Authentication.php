@@ -1,12 +1,11 @@
 <?php
 
+	// refactor this whole class to reflect validators now living on the request
 	namespace Validators;
-
-	use Tilwa\Sources\BaseValidator;
 
 	use Models\User;
 
-	class Authentication extends BaseValidator {
+	class Authentication {
 
 		public function signup ( array $reqData ) {
 

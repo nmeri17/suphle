@@ -200,6 +200,7 @@
 			return [];
 		}
 
+		// [deprecated]
 		public function setSingleton (string $typeName, $default) {
 
 			$this->container['classes'][$typeName] = $default;
@@ -234,6 +235,26 @@
 				session_start(); //session_destroy(); $_SESSION = [];
 
 			return $this;
+		}
+
+		public function whenType (string $type) {
+
+			// we're working with debug_backtrace()
+		}
+
+		public function needsArg (string $type) {
+
+			//
+		}
+
+		public function needs (string $type) {
+
+			//
+		}
+
+		public function give ( $valueObject) {
+
+			// should throw an error if no active needs[Arg]
 		}
 	}
 

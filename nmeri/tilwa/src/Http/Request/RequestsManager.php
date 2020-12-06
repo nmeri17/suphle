@@ -1,28 +1,20 @@
 <?php
 
-	namespace Tilwa\Controllers;
+	namespace Tilwa\Request\Http;
 
 	
-	use Monolog\Logger;
-
-	use Monolog\Handler\StreamHandler;
-
-	use PDO; use TypeError;
-
-	use Tilwa\Templating\TemplateEngine;
-
 	use Phpfastcache\CacheManager;
 
 	use Phpfastcache\Config\ConfigurationOption;
 
 	use Tilwa\Route\Route;
 
+	use Monolog\Logger;
 
-	class GetController {
+	use Monolog\Handler\StreamHandler;
 
-		/**
-		* @var Array */
-		private $contentOptions;
+
+	class RequestsManager {
 
 		protected $cachedData;
 
@@ -42,91 +34,15 @@
 		* @var object */
 		private $dataSource;
 
-		function __construct (Bootstrap $app ) {
-
-			$this->contentOptions = $this->getContentOptions();
+		function __construct (Bootstrap $app, array $requestParameters ) {
 
 			$this->appContainer = $app;
-		}
 
-	 	// in transit, document names are formatted for url compatibilty. this method aims to reverse it to its original state
-	 	public function nameCleanUp ($name) {
-	 		
-	 		return preg_replace_callback("/-|_|~/", function ($match) {
-				
-				if ($match[0] == '-') return ' ';
-
-				elseif ($match[0] == '_')  return '-';
-
-				return '_';
-			}, $name);
-	 	}
-
-	 	// converts a string to a format callable as a method i.e. camelcase or snake cased
-	 	public function nameDirty ($name, $dirtMode) {
-	 		
-	 		return preg_replace_callback('/\b(\s)|(-)(\w)?/', function($a) use ($dirtMode, $name) {
-
-		 		if ($dirtMode == 'dash-case') { // won't have any effect on strings containing underscores
-
-		 			if (!empty($a[1])) return '-';
-
-		 			if (!empty($a[2])) return '_' . $a[3];
-		 		}
-
-		 		elseif ($dirtMode == 'camel-case') {
-
-		 			if (!empty($a[3])) return strtoupper($a[3]);
-		 		}
-
-		 	}, $name);
-	 	}
-
-		
-		/**
-		* @description: cms helper function. Will NOT throw an error if you attempt to obtain an invalid resource, but will return an array with key url_error
-		*
-		* @param {retain}: foreach blocks are usually for repeated components, so pass in the names of those you want to edit at the admin panel. They'll appear as single fields. Otherwise they'll all be omitted
-		*/
-		protected function getFields ( $retain=[]) {
-
-			$fields = [];
-
-			try {
-				$engine = new TemplateEngine( $this->appContainer, $this->route );
-
-				$placeholders = $engine->fields();
-
-				unset($placeholders['blockCount']);
-
-				// sieve off repeated components
-				array_walk($placeholders, function ($val, $key) use (&$fields, $retain) {
-					
-					if ($key == 'foreachs') {
-
-						if (!empty($val) && is_array($val)) foreach ($val as $key2 => $repeat) {
-						
-							if (in_array($repeat, $retain)) $fields[] = $repeat;
-						}
-						elseif (!empty($val) && !is_array($val)) { // val `description` mysteriously gets here under key `foreach`
-
-							$fields[] = $val;
-						}
-					}
-
-					else $fields[] = $val;
-				});
-
-				return json_encode(array_unique($fields));
-			}
-			catch(f $e) {
-
-				return json_encode(['url_error' => $this->route->requestPath]);
-			}
+			$this->insertPayload($requestParameters);
 		}
 		
 		// assign a couple of default data before setting request on its merry way to a handler method
-		public function pairVarToFields ( array $queryPayload ) {
+		private function insertPayload ( array $parameters ) {
 
 			$container = $this->appContainer;
 
@@ -144,12 +60,16 @@
 
 				[$viewData, $validationErr] = $viewData; // replace whatever data was stored in previous request with current payload
 			$router->pushPrevRequest($requestedRoute, $viewData);
-
+			
+			// from here downward should be moved to the response manager
+			// afterwards, update response fetching in front controller
+			// alternatively, move this to root of http namespace and move from here downward into its own method
 			if (
 				!empty($validationErr) ||
 
 				!is_null($requestedRoute->getRedirectDestination())
 			) { // redirection will take precedence over viewless routes
+				// this flow needs to change if we're breaking down the routes into separate classes
 
 				if ($this->failedValidation)
 
@@ -157,14 +77,6 @@
 
 				return $this->changeDestination($requestedRoute, $viewData, $validationErr);
 			}
-
-			if ($requestedRoute->viewName === false )
-
-				return json_encode($viewData);
-
-			$engine = new TemplateEngine( $container, $this->dataSource, $viewData );
-
-			return $engine->parseAll();
 		}
 
 		/**
@@ -218,11 +130,11 @@
 				return $freshCopy;
 			}
 
-			catch (Error $e) { // review this block
+			catch (\Exception $e) { // review this block
 			
-				$log = new Logger('404-error');
+				$log = new Logger('500-error');
 
-				$log->pushHandler(new StreamHandler($container->rootPath .'logs/404-error.log', Logger::ERROR ));
+				$log->pushHandler(new StreamHandler($container->rootPath .'logs/500-error.log', Logger::ERROR ));
 
 				$log->error($e);
 				return ['url_error' => '"' . $currRoute->requestSlug. '"'];
@@ -239,15 +151,6 @@
 			]));
 
 			return CacheManager::getInstance();
-		}
-
-		/**
-		*@description: semantic options after getting data from db. valid keys are ->
-			navIndicator: callback given the dataset should return a string that should be outstanding
-		*/
-		public function getContentOptions ( ):array {
-
-			return [];
 		}
 
 		// if it's 'reload', replace current route with that matching user previous request. then merge the view data with what we have now
@@ -310,9 +213,7 @@
 
 			$router->pushPrevRequest($prevReqRoute, $viewData);
 
-			$engine = new TemplateEngine( $app, $this->dataSource, $viewData ); // TODO: if request was sent via ajax/api, just return the data
-
-			return $engine->parseAll();
+			// $response->publishHtml
 		}
 	}
 
