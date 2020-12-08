@@ -1,6 +1,6 @@
 <?php
 
-	namespace Tilwa\Route;
+	namespace Tilwa\Routing;
 
 	/**
 	 * methods here are what we use to sift routes based off certain criteria

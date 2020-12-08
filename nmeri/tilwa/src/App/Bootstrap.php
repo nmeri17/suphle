@@ -200,6 +200,7 @@
 			return [];
 		}
 
+		// [deprecated]
 		public function setSingleton (string $typeName, $default) {
 
 			$this->container['classes'][$typeName] = $default;
@@ -234,6 +235,34 @@
 				session_start(); //session_destroy(); $_SESSION = [];
 
 			return $this;
+		}
+
+		public function whenType (string $type) {
+
+			// we're working with debug_backtrace()
+
+			// and $this->container['classes']
+		}
+
+		public function needsArg (string $type) {
+
+			//
+		}
+
+		public function needs (string $type) {
+
+			// ensure the given type is an instance of current/active whenType
+		}
+
+		public function give ( $valueObject) {
+
+			// should throw an error if no active needs[Arg]
+		}
+
+		// special container for reflecting request action method and supplying appropriate classes
+		public function wireActionParameters () {
+
+			//
 		}
 	}
 

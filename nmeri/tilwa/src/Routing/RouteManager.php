@@ -1,6 +1,6 @@
 <?php
 
-	namespace Tilwa\Route;
+	namespace Tilwa\Routing;
 
 	use Tilwa\Controllers\Bootstrap;
 
@@ -177,6 +177,24 @@ var_dump($routeToken, $wordPlcholdr);
 		public function setActiveRoute (Route $route):RouteManager {
 
 			$this->activeRoute = $route;
+
+			return $this;
+		}
+
+		public function setPayload(array $defaultParameters = []) {
+			
+			$payloadAnchor = 'tilwa_request';
+
+			$fullPayload = array_filter($_GET + $_POST, function ( $key) {
+
+				return $key !== $payloadAnchor;
+			}, ARRAY_FILTER_USE_KEY);
+
+			unset($_GET[$payloadAnchor], $_POST[$payloadAnchor]);
+
+			$this->activeRoute->getRequest()
+
+			->replacePayload($fullPayload + $defaultParameters);
 
 			return $this;
 		}
