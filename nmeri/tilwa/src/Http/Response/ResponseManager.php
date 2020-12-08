@@ -28,29 +28,19 @@
 			$this->app = $app;
 		}
 		
-		// assign a couple of default data before setting request on its merry way to a handler method
-		private function getResponse () {
+		public function getResponse () {
 
 			$container = $this->app;
 
 			$router = $container->router;
 
-			$requestedRoute = $router->getActiveRoute();
+			$request = $router->getActiveRoute()->getRequest();
 
-			$validationErr = [];
+			if (!$request->validated())
 
-			if (!$requestedRoute->source) $viewData = [];
-
-			else $viewData = $this->routeProvider(); // refactor this to work without the injected payload
-
-			if ($this->failedValidation) // !$request->validated()
-
-				[$viewData, $validationErr] = $viewData; // replace whatever data was stored in previous request with current payload
-			$router->pushPrevRequest($requestedRoute, $viewData);
+				$request->executeHandler(); // does this replace whatever data was stored in previous request with current payload?
+			$router->pushPrevRequest($request); // refactor this internally to work with a full request
 			
-			// from here downward should be moved to the response manager
-			// afterwards, update response fetching in front controller
-			// alternatively, move this to root of http namespace and move from here downward into its own method
 			if (
 				!empty($validationErr) ||
 
@@ -62,10 +52,11 @@
 
 					$requestedRoute->restorePrevPage = true;
 
-				$this->changeDestination($requestedRoute, $viewData, $validationErr); // ensure `requestedRoute` is altered in here
+				$this->changeDestination($request); // ensure `request` is altered in here
+				// also refactor to work with new argument
 			}
-// call this somewhere $request->executeHandler(); if validation passes
-			return $requestedRoute->renderResponse();
+
+			return $request->renderResponse();
 		}
 
 		// returns a global instance of phpfastcache manager

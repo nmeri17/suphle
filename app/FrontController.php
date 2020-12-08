@@ -36,7 +36,10 @@
 
 		private function assignRequestRoute( $requestUrl):Route {
 			
-			$userMethod = constant(Route::class . '::'. $_SERVER['REQUEST_METHOD']); // CORRECT THIS IMPL
+			$userMethod = strtolower(
+
+				$_POST["_method"] ?? $_SERVER['REQUEST_METHOD']
+			);
 
 			$router = $this->app->router;
 
@@ -53,7 +56,7 @@
 
 				http_response_code(404);
 
-				$target = $router->findRoute( '404', Route::GET );
+				$target = $router->findRoute( '404', "get");
 
 				$router->setActiveRoute($target)->setPayload([
 
