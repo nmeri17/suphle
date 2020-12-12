@@ -82,7 +82,7 @@ var_dump($routeToken, $wordPlcholdr);
 
 			if (!$destination )
 
-				$destination = $this->findRoute( $fallback, Route::GET);
+				$destination = $this->findRoute( $fallback, "get");
 
 			$this->requestLog = $prevRequests;
 
@@ -198,6 +198,13 @@ var_dump($routeToken, $wordPlcholdr);
 
 			return $this;
 		}
-	}
 
+		/**
+		* @return previous Route
+		*/
+		public function revertRoute(BaseRequest $request):Route {
+			
+			$this->getPrevRequest() # find prev route and attach the current validation errors to that guy's request error property
+		}
+	}
 ?>

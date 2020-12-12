@@ -39,8 +39,19 @@
 
 		public function renderResponse() {
 
+			$destination = $this->getRedirectDestination();
+
+			if (is_callable($destination))
+
+				return $this->callbackRedirect($destination);
+
+			return $this->stringRedirect($destination);
+		}
+
+		private function stringRedirect($destination) {
+
 			if (
-				(strpos($this->destination,'://') !== false) ||
+				(strpos($destination,'://') !== false) ||
 				$this->hard
 			)
 
@@ -48,13 +59,21 @@
 			if (
 				$destinationRoute = $this->router
 
-				->findRoute( $this->destination, "get")
+				->findRoute( $destination, "get")
 			)
 
 				$router->setActiveRoute( $destinationRoute );
 			/* Assumptions:
 				- this route doesn't care about middlewares, validation etc
 			*/
+		}
+
+		private function callbackRedirect ($destination) {
+			
+			$destination = $this->$destination( function ($defaultRoute) { // this is an action that needs wiring up as well
+
+				return $this->app->router->hinderedRequest($defaultRoute);
+			});
 		}
 	}
 ?>

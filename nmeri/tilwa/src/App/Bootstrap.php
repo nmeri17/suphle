@@ -257,12 +257,21 @@
 		public function give ( $valueObject) {
 
 			// should throw an error if no active needs[Arg]
+			// work with `this.getInterfaceRepresentatives`
 		}
 
-		// special container for reflecting request action method and supplying appropriate classes
-		public function wireActionParameters () {
+		/**
+		* @ description: special container for reflecting request action method and supplying appropriate classes
+		* @param {$action} I'm hoping action will retain the context of its class
+		* @return {Array} of concrete parameters to call our action with
+		*/ 
+		public function wireActionParameters ( $action, Route $route) {
 
-			//
+			// still works with `this.getClass` (or, at least, borrows same mechanism) but that guy works with the constructor directly, so you can pass in a method name from here (or default to constructor). @see line 130
+
+			// should give action parameter values from the received route parameter before reflecting
+
+			// bootstrap our request with the payload if present
 		}
 	}
 

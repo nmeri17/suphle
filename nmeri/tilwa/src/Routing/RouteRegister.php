@@ -2,9 +2,6 @@
 
 	namespace Tilwa\Routing;
 
-	/**
-	 * methods here are what we use to sift routes based off certain criteria
-	 */
 	class RouteRegister {
 
 		private $prefixMode;
@@ -15,15 +12,19 @@
 
 		private $apiMode;
 
-		public function register ():Route {
+		public function register (Route $route) {
 
 			$args = func_get_args();
 
-			if ( $pref = $this->prefixMode ) $args[0] = $pref . '/'. $args[0];
+			if ( $pref = $this->prefixMode ) $args[0] = $pref . '/'. $args[0]; // the route object should provide methods for updating these
 
 			if ( $space = $this->namespaceMode ) $args[1] = $space . DIRECTORY_SEPARATOR . $args[1];
 
-			return $this->register[] = new Route(...$args);
+			$route = new Route(...$args);
+
+			$route->setHandler();
+
+			$this->register[] = $route;
 		}
 
 		// every registration within this scope will first be prefixed
@@ -48,38 +49,22 @@
 
 		public function apiMirror () {
 
-			// duplicates contents of `register` with disabled session, no template headers, api authentication middleware etc
+			// duplicates contents of `register`, creating Json routes for all of them; api authentication middleware etc
 		}
 
-		// should accept array or call back to map routes to methods under a source
-		public function groupBySource ($cbGroup ) {}
+		// overrides can include accept header for dictating route type
+		public function crud (string $basePath, string $controller, array $overrides ) {
+
+			// there should be an overwriteable heuristic for determining whether view for a requested exists and to return that or JSON (along with what controller action we're calling)
+
+			$resourceTemplates = []; // showCreateForm, saveNew, showAll, showOne, update, delete
+
+			// foreach ($resourceTemplates)
+		}
 		
 		public function registeredRoutes () {
 
 			return $this->register;
 		}
-
-		/**
-		 * assumes specific views exist at those locations
-		 *
-		 * @param {sourceHandler} when matches our CRUD source class, swap in `model` (meaning it can't be null here). Otherwise, will save the given source + crud method names
-		 * @return array
-		 **/
-		public function crudify (string $baseRoute, string $sourceHandler, /*object*/ $model = null):array {
-
-			$resourceTemplates = [
-
-				// register routes for the methods in `CrudSources`. Only point them those methods if $model is set
-			];
-
-			$customize = [];
-
-			foreach ($resourceTemplates as $action => $options)
-
-				$customize[] = $this->register(...$options);
-
-			return $customize; // for dev to modify to taste
-		}
 	}
-
 ?>

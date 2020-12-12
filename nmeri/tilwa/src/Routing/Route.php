@@ -4,6 +4,8 @@
 
 	use SuperClosure\Serializer;
 
+	use Tilwa\App\Bootstrap;
+
 	use Exception;
 
 	class Route {
@@ -24,36 +26,17 @@
 
 		private $handler;
 
+		private $handlerParameters;
 
-		function __construct(
 
-			string $pathPattern, ?string $handler,
+		function __construct( string $pathPattern, $handler,
 
-			?string $method = "get"
+			string $method = "get"
 		) {
 
-			$this->validateHandler($handler, !is_null($viewName))
-
-			->setHandler()
-
-			->assignMethod($method);
-
+			$this->assignMethod($method);
 
 			$this->pattern = !strlen($pathPattern) ? 'index' : $pathPattern;
-		}
-
-		private function validateHandler ( $src, bool $hasView ) {
-
-			$isDatalessView = is_null($src) && $hasView;
-
-			if (!is_null($src) && !$isDatalessView) {
-
-				if ( preg_match('/([\w\\\\]+@\w+)/', $src ) ) $this->handler = $src;
-
-				else throw new Exception("Invalid handler pattern given" );
-			}
-
-			return $this;
 		}
 
 		public function getMiddlewares () {
@@ -81,31 +64,46 @@
 
 		public function getRequest() {
 			
-			# returns request associated with this route's action or default if none found
+			# look through this.handlerParameters for an instance of request or return default if none found
 		}
 
 		public function renderResponse () {
 
-			return json_encode($this->rawResponse);
-		}
-
-		public function setRawResponse ($data) {
-			
-			$this->rawResponse = $data;
+			return $this->publishJson();
 		}
 
 		// sets that property to a closure that when called, passes in appropriate arguments to the action handler
-		// if this route has no handler, your closure is to return an empty array
-		public function setHandler () { // NOTE: THIS METHOD IS IN NEED OF REVIEW
+		public function setHandler (Bootstrap $app):void {
 
-		    $request = $this->app->router->getActiveRoute()->getRequest();
+		    $handler = $this->handler;
 
-			[$class, $method ]= explode('@', $currentRoute->handler);
+		    if (!$handler) return $this->noHandler();
 
-			$dataSrc = $container->getClass('\\' . $container->controllerNamespace .'\\' .$class); // this wiring should be done earlier, since we are inferring request from the action method
+		    if (is_string($handler)) {
 
-			$container->wireActionParameters($class, $method);
-			return $this;
+		    	[$class, $method ]= explode('@', $handler);
+
+				$handler = $app->getClass(
+					
+					$app->controllerNamespace .'\\' .$class
+				)->$method;
+			}
+
+			$this->handlerParameters = $container->wireActionParameters($handler, $this);
+
+			$this->handler = function () use ($handler) {
+
+				return $handler(...$this->handlerParameters);
+			};
+		}
+
+		private function noHandler():void {
+
+			$this->handler = function () {
+
+				return [];
+			};
+			return;
 		}
 
 		public function publishHtml () {
@@ -120,16 +118,18 @@
 
 		public function executeHandler () {
 
-			return $this->handler();
+			$this->rawResponse = $this->handler();
+
+			return $this;
 		}
 
-		private function assignMethod($userMethod) {
+		public function assignMethod($userMethod) {
 			
 			$methods = ["get", "post", "put", "delete"];
 
 			$this->method = array_filter($methods, function ($m) use ($userMethod) {
 				
-				return $m == $userMethod;
+				return $m == strtolower($userMethod);
 			})[0];
 		}
 
