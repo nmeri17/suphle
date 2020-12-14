@@ -12,7 +12,7 @@
 
 		private $apiMode;
 
-		public function register (Route $route) {
+		public function register (Route $route) { // review this method
 
 			$args = func_get_args();
 
@@ -22,7 +22,7 @@
 
 			$route = new Route(...$args);
 
-			$route->setHandler();
+			$route->setHandler(); // this now takes app as argument
 
 			$this->register[] = $route;
 		}

@@ -1,6 +1,6 @@
 <?php
 
-	namespace Tilwa\Controllers;
+	namespace Tilwa\App;
 	
 	use Dotenv\Dotenv;
 
@@ -10,7 +10,7 @@
 
 	use ReflectionClass;
 
-	use Tilwa\Route\Route;
+	use Tilwa\Routing\Route;
 
 	
 	class Bootstrap {
@@ -57,7 +57,7 @@
 			}
 		}
 
-		private function loadRoutes () {
+		private function loadRoutes () { // refactor this to pass in the path to route definition classes (RDC) to app. each registration on those classes goes to an encapsulated property which app can then pull into its route catalog. such RDCs will extend  RouteRegister class, therefore `$this->register(new Markup(params))`. but instead of having one long constructor, we will call all the methods on the class externally with `get_class_methods(class_name)`
 
 			$registrar = $this->routeCatalog;
 
@@ -191,6 +191,8 @@
 		*/
 		protected function foundUser ( string $apiToken = null) {
 			// non-browser devices will be unable to retain session, so we expect to use a token to maintain user state
+
+			/* in boot method, we set Eloquent's driver as implementation for orm interface. that's where we define user fetching logic */
 		}
 
 		/**
@@ -198,14 +200,6 @@
 		protected function getInterfaceRepresentatives ():array {
 
 			return [];
-		}
-
-		// [deprecated]
-		public function setSingleton (string $typeName, $default) {
-
-			$this->container['classes'][$typeName] = $default;
-
-			return $this;
 		}
 
 		protected function loadEnv () {		
@@ -272,6 +266,8 @@
 			// should give action parameter values from the received route parameter before reflecting
 
 			// bootstrap our request with the payload if present
+
+			// if model is type-hinted, fetch from model driver implementation with that id
 		}
 	}
 

@@ -32,11 +32,11 @@
 
 			$request = $route->getRequest();
 
-			if ($request->validated())
+			if (!$request->isValidated())
 
-				$router->pushPrevRequest($request);
+				$route = $router->revertRoute($request);
 
-			else $route = $router->revertRoute($request);
+			else /*if ($this->app->getClass(Tilwa\Contracts\Auth)->name !== "browser")*/ $router->pushPrevRequest($request); // uncomment when that is implemented
 
 			return $route;
 		}

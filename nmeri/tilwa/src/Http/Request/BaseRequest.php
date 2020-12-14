@@ -2,7 +2,9 @@
 
 	namespace Tilwa\Http\Request;
 
-	use Rakit\Validation\Validator;
+	use Validator\RakitValidator;
+
+	use Tilwa\Contracts\RequestValidator;
 
 	class BaseRequest {
 
@@ -10,9 +12,9 @@
 
 		private $validator;
 
-		public function __construct () {
+		public function __construct (RequestValidator $validator) {
 
-			$this->validator = new Validator;
+			$this->validator = $validator;
 		}
 
 		public function __get (string $parameterName) {
@@ -42,12 +44,26 @@
 
 		public function validationErrors ():array {
 
-			return $this->validator->validate()->errors()->all();
+			$valid = $this->validator
+
+			->validate($this->parameterList, $this->rules());
+
+			return $valid->getErrors();
 		}
 
-		public function validated (): bool {
+		public function isValidated (): bool {
 
 			return empty($this->validationErrors());
+		}
+
+		protected function rules () {
+
+			return [];
+		}
+
+		public function setValidationErrors(array $errors) {
+			
+			$this->validator->setErrors($errors);
 		}
 	}
 ?>

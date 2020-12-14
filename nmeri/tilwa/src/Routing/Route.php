@@ -8,6 +8,8 @@
 
 	use Exception;
 
+	use Tilwa\Http\Request\BaseRequest;
+
 	class Route {
 
 		public $pattern;
@@ -28,6 +30,8 @@
 
 		private $handlerParameters;
 
+		private $request;
+
 
 		function __construct( string $pathPattern, $handler,
 
@@ -44,7 +48,7 @@
 			return $this->middleware;
 		}
 
-		public function setPath (string $name):Route {
+		public function setPath (string $name):static {
 
 			$this->requestSlug = $name;
 
@@ -62,9 +66,9 @@
 			return $matchPath && ($matchMethod ? $this->method == $route->method : true);
 		}
 
-		public function getRequest() {
+		public function getRequest():BaseRequest {
 			
-			# look through this.handlerParameters for an instance of request or return default if none found
+			return $this->request;
 		}
 
 		public function renderResponse () {
@@ -72,29 +76,31 @@
 			return $this->publishJson();
 		}
 
-		// sets that property to a closure that when called, passes in appropriate arguments to the action handler
+		// prepares appropriate values for plugging into action method
 		public function setHandler (Bootstrap $app):void {
 
 		    $handler = $this->handler;
 
-		    if (!$handler) return $this->noHandler();
+		    if (!$handler) $this->noHandler();
 
 		    if (is_string($handler)) {
 
 		    	[$class, $method ]= explode('@', $handler);
 
-				$handler = $app->getClass(
+				$this->handler = $app->getClass(
 					
 					$app->controllerNamespace .'\\' .$class
 				)->$method;
+
+				$this->handlerParameters = $container->wireActionParameters($this->handler, $this);
+
+				$this->setRequest();
 			}
+		}
 
-			$this->handlerParameters = $container->wireActionParameters($handler, $this);
-
-			$this->handler = function () use ($handler) {
-
-				return $handler(...$this->handlerParameters);
-			};
+		private function setRequest() {
+			# look through this.handlerParameters for an instance of request or return default if none found
+			//
 		}
 
 		private function noHandler():void {
@@ -109,6 +115,7 @@
 		public function publishHtml () {
 
 			return (new TemplateEngine( $this->app, $this->rawResponse ))->parseAll(); // review this call
+			// pull the templating driver
 		}
 
 		public function publishJson() {
@@ -118,7 +125,7 @@
 
 		public function executeHandler () {
 
-			$this->rawResponse = $this->handler();
+			$this->rawResponse = call_user_func_array($this->handler, $this->handlerParameters);
 
 			return $this;
 		}
