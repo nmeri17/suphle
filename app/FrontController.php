@@ -45,23 +45,13 @@
 
 			if ($target = $router->findRoute( $requestUrl, $userMethod ) ) {
 
-				$router->setActiveRoute($target)->setPayload();
+				$router->setActiveRoute($target)
+
+				->savePayload();
 
 				if ($middlewares = $target->getMiddlewares())
 
 					$this->runMiddleware( $middlewares );
-			}
-
-			else {
-
-				http_response_code(404);
-
-				$target = $router->findRoute( '404', "get");
-
-				$router->setActiveRoute($target)->setPayload([
-
-					'error_url' => $requestUrl
-				]);
 			}
 
 			return $this;

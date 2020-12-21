@@ -2,8 +2,6 @@
 
 	namespace Tilwa\Http\Request;
 
-	use Validator\RakitValidator;
-
 	use Tilwa\Contracts\RequestValidator;
 
 	class BaseRequest {
@@ -11,6 +9,8 @@
 		private $parameterList;
 
 		private $validator;
+
+		private $initiator;
 
 		public function __construct (RequestValidator $validator) {
 
@@ -37,9 +37,11 @@
 			}
 		}
 
-		public function replacePayload (array $payload) {
+		public function setPayload (array $payload):static {
 			
 			$this->parameterList = $payload;
+
+			return $this;
 		}
 
 		public function validationErrors ():array {
@@ -64,6 +66,18 @@
 		public function setValidationErrors(array $errors) {
 			
 			$this->validator->setErrors($errors);
+		}
+
+		public function setInitiator ($user):static {
+			
+			$this->initiator = $user;
+
+			return $this;
+		}
+
+		public function initiator () {
+			
+			return $this->initiator;
 		}
 	}
 ?>

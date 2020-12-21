@@ -10,45 +10,31 @@
 
 		private $hard; // external redirect
 
-		const RELOAD = 10;
+		function __construct(Closure $destination, bool $hard=false) {
 
-		function __construct(string $destination, bool $hard=false) {
-
-			$this->destination = $destination;
+			$this->setDestination($destination);
 
 			$this->hard = $hard;
 		}
 
-		public function handleRedirects() {
+		public function setDestination($destination):void {
 
-			if ($this->destination === self::RELOAD ) $this->restorePrevPage = true;
-
-			else if (is_callable($this->destination)) {
-
-				// liquefy it so it can be cached if needed
-				$this->destination = (new Serializer())->serialize($this->destination); // when called, it will be passed data from the associated controller to build the new url
-			}
-
-			return $this;
+			$this->destination = (new Serializer())->serialize($destination);// liquefy it so it can be cached later under previous requests
 		}
 
-		public function getRedirectDestination () {
+		public function getDestination () {
 
 			return (new Serializer)->unserialize($this->destination);
 		}
 
 		public function renderResponse() {
 
-			$destination = $this->getRedirectDestination();
+			$destination = $this->resolveDestination($this->getDestination);
 
-			if (is_callable($destination))
-
-				return $this->callbackRedirect($destination);
-
-			return $this->stringRedirect($destination);
+			return $this->relocate($destination);
 		}
 
-		private function stringRedirect($destination) {
+		private function relocate($destination) {
 
 			if (
 				(strpos($destination,'://') !== false) ||
@@ -57,23 +43,19 @@
 
 				return header('Location: '. $destination);
 			if (
-				$destinationRoute = $this->router
-
-				->findRoute( $destination, "get")
+				$localRoute = Router::findRoute( $destination, "get") // refactor. facades don't exist
 			)
 
-				$router->setActiveRoute( $destinationRoute );
-			/* Assumptions:
-				- this route doesn't care about middlewares, validation etc
-			*/
+				return $localRoute->executeHandler() // refactor this to match the updates on this class
+
+				->renderResponse(); // note: this navigation will bypass middlewares, validation
 		}
 
-		private function callbackRedirect ($destination) {
+		private function resolveDestination ($destination) {
 			
-			$destination = $this->$destination( function ($defaultRoute) { // this is an action that needs wiring up as well
+			$parameters = App::wireActionParameters($destination, $this); // handle this special case in need of app
 
-				return $this->app->router->hinderedRequest($defaultRoute);
-			});
+			return call_user_func_array($destination, $parameters);
 		}
 	}
 ?>

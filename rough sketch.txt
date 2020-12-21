@@ -22,6 +22,35 @@ in the request manager
 
 		set validation data on the request/route object
 
-move crud actions into the request manager class, mapping route pattern to action method. route "resources" pair these in the manager
-
 refactor template engine->assignFile to accept view name rather than only working with router. then edit all instances where it was initialized
+
+remember to set response on the request at the end request cycle so redirect callback can pick it 
+
+review the call to RouteManager->findRoute after the new route sytem is put in place
+
+add authenticated user to request body
+
+implement methods on the orm adapter
+
+refactor `findRoute` on routeManager to conform with the new route system
+
+Look into redirect format type, route, template engine. Do a search for facade in those files
+
+
+validate registration credentials
+send mail and create new user
+visit email verification link
+breathe life to the CRUD actions
+
+->createQueryBuilder()
+
+->select('u')->from(User::class, 'u')
+
+->where('u.email = ?1')->setParameter(1, $reqData['email'])
+
+	use Tilwa\Http\Response\Templating\TemplateEngine;
+
+	new TemplateEngine( $this) // this is the active route. so set when/gives route=>activeRoute
+
+remember to set the container to resolve validator interface to this
+	use Validator\RakitValidator;

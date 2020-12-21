@@ -2,31 +2,32 @@
 
 	namespace Tilwa\Routing;
 
-	use Tilwa\Controllers\Bootstrap;
+	use Tilwa\App\Bootstrap;
+
+	use Tilwa\Contracts\Orm;
 
 	class RouteManager {
 
-		/**
-		* @property Bootstrap */
 		private $app;
 
-		/**
-		* @property Route */
 		private $activeRoute;
 
-		/**
-		* @property array */
-		private $requestLog; // use this to keep synchronic track of changes to the session request holder (which is only updated at the end of the request, i.e. updates of an altered session on another page fail to reflect)
+		private $payload;
+
+		private $handlerParameters;
+
+		private $databaseModel;
 
 		function __construct(Bootstrap $app ) {
 
 			$this->app = $app;
+			
+			$this->databaseModel = $this->app->getClass(Orm::class);
 		}
 
 		/**
 		 * @param {reqPath}: does not support query urls
 		 *
-		 * @return Route|false
 		 **/
 		public function findRoute (string $reqPath, int $reqMethod ) {
 
@@ -36,12 +37,12 @@
 
 			$regx = '/\{(\w+)?(\?)\}/';
 
-			$paramPair = [];
+			$parameterPair = [];
 
 			$allRoutes = $this->app->routeCatalog->registeredRoutes();
 
 			// search register for route matching this pattern
-			$target = @array_filter($allRoutes, function ($route) use ( $regx, $reqPath, $reqMethod, &$paramPair) {
+			$target = @array_filter($allRoutes, function ($route) use ( $regx, $reqPath, $reqMethod, &$parameterPair) {
 
 				// convert /jui/{fsdf}/weeer to /jui/\w+/weeer
 				// /jui/{fsdf?}/weeer to /jui/(\/\w+)?weeer
@@ -49,14 +50,16 @@
 
 					$routeToken = $m[1];
 
-					$wordPlcholdr = "(?P<$routeToken>\/\w+)"; // return assoc matches
-					if (isset($m[2])) $wordPlcholdr .= '?';
-var_dump($routeToken, $wordPlcholdr);
-					return $wordPlcholdr;
+					$wordPlaceholder = "(?P<$routeToken>\/\w+)"; // return assoc matches
+					if (isset($m[2]))
+
+						$wordPlaceholder .= '?';
+var_dump($routeToken, $wordPlaceholder);
+					return $wordPlaceholder;
 				}, preg_quote($route->pattern) );
 
-				$numMatches = preg_match_all("/^\/?$tempPat$/", $reqPath, $paramPair); // permit non-prefixed registered patterns to match requests for slash prefixed
-					// var_dump($paramPair, $numMatches, $tempPat);
+				$numMatches = preg_match_all("/^\/?$tempPat$/", $reqPath, $parameterPair); // permit non-prefixed registered patterns to match requests for slash prefixed
+					// var_dump($parameterPair, $numMatches, $tempPat);
 				return $numMatches !== 0 && $route->method === $reqMethod;
 			});
 //var_dump($target); die();
@@ -64,7 +67,7 @@ var_dump($routeToken, $wordPlcholdr);
 
 			if ($target !== false) {
 
-				$target->parameters = $paramPair;
+				$target->placeholderMap = $parameterPair;
 
 				$target->setPath($reqPath);
 			}
@@ -72,101 +75,16 @@ var_dump($routeToken, $wordPlcholdr);
 			return $target;
 		}
 
-		public function hinderedRequest (string $fallback):Route {
+		public function setPrevious(Route $route ):static {
 
-			$prevRequests = $_SESSION['prev_requests'];
-
-			array_shift($prevRequests); // remove the checkpoint route
-
-			$destination = current($prevRequests)['next_prev'];
-
-			if (!$destination )
-
-				$destination = $this->findRoute( $fallback, "get");
-
-			$this->requestLog = $prevRequests;
-
-			return $destination;
-		}
-
-		// compares incoming request with the immediate one in session and if different, pushes the current request to the top of the stack ahead of the next request
-		public function pushPrevRequest(Route $incomingRoute, array $routeData, bool $historyMode = false ):RouteManager {
-
-			$prev = @$_SESSION['prev_requests'];
-
-			if (http_response_code() !== 404) { // no need falling back to non existent paths
-
-				if (!empty($prev) ) { // retain data in-between requests with different methods
-
-					$oldRoute = $prev[0]['next_prev'];
-
-					$oldData = $prev[0]['data'];
-
-					$samePayload = strcasecmp(
-						json_encode($oldData), json_encode($routeData)
-					) === 0; // using this instead of array_diff_assoc cuz it throws errors on multidimensional arrays
-
-					$matchesRoute = $oldRoute->equals($incomingRoute);
-
-					if ( !$matchesRoute || !$samePayload) { // update ahead of next request only when current request changes
-
-						if ($matchesRoute)
-
-							$incomingRoute = $oldRoute; // we'll assume incoming route belongs to another method, and retain it
-							//var_dump($incomingRoute, $routeData);
-
-						$toSave = [
-
-							'next_prev' => $incomingRoute,
-
-							'data' => $routeData,
-
-							'request_time' => date('H:i:s')
-						];
-
-						if (!$historyMode)
-
-							$_SESSION['prev_requests'][0] = $toSave;
-
-						elseif (!$matchesRoute && $historyMode)
-
-							array_unshift($_SESSION['prev_requests'], $toSave);
-					}
-				}
-
-				else {
-					//var_dump($incomingRoute);
-
-					$initRequest = [
-
-						'next_prev' => $incomingRoute,
-
-						'data' => $routeData,
-
-						'request_time' => date('H:i:s')
-					];
-
-					$_SESSION['prev_requests'] = [$initRequest];
-				}
-			}
-
-			$this->requestLog = $_SESSION['prev_requests'];
+			$_SESSION['prev_route'] = $route;
 
 			return $this;
 		}
 
-		public function getPrevRequest () {
+		public function getPrevious ():Route {
 
-			$prev = $this->requestLog; // this relies on the trust that every session altering method will update this property
-
-			if (!empty($prev) )
-
-				return [
-
-					'route' => $prev[0]['next_prev'],
-
-					'data' => $prev[0]['data']
-				];
+			return $_SESSION['prev_route'];
 		}
 
 		public function getActiveRoute ():Route {
@@ -174,27 +92,23 @@ var_dump($routeToken, $wordPlcholdr);
 			return $this->activeRoute;
 		}
 
-		public function setActiveRoute (Route $route):RouteManager {
+		public function setActiveRoute (Route $route):static {
 
 			$this->activeRoute = $route;
 
 			return $this;
 		}
 
-		public function setPayload(array $defaultParameters = []) {
+		public function savePayload():static {
 			
 			$payloadAnchor = 'tilwa_request';
 
-			$fullPayload = array_filter($_GET + $_POST, function ( $key) {
+			$this->payload = array_filter($_GET + $_POST, function ( $key) use ($payloadAnchor) {
 
 				return $key !== $payloadAnchor;
 			}, ARRAY_FILTER_USE_KEY);
 
 			unset($_GET[$payloadAnchor], $_POST[$payloadAnchor]);
-
-			$this->activeRoute->getRequest()
-
-			->replacePayload($fullPayload + $defaultParameters);
 
 			return $this;
 		}
@@ -202,9 +116,77 @@ var_dump($routeToken, $wordPlcholdr);
 		/**
 		* @return previous Route
 		*/
-		public function revertRoute(BaseRequest $request):Route {
+		public function mergeWithPrevious(BaseRequest $request):Route {
 			
-			$this->getPrevRequest() # find prev route and attach the current validation errors to that guy's request error property
+			$route = $this->getPrevious();
+
+			$route->getRequest()
+
+			->setValidationErrors( $request->validationErrors() );
+
+			return $route;
+		}
+
+		public function prepareArguments():array {
+
+			$route = $this->activeRoute;
+
+			$this->handlerParameters = $this->app->getMethodParameters($route->getController(), $route->handler); // we might need to pull this property out of the route class
+
+			$request = $this->updateRequestPayload();
+
+			$route->setRequest ($request);
+
+			$this->hydrateDatabaseModels()
+
+			->resolveInitiator($request);
+
+			return $this->handlerParameters;
+		}
+
+		// set a request for the current route. update the parameter list if client injected request class so they can access the payload
+		private function updateRequestPayload():BaseRequest {
+
+			$requestIndex = $request = null;
+			
+			foreach ($this->handlerParameters as $idx => $arg) {
+				
+				if ($arg instanceof BaseRequest) {
+				
+					$requestIndex = $idx;
+
+					$request = $arg;
+				}
+			}
+			if (is_null($request))
+
+				$request = $this->app->getClass(BaseRequest::class);
+
+			$request->setPayload($this->payload); // TODO: consider adding a payload parameter on the BaseRequest constructor. then when-wantsArgs-give for it. it'll save us these 3 lines
+
+			if (!is_null($requestIndex))
+
+				$this->handlerParameters[$requestIndex] = $request;
+
+			return $request;
+		}
+
+		public function hydrateDatabaseModels():static {
+
+			$pathPlaceholders = array_values($this->activeRoute->placeholderMap);
+			
+			foreach ($this->handlerParameters as $idx => $arg) { // there probably is a better implementation than the assumption that url placeholders directly correspond to handler arguments
+				
+				if ($arg instanceof $this->databaseModel)
+				
+					$this->handlerParameters[ $idx] = $this->databaseModel->find($pathPlaceholders[$idx]);
+			}
+			return $this;
+		}
+
+		private function resolveInitiator(BaseRequest $request) {
+			
+			$request->setInitiator($this->model->auth());
 		}
 	}
 ?>

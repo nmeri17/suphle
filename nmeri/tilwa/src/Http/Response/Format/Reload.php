@@ -8,8 +8,7 @@
 
 		public function renderResponse() {
 
-			// derive previous rawResponse and merge that with ours
-			$this->rawResponse = $this->getPrevRequest()['data'];
+			$this->rawResponse += $this->getPrevious()->rawResponse; // avoid overwriting our own response
 
 			return $this->publishHtml();
 		}

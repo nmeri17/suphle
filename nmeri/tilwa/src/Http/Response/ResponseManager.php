@@ -2,15 +2,13 @@
 
 	namespace Tilwa\Http\Response;
 
-	use Phpfastcache\CacheManager;
-
-	use Phpfastcache\Config\ConfigurationOption;
-
 	use Tilwa\App\Bootstrap;
 
-	use Tilwa\Routing\Route;
+	use Tilwa\Routing\{Route, RouteManager};
 
 	class ResponseManager {
+
+		private $app;
 
 		function __construct (Bootstrap $app ) {
 
@@ -18,37 +16,35 @@
 		}
 		
 		public function getResponse () {
-			
-			return $this->getValidRoute()
-
-			->executeHandler()->renderResponse();
-		}
-
-		private function getValidRoute ():Route {
 
 			$router = $this->app->router;
 
+			$route = $this->getValidRoute($router);
+			
+			$arguments = $router->setActiveRoute($route)
+
+			->prepareArguments();
+
+			return $route->execute($arguments)
+
+			->renderResponse();
+		}
+
+		private function getValidRoute (RouteManager $router):Route {
+
 			$route = $router->getActiveRoute();
 
-			$request = $route->getRequest();
+			$request = $route->getRequest(); // this should throw an error if no route is found
 
 			if (!$request->isValidated())
 
-				$route = $router->revertRoute($request);
+				$route = $router->mergeWithPrevious($request);
 
-			else /*if ($this->app->getClass(Tilwa\Contracts\Auth)->name !== "browser")*/ $router->pushPrevRequest($request); // uncomment when that is implemented
+			else /*if ($this->app->getClass(Tilwa\Contracts\Auth)->name !== "browser")*/
+
+				$router->setPrevious($route); // uncomment when that is implemented
 
 			return $route;
-		}
-
-		public function cacheManager() {
-
-			CacheManager::setDefaultConfig(new ConfigurationOption([
-
-				"path" =>  $this->app->rootPath ."/req-cache"
-			]));
-
-			return CacheManager::getInstance();
 		}
 	}
 ?>

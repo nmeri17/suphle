@@ -2,13 +2,9 @@
 
 namespace Tilwa\Http\Response\Templating;
 
-use Tilwa\Controllers\{Bootstrap};
-
 use Tilwa\Helpers\Strings;
 
-use Tilwa\Route\Route;
-
-use Tilwa\Http\Response\ViewModels\HTMLFormatter;
+use Tilwa\Routing\Route;
 
 
 class TemplateEngine {
@@ -23,39 +19,27 @@ class TemplateEngine {
 
 	private $staticVars;
 
-	private $appContainer;
-
-	private $sourceClass;
-
-	private $viewData;
+	private $activeRoute;
 	
 
-	function __construct(Bootstrap $app, array $dataToParse ) {
+	function __construct(Route $activeRoute ) {
 
-		$this->appContainer = $app;
-
-		$this->viewData = $dataToParse;
-
-		// $this->setNavActive();
+		$this->activeRoute = $activeRoute;
 
 		$this->assignFile();
 
 		$this->setRegex();
 	}
 
-
 	/**
-	 * undocumented function
+	 * get all text between __foreach-*__ and exclude them from the string being searched
 	 *
 	 * @return 1D array of every field in a traversable component
 	 **/
 	public function fields () {
 
-		# get all text between __foreach-*__ and exclude them from the string being searched
-
 		// foreachs return a numeric array of all foreachs on this page
 		$forEach = array('foreachs' => [], 'blockCount' => 0);
-
 
 		if (!empty($this->file)) {
 			$otherFields = preg_replace_callback($this->forEachRegex, function ($match) use (&$forEach) {
@@ -95,7 +79,6 @@ class TemplateEngine {
 		else $dimension = 2; // 1 is peeled off by default
 
 		
-
 		$carry = ''; $that = $this;
 
 		$tempContext = $context;
@@ -327,7 +310,7 @@ class TemplateEngine {
 
 		->findSingleAndGrouped(
 			
-			$this->formatToUsersView($this->viewData)
+			$this->activeRoute->callViewModels()
 		);
 
 		$enoughData = count($repeatedComponents) >= $this->fields()['blockCount'];
@@ -353,7 +336,7 @@ class TemplateEngine {
 
 					$file = file_get_contents(
 
-						$this->appContainer->viewPath . Strings::nameCleanUp($isFile[1]) . '.tmpl'
+						Bootstrap::getViewPath() . Strings::nameCleanUp($isFile[1]) . '.tmpl' // refactor. facades don't exist
 					);
 
 					$tempAccum = ''; // each file instance
@@ -429,21 +412,16 @@ class TemplateEngine {
 		}
 	}
 
-	static function showMessage (string $msg) { return '<p style="color: #f00; font-size: 150%; margin:5%">'. $msg . '.</p>';}
+	static function showMessage (string $msg) {
 
-	// plug in dev's implementation of HTMLFormatter
-	public function setNavActive (Route $activeRoute, HTMLFormatter $formatter) {
-
-		if ($activeRoute->appendHeader)
-
-			$this->staticVars = $formatter->setNavIndicator($this->staticVars);
+		return '<p style="color: #f00; font-size: 150%; margin:5%">'. $msg . '.</p>';
 	}
 
-	private function assignFile ( ):void {
+	private function assignFile ():void {
 
-		$viewPath = $this->appContainer->viewPath;
+		$viewPath = Bootstrap::getViewPath();
 
-		$route = $this->appContainer->router->getActiveRoute();
+		$route = Router::getActiveRoute(); // facade alert!!
 
 		$this->file = file_get_contents($viewPath . $route->viewName . '.tmpl');
 
