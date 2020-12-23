@@ -4,8 +4,6 @@ namespace Tilwa\Http\Response\Templating;
 
 use Tilwa\Helpers\Strings;
 
-use Tilwa\Routing\Route;
-
 
 class TemplateEngine {
 	
@@ -19,14 +17,13 @@ class TemplateEngine {
 
 	private $staticVars;
 
-	private $activeRoute;
+	private $fileDirectory;
 	
+	function __construct(string $filePath, $folder ) {
 
-	function __construct(Route $activeRoute ) {
+		$this->file = file_get_contents($filePath . '.tmpl');
 
-		$this->activeRoute = $activeRoute;
-
-		$this->assignFile();
+		$this->fileDirectory = $folder;
 
 		$this->setRegex();
 	}
@@ -306,12 +303,7 @@ class TemplateEngine {
 
 	public function parseAll () {
 
-		[$staticVars, $repeatedComponents ] = $this
-
-		->findSingleAndGrouped(
-			
-			$this->activeRoute->callViewModels()
-		);
+		[$staticVars, $repeatedComponents ] = $this->findSingleAndGrouped();
 
 		$enoughData = count($repeatedComponents) >= $this->fields()['blockCount'];
 
@@ -336,7 +328,7 @@ class TemplateEngine {
 
 					$file = file_get_contents(
 
-						Bootstrap::getViewPath() . Strings::nameCleanUp($isFile[1]) . '.tmpl' // refactor. facades don't exist
+						$this->fileDirectory . Strings::nameCleanUp($isFile[1]) . '.tmpl'
 					);
 
 					$tempAccum = ''; // each file instance
@@ -415,17 +407,6 @@ class TemplateEngine {
 	static function showMessage (string $msg) {
 
 		return '<p style="color: #f00; font-size: 150%; margin:5%">'. $msg . '.</p>';
-	}
-
-	private function assignFile ():void {
-
-		$viewPath = Bootstrap::getViewPath();
-
-		$route = Router::getActiveRoute(); // facade alert!!
-
-		$this->file = file_get_contents($viewPath . $route->viewName . '.tmpl');
-
-		if ($route->appendHeader) $this->file = file_get_contents($viewPath . 'header.tmpl') . $this->file . file_get_contents($viewPath . 'footer.tmpl');
 	}
 
 	private function setRegex( ) {		

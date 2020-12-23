@@ -2,8 +2,8 @@
 
 	interface Orm {
 
-		public function auth();
+		public function getUser();
 
-		public function find();
+		public function findOne();
 	}
 ?>

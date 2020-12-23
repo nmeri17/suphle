@@ -8,13 +8,9 @@
 
 		private $destination; // callable
 
-		private $hard; // external redirect
-
-		function __construct(Closure $destination, bool $hard=false) {
+		function __construct(Closure $destination) {
 
 			$this->setDestination($destination);
-
-			$this->hard = $hard;
 		}
 
 		public function setDestination($destination):void {
@@ -27,35 +23,14 @@
 			return (new Serializer)->unserialize($this->destination);
 		}
 
-		public function renderResponse() {
-
-			$destination = $this->resolveDestination($this->getDestination);
-
-			return $this->relocate($destination);
-		}
-
-		private function relocate($destination) {
-
-			if (
-				(strpos($destination,'://') !== false) ||
-				$this->hard
-			)
-
-				return header('Location: '. $destination);
-			if (
-				$localRoute = Router::findRoute( $destination, "get") // refactor. facades don't exist
-			)
-
-				return $localRoute->executeHandler() // refactor this to match the updates on this class
-
-				->renderResponse(); // note: this navigation will bypass middlewares, validation
-		}
-
-		private function resolveDestination ($destination) {
+		public function renderResponse($destinationResolver) {
 			
-			$parameters = App::wireActionParameters($destination, $this); // handle this special case in need of app
+			$callable = $this->getDestination(); // hoping this returns a callable, although the serialization shouldn't have a use case. Redirect routes aren't gonna get stored in the previousRoutes property, anyway. I think
+			// just review sha
 
-			return call_user_func_array($destination, $parameters);
+			$parameters = $destinationResolver($callable);
+
+			return header('Location: '. call_user_func_array($callable, $parameters));
 		}
 	}
 ?>

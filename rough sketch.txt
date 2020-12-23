@@ -35,6 +35,9 @@ implement methods on the orm adapter
 refactor `findRoute` on routeManager to conform with the new route system
 
 Look into redirect format type, route, template engine. Do a search for facade in those files
+- $this->app->getMethodParameters
+
+inject appropriate dependencies into renderResponse of those format types. also, lazily wire in those dependencies into the container
 
 
 validate registration credentials

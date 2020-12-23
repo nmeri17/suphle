@@ -19,24 +19,20 @@
 
 			$router = $this->app->router;
 
-			$route = $this->getValidRoute($router);
+			$arguments = $router->prepareArguments();
+
+			return $this->getValidRoute($router)
 			
-			$arguments = $router->setActiveRoute($route)
-
-			->prepareArguments();
-
-			return $route->execute($arguments)
-
-			->renderResponse();
+			->execute($arguments)->renderResponse();
 		}
 
 		private function getValidRoute (RouteManager $router):Route {
 
 			$route = $router->getActiveRoute();
 
-			$request = $route->getRequest(); // this should throw an error if no route is found
+			$request = $route->getRequest();
 
-			if (!$request->isValidated())
+			if (!$request || !$request->isValidated())
 
 				$route = $router->mergeWithPrevious($request);
 

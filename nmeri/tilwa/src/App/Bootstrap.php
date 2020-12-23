@@ -196,7 +196,9 @@
 		}
 
 		/**
-		* @return an array containing what implementation to serve to the container when presented with multiple implementations of an interface*/
+		* @description runs during app bootstrapping. Doesn't actually initialize those classes till needed
+		* @return an array containing what implementation to serve to the container when presented with multiple implementations of an interface
+		*/
 		protected function getInterfaceRepresentatives ():array {
 
 			return [];
@@ -238,7 +240,12 @@
 			// and $this->container['classes']
 		}
 
-		public function needsArg (string $type) {
+		public function needsArgument (string $type) {
+
+			//
+		}
+
+		public function giveArguments (array $arguments) {
 
 			//
 		}
@@ -255,19 +262,15 @@
 		}
 
 		/**
-		* @ description: special container for reflecting request action method and supplying appropriate classes
-		* @param {$action} I'm hoping action will retain the context of its class
-		* @return {Array} of concrete parameters to call our action with
+		* @ description: fetch appropriate classes for a method's arguments
+		* @param {method}:string|Closure
+		* @return {Array} of hydrated parameters to call given method with
 		*/ 
-		public function wireActionParameters ( $action, Route $route) {
+		public function getMethodParameters ( $method, string $class) {
+
+			// class is disregarded when method= closure
 
 			// still works with `this.getClass` (or, at least, borrows same mechanism) but that guy works with the constructor directly, so you can pass in a method name from here (or default to constructor). @see line 130
-
-			// should give action parameter values from the received route parameter before reflecting
-
-			// bootstrap our request with the payload if present
-
-			// if model is type-hinted, fetch from model driver implementation with that id
 		}
 	}
 

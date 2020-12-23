@@ -6,11 +6,12 @@
 
 	class Reload extends Route {
 
-		public function renderResponse() {
+		public function renderResponse(HtmlParser $htmlAdapter) {
 
 			$this->rawResponse += $this->getPrevious()->rawResponse; // avoid overwriting our own response
-
-			return $this->publishHtml();
+			
+			// you want to call this->runViewModels somewhere here
+			return $this->publishHtml($htmlAdapter);
 		}
 	}
 ?>

@@ -16,13 +16,17 @@
 
 		private $handlerParameters;
 
-		private $databaseModel;
+		private $databaseAdapter;
+
+		private $requestIndexInParameters;
+
+		private $modelIndexesInParameters;
 
 		function __construct(Bootstrap $app ) {
 
 			$this->app = $app;
-			
-			$this->databaseModel = $this->app->getClass(Orm::class);
+
+			$this->databaseAdapter = $app->getClass(Orm::class);
 		}
 
 		/**
@@ -67,7 +71,7 @@ var_dump($routeToken, $wordPlaceholder);
 
 			if ($target !== false) {
 
-				$target->placeholderMap = $parameterPair;
+				$target->placeholderMap = $parameterPair; // this should update the current payload list. if it isn't called after `setPayload`, clobber it in when that guy is called
 
 				$target->setPath($reqPath);
 			}
@@ -131,62 +135,62 @@ var_dump($routeToken, $wordPlaceholder);
 
 			$route = $this->activeRoute;
 
-			$this->handlerParameters = $this->app->getMethodParameters($route->getController(), $route->handler); // we might need to pull this property out of the route class
+			$this->handlerParameters = $this->app->getMethodParameters($route->getController(), $route->handler);
 
-			$request = $this->updateRequestPayload();
+			$this->warmParameters();
 
-			$route->setRequest ($request);
+			if (!is_null($this->requestIndexInParameters))
 
-			$this->hydrateDatabaseModels()
+				$this->updateRequestPayload();
 
-			->resolveInitiator($request);
+			if (!empty($this->modelIndexesInParameters))
+
+				$this->hydrateModels();
 
 			return $this->handlerParameters;
 		}
 
-		// set a request for the current route. update the parameter list if client injected request class so they can access the payload
-		private function updateRequestPayload():BaseRequest {
-
-			$requestIndex = $request = null;
+		private function warmParameters():void {
 			
 			foreach ($this->handlerParameters as $idx => $arg) {
 				
-				if ($arg instanceof BaseRequest) {
+				if ($arg instanceof BaseRequest)
 				
-					$requestIndex = $idx;
+					$this->requestIndexInParameters = $idx;
 
-					$request = $arg;
-				}
+				elseif ($arg instanceof $this->databaseAdapter)
+
+					$this->modelIndexesInParameters[] = $idx;
 			}
-			if (is_null($request))
-
-				$request = $this->app->getClass(BaseRequest::class);
-
-			$request->setPayload($this->payload); // TODO: consider adding a payload parameter on the BaseRequest constructor. then when-wantsArgs-give for it. it'll save us these 3 lines
-
-			if (!is_null($requestIndex))
-
-				$this->handlerParameters[$requestIndex] = $request;
-
-			return $request;
 		}
 
-		public function hydrateDatabaseModels():static {
+		private function updateRequestPayload():void {
 
-			$pathPlaceholders = array_values($this->activeRoute->placeholderMap);
-			
-			foreach ($this->handlerParameters as $idx => $arg) { // there probably is a better implementation than the assumption that url placeholders directly correspond to handler arguments
-				
-				if ($arg instanceof $this->databaseModel)
-				
-					$this->handlerParameters[ $idx] = $this->databaseModel->find($pathPlaceholders[$idx]);
-			}
-			return $this;
+			$request = $this->handlerParameters[$this->requestIndexInParameters]->setPayload($this->payload);
+
+			$this->initializeUser($request);
+
+			$this->activeRoute->setRequest ($request);
 		}
 
-		private function resolveInitiator(BaseRequest $request) {
+		/*
+		* @description: assumes ordering of the arguments on the action handler matches the one on url pattern
+
+			handler (BaseRequest, Model1, Random, Model2)
+			path/2/action/3 = [2,3]
+		*/
+		private function hydrateModels():void {
+
+			$pathPlaceholders = array_values($this->activeRoute->placeholderMap); // 
 			
-			$request->setInitiator($this->model->auth());
+			foreach ($this->modelIndexesInParameters as $index => $modelIndex)
+
+				$this->handlerParameters[ $modelIndex] = $this->databaseAdapter->findOne($pathPlaceholders[$index]);
+		}
+
+		private function initializeUser(BaseRequest $request) {
+			
+			$request->setUserResolver($this->databaseAdapter);
 		}
 	}
 ?>

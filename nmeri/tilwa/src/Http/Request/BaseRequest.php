@@ -10,7 +10,7 @@
 
 		private $validator;
 
-		private $initiator;
+		private $userResolver;
 
 		public function __construct (RequestValidator $validator) {
 
@@ -29,12 +29,9 @@
 
 		public function updatePayload(array $newPairs) {
 
-			foreach ($newPairs as $key => $newValue) {
-				
-				if (in_array($key, $this->parameterList))
+			foreach ($newPairs as $key => $newValue)
 
-					$this->parameterList[$key] = $newValue;
-			}
+				$this->parameterList[$key] = $newValue;
 		}
 
 		public function setPayload (array $payload):static {
@@ -68,16 +65,16 @@
 			$this->validator->setErrors($errors);
 		}
 
-		public function setInitiator ($user):static {
+		public function setUserResolver ($resolver):static {
 			
-			$this->initiator = $user;
+			$this->userResolver = $resolver;
 
 			return $this;
 		}
 
-		public function initiator () {
+		public function userResolver () { // lazy load user fetch
 			
-			return $this->initiator;
+			return $this->userResolver->getUser();
 		}
 	}
 ?>
