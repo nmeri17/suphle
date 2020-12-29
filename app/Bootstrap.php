@@ -1,97 +1,44 @@
 <?php
 
-	namespace Controllers;
+	namespace App;
 
-	use Tilwa\Route\{RouteRegister, RouteManager};
+	use Tilwa\Routing\{RouteRegister, RouteManager};
 
-	use Tilwa\Controllers\Bootstrap as InitApp;
+	use Tilwa\App\Bootstrap as InitApp;
 
-	use Doctrine\ORM\Tools\Setup;
+	use AppRoutes\MainRoutes;
 
-	use Doctrine\ORM\EntityManager;
+	use Tilwa\Contracts\Orm;
 
-	use Models\User;
-	
+	use Adapters\Orms\Eloquent;
 	
 	class Bootstrap extends InitApp {
 
-		// the objective is to plant your desired orm connections on $this->container['connection']
-		protected function setConnection () {
-
-			try {
-
-				$connectionParams = [
-					'dbname' => getenv('DBNAME'),
-
-				    'user' => getenv('DBUSER'),
-
-				    'password' => getenv('DBPASS'),
-
-				    'driver' => 'pdo_mysql',
-				];
-
-				$paths = ["models"];
-
-				$isDevMode = true;
-
-				// custom edits
-				$config = Setup::createAnnotationMetadataConfiguration($paths, $isDevMode);
-
-				$entityManager = EntityManager::create($connectionParams, $config);
-
-				$this->container['connection'] = $entityManager;
-
-				return $this;
-			}
-			catch (PDOException $e) {
-
-				var_dump("unable to connect to mysql server", $e->getMessage());
-
-				exit();
-			}
-		}
-
-		protected function setStaticVars ( $vars ) {
+		protected function setFileSystemPaths () {
 
 			$slash = DIRECTORY_SEPARATOR;
 
 			$rootPath = dirname(__DIR__, 1) . $slash; // up one folder
 
-			$this->container = [
+			$this->container += [
 
-				'routeCatalog' => new RouteRegister,
-
-				'router' => new RouteManager($this),
-
-				'classes' => [],
-
-				'controllerNamespace' => 'Sources',
-
-				'routesDirectory' => 'routes',
-
-				'middlewareDirectory' => 'Middleware',
-
-				'viewPath' => $rootPath . 'views'. $slash,
-
-				'siteName' => @$_SERVER['SERVER_NAME'] ?? getenv('SITENAME'), // server name will be empty when running from cli
+				'viewPath' => $rootPath . 'views'. $slash
 
 			] + compact('rootPath', 'slash');
 
 			return $this;
 		}
 
-		protected function foundUser ( string $apiToken = null) {
-			$user = null; // guest
+		public function getAppMainRoutes ():string {
 
-			if ($userId = @$_SESSION['tilwa_user_id'])
+			return MainRoutes::class; // each of the classes will extend RouteRegister class, therefore `$this->prefixFor(class)`. we will call all the methods on the class externally with `get_class_methods(class_name)`
+		}
 
-				$user = $this->connection
+		protected function boundServices ():array {
 
-				->getRepository(User::class)
-
-				->find($userId);
-
-			return $user;
+			return [
+				Orm::class => Eloquent::class
+			];
 		}
 	}
 

@@ -43,7 +43,8 @@
 
 			$parameterPair = [];
 
-			$allRoutes = $this->app->routeCatalog->registeredRoutes();
+			$allRoutes = $this->app->routeCatalog->registeredRoutes(); // use either a generator or while loop here, since we don't intend to parse everything at once
+			// also consider injecting those routes instead
 
 			// search register for route matching this pattern
 			$target = @array_filter($allRoutes, function ($route) use ( $regx, $reqPath, $reqMethod, &$parameterPair) {
@@ -189,7 +190,7 @@ var_dump($routeToken, $wordPlaceholder);
 		}
 
 		private function initializeUser(BaseRequest $request) {
-			
+			// there should be a link between app and orm i.e. initialize orm, set identifier, and pull from database on demand
 			$request->setUserResolver($this->databaseAdapter);
 		}
 	}

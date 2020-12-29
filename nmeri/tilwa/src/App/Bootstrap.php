@@ -12,8 +12,7 @@
 
 	use Tilwa\Routing\Route;
 
-	
-	class Bootstrap {
+	abstract class Bootstrap {
 
 		/**
 		* @property array */
@@ -22,58 +21,64 @@
 		/* @property bool */
 		private $refresh;
 
-		function __construct ( array $config = []) {
+		public $routeCatalog;
 
-			$this->setStaticVars( $config )->loadEnv()
+		public $router;
 
-			->setConnection()->configMail()
+		private $classes = [];
 
-			->loadRoutes()->initSession();
+		private $databaseAdapter;
+
+		function __construct () {
+
+			$this->setFileSystemPaths()->loadEnv()
+
+			->setConnection()
+
+			// ->configMail() // we only wanna run this if it's not set already and if dev wanna send mails. so, a mail adapter?
+
+			->getAppMainRoutes()->initSession();
+
+			$this->routeCatalog = new RouteRegister;
+
+			$this->router = new RouteManager($this);
 		}
 
-		protected function setConnection ( ) {
-
-			$this->container['connection'] = null;
+		protected function setConnection () {
 
 			return $this;
 		}
 
-		protected function setStaticVars ( $vars ) {
+		abstract function setFileSystemPaths ():self;
 
-			return $this;
-		}
+		abstract function getAppMainRoutes():string;
+
+		/**
+		* @return an array containing what implementation to serve to the container when presented with multiple implementations of an interface
+		*/
+		abstract protected function boundServices ():array;
 
 		private function user () {
 
 			if (!isset($this->user)) {
 
-				$bearer = @getallheaders()['Authorization'];
+				$headers = getallheaders();
 
-				if (empty($_SESSION) && !$bearer) $user = null;
+				$headerKey = "Authorization";
 
-				else $user = $this->foundUser( $bearer);
+				$identifier = null;
+
+				if (array_key_exists($headerKey, $headers))
+
+					$identifier = $headers[$headerKey]; // this should be deserialized before assignment
+				else $identifier = $_SESSION['tilwa_user_id'];
+
+				if (!$identifier) $user = null;
+
+				else $user = $this->getClass(Orm::class)->getUser(); // remember to set identifier on this guy
 
 				$this->container['user'] = $user;
 			}
-		}
-
-		private function loadRoutes () { // refactor this to pass in the path to route definition classes (RDC) to app. each registration on those classes goes to an encapsulated property which app can then pull into its route catalog. such RDCs will extend  RouteRegister class, therefore `$this->register(new Markup(params))`. but instead of having one long constructor, we will call all the methods on the class externally with `get_class_methods(class_name)`
-
-			$registrar = $this->routeCatalog;
-
-			$pathName = $this->rootPath . $this->routesDirectory;
-
-			$groups = array_filter( scandir($pathName), function ($name) {
-
-				return !in_array($name, ['.', '..']);
-			});
-
-			// scan dir for all route files and pass them the registrar
-			foreach ($groups as $file)
-
-				require_once $pathName . $this->container['slash'] . $file;
-
-			return $this;
 		}
 
 		public function __get ($key) {
@@ -94,7 +99,7 @@
 				return $this->container[$key];
 			}
 
-			// lastly assume user trying to get class
+			// lastly assume dev trying to get class
 			if ($isClass = $this->getClass($key)) return $isClass;
 
 			return null;
@@ -185,25 +190,6 @@
 			return $val;
 		}
 
-		/**
-		* @description defines the process of obtaining user
-		* @return a user model/entity streamlined to your orm
-		*/
-		protected function foundUser ( string $apiToken = null) {
-			// non-browser devices will be unable to retain session, so we expect to use a token to maintain user state
-
-			/* in boot method, we set Eloquent's driver as implementation for orm interface. that's where we define user fetching logic */
-		}
-
-		/**
-		* @description runs during app bootstrapping. Doesn't actually initialize those classes till needed
-		* @return an array containing what implementation to serve to the container when presented with multiple implementations of an interface
-		*/
-		protected function getInterfaceRepresentatives ():array {
-
-			return [];
-		}
-
 		protected function loadEnv () {		
 
 			$dotenv = Dotenv::createImmutable( $this->container['rootPath'] );
@@ -215,11 +201,11 @@
 
 		protected function configMail () {
 
-			ini_set("SMTP", getenv('MAILSMTP'));
+			ini_set("SMTP", getenv('MAIL_SMTP'));
 
-			ini_set("smtp_port", getenv('MAILPORT'));
+			ini_set("smtp_port", getenv('MAIL_PORT'));
 
-			ini_set('sendmail_from', getenv('MAILSENDER'));
+			ini_set('sendmail_from', getenv('MAIL_SENDER'));
 
 			return $this;
 		}
