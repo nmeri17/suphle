@@ -10,9 +10,9 @@
 
 	use ReflectionClass;
 
-	use Tilwa\Routing\Route;
+	use Tilwa\Routing\RouteManager;
 
-	abstract class Bootstrap {
+	/*abstract */class Bootstrap {
 
 		/**
 		* @property array */
@@ -21,34 +21,27 @@
 		/* @property bool */
 		private $refresh;
 
-		public $routeCatalog;
-
 		public $router;
 
 		private $classes = [];
-
-		private $databaseAdapter;
 
 		function __construct () {
 
 			$this->setFileSystemPaths()->loadEnv()
 
-			->setConnection()
+			->initSession()->bootAdapters()
 
 			// ->configMail() // we only wanna run this if it's not set already and if dev wanna send mails. so, a mail adapter?
 
-			->getAppMainRoutes()->initSession();
+			->getAppMainRoutes(); // move this out to the route generator point
 
-			$this->routeCatalog = new RouteRegister;
-
-			$this->router = new RouteManager($this);
+			$this->router = new RouteManager($this); // this guy should now be the new route repository
 		}
 
-		protected function setConnection () {
+		// wire in arguments into app critical services
+		abstract protected function bootAdapters ():self;
 
-			return $this;
-		}
-
+		// pick project root path
 		abstract function setFileSystemPaths ():self;
 
 		abstract function getAppMainRoutes():string;
@@ -56,30 +49,7 @@
 		/**
 		* @return an array containing what implementation to serve to the container when presented with multiple implementations of an interface
 		*/
-		abstract protected function boundServices ():array;
-
-		private function user () {
-
-			if (!isset($this->user)) {
-
-				$headers = getallheaders();
-
-				$headerKey = "Authorization";
-
-				$identifier = null;
-
-				if (array_key_exists($headerKey, $headers))
-
-					$identifier = $headers[$headerKey]; // this should be deserialized before assignment
-				else $identifier = $_SESSION['tilwa_user_id'];
-
-				if (!$identifier) $user = null;
-
-				else $user = $this->getClass(Orm::class)->getUser(); // remember to set identifier on this guy
-
-				$this->container['user'] = $user;
-			}
-		}
+		abstract protected function providers ():array;
 
 		public function __get ($key) {
 
@@ -125,7 +95,7 @@
 
 			if ($refleClass->isInterface()) { // switch to an implementation
 
-				$fullName = $this->getInterfaceRepresentatives()[$fullName];
+				$fullName = $this->providers()[$fullName];
 				
 				$refleClass = new ReflectionClass($fullName);
 			}
@@ -226,7 +196,7 @@
 			// and $this->container['classes']
 		}
 
-		public function needsArgument (string $type) {
+		public function needsArguments (string $type) {
 
 			//
 		}

@@ -57,3 +57,25 @@ breathe life to the CRUD actions
 
 remember to set the container to resolve validator interface to this
 	use Validator\RakitValidator;
+
+remember to set Eloquent's driver as implementation for orm interface
+
+function get_this_class_methods($class){
+    $array1 = get_class_methods($class);
+    if($parent_class = get_parent_class($class)){
+        $array2 = get_class_methods($parent_class);
+        $array3 = array_diff($array1, $array2);
+    }else{
+        $array3 = $array1;
+    }
+    return($array3);
+}
+
+set connection
+	- pull the orm adapter and call its connection method
+	- fix the user method on bootstrap
+	- then return to line 40
+	- then routeManager->initializeUser
+load routes
+	- define our routes
+work on the whenType and co

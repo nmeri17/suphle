@@ -12,30 +12,27 @@
 
 	class Doctrine implements Orm {
 
-		public function setConnection () {
+		protected $connection;
+
+		private $credentials;
+
+		function __construct(array $credentials) {
+
+			$this->credentials = $credentials;
+		}
+
+		private function setConnection ():self {
 
 			try {
 
-				$connectionParams = [
-					'dbname' => getenv('DB_PROD'),
-
-				    'user' => getenv('DB_USER'),
-
-				    'password' => getenv('DB_PASS'),
-
-				    'driver' => 'pdo_mysql',
-				];
-
-				$paths = ["models"];
+				$paths = ["Models"];
 
 				$isDevMode = true;
 
 				// custom edits
 				$config = Setup::createAnnotationMetadataConfiguration($paths, $isDevMode);
 
-				$entityManager = EntityManager::create($connectionParams, $config);
-
-				$this->connection = $entityManager;
+				$this->connection = EntityManager::create($this->credentials, $config);
 
 				return $this;
 			}
@@ -47,19 +44,25 @@
 			}
 		}
 
-		public function getUser() {
+		public function findOne(string $model, int $id) {
 
-			$user = null; // guest
+			$this->getConnection()
 
-			if ($userId = @$_SESSION['tilwa_user_id'])
+			->getRepository($model)->find($id);
+		}
 
-				$user = $this->connection
+		public function isModel( string $class):bool {
 
-				->getRepository(User::class)
+		    return !$this->getConnection()
 
-				->find($userId);
+		    ->getMetadataFactory()->isTransient($class);
+		}
 
-			return $user;
+		private function getConnection () {
+
+			if (!$this->connection) $this->setConnection(); // defer to when it's needed
+
+			return $this->connection;
 		}
 	}
 ?>

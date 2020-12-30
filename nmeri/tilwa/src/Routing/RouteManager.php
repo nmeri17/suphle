@@ -6,6 +6,8 @@
 
 	use Tilwa\Contracts\Orm;
 
+	use Tilwa\Http\Request\Authenticator;
+
 	class RouteManager {
 
 		private $app;
@@ -45,6 +47,9 @@
 
 			$allRoutes = $this->app->routeCatalog->registeredRoutes(); // use either a generator or while loop here, since we don't intend to parse everything at once
 			// also consider injecting those routes instead
+
+			// app method Y pulls the class behind the entry route and passes that to routeCollection method X, who gathers all the methods inside it and run them in a generator. if any of the methods returns a class string to its caller (the app) instead of a route (or updates the `prefix` context property), we toss it back into Y
+			// while generator->current() != incoming, generator->next
 
 			// search register for route matching this pattern
 			$target = @array_filter($allRoutes, function ($route) use ( $regx, $reqPath, $reqMethod, &$parameterPair) {
@@ -159,7 +164,7 @@ var_dump($routeToken, $wordPlaceholder);
 				
 					$this->requestIndexInParameters = $idx;
 
-				elseif ($arg instanceof $this->databaseAdapter)
+				elseif ( $this->databaseAdapter->isModel($arg))
 
 					$this->modelIndexesInParameters[] = $idx;
 			}
@@ -167,9 +172,9 @@ var_dump($routeToken, $wordPlaceholder);
 
 		private function updateRequestPayload():void {
 
-			$request = $this->handlerParameters[$this->requestIndexInParameters]->setPayload($this->payload);
+			$request = $this->handlerParameters[$this->requestIndexInParameters]->setPayload($this->payload)
 
-			$this->initializeUser($request);
+			->setUserResolver($this->app->getClass(Authenticator::class));
 
 			$this->activeRoute->setRequest ($request);
 		}
@@ -182,16 +187,17 @@ var_dump($routeToken, $wordPlaceholder);
 		*/
 		private function hydrateModels():void {
 
-			$pathPlaceholders = array_values($this->activeRoute->placeholderMap); // 
+			$pathPlaceholders = array_values($this->activeRoute->placeholderMap);
 			
-			foreach ($this->modelIndexesInParameters as $index => $modelIndex)
+			foreach ($this->modelIndexesInParameters as $index => $modelIndex) {
 
-				$this->handlerParameters[ $modelIndex] = $this->databaseAdapter->findOne($pathPlaceholders[$index]);
-		}
+				$defaultModel = $this->handlerParameters[ $modelIndex];
 
-		private function initializeUser(BaseRequest $request) {
-			// there should be a link between app and orm i.e. initialize orm, set identifier, and pull from database on demand
-			$request->setUserResolver($this->databaseAdapter);
+				$this->handlerParameters[ $modelIndex] = $this->databaseAdapter
+				->findOne(
+					$defaultModel::class, $pathPlaceholders[$index]
+				);
+			}
 		}
 	}
 ?>

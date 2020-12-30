@@ -1,17 +1,19 @@
 <?php
 
-	interface Orm {
+	namespace Tilwa\Contracts;
 
-		public $userIdentifier;
+	use Models\User;
+
+	interface Orm {
 
 		protected $connection;
 
-		public function getUser();
+		private $credentials;
 
-		public function findOne();
+		public function findOne(string $model, int $id);
 
-		public setUserIdentifier ();
+		private setConnection():self;
 
-		public setConnection();
+		public function isModel( string $class): bool;
 	}
 ?>

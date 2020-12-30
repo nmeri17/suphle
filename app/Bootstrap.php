@@ -2,8 +2,6 @@
 
 	namespace App;
 
-	use Tilwa\Routing\{RouteRegister, RouteManager};
-
 	use Tilwa\App\Bootstrap as InitApp;
 
 	use AppRoutes\MainRoutes;
@@ -31,14 +29,38 @@
 
 		public function getAppMainRoutes ():string {
 
-			return MainRoutes::class; // each of the classes will extend RouteRegister class, therefore `$this->prefixFor(class)`. we will call all the methods on the class externally with `get_class_methods(class_name)`
+			return MainRoutes::class; // each of the classes will extend RouteCollection class, therefore `$this->prefixFor(class)`. we will call all the methods on the class externally with `get_class_methods(class_name)`
 		}
 
-		protected function boundServices ():array {
+		protected function provider ():array {
 
 			return [
 				Orm::class => Eloquent::class
 			];
+		}
+
+		protected function bootAdapters ():self {
+
+			$this->setOrmRequirements();
+
+			return $this;
+		}
+
+		private function setOrmRequirements ():void {
+
+			$this->whenType(Orm::class)->needsArguments(["credentials"])
+			->giveArguments([
+
+				"credentials" => [
+					'dbname' => getenv('DB_NAME'),
+
+				    'user' => getenv('DB_USERNAME'),
+
+				    'password' => getenv('DB_PASS'),
+
+				    'driver' => 'pdo_mysql',
+				]
+			]);
 		}
 	}
 

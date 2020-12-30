@@ -2,13 +2,7 @@
 
 	namespace Tilwa\Routing;
 
-	class RouteRegister {
-
-		private $prefixMode;
-
-		private $namespaceMode;
-
-		private $apiMode;
+	class RouteCollection {
 
 		public function crud (string $basePath, string $controller, array $overrides ) {
 

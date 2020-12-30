@@ -4,6 +4,8 @@
 
 	use Tilwa\Contracts\RequestValidator;
 
+	use Tilwa\Http\Request\Authenticator;
+
 	class BaseRequest {
 
 		private $parameterList;
@@ -65,14 +67,14 @@
 			$this->validator->setErrors($errors);
 		}
 
-		public function setUserResolver ($resolver):static {
+		public function setUserResolver (Authenticator $resolver):self {
 			
 			$this->userResolver = $resolver;
 
 			return $this;
 		}
 
-		public function userResolver () { // lazy load user fetch
+		public function userResolver () { // access user by calling this method on your request object
 			
 			return $this->userResolver->getUser();
 		}
