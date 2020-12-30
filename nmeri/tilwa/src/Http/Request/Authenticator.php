@@ -4,55 +4,59 @@
 
 	use Tilwa\Contracts\Orm;
 
+	use Models\User;
+
 	// handles login, logout, continuity i.e. pulling user out of orm
 	class Authenticator {
 
-		public $user;
+		private $user;
 
-		private $authenticationStatus = 0;
+		private $userSearched;
 
 		private $databaseAdapter;
 
 		function __construct(Orm $databaseAdapter) {
 
 			$this->databaseAdapter = $databaseAdapter;
+
+			$this->userSearched = 0;
 		}
 
-		public function setUser () {
+		public function continueSession ():void {
 
 			$headers = getallheaders();
 
-			$isToken = false;
-
 			$headerKey = "Authorization";
 
-			$identifier = null;
+			$user = $identifier = null;
 
 			if (array_key_exists($headerKey, $headers)) {
 
-				$identifier = $headers[$headerKey];
-
-				$isToken = true;
+				$identifier = $headers[$headerKey]; // deserialize and assign user id to identifier
 			}
 			else $identifier = $_SESSION['tilwa_user_id'];
 
-			if (!$identifier) $this->user = null;
+			if ($identifier)
 
-			else {
-				// if ($isToken) // deserialize and assign user id to identifier
+				$user = $this->databaseAdapter->findOne(User::class, $identifier);
 
-				$this->user = $this->databaseAdapter->findOne(User::class, $identifier);
-			}
-			$this->authenticationStatus = 1; // this still needs attention
+			$this->setUser($user);
+			
+			$this->userSearched = 1;
 		}
 
-		public function getUser () {
+		public function getUser ():User {
 
-			if ( $this->authenticationStatus === 0)
+			if ( $this->userSearched === 0)
 
-				$this->setUser();
+				$this->continueSession();
 
 			return $this->user; // clear this on logout
+		}
+
+		public function setUser (User $user) {
+
+			$this->user = $user;
 		}
 	}
 ?>
