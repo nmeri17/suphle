@@ -10,8 +10,6 @@
 
 	use ReflectionClass;
 
-	use Tilwa\Routing\RouteManager;
-
 	/*abstract */class Bootstrap {
 
 		/**
@@ -29,13 +27,9 @@
 
 			$this->setFileSystemPaths()->loadEnv()
 
-			->initSession()->bootAdapters()
+			->initSession()->bootAdapters();
 
 			// ->configMail() // we only wanna run this if it's not set already and if dev wanna send mails. so, a mail adapter?
-
-			->getAppMainRoutes(); // move this out to the route generator point
-
-			$this->router = new RouteManager($this); // this guy should now be the new route repository
 		}
 
 		// wire in arguments into app critical services

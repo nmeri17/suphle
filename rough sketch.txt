@@ -79,3 +79,5 @@ set connection
 load routes
 	- define our routes
 work on the whenType and co
+
+once we have enough information about a route, update the authenticator argument to either to api/session scope

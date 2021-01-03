@@ -6,7 +6,7 @@
 
 	use Tilwa\Contracts\Orm;
 
-	use Tilwa\Http\Request\Authenticator;
+	use \Generator;
 
 	class RouteManager {
 
@@ -24,6 +24,8 @@
 
 		private $modelIndexesInParameters;
 
+		private $pathPlaceholders;
+
 		function __construct(Bootstrap $app ) {
 
 			$this->app = $app;
@@ -32,58 +34,47 @@
 		}
 
 		/**
-		 * @param {reqPath}: does not support query urls
+		 * @param {requestPath}: does not support query urls
 		 *
 		 **/
-		public function findRoute (string $reqPath, int $reqMethod ) {
+		public function findRoute (string $requestPath, string $requestMethod ) {
 
-			if (preg_match('/^\/?$/', $reqPath))
+			$hit = null;
 
-				return $this->findRoute('index', $reqMethod);
+			foreach ($this->loadRoutesFromClass() as $route) {
+				
+				if ($this->routeCompare($route, $requestPath, $requestMethod)) {
 
-			$regx = '/\{(\w+)?(\?)\}/';
+					$hit = $route;
 
-			$parameterPair = [];
-
-			$allRoutes = $this->app->routeCatalog->registeredRoutes(); // use either a generator or while loop here, since we don't intend to parse everything at once
-			// also consider injecting those routes instead
-
-			// app method Y pulls the class behind the entry route and passes that to routeCollection method X, who gathers all the methods inside it and run them in a generator. if any of the methods returns a class string to its caller (the app) instead of a route (or updates the `prefix` context property), we toss it back into Y
-			// while generator->current() != incoming, generator->next
-
-			// search register for route matching this pattern
-			$target = @array_filter($allRoutes, function ($route) use ( $regx, $reqPath, $reqMethod, &$parameterPair) {
-
-				// convert /jui/{fsdf}/weeer to /jui/\w+/weeer
-				// /jui/{fsdf?}/weeer to /jui/(\/\w+)?weeer
-				$tempPat = preg_replace_callback($regx, function ($m) {
-
-					$routeToken = $m[1];
-
-					$wordPlaceholder = "(?P<$routeToken>\/\w+)"; // return assoc matches
-					if (isset($m[2]))
-
-						$wordPlaceholder .= '?';
-var_dump($routeToken, $wordPlaceholder);
-					return $wordPlaceholder;
-				}, preg_quote($route->pattern) );
-
-				$numMatches = preg_match_all("/^\/?$tempPat$/", $reqPath, $parameterPair); // permit non-prefixed registered patterns to match requests for slash prefixed
-					// var_dump($parameterPair, $numMatches, $tempPat);
-				return $numMatches !== 0 && $route->method === $reqMethod;
-			});
-//var_dump($target); die();
-			$target = current($target);
-
-			if ($target !== false) {
-
-				$target->placeholderMap = $parameterPair; // this should update the current payload list. if it isn't called after `setPayload`, clobber it in when that guy is called
-
-				$target->setPath($reqPath);
+					break;
+				}
 			}
+			if (!is_null($hit))
 
-			return $target;
+				$this->updateRequestParameters($hit->setPath($requestPath));
+
+			return $hit;
 		}
+
+		// if any of the methods returns a class string to its caller (the app) instead of a route (or updates the `prefix` context property), we toss it back into this method
+		public function loadRoutesFromClass():Generator {
+			
+			$collection = $this->app->getClass($this->app->getAppMainRoutes())
+
+			->getLeaves(); // array of strings
+
+			$c # then do your generator ish here
+		}
+		
+		// request method is only compared on the final path. empty incoming path should check for presence of an index method
+		// will likely work hand in hand with the guy above
+		public function routeCompare(Route $route, string $incomingPath, string $httpMethod):bool {
+
+			// reset `pathPlaceholders` on each parent/root route. populate it subsequently for leaves under it
+		}
+		
+		public function updateRequestParameters():void {}
 
 		public function setPrevious(Route $route ):static {
 
@@ -172,9 +163,7 @@ var_dump($routeToken, $wordPlaceholder);
 
 		private function updateRequestPayload():void {
 
-			$request = $this->handlerParameters[$this->requestIndexInParameters]->setPayload($this->payload)
-
-			->setUserResolver($this->app->getClass(Authenticator::class));
+			$request = $this->handlerParameters[$this->requestIndexInParameters]->setPayload($this->payload);
 
 			$this->activeRoute->setRequest ($request);
 		}
