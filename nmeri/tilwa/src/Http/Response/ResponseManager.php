@@ -6,39 +6,59 @@
 
 	use Tilwa\Routing\{Route, RouteManager};
 
+	use Tilwa\Http\Request\Authenticator;
+
 	class ResponseManager {
 
 		private $app;
 
-		function __construct (Bootstrap $app ) {
+		private $router;
+
+		private $skipHandler;
+
+		function __construct (Bootstrap $app, RouteManager $router ) {
 
 			$this->app = $app;
+
+			$this->router = $router;
 		}
 		
 		public function getResponse () {
 
-			$router = $this->app->router;
+			$arguments = $this->router->prepareArguments();
 
-			$arguments = $router->prepareArguments();
+			$route = $this->getValidRoute();
 
-			return $this->getValidRoute($router)
+			if (!$this->skipHandler)
+
+				$route->execute($arguments);
 			
-			->execute($arguments)->renderResponse();
+			return $route->renderResponse();
 		}
 
-		private function getValidRoute (RouteManager $router):Route {
+		/** @description
+		*	For requests originating from browser, flow will be reverted to previous request, expecting its view to read the error bag
+		*	For other clients, the handler should be skipped altogether for the errors to be immediately rendered
+		*/
+		private function getValidRoute ():Route {
 
-			$route = $router->getActiveRoute();
+			$route = $this->router->getActiveRoute();
 
 			$request = $route->getRequest();
 
-			if (!$request || !$request->isValidated())
+			$browserOrigin = $this->app->getClass(Authenticator::class)->fromBrowser();
 
-				$route = $router->mergeWithPrevious($request);
+			if ( !$request->isValidated()) {
 
-			else /*if ($this->app->getClass(Tilwa\Contracts\Auth)->name !== "browser")*/
+				if ($browserOrigin)
 
-				$router->setPrevious($route); // uncomment when that is implemented
+					$route = $this->router->mergeWithPrevious($request);
+				
+				else $this->skipHandler = true;
+			}
+			else if ($browserOrigin)
+
+				$this->router->setPrevious($route);
 
 			return $route;
 		}

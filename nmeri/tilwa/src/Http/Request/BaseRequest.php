@@ -4,24 +4,13 @@
 
 	use Tilwa\Contracts\RequestValidator;
 
-	use Tilwa\Http\Request\Authenticator;
-
 	class BaseRequest {
 
-		private $parameterList;
-
 		private $validator;
-
-		private $userResolver;
 
 		public function __construct (RequestValidator $validator) {
 
 			$this->validator = $validator;
-		}
-
-		public function __get (string $parameterName) {
-
-			return $this->parameterList[$parameterName];
 		}
 
 		public function payload () {
@@ -29,25 +18,27 @@
 			return $this->parameterList;
 		}
 
-		public function updatePayload(array $newPairs) {
+		public function updatePayload(array $newPairs):self {
 
 			foreach ($newPairs as $key => $newValue)
 
-				$this->parameterList[$key] = $newValue;
-		}
+				if (property_exists($this, $key))
 
-		public function setPayload (array $payload):static {
-			
-			$this->parameterList = $payload;
+					$this->$key = $newValue;
 
 			return $this;
+		}
+
+		public function setPayload (array $payload):self {
+			
+			return $this->updatePayload($payload);
 		}
 
 		public function validationErrors ():array {
 
 			$valid = $this->validator
 
-			->validate($this->parameterList, $this->rules());
+			->validate($this->parameterList, $this->rules()); // continue here
 
 			return $valid->getErrors();
 		}
@@ -65,18 +56,6 @@
 		public function setValidationErrors(array $errors) {
 			
 			$this->validator->setErrors($errors);
-		}
-
-		public function setUserResolver (Authenticator $resolver):self {
-			
-			$this->userResolver = $resolver;
-
-			return $this;
-		}
-
-		public function userResolver () { // access user by calling this method on your request object
-			
-			return $this->userResolver->getUser();
 		}
 	}
 ?>

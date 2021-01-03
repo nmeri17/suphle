@@ -6,6 +6,8 @@
 
 	use Tilwa\Http\Request\BaseRequest;
 
+	use Tilwa\Contracts\HtmlParser;
+
 	class Route {
 
 		public $pattern;
@@ -42,22 +44,11 @@
 			return $this->middleware;
 		}
 
-		public function setPath (string $name):static {
+		public function setPath (string $name):self {
 
 			$this->requestSlug = $name;
 
 			return $this;
-		}
-
-		public function equals (Route $route, bool $matchMethod =false) {
-
-			$slug = preg_quote($this->requestSlug);
-
-			$leadingSlash = '/'. preg_replace('/^\//', '\/?', $slug). '/i';
-
-			$matchPath = preg_match($leadingSlash, $route->requestSlug);
-
-			return $matchPath && ($matchMethod ? $this->method == $route->method : true);
 		}
 
 		public function getRequest():BaseRequest {
@@ -72,19 +63,28 @@
 			return $this;
 		}
 
-		public function renderResponse () {
+		public function renderResponse ($adapter) {
 
 			return $this->publishJson();
 		}
 
-		public function publishHtml () {
-
-			return Bootstrap::driver("templating")->parseAll(); // facade. refactor
+		public function publishHtml(HtmlParser $htmlAdapter) {
+			
+			// you want to call this->runViewModels somewhere here
+			return $htmlAdapter->parseAll();
 		}
 
-		public function publishJson() {
+		protected function publishJson() {
+
+			$request = $this->request;
+
+			if (!$request->isValidated())
+
+				$response = $request->validationErrors();
+
+			else $response = $this->rawResponse;
 			
-			return json_encode($this->rawResponse);
+			return json_encode($response);
 		}
 
 		public function execute (array $handlerParameters):static {
