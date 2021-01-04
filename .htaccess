@@ -6,10 +6,10 @@ php_value post_max_size 11M
 
 
 # QSA = tack query string onto the target tilwa_request
-RewriteRule ^/?(.+)$ controllers/index.php?tilwa_request=$1 [NC,QSA,L]
+RewriteRule ^/?(.+)$ assemble.php?tilwa_request=$1 [NC,QSA,L]
 
 # serve index
-RewriteRule ^/?$ controllers/index.php?tilwa_request=index [NC,QSA,L]
+RewriteRule ^/?$ assemble.php?tilwa_request=index [NC,QSA,L]
 
 
 # invalid file?

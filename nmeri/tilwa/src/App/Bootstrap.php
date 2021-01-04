@@ -222,6 +222,22 @@
 
 			// still works with `this.getClass` (or, at least, borrows same mechanism) but that guy works with the constructor directly, so you can pass in a method name from here (or default to constructor). @see line 130
 		}
+
+		public function setDependsOn(array $bindings):self {
+			
+			# check if key interface matches the `exports` of incoming type before pairing
+		}
+
+		// @return interfaces[] from `Interactions` namespace
+		public function getDependsOn():array {
+
+			return [];
+		}
+
+		public function exports():string {
+
+			return; // an interface from Interactions namespace for `setDependsOn` on sister modules to consume
+		}
 	}
 
 ?>

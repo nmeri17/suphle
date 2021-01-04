@@ -16,11 +16,15 @@
 
 		private $skipHandler;
 
+		public $responseMutations;
+
 		function __construct (Bootstrap $app, RouteManager $router ) {
 
 			$this->app = $app;
 
 			$this->router = $router;
+
+			$this->responseMutations = [];
 		}
 		
 		public function getResponse () {
@@ -29,11 +33,20 @@
 
 			$route = $this->getValidRoute();
 
-			if (!$this->skipHandler)
+			if (!$this->skipHandler) {
+
+				$this->runMiddleware($route);
 
 				$route->execute($arguments);
+			}
 			
-			return $route->renderResponse();
+			$body = $route->renderResponse();
+			
+			if (!$this->skipHandler)
+				
+				$body = $this->mutateResponse($body);
+			
+			return $body;
 		}
 
 		/** @description
@@ -61,6 +74,38 @@
 				$this->router->setPrevious($route);
 
 			return $route;
+		}
+
+		// middleware delimited by commas. Middleware params delimited by colons
+		private function runMiddleware ( Route $route ):bool {
+
+			$passed = true;
+
+			foreach ($route->getMiddlewares() as $mw ) {
+
+				@[$className, $args] = explode(',', $mw);
+
+				$instance = $this->app->getClass($className);
+
+				if (is_callable($instance->postSourceBehavior))
+
+					$this->responseMutations[] = $instance->postSourceBehavior;
+
+				else $passed = $instance->handle( explode(':', $args) );
+
+				if ( !$passed ) return $passed; // terminate
+			}
+
+			return $passed;
+		}
+
+		private function mutateResponse(string $currentBody):string {
+
+			foreach ($this->responseMutations as $handler)
+
+				$currentBody = $handler($currentBody);
+			
+			return $currentBody;
 		}
 	}
 ?>
