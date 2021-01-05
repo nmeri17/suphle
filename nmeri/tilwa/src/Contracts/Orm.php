@@ -2,8 +2,6 @@
 
 	namespace Tilwa\Contracts;
 
-	use Models\User;
-
 	interface Orm {
 
 		protected $connection;
@@ -15,5 +13,7 @@
 		private setConnection():self;
 
 		public function isModel( string $class): bool;
+
+		private function getConnection ();
 	}
 ?>

@@ -1,6 +1,6 @@
 <?php
 
-	namespace Adapters\Orms;
+	namespace Tilwa\Adapters\Orms;
 
 	use Tilwa\Contracts\Orm;
 

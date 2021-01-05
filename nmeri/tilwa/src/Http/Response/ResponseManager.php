@@ -6,8 +6,6 @@
 
 	use Tilwa\Routing\{Route, RouteManager};
 
-	use Tilwa\Http\Request\Authenticator;
-
 	class ResponseManager {
 
 		private $app;
@@ -39,7 +37,7 @@
 
 				$route->execute($arguments);
 			}
-			
+
 			$body = $route->renderResponse();
 			
 			if (!$this->skipHandler)
@@ -59,7 +57,7 @@
 
 			$request = $route->getRequest();
 
-			$browserOrigin = $this->app->getClass(Authenticator::class)->fromBrowser();
+			$browserOrigin = !$this->router->isApiRoute();
 
 			if ( !$request->isValidated()) {
 

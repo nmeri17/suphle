@@ -14,19 +14,14 @@
 
 		function __construct(Bootstrap $module) {
 
-			$this->router = new RouteManager($module); // this guy should now be the new route repository
+			$this->setRouter($module);
 
 			$this->responseManager = new ResponseManager($module, $this->router);
 		}
 
 		public function assignRoute():self {
 			
-			$httpMethod = strtolower(
-
-				$_POST["_method"] ?? $_SERVER['REQUEST_METHOD']
-			);
-
-			if ($target = $this->router->findRoute( $_GET['tilwa_request'], $httpMethod ) ) {
+			if ($target = $this->router->findRoute() ) {
 
 				$this->router->setActiveRoute($target)->savePayload();
 
@@ -38,6 +33,23 @@
 		public function trigger():string {
 
 			return $this->responseManager->getResponse();
+		}
+
+		private function setRouter ($module) {
+
+			$this->router = new RouteManager($module, $_GET['tilwa_request'], $this->getHttpMethod()); // this guy should now be the new route repository
+
+			$module->whenTypeAny()->needsAny(RouteManager::class)
+
+			->give($this->router);
+		}
+
+		private function getHttpMethod ():string {
+
+			return strtolower(
+
+				$_POST["_method"] ?? $_SERVER['REQUEST_METHOD']
+			);
 		}
 	}
 ?>

@@ -4,11 +4,13 @@
 
 	use Tilwa\Routing\Route;
 
+	use Tilwa\App\Bootstrap;
+
 	class Redirect extends Route {
 
 		private $destination; // callable
 
-		function __construct(Closure $destination) {
+		function __construct(string $handler, Closure $destination, string $httpMethod) {
 
 			$this->setDestination($destination);
 		}
@@ -23,12 +25,12 @@
 			return (new Serializer)->unserialize($this->destination);
 		}
 
-		public function renderResponse($destinationResolver) {
+		public function renderResponse(Bootstrap $module) {
 			
 			$callable = $this->getDestination(); // hoping this returns a callable, although the serialization shouldn't have a use case. Redirect routes aren't gonna get stored in the previousRoutes property, anyway. I think
 			// just review sha
 
-			$parameters = $destinationResolver($callable);
+			$parameters = $module->getMethodParameters($callable);
 
 			return header('Location: '. call_user_func_array($callable, $parameters));
 		}

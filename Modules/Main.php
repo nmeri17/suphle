@@ -6,73 +6,34 @@
 
 	use AppRoutes\MainRoutes;
 
-	use Tilwa\Contracts\Orm;
-
-	use Adapters\Orms\Eloquent;
-
-	use Tilwa\Http\Response\Templating\TemplateEngine;
+	use Tilwa\Routing\RouteManager;
 	
 	class Main extends Bootstrap {
 
-		protected function setFileSystemPaths () {
+		public function provideSelf ():self {
 
-			$slash = DIRECTORY_SEPARATOR;
+			$this->whenTypeAny()->needsAny(Bootstrap::class)
 
-			$rootPath = dirname(__DIR__, 1) . $slash; // up one folder
-
-			$this->container += [
-
-				'viewPath' => $rootPath . 'views'. $slash
-
-			] + compact('rootPath', 'slash');
+			->give($this);
 
 			return $this;
 		}
 
-		public function browserMainRoute ():string {
+		public function getRootPath ():string {
+
+			return dirname(__DIR__, 1) . DIRECTORY_SEPARATOR; // up one folder;
+		}
+
+		public function browserEntryRoute ():string {
 
 			return MainRoutes::class;
 		}
 
-		public function apiStack ():array {
+		public function apiStack ():array { // remove this after testing it
 
 			return [
-				"v1" => $this->getClass(RouteManager::class) // we wanna call api mirror here
+				"v1" => $this->getClass(RouteManager::class)->mirrorBrowserRoutes()
 			];
-		}
-
-		protected function provider ():array {
-
-			return [
-				Orm::class => Eloquent::class,
-
-				HtmlParser::class => TemplateEngine::class
-			];
-		}
-
-		protected function bootAdapters ():self {
-
-			$this->setOrmRequirements();
-
-			return $this;
-		}
-
-		private function setOrmRequirements ():void {
-
-			$this->whenType(Orm::class)->needsArguments(["credentials"])
-			->giveArguments([
-
-				"credentials" => [
-					'dbname' => getenv('DB_NAME'),
-
-				    'user' => getenv('DB_USERNAME'),
-
-				    'password' => getenv('DB_PASS'),
-
-				    'driver' => 'pdo_mysql',
-				]
-			]);
 		}
 	}
-
 ?>

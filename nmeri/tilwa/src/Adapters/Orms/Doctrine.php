@@ -1,14 +1,12 @@
 <?php
 
-	namespace Adapters\Orms;
+	namespace Tilwa\Adapters\Orms;
 
 	use Tilwa\Contracts\Orm;
 
 	use Doctrine\ORM\Tools\Setup;
 
 	use Doctrine\ORM\EntityManager;
-
-	use Models\User;
 
 	class Doctrine implements Orm {
 

@@ -1,6 +1,6 @@
 <?php
 
-	interface Parser {
+	interface HtmlParser {
 
 		public function parseAll():string;
 	}

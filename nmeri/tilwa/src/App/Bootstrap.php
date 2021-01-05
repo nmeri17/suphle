@@ -10,11 +10,13 @@
 
 	use ReflectionClass;
 
-	/*abstract */class Bootstrap {
+	use Models\User;
 
-		/**
-		* @property array */
-		protected $container;
+	use Tilwa\Contracts\{Orm, HtmlParser, Authenticator};
+
+	use Tilwa\ServiceProviders\{OrmProvider, AuthenticatorProvider, HtmlTemplateProvider};
+
+	abstract class Bootstrap {
 
 		/* @property bool */
 		private $refresh;
@@ -25,49 +27,32 @@
 
 		function __construct () {
 
-			$this->setFileSystemPaths()->loadEnv()
-
-			->initSession()->bootAdapters();
+			$this->loadEnv()->initSession()->provideSelf();
 
 			// ->configMail() // we only wanna run this if it's not set already and if dev wanna send mails. so, a mail adapter?
 		}
 
-		// wire in arguments into app critical services
-		abstract protected function bootAdapters ():self;
+		public function apiStack ():array;
 
-		// pick project root path
-		abstract function setFileSystemPaths ():self;
+		public function browserEntryRoute ():string;
 
-		abstract function getAppMainRoutes():string;
+		public function getRootPath ():string;
 
-		/**
-		* @return an array containing what implementation to serve to the container when presented with multiple implementations of an interface
-		*/
-		abstract protected function providers ():array;
+		protected function getServiceProviders ():array {
 
-		public function __get ($key) {
+			return [
+				Orm::class => OrmProvider::class,
 
-			if (
-				array_key_exists($key, $this->container) &&
+				HtmlParser::class => HtmlTemplateProvider::class,
 
-				$this->refresh !== true
-			)
-				return $this->container[$key];
+				Authenticator::class => AuthenticatorProvider::class,
 
-			if (method_exists($this, $key)) {
-
-				$this->refresh = false; // so other dependents don't try getting fresh copies too
-
-				$this->$key();
-
-				return $this->container[$key];
-			}
-
-			// lastly assume dev trying to get class
-			if ($isClass = $this->getClass($key)) return $isClass;
-
-			return null;
+				RequestValidator::class => RequestValidatorProvider::class
+			];
 		}
+
+		// will supply the active module to every client requesting this base type
+		public function provideSelf ():self;
 
 		/**
 		* @description Will load the instance in the app classes cache
@@ -76,9 +61,9 @@
 		*/
 		public function getClass (string $fullName) {
 
-			if (array_key_exists($fullName, $this->container['classes']))
+			if (array_key_exists($fullName, $this->classes))
 
-				return $this->container['classes'][$fullName];
+				return $this->classes[$fullName];
 
 			// if not there, grab class and load their constructorParams recursively
 			$constructorParams = [];
@@ -89,7 +74,7 @@
 
 			if ($refleClass->isInterface()) { // switch to an implementation
 
-				$fullName = $this->providers()[$fullName];
+				$fullName = $this->providers()[$fullName]; // this was refactored, so review this block
 				
 				$refleClass = new ReflectionClass($fullName);
 			}
@@ -139,10 +124,10 @@
 				}
 			}
 
-			// constructorParams ready. instantiate and include in app container
+			// constructorParams ready. instantiate and include in app classes
 			$classInst = new $fullName ( ...$constructorParams);
 			
-			return $this->container['classes'][$fullName] = $classInst;
+			return $this->classes[$fullName] = $classInst;
 		}
 
 		public function fresh ($prop) {
@@ -156,7 +141,7 @@
 
 		protected function loadEnv () {		
 
-			$dotenv = Dotenv::createImmutable( $this->container['rootPath'] );
+			$dotenv = Dotenv::createImmutable( $this->getRootPath() );
 
 			$dotenv->load();
 
@@ -185,9 +170,12 @@
 
 		public function whenType (string $type) {
 
-			// we're working with debug_backtrace()
+			// after pairing this, if we're getting a class manually instead of injecting it as method argument, `getClass` will have to check debug_backtrace() for whether caller matches what we passed here
+		}
 
-			// and $this->container['classes']
+		public function whenTypeAny () {
+
+			return $this->whenType("*");
 		}
 
 		public function needsArguments (string $type) {
@@ -205,10 +193,21 @@
 			// ensure the given type is an instance of current/active whenType
 		}
 
+		// @param {$valueObject} instance of singleton
 		public function give ( $valueObject) {
 
 			// should throw an error if no active needs[Arg]
-			// work with `this.getInterfaceRepresentatives`
+			// work with `this->getServiceProviders()`
+		}
+
+		public function needsArgumentsType (string $type) {
+
+			//
+		}
+
+		public function needsAny (string $type) {
+
+			// activates both arguments and normal needs ahead of the give call
 		}
 
 		/**
@@ -237,6 +236,21 @@
 		public function exports():string {
 
 			return; // an interface from Interactions namespace for `setDependsOn` on sister modules to consume
+		}
+
+		public function getUserModel():string {
+
+			return User::class;
+		}
+
+		public function apiPrefix():string {
+
+			return "api";
+		}
+
+		public function getViewPath ():string {
+
+			return $this->getRootPath() . 'views'. DIRECTORY_SEPARATOR;
 		}
 	}
 

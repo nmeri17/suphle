@@ -29,16 +29,6 @@
 		private $controller;
 
 
-		function __construct( string $pathPattern, $handler,
-
-			string $method = "get"
-		) {
-
-			$this->assignMethod($method);
-
-			$this->pattern = !strlen($pathPattern) ? 'index' : $pathPattern;
-		}
-
 		public function getMiddlewares () {
 
 			return $this->middleware;

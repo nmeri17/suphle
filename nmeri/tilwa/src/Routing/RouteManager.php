@@ -10,7 +10,7 @@
 
 	class RouteManager {
 
-		private $app;
+		private $module;
 
 		private $activeRoute;
 
@@ -26,24 +26,32 @@
 
 		private $pathPlaceholders;
 
-		function __construct(Bootstrap $app ) {
+		private $incomingPath;
 
-			$this->app = $app;
+		private $httpMethod;
 
-			$this->databaseAdapter = $app->getClass(Orm::class);
+		function __construct(Bootstrap $module, string $incomingPath, string $httpMethod ) {
+
+			$this->module = $module;
+
+			$this->databaseAdapter = $module->getClass(Orm::class);
+
+			$this->incomingPath = $incomingPath;
+
+			$this->httpMethod = $httpMethod;
 		}
 
 		/**
 		 * @param {requestPath}: does not support query urls
 		 *
 		 **/
-		public function findRoute (string $requestPath, string $requestMethod ) {
+		public function findRoute () {
 
 			$hit = null;
 
 			foreach ($this->loadRoutesFromClass() as $route) {
 				
-				if ($this->routeCompare($route, $requestPath, $requestMethod)) {
+				if ($this->routeCompare($route)) {
 
 					$hit = $route;
 
@@ -59,19 +67,21 @@
 
 		// if any of the methods returns a class string to its caller (the app) instead of a route (or updates the `prefix` context property), we toss it back into this method
 		public function loadRoutesFromClass():Generator {
-			
-			$collection = $this->app->getClass($this->app->getAppMainRoutes())
+			// first check if `this->isApiRoute()` before deciding on whether to load this or the API route stack
+			$collection = $this->module->getClass($this->module->getAppMainRoutes())
 
 			->getLeaves(); // array of strings
 
-			$c # then do your generator ish here
+			// $collection-> # then do your generator ish here
 		}
 		
-		// request method is only compared on the final path. empty incoming path should check for presence of an index method
+		// request method vs route http method is only done on the final path. empty incoming path should check for presence of an index method
 		// will likely work hand in hand with the guy above
-		public function routeCompare(Route $route, string $incomingPath, string $httpMethod):bool {
+		public function routeCompare(Route $route):bool {
 
 			// reset `pathPlaceholders` on each parent/root route. populate it subsequently for leaves under it
+
+			// work with this->incomingPath
 		}
 		
 		public function updateRequestParameters():void {}
@@ -132,7 +142,7 @@
 
 			$route = $this->activeRoute;
 
-			$this->handlerParameters = $this->app->getMethodParameters($route->getController(), $route->handler);
+			$this->handlerParameters = $this->module->getMethodParameters($route->handler, $route->getController());
 
 			$this->warmParameters();
 
@@ -187,6 +197,11 @@
 					$defaultModel::class, $pathPlaceholders[$index]
 				);
 			}
+		}
+
+		public function isApiRoute ():bool {
+
+			return preg_match("/^" . $this->module->apiPrefix() . "/", $this->incomingPath);
 		}
 	}
 ?>

@@ -4,8 +4,9 @@ namespace Tilwa\Http\Response\Templating;
 
 use Tilwa\Helpers\Strings;
 
+use Tilwa\Contracts\HtmlParser;
 
-class TemplateEngine {
+class TemplateEngine implements HtmlParser {
 	
 	private $regex;
 
@@ -19,7 +20,7 @@ class TemplateEngine {
 
 	private $fileDirectory;
 	
-	function __construct(string $filePath, $folder ) {
+	function __construct(string $filePath, string $folder ) {
 
 		$this->file = file_get_contents($filePath . '.tmpl');
 

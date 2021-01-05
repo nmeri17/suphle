@@ -2,12 +2,9 @@
 
 	namespace Tilwa\Http\Request;
 
-	use Tilwa\Contracts\Orm;
+	use Tilwa\Contracts\{Orm, Authenticator as AuthInterface};
 
-	use Models\User;
-
-	// handles login, logout, continuity i.e. pulling user out of orm
-	class Authenticator {
+	class Authenticator implements AuthInterface {
 
 		private $user;
 
@@ -15,39 +12,44 @@
 
 		private $databaseAdapter;
 
-		private $statelessLogin;
-
 		private $sessionIdentifier;
 
+		private $userModel;
+
+		private $isApiRoute;
+
 		/**
-		* @param {checkToken} Since user cannot be authenticated by both session and API at once, the router should bind a property guiding us on what context we should work with
+		* @param {isApiRoute} Since user cannot be authenticated by both session and API at once, the router should bind a property guiding us on what context we should work with
 		*/
-		function __construct(Orm $databaseAdapter, bool $checkToken = false) {
+		function __construct(Orm $databaseAdapter, string $userModel, bool $isApiRoute) {
 
 			$this->databaseAdapter = $databaseAdapter;
 
-			$this->checkToken = $checkToken;
+			$this->isApiRoute = $isApiRoute;
 
 			$this->userSearched = 0;
 
 			$this->sessionIdentifier = "tilwa_user_id";
+
+			$this->userModel = $userModel;
 		}
 
 		// return database ID of signed in user
 		public function getIdentifier ():int {
 
-			$headers = getallheaders();
+			if ($this->isApiRoute) {
 
-			$headerKey = "Authorization";
+				$headers = getallheaders();
 
-			if ($this->checkToken && array_key_exists($headerKey, $headers)) {
+				$headerKey = "Authorization";
 
-				$this->statelessLogin = true;
+				if (array_key_exists($headerKey, $headers)) {
 
-				$identifier = $headers[$headerKey]; // DESERIALIZE AND RETURN USER ID
-				return $identifier;
+					$identifier = $headers[$headerKey]; // DESERIALIZE AND RETURN USER ID
+					return $identifier;
+				}
 			}
-			return $_SESSION[$this->sessionIdentifier];
+			else return $_SESSION[$this->sessionIdentifier];
 		}
 
 		public function continueSession ():void {
@@ -56,7 +58,7 @@
 
 			$user = null;
 
-			if ($userId) $user = $this->databaseAdapter->findOne(User::class, $userId); // when not using default folder structure/ modular architecture, this would fail. The parent bootstrap should point to this class. your module overrides it at will, then binds that override to this class
+			if ($userId) $user = $this->databaseAdapter->findOne($this->userModel, $userId);
 
 			$this->setUser($user);
 
@@ -75,11 +77,6 @@
 		private function setUser (User $user) {
 
 			$this->user = $user;
-		}
-
-		public function fromBrowser() {
-			
-			return !$this->statelessLogin;
 		}
 
 		public function initializeSession (int $userId):string {
