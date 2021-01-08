@@ -2,13 +2,13 @@
 
 	namespace Tilwa\Http\Response;
 
-	use Tilwa\App\Bootstrap;
+	use Tilwa\module\Bootstrap;
 
 	use Tilwa\Routing\{Route, RouteManager};
 
 	class ResponseManager {
 
-		private $app;
+		private $module;
 
 		private $router;
 
@@ -16,9 +16,9 @@
 
 		public $responseMutations;
 
-		function __construct (Bootstrap $app, RouteManager $router ) {
+		function __construct (Bootstrap $module, RouteManager $router ) {
 
-			$this->app = $app;
+			$this->module = $module;
 
 			$this->router = $router;
 
@@ -38,7 +38,11 @@
 				$route->execute($arguments);
 			}
 
-			$body = $route->renderResponse();
+			$renderResponse = "renderResponse";
+
+			$parameters = $this->module->getMethodParameters($renderResponse, $route::class);
+
+			$body = call_user_func_array([$route, $renderResponse], $parameters);
 			
 			if (!$this->skipHandler)
 				
@@ -74,7 +78,7 @@
 			return $route;
 		}
 
-		// middleware delimited by commas. Middleware params delimited by colons
+		// middleware delimited by commas. Middleware parameters delimited by colons
 		private function runMiddleware ( Route $route ):bool {
 
 			$passed = true;
@@ -83,7 +87,7 @@
 
 				@[$className, $args] = explode(',', $mw);
 
-				$instance = $this->app->getClass($className);
+				$instance = $this->module->getClass($className);
 
 				if (is_callable($instance->postSourceBehavior))
 

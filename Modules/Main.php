@@ -4,9 +4,7 @@
 
 	use Tilwa\App\Bootstrap;
 
-	use AppRoutes\MainRoutes;
-
-	use Tilwa\Routing\RouteManager;
+	use AppRoutes\{MainRoutes, ApiRoutes\V1};
 	
 	class Main extends Bootstrap {
 
@@ -32,7 +30,7 @@
 		public function apiStack ():array { // remove this after testing it
 
 			return [
-				"v1" => $this->getClass(RouteManager::class)->mirrorBrowserRoutes()
+				"v1" => V1::class
 			];
 		}
 	}

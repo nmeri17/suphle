@@ -24,8 +24,6 @@
 
 		private $modelIndexesInParameters;
 
-		private $pathPlaceholders;
-
 		private $incomingPath;
 
 		private $httpMethod;
@@ -41,50 +39,80 @@
 			$this->httpMethod = $httpMethod;
 		}
 
-		/**
-		 * @param {requestPath}: does not support query urls
-		 *
-		 **/
-		public function findRoute () {
+		public function findRoute ():Route {
 
-			$hit = null;
-
-			foreach ($this->loadRoutesFromClass() as $route) {
+			foreach ($this->entryRouteMap() as $collection) {
 				
-				if ($this->routeCompare($route)) {
+				$hit = $this->recursiveSearch($collection);
 
-					$hit = $route;
+				if (!is_null($hit)) {
 
-					break;
+					$this->updateRequestParameters($hit->setPath($this->incomingPath));
+
+					return $hit;
 				}
 			}
-			if (!is_null($hit))
-
-				$this->updateRequestParameters($hit->setPath($requestPath));
-
-			return $hit;
 		}
 
 		// if any of the methods returns a class string to its caller (the app) instead of a route (or updates the `prefix` context property), we toss it back into this method
-		public function loadRoutesFromClass():Generator {
-			// first check if `this->isApiRoute()` before deciding on whether to load this or the API route stack
-			$collection = $this->module->getClass($this->module->getAppMainRoutes())
+		public function loadPatterns(object $instance):Generator {
 
-			->getLeaves(); // array of strings
+			if ($instance->_passover())
+			
+				foreach ($instance->getPatterns() as $pattern)
+				 	
+				 	yield $pattern;
+			else yield;
+		}
 
-			// $collection-> # then do your generator ish here
+		private function recursiveSearch(string $routeClass, string $routeState = "", bool $nestedMode = false):Route {
+
+			$instance = $this->module->getClass($routeClass);
+
+			$instance->_setAllow($this->module->routePermissions()); // this should be provisioned
+			
+			foreach ($this->loadPatterns($instance) as $pattern) {
+
+				$routeList = call_user_func([$instance, $pattern]);
+
+				$temporaryFullPath = $nestedMode ? "$routeState/$pattern": $pattern;
+
+				if (!is_null($instance->prefixClass) && $this->prefixMatch($temporaryFullPath)) { // only delve deeper if we're on the right track i.e. if nested path = foo/bar/foobar, and nested method "bar" defines prefix, we only wanna explore its contents if requested route matches foo/bar
+
+					$findNested = $this->recursiveSearch($instance->prefixClass, $temporaryFullPath, true);
+
+					if ($findNested instanceof Route)
+
+						return $findNested;
+				}
+				else {
+					foreach ($routeList as $route) {
+
+						$this->fullPath = $temporaryFullPath;
+
+						if ($this->prefixMatch($this->fullPath) && $route->method == $this->httpMethod)
+
+							return $route;
+					}
+					$instance->prefixClass = null; // reset ahead of other prefixed calls
+				}
+			}
+		}
+
+		private function prefixMatch(string $routeState):bool {
+			
+			return preg_match("/^$routeState/", $this->incomingPath); // account for placeholder patterns while matching i.e. replace and create a dynamic pattern
+
+			// account for empty incoming and plug in "index"
+
+			// leading slash should be optional
 		}
 		
-		// request method vs route http method is only done on the final path. empty incoming path should check for presence of an index method
-		// will likely work hand in hand with the guy above
-		public function routeCompare(Route $route):bool {
+		// i think this has to do with replacing path placeholders with parameters
+		public function updateRequestParameters():void {
 
-			// reset `pathPlaceholders` on each parent/root route. populate it subsequently for leaves under it
-
-			// work with this->incomingPath
+			// work with this->fullPath
 		}
-		
-		public function updateRequestParameters():void {}
 
 		public function setPrevious(Route $route ):static {
 
@@ -159,15 +187,15 @@
 
 		private function warmParameters():void {
 			
-			foreach ($this->handlerParameters as $idx => $arg) {
+			foreach ($this->handlerParameters as $parameter => $argument) {
 				
-				if ($arg instanceof BaseRequest)
+				if ($argument instanceof BaseRequest)
 				
-					$this->requestIndexInParameters = $idx;
+					$this->requestIndexInParameters = $parameter;
 
-				elseif ( $this->databaseAdapter->isModel($arg))
+				elseif ( $this->databaseAdapter->isModel($argument))
 
-					$this->modelIndexesInParameters[] = $idx;
+					$this->modelIndexesInParameters[$parameter] = $argument;
 			}
 		}
 
@@ -186,22 +214,72 @@
 		*/
 		private function hydrateModels():void {
 
-			$pathPlaceholders = array_values($this->activeRoute->placeholderMap);
+			$request = $this->activeRoute->getRequest();
 			
-			foreach ($this->modelIndexesInParameters as $index => $modelIndex) {
+			foreach ($this->modelIndexesInParameters as $parameter => $model)
 
-				$defaultModel = $this->handlerParameters[ $modelIndex];
-
-				$this->handlerParameters[ $modelIndex] = $this->databaseAdapter
+				$this->handlerParameters[ $parameter] = $this->databaseAdapter
 				->findOne(
-					$defaultModel::class, $pathPlaceholders[$index]
+					$model::class, $request->$parameter // relies on the invocation ordering that populated request payload prior to calling this
 				);
-			}
 		}
 
 		public function isApiRoute ():bool {
 
 			return preg_match("/^" . $this->module->apiPrefix() . "/", $this->incomingPath);
+		}
+
+		// given a request to api/v3/verb/noun, return v3
+		public function incomingVersion():string {
+			
+			$pattern = $this->module->apiPrefix() . "\/(.+?)\/";
+
+			preg_match("/^" . $pattern . "/i", $this->incomingPath, $version);
+
+			return $version[1];
+		}
+
+		# api/v3/verb/noun should return all versions from v3 and below
+		private function apiVersionClasses():array {
+
+			$versionKeys = array_keys($this->module->apiStack());
+
+			$versionHandlers = array_values($this->module->apiStack());
+
+			$start = array_search( // case-insensitive search
+
+				strtolower($this->incomingVersion()),
+
+				array_map("strtolower", $versionKeys)
+			);
+
+			$versionHandlers = array_slice($versionHandlers, $start, count($versionHandlers)-1);
+
+			$versionKeys = array_slice($versionKeys, $start, count($versionKeys)-1);
+
+			return array_combine($versionKeys, $versionHandlers);
+		}
+
+		// @return Strings[]
+		private function entryRouteMap():array {
+			
+			if ($this->isApiRoute()) {
+
+				$this->stripApiPrefix();
+
+				return $this->apiVersionClasses();
+			}
+			return [$this->module->getAppMainRoutes()];
+		}
+
+		// given a request to api/v3/verb/noun, return verb/noun
+		private function stripApiPrefix():void {
+			
+			$pattern = $this->module->apiPrefix() . "\/.+?\/(.+)";
+
+			preg_match("/^" . $pattern . "/i", $this->incomingPath, $path);
+			
+			$this->incomingPath = $path[1];
 		}
 	}
 ?>

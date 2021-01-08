@@ -2,9 +2,9 @@
 
 	namespace Tilwa\Http\Request;
 
-	use Tilwa\Contracts\{Orm, Authenticator as AuthInterface};
+	use Tilwa\Contracts\{Orm, Authenticator};
 
-	class Authenticator implements AuthInterface {
+	class SessionAuth implements Authenticator {
 
 		private $user;
 

@@ -1,21 +1,21 @@
-run renderResponse through method loader
-
-work on routeManager, authenticator class
-
+work on routeManager, sessionAuth class
+	- continue from route manager->prefixMatch and co.
+	- implement the missing holes from the route collection demands on route manager
+	- correctly `provide` the collection instance and _setAllow
+	- finish work on route collection
 work on whenType and others on bootstrap
 
 service provider->bindArguments should be passed through the method loader
 
-load and define CRUD and regular routes. play with nested routes. ensure requests to api routes doesn't slip into browser route list
+auth module/classes
+	- validate registration credentials
+	- send mail and create new user
+	- visit email verification link
 
 ready for controller actions!
 
 
 install eloquent
-
-validate registration credentials
-send mail and create new user
-visit email verification link
 
 ->createQueryBuilder()
 
@@ -23,13 +23,3 @@ visit email verification link
 
 ->where('u.email = ?1')->setParameter(1, $reqData['email'])
 
-function get_this_class_methods($class){ // should be used to grab route class custom routes
-    $array1 = get_class_methods($class);
-    if($parent_class = get_parent_class($class)){
-        $array2 = get_class_methods($parent_class);
-        $array3 = array_diff($array1, $array2);
-    }else{
-        $array3 = $array1;
-    }
-    return($array3);
-}

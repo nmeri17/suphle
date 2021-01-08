@@ -16,6 +16,8 @@
 
 	use Tilwa\ServiceProviders\{OrmProvider, AuthenticatorProvider, HtmlTemplateProvider};
 
+	use Tilwa\Http\Request\RouteGuards;
+
 	abstract class Bootstrap {
 
 		/* @property bool */
@@ -32,6 +34,7 @@
 			// ->configMail() // we only wanna run this if it's not set already and if dev wanna send mails. so, a mail adapter?
 		}
 
+		// should be listed in descending order of the versions
 		public function apiStack ():array;
 
 		public function browserEntryRoute ():string;
@@ -215,11 +218,15 @@
 		* @param {method}:string|Closure
 		* @return {Array} of hydrated parameters to call given method with
 		*/ 
-		public function getMethodParameters ( $method, string $class) {
+		public function getMethodParameters ( $method, string $class):array {
 
 			// class is disregarded when method= closure
 
-			// still works with `this.getClass` (or, at least, borrows same mechanism) but that guy works with the constructor directly, so you can pass in a method name from here (or default to constructor). @see line 130
+			// still works with `this->getClass` (or, at least, borrows same mechanism) but that guy works with the constructor directly, so you can pass in a method name from here (or default to constructor). @see line 130
+
+			// if you don't liaise with `this->getClass` first check if class has been previously loaded. if it's not there, plug it into our `classes` array
+
+			// try and key the final array by the parameter name instead of a numeric array of values
 		}
 
 		public function setDependsOn(array $bindings):self {
@@ -251,6 +258,12 @@
 		public function getViewPath ():string {
 
 			return $this->getRootPath() . 'views'. DIRECTORY_SEPARATOR;
+		}
+
+		# class containing route guard rules
+		public function routePermissions():object {
+			
+			return $this->getClass(RouteGuards::class);
 		}
 	}
 

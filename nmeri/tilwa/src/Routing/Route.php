@@ -12,8 +12,6 @@
 
 		public $pattern;
 
-		public $placeholderMap;
-
 		public $method;
 
 		private $middleware; // array
@@ -27,6 +25,8 @@
 		private $request;
 
 		private $controller;
+
+		public $contentNegotiable;
 
 
 		public function getMiddlewares () {
@@ -87,7 +87,7 @@
 			return $this;
 		}
 
-		public function assignMethod($userMethod) {
+		public function assignMethod($userMethod):self {
 			
 			$methods = ["get", "post", "put", "delete"];
 
@@ -95,16 +95,23 @@
 				
 				return $m == strtolower($userMethod);
 			})[0];
+
+			return $this;
 		}
 
-		public function setMiddleware($middleware ) {
+		public function setMiddleware(array $middleware ) {
 			
-			$this->middleware = is_string($middleware) ? [$middleware] : $middleware;
+			$this->middleware = $middleware;
 		}
 
-		public function setController($class ) {
+		public function setController($class ):void { // put this on the manager
 			
 			$this->controller = $class;
+		}
+
+		public function isContentNegotiable() {
+			
+			$this->contentNegotiable = true;
 		}
 	}
 ?>

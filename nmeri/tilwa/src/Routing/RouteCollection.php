@@ -1,54 +1,114 @@
 <?php
 
 	namespace Tilwa\Routing;
+	
+	use Controllers\Home;
 
 	class RouteCollection {
 
-		// should be called in the api entry class so subsequent methods found within the same scope can overwrite methods attending to browser
-		public function mirrorBrowserRoutes () {
+		private $utilities;
 
-			// duplicate browser routes, but change the anchor key to "api"
+		public $prefixClass;
+
+		private $allow;
+
+		private $canaryValidator;
+
+		private $browserEntry;
+
+		public $isMirroring;
+
+		function __construct(CanaryValidator $validator, string $browserEntry) {
+			
+			$this->canaryValidator = $validator;
+
+			$this->browserEntry = $browserEntry;
+
+			$this->utilities = ["_mirrorBrowserRoutes", "_passover", "_handlingClass", "_crud", "_register", "_setAllow", "_canaryEntry"];
 		}
 
-		public function crud (string $basePath, string $controller, array $overrides ) {
+		// overwrite in your routes file
+		public function _index ():array {
 
-			// there should be an overwriteable heuristic for determining whether view for a requested exists and to return that or JSON (along with what controller action we're calling)
-
-			$resourceTemplates = []; // showCreateForm, saveNew, showAll, showOne, update, delete
-
-			// foreach ($resourceTemplates)
+			// register a route here
+			
+			# should be treated specially in the matcher, when path is empty i.e. /, cart/
 		}
 
-		public function get (Route $route) {
+		/**
+		* @description: should be called only in the API first version's _index method
+		* Assumes that _index method is defined last so subsequent methods found within the same scope can overwrite methods from the nested browser route search
+		*/
+		public function _mirrorBrowserRoutes ():void {
 
-			// register
+			$this->isMirroring = true; // should be used in the manager
+
+			return $this->_prefixFor($this->browserEntry); //  then update a property on the route that enables content negotiation
 		}
 
-		public function post (Route $route) {
+		public function _handlingClass ():string {
 
-			// register
+			return Home::class; // default controller
 		}
 
-		public function delete (Route $route) {
+		protected function _crud ():CrudBuilder {
 
-			// register
+			if ($this->prefix)
+
+				return new CrudBuilder($this, $this->prefix);
 		}
 
-		public function put (Route $route) {
+		public function __call ($method, $route) {
 
-			// register
+			if (array_search($method, ["_get", "_post", "_delete", "_put"]))
+
+				return $this->_register($route, $method);
 		}
 
-		private function register($route) {
+		public function _register(Route $route, string $method):array {
 
-			$route->assignMethod();
-
-			$route->pattern = !strlen($pathPattern) ? 'index' : $pathPattern;
+			return [$route->assignMethod(substr($method, 1))];
 		}
 
-		public function prefixFor (string $routeClass) {
+		// this will be unset by the manager after working with the given class
+		public function _prefixFor (string $routeClass):void {
 
-			// load it somewhere for recurser to pick up?
+			$this->prefixClass = $routeClass;
+		}
+
+		# filter off methods that aren't one of us
+		public function getPatterns():array {
+
+			$myMethods = get_class_methods($this);
+
+			if ($parent_class = get_parent_class($this)) {
+
+				$parentMethods = get_class_methods($parent_class);
+				$myMethods = array_diff($myMethods, $parentMethods);
+			}
+			return array_diff($myMethods, $this->utilities);
+		}
+
+		# @return $this->allow->auth();
+		public function _passover():bool {
+			
+			return true;
+		}
+
+		public function _setAllow(object $rulesClass):void {
+
+			$this->allow = $rulesClass;
+		}
+
+		protected function _canaryEntry(array $canaries):void {
+
+			$validEntries = $this->canaryValidator->validate($canaries);
+			
+			foreach ($validEntries as $canary)
+				
+				if ($canary->willLoad() )
+
+					return $this->_prefixFor($canary->entryClass());
 		}
 	}
 ?>

@@ -2,11 +2,14 @@
 
 	namespace AppRoutes;
 
-	use Tilwa\Routing\{Route, RouteRegister};
+	use Tilwa\Routing\{Route, RouteCollection};
 
-	class MainRoutes extends RouteRegister {
+	class MainRoutes extends RouteCollection {
 		
-		//
+		public function report() {
+			
+			return $this->_prefixFor(ReportsRoutes::class);
+		}
 	}
 
 	$registrar->register('', 'Home@index', 'index');
