@@ -65,7 +65,12 @@
 			else yield;
 		}
 
-		private function recursiveSearch(string $routeClass, string $routeState = "", bool $nestedMode = false):Route {
+		/**
+		* to find from cache, we won't need:
+			- we'll need to not parse our route before matching
+			- loadPatterns?
+		*/
+		private function recursiveSearch(string $routeClass, string $routeState = "", bool $nestedMode = false, bool $fromCache = false):Route {
 
 			$instance = $this->module->getClass($routeClass);
 
@@ -75,37 +80,97 @@
 
 				$routeList = call_user_func([$instance, $pattern]);
 
-				$temporaryFullPath = $nestedMode ? "$routeState/$pattern": $pattern;
+				if ($pattern == "_index") $pattern = ""; // pair empty incoming path with _index method
 
-				if (!is_null($instance->prefixClass) && $this->prefixMatch($temporaryFullPath)) { // only delve deeper if we're on the right track i.e. if nested path = foo/bar/foobar, and nested method "bar" defines prefix, we only wanna explore its contents if requested route matches foo/bar
+				$newRouteState = $nestedMode ? "$routeState/$pattern": $pattern;
 
-					$findNested = $this->recursiveSearch($instance->prefixClass, $temporaryFullPath, true);
+				$parsed = $this->regexForm($newRouteState);
 
-					if ($findNested instanceof Route)
+				if (!is_null($instance->prefixClass) && $this->prefixMatch($parsed)) { // only delve deeper if we're on the right track i.e. if nested path = foo/bar/foobar, and nested method "bar" defines prefix, we only wanna explore its contents if requested route matches foo/bar
 
-						return $findNested;
+					return $this->recursiveSearch($instance->prefixClass, $newRouteState, true); // we don't bother checking whether a route was found or not because if there was none after going downwards, searching sideways won't help either
 				}
 				else {
-					foreach ($routeList as $route) {
+					foreach ($routeList as $route) { // we'll usually get one route here, except for CRUD routes
 
-						$this->fullPath = $temporaryFullPath;
+						if ($this->routeCompare($parsed, $route->method)) {
 
-						if ($this->prefixMatch($this->fullPath) && $route->method == $this->httpMethod)
-
+							$this->fullPath = $parsed;
+							
 							return $route;
+						}
 					}
-					$instance->prefixClass = null; // reset ahead of other prefixed calls
 				}
 			}
 		}
 
-		private function prefixMatch(string $routeState):bool {
+		private function routeCompare(string $path, string $routeMethod):bool {
 			
-			return preg_match("/^$routeState/", $this->incomingPath); // account for placeholder patterns while matching i.e. replace and create a dynamic pattern
+			return $this->prefixMatch($path) && $routeMethod == $this->httpMethod;
+		}
 
-			// account for empty incoming and plug in "index"
+		// given hypothetic path: PATH_id_EDIT_id2_EDIT__SAME__OKJh_optionalO_TOMP
+		private function regexForm(string $routeState):string {
 
-			// leading slash should be optional
+			$segmentDelimiters = ["h" => "-", "u" => "_"];
+
+			$pattern = "(
+				(_)?#literal to literal i.e. no placeholder in between
+				(?<one_word>
+					[A-Z0-9]+# one word match
+					(
+						(
+							_{2}[A-Z0-9]+)+# chain as many uppercase characters
+							(?<merge_delimiter>[hu])?# double underscores with uppercase letters ending with any of these will be replaced with their counterparts
+					)?# compound word
+				)
+			)?# literal match
+			(
+				(?:_)?# path segments delimited by single underscores
+				(?<placeholder>
+					[a-z0-9]+
+					(?<is_optional>[O])?
+				)
+				_?# possible trailing slash before next literal
+			)?";
+
+			return preg_replace_callback("/$pattern/x", function ($matches) use ( $segmentDelimiters) {
+
+				$builder = "";
+				
+				if ($default = @$matches["one_word"]) {
+
+					if ($delimiter = @$matches["merge_delimiter"])
+
+						$default = implode(
+							$segmentDelimiters[$delimiter], explode(
+								"__", rtrim($default, $delimiter) // trailing "h"
+							)
+						);
+
+					$builder .=  "$default\/";
+				}
+				$wordPattern = "\w+?\/";
+
+				$hasPlaceholder = @$matches["placeholder"]; // you want to store this placeholder somewhere. the prefixing guy will reset it when the match fails. or just use another regex
+
+				if ($maybe = @$matches["is_optional"]) {
+
+					$hasPlaceholder = rtrim($hasPlaceholder, "O");
+
+					$builder .= "($wordPattern)?";
+				}
+				elseif ($hasPlaceholder) $builder .= $wordPattern;
+
+				return $builder;
+			}, $routeState);
+		}
+
+		private function prefixMatch (string $newRouteState):bool {
+			
+			return preg_match("/^$newRouteState
+				?# neutralize trailing slash in replaced path
+				/ix", $this->incomingPath);
 		}
 		
 		// i think this has to do with replacing path placeholders with parameters

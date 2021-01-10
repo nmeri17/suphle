@@ -1,6 +1,6 @@
 <?php
 
-	namespace AppRoutes;
+	namespace AppRoutes\ApiRoutes;
 
 	use Tilwa\Routing\{Route, RouteCollection};
 
