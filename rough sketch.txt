@@ -1,8 +1,12 @@
-work on routeManager, sessionAuth class
-	- continue from route manager->prefixMatch and co., line 155
+work on
+	- sessionAuth class
 	- implement the missing holes from the route collection demands on route manager
-	- correctly `provide` the collection instance and _setAllow
+	- provide HtmlParser constructor
 	- finish work on route collection
+	- define \request\route guard
+	- router->getPrevious should now work with the render response type
+	- refactor response manager to conform with new render types
+	- invoke all the methods on the abstract route required to boot it
 work on whenType and others on bootstrap
 
 service provider->bindArguments should be passed through the method loader
@@ -15,7 +19,7 @@ auth module/classes
 ready for controller actions!
 
 
-install eloquent
+install eloquent and plates
 
 ->createQueryBuilder()
 
@@ -23,8 +27,9 @@ install eloquent
 
 ->where('u.email = ?1')->setParameter(1, $reqData['email'])
 
-remember to store the placeholders
-
 route caching
 	- all the routes should pass through regexForm and get saved with the result under a trie the way they were defined. The aim is to skip this replacement phase during runtime
 	- only needed if you're using a lot of dynamic routes
+
+meeting at the village jan 29th
+burial date feb 25th

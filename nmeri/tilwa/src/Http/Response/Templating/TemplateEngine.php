@@ -20,9 +20,7 @@ class TemplateEngine implements HtmlParser {
 
 	private $fileDirectory;
 	
-	function __construct(string $filePath, string $folder ) {
-
-		$this->file = file_get_contents($filePath . '.tmpl');
+	function __construct( string $folder ) {
 
 		$this->fileDirectory = $folder;
 
@@ -301,10 +299,12 @@ class TemplateEngine implements HtmlParser {
 	 	}
 	}
 
+	// @param {rawData} array or iterable
+	public function parseAll (string $filePath, array $rawData) {
 
-	public function parseAll () {
+		$this->file = file_get_contents($this->fileDirectory . "/". $filePath . '.tmpl');
 
-		[$staticVars, $repeatedComponents ] = $this->findSingleAndGrouped();
+		[$staticVars, $repeatedComponents ] = $this->findSingleAndGrouped($rawData);
 
 		$enoughData = count($repeatedComponents) >= $this->fields()['blockCount'];
 

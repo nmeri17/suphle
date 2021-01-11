@@ -28,6 +28,8 @@
 
 		private $httpMethod;
 
+		private $fullTriedPath;
+
 		function __construct(Bootstrap $module, string $incomingPath, string $httpMethod ) {
 
 			$this->module = $module;
@@ -54,12 +56,11 @@
 			}
 		}
 
-		// if any of the methods returns a class string to its caller (the app) instead of a route (or updates the `prefix` context property), we toss it back into this method
-		public function loadPatterns(object $instance):Generator {
+		public function loadPatterns(RouteCollection $collection):Generator {
 
-			if ($instance->_passover())
+			if ($collection->_passover())
 			
-				foreach ($instance->getPatterns() as $pattern)
+				foreach ($collection->getPatterns() as $pattern)
 				 	
 				 	yield $pattern;
 			else yield;
@@ -67,18 +68,16 @@
 
 		/**
 		* to find from cache, we won't need:
-			- we'll need to not parse our route before matching
+			- to parse our route before matching
 			- loadPatterns?
 		*/
 		private function recursiveSearch(string $routeClass, string $routeState = "", bool $nestedMode = false, bool $fromCache = false):Route {
 
-			$instance = $this->module->getClass($routeClass);
-
-			$instance->_setAllow($this->module->routePermissions()); // this should be provisioned
+			$collection = $this->provideCollection($routeClass);
 			
-			foreach ($this->loadPatterns($instance) as $pattern) {
+			foreach ($this->loadPatterns($collection) as $pattern) {
 
-				$routeList = call_user_func([$instance, $pattern]);
+				$routeList = call_user_func([$collection, $pattern]);
 
 				if ($pattern == "_index") $pattern = ""; // pair empty incoming path with _index method
 
@@ -86,18 +85,22 @@
 
 				$parsed = $this->regexForm($newRouteState);
 
-				if (!is_null($instance->prefixClass) && $this->prefixMatch($parsed)) { // only delve deeper if we're on the right track i.e. if nested path = foo/bar/foobar, and nested method "bar" defines prefix, we only wanna explore its contents if requested route matches foo/bar
+				if (!is_null($collection->prefixClass) && $this->prefixMatch($parsed)) { // only delve deeper if we're on the right track i.e. if nested path = foo/bar/foobar, and nested method "bar" defines prefix, we only wanna explore its contents if requested route matches foo/bar
 
-					return $this->recursiveSearch($instance->prefixClass, $newRouteState, true); // we don't bother checking whether a route was found or not because if there was none after going downwards, searching sideways won't help either
+					return $this->recursiveSearch($collection->prefixClass, $newRouteState, true); // we don't bother checking whether a route was found or not because if there was none after going downwards, searching sideways won't help either
 				}
 				else {
 					foreach ($routeList as $route) { // we'll usually get one route here, except for CRUD routes
 
 						if ($this->routeCompare($parsed, $route->method)) {
 
-							$this->fullPath = $parsed;
+							$this->fullTriedPath = $parsed;
+
+							if ($collection->isMirroring)
+
+								$route->isContentNegotiable();
 							
-							return $route;
+							return $route->setController($collection->_handlingClass());
 						}
 					}
 				}
@@ -148,11 +151,11 @@
 							)
 						);
 
-					$builder .=  "$default\/";
+					$builder .=  "$default\/"; // the slash here is probably unrequired since the recursive loop adds that already
 				}
-				$wordPattern = "\w+?\/";
+				$wordPattern = "[a-z0-9]+?\/";
 
-				$hasPlaceholder = @$matches["placeholder"]; // you want to store this placeholder somewhere. the prefixing guy will reset it when the match fails. or just use another regex
+				$hasPlaceholder = @$matches["placeholder"];
 
 				if ($maybe = @$matches["is_optional"]) {
 
@@ -173,10 +176,13 @@
 				/ix", $this->incomingPath);
 		}
 		
-		// i think this has to do with replacing path placeholders with parameters
-		public function updateRequestParameters():void {
+		public function updateRequestParameters(Route $route):void {
+			$pattern = "(?<![A-Z0-9])# negative lookbehind: given PATH_id_EDIT_id2_EDIT__SAME__OKJh_optionalO_TOMP, refuse to match the h in the compound segment
+			([a-z0-9]+)# pick placeholders";
 
-			// work with this->fullPath
+			preg_match("/$pattern/x", $this->fullTriedPath, $matches);
+
+			$route->getRequest()->setPayload($matches[0]);
 		}
 
 		public function setPrevious(Route $route ):static {
@@ -345,6 +351,25 @@
 			preg_match("/^" . $pattern . "/i", $this->incomingPath, $path);
 			
 			$this->incomingPath = $path[1];
+		}
+
+		private function provideCollection(string $routeCollection):RouteCollection {
+
+			$module = $this->module;
+			
+			$module->whenType(RouteCollection::class)
+
+			->needsArguments([ // not passing the `preserve` argument so subsequent requests for this base type won't initialize these values afresh
+				"permissions" => function($module) {
+
+					return $module->getClass($module->routePermissions());
+				},
+				"browserEntry" => function($module) {
+
+					return $module->browserEntryRoute();
+				}
+			]);
+			return $module->getClass($routeCollection);
 		}
 	}
 ?>

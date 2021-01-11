@@ -18,8 +18,13 @@
 
 		public $isMirroring;
 
-		function __construct(CanaryValidator $validator, string $browserEntry) {
-			
+		/**
+		* @param {permissions} @see `Bootstrap->routePermissions`
+		*/
+		function __construct(CanaryValidator $validator, string $browserEntry, object $permissions) {
+
+			$this->allow = $permissions;
+
 			$this->canaryValidator = $validator;
 
 			$this->browserEntry = $browserEntry;
@@ -41,9 +46,9 @@
 		*/
 		public function _mirrorBrowserRoutes ():void {
 
-			$this->isMirroring = true; // should be used in the manager
+			$this->isMirroring = true;
 
-			return $this->_prefixFor($this->browserEntry); //  then update a property on the route that enables content negotiation
+			return $this->_prefixFor($this->browserEntry);
 		}
 
 		public function _handlingClass ():string {
@@ -67,7 +72,7 @@
 
 		public function _register(Route $route, string $method):array {
 
-			return [$route->assignMethod(substr($method, 1))];
+			return [$route->assignMethod(ltrim($method, "_"))];
 		}
 
 		// this will be unset by the manager after working with the given class
@@ -93,11 +98,6 @@
 		public function _passover():bool {
 			
 			return true;
-		}
-
-		public function _setAllow(object $rulesClass):void {
-
-			$this->allow = $rulesClass;
 		}
 
 		protected function _canaryEntry(array $canaries):void {

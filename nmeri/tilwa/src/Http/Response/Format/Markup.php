@@ -2,34 +2,45 @@
 
 	namespace Tilwa\Http\Response\Format;
 
-	use Tilwa\Routing\Route;
-
-	class Markup extends Route {
+	class Markup extends AbstractRenderer {
 
 		public $viewName;
 
-		public $appendHeader;
+		public $handler;
 
-		private $viewModels;
+		public $contentNegotiable;
 
-		function __construct( string $viewName, bool $appendHeader = true, array $viewModels = []) {
+		private $wantsJson;
+
+		function __construct(string $handler, string $viewName) {
 
 			$this->viewName = $viewName;
 
-			$this->appendHeader = $appendHeader;
-
-			$this->viewModels = $viewModels;
+			$this->handler = $handler;
 		}
 
-		public function renderResponse(HtmlParser $htmlAdapter) {
+		public function render() {
 			
-			// you want to call this->runViewModels somewhere here
-			return $this->publishHtml($htmlAdapter);
+			if (!$this->contentNegotiable && !$this->wantsJson())
+
+				return $this->renderHtml();
+
+			return $this->renderJson();
 		}
 
-		public function runViewModels () {
+		public function isContentNegotiable():void {
 			
-			# it is expected that html formatting will be done here instead of the view template. we want viewModels to contain an array of Class@handler with which we can use to further parse template for that specific request
+			$this->contentNegotiable = true;
+		}
+
+		public function wantsJson():bool {
+			
+			return $this->wantsJson;
+		}
+
+		public function setWantsJson():void {
+			
+			return $this->wantsJson = true;
 		}
 	}
 ?>

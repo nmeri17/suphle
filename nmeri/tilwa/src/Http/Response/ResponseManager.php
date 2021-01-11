@@ -38,11 +38,7 @@
 				$route->execute($arguments);
 			}
 
-			$renderResponse = "renderResponse";
-
-			$parameters = $this->module->getMethodParameters($renderResponse, $route::class);
-
-			$body = call_user_func_array([$route, $renderResponse], $parameters);
+			$body = $route->render();
 			
 			if (!$this->skipHandler)
 				

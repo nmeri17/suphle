@@ -2,16 +2,18 @@
 
 	namespace Tilwa\Http\Response\Format;
 
-	use Tilwa\Routing\Route;
+	class Reload extends AbstractRenderer {
 
-	class Reload extends Route {
+		function __construct(string $handler) {
 
-		public function renderResponse(HtmlParser $htmlAdapter) {
+			$this->handler = $handler;
+		}
 
-			$this->rawResponse += $this->getPrevious()->rawResponse; // avoid overwriting our own response
+		public function render() {
+
+			$this->rawResponse += $this->router->getPrevious()->rawResponse; // avoid overwriting our own response
 			
-			// you want to call this->runViewModels somewhere here
-			return $this->publishHtml($htmlAdapter);
+			return $this->renderHtml();
 		}
 	}
 ?>

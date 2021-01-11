@@ -6,28 +6,24 @@
 
 	use Tilwa\Http\Request\BaseRequest;
 
-	use Tilwa\Contracts\HtmlParser;
-
 	class Route {
 
 		public $pattern;
 
 		public $method;
 
-		private $middleware; // array
+		private $middleware; // so, how do we access this guy given the route itself is now cutoff?
 
 		public $requestSlug;
 
-		private $rawResponse;
-
-		private $handler;
-
 		private $request;
 
-		private $controller;
+		function __construct(string $pattern, string $method) {
 
-		public $contentNegotiable;
+			$this->method = $method;
 
+			$this->pattern = $pattern;
+		}
 
 		public function getMiddlewares () {
 
@@ -53,40 +49,6 @@
 			return $this;
 		}
 
-		public function renderResponse ($adapter) {
-
-			return $this->publishJson();
-		}
-
-		public function publishHtml(HtmlParser $htmlAdapter) {
-			
-			// you want to call this->runViewModels somewhere here
-			return $htmlAdapter->parseAll();
-		}
-
-		protected function publishJson() {
-
-			$request = $this->request;
-
-			if (!$request->isValidated())
-
-				$response = $request->validationErrors();
-
-			else $response = $this->rawResponse;
-			
-			return json_encode($response);
-		}
-
-		public function execute (array $handlerParameters):static {
-
-			$this->rawResponse = call_user_func_array([
-
-				$this->getController(), $this->handler], $handlerParameters
-			);
-
-			return $this;
-		}
-
 		public function assignMethod($userMethod):self {
 			
 			$methods = ["get", "post", "put", "delete"];
@@ -102,16 +64,6 @@
 		public function setMiddleware(array $middleware ) {
 			
 			$this->middleware = $middleware;
-		}
-
-		public function setController($class ):void { // put this on the manager
-			
-			$this->controller = $class;
-		}
-
-		public function isContentNegotiable() {
-			
-			$this->contentNegotiable = true;
 		}
 	}
 ?>

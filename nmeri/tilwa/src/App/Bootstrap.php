@@ -27,6 +27,8 @@
 
 		private $classes = [];
 
+		private $provisionedClasses = [];
+
 		function __construct () {
 
 			$this->loadEnv()->initSession()->provideSelf();
@@ -171,24 +173,47 @@
 			return $this;
 		}
 
-		public function whenType (string $type) {
+		// after pairing this, if we're getting a class manually instead of injecting it as method argument, `getClass` will have to check debug_backtrace() for whether caller matches what we passed here
+		public function whenType (string $type):self {
 
-			// after pairing this, if we're getting a class manually instead of injecting it as method argument, `getClass` will have to check debug_backtrace() for whether caller matches what we passed here
+			$this->provisionContext = $type; // unset after the `gives`
+			return $this;
 		}
 
-		public function whenTypeAny () {
+		public function whenTypeAny ():self {
 
 			return $this->whenType("*");
 		}
 
-		public function needsArguments (string $type) {
+		/**
+		* @param {preserve} when false, overrides any previous concrete given for these arguments
+		*/
+		public function needsArguments (array $arguments, bool $preserve=true) {
 
-			//
+			if (!($context = @$this->provisionedClasses[$this->provisionContext]))
+
+				$context = $this->providerTemplate($preserve);
+
+			$oldArguments = $context["arguments"];
+
+			foreach ($arguments as $name => $callback) {
+
+				if (!array_key_exists($name, $oldArguments) || !$context["preserve"])
+
+					$oldArguments[$name] = $callback($this);
+			}
+			$context["arguments"] = $oldArguments;
+
+			$this->provisionedClasses[$this->provisionContext] = $context;
 		}
 
-		public function giveArguments (array $arguments) {
-
-			//
+		// the regular getClass should populate this object using the "*" key as reference. remove the `classes` property
+		private function providerTemplate(bool $preserve):array {
+			
+			return [
+				"concretes" => [], // populated by `needs`
+				"arguments" => [] // associative array of closures
+			] + compact("preserve");
 		}
 
 		public function needs (string $type) {
@@ -203,14 +228,11 @@
 			// work with `this->getServiceProviders()`
 		}
 
-		public function needsArgumentsType (string $type) {
-
-			//
-		}
-
 		public function needsAny (string $type) {
 
 			// activates both arguments and normal needs ahead of the give call
+
+			// for this to replace base types, store the given base type string as key, then the overriding child as value
 		}
 
 		/**
@@ -261,9 +283,9 @@
 		}
 
 		# class containing route guard rules
-		public function routePermissions():object {
+		public function routePermissions():string {
 			
-			return $this->getClass(RouteGuards::class);
+			return RouteGuards::class;
 		}
 	}
 
