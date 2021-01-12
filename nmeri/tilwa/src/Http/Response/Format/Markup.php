@@ -12,7 +12,9 @@
 
 		private $wantsJson;
 
-		function __construct(string $handler, string $viewName) {
+		function __construct(string $handler, string $viewName, array $middleware) {
+			
+			$this->middleware = $middleware;
 
 			$this->viewName = $viewName;
 
@@ -28,7 +30,7 @@
 			return $this->renderJson();
 		}
 
-		public function isContentNegotiable():void {
+		public function contentIsNegotiable():void {
 			
 			$this->contentNegotiable = true;
 		}

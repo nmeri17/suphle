@@ -4,7 +4,7 @@
 
 	use Tilwa\App\{Bootstrap, ServiceProvider};
 
-	use Tilwa\Http\Request\Authenticator;
+	use Tilwa\Http\Request\NativeAuth;
 
 	use Tilwa\Routing\RouteManager;
 
@@ -22,7 +22,7 @@
 
 		public function concrete():string {
 
-			return Authenticator::class;
+			return NativeAuth::class;
 		}
 	}
 ?>

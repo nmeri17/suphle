@@ -2,9 +2,11 @@
 
 	namespace Tilwa\Http\Response;
 
-	use Tilwa\module\Bootstrap;
+	use Tilwa\App\Bootstrap;
 
-	use Tilwa\Routing\{Route, RouteManager};
+	use Tilwa\Routing\RouteManager;
+
+	use Tilwa\Http\Response\Format\Markup;
 
 	class ResponseManager {
 
@@ -29,16 +31,20 @@
 
 			$arguments = $this->router->prepareArguments();
 
-			$route = $this->getValidRoute();
+			$renderer = $this->getValidRenderer();
 
 			if (!$this->skipHandler) {
 
-				$this->runMiddleware($route);
+				$this->runMiddleware($renderer);
 
-				$route->execute($arguments);
+				if ($renderer instanceof Markup)
+
+					$renderer->wantsJson($this->router->acceptsJson());
+
+				$renderer->execute($arguments);
 			}
 
-			$body = $route->render();
+			$body = $renderer->render();
 			
 			if (!$this->skipHandler)
 				
@@ -51,11 +57,11 @@
 		*	For requests originating from browser, flow will be reverted to previous request, expecting its view to read the error bag
 		*	For other clients, the handler should be skipped altogether for the errors to be immediately rendered
 		*/
-		private function getValidRoute ():Route {
+		private function getValidRenderer ():AbstractRenderer {
 
-			$route = $this->router->getActiveRoute();
+			$renderer = $this->router->getActiveRenderer();
 
-			$request = $route->getRequest();
+			$request = $renderer->getRequest();
 
 			$browserOrigin = !$this->router->isApiRoute();
 
@@ -63,23 +69,23 @@
 
 				if ($browserOrigin)
 
-					$route = $this->router->mergeWithPrevious($request);
+					$renderer = $this->router->mergeWithPrevious($request);
 				
 				else $this->skipHandler = true;
 			}
 			else if ($browserOrigin)
 
-				$this->router->setPrevious($route);
+				$this->router->setPrevious($renderer);
 
-			return $route;
+			return $renderer;
 		}
 
 		// middleware delimited by commas. Middleware parameters delimited by colons
-		private function runMiddleware ( Route $route ):bool {
+		private function runMiddleware ( AbstractRenderer $renderer ):bool {
 
 			$passed = true;
 
-			foreach ($route->getMiddlewares() as $mw ) {
+			foreach ($renderer->getMiddlewares() as $mw ) {
 
 				@[$className, $args] = explode(',', $mw);
 
@@ -97,6 +103,7 @@
 			return $passed;
 		}
 
+		// last action before response is flushed. log or profile middleware goes here
 		private function mutateResponse(string $currentBody):string {
 
 			foreach ($this->responseMutations as $handler)

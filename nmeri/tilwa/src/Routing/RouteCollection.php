@@ -4,6 +4,8 @@
 	
 	use Controllers\Home;
 
+	use Tilwa\Http\Response\Format\AbstractRenderer;
+
 	class RouteCollection {
 
 		private $utilities;
@@ -32,13 +34,11 @@
 			$this->utilities = ["_mirrorBrowserRoutes", "_passover", "_handlingClass", "_crud", "_register", "_setAllow", "_canaryEntry"];
 		}
 
-		// overwrite in your routes file
-		public function _index ():array {
-
-			// register a route here
+		/** overwrite in your routes file
 			
-			# should be treated specially in the matcher, when path is empty i.e. /, cart/
-		}
+		* will be treated specially in the matcher, when path is empty i.e. /, cart/
+		*/
+		public function _index ():array; // register a route here
 
 		/**
 		* @description: should be called only in the API first version's _index method
@@ -55,27 +55,33 @@
 
 			return Home::class; // default controller
 		}
+		
+		public function _prefixCurrent():string {
+			
+			return null;
+		}
 
 		protected function _crud ():CrudBuilder {
 
-			if ($this->prefix)
+			if ($this->prefixClass)
 
-				return new CrudBuilder($this, $this->prefix);
+				return new CrudBuilder($this, $this->prefixClass);
 		}
 
-		public function __call ($method, $route) {
+		public function __call ($method, $renderer) {
 
-			if (array_search($method, ["_get", "_post", "_delete", "_put"]))
+			if (in_array($method, ["_get", "_post", "_delete", "_put"]))
 
-				return $this->_register($route, $method);
+				return $this->_register($renderer, $method);
 		}
 
-		public function _register(Route $route, string $method):array {
+		protected function _register(AbstractRenderer $renderer, string $method):array {
 
-			return [$route->assignMethod(ltrim($method, "_"))];
+			$renderer->routeMethod = ltrim($method, "_");
+
+			return [$renderer];
 		}
 
-		// this will be unset by the manager after working with the given class
 		public function _prefixFor (string $routeClass):void {
 
 			$this->prefixClass = $routeClass;

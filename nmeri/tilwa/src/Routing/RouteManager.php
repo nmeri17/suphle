@@ -6,13 +6,15 @@
 
 	use Tilwa\Contracts\Orm;
 
+	use Tilwa\Http\Response\Format\Markup;
+
 	use \Generator;
 
 	class RouteManager {
 
 		private $module;
 
-		private $activeRoute;
+		private $activeRenderer;
 
 		private $payload;
 
@@ -41,7 +43,7 @@
 			$this->httpMethod = $httpMethod;
 		}
 
-		public function findRoute ():Route {
+		public function findRenderer ():AbstractRenderer {
 
 			foreach ($this->entryRouteMap() as $collection) {
 				
@@ -49,7 +51,7 @@
 
 				if (!is_null($hit)) {
 
-					$this->updateRequestParameters($hit->setPath($this->incomingPath));
+					$this->updateRequestParameters($hit);
 
 					return $hit;
 				}
@@ -71,15 +73,19 @@
 			- to parse our route before matching
 			- loadPatterns?
 		*/
-		private function recursiveSearch(string $routeClass, string $routeState = "", bool $nestedMode = false, bool $fromCache = false):Route {
+		private function recursiveSearch(string $patternsCollection, string $routeState = "", bool $nestedMode = false, bool $fromCache = false):AbstractRenderer {
 
-			$collection = $this->provideCollection($routeClass);
+			$collection = $this->provideCollection($patternsCollection);
 			
 			foreach ($this->loadPatterns($collection) as $pattern) {
 
-				$routeList = call_user_func([$collection, $pattern]);
+				$rendererList = call_user_func([$collection, $pattern]);
 
 				if ($pattern == "_index") $pattern = ""; // pair empty incoming path with _index method
+
+				if ($prefix = $collection->_prefixCurrent())
+
+					$pattern = "$prefix/$pattern";
 
 				$newRouteState = $nestedMode ? "$routeState/$pattern": $pattern;
 
@@ -90,26 +96,26 @@
 					return $this->recursiveSearch($collection->prefixClass, $newRouteState, true); // we don't bother checking whether a route was found or not because if there was none after going downwards, searching sideways won't help either
 				}
 				else {
-					foreach ($routeList as $route) { // we'll usually get one route here, except for CRUD routes
+					foreach ($rendererList as $renderer) { // we'll usually get one route here, except for CRUD routes
 
-						if ($this->routeCompare($parsed, $route->method)) {
+						if ($this->routeCompare($parsed, $renderer->routeMethod)) {
 
 							$this->fullTriedPath = $parsed;
 
-							if ($collection->isMirroring)
+							if ($renderer instanceof Markup && $collection->isMirroring)
 
-								$route->isContentNegotiable();
+								$renderer->contentIsNegotiable();
 							
-							return $route->setController($collection->_handlingClass());
+							return $renderer->boot($this, $this->module, $collection->_handlingClass());
 						}
 					}
 				}
 			}
 		}
 
-		private function routeCompare(string $path, string $routeMethod):bool {
+		private function routeCompare(string $path, string $rendererMethod):bool {
 			
-			return $this->prefixMatch($path) && $routeMethod == $this->httpMethod;
+			return $this->prefixMatch($path) && $rendererMethod == $this->httpMethod;
 		}
 
 		// given hypothetic path: PATH_id_EDIT_id2_EDIT__SAME__OKJh_optionalO_TOMP
@@ -176,18 +182,18 @@
 				/ix", $this->incomingPath);
 		}
 		
-		public function updateRequestParameters(Route $route):void {
+		public function updateRequestParameters(AbstractRenderer $renderer):void {
 			$pattern = "(?<![A-Z0-9])# negative lookbehind: given PATH_id_EDIT_id2_EDIT__SAME__OKJh_optionalO_TOMP, refuse to match the h in the compound segment
 			([a-z0-9]+)# pick placeholders";
 
 			preg_match("/$pattern/x", $this->fullTriedPath, $matches);
 
-			$route->getRequest()->setPayload($matches[0]);
+			$renderer->getRequest()->setPayload($matches[0]);
 		}
 
-		public function setPrevious(Route $route ):static {
+		public function setPrevious(AbstractRenderer $renderer ):static {
 
-			$_SESSION['prev_route'] = $route;
+			$_SESSION['prev_route'] = $renderer;
 
 			return $this;
 		}
@@ -197,14 +203,14 @@
 			return $_SESSION['prev_route'];
 		}
 
-		public function getActiveRoute ():Route {
+		public function getActiveRenderer ():Route {
 
-			return $this->activeRoute;
+			return $this->activeRenderer;
 		}
 
-		public function setActiveRoute (Route $route):static {
+		public function setActiveRenderer (AbstractRenderer $renderer):self {
 
-			$this->activeRoute = $route;
+			$this->activeRenderer = $renderer;
 
 			return $this;
 		}
@@ -224,24 +230,24 @@
 		}
 
 		/**
-		* @return previous Route
+		* @return previous AbstractRenderer
 		*/
-		public function mergeWithPrevious(BaseRequest $request):Route {
+		public function mergeWithPrevious(BaseRequest $request):AbstractRenderer {
 			
-			$route = $this->getPrevious();
+			$renderer = $this->getPrevious();
 
-			$route->getRequest()
+			$renderer->getRequest()
 
 			->setValidationErrors( $request->validationErrors() );
 
-			return $route;
+			return $renderer;
 		}
 
 		public function prepareArguments():array {
 
-			$route = $this->activeRoute;
+			$renderer = $this->activeRenderer;
 
-			$this->handlerParameters = $this->module->getMethodParameters($route->handler, $route->getController());
+			$this->handlerParameters = $this->module->getMethodParameters($renderer->handler, $renderer->getController());
 
 			$this->warmParameters();
 
@@ -274,7 +280,7 @@
 
 			$request = $this->handlerParameters[$this->requestIndexInParameters]->setPayload($this->payload);
 
-			$this->activeRoute->setRequest ($request);
+			$this->activeRenderer->setRequest ($request);
 		}
 
 		/*
@@ -285,7 +291,7 @@
 		*/
 		private function hydrateModels():void {
 
-			$request = $this->activeRoute->getRequest();
+			$request = $this->activeRenderer->getRequest();
 			
 			foreach ($this->modelIndexesInParameters as $parameter => $model)
 
@@ -353,7 +359,7 @@
 			$this->incomingPath = $path[1];
 		}
 
-		private function provideCollection(string $routeCollection):RouteCollection {
+		private function provideCollection(string $rendererCollection):RouteCollection {
 
 			$module = $this->module;
 			
@@ -369,7 +375,17 @@
 					return $module->browserEntryRoute();
 				}
 			]);
-			return $module->getClass($routeCollection);
+			return $module->getClass($rendererCollection);
+		}
+
+		public function acceptsJson():bool {
+
+			foreach (getallheaders() as $key => $value) {
+				
+				if (strtolower($key) == "accept" && preg_match("/application\/json/i", $value))
+
+					return true;
+			}
 		}
 	}
 ?>

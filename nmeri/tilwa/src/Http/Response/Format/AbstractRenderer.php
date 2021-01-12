@@ -6,11 +6,13 @@
 
 	use Tilwa\Contracts\HtmlParser;
 
+	use Tilwa\Http\Request\BaseRequest;
+
 	abstract class AbstractRenderer {
 
-		public $router;
+		protected $router;
 
-		protected $handler;
+		public $handler;
 
 		private $controller;
 
@@ -18,17 +20,24 @@
 
 		protected $module;
 
-		public function setRouter(RouteManager $router):void {
+		public $routeMethod;
+
+		private $request;
+
+		protected $middleware;
+
+		public function boot(RouteManager $router, Bootstrap $module, string $class):self {
 
 			$this->router = $router;
+
+			$this->module = $module;
+			
+			$this->controller = $class;
+
+			return $this;
 		}
 
-		public function getRouter():RouteManager {
-
-			return $this->router;
-		}
-
-		public function execute (array $handlerParameters):static {
+		public function execute (array $handlerParameters):self {
 
 			$this->rawResponse = call_user_func_array([
 
@@ -38,23 +47,14 @@
 			return $this;
 		}
 
-		public function setController($class ):self {
+		public function getController():string {
 			
-			$this->controller = $class;
-
-			return $this;
-		}
-
-		public function setModule(Bootstrap $module):void {
-
-			$this->module = $module;
+			return $this->controller;
 		}
 
 		protected function renderJson():string {
 
-			$route = $this->router->getActiveRoute();
-
-			$request = $route->getRequest();
+			$request = $this->request;
 
 			if (!$request->isValidated())
 
@@ -65,11 +65,23 @@
 			return json_encode($response);
 		}
 
-		protected function renderHtml() {
+		protected function renderHtml():string {
 			
 			return $this->module->getClass(HtmlParser::class)
 
 			->parseAll($this->viewName, $this->rawResponse);
+		}
+
+		public function getRequest():BaseRequest {
+			
+			return $this->request;
+		}
+
+		public function setRequest(BaseRequest $request):self {
+			
+			$this->request = $request;
+
+			return $this;
 		}
 
 		abstract public function render ():string;

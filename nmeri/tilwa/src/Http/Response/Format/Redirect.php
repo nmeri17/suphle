@@ -2,13 +2,15 @@
 
 	namespace Tilwa\Http\Response\Format;
 
-	use Serializer;
+	use SuperClosure\Serializer;
 
 	class Redirect extends AbstractRenderer {
 
 		private $destination;
 
-		function __construct(string $handler, Closure $destination) {
+		function __construct(string $handler, Closure $destination, array $middleware) {
+			
+			$this->middleware = $middleware;
 
 			$this->destination = (new Serializer())->serialize($destination); // liquefy it so it can be cached later under previous requests
 

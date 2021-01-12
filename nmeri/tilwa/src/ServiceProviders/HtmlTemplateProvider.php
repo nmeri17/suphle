@@ -14,8 +14,6 @@
 
 			return [
 
-				"filePath" => $router->getActiveRoute()->viewName,
-
 				"folder" => $module->getViewPath()
 			];
 		}

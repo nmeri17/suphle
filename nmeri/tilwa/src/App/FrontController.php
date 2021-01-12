@@ -21,9 +21,9 @@
 
 		public function assignRoute():self {
 			
-			if ($target = $this->router->findRoute() ) {
+			if ($target = $this->router->findRenderer() ) {
 
-				$this->router->setActiveRoute($target)->savePayload();
+				$this->router->setActiveRenderer($target)->savePayload();
 
 				$this->foundRoute = true;
 			}
@@ -37,7 +37,7 @@
 
 		private function setRouter ($module) {
 
-			$this->router = new RouteManager($module, $_GET['tilwa_request'], $this->getHttpMethod()); // this guy should now be the new route repository
+			$this->router = new RouteManager($module, $_GET['tilwa_request'], $this->getHttpMethod());
 
 			$module->whenTypeAny()->needsAny(RouteManager::class)
 

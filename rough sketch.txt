@@ -1,12 +1,6 @@
 work on
 	- sessionAuth class
-	- implement the missing holes from the route collection demands on route manager
-	- provide HtmlParser constructor
-	- finish work on route collection
-	- define \request\route guard
-	- router->getPrevious should now work with the render response type
-	- refactor response manager to conform with new render types
-	- invoke all the methods on the abstract route required to boot it
+	- work on crud builder
 work on whenType and others on bootstrap
 
 service provider->bindArguments should be passed through the method loader
