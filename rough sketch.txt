@@ -1,10 +1,12 @@
-work on crud builder
-
 flesh out auth controller actions
 
 work on whenType and others on bootstrap. when pulling from the service provider, the provider->bindArguments should be passed through this->method loader
 
-ready for controller actions!
+implement behavior surrounding this and the service layer
+
+events
+
+flows
 
 
 install eloquent (requires a fork that doesn't use their container and event interfaces) and plates

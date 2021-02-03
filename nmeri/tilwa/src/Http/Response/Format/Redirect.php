@@ -19,9 +19,11 @@
 
 		public function render() {
 			
-			$callable = (new Serializer)->unserialize($this->destination)->bindTo($this, $this);
+			$callable = (new Serializer)->unserialize($this->destination)->bindTo($this, $this); // so dev can have access to `rawResponse`
 
-			return header('Location: '. $callable($this->rawResponse));
+			$parameters = $this->module->getMethodParameters($this->destination); // autowiring in case next location will be dictated by another library
+
+			return header('Location: '. call_user_func_array($callable, $parameters) );
 		}
 	}
 ?>

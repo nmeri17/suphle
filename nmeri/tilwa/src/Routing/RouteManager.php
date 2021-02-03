@@ -101,11 +101,11 @@
 					return $this->recursiveSearch($collection->prefixClass, $newRouteState, $pattern); // we don't bother checking whether a route was found or not because if there was none after going downwards, searching sideways won't help either
 				}
 				else {
-					foreach ($rendererList as $renderer) { // we'll usually get one route here, except for CRUD routes
+					foreach ($rendererList as $path => $renderer) { // we'll usually get one route here, except for CRUD invocations
 
 						if ($collection->expectsCrud)
 
-							$parsed .= $renderer->path;
+							$parsed .= $this->regexForm($path);
 
 						if ($this->routeCompare($parsed, $renderer->routeMethod)) {
 
@@ -128,7 +128,7 @@
 			return $this->prefixMatch($path) && $rendererMethod == $this->httpMethod;
 		}
 
-		/* given hypothetic path: PATH_id_EDIT_id2_EDIT__SAME__OKJh_optionalO_TOMP, clean and return a path similar to a real life path
+		/* given hypothetic path: PATH_id_EDIT_id2_EDIT__SAME__OKJh_optionalO_TOMP, clean and return a path similar to a real life path; but still in a regec format so optional segments can be indicated as such
 		PATH/id/EDIT/id2/EDIT-SAME-OKJ/TOMP
 		*/
 		private function regexForm(string $routeState):string {

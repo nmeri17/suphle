@@ -22,7 +22,7 @@
 
 		public $expectsCrud;
 
-		public $activeCrudPaths;
+		public $localPrefix;
 
 		/**
 		* @param {permissions} @see `Bootstrap->routePermissions`
@@ -71,13 +71,13 @@
 			$this->localPrefix = $prefix;
 		}
 
-		protected function _crud ():CrudBuilder {
+		protected function _crud (string $viewPath):CrudBuilder {
 
 			if (!empty($this->localPrefix)) { // confirm setting neither creates no crud routes
 
 				$this->expectsCrud = true;
 
-				return new CrudBuilder($this); // you must call `save` in the invoking method
+				return new CrudBuilder($this, $viewPath); // you must call `save` in the invoking method
 			}
 		}
 
@@ -128,6 +128,10 @@
 				if ($canary->willLoad() )
 
 					return $this->_prefixFor($canary->entryClass());
+		}
+
+		public function attachFlow() {
+			# code...
 		}
 	}
 ?>
