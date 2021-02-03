@@ -1,19 +1,13 @@
-work on
-	- sessionAuth class
-	- work on crud builder
-work on whenType and others on bootstrap
+work on crud builder
 
-service provider->bindArguments should be passed through the method loader
+flesh out auth controller actions
 
-auth module/classes
-	- validate registration credentials
-	- send mail and create new user
-	- visit email verification link
+work on whenType and others on bootstrap. when pulling from the service provider, the provider->bindArguments should be passed through this->method loader
 
 ready for controller actions!
 
 
-install eloquent and plates
+install eloquent (requires a fork that doesn't use their container and event interfaces) and plates
 
 ->createQueryBuilder()
 
@@ -27,3 +21,6 @@ route caching
 
 meeting at the village jan 29th
 burial date feb 25th
+
+this->_get(new ResponseType) // home route
+->flow([...define keys to return])->linksTo([categoryPath, pathToMenuItems])

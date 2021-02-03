@@ -24,15 +24,17 @@
 
 		private $request;
 
-		protected $middleware;
+		protected $statusCode;
 
-		public function boot(RouteManager $router, Bootstrap $module, string $class):self {
+		public $path;
+
+		public function setDependencies(RouteManager $router, Bootstrap $module, string $controllerClass):self {
 
 			$this->router = $router;
 
 			$this->module = $module;
 			
-			$this->controller = $class;
+			$this->controller = $controllerClass;
 
 			return $this;
 		}

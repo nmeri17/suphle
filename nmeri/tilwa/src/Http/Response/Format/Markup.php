@@ -12,9 +12,9 @@
 
 		private $wantsJson;
 
-		function __construct(string $handler, string $viewName, array $middleware) {
+		function __construct(string $handler, string $viewName, int $statusCode = 200) {
 			
-			$this->middleware = $middleware;
+			$this->statusCode = $statusCode;
 
 			$this->viewName = $viewName;
 

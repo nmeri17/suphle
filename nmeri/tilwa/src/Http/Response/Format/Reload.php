@@ -4,9 +4,10 @@
 
 	class Reload extends AbstractRenderer {
 
-		function __construct(string $handler, array $middleware) {
+		// change to 50* on validation error
+		function __construct(string $handler, int $statusCode = 200) {
 			
-			$this->middleware = $middleware;
+			$this->statusCode = $statusCode;
 
 			$this->handler = $handler;
 		}

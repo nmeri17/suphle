@@ -4,9 +4,9 @@
 
 	class Json extends AbstractRenderer {
 
-		function __construct(string $handler, array $middleware) {
+		function __construct(string $handler, int $statusCode = 200) {
 			
-			$this->middleware = $middleware;
+			$this->statusCode = $statusCode;
 
 			$this->handler = $handler;
 		}

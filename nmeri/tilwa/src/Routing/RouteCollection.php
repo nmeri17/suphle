@@ -20,6 +20,10 @@
 
 		public $isMirroring;
 
+		public $expectsCrud;
+
+		public $activeCrudPaths;
+
 		/**
 		* @param {permissions} @see `Bootstrap->routePermissions`
 		*/
@@ -31,7 +35,7 @@
 
 			$this->browserEntry = $browserEntry;
 
-			$this->utilities = ["_mirrorBrowserRoutes", "_passover", "_handlingClass", "_crud", "_register", "_setAllow", "_canaryEntry"];
+			$this->utilities = ["_mirrorBrowserRoutes", "_passover", "_handlingClass", "_crud", "_register", "_setAllow", "_canaryEntry", "_setLocalPrefix"];
 		}
 
 		/** overwrite in your routes file
@@ -60,12 +64,21 @@
 			
 			return null;
 		}
+		
+		// crud routes must be anchored by either a preceding collection group name, or the current one. So, we make that assertion from this property set externally by the manager
+		public function _setLocalPrefix(string $prefix):void {
+			
+			$this->localPrefix = $prefix;
+		}
 
 		protected function _crud ():CrudBuilder {
 
-			if ($this->prefixClass)
+			if (!empty($this->localPrefix)) { // confirm setting neither creates no crud routes
 
-				return new CrudBuilder($this, $this->prefixClass);
+				$this->expectsCrud = true;
+
+				return new CrudBuilder($this); // you must call `save` in the invoking method
+			}
 		}
 
 		public function __call ($method, $renderer) {

@@ -3,12 +3,21 @@
 
 	class CrudBuilder {
 		
-		function __construct(argument) {
-			// there should be an overwriteable heuristic for determining whether view for a requested exists and to return that or JSON (along with what controller action we're calling)
+		function __construct(RouteCollection $context) {
+			// pull what controller class is active
 
 			$resourceTemplates = []; // showCreateForm, saveNew, showAll, showOne, update, delete
 
 			// foreach ($resourceTemplates)
+		}
+
+		public function save():array {
+			
+			foreach ($this->createdRoutes as $route)
+
+				$this->context->_register($route);
+
+			return $this->createdRoutes; // is expected to contain a bunch of renderers
 		}
 	}
 ?>

@@ -73,30 +73,39 @@
 			- to parse our route before matching
 			- loadPatterns?
 		*/
-		private function recursiveSearch(string $patternsCollection, string $routeState = "", bool $nestedMode = false, bool $fromCache = false):AbstractRenderer {
+		private function recursiveSearch(string $patternsCollection, string $routeState = "", string $invokerPrefix = "", bool $fromCache = false):AbstractRenderer {
 
 			$collection = $this->provideCollection($patternsCollection);
+
+			$patternPrefix = $invokerPrefix ?? $collection->_prefixCurrent();
+
+			$collection->_setLocalPrefix($patternPrefix);
 			
 			foreach ($this->loadPatterns($collection) as $pattern) {
 
 				$rendererList = call_user_func([$collection, $pattern]);
+				/*
+					- pair empty incoming path with _index method
+					- crud methods disregard their method names
+				*/
+				if (($pattern == "_index") || $collection->expectsCrud) $pattern = "";
 
-				if ($pattern == "_index") $pattern = ""; // pair empty incoming path with _index method
+				if (!empty($patternPrefix) ) $pattern = "$patternPrefix/$pattern";
 
-				if ($prefix = $collection->_prefixCurrent())
-
-					$pattern = "$prefix/$pattern";
-
-				$newRouteState = $nestedMode ? "$routeState/$pattern": $pattern;
+				$newRouteState = $invokerPrefix ? "$routeState/$pattern": $pattern;
 
 				$parsed = $this->regexForm($newRouteState);
 
 				if (!is_null($collection->prefixClass) && $this->prefixMatch($parsed)) { // only delve deeper if we're on the right track i.e. if nested path = foo/bar/foobar, and nested method "bar" defines prefix, we only wanna explore its contents if requested route matches foo/bar
 
-					return $this->recursiveSearch($collection->prefixClass, $newRouteState, true); // we don't bother checking whether a route was found or not because if there was none after going downwards, searching sideways won't help either
+					return $this->recursiveSearch($collection->prefixClass, $newRouteState, $pattern); // we don't bother checking whether a route was found or not because if there was none after going downwards, searching sideways won't help either
 				}
 				else {
 					foreach ($rendererList as $renderer) { // we'll usually get one route here, except for CRUD routes
+
+						if ($collection->expectsCrud)
+
+							$parsed .= $renderer->path;
 
 						if ($this->routeCompare($parsed, $renderer->routeMethod)) {
 
@@ -106,9 +115,10 @@
 
 								$renderer->contentIsNegotiable();
 							
-							return $renderer->boot($this, $this->module, $collection->_handlingClass());
+							return $this->bootRenderer($renderer, $collection->_handlingClass());
 						}
 					}
+					$collection->expectsCrud = null; // for subsequent patterns
 				}
 			}
 		}
@@ -118,7 +128,9 @@
 			return $this->prefixMatch($path) && $rendererMethod == $this->httpMethod;
 		}
 
-		// given hypothetic path: PATH_id_EDIT_id2_EDIT__SAME__OKJh_optionalO_TOMP
+		/* given hypothetic path: PATH_id_EDIT_id2_EDIT__SAME__OKJh_optionalO_TOMP, clean and return a path similar to a real life path
+		PATH/id/EDIT/id2/EDIT-SAME-OKJ/TOMP
+		*/
 		private function regexForm(string $routeState):string {
 
 			$segmentDelimiters = ["h" => "-", "u" => "_"];
@@ -386,6 +398,21 @@
 
 					return true;
 			}
+		}
+
+		private function bootRenderer(AbstractRenderer $renderer, string $controllingClass):AbstractRenderer {
+
+			$dependencyMethod = "setDependencies";
+			
+			$parameters = $this->module->getMethodParameters($dependencyMethod, $renderer);
+
+			$controller = "controllerClass";
+
+			if (array_key_exists($controller, $parameters) && empty($parameters[$controller]))
+
+				$parameters[$controller] = $controllerClass;
+
+			return call_user_func_array([$renderer, $dependencyMethod], $parameters);
 		}
 	}
 ?>

@@ -8,9 +8,9 @@
 
 		private $destination;
 
-		function __construct(string $handler, Closure $destination, array $middleware) {
+		function __construct(string $handler, Closure $destination, int $statusCode = 302) {
 			
-			$this->middleware = $middleware;
+			$this->statusCode = $statusCode;
 
 			$this->destination = (new Serializer())->serialize($destination); // liquefy it so it can be cached later under previous requests
 
