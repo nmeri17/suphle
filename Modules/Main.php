@@ -2,18 +2,24 @@
 
 	namespace Modules;
 
-	use Tilwa\App\Bootstrap;
+	use Tilwa\App\{ParentModule, Container};
 
 	use AppRoutes\{MainRoutes, ApiRoutes\V1};
 	
-	class Main extends Bootstrap {
+	class Main extends ParentModule {
+
+		function __construct(Container $container) {
+			
+			$this->container = $container;
+		}
 
 		public function provideSelf ():self {
 
-			return $this->whenTypeAny()->needsAny([
+			$this->container->whenTypeAny()->needsAny([
 
-				Bootstrap::class => $this
+				ParentModule::class => $this
 			]);
+			return $this;
 		}
 
 		public function getRootPath ():string {

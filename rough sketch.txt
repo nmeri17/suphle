@@ -2,7 +2,7 @@ flesh out auth controller actions
 
 implement behavior surrounding controller and service layers
 
-divide module manager from container. look at getmethod paramter invocations and refactor
+look at getmethod paramter invocations and refactor. route manager controller provision to work with a fixed set of arguments
 
 events
 

@@ -375,7 +375,7 @@
 
 			$module = $this->module;
 			
-			$module->whenType(RouteCollection::class)
+			$module->whenType($rendererCollection)
 
 			->needsArguments([
 				"permissions" => function($module) {
@@ -386,7 +386,7 @@
 
 					return $module->browserEntryRoute();
 				}
-			], false);
+			]);
 			return $module->getClass($rendererCollection);
 		}
 
