@@ -1,12 +1,14 @@
 {
     "require": {
-        "nmeri/tilwa": "@dev",
-        "doctrine/orm": "^2.7",
-        "rakit/validation": "^1.2",
-        "jeremeamia/superclosure": "^2.4"
+        "nmeri/tilwa": "@dev"
     },
     
     "require-dev": {
+        "rakit/validation": "^1.2",
+        "jeremeamia/superclosure": "^2.4",
+        "firebase/php-jwt": "^5.2",
+        "illuminate/database": "^4.0",
+        "doctrine/orm": "^2.7"
     },
 
     "repositories": [

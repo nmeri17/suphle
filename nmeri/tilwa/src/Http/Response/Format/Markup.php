@@ -2,22 +2,47 @@
 
 	namespace Tilwa\Http\Response\Format;
 
-	use Tilwa\Routing\Route;
+	class Markup extends AbstractRenderer {
 
-	use Tilwa\Http\Response\Templating\TemplateEngine;
+		public $viewName;
 
-	class Markup extends Route {
+		public $handler;
 
-		public $viewName; // setting this to false SHOULD skips the trip to parse. If null, it SHOULD assign the name of your handler to it
+		public $contentNegotiable;
 
-		function __construct(string $viewName, bool $appendHeader = true) {
+		private $wantsJson;
+
+		function __construct(string $handler, string $viewName, int $statusCode = 200) {
+			
+			$this->statusCode = $statusCode;
 
 			$this->viewName = $viewName;
+
+			$this->handler = $handler;
 		}
 
-		public function renderResponse() {
+		public function render() {
 			
-			return $this->publishHtml();
+			if (!$this->contentNegotiable && !$this->wantsJson())
+
+				return $this->renderHtml();
+
+			return $this->renderJson();
+		}
+
+		public function contentIsNegotiable():void {
+			
+			$this->contentNegotiable = true;
+		}
+
+		public function wantsJson():bool {
+			
+			return $this->wantsJson;
+		}
+
+		public function setWantsJson():void {
+			
+			return $this->wantsJson = true;
 		}
 	}
 ?>

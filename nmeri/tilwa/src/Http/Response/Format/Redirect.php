@@ -2,59 +2,28 @@
 
 	namespace Tilwa\Http\Response\Format;
 
-	use Tilwa\Routing\Route;
+	use SuperClosure\Serializer;
 
-	class Redirect extends Route {
+	class Redirect extends AbstractRenderer {
 
-		private $destination; // callable
+		private $destination;
 
-		private $hard; // external redirect
+		function __construct(string $handler, Closure $destination, int $statusCode = 302) {
+			
+			$this->statusCode = $statusCode;
 
-		const RELOAD = 10;
+			$this->destination = (new Serializer())->serialize($destination); // liquefy it so it can be cached later under previous requests
 
-		function __construct(string $destination, bool $hard=false) {
-
-			$this->destination = $destination;
-
-			$this->hard = $hard;
+			$this->handler = $handler;
 		}
 
-		public function handleRedirects() {
+		public function render() {
+			
+			$callable = (new Serializer)->unserialize($this->destination)->bindTo($this, $this); // so dev can have access to `rawResponse`
 
-			if ($this->destination === self::RELOAD ) $this->restorePrevPage = true;
+			$parameters = $this->container->getMethodParameters($this->destination); // autowiring in case next location will be dictated by another library
 
-			else if (is_callable($this->destination)) {
-
-				// liquefy it so it can be cached if needed
-				$this->destination = (new Serializer())->serialize($this->destination); // when called, it will be passed data from the associated controller to build the new url
-			}
-
-			return $this;
-		}
-
-		public function getRedirectDestination () {
-
-			return (new Serializer)->unserialize($this->destination);
-		}
-
-		public function renderResponse() {
-
-			if (
-				(strpos($this->destination,'://') !== false) ||
-				$this->hard
-			)
-
-				return header('Location: '. $destination);
-			if (
-				$destinationRoute = $this->router
-
-				->findRoute( $this->destination, "get")
-			)
-
-				$router->setActiveRoute( $destinationRoute );
-			/* Assumptions:
-				- this route doesn't care about middlewares, validation etc
-			*/
+			return header('Location: '. call_user_func_array($callable, $parameters) );
 		}
 	}
 ?>

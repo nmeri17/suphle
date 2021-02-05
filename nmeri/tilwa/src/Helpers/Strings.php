@@ -35,6 +35,14 @@
 
 		 	}, $name);
 	 	}
+
+	 	public static function kebab ($string) {
+	 		
+	 		return preg_replace_callback('/([a-z]+)([A-Z])/', function($m) {
+
+				  return $m[1] . '-' . strtolower($m[2]);
+				}, $string);
+	 	}
 	}
 
 ?>

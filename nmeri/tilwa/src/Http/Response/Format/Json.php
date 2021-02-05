@@ -2,18 +2,18 @@
 
 	namespace Tilwa\Http\Response\Format;
 
-	use Tilwa\Routing\Route;
+	class Json extends AbstractRenderer {
 
-	class Json extends Route {
+		function __construct(string $handler, int $statusCode = 200) {
+			
+			$this->statusCode = $statusCode;
 
-		function __construct() {
-
-			parent::__construct();
+			$this->handler = $handler;
 		}
 
-		public function renderResponse() {
-			
-			return $this->publishJson();
+		public function render():string {
+
+			return $this->renderJson();
 		}
 	}
 ?>

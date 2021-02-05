@@ -1,8 +1,17 @@
 <?php
 
-	use Tilwa\Route\Route;
+	namespace AppRoutes;
 
-	// this var is available in every file in your route path
+	use Tilwa\Routing\{Route, RouteCollection};
+
+	class MainRoutes extends RouteCollection {
+		
+		public function report() {
+			
+			return $this->_prefixFor(ReportsRoutes::class);
+		}
+	}
+
 	$registrar->register('', 'Home@index', 'index');
 	
 	$registrar->register('profile', 'Dashboard@profile', null, null, 'Authenticate');

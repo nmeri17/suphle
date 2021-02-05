@@ -2,137 +2,115 @@
 
 	namespace Tilwa\Http\Response;
 
-	
-	use Phpfastcache\CacheManager;
+	use Tilwa\App\Container;
 
-	use Phpfastcache\Config\ConfigurationOption;
+	use Tilwa\Routing\RouteManager;
 
-	use Tilwa\Route\Route;
-
-	/*use Monolog\Logger;
-
-	use Monolog\Handler\StreamHandler;*/
-	use \Exception;
-
+	use Tilwa\Http\Response\Format\Markup;
 
 	class ResponseManager {
 
-		protected $cachedData;
+		private $container;
 
-		/**
-		* @var Tilwa\Controllers\Bootstrap */
-		private $app;
+		private $router;
 
-		function __construct (Bootstrap $app ) {
+		private $skipHandler;
 
-			$this->app = $app;
+		public $responseMutations;
+
+		function __construct (Container $container, RouteManager $router ) {
+
+			$this->container = $container;
+
+			$this->router = $router;
+
+			$this->responseMutations = [];
 		}
 		
 		public function getResponse () {
 
-			$container = $this->app;
+			$this->router->prepareArguments();
 
-			$router = $container->router;
+			$renderer = $this->getValidRenderer();
 
-			$request = $router->getActiveRoute()->getRequest();
+			if (!$this->skipHandler) {
 
-			if (!$request->validated())
+				$this->runMiddleware($renderer);
 
-				$request->executeHandler(); // does this replace whatever data was stored in previous request with current payload?
-			$router->pushPrevRequest($request); // refactor this internally to work with a full request
+				if ($renderer instanceof Markup)
+
+					$renderer->wantsJson($this->router->acceptsJson());
+
+				$renderer->execute($this->handlerParameters);
+			}
+
+			$body = $renderer->render();
 			
-			if (
-				!empty($validationErr) ||
-
-				!is_null($requestedRoute->getRedirectDestination())
-			) { // redirection will take precedence over viewless routes
-				// this flow needs to change if we're breaking down the routes into separate classes
-
-				if ($this->failedValidation)
-
-					$requestedRoute->restorePrevPage = true;
-
-				$this->changeDestination($request); // ensure `request` is altered in here
-				// also refactor to work with new argument
-			}
-
-			return $request->renderResponse();
+			if (!$this->skipHandler)
+				
+				$body = $this->mutateResponse($body);
+			
+			return $body;
 		}
 
-		// returns a global instance of phpfastcache manager
-		public function cacheManager() {
+		/** @description
+		*	For requests originating from browser, flow will be reverted to previous request, expecting its view to read the error bag
+		*	For other clients, the handler should be skipped altogether for the errors to be immediately rendered
+		*/
+		private function getValidRenderer ():AbstractRenderer {
 
-			//Configuring PHP Fast Cache
-			CacheManager::setDefaultConfig(new ConfigurationOption([
+			$renderer = $this->router->getActiveRenderer();
 
-				"path" =>  $this->app->rootPath ."/req-cache"
-			]));
+			$request = $renderer->getRequest();
 
-			return CacheManager::getInstance();
+			$browserOrigin = !$this->router->isApiRoute();
+
+			if ( !$request->isValidated()) {
+
+				if ($browserOrigin)
+
+					$renderer = $this->router->mergeWithPrevious($request);
+				
+				else $this->skipHandler = true;
+			}
+			else if ($browserOrigin)
+
+				$this->router->setPrevious($renderer);
+
+			return $renderer;
 		}
 
-		// if it's 'reload', replace current route with that matching user previous request. then merge the view data with what we have now
-		private function changeDestination (Route $route, array $currViewData, array $validationErr) {
+		// middleware delimited by commas. Middleware parameters delimited by colons
+		private function runMiddleware ( AbstractRenderer $renderer ):bool {
 
-			$app = $this->app;
+			$passed = true;
 
-			$router = $app->router;
+			foreach ($renderer->getMiddlewares() as $mw ) {
 
-			$prevReqRoute = $router->getPrevRequest()['route'];
+				@[$className, $args] = explode(',', $mw);
 
-			if (is_null($prevReqRoute)) { // currently the 1st route
+				$instance = $this->container->getClass($className);
 
-				var_dump($_SESSION['prev_requests'], $route );
+				if (is_callable($instance->postSourceBehavior))
 
-				$prevReqRoute = $route;
+					$this->responseMutations[] = $instance->postSourceBehavior;
+
+				else $passed = $instance->handle( explode(':', $args) );
+
+				if ( !$passed ) return $passed; // terminate
 			}
 
-			if (!$route->restorePrevPage && !$this->failedValidation) {
+			return $passed;
+		}
 
-				$destinationCallback = $route->getRedirectDestination();
+		// last action before response is flushed. log or profile middleware goes here
+		private function mutateResponse(string $currentBody):string {
 
-				$destination = $destinationCallback($currViewData, function ($defaultRoute) {
+			foreach ($this->responseMutations as $handler)
 
-					return $this->app->router->hinderedRequest($defaultRoute);
-				});
-
-				if (is_string($destination)) {
-
-					if (strpos($destination,'://') !== false)
-
-						return header('Location: '. $destination); // external redirect
-
-					if (
-						$destinationRoute = $router
-
-						->findRoute( $destination, Route::GET)
-					)
-
-						$router->setActiveRoute( $destinationRoute );
-					/* Assumptions:
-						- this route doesn't care about middlewares, validation etc
-						- target route was registered as get request, considering dev will hardly redirect to a post route (cuz they have no payload)
-					*/
-				}
-
-				elseif ( $destination instanceof Route ) {
-
-					$currViewData = $router
-
-					->setActiveRoute($destination )
-
-					->getPrevRequest()['data'];
-				}
-			}
-
-			else $router->setActiveRoute($prevReqRoute); // in preparation for below call
-
-			$viewData = $this->routeProvider( $currViewData, $validationErr );
-
-			$router->pushPrevRequest($prevReqRoute, $viewData);
-
-			// $response->publishHtml
+				$currentBody = $handler($currentBody);
+			
+			return $currentBody;
 		}
 	}
-
 ?>

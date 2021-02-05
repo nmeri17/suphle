@@ -2,16 +2,11 @@
 
 namespace Tilwa\Http\Response\Templating;
 
-use Tilwa\Controllers\{Bootstrap};
-
 use Tilwa\Helpers\Strings;
 
-use Tilwa\Route\Route;
+use Tilwa\Contracts\HtmlParser;
 
-use Tilwa\Http\Response\ViewModels\HTMLFormatter;
-
-
-class TemplateEngine {
+class TemplateEngine implements HtmlParser {
 	
 	private $regex;
 
@@ -23,39 +18,24 @@ class TemplateEngine {
 
 	private $staticVars;
 
-	private $appContainer;
-
-	private $sourceClass;
-
-	private $viewData;
+	private $fileDirectory;
 	
+	function __construct( string $folder ) {
 
-	function __construct(Bootstrap $app, array $dataToParse ) {
-
-		$this->appContainer = $app;
-
-		$this->viewData = $dataToParse;
-
-		// $this->setNavActive();
-
-		$this->assignFile();
+		$this->fileDirectory = $folder;
 
 		$this->setRegex();
 	}
 
-
 	/**
-	 * undocumented function
+	 * get all text between __foreach-*__ and exclude them from the string being searched
 	 *
 	 * @return 1D array of every field in a traversable component
 	 **/
 	public function fields () {
 
-		# get all text between __foreach-*__ and exclude them from the string being searched
-
 		// foreachs return a numeric array of all foreachs on this page
 		$forEach = array('foreachs' => [], 'blockCount' => 0);
-
 
 		if (!empty($this->file)) {
 			$otherFields = preg_replace_callback($this->forEachRegex, function ($match) use (&$forEach) {
@@ -95,7 +75,6 @@ class TemplateEngine {
 		else $dimension = 2; // 1 is peeled off by default
 
 		
-
 		$carry = ''; $that = $this;
 
 		$tempContext = $context;
@@ -320,15 +299,12 @@ class TemplateEngine {
 	 	}
 	}
 
+	// @param {rawData} array or iterable
+	public function parseAll (string $filePath, array $rawData) {
 
-	public function parseAll () {
+		$this->file = file_get_contents($this->fileDirectory . "/". $filePath . '.tmpl');
 
-		[$staticVars, $repeatedComponents ] = $this
-
-		->findSingleAndGrouped(
-			
-			$this->formatToUsersView($this->viewData)
-		);
+		[$staticVars, $repeatedComponents ] = $this->findSingleAndGrouped($rawData);
 
 		$enoughData = count($repeatedComponents) >= $this->fields()['blockCount'];
 
@@ -353,7 +329,7 @@ class TemplateEngine {
 
 					$file = file_get_contents(
 
-						$this->appContainer->viewPath . Strings::nameCleanUp($isFile[1]) . '.tmpl'
+						$this->fileDirectory . Strings::nameCleanUp($isFile[1]) . '.tmpl'
 					);
 
 					$tempAccum = ''; // each file instance
@@ -429,25 +405,9 @@ class TemplateEngine {
 		}
 	}
 
-	static function showMessage (string $msg) { return '<p style="color: #f00; font-size: 150%; margin:5%">'. $msg . '.</p>';}
+	static function showMessage (string $msg) {
 
-	// plug in dev's implementation of HTMLFormatter
-	public function setNavActive (Route $activeRoute, HTMLFormatter $formatter) {
-
-		if ($activeRoute->appendHeader)
-
-			$this->staticVars = $formatter->setNavIndicator($this->staticVars);
-	}
-
-	private function assignFile ( ):void {
-
-		$viewPath = $this->appContainer->viewPath;
-
-		$route = $this->appContainer->router->getActiveRoute();
-
-		$this->file = file_get_contents($viewPath . $route->viewName . '.tmpl');
-
-		if ($route->appendHeader) $this->file = file_get_contents($viewPath . 'header.tmpl') . $this->file . file_get_contents($viewPath . 'footer.tmpl');
+		return '<p style="color: #f00; font-size: 150%; margin:5%">'. $msg . '.</p>';
 	}
 
 	private function setRegex( ) {		
