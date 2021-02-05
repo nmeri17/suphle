@@ -4,36 +4,31 @@
 	
 	use Dotenv\Dotenv;
 
-	use PDO;
-
-	use ReflectionMethod;
-
-	use ReflectionClass;
+	use {PDO, ReflectionMethod, ReflectionClass, ReflectionFunction, ReflectionType};
 
 	use Models\User;
 
-	use Tilwa\Contracts\{Orm, HtmlParser, Authenticator};
+	use Tilwa\Contracts\{Orm, HtmlParser, Authenticator, RequestValidator};
 
-	use Tilwa\ServiceProviders\{OrmProvider, AuthenticatorProvider, HtmlTemplateProvider};
+	use Tilwa\ServiceProviders\{OrmProvider, AuthenticatorProvider, HtmlTemplateProvider, RequestValidatorProvider};
 
 	use Tilwa\Http\Request\RouteGuards;
 
 	abstract class Bootstrap {
 
-		/* @property bool */
-		private $refresh;
+		private $provisionedClasses; // list of `providerTemplate`s
 
-		public $router;
+		private $provisionContext; // the active Type before calling `needs`
 
-		private $classes = [];
-
-		private $provisionedClasses = [];
+		private $recursingFor; // the active `providerTemplate`
 
 		function __construct () {
 
 			$this->loadEnv()->initSession()->provideSelf();
 
 			// ->configMail() // we only wanna run this if it's not set already and if dev wanna send mails. so, a mail adapter?
+
+			$this->provisionedClasses = [];
 		}
 
 		// should be listed in descending order of the versions
@@ -60,88 +55,95 @@
 		public function provideSelf ():self;
 
 		/**
-		* @description Will load the instance in the app classes cache
+		* @description: Looks for the given class in this order
+			1) pre-provisioned caller list
+			2) Provisions it afresh if an interface or recursively wires in its constructor dependencies
 		*
-		*@return A class instance if found
+		* @return A class instance if found
 		*/
 		public function getClass (string $fullName) {
 
-			if (array_key_exists($fullName, $this->classes))
+			if (is_null($this->recursingFor))
 
-				return $this->classes[$fullName];
+				$this->recursingFor = $this->lastCaller();
 
-			// if not there, grab class and load their constructorParams recursively
-			$constructorParams = [];
+			else $this->recursingFor = $fullName;
 
-			$init = '';
+			$context = $this->getRecursionContext();
 
-			$refleClass = new ReflectionClass($fullName);
+			if (array_key_exists($fullName, $context["concretes"]))
 
-			if ($refleClass->isInterface()) { // switch to an implementation
+				return $context["concretes"][$fullName];
 
-				$fullName = $this->providers()[$fullName]; // this was refactored, so review this block
+			$reflectedClass = new ReflectionClass($fullName);
+
+			if ($reflectedClass->isInterface())
+
+				return $this->provideInterface($fullName);
+
+			if ($reflectedClass->isInstantiable()) {
 				
-				$refleClass = new ReflectionClass($fullName);
+				$dependencies = $this->getMethodParameters($reflectedClass->getConstructor(), $fullName);
+
+				return $this->provisionedClasses[$this->recursingFor]["concretes"][$fullName] = new $fullName (...$dependencies);
 			}
-
-			if ($refleClass->isInstantiable())
-
-				$constr = $refleClass->getConstructor();
-
-			else $constr = null; // we'll assume this is an abstract class
-
-			if (!is_null($constr)) foreach ($constr->getParameters() as $param) {
-				
-				if ($param->allowsNull() )
-
-					$constructorParams[] = null;
-
-				elseif ($param->isOptional() ) {
-
-					if (!$param->isDefaultValueAvailable()) // is it possible for this to be false? may return true if default is null
-
-						$constructorParams[] = null;
-
-					else $constructorParams[] = $param->getDefaultValue();
-				}
-
-				elseif ($param->hasType()) {
-
-					$type = $param->getType();
-
-					$typeName = $type->getName();
-
-					if ( $typeName == __CLASS__) $constructorParams[] = $this;
-
-					elseif ( $type->isBuiltin()) {
-
-						settype($init, $type); $constructorParams[] = $init;
-					}
-
-					elseif (($type === []) || $type->getName() == 'array' ) {$constructorParams[] = [];var_dump($fullName); die();} // wonder if we ever get here
-
-					else {
-						
-						$res = $this->getClass($typeName);
-						
-						$constructorParams[] = $res;
-					}
-				}
-			}
-
-			// constructorParams ready. instantiate and include in app classes
-			$classInst = new $fullName ( ...$constructorParams);
-			
-			return $this->classes[$fullName] = $classInst;
 		}
 
-		public function fresh ($prop) {
+		private function lastCaller ():string {
 
-			$this->refresh = true;
+			$stack = debug_backtrace ( DEBUG_BACKTRACE_IGNORE_ARGS, 3 ); // [lastCaller,getClass,ourGuy]. Another extensible but memory intensive way to go about this is to group the calls by class and pick the immediate last one that doesn't correspond to `self::class`
 
-			$val = $this->$prop;
+			return end($stack)["class"];
+		}
 
-			return $val;
+		/**
+		* @description switches template being provided to universal if it doesn't exist
+		* @return currently available provision template
+		*/
+		private function getRecursionContext():array {
+
+			if (!array_key_exists($this->recursingFor, $this->provisionedClasses))
+
+				$this->recursingFor = "*";
+
+			return $this->provisionedClasses[$this->recursingFor];
+		}
+
+		private function provideInterface(string $service):object {
+
+			$providerClass = $this->getServiceProviders()[$service];
+
+			$provider = new $providerClass();
+
+			$providerArguments = $this->getMethodParameters("bindArguments", $providerClass);
+
+			$providerParameters = call_user_func_array([$provider, "bindArguments"], $providerArguments);
+
+			$concrete = $provider->concrete();
+
+			$this->whenType($concrete) // for easy instantiation by getClass
+
+			->needsArguments($this->wrapInCallable( $providerParameters));
+				
+			$reflectedClass = $this->getClass($concrete);
+
+			$provider->afterBind($reflectedClass);
+
+			$this->whenTypeAny()
+
+			->needsAny([$service => $reflectedClass]);
+
+			return $reflectedClass;
+		}
+
+		private function wrapInCallable(array $values):array {
+			
+			return array_map(function ($value) {
+				return function () use ($value) {
+
+					return $value;
+				};
+			}, $values);
 		}
 
 		protected function loadEnv () {		
@@ -153,7 +155,7 @@
 			return $this;
 		}
 
-		protected function configMail () {
+		protected function configMail ():self {
 
 			ini_set("SMTP", getenv('MAIL_SMTP'));
 
@@ -164,7 +166,7 @@
 			return $this;
 		}
 
-		private function initSession () {
+		private function initSession ():self {
 
 			if (session_status() == PHP_SESSION_NONE /*&& !headers_sent()*/)
 
@@ -173,10 +175,14 @@
 			return $this;
 		}
 
-		// after pairing this, if we're getting a class manually instead of injecting it as method argument, `getClass` will have to check debug_backtrace() for whether caller matches what we passed here
-		public function whenType (string $type):self {
+		public function whenType (string $toProvision):self {
 
-			$this->provisionContext = $type; // unset after the `gives`
+			if (!array_key_exists($toProvision, $this->provisionedClasses))
+
+				$this->provisionedClasses[$toProvision] = $this->providerTemplate($overwritable);
+
+			$this->provisionContext = $toProvision;
+
 			return $this;
 		}
 
@@ -185,70 +191,110 @@
 			return $this->whenType("*");
 		}
 
+		public function needs (array $dependencyList):self {
+
+			return $this->populateProvisioner($dependencyList, "concretes" );
+		}
+
+		public function needsAny (array $dependencyList, bool $overwritable):self {
+
+			$this->populateProvisioner($dependencyList, "concretes");
+
+			return $this->populateProvisioner($this->wrapInCallable( $dependencyList), "arguments", $overwritable);
+		}
+
+		public function needsArguments (array $argumentList, bool $overwritable):self {
+
+			return $this->populateProvisioner($argumentList, "arguments", $overwritable);
+		}
+
 		/**
-		* @param {preserve} when false, overrides any previous concrete given for these arguments
+		* @param {overwritable} when false, preserves any previous concrete given for these arguments
 		*/
-		public function needsArguments (array $arguments, bool $preserve=true) {
+		private function populateProvisioner (array $parameters, string $mode, bool $overwritable=true) {
 
-			if (!($context = @$this->provisionedClasses[$this->provisionContext]))
+			$context = $this->provisionedClasses[$this->provisionContext];
 
-				$context = $this->providerTemplate($preserve);
+			$modeArray = $context[$mode];
 
-			$oldArguments = $context["arguments"];
+			foreach ($parameters as $name => $provide) {
 
-			foreach ($arguments as $name => $callback) {
+				if (!array_key_exists($name, $modeArray) || !$context["overwritable"])
 
-				if (!array_key_exists($name, $oldArguments) || !$context["preserve"])
+					if ($mode == "arguments")
 
-					$oldArguments[$name] = $callback($this);
+						$modeArray[$name] = $provide($this); // arguments are defined as callbacks since they have the preservation option
+
+					else $modeArray[$name] = $provide;
 			}
-			$context["arguments"] = $oldArguments;
+			$context[$mode] = $modeArray;
 
 			$this->provisionedClasses[$this->provisionContext] = $context;
 		}
 
-		// the regular getClass should populate this object using the "*" key as reference. remove the `classes` property
-		private function providerTemplate(bool $preserve):array {
+		// blueprint for each provided entity
+		private function providerTemplate(bool $overwritable):array {
 			
 			return [
 				"concretes" => [], // populated by `needs`
-				"arguments" => [] // associative array of closures
-			] + compact("preserve");
-		}
-
-		public function needs (string $type) {
-
-			// ensure the given type is an instance of current/active whenType
-		}
-
-		// @param {$valueObject} instance of singleton
-		public function give ( $valueObject) {
-
-			// should throw an error if no active needs[Arg]
-			// work with `this->getServiceProviders()`
-		}
-
-		public function needsAny (string $type) {
-
-			// activates both arguments and normal needs ahead of the give call
-
-			// for this to replace base types, store the given base type string as key, then the overriding child as value
+				"arguments" => [] // sent in as an associative array of closures invoked during an override
+			] + compact("overwritable");
 		}
 
 		/**
-		* @ description: fetch appropriate classes for a method's arguments
-		* @param {method}:string|Closure
-		* @return {Array} of hydrated parameters to call given method with
+		* @ description: fetch appropriate dependencies for a callable's arguments
+		* @param {callable}:string|Closure
+		* @param {anchorClass} the class the given method belongs to
+		* @return {Array} associative. Contains hydrated parameters to invoke given callable with
 		*/ 
-		public function getMethodParameters ( $method, string $class):array {
+		public function getMethodParameters ( $callable, string $anchorClass):array {
 
-			// class is disregarded when method= closure
+			$predefinedArguments = $dependencies = [];
 
-			// still works with `this->getClass` (or, at least, borrows same mechanism) but that guy works with the constructor directly, so you can pass in a method name from here (or default to constructor). @see line 130
+			if (isset($anchorClass)) {
 
-			// if you don't liaise with `this->getClass` first check if class has been previously loaded. if it's not there, plug it into our `classes` array
+				$reflectedCallable = new ReflectionMethod($anchorClass, $callable);
 
-			// try and key the final array by the parameter name instead of a numeric array of values
+				if (is_null($this->recursingFor))
+
+					$this->recursingFor = $anchorClass; // Assume class A wanna get parameters for class B->foo. When set to `lastCaller`, we'll be looking through class A's provisions instead of class B
+
+				$predefinedArguments = $this->getRecursionContext()["arguments"];
+			}
+			else $reflectedCallable = new ReflectionFunction($callable);
+
+			foreach ($reflectedCallable->getParameters() as $parameter) {
+
+				$parameterName = $parameter->getName();
+
+				if (array_key_exists($parameterName, $predefinedArguments))
+
+					$dependencies[$parameterName] = $predefinedArguments[$parameterName];
+				
+				if ($parameter->isOptional() )
+
+					$dependencies[$parameterName] = $parameter->getDefaultValue();
+				elseif ($parameter->hasType())
+
+					$dependencies[$parameterName] = $this->getParameterValue($parameter->getType());
+				else $dependencies[$parameterName] = null;
+			}
+			return $dependencies;
+		}
+
+		private function getParameterValue(ReflectionType $parameterType) {
+
+			$typeName = $parameterType->getName();
+
+			if ( !$parameterType->isBuiltin())
+
+				return $this->getClass($typeName);
+
+			$defaultValue = null;
+
+			settype($defaultValue, $typeName);
+
+			return $defaultValue;
 		}
 
 		public function setDependsOn(array $bindings):self {

@@ -377,7 +377,7 @@
 			
 			$module->whenType(RouteCollection::class)
 
-			->needsArguments([ // not passing the `preserve` argument so subsequent requests for this base type won't initialize these values afresh
+			->needsArguments([
 				"permissions" => function($module) {
 
 					return $module->getClass($module->routePermissions());
@@ -386,7 +386,7 @@
 
 					return $module->browserEntryRoute();
 				}
-			]);
+			], false);
 			return $module->getClass($rendererCollection);
 		}
 
@@ -404,7 +404,7 @@
 
 			$dependencyMethod = "setDependencies";
 			
-			$parameters = $this->module->getMethodParameters($dependencyMethod, $renderer);
+			$parameters = $this->module->getMethodParameters($dependencyMethod, $renderer::class);
 
 			$controller = "controllerClass";
 

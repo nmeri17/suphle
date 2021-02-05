@@ -1,8 +1,8 @@
 flesh out auth controller actions
 
-work on whenType and others on bootstrap. when pulling from the service provider, the provider->bindArguments should be passed through this->method loader
+implement behavior surrounding controller and service layers
 
-implement behavior surrounding this and the service layer
+divide module manager from container. look at getmethod paramter invocations and refactor
 
 events
 

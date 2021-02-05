@@ -39,9 +39,10 @@
 
 			$this->router = new RouteManager($module, $_GET['tilwa_request'], $this->getHttpMethod());
 
-			$module->whenTypeAny()->needsAny(RouteManager::class)
-
-			->give($this->router);
+			$module->whenTypeAny()->needsAny([
+				
+				RouteManager::class => $this->router
+			]);
 		}
 
 		private function getHttpMethod ():string {

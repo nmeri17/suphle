@@ -10,11 +10,10 @@
 
 		public function provideSelf ():self {
 
-			$this->whenTypeAny()->needsAny(Bootstrap::class)
+			return $this->whenTypeAny()->needsAny([
 
-			->give($this);
-
-			return $this;
+				Bootstrap::class => $this
+			]);
 		}
 
 		public function getRootPath ():string {
