@@ -2,7 +2,7 @@
 
 	namespace Tilwa\Http\Response;
 
-	use Tilwa\App\Bootstrap;
+	use Tilwa\App\Container;
 
 	use Tilwa\Routing\RouteManager;
 
@@ -10,7 +10,7 @@
 
 	class ResponseManager {
 
-		private $module;
+		private $container;
 
 		private $router;
 
@@ -18,9 +18,9 @@
 
 		public $responseMutations;
 
-		function __construct (Bootstrap $module, RouteManager $router ) {
+		function __construct (Container $container, RouteManager $router ) {
 
-			$this->module = $module;
+			$this->container = $container;
 
 			$this->router = $router;
 
@@ -29,7 +29,7 @@
 		
 		public function getResponse () {
 
-			$arguments = $this->router->prepareArguments();
+			$this->router->prepareArguments();
 
 			$renderer = $this->getValidRenderer();
 
@@ -41,7 +41,7 @@
 
 					$renderer->wantsJson($this->router->acceptsJson());
 
-				$renderer->execute($arguments);
+				$renderer->execute($this->handlerParameters);
 			}
 
 			$body = $renderer->render();
@@ -89,7 +89,7 @@
 
 				@[$className, $args] = explode(',', $mw);
 
-				$instance = $this->module->getClass($className);
+				$instance = $this->container->getClass($className);
 
 				if (is_callable($instance->postSourceBehavior))
 

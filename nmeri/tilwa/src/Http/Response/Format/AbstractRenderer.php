@@ -2,15 +2,11 @@
 
 	namespace Tilwa\Http\Response\Format;
 
-	use Tilwa\Routing\RouteManager;
-
 	use Tilwa\Contracts\HtmlParser;
 
 	use Tilwa\Http\Request\BaseRequest;
 
 	abstract class AbstractRenderer {
-
-		protected $router;
 
 		public $handler;
 
@@ -18,7 +14,7 @@
 
 		private $rawResponse;
 
-		protected $module;
+		protected $container;
 
 		public $routeMethod;
 
@@ -28,11 +24,9 @@
 
 		public $path;
 
-		public function setDependencies(RouteManager $router, Bootstrap $module, string $controllerClass):self {
+		public function setDependencies(Container $container, string $controllerClass):self {
 
-			$this->router = $router;
-
-			$this->module = $module;
+			$this->container = $container;
 			
 			$this->controller = $controllerClass;
 
@@ -69,7 +63,7 @@
 
 		protected function renderHtml():string {
 			
-			return $this->module->getClass(HtmlParser::class)
+			return $this->container->getClass(HtmlParser::class)
 
 			->parseAll($this->viewName, $this->rawResponse);
 		}

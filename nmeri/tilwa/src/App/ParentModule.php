@@ -1,8 +1,6 @@
 <?php
 
 	namespace Tilwa\App;
-	
-	use Dotenv\Dotenv;
 
 	use Models\User;
 
@@ -12,13 +10,10 @@
 
 		protected $container;
 
-		public function activate () {
+		public function activate ():self {
 
-			$this->loadEnv()->initSession() // these should be done once (in the front controller?)
-
-			->provideSelf()->entityBindings()->bindEvents();
-
-			// ->configMail() // we only wanna run this if it's not set already and if dev wanna send mails. so, a mail adapter?
+			$this->entityBindings()->bindEvents(); // evaluate if these actions are worth taking before route finding; `bindEvents` especially
+			return $this;
 		}
 
 		// should be listed in descending order of the versions
@@ -27,38 +22,6 @@
 		public function browserEntryRoute ():string;
 
 		public function getRootPath ():string;
-
-		// will supply the active module to every client requesting this base type
-		public function provideSelf ():self;
-
-		protected function loadEnv () {		
-
-			$dotenv = Dotenv::createImmutable( $this->getRootPath() );
-
-			$dotenv->load();
-
-			return $this;
-		}
-
-		protected function configMail ():self {
-
-			ini_set("SMTP", getenv('MAIL_SMTP'));
-
-			ini_set("smtp_port", getenv('MAIL_PORT'));
-
-			ini_set('sendmail_from', getenv('MAIL_SENDER'));
-
-			return $this;
-		}
-
-		private function initSession ():self {
-
-			if (session_status() == PHP_SESSION_NONE /*&& !headers_sent()*/)
-
-				session_start(); //session_destroy(); $_SESSION = [];
-
-			return $this;
-		}
 
 		public function setDependsOn(array $bindings):self {
 			
@@ -98,10 +61,7 @@
 		}
 
 		// provision your classes here
-		public function entityBindings ():self {
-
-			//
-		}
+		abstract public function entityBindings ():self;
 
 		// attach event listeners here
 		public function bindEvents ():self {

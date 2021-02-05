@@ -12,11 +12,11 @@
 
 		public $foundRoute;
 
-		function __construct(Bootstrap $module) {
+		function __construct(ParentModule $module) {
 
-			$this->setRouter($module);
+			$this->setRouter($module->activate());
 
-			$this->responseManager = new ResponseManager($module, $this->router);
+			$this->responseManager = new ResponseManager($module->container, $this->router);
 		}
 
 		public function assignRoute():self {
@@ -39,8 +39,8 @@
 
 			$this->router = new RouteManager($module, $_GET['tilwa_request'], $this->getHttpMethod());
 
-			$module->whenTypeAny()->needsAny([
-				
+			$module->container->whenTypeAny()->needsAny([
+
 				RouteManager::class => $this->router
 			]);
 		}

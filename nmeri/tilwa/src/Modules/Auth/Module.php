@@ -13,9 +13,9 @@
 			$this->container = $container;
 		}
 
-		public function provideSelf ():self {
+		public function entityBindings ():self {
 
-			$this->container->whenTypeAny()->needsAny([
+			$this->container->whenTypeAny()->needsAny([ // this should be always be the first binding so it can supply the active module to every client requesting the base type
 
 				ParentModule::class => $this
 			]);

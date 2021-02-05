@@ -2,13 +2,13 @@
 
 	namespace Tilwa\Routing;
 
-	use Tilwa\App\Bootstrap;
+	use Tilwa\App\{ParentModule, Container};
 
 	use Tilwa\Contracts\Orm;
 
 	use Tilwa\Http\Response\Format\Markup;
 
-	use \Generator;
+	use Generator;
 
 	class RouteManager {
 
@@ -32,15 +32,19 @@
 
 		private $fullTriedPath;
 
-		function __construct(Bootstrap $module, string $incomingPath, string $httpMethod ) {
+		private $collectionArguments;
+
+		function __construct(ParentModule $module, string $incomingPath, string $httpMethod ) {
 
 			$this->module = $module;
 
-			$this->databaseAdapter = $module->getClass(Orm::class);
+			$this->databaseAdapter = $module->container->getClass(Orm::class);
 
 			$this->incomingPath = $incomingPath;
 
 			$this->httpMethod = $httpMethod;
+
+			$this->defineCollectionArguments();
 		}
 
 		public function findRenderer ():AbstractRenderer {
@@ -255,11 +259,13 @@
 			return $renderer;
 		}
 
-		public function prepareArguments():array {
+		public function prepareArguments():void {
 
 			$renderer = $this->activeRenderer;
 
-			$this->handlerParameters = $this->module->getMethodParameters($renderer->handler, $renderer->getController());
+			$this->handlerParameters = $this->module->container
+
+			->getMethodParameters($renderer->handler, $renderer->getController());
 
 			$this->warmParameters();
 
@@ -270,8 +276,6 @@
 			if (!empty($this->modelIndexesInParameters))
 
 				$this->hydrateModels();
-
-			return $this->handlerParameters;
 		}
 
 		private function warmParameters():void {
@@ -371,23 +375,16 @@
 			$this->incomingPath = $path[1];
 		}
 
+		// @return concrete instance of given collection class containing list of patterns and renderers
 		private function provideCollection(string $rendererCollection):RouteCollection {
 
-			$module = $this->module;
+			return $this->module->container
 			
-			$module->whenType($rendererCollection)
+			->whenType($rendererCollection)
 
-			->needsArguments([
-				"permissions" => function($module) {
-
-					return $module->getClass($module->routePermissions());
-				},
-				"browserEntry" => function($module) {
-
-					return $module->browserEntryRoute();
-				}
-			]);
-			return $module->getClass($rendererCollection);
+			->needsArguments($this->collectionArguments)
+			
+			->getClass($rendererCollection);
 		}
 
 		public function acceptsJson():bool {
@@ -403,16 +400,32 @@
 		private function bootRenderer(AbstractRenderer $renderer, string $controllingClass):AbstractRenderer {
 
 			$dependencyMethod = "setDependencies";
+
+			$parameters = $this->provideRendererDependencies($renderer::class, $controllingClass)
 			
-			$parameters = $this->module->getMethodParameters($dependencyMethod, $renderer::class);
-
-			$controller = "controllerClass";
-
-			if (array_key_exists($controller, $parameters) && empty($parameters[$controller]))
-
-				$parameters[$controller] = $controllerClass;
+			->getMethodParameters($dependencyMethod, $renderer::class);
 
 			return call_user_func_array([$renderer, $dependencyMethod], $parameters);
+		}
+
+		private function defineCollectionArguments() {
+
+			$this->collectionArguments = [
+				"permissions" => $this->module->container
+
+				->getClass($this->module->routePermissions()),
+				
+				"browserEntry" => $this->module->browserEntryRoute()
+			];
+		}
+
+		private function provideRendererDependencies(string $renderer, string $controller):Container {
+
+			return $this->module->container->whenType($renderer)
+
+			->needsArguments([
+				"controllerClass" => $controller
+			]);
 		}
 	}
 ?>

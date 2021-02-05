@@ -2,26 +2,26 @@
 
 	namespace Tilwa\Routing;
 
-	use Tilwa\App\Bootstrap;
+	use Tilwa\App\Container;
 
 	use Tilwa\Contracts\CanaryGateway;
 
 	class CanaryValidator {
 
-		private $module;
+		private $container;
 
-		function __construct(Bootstrap $module) {
+		function __construct(Container $container) {
 			
-			$this->module = $module;
+			$this->container = $container;
 		}
 
 		public function validate (array $canaries):array {
 
 			return array_filter($canaries, function ($canary) {
 
-				$instance = $this->module->getClass($canary);
+				$instance = $this->container->getClass($canary);
 				
-				return $instance instanceof CanaryGateway && $this->module->getClass($instance->entryClass()) instanceof RouteCollection;
+				return $instance instanceof CanaryGateway && $this->container->getClass($instance->entryClass()) instanceof RouteCollection;
 			});
 			
 			

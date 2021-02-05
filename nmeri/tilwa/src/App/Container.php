@@ -116,21 +116,11 @@
 			return $reflectedClass;
 		}
 
-		private function wrapInCallable(array $values):array {
-			
-			return array_map(function ($value) {
-				return function () use ($value) {
-
-					return $value;
-				};
-			}, $values);
-		}
-
 		public function whenType (string $toProvision):self {
 
 			if (!array_key_exists($toProvision, $this->provisionedClasses))
 
-				$this->provisionedClasses[$toProvision] = $this->providerTemplate($overwritable);
+				$this->provisionedClasses[$toProvision] = $this->providerTemplate();
 
 			$this->provisionContext = $toProvision;
 
@@ -147,49 +137,41 @@
 			return $this->populateProvisioner($dependencyList, "concretes" );
 		}
 
-		public function needsAny (array $dependencyList, bool $overwritable):self {
+		public function needsAny (array $dependencyList):self {
 
-			$this->populateProvisioner($dependencyList, "concretes");
-
-			return $this->populateProvisioner($this->wrapInCallable( $dependencyList), "arguments", $overwritable);
+			foreach (["concretes", "arguments"] as $mode)
+				
+				$this->populateProvisioner($dependencyList, $mode);
+			return $this;
 		}
 
-		public function needsArguments (array $argumentList, bool $overwritable):self {
+		public function needsArguments (array $argumentList):self {
 
-			return $this->populateProvisioner($argumentList, "arguments", $overwritable);
+			return $this->populateProvisioner($argumentList, "arguments");
 		}
 
-		/**
-		* @param {overwritable} when false, preserves any previous concrete given for these arguments
-		*/
-		private function populateProvisioner (array $parameters, string $mode, bool $overwritable=true) {
+		private function populateProvisioner (array $parameters, string $mode) {
 
 			$context = $this->provisionedClasses[$this->provisionContext];
 
 			$modeArray = $context[$mode];
 
-			foreach ($parameters as $name => $provide) {
+			foreach ($parameters as $name => $provide)
 
-				if (!array_key_exists($name, $modeArray) || !$context["overwritable"])
+				$modeArray[$name] = $provide;
 
-					if ($mode == "arguments")
-
-						$modeArray[$name] = $provide($this); // arguments are defined as callbacks since they have the preservation option
-
-					else $modeArray[$name] = $provide;
-			}
 			$context[$mode] = $modeArray;
 
 			$this->provisionedClasses[$this->provisionContext] = $context;
 		}
 
 		// blueprint for each provided entity
-		private function providerTemplate(bool $overwritable):array {
+		private function providerTemplate():array {
 			
 			return [
 				"concretes" => [], // populated by `needs`
 				"arguments" => [] // sent in as an associative array of closures invoked during an override
-			] + compact("overwritable");
+			];
 		}
 
 		/**

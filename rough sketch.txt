@@ -1,8 +1,6 @@
-flesh out auth controller actions
+flesh out auth controller actions. Implement loginAs
 
 implement behavior surrounding controller and service layers
-
-look at getmethod paramter invocations and refactor. route manager controller provision to work with a fixed set of arguments
 
 events
 

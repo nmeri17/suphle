@@ -21,4 +21,4 @@ RewriteCond %{REQUEST_FILENAME} -d
 # extensioned requests, suck it!
 RewriteCond %{REQUEST_URI} ^(.+\.\w{3,4})$
 
-RewriteRule .? controllers/FrontController.php?tilwa_request=404 [L]
+RewriteRule .? assemble.php?tilwa_request=fraudulent_tilwa [L]

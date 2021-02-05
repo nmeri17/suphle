@@ -13,7 +13,7 @@
 			$this->container = $container;
 		}
 
-		public function provideSelf ():self {
+		public function entityBindings ():self {
 
 			$this->container->whenTypeAny()->needsAny([
 
