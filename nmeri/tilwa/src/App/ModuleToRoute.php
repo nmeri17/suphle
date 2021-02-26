@@ -5,23 +5,28 @@
 	use Dotenv\Dotenv;
 
 	class ModuleToRoute {
+
+		private $modules;
+
+		private $eventConsumers;
+
+		public function __construct(array $modules, array $eventConsumers) {
+
+			$this->modules = $modules;
+
+			$this->eventConsumers = $eventConsumers;
+		}
 		
-		function findContext(array $modules):FrontController {
+		public function findContext():ModuleInitializer {
+
+			$requestQuery = $_GET['tilwa_request'];
 			
-			$context = null;
+			foreach($this->modules as $module) {
 
-			foreach($modules as $module) {
-
-				$routeMatcher = (new FrontController($module))->assignRoute();
+				$routeMatcher = (new ModuleInitializer($module, $requestQuery))->assignRoute();
 				
-				if ($routeMatcher->foundRoute) {
-
-					$context = $routeMatcher;
-
-					break;
-				}
+				if ($routeMatcher->foundRoute) return $routeMatcher;
 			}
-			return $context;
 		}
 
 		public function environmentDefaults():self {
@@ -58,6 +63,17 @@
 				session_start(); //session_destroy(); $_SESSION = [];
 
 			return $this;
+		}
+
+		// note: we don't wanna listen to events from only the active module since one of its listeners can equally fire another event
+		public function watchEvents() {
+			// filter modules matching contents of $eventConsumers + active module
+			foreach($this->modules as $module) {
+
+				foreach($this->modules as $module) { // ensure currently evaluated doesn't match active module
+					// call everybody's registerListeners then pull their externals
+				}
+			}
 		}
 	}
 ?>

@@ -8,20 +8,6 @@
 	
 	class Main extends ParentModule {
 
-		function __construct(Container $container) {
-			
-			$this->container = $container;
-		}
-
-		public function entityBindings ():self {
-
-			$this->container->whenTypeAny()->needsAny([
-
-				ParentModule::class => $this
-			]);
-			return $this;
-		}
-
 		public function getRootPath ():string {
 
 			return dirname(__DIR__, 1) . DIRECTORY_SEPARATOR; // up one folder;

@@ -27,11 +27,11 @@
 		new Errors // this must be the last for it to catch unmatched routes. the route file should have a _notFound method that catches anything thrown at it
 	];
 
-	$assembler = new ModuleToRoute;
+	$assembler = new ModuleToRoute($modules);
 
-	$context = $assembler->findContext($modules);
+	$context = $assembler->findContext();
 
-	$assembler->environmentDefaults(); // we may need to call this before finding context. I'm trying to save resources
+	$assembler->environmentDefaults()->watchEvents();
 
 	echo $context->trigger();
 ?>
