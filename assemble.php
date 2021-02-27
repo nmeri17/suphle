@@ -2,7 +2,9 @@
 
 	require '../autoload.php';
 
-	use Tilwa\App\ModuleToRoute;
+	use Tilwa\App\{ModuleToRoute, EnvironmentDefaults};
+
+	use Tilwa\Events\ModuleLevelEvents;
 
 	use Modules\{Main, Cart, Category, Product, Auth, Sellers, Errors}; // correct this import
 
@@ -27,11 +29,11 @@
 		new Errors // this must be the last for it to catch unmatched routes. the route file should have a _notFound method that catches anything thrown at it
 	];
 
-	$assembler = new ModuleToRoute($modules);
+	$context = (new ModuleToRoute)->findContext($modules);
 
-	$context = $assembler->findContext();
+	new EnvironmentDefaults;
 
-	$assembler->environmentDefaults()->watchEvents();
+	(new ModuleLevelEvents)->bootReactiveLogger($modules);
 
 	echo $context->trigger();
 ?>

@@ -52,17 +52,11 @@
 			return $this->dependsOn;
 		}
 
-		// @return a class implementing `exportsImplements`
-		public function exports():object {
-
-			return null;
-		}
+		// @return concrete implementing `exportsImplements`
+		abstract public function exports():object;
 
 		// interface from Interactions namespace which will be consumers API with this module
-		public function exportsImplements():string {
-			
-			return "";
-		}
+		abstract public function exportsImplements():string;
 
 		public function getUserModel():string {
 

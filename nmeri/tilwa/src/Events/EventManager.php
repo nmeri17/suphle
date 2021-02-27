@@ -11,109 +11,74 @@
 
 		private $module;
 
-		private $externalHandlers;
+		private $parentManager;
 
-		function __construct(ParentModule $module, array $externalHandlers) {
+		function __construct(ParentModule $module, ModuleLevelEvents $parentManager) {
 
 			$this->module = $module;
 
-			$this->externalHandlers = $externalHandlers;
+			$this->parentManager = $parentManager;
 			
 			$this->emitters = ["local" => [], "external" => []];
 		}
 
-		public function local(string $emittingInterface, string $handlingClass):self {
+		public function local(string $emittingEntity, string $handlingClass):self {
 			
-			$this->initializeHandlingScope("local", $emittingInterface, $handlingClass);
+			$this->initializeHandlingScope("local", $emittingEntity, $handlingClass);
 		}
 
-		private function initializeHandlingScope(string $scope, string $emittingInterface, string $handlingClass):void {
-
-			$handlingUnits = [];
-
-			$this->emitters[$scope][$emittingInterface] = compact("handlingClass", "handlingUnits"); // all events from this interface should be handled by only one class
-
-			$this->activeHandlerPath = compact("scope", "emittingInterface");
-		}
-
-		// [REVIEW] this means the emitter must equally trigger using its foreign name so external listeners can react
 		public function external(string $interaction, string $handlingClass):self {
 
 			$this->initializeHandlingScope("external", $interaction, $handlingClass);
 		}
 
+		// there's a distinction between local and external emitters because we don't wanna assume each client has a hard dependency on that interface. The client shouldn't care beyond the knowledge that such interface may emit such events if it exists
+		private function initializeHandlingScope(string $scope, string $emitable, string $handlingClass):void {
+
+			$this->emitters[$scope][$emitable] = new EventSubscription($handlingClass, $this->module->container);
+
+			$this->activeHandlerPath = compact("scope", "emitable");
+		}
+
 		/**
-		 * @param {$emitter} inserting this without a proxy means a random class can trigger handlers listening on another class, which is not the best
+		 * @param {$emitter} inserting this without a proxy means a random class can trigger handlers listening on another event, which is not the best
 		 **/
 		public function emit(string $emitter, string $eventName, $payload) {
 
-			foreach ([
-				$this->hydrateLocalScope($emitter),
+			$localHandlers = $this->getLocalHandler($emitter);
 
-				$this->externalHandlers // assumes the handling class has already been hydrated via `getExternalHandlers`
-			] as $scope)
+			$this->parentManager->triggerHandlers($localHandlers, $eventName, $payload)
 
-				$this->triggerHandlers($scope, $eventName, $payload);
-		}
-
-		public function triggerHandlers(array $scope, string $eventName, $payload) {
+			->gatherForeignSubscribers($this->module->exportsImplements()) // this means external listeners of this module can comfortably listen to the module exports interface rather than bothering about the specific entity emitting the event
 			
-			$hydratedHandler = $scope["handlingClass"];
-
-			foreach ($scope["handlingUnits"] as $executionUnit) {
-
-				$method = $executionUnit["handlingMethod"];
-				
-				if ($eventName == $executionUnit["eventName"])
-
-					$hydratedHandler->$method($payload);
-			}
-		}
-
-		private function hydrateLocalScope(string $emitter):array {
-
-			$scope = $this->getLocalHandler($emitter);
-
-			$scope["handlingClass"] = $this->module->container->getClass($scope["handlingClass"]);
-			
-			return $scope;
+			->triggerExternalHandlers($eventName, $payload);
 		}
 
 		public function on(string $eventName, string $handlingMethod):self {
 
-			$activeScope = $this->activeHandlerPath["scope"];
-
-			$emitter = $this->activeHandlerPath["emittingInterface"];
+			["scope" => $activeScope, "emittingEntity" => $emitter] = $this->activeHandlerPath;
 			
-			array_push(
-				$this->emitters[$activeScope][$emitter]["handlingUnits"], compact("eventName", "handlingMethod")
-			);
+			$this->emitters[$activeScope][$emitter]->addUnit( $eventName, $handlingMethod);
 		}
 
 		/**
-		 * For each module, ModuleToRoute will request handlers matching currently evaluated module from this guy
+		 * For each module, [parentManager] will request handlers matching currently evaluated module from this guy
 		 *
-		 * @return hydrates the class listening on the currently evaluated module and returns the scope
 		 **/
-		public function getExternalHandlers(string $evaluatedModule):array {
+		public function getExternalHandlers(string $evaluatedModule):EventSubscription {
 
-			foreach ($this->emitters["external"] as $emitable => $context) {
+			foreach ($this->emitters["external"] as $emitable => $context)
 
-				if ($emitable == $evaluatedModule) {
-
-					$context["handlingClass"] = $this->module->container->getClass($context["handlingClass"]);
+				if ($emitable == $evaluatedModule)
 
 					return $context;
-				}
-			}
 		}
 
 		/**
 		 * we want to decouple the emitter from the interface consumers are subscribed to
 		 *
-		 * @return Array of the listening context and its listeners
 		 **/
-		public function getLocalHandler(string $emitter):array {
+		public function getLocalHandler(string $emitter):EventSubscription {
 			
 			foreach ($this->emitters["local"] as $emitable => $details) {
 
