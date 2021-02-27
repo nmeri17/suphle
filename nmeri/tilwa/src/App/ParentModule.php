@@ -52,10 +52,16 @@
 			return $this->dependsOn;
 		}
 
-		// @return a class implementing an interface from Interactions namespace for `setDependsOn` on sister modules to consume
+		// @return a class implementing `exportsImplements`
 		public function exports():object {
 
 			return null;
+		}
+
+		// interface from Interactions namespace which will be consumers API with this module
+		public function exportsImplements():string {
+			
+			return "";
 		}
 
 		public function getUserModel():string {

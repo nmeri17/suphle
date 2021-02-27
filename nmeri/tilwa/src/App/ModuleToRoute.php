@@ -4,13 +4,17 @@
 	
 	use Dotenv\Dotenv;
 
+	use Tilwa\Events\EventManager;
+
 	class ModuleToRoute {
 
 		private $modules;
 
 		private $eventConsumers;
 
-		public function __construct(array $modules, array $eventConsumers) {
+		private $activeInitializer;
+
+		public function __construct(array $modules, array $eventConsumers = []) {
 
 			$this->modules = $modules;
 
@@ -25,7 +29,12 @@
 
 				$routeMatcher = (new ModuleInitializer($module, $requestQuery))->assignRoute();
 				
-				if ($routeMatcher->foundRoute) return $routeMatcher;
+				if ($routeMatcher->foundRoute) {
+
+					$this->activeInitializer = $routeMatcher;
+
+					return $routeMatcher;
+				}
 			}
 		}
 
@@ -65,15 +74,57 @@
 			return $this;
 		}
 
-		// note: we don't wanna listen to events from only the active module since one of its listeners can equally fire another event
+		// setup watchers for the active module and any related modules
 		public function watchEvents() {
-			// filter modules matching contents of $eventConsumers + active module
-			foreach($this->modules as $module) {
+			
+			$activeModule = $this->activeInitializer->getModule();
+			
+			$subscribers = $this->getModuleSubscribers($activeModule);
 
-				foreach($this->modules as $module) { // ensure currently evaluated doesn't match active module
-					// call everybody's registerListeners then pull their externals
-				}
+			$eventManager = $this->getEventManager($activeModule, $subscribers);
+		}
+
+		public function getEventManager(ParentModule $module, array $subscriptions) {
+
+			$eventManager = new EventManager($module, $subscriptions);
+
+			$eventManager->registerListeners();
+
+			$module->container->whenTypeAny()->needsAny([
+
+				EventManager::class => $eventManager
+			]);
+			return $eventManager;
+		}
+
+		public function getModuleSubscribers(ParentModule $emitableModule, ParentModule $circularDebounce) { //A
+			
+			$subscriptions = [];
+
+			foreach($this->getCanSubscribe([$emitableModule, $circularDebounce]) as $module) { // gets [B]
+				
+				$subscribers = $this->getModuleSubscribers($module, $emitableModule); // skips A's listeners if A is listening to events on B
+
+				$eventManager = $this->getEventManager($module, $subscribers);
+
+				$hasListeners = $eventManager->getExternalHandlers($emitableModule->exportsImplements()); // pass the dependency interface, not the module itself
+
+				if ($hasListeners)
+
+				 	$subscriptions[] = $hasListeners;
 			}
+			return $subscriptions;
+		}
+
+		// by default, only listeners within the active module (module with the route hit) will be triggered. Or those in `eventConsumers`. This method ensures that dynamic list (cuz of the recursion) is possible
+		public function getCanSubscribe(array $reject):array {
+			
+			return array_filter($this->modules, function ($module) use ($reject) {
+
+				return !in_array($listener, $reject, true) &&
+					
+				in_array($module, $this->eventConsumers, true);
+			});
 		}
 	}
 ?>

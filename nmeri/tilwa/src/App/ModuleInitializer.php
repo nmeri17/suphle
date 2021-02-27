@@ -20,7 +20,7 @@
 
 			$this->router = new RouteManager($module, $requestQuery, $this->getHttpMethod());
 
-			$module->entityBindings($this->router); // idk how reasonable it is to insert this from here considering how many defaults we could potentially wanna pass
+			$module->entityBindings($this->router); // idk how reasonable it is to insert this from here considering how many defaults we could potentially wanna pass. But there's no better candidate to delegate initialization of the router to. And this is our last contact with the module before route finding commences
 		}
 
 		public function assignRoute():self {
@@ -45,6 +45,11 @@
 
 				$_POST["_method"] ?? $_SERVER['REQUEST_METHOD']
 			);
+		}
+
+		public function getModule():ParentModule {
+			
+			return $this->module;
 		}
 	}
 ?>
