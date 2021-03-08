@@ -54,11 +54,17 @@
 			->triggerExternalHandlers($eventName, $payload);
 		}
 
-		public function on(string $eventName, string $handlingMethod):self {
+		/**
+		* @param {eventNames} space separated list of events to be handled by this method
+		*/
+		public function on(string $eventNames, string $handlingMethod):self {
 
-			["scope" => $activeScope, "emittingEntity" => $emitter] = $this->activeHandlerPath;
-			
-			$this->emitters[$activeScope][$emitter]->addUnit( $eventName, $handlingMethod);
+			foreach (explode(" ", $eventNames) as $eventName) {
+
+				["scope" => $activeScope, "emittingEntity" => $emitter] = $this->activeHandlerPath;
+				
+				$this->emitters[$activeScope][$emitter]->addUnit( trim($eventName), $handlingMethod);
+			}
 		}
 
 		/**

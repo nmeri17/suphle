@@ -1,9 +1,10 @@
 flesh out auth controller actions. Implement loginAs
 
-implement behavior surrounding controller and service layers
-
 flows
 
+go back to route collection
+	- emit _beforeExecute, _afterExecute for controller actions
+	- the routeManager injecting models/controllers should'nt blanket find, but create dry objects for post/update routes (known from their handler :D)
 
 install eloquent (requires a fork that doesn't use their container and event interfaces) and plates
 

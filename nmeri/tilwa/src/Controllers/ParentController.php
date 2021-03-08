@@ -5,7 +5,7 @@
 	class ParentController {
 
 		public function alternateWhen() {
-			# code...
+			# might need to be abstracted somewhere logic level services can equally use it
 		}
 
 		public function decide() {
