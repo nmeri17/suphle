@@ -6,21 +6,7 @@
 
 	use Routes\{BrowserRoutes, ApiRoutes\V1};
 	
-	class Module extends ParentModule {
-
-		function __construct(Container $container) {
-			
-			$this->container = $container;
-		}
-
-		public function entityBindings ():self {
-
-			$this->container->whenTypeAny()->needsAny([
-
-				ParentModule::class => $this
-			]);
-			return $this;
-		}
+	class CartModule extends ParentModule {
 
 		public function getRootPath ():string {
 

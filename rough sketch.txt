@@ -1,11 +1,10 @@
 flesh out auth controller actions. Implement loginAs
 
-implement behavior surrounding controller and service layers
-
-events
-
 flows
 
+go back to route collection
+	- emit _beforeExecute, _afterExecute for controller actions
+	- the routeManager injecting models/controllers should'nt blanket find, but create dry objects for post/update routes (known from their handler :D)
 
 install eloquent (requires a fork that doesn't use their container and event interfaces) and plates
 
@@ -19,8 +18,7 @@ route caching
 	- all the routes should pass through regexForm and get saved with the result under a trie the way they were defined. The aim is to skip this replacement phase during runtime
 	- only needed if you're using a lot of dynamic routes
 
-meeting at the village jan 29th
-burial date feb 25th
-
 this->_get(new ResponseType) // home route
 ->flow([...define keys to return])->linksTo([categoryPath, pathToMenuItems])
+
+try to deploy on azure

@@ -6,21 +6,7 @@
 
 	use Routes\{BrowserRoutes, ApiRoutes\V1};
 	
-	class Module extends ParentModule {
-
-		function __construct(Container $container) {
-			
-			$this->container = $container;
-		}
-
-		public function entityBindings ():self {
-
-			$this->container->whenTypeAny()->needsAny([ // this should be always be the first binding so it can supply the active module to every client requesting the base type
-
-				ParentModule::class => $this
-			]);
-			return $this;
-		}
+	class AuthModule extends ParentModule {
 
 		public function getRootPath ():string {
 

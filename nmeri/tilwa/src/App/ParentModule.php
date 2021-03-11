@@ -2,18 +2,30 @@
 
 	namespace Tilwa\App;
 
+	// these user defined classes should be read from the Main module when we have that
 	use Models\User;
 
+	use Events\AssignListeners;
+
 	use Tilwa\Http\Request\RouteGuards;
+
+	use Tilwa\Routing\RouteManager;
+
+	use Tilwa\Controllers\{ServiceWrapper, RepositoryWrapper};
 
 	abstract class ParentModule {
 
 		protected $container;
 
-		public function activate ():self {
+		private $dependsOn;
 
-			$this->entityBindings()->bindEvents(); // evaluate if these actions are worth taking before route finding; `bindEvents` especially
-			return $this;
+		private $serviceLifecycle;
+
+		function __construct(Container $container, bool $serviceLifecycle = false ) {
+			
+			$this->container = $container;
+
+			$this->serviceLifecycle = $serviceLifecycle;
 		}
 
 		// should be listed in descending order of the versions
@@ -23,21 +35,34 @@
 
 		public function getRootPath ():string;
 
-		public function setDependsOn(array $bindings):self {
+		public function setDependsOn(array $dependencies):self {
 			
-			# check if key interface matches the `exports` of incoming type before pairing
+			foreach ($dependencies as $contract => $concrete) {
+
+				$service = $concrete->exports();
+				
+				if ($service instanceof $contract) {
+
+					$pair = [$contract => $service];
+
+					$this->dependsOn += $pair;
+
+					$this->container->whenTypeAny()->needsAny($pair);
+				}
+			}
 		}
 
 		// @return interfaces[] from `Interactions` namespace
 		public function getDependsOn():array {
 
-			return [];
+			return $this->dependsOn;
 		}
 
-		public function exports():string {
+		// @return concrete implementing `exportsImplements`
+		abstract public function exports():object;
 
-			return; // an interface from Interactions namespace for `setDependsOn` on sister modules to consume
-		}
+		// interface from Interactions namespace which will be consumers API with this module
+		abstract public function exportsImplements():string;
 
 		public function getUserModel():string {
 
@@ -60,19 +85,30 @@
 			return RouteGuards::class;
 		}
 
-		// provision your classes here
-		abstract public function entityBindings ():self;
+		// extending module is expected to do a parent::entityBindings($router) before provisioning its own classes
+		public function entityBindings (RouteManager $router):self {
 
-		// attach event listeners here
-		public function bindEvents ():self {
+			$this->container->whenTypeAny()->needsAny([
 
-			// may need to work with an event manager
+				ParentModule::class => $this, // all requests for the parent should respond with the active module
+
+				RouteManager::class => $router
+			])
+			->whenType(ServiceWrapper::class)->needsArguments([
+
+				"lifeCycle" => $this->serviceLifecycle
+			])
+			->whenType(RepositoryWrapper::class)->needsArguments([
+
+				"lifeCycle" => $this->serviceLifecycle
+			]);
+			return $this;
 		}
 
-		protected function on () {
+		// @return the class where we bound listeners to events we wanna listen to
+		public function listenersLoader ():string {
 
-			//
+			return AssignListeners::class;
 		}
 	}
-
 ?>
