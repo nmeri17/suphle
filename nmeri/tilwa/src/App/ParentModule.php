@@ -11,15 +11,21 @@
 
 	use Tilwa\Routing\RouteManager;
 
+	use Tilwa\Controllers\{ServiceWrapper, RepositoryWrapper};
+
 	abstract class ParentModule {
 
 		protected $container;
 
 		private $dependsOn;
 
-		function __construct() {
+		private $serviceLifecycle;
+
+		function __construct(Container $container, bool $serviceLifecycle = false ) {
 			
-			$this->container = new Container;
+			$this->container = $container;
+
+			$this->serviceLifecycle = $serviceLifecycle;
 		}
 
 		// should be listed in descending order of the versions
@@ -37,7 +43,7 @@
 				
 				if ($service instanceof $contract) {
 
-					$pair = [$contract => $service]; // So far, `exports` classes merely expose functionality in controllers and services. They don't wield any influence over what goes on in the module. But if the need for that arises, we would need to configure it externally. And, that module will grant access via its `exports` class's constructor. Then we will either need a special service provider that allows a more customized control over that guy's initialization, or through the consumed module itself
+					$pair = [$contract => $service];
 
 					$this->dependsOn += $pair;
 
@@ -87,10 +93,19 @@
 				ParentModule::class => $this, // all requests for the parent should respond with the active module
 
 				RouteManager::class => $router
+			])
+			->whenType(ServiceWrapper::class)->needsArguments([
+
+				"lifeCycle" => $this->serviceLifecycle
+			])
+			->whenType(RepositoryWrapper::class)->needsArguments([
+
+				"lifeCycle" => $this->serviceLifecycle
 			]);
 			return $this;
 		}
 
+		// @return the class where we bound listeners to events we wanna listen to
 		public function listenersLoader ():string {
 
 			return AssignListeners::class;

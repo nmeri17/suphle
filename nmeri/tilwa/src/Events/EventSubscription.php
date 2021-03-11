@@ -9,12 +9,16 @@
 		private $handlingClass;
 
 		private $handlingUnits;
+
+		private $eventManager;
 		
-		function __construct(string $handlingClass, Container $container) {
+		function __construct(string $handlingClass, Container $container, EventManager $eventManager) {
 
 			$this->handlingClass = $handlingClass;
 
 			$this->handlingUnits = [];
+
+			$this->eventManager = $eventManager;
 		}
 		
 		// since each local event manager points to its own module, we can know that pulling a listener from another module will load the class from its correct scope
@@ -31,6 +35,11 @@
 		function getHandlingUnits():array {
 			
 			return $this->handlingUnits;
+		}
+
+		public function getEventManager() {
+			
+			return $this->eventManager;
 		}
 	}
 ?>

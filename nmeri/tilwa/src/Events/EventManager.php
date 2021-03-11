@@ -35,7 +35,7 @@
 		// there's a distinction between local and external emitters because we don't wanna assume each client has a hard dependency on that interface. The client shouldn't care beyond the knowledge that such interface may emit such events if it exists
 		private function initializeHandlingScope(string $scope, string $emitable, string $handlingClass):void {
 
-			$this->emitters[$scope][$emitable] = new EventSubscription($handlingClass, $this->module->container);
+			$this->emitters[$scope][$emitable] = new EventSubscription($handlingClass, $this->module->container, $this);
 
 			$this->activeHandlerPath = compact("scope", "emitable");
 		}

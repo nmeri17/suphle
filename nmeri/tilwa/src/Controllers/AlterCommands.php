@@ -9,8 +9,17 @@
 			# set event handler on model blocking reads if the sub has no ancestor by our name
 		}
 
-		# don't even call the method if this is false
-		public function canCommand():bool {
+		/**
+		* @desc protects invocation of [method] when return value=false
+		* @param {arguments} what the caller wants to pass to the method
+		*/
+		public function canCommand(string $method, array $arguments):bool {
+			return true;
+		}
+
+		// causes all events handled by this class (each method call) to equally trigger ripple events ("refresh")
+		public function reboundsEvents():bool {
+			
 			return true;
 		}
 	}
