@@ -2,7 +2,9 @@
 
 	namespace Tilwa\Controllers;
 
-	class NoSqlLogic {
+	use Tilwa\Contracts\PermissibleService;
+
+	class NoSqlLogic implements PermissibleService {
 
 		public function restrictAccess() {
 			# whenType self::class needsAny orm model, return null

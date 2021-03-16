@@ -58,14 +58,9 @@
 			$hydratedHandler = $scope->getHandlingClass();
 
 			foreach ($scope->getHandlingUnits() as $executionUnit) {
-				if ($executionUnit->canExecute($eventName)) {
+				if ($executionUnit->canExecute($eventName))
 
 					$executionUnit->fire($hydratedHandler, $payload);
-
-					if ($executionUnit->reboundContext)
-
-						$scope->getEventManager()->emit($hydratedHandler::class, "refresh", $executionUnit->reboundContext);
-				}
 			}
 			return $this;
 		}

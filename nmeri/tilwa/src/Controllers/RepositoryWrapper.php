@@ -1,10 +1,10 @@
 <?php
-
 	namespace Tilwa\Controllers;
 
-	use Tilwa\Contracts\Orm;
+	use Tilwa\Contracts\ReboundsEvents;
 
-	// this only wraps InterceptsQuery. AlterCommands are handled by QueryEmitter
+	use Tilwa\Errors\UnauthorizedServiceAccess;
+
 	class RepositoryWrapper extends ServiceWrapper {
 
 		protected function yield(string $method, array $arguments) {
@@ -13,29 +13,17 @@
 
 			$serviceName = $service::class;
 
-			$service->ormListener($this->onCatch($serviceName, $method));
+			$result = parent::yield($method, $arguments);
 
-			$result = $service->$method(...$arguments);
-				
-			if (!$service->shouldFetch($result))
+			if ($service instanceof QueryService && !$service->shouldFetch($result))
 
 				throw new UnauthorizedServiceAccess($serviceName);
 
+			if ($service instanceof ReboundsEvents)
+
+				$this->eventManager->emit($serviceName, "refresh", compact("result", "method"));
+
 			return $result;
-		}
-
-		private function onCatch(string $serviceName, string $method) {
-			
-			return function($bindings) use ($method, $serviceName) {
-
-				if (empty($bindings)) // $query->bindings
-
-					throw new InvalidRepositoryMethod($method);
-				
-				if ($this->lifecycle)
-
-					$this->eventManager->emit($serviceName, "fetched", compact("bindings"));
-			};
 		}
 	}
 ?>

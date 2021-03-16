@@ -62,16 +62,10 @@
 
 		private function isAcceptableService(object $dependency, array $foreignServices):bool {
 			
-			$allowed = [EventManager::class, InterceptsQuery::class, NoSqlLogic::class] + array_map(function ($concrete) {
+			$allowed = [EventManager::class, BaseQueryInterceptor::class, NoSqlLogic::class] + array_map(function ($concrete) {
 
 				return $concrete::class;
 			}, $foreignServices);
-
-			$reject = [AlterCommands::class]; // users of this should go through EventManager
-
-			foreach ($reject as $type)
-
-				if ($dependency instanceof $type) return false;
 
 			foreach ($allowed as $type)
 
@@ -99,13 +93,13 @@
 			
 			$wrapped = null;
 
-			if ($concrete instanceof EventManager) // ExecutionUnit already has its own rules that replicates what direct wrapper access does for us
+			if ($concrete instanceof EventManager) // ExecutionUnit will eventually wrap the handler in [RepositoryWrapper] if it matches
 
 				$wrapped = $concrete;
 			else {
 				$container = $this->container;
 
-				if ($concrete instanceof InterceptsQuery)
+				if ($concrete instanceof BaseQueryInterceptor)
 
 					$wrapper = $container->getClass(RepositoryWrapper::class);
 
