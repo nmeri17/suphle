@@ -4,7 +4,7 @@
 
 	use Tilwa\App\Container;
 
-	use Tilwa\Errors\IncompatibleService;
+	use Tilwa\Events\EventManager;
 
 	class Executable {
 
@@ -13,6 +13,8 @@
 		private $services;
 
 		private $container;
+
+		private $invalidService;
 
 		public function alternateFactory(string $interface, ...$arguments):object {
 			
@@ -50,13 +52,16 @@
 			$this->services = $dependencies;
 		}
 
-		public function validateServices (array $moduleDependencies):bool {
+		public function hasValidServices (array $moduleDependencies):bool {
 			
 			foreach ($this->services as $alias => $service)
 				
-				if (!$this->isAcceptableService($service, $moduleDependencies))
+				if (!$this->isAcceptableService($service, $moduleDependencies)) {
 
-					throw new IncompatibleService( $alias);
+					$this->invalidService = $alias;
+
+					return false;
+				}
 			return true;
 		}
 
@@ -79,40 +84,49 @@
 			return empty(get_object_vars($this));
 		}
 
-		public function injectedEmitter():bool {
-			
-			foreach ($this->services as $dependency)
-				
-				if ($dependency instanceof EventManager) return true;
-			return false;
-		}
-
 		public function __get($property) {
 
 			$concrete = $this->services[$property];
-			
-			$wrapped = null;
 
-			if ($concrete instanceof EventManager) // ExecutionUnit will eventually wrap the handler in [RepositoryWrapper] if it matches
+			if ($concrete instanceof EventManager)
 
-				$wrapped = $concrete;
-			else {
-				$container = $this->container;
+				return $concrete; // [ExecutionUnit] will eventually wrap the handler in [RepositoryWrapper] if it matches
+			$this->setupBootableService($concrete);
 
-				if ($concrete instanceof BaseQueryInterceptor)
-
-					$wrapper = $container->getClass(RepositoryWrapper::class);
-
-				else $wrapper = $container->getClass(ServiceWrapper::class);
-
-				$wrapped = $wrapper->setActiveService($concrete);
-			}
-			return $wrapped;
+			return $this->getWrappedService($concrete);
 		}
 
-		public function setContainer(Container $container) {
+		public function setContainer(Container $container):self {
 			
 			$this->container = $container;
+
+			return $this;
+		}
+
+		public function getInvalidService():string {
+			
+			return $this->invalidService;
+		}
+
+		private function getWrappedService(object $originalService) {
+			
+			$container = $this->container;
+
+			if ($originalService instanceof BaseQueryInterceptor)
+
+				$wrapper = $container->getClass(RepositoryWrapper::class);
+
+			else $wrapper = $container->getClass(ServiceWrapper::class);
+
+			return $wrapper->setActiveService($originalService);
+		}
+
+		// A better location for this would've been while setting it in the service wrapper? But it seems like too little a reason to pass in the container
+		private function setupBootableService(object $concrete):void {
+			
+			if ($concrete instanceof BootsService)
+
+				$concrete->setup($this->container); 
 		}
 	}
 ?>

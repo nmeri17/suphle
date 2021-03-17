@@ -2,12 +2,17 @@
 
 	namespace Tilwa\Controllers;
 
-	use Tilwa\Contracts\PermissibleService;
+	use Tilwa\Contracts\{PermissibleService, BootsService};
 
-	class NoSqlLogic implements PermissibleService {
+	use Tilwa\App\Container;
 
-		public function restrictAccess() {
-			# whenType self::class needsAny orm model, return null
+	class NoSqlLogic implements PermissibleService, BootsService { // using [BootsService] instead of a service provider since it won't have a concrete. We will also wanna run multiple logic classes within one request
+		final public function setup(Container $container):void {
+			
+			$container->whenType( self::class)->needsAny([
+
+				"ormModel" => null
+			]);
 		}
 	}
 ?>

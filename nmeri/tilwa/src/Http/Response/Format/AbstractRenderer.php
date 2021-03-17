@@ -33,7 +33,7 @@
 			return $this;
 		}
 
-		public function execute (array $handlerParameters):self {
+		public function invokeActionHandler (array $handlerParameters):self {
 
 			$this->rawResponse = call_user_func_array([
 

@@ -110,5 +110,10 @@
 
 			return AssignListeners::class;
 		}
+
+		public function getContainer():Container {
+			
+			return $this->container;
+		}
 	}
 ?>

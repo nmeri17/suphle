@@ -4,8 +4,6 @@
 
 	use Tilwa\App\{ParentModule, Container};
 
-	use Tilwa\Contracts\Orm;
-
 	use Tilwa\Http\Response\Format\Markup;
 
 	use Generator;
@@ -18,14 +16,6 @@
 
 		private $payload;
 
-		private $handlerParameters;
-
-		private $databaseAdapter;
-
-		private $requestIndexInParameters;
-
-		private $modelIndexesInParameters;
-
 		private $incomingPath;
 
 		private $httpMethod;
@@ -34,20 +24,22 @@
 
 		private $collectionArguments;
 
-		function __construct(ParentModule $module, string $incomingPath, string $httpMethod ) {
+		private $container;
+
+		function __construct(ParentModule $module, Container $container, string $incomingPath, string $httpMethod ) {
 
 			$this->module = $module;
-
-			$this->databaseAdapter = $module->container->getClass(Orm::class);
 
 			$this->incomingPath = $incomingPath;
 
 			$this->httpMethod = $httpMethod;
 
-			$this->defineCollectionArguments();
+			$this->container = $container;
 		}
 
 		public function findRenderer ():AbstractRenderer {
+
+			$this->defineCollectionArguments();
 
 			foreach ($this->entryRouteMap() as $collection) {
 				
@@ -55,7 +47,7 @@
 
 				if (!is_null($hit)) {
 
-					$this->updateRequestParameters($hit);
+					$this->updateRequestParameters($hit->getRequest());
 
 					return $hit;
 				}
@@ -198,13 +190,13 @@
 				/ix", $this->incomingPath);
 		}
 		
-		public function updateRequestParameters(AbstractRenderer $renderer):void {
+		public function updateRequestParameters(BaseRequest $request):void {
 			$pattern = "(?<![A-Z0-9])# negative lookbehind: given PATH_id_EDIT_id2_EDIT__SAME__OKJh_optionalO_TOMP, refuse to match the h in the compound segment
 			([a-z0-9]+)# pick placeholders";
 
 			preg_match("/$pattern/x", $this->fullTriedPath, $matches);
 
-			$renderer->getRequest()->setPayload($matches[0]);
+			$request->setPlaceholders($matches[0]);
 		}
 
 		public function setPrevious(AbstractRenderer $renderer ):static {
@@ -257,64 +249,6 @@
 			->setValidationErrors( $request->validationErrors() );
 
 			return $renderer;
-		}
-
-		public function prepareArguments():void {
-
-			$renderer = $this->activeRenderer;
-
-			$this->handlerParameters = $this->module->container
-
-			->getMethodParameters($renderer->handler, $renderer->getController());
-
-			$this->warmParameters();
-
-			if (!is_null($this->requestIndexInParameters))
-
-				$this->updateRequestPayload();
-
-			if (!empty($this->modelIndexesInParameters))
-
-				$this->hydrateModels();
-		}
-
-		private function warmParameters():void {
-			
-			foreach ($this->handlerParameters as $parameter => $argument) {
-				
-				if ($argument instanceof BaseRequest)
-				
-					$this->requestIndexInParameters = $parameter;
-
-				elseif ( $this->databaseAdapter->isModel($argument))
-
-					$this->modelIndexesInParameters[$parameter] = $argument;
-			}
-		}
-
-		private function updateRequestPayload():void {
-
-			$request = $this->handlerParameters[$this->requestIndexInParameters]->setPayload($this->payload);
-
-			$this->activeRenderer->setRequest ($request);
-		}
-
-		/*
-		* @description: assumes ordering of the arguments on the action handler matches the one on url pattern
-
-			handler (BaseRequest, Model1, Random, Model2)
-			path/2/action/3 = [2,3]
-		*/
-		private function hydrateModels():void {
-
-			$request = $this->activeRenderer->getRequest();
-			
-			foreach ($this->modelIndexesInParameters as $parameter => $model)
-
-				$this->handlerParameters[ $parameter] = $this->databaseAdapter
-				->findOne(
-					$model::class, $request->$parameter // relies on the invocation ordering that populated request payload prior to calling this
-				);
 		}
 
 		public function isApiRoute ():bool {
@@ -378,9 +312,7 @@
 		// @return concrete instance of given collection class containing list of patterns and renderers
 		private function provideCollection(string $rendererCollection):RouteCollection {
 
-			return $this->module->container
-			
-			->whenType($rendererCollection)
+			return $this->container->whenType($rendererCollection)
 
 			->needsArguments($this->collectionArguments)
 			
@@ -395,6 +327,7 @@
 
 					return true;
 			}
+			return false;
 		}
 
 		private function bootRenderer(AbstractRenderer $renderer, string $controllingClass):AbstractRenderer {
@@ -411,7 +344,7 @@
 		private function defineCollectionArguments() {
 
 			$this->collectionArguments = [
-				"permissions" => $this->module->container
+				"permissions" => $this->container
 
 				->getClass($this->module->routePermissions()),
 				
@@ -421,7 +354,7 @@
 
 		private function provideRendererDependencies(string $renderer, string $controller):Container {
 
-			return $this->module->container->whenType($renderer)
+			return $this->container->whenType($renderer)
 
 			->needsArguments([
 				"controllerClass" => $controller

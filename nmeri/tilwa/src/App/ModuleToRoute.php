@@ -12,7 +12,7 @@
 			
 			foreach($modules as $module) {
 
-				$routeMatcher = (new ModuleInitializer($module, $requestQuery))->assignRoute();
+				$routeMatcher = (new ModuleInitializer($module, $module->getContainer(), $requestQuery))->assignRoute();
 				
 				if ($routeMatcher->foundRoute)
 

@@ -2,11 +2,15 @@
 
 	namespace Tilwa\Http\Response;
 
-	use Tilwa\App\Container;
+	use Tilwa\App\{Container, ParentModule};
 
 	use Tilwa\Routing\RouteManager;
 
 	use Tilwa\Http\Response\Format\Markup;
+
+	use Tilwa\Http\Request\BaseRequest;
+
+	use Tilwa\Controllers\ControllerManager;
 
 	class ResponseManager {
 
@@ -14,7 +18,7 @@
 
 		private $router;
 
-		private $skipHandler;
+		private $skipHandler; // is `true` on validation failure
 
 		public $responseMutations;
 
@@ -29,19 +33,27 @@
 		
 		public function getResponse () {
 
-			$this->router->prepareArguments();
+			$oldRenderer = $this->router->getActiveRenderer();
 
-			$renderer = $this->getValidRenderer();
+			$request = $oldRenderer->getRequest();
+
+			$renderer = $this->getValidRenderer($oldRenderer, $request);
 
 			if (!$this->skipHandler) {
 
-				$this->runMiddleware($renderer);
+				$controllerManager = $this->getControllerManager($renderer);
 
-				if ($renderer instanceof Markup)
+				$this->validateManager($controllerManager);
 
-					$renderer->wantsJson($this->router->acceptsJson());
+				$this->buildManagerTarget($controllerManager, $renderer);
 
-				$renderer->execute($this->handlerParameters);
+				if ($renderer instanceof Markup && $this->router->acceptsJson())
+
+					$renderer->setWantsJson();
+
+				$this->runMiddleware($renderer); // called here so some awesome middleware can override default behavior on our booted controller
+
+				$renderer->invokeActionHandler($controllerManager->getHandlerParameters());
 			}
 
 			$body = $renderer->render();
@@ -53,15 +65,11 @@
 			return $body;
 		}
 
-		/** @description
+		/** @description: Validates request and decides whether controller will be invoked
 		*	For requests originating from browser, flow will be reverted to previous request, expecting its view to read the error bag
 		*	For other clients, the handler should be skipped altogether for the errors to be immediately rendered
 		*/
-		private function getValidRenderer ():AbstractRenderer {
-
-			$renderer = $this->router->getActiveRenderer();
-
-			$request = $renderer->getRequest();
+		private function getValidRenderer (AbstractRenderer $currentRenderer, BaseRequest $request):AbstractRenderer {
 
 			$browserOrigin = !$this->router->isApiRoute();
 
@@ -69,15 +77,15 @@
 
 				if ($browserOrigin)
 
-					$renderer = $this->router->mergeWithPrevious($request);
+					$currentRenderer = $this->router->mergeWithPrevious($request);
 				
 				else $this->skipHandler = true;
 			}
 			else if ($browserOrigin)
 
-				$this->router->setPrevious($renderer);
+				$this->router->setPrevious($currentRenderer);
 
-			return $renderer;
+			return $currentRenderer;
 		}
 
 		// middleware delimited by commas. Middleware parameters delimited by colons
@@ -111,6 +119,31 @@
 				$currentBody = $handler($currentBody);
 			
 			return $currentBody;
+		}
+
+		private function getControllerManager(AbstractRenderer $renderer):ControllerManager {
+
+			$controllerManager = $this->container->getClass(ControllerManager::class);
+
+			$controllerManager->setController($this->container->getClass($renderer->getController()));
+
+			return $controllerManager;
+		}
+
+		public function validateManager(ControllerManager $manager):void {
+
+			$globalDependencies = $this->container->getClass(ParentModule::class)->getDependsOn();
+
+			$manager->validateController($globalDependencies);
+		}
+
+		public function buildManagerTarget(ControllerManager $manager, AbstractRenderer $renderer):void {
+
+			$manager->bootController();
+
+			$manager->setHandlerParameters($renderer->handler);
+
+			$manager->provideModelArguments($renderer->getRequest(), $renderer->routeMethod);
 		}
 	}
 ?>

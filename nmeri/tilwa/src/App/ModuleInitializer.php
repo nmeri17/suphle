@@ -5,6 +5,8 @@
 	use Tilwa\Http\Response\ResponseManager;
 
 	use Tilwa\Routing\RouteManager;
+
+	use Tilwa\App\Container;
 	
 	class ModuleInitializer {
 
@@ -14,11 +16,11 @@
 
 		private $module;
 
-		function __construct(ParentModule $module, string $requestQuery) {
+		function __construct(ParentModule $module, Container $container, string $requestQuery) {
 
 			$this->module = $module;
 
-			$this->router = new RouteManager($module, $requestQuery, $this->getHttpMethod());
+			$this->router = new RouteManager($module, $container, $requestQuery, $this->getHttpMethod());
 
 			$module->entityBindings($this->router); // idk how reasonable it is to insert this from here considering how many defaults we could potentially wanna pass. But there's no better candidate to delegate initialization of the router to. And this is our last contact with the module before route finding commences
 		}
@@ -36,7 +38,7 @@
 
 		public function trigger():string {
 
-			return (new ResponseManager($this->module->container, $this->router))->getResponse();
+			return $this->container->getClass(ResponseManager::class)->getResponse();
 		}
 
 		private function getHttpMethod ():string {
@@ -45,11 +47,6 @@
 
 				$_POST["_method"] ?? $_SERVER['REQUEST_METHOD']
 			);
-		}
-
-		public function getModule():ParentModule {
-			
-			return $this->module;
 		}
 	}
 ?>
