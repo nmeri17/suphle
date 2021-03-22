@@ -20,5 +20,7 @@
 		public function setTrap(Closure $callback);
 
 		public function builderWhere( string $modelName, $modelId, string $columnName)/*:builder*/;
+
+		public function create();
 	}
 ?>

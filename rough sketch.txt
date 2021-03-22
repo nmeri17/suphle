@@ -1,12 +1,6 @@
 flesh out auth controller actions. Implement loginAs
 
-flows
-
-go back to route collection
-	- emit _beforeExecute, _afterExecute for controller actions
-	- the routeManager injecting models/controllers should'nt blanket find, but create dry objects for post/update routes (known from their handler :D)
-
-install eloquent (requires a fork that doesn't use their container and event interfaces) and plates
+install plates
 
 ->createQueryBuilder()
 
@@ -18,7 +12,26 @@ route caching
 	- all the routes should pass through regexForm and get saved with the result under a trie the way they were defined. The aim is to skip this replacement phase during runtime
 	- only needed if you're using a lot of dynamic routes
 
-this->_get(new ResponseType) // home route
-->flow([...define keys to return])->linksTo([categoryPath, pathToMenuItems])
-
 try to deploy on azure
+
+When you find a way of identifying orm models, revisit NoSqlLogic->setup
+
+before the request is over, queue my flow. when it runs, it gets and runs all my siblings
+
+Flow request uses a pub sub pattern ie. Publishing to all flows containing outgoing route (each route publishes an event and underground, that each flow listens to). Furthermore, each write to the redis data store by a queried database result set subscribes to that topic. Each write to the database looks up subscriptions matching the criteria
+
+Flow request caching expires once they've been accessed, and has to be tied to current user, where present ie. The process that'll run those queries in the background is fed authenticated id and session data to work with since CLI won't have access to session. But, user can make first request, log out and sign in as different user to make the pending second request. So, app must compare current auth id with what's in cached response
+
+#
+Wrap the outermost context in the flow class for it to handle triggering retrieving response from the controller. Also wrap the module/route finder with it or replace it altogether for us to internally call those methods 
+
+#
+We also want to skip the trip for route finding. So, we first check whether the cached route matches incoming route before attempting to find route and handler/ response result
+
+#
+update an App property each time a call is made to retrieve user. If this indicator property is empty, another user could use this response, so store for longer (or make more accessible to more than current user). This saves us from making those caches for each user
+#
+Flows have a `hydrate` method that can create instantiate a flow from an incoming request. Useful for 3rd party consumers of the api
+
+#
+When a request comes in and it has a cache hit, trigger an event with either the route name or action handler as event name. we forward the actual request object as payload to the handler. then the request of the matching route is queued
