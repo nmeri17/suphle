@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Events;
 
-	use Tilwa\App\ParentModule;
+	use Tilwa\App\{ParentModule, Container};
 
 	class ModuleLevelEvents {
 
@@ -18,16 +18,16 @@
 			
 			foreach ($this->modules as $module)
 				
-				$this->setEventManager($module);
+				$this->setEventManager($module, $module->getContainer());
 		}
 
-		private function setEventManager(ParentModule $module):void {
+		private function setEventManager(ParentModule $module, Container $container):void {
 
 			$manager = $this->eventManagers[] = new EventManager($module, $this);
 
 			$manager->registerListeners();
 
-			$module->container->whenTypeAny()->needsAny([
+			$container->whenTypeAny()->needsAny([
 
 				EventManager::class => $manager
 			]);

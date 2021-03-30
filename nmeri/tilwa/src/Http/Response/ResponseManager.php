@@ -12,7 +12,7 @@
 
 	use Tilwa\Controllers\ControllerManager;
 
-	class ResponseManager {
+	class ResponseManager extends BaseResponseManager {
 
 		private $container;
 
@@ -119,15 +119,6 @@
 				$currentBody = $handler($currentBody);
 			
 			return $currentBody;
-		}
-
-		private function getControllerManager(AbstractRenderer $renderer):ControllerManager {
-
-			$controllerManager = $this->container->getClass(ControllerManager::class);
-
-			$controllerManager->setController($this->container->getClass($renderer->getController()));
-
-			return $controllerManager;
 		}
 
 		public function validateManager(ControllerManager $manager):void {

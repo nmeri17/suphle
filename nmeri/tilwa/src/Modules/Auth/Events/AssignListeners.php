@@ -7,8 +7,8 @@
 
 		public function registerListeners() {
 			
-			$this->local(InterfaceB::class, ServiceBHandlers::class)
-	        ->on(yEvent, "yHandler")
+			$this->local(ControllerB::class, ServiceBHandlers::class)
+	        ->on("on_hit", "yHandler")
 	        ->on(xEvent, "xHandler");
 
 			$this->external(InteractionC::class, ServiceCHandlers::class)

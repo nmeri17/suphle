@@ -77,13 +77,11 @@
 		// mutates the underlying handler parameters
 		private function hydrateModels(BaseRequest $request, array $modelArguments, string $httpMethod):void {
 			
-			if ($httpMethod != "post") {// nothing to fetch/build. user is creating a new resource
-
-				$modelFactory = "loadModelFor". ucfirst($httpMethod);
+			if ($httpMethod == "get") {// post has nothing to fetch/build. put/delete can return builders but risk developer using them directly instead of passing it to the service
 
 				foreach ($modelArguments as $parameter => $model)
 
-					$this->handlerParameters[ $parameter] = $this->$modelFactory(
+					$this->handlerParameters[ $parameter] = $this->loadModelForGet(
 						$model::class, $request->$parameter, $parameter
 					);
 			}
@@ -92,16 +90,6 @@
 		private function loadModelForGet(string $modelName, $modelId):object {
 			
 			return $this->databaseAdapter->findOne( $modelName, $modelId);
-		}
-
-		private function loadModelForPut(string $modelName, $modelId, string $columnName):object {
-			
-			return $this->databaseAdapter->builderWhere( $modelName, $modelId, $columnName);
-		}
-
-		private function loadModelForDelete(string $modelName, $modelId, string $columnName):object {
-			
-			return $this->loadModelForPut($modelName, $modelId, $columnName);
 		}
 
 		public function bootController():void {
