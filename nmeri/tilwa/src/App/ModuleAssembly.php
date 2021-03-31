@@ -14,7 +14,7 @@
 
 			$this->bootInterceptor();
 
-			$this->beginRequest();
+			echo $this->beginRequest();
 		}
 		
 		private function bootInterceptor():void {
@@ -24,17 +24,19 @@
 			(new ModuleLevelEvents)->bootReactiveLogger($this->getModules());
 		}
 		
-		private function beginRequest():void {
+		private function beginRequest():string {
 
 			$flow = new FlowFinder;
 
 			if ($flow->shouldRespond()) {
 
-				echo $flow->getResponse(); // should set [renderer] for other methods to use
+				$response = $flow->getResponse(); // should set [renderer] for other methods to use
 					
 				$flow->flush();
+
+				return $response;
 			}
-			else echo (new ModuleToRoute)->findContext($this->getModules())->trigger();
+			return (new ModuleToRoute)->findContext($this->getModules())->trigger();
 		}
 	}
 ?>

@@ -7,19 +7,14 @@
 
 	class FlowFinder extends BaseResponseManager {
 
-		private $eventManager;
+		private $eventManager; // this is deduced from the modules loader when the flow is hydrated from our cache
 
-		function __construct(EventManager $eventManager) {
-			
-			$this->eventManager = $eventManager;
-		}
-
-		public function matchesRequest():bool {
+		private function matchesRequest():bool {
 			
 			//
 		}
 
-		public function flowExists():bool {
+		private function flowExists():bool {
 			
 			//
 		}
@@ -34,12 +29,10 @@
 
 			$renderer->invokeActionHandler($controllerManager->getHandlerParameters());
 
-			$body = $renderer->render();
-
-			return $body;
+			return $renderer->render();
 		}
 
-		public function queueNext($nextResponse):void { // should include the full renderer as well
+		public function setLastResponseNodes($nextResponse):void { // should include the full renderer as well and not just the response
 			
 			//
 		}
@@ -47,6 +40,20 @@
 		private function getActiveFlow() {
 			
 			// find the flow request in the cache matching current get parameters
+		}
+
+		// contents of this method should be queued
+		public function flush() {
+
+			$this->setLastResponseNodes($body);
+
+			// review this parameter
+			$this->rendererModule->eventManager->emit($renderer->getController(), "on_flow_hit", $body); // should probably include request parameters, too?
+		}
+
+		public function shouldRespond():bool {
+			
+			return $this->matchesRequest() && $this->flowExists();
 		}
 	}
 ?>
