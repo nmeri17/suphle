@@ -7,24 +7,20 @@
 
 		const DATE_ON_HIT = 1;
 
-		private $renderer; // we'll record the eventual builder on a property on this guy. he's the one who gets saved ultimately
-
-		private $siblings;
+		private $branches; // this is the guy containing all the information the hydrator is interested in
 
 		private $actions;
 
-		function __construct(AbstractRenderer $renderer) {
-			
-			$this->renderer = $renderer;
+		function __construct() {
 
 			$this->actions = [];
 
-			$this->siblings = [];
+			$this->branches = [];
 		}
 
 		private function linksTo(string $pattern, $responseStructure):self {
 
-			$this->siblings[$pattern] = $responseStructure;
+			$this->branches[$pattern] = $responseStructure;
 
 			return $this;
 		}

@@ -1,11 +1,11 @@
 <?php
 	namespace Tilwa\Flows;
 
-	use Tilwa\Http\Response\BaseResponseManager;
+	use Tilwa\Contracts\ResponseManager as ManagerInterface;
 
 	use Tilwa\Events\EventManager;
 
-	class FlowFinder extends BaseResponseManager {
+	class FlowFinder implements ManagerInterface {
 
 		private $eventManager; // this is deduced from the modules loader when the flow is hydrated from our cache
 
@@ -19,35 +19,24 @@
 			//
 		}
 
-		public function getResponse():string {
+		public function getResponse(string $incomingPattern):string {
 
-			$context = $this->getActiveFlow();
+			$context = $this->getActiveFlow($incomingPattern);
 
 			$renderer = $context->hydrateRenderer();
 
-			$controllerManager = $this->getControllerManager($renderer);
-
-			$renderer->invokeActionHandler($controllerManager->getHandlerParameters());
+			// then set the [rawResponse] to the fetched payload
 
 			return $renderer->render();
 		}
 
-		public function setLastResponseNodes($nextResponse):void { // should include the full renderer as well and not just the response
-			
-			//
-		}
-
-		private function getActiveFlow() {
+		private function getActiveFlow(string $incomingPattern) {
 			
 			// find the flow request in the cache matching current get parameters
 		}
 
-		// contents of this method should be queued
-		public function flush() {
+		public function afterRender() {
 
-			$this->setLastResponseNodes($body);
-
-			// review this parameter
 			$this->rendererModule->eventManager->emit($renderer->getController(), "on_flow_hit", $body); // should probably include request parameters, too?
 		}
 

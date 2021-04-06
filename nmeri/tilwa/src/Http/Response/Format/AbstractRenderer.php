@@ -2,9 +2,11 @@
 
 	namespace Tilwa\Http\Response\Format;
 
-	use Tilwa\Contracts\HtmlParser;
+	use Tilwa\Contracts\{HtmlParser, Authenticator, QueueManager};
 
 	use Tilwa\Http\Request\BaseRequest;
+
+	use Tilwa\Flows\{ControllerFlows, RouteQueueJob};
 
 	abstract class AbstractRenderer {
 
@@ -24,11 +26,21 @@
 
 		public $path;
 
-		public function setDependencies(Container $container, string $controllerClass):self {
+		private $flows;
+
+		private $authenticator;
+
+		private $queueManager;
+
+		public function setDependencies(Container $container, string $controllerClass, Authenticator $authenticator, QueueManager $queueManager):self {
 
 			$this->container = $container;
 			
 			$this->controller = $controllerClass;
+
+			$this->authenticator = $authenticator;
+
+			$this->queueManager = $queueManager;
 
 			return $this;
 		}
@@ -81,5 +93,25 @@
 		}
 
 		abstract public function render ():string;
+
+		public function hasBranches():bool {
+			
+			return !is_null($this->flows);
+		}
+
+		public function queueNextFlow():bool {
+
+			$user = $this->authenticator->getUser(); // passing this here since queue has no idea who user is
+
+			$id = $user ? $user->id ? "*";
+
+			$this->queueManager->push(RouteQueueJob::class, $id, $this->rawResponse, self::class, $this->flows
+			])->afterResponse();
+		}
+
+		public function setFlow(ControllerFlows $flow):self {
+			
+			$this->flows = $flow;
+		}
 	}
 ?>

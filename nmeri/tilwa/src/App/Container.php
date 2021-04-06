@@ -4,10 +4,6 @@
 
 	use { ReflectionMethod, ReflectionClass, ReflectionFunction, ReflectionType};
 
-	use Tilwa\Contracts\{Orm, HtmlParser, Authenticator, RequestValidator};
-
-	use Tilwa\ServiceProviders\{OrmProvider, AuthenticatorProvider, HtmlTemplateProvider, RequestValidatorProvider};
-
 	class Container {
 
 		private $provisionedClasses; // list of `providerTemplate`s
@@ -16,22 +12,20 @@
 
 		private $recursingFor; // the active `providerTemplate`
 
+		private $serviceProviders;
+
 		function __construct () {
 
 			$this->provisionedClasses = [];
+
+			$this->serviceProviders = [];
 		}
 
-		protected function getServiceProviders ():array {
+		public function setServiceProviders (array $providers):self {
 
-			return [
-				Orm::class => OrmProvider::class,
+			$this->serviceProviders = $providers;
 
-				HtmlParser::class => HtmlTemplateProvider::class,
-
-				Authenticator::class => AuthenticatorProvider::class,
-
-				RequestValidator::class => RequestValidatorProvider::class
-			];
+			return $this;
 		}
 
 		/**
@@ -71,7 +65,8 @@
 
 		private function lastCaller ():string {
 
-			$stack = debug_backtrace ( DEBUG_BACKTRACE_IGNORE_ARGS, 3 ); // [lastCaller,getClass,ourGuy]. Another extensible but memory intensive way to go about this is to group the calls by class and pick the immediate last one that doesn't correspond to `self::class`
+			// 2=> ignore concrete objects and their args
+			$stack = debug_backtrace ( 2, 3 ); // [lastCaller,getClass,ourGuy]. A more extensible (we won't have to specify limit anymore) but memory intensive way to go about this is to remove the limit and group them by class. then pick the immediate last one that doesn't correspond to `self::class`
 
 			return end($stack)["class"];
 		}
@@ -91,7 +86,7 @@
 
 		private function provideInterface(string $service):object {
 
-			$providerClass = $this->getServiceProviders()[$service];
+			$providerClass = $this->serviceProviders[$service];
 
 			$provider = new $providerClass();
 

@@ -28,15 +28,21 @@
 
 			$flow = new FlowFinder;
 
+			$requestPath = $_GET['tilwa_request'];
+
 			if ($flow->shouldRespond()) {
 
-				$response = $flow->getResponse(); // should set [renderer] for other methods to use
+				$response = $flow->getResponse($requestPath); // i need the user id here
 					
-				$flow->flush();
+				$flow->afterRender();
 
 				return $response;
 			}
-			return (new ModuleToRoute)->findContext($this->getModules())->trigger();
+			return (new ModuleToRoute)
+
+			->findContext($this->getModules(), $requestPath)
+
+			->trigger();
 		}
 	}
 ?>

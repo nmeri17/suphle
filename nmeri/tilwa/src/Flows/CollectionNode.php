@@ -32,7 +32,7 @@
 		/*// we still need this
 		public function interactsWithDatabase():bool; // only applicable to fetch routes*/
 		
-		 // works like `reduce`
+		 // works like `reduce`. should recursively load [attribute] but only match request to the last one?
 		public function eachAttribute(string $attribute):self {
 
 			$this->actions[self::EACH_ATTRIBUTE] = $attribute;
@@ -40,6 +40,7 @@
 			return $this;
 		}
 		
+		// will create multiple versions of the node attached. when a request where the wildcard matches the key passed in [eachAttribute], we return the key corresponding to what was evaluated here
 		public function pipeTo(string $service, string $method):self {
 
 			$this->actions[self::PIPE_TO] = compact("service", "method");

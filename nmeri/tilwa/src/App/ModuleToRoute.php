@@ -6,9 +6,7 @@
 
 	class ModuleToRoute {
 		
-		public function findContext(array $modules):ModuleInitializer {
-
-			$requestQuery = $_GET['tilwa_request'];
+		public function findContext(array $modules, string $requestQuery):ModuleInitializer {
 			
 			foreach($modules as $module) {
 
@@ -35,6 +33,8 @@
 			$router = new RouteManager($module, $container, $requestQuery, $this->getHttpMethod());
 
 			$module->entityBindings($router);
+
+			$container->setServiceProviders($module->getServiceProviders());
 
 			return (new ModuleInitializer($module, $container, $router))
 			->assignRoute();
