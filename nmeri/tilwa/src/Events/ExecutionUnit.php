@@ -1,8 +1,6 @@
 <?php
 	namespace Tilwa\Events;
 
-	use Tilwa\Errors\{UnauthorizedServiceAccess, InvalidRepositoryMethod};
-
 	class ExecutionUnit {
 
 		private $eventName;

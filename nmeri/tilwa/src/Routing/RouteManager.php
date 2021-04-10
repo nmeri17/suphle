@@ -206,12 +206,12 @@
 			return $this;
 		}
 
-		public function getPrevious ():Route {
+		public function getPrevious ():AbstractRenderer {
 
 			return $_SESSION['prev_route'];
 		}
 
-		public function getActiveRenderer ():Route {
+		public function getActiveRenderer ():AbstractRenderer {
 
 			return $this->activeRenderer;
 		}

@@ -6,7 +6,7 @@
 
 	use Tilwa\Http\Request\BaseRequest;
 
-	use Tilwa\Flows\{ControllerFlows, RouteQueueJob};
+	use Tilwa\Flows\{ControllerFlows, RouteQueueJob, FlowContext};
 
 	abstract class AbstractRenderer {
 
@@ -21,8 +21,6 @@
 		public $routeMethod;
 
 		private $request;
-
-		protected $statusCode;
 
 		public $path;
 
@@ -103,10 +101,19 @@
 
 			$user = $this->authenticator->getUser(); // passing this here since queue has no idea who user is
 
-			$id = $user ? $user->id ? "*";
+			$id = $user ? strval($user->id) ? "*";
 
-			$this->queueManager->push(RouteQueueJob::class, $id, $this->rawResponse, self::class, $this->flows
-			])->afterResponse();
+			$this->queueManager->push(RouteQueueJob::class, 
+
+				new FlowContext($id, $this->rawResponse, $this, $this->flows)
+			);
+		}
+
+		public function setRawResponse($response):self {
+			
+			$this->rawResponse = $response;
+
+			return $this;
 		}
 
 		public function setFlow(ControllerFlows $flow):self {

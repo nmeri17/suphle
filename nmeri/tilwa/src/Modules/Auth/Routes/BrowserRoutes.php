@@ -34,7 +34,7 @@
 
 			$renderer = new Markup("showRegister", "auth/register-form");
 
-			$flow = $renderer->getFlow(); // creates a new ControllerFlows instance and sets our url as the titular pattern
+			$flow = new ControllerFlows;
 
 			$flow->linksTo("/submit-register", [
 				
@@ -73,8 +73,8 @@
 
 				->inRange(\Service\Name::class, "method")
 			]);
-			
-			return $this->_get($renderer);
+
+			return $this->_get($renderer->setFlow($flow));
 		}
 		
 		public function SUBMIT__REGISTERh() {

@@ -8,10 +8,7 @@
 
 		protected $router;
 
-		// change to 50* on validation error
-		function __construct(string $handler, int $statusCode = 200) {
-			
-			$this->statusCode = $statusCode;
+		function __construct(string $handler) {
 
 			$this->handler = $handler;
 		}

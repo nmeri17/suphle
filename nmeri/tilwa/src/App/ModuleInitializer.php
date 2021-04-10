@@ -38,7 +38,20 @@
 
 		public function trigger():string {
 
-			return $this->responseManager->getResponse();
+			$manager = $this->responseManager;
+
+			$manager->setValidRenderer(); // can set response status codes (on http_response_header or something) here based on this guy's evaluation and renderer type
+
+			$response = $manager->getResponse();
+
+			$manager->afterEvaluation();
+
+			return $response;
+		}
+
+		public function getRouter():RouteManager {
+			
+			return $this->router;
 		}
 	}
 ?>

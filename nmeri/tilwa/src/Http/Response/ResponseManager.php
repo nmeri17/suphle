@@ -25,6 +25,8 @@
 
 		public $responseMutations;
 
+		private $renderer;
+
 		function __construct (Container $container, RouteManager $router, ControllerManager $controllerManager) {
 
 			$this->container = $container;
@@ -36,42 +38,52 @@
 			$this->controllerManager = $controllerManager;
 		}
 		
-		public function getResponse () {
+		public function setValidRenderer ():void {
 
 			$oldRenderer = $this->router->getActiveRenderer();
 
 			$request = $oldRenderer->getRequest();
 
-			$renderer = $this->getValidRenderer($oldRenderer, $request);
+			$this->renderer = $this->getValidRenderer($oldRenderer, $request);
+		}
+		
+		public function getResponse ():string {
 
-			if (!$this->skipHandler) {
-
-				$this->updateControllerManager($renderer);
-
-				$this->validateManager();
-
-				$this->buildManagerTarget( $renderer);
-
-				if ($renderer instanceof Markup && $this->router->acceptsJson())
-
-					$renderer->setWantsJson();
-
-				$this->runMiddleware($renderer); // called here so some awesome middleware can override default behavior on our booted controller
-
-				$renderer->invokeActionHandler($this->controllerManager->getHandlerParameters());
-
-				if ($renderer->hasBranches()) // the very first request won't be caught in a flow. so, delegate queueing branches
-
-					$renderer->queueNextFlow();
-			}
+			if (!$this->skipHandler) $this->handleValidRequest();
 
 			$body = $renderer->render();
 			
 			if (!$this->skipHandler)
 				
-				$body = $this->mutateResponse($body);
+				$body = $this->mutateResponse($body); // those middleware should only get the response object/headers, not our payload
 			
 			return $body;
+		}
+
+		public function afterEvaluation() {
+
+			if ($this->renderer->hasBranches()) // the very first request won't be caught in a flow. so, delegate queueing branches
+
+				$this->renderer->queueNextFlow();
+		}
+
+		private function handleValidRequest() {
+
+			$this->updateControllerManager();
+
+			$this->validateManager();
+
+			$this->buildManagerTarget();
+
+			$renderer = $this->renderer;
+
+			if ($renderer instanceof Markup && $this->router->acceptsJson())
+
+				$renderer->setWantsJson();
+
+			$this->runMiddleware(); // called here so some awesome middleware can override default behavior on our booted controller
+
+			$renderer->invokeActionHandler($this->controllerManager->getHandlerParameters());
 		}
 
 		/** @description: Validates request and decides whether controller will be invoked
@@ -98,11 +110,11 @@
 		}
 
 		// middleware delimited by commas. Middleware parameters delimited by colons
-		private function runMiddleware ( AbstractRenderer $renderer ):bool {
+		private function runMiddleware ():bool {
 
 			$passed = true;
 
-			foreach ($renderer->getMiddlewares() as $mw ) {
+			foreach ($this->renderer->getMiddlewares() as $mw ) {
 
 				@[$className, $args] = explode(',', $mw);
 
@@ -137,9 +149,11 @@
 			$this->controllerManager->validateController($globalDependencies);
 		}
 
-		public function buildManagerTarget( AbstractRenderer $renderer):void {
+		public function buildManagerTarget():void {
 
 			$manager = $this->controllerManager;
+
+			$renderer = $this->renderer;
 
 			$manager->bootController();
 
@@ -148,11 +162,11 @@
 			$manager->provideModelArguments($renderer->getRequest(), $renderer->routeMethod);
 		}
 
-		private function updateControllerManager(AbstractRenderer $renderer):void {
+		private function updateControllerManager():void {
 
 			$this->controllerManager->setController(
 
-				$this->container->getClass($renderer->getController())
+				$this->container->getClass($this->renderer->getController())
 			);
 		}
 	}

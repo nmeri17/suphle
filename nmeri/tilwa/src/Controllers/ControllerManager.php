@@ -2,13 +2,15 @@
 
 	namespace Tilwa\Controllers;
 
-	use Tilwa\Errors\{IncompatibleService, CrowdedConstructor};
+	use \InvalidArgumentException;
 
 	use Tilwa\App\Container;
 
 	use Tilwa\Contracts\Orm;
 
 	use Tilwa\Http\Request\BaseRequest;
+
+	use Tilwa\Errors\CrowdedConstructor;
 
 	class ControllerManager {
 
@@ -38,7 +40,7 @@
 			
 			if (!$controller->hasValidServices ($moduleDependencies ))
 
-				throw new IncompatibleService( $controller->getInvalidService());
+				throw new InvalidArgumentException ("Incompatible Service: ". $controller->getInvalidService());
 
 			if (!$controller->hasIsolatedConstructor())
 
@@ -94,9 +96,7 @@
 
 		public function bootController():void {
 
-			$this->controller->setContainer($this->container)
-
-			->registerFactories();
+			$this->controller->setContainer($this->container);
 		}
 	}
 ?>

@@ -15,20 +15,10 @@ route caching
 try to deploy on azure
 
 When you find a way of identifying orm models, revisit NoSqlLogic->setup
-	
-	- After route is found, we want to (pull the stored flow state from cache and hydrate). "Hydration" translates to the actual functionality behind those methods (3)
-
-	- write flow route matching pattern (4)
 
 	- Each write to the database triggers either redis subscriptions or tilwa event listeners. the handler uses the prepared statement to look up matching items/tags in the cache and refreshes them (5)
 
-	- what happens when they're accessed? (6)
-		- delete items under this tag(s). expire the caches in 20 mins but delete each route pattern after it's accessed
 #
-update an App property each time a call is made to retrieve user. If this indicator property is empty, another user could use this response, so store for longer (or make more accessible to more than current user). This saves us from making those caches for each user
-#
-Flows have a `hydrate` method that can create instantiate a flow from an incoming request. Useful for 3rd party consumers of the api
-#work needed on FlowFinder
+work needed on OuterFlowWrapper, flowHydrator
 
-https://laravel.com/docs/8.x/queues#running-the-queue-worker
-php artisan queue:work
+what container is used to hydrate handler method on the queued job?

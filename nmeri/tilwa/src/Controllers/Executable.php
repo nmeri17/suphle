@@ -27,25 +27,6 @@
 			return $concrete;
 		}
 
-		public function registerFactories() {
-			// to be overridden
-		}
-
-		/**
-		* @desc calls to this goes inside [registerFactories]
-		* @param {useCases} class with an [__invoke] method
-		*/
-		protected function factoryFor(string $interface, string $useCases):self {
-
-			if (is_null($this->factoryList))
-
-				$this->factoryList = [];
-
-			$this->factoryList[$interface] = $useCases;
-
-			return $this;
-		}
-
 		# ideally, this should be the only expression in controller's constructor
 		protected function loadServices(array $dependencies) {
 

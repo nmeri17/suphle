@@ -2,7 +2,7 @@
 
 	namespace Tilwa\Controllers;
 
-	use Tilwa\Contracts\{PermissibleService, BootsService};
+	use Tilwa\Contracts\{PermissibleService, BootsService, Orm};
 
 	use Tilwa\App\Container;
 
@@ -11,8 +11,31 @@
 			
 			$container->whenType( self::class)->needsAny([
 
-				"ormModel" => null
+				"ormModel" => null,
+
+				Orm::class => null
 			]);
+
+			$this->registerFactories();
+		}
+
+		public function registerFactories() {
+			// to be overridden
+		}
+
+		/**
+		* @desc calls to this goes inside [registerFactories]
+		* @param {useCases} class with an [__invoke] method
+		*/
+		protected function factoryFor(string $interface, string $useCases):self {
+
+			if (is_null($this->factoryList))
+
+				$this->factoryList = [];
+
+			$this->factoryList[$interface] = $useCases;
+
+			return $this;
 		}
 	}
 ?>

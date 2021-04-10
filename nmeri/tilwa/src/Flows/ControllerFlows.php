@@ -11,14 +11,18 @@
 
 		private $actions;
 
+		private $config;
+
 		function __construct() {
 
 			$this->actions = [];
 
 			$this->branches = [];
+
+			$this->config = [];
 		}
 
-		private function linksTo(string $pattern, $responseStructure):self {
+		public function linksTo(string $pattern, $responseStructure):self {
 
 			$this->branches[$pattern] = $responseStructure;
 
@@ -42,6 +46,25 @@
 		public function fromService(string $sourceService, string $method, SingleNode $responseBuilder):CollectionNode {
 
 			return new CollectionNode($this, $responseBuilder->getNodeName());
+		}
+		
+		/**
+		*
+		* @param {callback} Function(string $userId, string $pattern)
+		* @return int in seconds*/
+		public function setTTL(callable $callback):void /*int*/ {
+
+			$this->config["ttl"] = $callback;
+			
+			// return 60; // goes to the getter. These arguments ought to be plugged in
+		}
+		
+		// expire cache contents after this value elapses
+		public function setMaxHits(callable $callback):void /*int*/ {
+
+			$this->config["max_hits"] = $callback;
+			
+			// return 1;
 		}
 	}
 ?>
