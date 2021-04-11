@@ -1,10 +1,12 @@
 <?php
 
-	namespace Tilwa\Flows;
+	namespace Tilwa\Flows\Jobs;
 
 	use Tilwa\Events\EventManager;
 
-	class RouteQueueJob implements Job {
+	use Tilwa\Flows\Structures\FlowContext;
+
+	class RouteQueue {
 
 		private $context;
 

@@ -6,9 +6,7 @@
 
 	use Tilwa\Http\Request\BaseRequest;
 
-	use Tilwa\Flows\{ControllerFlows, FlowContext};
-
-	use Tilwa\Flows\Jobs\RouteQueue;
+	use Tilwa\Flows\{ControllerFlows, Structures\FlowContext, Jobs\RouteQueue};
 
 	abstract class AbstractRenderer {
 

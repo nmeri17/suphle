@@ -1,6 +1,6 @@
 <?php
 
-	namespace Tilwa\Flows;
+	namespace Tilwa\Flows\Structures;
 
 	class BranchesContext {
 

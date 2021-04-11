@@ -1,13 +1,17 @@
 <?php
 	namespace Tilwa\Flows;
 
-	use Tilwa\Contracts\{ResponseManager as ManagerInterface, QueueManager};
+	use Tilwa\Contracts\{ResponseManager as ManagerInterface, QueueManager, CacheManager, Authenticator};
 
-	use Tilwa\Events\EventManager;
+	use Tilwa\Flows\Jobs\{RouteBranches, BranchesContext, UpdateCountDelete};
 
-	use Tilwa\Flows\Jobs\{RouteBranches, BranchesContext};
+	use Tilwa\Flows\Structures\{FlowContext, RouteUmbrella,AccessContext};
 
 	class OuterFlowWrapper implements ManagerInterface {
+
+		const FLOW_PREFIX = "tilwa_flow";
+
+		const ALL_USERS = "*";
 
 		private $incomingPattern;
 
@@ -15,23 +19,60 @@
 
 		private $modules;
 
-		public function __construct(string $pattern, QueueManager $queueManager, array $modules) {
+		private $cacheManager;
+
+		private $authenticator;
+
+		private $routeUmbrella;
+
+		private $activeUser;
+
+		public function __construct(string $pattern, QueueManager $queueManager, array $modules, CacheManager $cacheManager, Authenticator $authenticator) {
 			
 			$this->incomingPattern = $pattern;
 
 			$this->queueManager = $queueManager;
 
 			$this->modules = $modules;
+
+			$this->cacheManager = $cacheManager;
+
+			$this->authenticator = $authenticator;
 		}
 
-		public function matchesUrl():bool {
-			
-			// work with $this->incomingPattern. the cache saves the placeholders with the actual values so just fish it out
+		private function matchesUrl():bool {
+
+			return !is_null($this->routeUmbrella);
 		}
 
-		public function setContext($user) {
+		private function setRouteUmbrella():void {
 
-			$this->context = $this->getActiveFlow( $user);
+			$this->routeUmbrella = $this->cacheManager->get(self::FLOW_PREFIX . $this->incomingPattern); // or combine [tag] with the [get]
+		}
+
+		private function getUserId():string { 
+
+			$user = $this->authenticator->getUser();
+
+			return !$user ? self::ALL_USERS: strval($user->id);
+		}
+
+		public function canHandle():bool {
+
+			$this->setRouteUmbrella();
+
+			if (!$this->matchesUrl()) return false;
+
+			$this->setContext();
+
+			return !is_null($this->context);
+		}
+
+		private function setContext():void {
+
+			$userId = $this->getUserId();
+
+			$this->context = $this->getActiveFlow( $userId);
 		}
 
 		public function getResponse():string {
@@ -42,10 +83,19 @@
 			)->render();
 		}
 
-		private function getActiveFlow( $user):FlowContext {
-			
-			// find the flow request in the cache matching current get parameters
-			// use [$this->incomingPattern]
+		private function getActiveFlow(string $userId):FlowContext {
+
+			$context = $this->routeUmbrella->getUserPayload($userId);
+
+			if (is_null($context) && ($userId != self::ALL_USERS)) { // assume data was saved for general user base
+				$userId = self::ALL_USERS;
+
+				$context = $this->routeUmbrella->getUserPayload($userId);
+			}
+
+			$this->activeUser = $userId;
+
+			return $context;
 		}
 
 		public function afterRender($cachedResponse):void {
@@ -55,9 +105,13 @@
 			$this->queueBranches();
 		}
 		
-		public function discard():bool {
-			# delete items under this tag(s). expire the caches in [ttl] mins but delete each route pattern after it's accessed
-			// if ($context->getBranches()->getTTL(userId, pattern) > $whenSaved)
+		public function emptyFlow():void {
+
+			$path = self::FLOW_PREFIX . $this->incomingPattern;
+
+			$this->queueManager->push(UpdateCountDelete::class,
+				new AccessContext($path, $this->context, $this->routeUmbrella, $this->activeUser )
+			);
 		}
 
 		private function emitEvents($cachedResponse):void {

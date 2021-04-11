@@ -6,7 +6,7 @@ install plates
 
 ->select('u')->from(User::class, 'u')
 
-->where('u.email = ?1')->setParameter(1, $reqData['email'])
+->where('u.email = ?1')->setParameter(1, $reqData['email']) // this should go in "good to know"
 
 route caching
 	- all the routes should pass through regexForm and get saved with the result under a trie the way they were defined. The aim is to skip this replacement phase during runtime
@@ -16,9 +16,21 @@ try to deploy on azure
 
 When you find a way of identifying orm models, revisit NoSqlLogic->setup
 
+when cacheManager is integrated, refactor its usage on OuterFlowWrapper in respect to accessing nested objects; tags etc
+
 	- Each write to the database triggers either redis subscriptions or tilwa event listeners. the handler uses the prepared statement to look up matching items/tags in the cache and refreshes them (5)
 
 #
-work needed on OuterFlowWrapper, flowHydrator
+work needed on flowContext->getMaxHits, flowHydrator, routeUmbrella
 
+	- routes/ then users/ then payload/flowContext ie
+		path /category/5
+			userId 32
+				data [
+					nodeA Health[3]
+				]
+			userId *
+				data [
+					nodeA Health[5]
+				]
 what container is used to hydrate handler method on the queued job?

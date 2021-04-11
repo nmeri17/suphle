@@ -6,8 +6,6 @@
 
 	use Tilwa\Flows\OuterFlowWrapper;
 
-	use Tilwa\Contracts\{Authenticator, QueueManager};
-
 	abstract class ModuleAssembly {
 
 		private $container;
@@ -32,15 +30,17 @@
 
 			$requestPath = $_GET['tilwa_request'];
 
-			$this->setContainer();
+			$wrapperName = OuterFlowWrapper::class;
 
-			$queueManager = $this->container->getClass(QueueManager::class);
+			$wrapper = $this->setContainer()
 
-			$flowWrapper = new OuterFlowWrapper($requestPath, $queueManager, $this->getModules());
+			->provisionWrapper($requestPath, $wrapperName)
 
-			if ($flowWrapper->matchesUrl())
+			->getClass($wrapperName);
 
-				return $this->flowRequestHandler($flowWrapper);
+			if ($wrapper->canHandle())
+
+				return $this->flowRequestHandler($wrapper);
 
 			return (new ModuleToRoute)
 
@@ -51,12 +51,8 @@
 
 		private function flowRequestHandler(OuterFlowWrapper $wrapper):string {
 
-			$user = $this->container->getClass(Authenticator::class)->getUser();
-
-			$wrapper->setContext($user);
-
 			$response = $wrapper->getResponse();
-				
+			
 			$wrapper->afterRender($response);
 
 			$wrapper->emptyFlow();
@@ -68,7 +64,18 @@
 
 			$randomModule = current($this->getModules());
 
-			$this->container = $randomModule->getContainer();
+			return $this->container = $randomModule->getContainer();
+		}
+
+		private function provisionWrapper(string $requestPath, string $wrapperName):void {
+
+			$this->container->whenType($wrapperName)
+
+			->needsArguments([
+				"pattern" => $requestPath,
+
+				"modules" => $this->getModules()
+			]);
 		}
 	}
 ?>

@@ -1,6 +1,6 @@
 <?php
 
-	namespace Tilwa\Flows;
+	namespace Tilwa\Flows\Structures;
 
 	use Tilwa\Http\Response\Format\AbstractRenderer;
 
@@ -21,6 +21,8 @@
 		private $eventManager;
 
 		private $config;
+
+		private $hits;
 		
 		function __construct(string $contentOwner, $previousResponse, AbstractRenderer $renderer, ControllerFlows $routeBranches) {
 			
@@ -51,6 +53,21 @@
 		public function getBranches():ControllerFlows {
 			
 			return $this->routeBranches;
+		}
+
+		public function currentHits():int {
+
+			return $hits;
+		}
+
+		public function getMaxHits():void {
+
+			//read from setHits on the controller flows
+		}
+
+		public function incrementHits():void {
+
+			$this->hits++;
 		}
 	}
 ?>

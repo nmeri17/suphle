@@ -4,6 +4,8 @@
 
 	use Tilwa\App\ModuleToRoute;
 
+	use Tilwa\Flows\Structures\BranchesContext;
+
 	// for queueing the cached endpoint on hit
 	class RouteBranches {
 
