@@ -3,6 +3,8 @@
 
 	use Tilwa\Http\Response\Format\AbstractRenderer;
 
+	use Tilwa\Flows\Previous\{ResponseBuilderProxy, SingleNode, CollectionNode};
+
 	class ControllerFlows {
 
 		const DATE_ON_HIT = 1;

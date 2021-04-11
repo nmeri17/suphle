@@ -1,5 +1,7 @@
 <?php
-	namespace Tilwa\Flows;
+	namespace Tilwa\Flows\Previous;
+
+	use Tilwa\Flows\ControllerFlows;
 
 	// represents a meta map of attributes to take on a previous response node when it's hydrated
 	class SingleNode {

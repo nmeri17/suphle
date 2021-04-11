@@ -5,6 +5,8 @@
 
 	use Tilwa\Events\EventManager;
 
+	use Tilwa\Flows\Jobs\{RouteBranches, BranchesContext};
+
 	class OuterFlowWrapper implements ManagerInterface {
 
 		private $incomingPattern;
@@ -24,7 +26,7 @@
 
 		public function matchesUrl():bool {
 			
-			// work with $this->incomingPattern
+			// work with $this->incomingPattern. the cache saves the placeholders with the actual values so just fish it out
 		}
 
 		public function setContext($user) {
@@ -70,7 +72,7 @@
  
 		private function queueBranches():void {
 
-			$this->queueManager->push(RouteBranchesJob::class, 
+			$this->queueManager->push(RouteBranches::class, 
 
 				new BranchesContext($this->incomingPattern, $this->modules )
 			);

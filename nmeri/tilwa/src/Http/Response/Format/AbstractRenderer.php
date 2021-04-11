@@ -6,7 +6,9 @@
 
 	use Tilwa\Http\Request\BaseRequest;
 
-	use Tilwa\Flows\{ControllerFlows, RouteQueueJob, FlowContext};
+	use Tilwa\Flows\{ControllerFlows, FlowContext};
+
+	use Tilwa\Flows\Jobs\RouteQueue;
 
 	abstract class AbstractRenderer {
 
@@ -103,7 +105,7 @@
 
 			$id = $user ? strval($user->id) ? "*";
 
-			$this->queueManager->push(RouteQueueJob::class, 
+			$this->queueManager->push(RouteQueue::class, 
 
 				new FlowContext($id, $this->rawResponse, $this, $this->flows)
 			);

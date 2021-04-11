@@ -1,11 +1,11 @@
 <?php
 
-	namespace Tilwa\Flows;
+	namespace Tilwa\Flows\Jobs;
 
 	use Tilwa\App\ModuleToRoute;
 
 	// for queueing the cached endpoint on hit
-	class RouteBranchesJob {
+	class RouteBranches {
 
 		private $context;
 

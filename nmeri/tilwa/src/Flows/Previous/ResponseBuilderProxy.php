@@ -1,5 +1,7 @@
 <?php
-	namespace Tilwa\Flows;
+	namespace Tilwa\Flows\Previous;
+
+	use Tilwa\Flows\ControllerFlows;
 
 	class ResponseBuilderProxy {
 
