@@ -14,18 +14,20 @@
 
 		private $module;
 
-		function __construct(ParentModule $module, string $requestQuery) {
+		private $responseManager;
+
+		function __construct(ParentModule $module, ResponseManager $responseManager, RouteManager $router) {
 
 			$this->module = $module;
 
-			$this->router = new RouteManager($module, $requestQuery, $this->getHttpMethod());
-
-			$module->entityBindings($this->router); // idk how reasonable it is to insert this from here considering how many defaults we could potentially wanna pass. But there's no better candidate to delegate initialization of the router to. And this is our last contact with the module before route finding commences
+			$this->router = $router;
+			
+			$this->responseManager = $responseManager;
 		}
 
 		public function assignRoute():self {
 			
-			if ($target = $this->router->findRenderer() ) { // what are the chances of the guys inside here or the container looking for a route manager?
+			if ($target = $this->router->findRenderer() ) { // what are the chances of the guys inside here looking for a route manager?
 
 				$this->router->setActiveRenderer($target)->savePayload();
 
@@ -36,20 +38,20 @@
 
 		public function trigger():string {
 
-			return (new ResponseManager($this->module->container, $this->router))->getResponse();
+			$manager = $this->responseManager;
+
+			$manager->setValidRenderer(); // can set response status codes (on http_response_header or something) here based on this guy's evaluation and renderer type
+
+			$response = $manager->getResponse();
+
+			$manager->afterEvaluation();
+
+			return $response;
 		}
 
-		private function getHttpMethod ():string {
-
-			return strtolower(
-
-				$_POST["_method"] ?? $_SERVER['REQUEST_METHOD']
-			);
-		}
-
-		public function getModule():ParentModule {
+		public function getRouter():RouteManager {
 			
-			return $this->module;
+			return $this->router;
 		}
 	}
 ?>

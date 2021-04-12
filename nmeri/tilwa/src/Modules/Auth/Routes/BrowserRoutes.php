@@ -31,8 +31,48 @@
 		}
 
 		public function SHOW__REGISTERh() {
-			
-			return $this->_get(new Markup("showRegister", "auth/register-form"));
+
+			$renderer = new Markup("showRegister", "auth/register-form");
+
+			$flow = new ControllerFlows;
+
+			$flow->linksTo("/submit-register", [
+				
+				"nodeA" => $flow->previousResponse()
+
+				->getNode("C")
+
+				->includesPagination("path.to.next_url")
+
+				->surviveFor("300")
+			])
+			->linksTo("/categories/*", [
+
+				"data" => $flow->previousResponse()->collectionNode("nodeD") // assumes we're coming from the category page
+
+				->eachAttribute("key")
+
+				->pipeTo(\Service\Name::class, "method"), 
+				// so we need a `resolvePlaceholder` and `interactsWithPlaceholders` method on the flow object
+			])
+			->linksTo("/store/*", [
+
+				"data" => $flow->previousResponse()->collectionNode("nodeB")
+
+				->eachAttribute("key")
+
+				->oneOf(\Service\Name::class, "method", "key instead of id")
+			])
+			->linksTo("/orders/sort/*/*", [
+
+				"data" => $flow->fromService(\Service\Orders::class, "method", $flow->previousResponse()->getNode("store.id"))
+
+				->eachAttribute("key")
+
+				->inRange(\Service\Name::class, "method")
+			]);
+
+			return $this->_get($renderer->setFlow($flow));
 		}
 		
 		public function SUBMIT__REGISTERh() {

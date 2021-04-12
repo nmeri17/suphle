@@ -45,15 +45,28 @@
 			return $result;
 		}
 
-		private function yield (string $method, array $arguments) {
-			return $this->activeService->$method(...$arguments);
+		protected function yield (string $method, array $arguments) {
+
+			$service = $this->activeService;
+
+			if ($service instanceof PermissibleService && !$service->canPerform($method, $arguments))
+
+				throw new UnauthorizedServiceAccess($service::class);
+			
+			return $service->$method(...$arguments);
 		}
 
 		private function failureReturnValue(string $method) {
+
+			$default = null;
 			
 			$reflectedMethod = new ReflectionMethod($this->activeService, $method);
 
-			return $reflectedMethod->getPrototype()->getReturnType() ;
+			$type = $reflectedMethod->getPrototype()->getReturnType();
+
+			settype($default, $type);
+
+			return $default;
 		}
 
 		public function setActiveService(object $service):void {

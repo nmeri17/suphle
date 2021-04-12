@@ -13,6 +13,10 @@
 
 	use Tilwa\Controllers\{ServiceWrapper, RepositoryWrapper};
 
+	use Tilwa\Contracts\{Orm, HtmlParser, Authenticator, RequestValidator, QueueManager};
+
+	use Tilwa\ServiceProviders\{OrmProvider, AuthenticatorProvider, HtmlTemplateProvider, RequestValidatorProvider, QueueProvider};
+
 	abstract class ParentModule {
 
 		protected $container;
@@ -66,7 +70,7 @@
 
 		public function getUserModel():string {
 
-			return User::class;
+			return User::class; // is providing it worth it?
 		}
 
 		public function apiPrefix():string {
@@ -109,6 +113,27 @@
 		public function listenersLoader ():string {
 
 			return AssignListeners::class;
+		}
+
+		public function getContainer():Container {
+			
+			return $this->container;
+		}
+
+		// this information belongs on the container, but we're setting it here since containers are injected externally and we don't wanna clutter the assembly namespace
+		public function getServiceProviders():array {
+
+			return [
+				Orm::class => OrmProvider::class,
+
+				HtmlParser::class => HtmlTemplateProvider::class,
+
+				Authenticator::class => AuthenticatorProvider::class,
+
+				RequestValidator::class => RequestValidatorProvider::class,
+
+				QueueManager::class => QueueProvider::class
+			];
 		}
 	}
 ?>

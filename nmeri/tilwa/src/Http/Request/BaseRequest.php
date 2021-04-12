@@ -6,19 +6,24 @@
 
 	class BaseRequest {
 
-		private $validator;
+		protected $validator;
+
+		public $body;
 
 		public function __construct (RequestValidator $validator) {
 
 			$this->validator = $validator;
 		}
 
-		public function payload () {
+		public function getPlaceholders () {
 
-			return $this->parameterList;
+			return array_filter(get_object_vars($this), function ($property) {
+
+				return $property != "validator";
+			}, ARRAY_FILTER_USE_KEY);
 		}
 
-		public function updatePayload(array $newPairs):self {
+		public function updatePlaceholders(array $newPairs):self {
 
 			foreach ($newPairs as $key => $newValue)
 
@@ -29,16 +34,16 @@
 			return $this;
 		}
 
-		public function setPayload (array $payload):self {
+		public function setPlaceholders (array $payload):self {
 			
-			return $this->updatePayload($payload);
+			return $this->updatePlaceholders($payload);
 		}
 
 		public function validationErrors ():array {
 
 			$valid = $this->validator
 
-			->validate($this->parameterList, $this->rules()); // continue here
+			->validate($this->getPlaceholders(), $this->rules());
 
 			return $valid->getErrors();
 		}

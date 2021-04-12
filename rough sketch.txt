@@ -1,24 +1,26 @@
 flesh out auth controller actions. Implement loginAs
 
-flows
-
-go back to route collection
-	- emit _beforeExecute, _afterExecute for controller actions
-	- the routeManager injecting models/controllers should'nt blanket find, but create dry objects for post/update routes (known from their handler :D)
-
-install eloquent (requires a fork that doesn't use their container and event interfaces) and plates
+install plates
 
 ->createQueryBuilder()
 
 ->select('u')->from(User::class, 'u')
 
-->where('u.email = ?1')->setParameter(1, $reqData['email'])
+->where('u.email = ?1')->setParameter(1, $reqData['email']) // this should go in "good to know"
 
 route caching
 	- all the routes should pass through regexForm and get saved with the result under a trie the way they were defined. The aim is to skip this replacement phase during runtime
 	- only needed if you're using a lot of dynamic routes
 
-this->_get(new ResponseType) // home route
-->flow([...define keys to return])->linksTo([categoryPath, pathToMenuItems])
-
 try to deploy on azure
+
+When you find a way of identifying orm models, revisit NoSqlLogic->setup
+
+when cacheManager is integrated, refactor its usage wherever it appears in respect to accessing nested objects; tags etc. is the override pattern we're using good or can it be updated while in the cache
+
+	- Each write to the database triggers either redis subscriptions or tilwa event listeners. the handler uses the prepared statement to look up matching items/tags in the cache and refreshes them (5)
+
+#
+work needed on flowContext, flowHydrator
+
+what container is used to hydrate handler method on the queued job?
