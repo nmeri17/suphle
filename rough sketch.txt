@@ -16,21 +16,11 @@ try to deploy on azure
 
 When you find a way of identifying orm models, revisit NoSqlLogic->setup
 
-when cacheManager is integrated, refactor its usage on OuterFlowWrapper in respect to accessing nested objects; tags etc
+when cacheManager is integrated, refactor its usage wherever it appears in respect to accessing nested objects; tags etc. is the override pattern we're using good or can it be updated while in the cache
 
 	- Each write to the database triggers either redis subscriptions or tilwa event listeners. the handler uses the prepared statement to look up matching items/tags in the cache and refreshes them (5)
 
 #
-work needed on flowContext->getMaxHits, flowHydrator, routeUmbrella
+work needed on flowContext, flowHydrator
 
-	- routes/ then users/ then payload/flowContext ie
-		path /category/5
-			userId 32
-				data [
-					nodeA Health[3]
-				]
-			userId *
-				data [
-					nodeA Health[5]
-				]
 what container is used to hydrate handler method on the queued job?

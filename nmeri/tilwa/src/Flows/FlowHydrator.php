@@ -1,4 +1,9 @@
-<?php namespace Tilwa\Flows;
+<?php
+	namespace Tilwa\Flows;
+
+	use Tilwa\Contracts\CacheManager;
+
+	use Tilwa\Flows\Structures\{FlowContext, RouteUmbrella};
 
 	class FlowHydrator {
 
@@ -6,23 +11,45 @@
 
 		private $computedNodes;
 
+		private $cacheManager;
+
+		function __construct(CacheManager $cacheManager) {
+			
+			$this->cacheManager = $cacheManager;
+		}
+
 		public function setContext(FlowContext $context):self {
 
 			$this->context = $context;
 		}
 
-		public function store():self {
-			# store them according to the format being read by the outer flow wrapper?
+		# @param {contentType} model type, where present
+		private function storeContext(string $urlPattern, string $userId, string $contentType):void {
+
+			$manager = $this->cacheManager;
+			
+			$umbrella = $manager->get($urlPattern);
+
+			if (!$umbrella) $umbrella = new RouteUmbrella($urlPattern);
+
+			$umbrella->addUser($userId, $this->context);
+
+			$saved = $manager->save($urlPattern, $umbrella);
+
+			if ($contentType) $saved->tag($contentType);
 		}
 
+		// call the appropriate triggers depending on action specified on it
 		public function runNodes():self {
 
-			//call the appropriate triggers depending on action specified on it
-			// cache lookup when updates come: tag by model type
-			//  ==> check [user id] umbrella. no match? check route patterns under [all] umbrella for incoming url pattern and fail if no match
-			// use something like $branches = flow->branches->each(select action handler)
+			$this->context->getBranches(); // this is on the controller flow, not this object
 
-			# store them according to the format being read by the outer flow wrapper?
+			// use something like $branches = flow->branches->each(select action handler)
+			// work with the controller flow expiry time and co
+
+			// better still, this guy can subscribe to a topic(instead of using tags?). update listener publishes to that topic (so we hopefully have no loop)
+
+			//$this->storeContext()
 		}
 	}
 ?>

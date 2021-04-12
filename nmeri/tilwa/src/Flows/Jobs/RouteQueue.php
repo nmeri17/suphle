@@ -19,9 +19,7 @@
 
 			$this->context->setEventManager($eventManager);
 
-			$hydrator->setContext($this->context)
-
-			->runNodes()->store();
+			$hydrator->setContext($this->context)->runNodes();
 		}
 	}
 ?>

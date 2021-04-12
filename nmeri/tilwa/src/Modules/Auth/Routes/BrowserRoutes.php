@@ -54,8 +54,6 @@
 
 				->pipeTo(\Service\Name::class, "method"), 
 				// so we need a `resolvePlaceholder` and `interactsWithPlaceholders` method on the flow object
-
-				"nodeE" => $flow->dateOnHit("time_format")
 			])
 			->linksTo("/store/*", [
 

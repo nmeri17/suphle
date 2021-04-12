@@ -6,6 +6,8 @@
 
 	use Tilwa\Events\EventManager;
 
+	use DateTime;
+
 	class FlowContext {
 
 		private $contentOwner;
@@ -68,6 +70,10 @@
 		public function incrementHits():void {
 
 			$this->hits++;
+		}
+
+		public function getExpiresAt():DateTime {
+			# code...
 		}
 	}
 ?>

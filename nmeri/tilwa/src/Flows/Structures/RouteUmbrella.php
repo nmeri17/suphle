@@ -1,21 +1,37 @@
 <?php
 	namespace Tilwa\Flows\Structures;
 
+	use DateTime;
+
+	// this is the object value for each route key in the cache i.e. cache = ["path-x" => RouteUmbrella]
 	class RouteUmbrella {
 
-		public function addUser():void {
+		private $users;
 
-			//
+		private $routeName;
+
+		function __construct(string $routeName) {
+			
+			$this->routeName = $routeName;
 		}
 
-		public function getUserPayload():FlowContext {
+		public function addUser(string $userId, FlowContext $flowContext):void {
 
-			// oughts to take this flow's expiry date into account before returning i.e. ttl > now?
+			$this->users[$userId] = $flowContext;
 		}
 
-		public function clearUser():void {
+		public function getUserPayload(string $userId):FlowContext {
 
-			//
+			$context = $this->users[$userId];
+
+			if (!$context || $context->getExpiresAt() >= new DateTime) return;
+
+			return $context;
+		}
+
+		public function clearUser(string $userId):void {
+
+			unset($this->users[$userId]);
 		}
 	}
 ?>

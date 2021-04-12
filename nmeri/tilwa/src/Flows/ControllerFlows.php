@@ -7,9 +7,7 @@
 
 	class ControllerFlows {
 
-		const DATE_ON_HIT = 1;
-
-		private $branches; // this is the guy containing all the information the hydrator is interested in
+		private $branches; // this is the guy containing all the information hydrator is interested in
 
 		private $actions;
 
@@ -34,12 +32,6 @@
 		public function previousResponse():ResponseBuilderProxy {
 
 			return new ResponseBuilderProxy($this);
-		}
-
-		// evaluated at runtime
-		public function dateOnHit(string $dateFormat):self {
-
-			$this->actions[self::DATE_ON_HIT] = $dateFormat;
 		}
 
 		/**
