@@ -16,7 +16,7 @@
 
 		private $renderer;
 
-		private $routeBranches;
+		private $controllerFlow;
 
 		private $payload;
 
@@ -26,7 +26,7 @@
 
 		private $hits;
 		
-		function __construct(string $contentOwner, $previousResponse, AbstractRenderer $renderer, ControllerFlows $routeBranches) {
+		function __construct(string $contentOwner, $previousResponse, AbstractRenderer $renderer, ControllerFlows $controllerFlow) {
 			
 			$this->contentOwner = $contentOwner;
 
@@ -34,7 +34,7 @@
 
 			$this->renderer = $renderer;
 
-			$this->flow = $routeBranches;
+			$this->flow = $controllerFlow;
 		}
 
 		public function getPayload() {
@@ -54,7 +54,7 @@
 
 		public function getBranches():ControllerFlows {
 			
-			return $this->routeBranches;
+			return $this->controllerFlow->branches;
 		}
 
 		public function currentHits():int {
@@ -74,6 +74,11 @@
 
 		public function getExpiresAt():DateTime {
 			# code...
+		}
+
+		public function getRenderer():AbstractRenderer {
+			
+			return $this->renderer;
 		}
 	}
 ?>

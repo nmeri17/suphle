@@ -12,9 +12,11 @@
 
 	use Tilwa\Controllers\ControllerManager;
 
-	use Tilwa\Contracts\ResponseManager as ManagerInterface;
+	use Tilwa\Contracts\{ResponseManager as BaseResponseManager, QueueManager};
 
-	class ResponseManager implements ManagerInterface {
+	use Tilwa\Flows\{Structures\BranchesContext, Jobs\RouteBranches}
+
+	class ResponseManager implements BaseResponseManager {
 
 		private $container;
 
@@ -27,7 +29,11 @@
 
 		private $renderer;
 
-		function __construct (Container $container, RouteManager $router, ControllerManager $controllerManager) {
+		private $queueManager;
+
+		private $authenticator;
+
+		function __construct (Container $container, RouteManager $router, ControllerManager $controllerManager, QueueManager $queueManager, Authenticator $authenticator) {
 
 			$this->container = $container;
 
@@ -36,6 +42,10 @@
 			$this->responseMutations = [];
 
 			$this->controllerManager = $controllerManager;
+
+			$this->queueManager = $queueManager;
+
+			$this->authenticator = $authenticator;
 		}
 		
 		public function setValidRenderer ():void {
@@ -62,9 +72,14 @@
 
 		public function afterEvaluation() {
 
-			if ($this->renderer->hasBranches()) // the very first request won't be caught in a flow. so, delegate queueing branches
+			if ($this->renderer->hasBranches()) { // the very first request won't be caught in a flow. so, delegate queueing branches
 
-				$this->renderer->queueNextFlow();
+				$user = $this->authenticator->getUser();
+
+				$this->queueManager->push(RouteBranches::class,
+					new BranchesContext(null, $user, $this->renderer )
+				);
+			}
 		}
 
 		private function handleValidRequest() {

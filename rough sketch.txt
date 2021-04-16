@@ -18,9 +18,7 @@ When you find a way of identifying orm models, revisit NoSqlLogic->setup
 
 when cacheManager is integrated, refactor its usage wherever it appears in respect to accessing nested objects; tags etc. is the override pattern we're using good or can it be updated while in the cache
 
-	- Each write to the database triggers either redis subscriptions or tilwa event listeners. the handler uses the prepared statement to look up matching items/tags in the cache and refreshes them (5)
-
 #
-work needed on flowContext, flowHydrator
+work needed on flowContext (merge with branchescontext), flowHydrator, updateReactor, controllerFlows, routebranches
 
 what container is used to hydrate handler method on the queued job?

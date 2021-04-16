@@ -10,6 +10,8 @@
 
 		private $routeName;
 
+		//private $nodeTags; // should give us a bird's eye view of the path to each model [collection] i.e. [Cows => "user35,foo", "user*,bar"]
+
 		function __construct(string $routeName) {
 			
 			$this->routeName = $routeName;

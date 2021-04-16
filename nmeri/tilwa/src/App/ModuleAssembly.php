@@ -67,9 +67,9 @@
 			return $this->container = $randomModule->getContainer();
 		}
 
-		private function provisionWrapper(string $requestPath, string $wrapperName):void {
+		private function provisionWrapper(string $requestPath, string $wrapperName):Container {
 
-			$this->container->whenType($wrapperName)
+			return $this->container->whenType($wrapperName)
 
 			->needsArguments([
 				"pattern" => $requestPath,

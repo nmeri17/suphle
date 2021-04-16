@@ -126,9 +126,11 @@
  
 		private function queueBranches():void {
 
+			$user = $this->authenticator->getUser();
+
 			$this->queueManager->push(RouteBranches::class, 
 
-				new BranchesContext($this->incomingPattern, $this->modules )
+				new BranchesContext( $this->modules, $user, $renderer )
 			);
 		}
 	}

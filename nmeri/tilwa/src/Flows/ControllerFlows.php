@@ -7,15 +7,11 @@
 
 	class ControllerFlows {
 
-		private $branches; // this is the guy containing all the information hydrator is interested in
-
-		private $actions;
+		public $branches;
 
 		private $config;
 
 		function __construct() {
-
-			$this->actions = [];
 
 			$this->branches = [];
 
