@@ -3,8 +3,10 @@
 
 	use Tilwa\Flows\ControllerFlows;
 
+	use Tilwa\Contracts\FlowUnitNode;
+
 	// represents a meta map of attributes to take on a previous response node when it's hydrated
-	class SingleNode {
+	class SingleNode implements FlowUnitNode {
 
 		const INCLUDES_PAGINATION = 1; // expects these methods to be called in a meaningful sequence
 
@@ -49,6 +51,11 @@
 		public function getNodeName():string {
 
 			return $this->nodeName;
+		}
+
+		public function getActions():array {
+			
+			return $this->actions;
 		}
 	}
 ?>

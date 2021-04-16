@@ -1,11 +1,15 @@
 <?php
 	namespace Tilwa\Flows;
 
-	use Tilwa\Contracts\CacheManager;
+	use Tilwa\Contracts\{CacheManager, FlowUnitNode};
 
-	use Tilwa\Flows\Structures\{FlowContext, RouteUmbrella};
+	use Tilwa\Flows\Structures\{RouteUserNode, RouteUmbrella};
+
+	use Tilwa\Flows\Previous\{ SingleNode, CollectionNode};
 
 	class FlowHydrator {
+
+		const ALL_USERS = "*";
 
 		private $context;
 
@@ -13,18 +17,24 @@
 
 		private $cacheManager;
 
-		function __construct(CacheManager $cacheManager) {
-			
+		private $authenticator;
+
+		private $userId;
+
+		function __construct(CacheManager $cacheManager, Authenticator $authenticator, ) {
+
 			$this->cacheManager = $cacheManager;
+
+			$this->authenticator = $authenticator;
 		}
 
-		public function setContext(FlowContext $context):self {
+		public function setContext(RouteUserNode $context):self {
 
 			$this->context = $context;
 		}
 
 		# @param {contentType} model type, where present
-		private function storeContext(string $urlPattern, string $userId, string $contentType):void {
+		private function storeContext(string $urlPattern, string $contentType):void {
 
 			$manager = $this->cacheManager;
 			
@@ -32,24 +42,56 @@
 
 			if (!$umbrella) $umbrella = new RouteUmbrella($urlPattern);
 
-			$umbrella->addUser($userId, $this->context);
+			$umbrella->addUser($this->getUserId(), $this->context); // it's supposed to be different different contexts per umbrella/user
 
 			$saved = $manager->save($urlPattern, $umbrella);
 
 			if ($contentType) $saved->tag($contentType);
+
+			// better still, this guy can subscribe to a topic(instead of using tags?). update listener publishes to that topic (so we hopefully have no loop)
 		}
 
 		// call the appropriate triggers depending on action specified on it
-		public function runNodes():self {
+		public function runNodes(AbstractRenderer $renderer, FlowUnitNode $flowStructure):self {
 
-			$this->context->getBranches(); // this is on the controller flow, not this object
+			//$unitPayload = new RouteUserNode(); // the ultimate goal is to fill up this guy and plug him into the cache
 
-			// use something like $branches = flow->branches->each(select action handler)
+			$branchTypeHandlers = [
+				SingleNode::class => "handleSingleNodes",
+
+				CollectionNode::class => "handleCollectionNodes"
+			];
+
+			$handler = $branchTypeHandlers[$branch::class];
+
+			$builtNode = $this->$handler($branch);
+
+			$contentType = $this->getContentType($builtNode);
+			$node = $this->getUserNode($urlPattern);
+
+			$this->storeContext($urlPattern, $contentType);
+
 			// work with the controller flow expiry time and co
+			return $this;
+		}
 
-			// better still, this guy can subscribe to a topic(instead of using tags?). update listener publishes to that topic (so we hopefully have no loop)
+		private function getUserId():string {
 
-			//$this->storeContext()
+			$userId = $this->userId;
+
+			if (!is_null($userId)) return $userId;
+
+			$user = $this->authenticator->getUser();
+
+			$userId = !$user ? self::ALL_USERS: strval($user->id);
+
+			return $this->userId = $userId;
+		}
+
+		public function getUserNode(string $pattern):RouteUserNode {
+			// find and set this pattern's renderer. then create a RouteUserNode out of that
+			// there's simply no way of conveying those modules to this guy
+			// is richer in wealth and knowledge than the deep sitted self-esteem
 		}
 	}
 ?>

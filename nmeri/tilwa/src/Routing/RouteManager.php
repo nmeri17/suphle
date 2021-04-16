@@ -49,6 +49,8 @@
 
 					$this->updateRequestParameters($hit->getRequest());
 
+					$hit->setPath($this->fullTriedPath);
+
 					return $hit;
 				}
 			}

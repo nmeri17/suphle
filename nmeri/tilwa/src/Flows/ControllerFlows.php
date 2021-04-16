@@ -7,15 +7,13 @@
 
 	class ControllerFlows {
 
-		private $branches; // this is the guy containing all the information hydrator is interested in
-
-		private $actions;
+		private $branches;
 
 		private $config;
 
-		function __construct() {
+		private $previousPayload;
 
-			$this->actions = [];
+		function __construct() {
 
 			$this->branches = [];
 
@@ -32,6 +30,21 @@
 		public function previousResponse():ResponseBuilderProxy {
 
 			return new ResponseBuilderProxy($this);
+		}
+
+		public function setPreviousPayload($payload):self {
+			
+			$this->previousPayload = $payload;
+
+			return $this;
+		}
+
+		public function eachBranch(callable $callback) {
+			
+			foreach ($this->branches as $path => $branch) {
+				
+				$callback($path, $branch);
+			}
 		}
 
 		/**

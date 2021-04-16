@@ -5,7 +5,9 @@
 
 	use Tilwa\Flows\Jobs\{RouteBranches, BranchesContext, UpdateCountDelete};
 
-	use Tilwa\Flows\Structures\{FlowContext, RouteUmbrella,AccessContext};
+	use Tilwa\Flows\Structures\{RouteUserNode, RouteUmbrella,AccessContext};
+
+	use Tilwa\Events\EventManager;
 
 	class OuterFlowWrapper implements ManagerInterface {
 
@@ -27,7 +29,9 @@
 
 		private $activeUser;
 
-		public function __construct(string $pattern, QueueManager $queueManager, array $modules, CacheManager $cacheManager, Authenticator $authenticator) {
+		private $eventManager;
+
+		public function __construct(string $pattern, QueueManager $queueManager, array $modules, CacheManager $cacheManager, Authenticator $authenticator, EventManager $eventManager) {
 			
 			$this->incomingPattern = $pattern;
 
@@ -38,6 +42,8 @@
 			$this->cacheManager = $cacheManager;
 
 			$this->authenticator = $authenticator;
+
+			$this->eventManager = $eventManager;
 		}
 
 		private function matchesUrl():bool {
@@ -83,7 +89,7 @@
 			)->render();
 		}
 
-		private function getActiveFlow(string $userId):FlowContext {
+		private function getActiveFlow(string $userId):RouteUserNode {
 
 			$context = $this->routeUmbrella->getUserPayload($userId);
 
@@ -114,21 +120,22 @@
 			);
 		}
 
+		// it is safest for listeners to listen "external" on the target controller
 		private function emitEvents($cachedResponse):void {
 
-			$context = $this->context;
+			$this->eventManager->emit(
 
-			$context->getEventManager()->emit(
-
-				$context->getRenderer()->getController(), "on_flow_hit", $cachedResponse
+				$this->context->getRenderer()->getController(), "on_flow_hit", $cachedResponse
 			); // should probably include incoming request parameters?
 		}
  
 		private function queueBranches():void {
 
+			$user = $this->authenticator->getUser();
+
 			$this->queueManager->push(RouteBranches::class, 
 
-				new BranchesContext($this->incomingPattern, $this->modules )
+				new BranchesContext( $this->modules, $user, $renderer )
 			);
 		}
 	}

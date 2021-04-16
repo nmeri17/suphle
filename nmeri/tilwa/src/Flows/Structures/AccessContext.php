@@ -6,17 +6,17 @@
 
 		private $path;
 
-		private $flowContext;
+		private $unitPayload;
 
 		private $umbrella;
 
 		private $userId;
 
-		function __construct(string $path, FlowContext $flowContext, RouteUmbrella $umbrella, string $userId) {
+		function __construct(string $path, RouteUserNode $unitPayload, RouteUmbrella $umbrella, string $userId) {
 
 			$this->path = $path;
 
-			$this->flowContext = $flowContext;
+			$this->unitPayload = $unitPayload;
 
 			$this->umbrella = $umbrella;
 
@@ -38,9 +38,9 @@
 			return $this->userId;
 		}
 
-		public function getFlowContext():FlowContext {
+		public function getRouteUserNode():RouteUserNode {
 
-			return $this->flowContext;
+			return $this->unitPayload;
 		}
 	}
 ?>
