@@ -7,9 +7,11 @@
 
 	class ControllerFlows {
 
-		public $branches;
+		private $branches;
 
 		private $config;
+
+		private $previousPayload;
 
 		function __construct() {
 
@@ -28,6 +30,21 @@
 		public function previousResponse():ResponseBuilderProxy {
 
 			return new ResponseBuilderProxy($this);
+		}
+
+		public function setPreviousPayload($payload):self {
+			
+			$this->previousPayload = $payload;
+
+			return $this;
+		}
+
+		public function eachBranch(callable $callback) {
+			
+			foreach ($this->branches as $path => $branch) {
+				
+				$callback($path, $branch);
+			}
 		}
 
 		/**

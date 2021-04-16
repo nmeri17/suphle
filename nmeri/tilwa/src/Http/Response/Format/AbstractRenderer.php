@@ -109,6 +109,16 @@
 			$this->flows = $flow;
 		}
 
+		public function getFlow():ControllerFlows {
+			
+			return $this->flows;
+		}
+
+		public function getRawResponse() {
+			
+			return $this->rawResponse;
+		}
+
 		public function getPath():string {
 			
 			return $this->path;

@@ -17,12 +17,12 @@
 			$this->routeName = $routeName;
 		}
 
-		public function addUser(string $userId, FlowContext $flowContext):void {
+		public function addUser(string $userId, RouteUserNode $unitPayload):void {
 
-			$this->users[$userId] = $flowContext;
+			$this->users[$userId] = $unitPayload;
 		}
 
-		public function getUserPayload(string $userId):FlowContext {
+		public function getUserPayload(string $userId):RouteUserNode {
 
 			$context = $this->users[$userId];
 

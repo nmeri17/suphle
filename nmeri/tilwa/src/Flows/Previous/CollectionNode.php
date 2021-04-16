@@ -3,8 +3,10 @@
 
 	use Tilwa\Flows\ControllerFlows;
 
+	use Tilwa\Contracts\FlowUnitNode;
+
 	// represents a meta map of actions to take on a previous response node when it's hydrated
-	class CollectionNode {
+	class CollectionNode implements FlowUnitNode {
 
 		const EACH_ATTRIBUTE = 1; // expects these methods to be called in a meaningful sequence
 
@@ -72,6 +74,11 @@
 			$this->actions[self::DATE_RANGE] = compact("service", "method");
 
 			return $this;
+		}
+
+		public function getActions():array {
+			
+			return $this->actions;
 		}
 	}
 ?>

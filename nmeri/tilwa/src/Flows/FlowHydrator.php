@@ -1,9 +1,9 @@
 <?php
 	namespace Tilwa\Flows;
 
-	use Tilwa\Contracts\CacheManager;
+	use Tilwa\Contracts\{CacheManager, FlowUnitNode};
 
-	use Tilwa\Flows\Structures\{FlowContext, RouteUmbrella};
+	use Tilwa\Flows\Structures\{RouteUserNode, RouteUmbrella};
 
 	use Tilwa\Flows\Previous\{ SingleNode, CollectionNode};
 
@@ -28,7 +28,7 @@
 			$this->authenticator = $authenticator;
 		}
 
-		public function setContext(FlowContext $context):self {
+		public function setContext(RouteUserNode $context):self {
 
 			$this->context = $context;
 		}
@@ -52,7 +52,9 @@
 		}
 
 		// call the appropriate triggers depending on action specified on it
-		public function runNodes():self {
+		public function runNodes(AbstractRenderer $renderer, FlowUnitNode $flowStructure):self {
+
+			//$unitPayload = new RouteUserNode(); // the ultimate goal is to fill up this guy and plug him into the cache
 
 			$branchTypeHandlers = [
 				SingleNode::class => "handleSingleNodes",
@@ -60,16 +62,14 @@
 				CollectionNode::class => "handleCollectionNodes"
 			];
 
-			foreach ($this->context->getBranches() as $urlPattern => $branch) { // this is on the controller flow, not this object
-				$handler = $branchTypeHandlers[$branch::class];
+			$handler = $branchTypeHandlers[$branch::class];
 
-				$builtNode = $this->$handler($branch);
+			$builtNode = $this->$handler($branch);
 
-				$contentType = $this->getContentType($builtNode);
-				$node = $this->getUserNode($urlPattern);
+			$contentType = $this->getContentType($builtNode);
+			$node = $this->getUserNode($urlPattern);
 
-				$this->storeContext($urlPattern, $contentType)
-			};
+			$this->storeContext($urlPattern, $contentType);
 
 			// work with the controller flow expiry time and co
 			return $this;

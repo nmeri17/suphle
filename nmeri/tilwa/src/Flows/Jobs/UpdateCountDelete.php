@@ -23,7 +23,7 @@
 
 			$accessingUser = $accessed->getUser();
 
-			$mainFlow = $accessed->getFlowContext();
+			$mainFlow = $accessed->getRouteUserNode();
 
 			$hits = $mainFlow->currentHits();
 

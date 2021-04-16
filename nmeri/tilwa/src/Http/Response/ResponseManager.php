@@ -77,7 +77,7 @@
 				$user = $this->authenticator->getUser();
 
 				$this->queueManager->push(RouteBranches::class,
-					new BranchesContext(null, $user, $this->renderer )
+					new BranchesContext(null, $user, $this->renderer, $this->router )
 				);
 			}
 		}

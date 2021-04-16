@@ -4,51 +4,67 @@
 
 	use Tilwa\App\ModuleToRoute;
 
-	use Tilwa\Flows\Structures\BranchesContext;
+	use Tilwa\Flows\Structures\{BranchesContext, RouteUserNode};
 
-	// for queueing the cached endpoint on hit
+	// for queueing the cached endpoint on hit and queuing sub-flows
 	class RouteBranches {
 
 		private $context;
 
-		function __construct(BranchesContext $context) { // needs an authentication object
+		private $moduleFinder;
+
+		private $hydrator;
+
+		function __construct(BranchesContext $context) {
 			
 			$this->context = $context;
 		}
-// find where route branches was created and inject a renderer into our context. use [getOutgoingPath]
-		public function handle(ModuleToRoute $moduleFinder, FlowHydrator $hydrator, EventManager $eventManager) {
 
-			$renderer = $this->context->getRenderer();
+		public function handle(ModuleToRoute $moduleFinder, FlowHydrator $hydrator) {
 
-			if ($renderer->hasBranches())
+			$this->moduleFinder = $moduleFinder;
+
+			$this->hydrator = $hydrator;
+
+			$outgoingRenderer = $this->context->getRenderer();
+
+			if ($outgoingRenderer->hasBranches())
 			
-				$this->handleSubFlows($renderer, $hydrator, $eventManager);
+				$this->handleSubFlows($outgoingRenderer);
 		}
 
-		private function handleSubFlows(AbstractRenderer $renderer, FlowHydrator $hydrator, EventManager $eventManager) {
+		private function handleSubFlows(AbstractRenderer $renderer) {
 
-			$this->context->setEventManager($eventManager); // note: context here is flowContext not our guy
+			$flowController = $renderer->getFlow();
 
-			$hydrator->setContext($this->context)->runNodes();
+			$flowController->setPreviousPayload($renderer->getRawResponse())
 
-			// for each branch
-
-			$moduleInitializer = $moduleFinder->findContext(
-
-				$context->getModules(), $pattern// when module is absent, borrow the previous guy's modules since it won't possibly be updated at runtime. but state in the docs that transitioning from non-flow to flow route will result in working with stale modules
-			);
-
-			$renderer = $moduleInitializer->getRouter()->getActiveRenderer();
+			->eachBranch($this->eachFlowBranch);
 		}
-// formerly on abstract renderer. copy user id and flowContext creation
-		public function queueNextFlow():bool { // this should be injected by whoever triggers the queue
 
-			$id = $user ? strval($user->id) ? "*";
+		private function eachFlowBranch($urlPattern, $structure) {
 
-			$this->queueManager->push(RouteQueue::class, 
+			$context = $this->context;
 
-				new FlowContext($id, $this->rawResponse, $this->flows) // push all this route queue handler into route branches
-			);
+			$modules = $context->getModules();
+
+			if (!is_null($modules))
+
+				$renderer = $this->getRendererFromModules($modules, $urlPattern);
+
+			else $renderer = $context->getRouter()->findRenderer();
+
+			if ($renderer)
+
+				$this->hydrator->runNodes($renderer, $structure, $context->getUserId());
+		}
+
+		// if the queue can pick app index file, we can just pull its modules. otherwise, it means transitions from non-flow to flow links won't cache the first link if it's outside the active module i.e. routes in moduleA controllers can't visit those in moduleB if the moduleA route wasn't loaded from cache
+		private function getRendererFromModules(array $modules, string $pattern):AbstractRenderer {
+
+			$moduleInitializer = $this->moduleFinder->findContext($modules, $pattern);
+
+			return $moduleInitializer->getRouter()->getActiveRenderer();
 		}
 	}
 ?>
