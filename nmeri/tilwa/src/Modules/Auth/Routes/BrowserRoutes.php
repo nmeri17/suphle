@@ -36,41 +36,26 @@
 
 			$flow = new ControllerFlows;
 
-			$flow->linksTo("/submit-register", [
-				
-				"nodeA" => $flow->previousResponse()
+			$flow->linksTo("submit-register", $flow
 
-				->getNode("C")
+				->previousResponse()->getNode("C")
 
 				->includesPagination("path.to.next_url")
 
 				->surviveFor("300")
-			])
-			->linksTo("/categories/*", [
+			)
+			->linksTo("categories/id", $flow->previousResponse()->collectionNode("nodeD") // assumes we're coming from the category page
 
-				"data" => $flow->previousResponse()->collectionNode("nodeD") // assumes we're coming from the category page
+				->eachAttribute("key")->pipeTo(),
+			)
+			->linksTo("store/id", $flow->previousResponse()->collectionNode("nodeB")
 
-				->eachAttribute("key")
+				->eachAttribute("key")->oneOf()
+			)
+			->linksTo("orders/sort/id/id2", $flow->fromService(\Service\Orders::class, "method", $flow->previousResponse()->getNode("store.id"))
 
-				->pipeTo(\Service\Name::class, "method"), 
-				// so we need a `resolvePlaceholder` and `interactsWithPlaceholders` method on the flow object
-			])
-			->linksTo("/store/*", [
-
-				"data" => $flow->previousResponse()->collectionNode("nodeB")
-
-				->eachAttribute("key")
-
-				->oneOf(\Service\Name::class, "method", "key instead of id")
-			])
-			->linksTo("/orders/sort/*/*", [
-
-				"data" => $flow->fromService(\Service\Orders::class, "method", $flow->previousResponse()->getNode("store.id"))
-
-				->eachAttribute("key")
-
-				->inRange(\Service\Name::class, "method")
-			]);
+				->eachAttribute("key")->inRange()
+			);
 
 			return $this->_get($renderer->setFlow($flow));
 		}

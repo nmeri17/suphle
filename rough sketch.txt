@@ -19,6 +19,6 @@ When you find a way of identifying orm models, revisit NoSqlLogic->setup
 when cacheManager is integrated, refactor its usage wherever it appears in respect to accessing nested objects; tags etc. is the override pattern we're using good or can it be updated while in the cache
 
 #
-work needed on flowContext (merge with branchescontext), flowHydrator, updateReactor, controllerFlows, routebranches
+work needed on RouteUserNode, flowHydrator, updateReactor, controllerFlows
 
 what container is used to hydrate handler method on the queued job?

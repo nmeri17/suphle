@@ -1,12 +1,8 @@
 <?php
 	namespace Tilwa\Flows\Previous;
 
-	use Tilwa\Flows\ControllerFlows;
-
-	use Tilwa\Contracts\FlowUnitNode;
-
 	// represents a meta map of actions to take on a previous response node when it's hydrated
-	class CollectionNode implements FlowUnitNode {
+	class CollectionNode extends UnitNode {
 
 		const EACH_ATTRIBUTE = 1; // expects these methods to be called in a meaningful sequence
 
@@ -18,23 +14,12 @@
 
 		const ONE_OF = 5;
 
-		private $actions;
+		const FROM_SERVICE = 6;
 
-		private $parentContext; // could be used to populate this guy when a node should create multiple copies in its parent
-
-		private $nodeName; // the node on the previous response body this object is attached to
-
-		function __construct(ControllerFlows $parentContext, string $nodeName) {
-			
-			$this->actions = [];
-
-			$this->parentContext = $parentContext;
+		function __construct(string $nodeName) {
 
 			$this->nodeName = $nodeName;
 		}
-
-		/*// we still need this
-		public function interactsWithDatabase():bool; // only applicable to fetch routes*/
 		
 		 // works like `reduce`. should recursively load [attribute] but only match request to the last one?
 		public function eachAttribute(string $attribute):self {
@@ -45,40 +30,41 @@
 		}
 		
 		// will create multiple versions of the node attached. when a request where the wildcard matches the key passed in [eachAttribute], we return the key corresponding to what was evaluated here
-		public function pipeTo(string $service, string $method):self {
+		public function pipeTo():self {
 
-			$this->actions[self::PIPE_TO] = compact("service", "method");
+			$this->actions[self::PIPE_TO] = 1;
 
 			return $this;
 		}
 		
-		// same as [pipeTo], but is sent in bulk to the service rather than one after the other. service is expected to do a `whereIn`
-		// during fetch, we pull just those matching [key] instead of creating multiple copies of the node in the sibling list
-		public function oneOf(string $service, string $method):self {
+		// same as [pipeTo], but is sent in bulk to the service rather than one after the other. service is expected to do a `whereIn`. but the result will be stored separately
+		public function oneOf():self {
 
-			$this->actions[self::ONE_OF] = compact("service", "method");
+			$this->actions[self::ONE_OF] = 1;
 
 			return $this;
 		}
 		
 		// this and [dateRange] will plug each of the values they receive from the flow hydrator into the services supplied
-		public function inRange(string $service, string $method):self {
+		public function inRange():self {
 
-			$this->actions[self::IN_RANGE] = compact("service", "method");
+			$this->actions[self::IN_RANGE] = 1;
 
 			return $this;
 		}
 		
-		public function dateRange(string $service, string $method):self {
+		public function dateRange():self {
 
-			$this->actions[self::DATE_RANGE] = compact("service", "method");
+			$this->actions[self::DATE_RANGE] = 1;
 
 			return $this;
 		}
 
-		public function getActions():array {
-			
-			return $this->actions;
+		public function setFromService(string $serviceClass, string $method):self {
+
+			$this->actions[self::FROM_SERVICE] = compact("serviceClass", "method");
+
+			return $this;
 		}
 	}
 ?>

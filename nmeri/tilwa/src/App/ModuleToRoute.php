@@ -4,6 +4,8 @@
 	
 	use Dotenv\Dotenv;
 
+	use Tilwa\Http\Response\ResponseManager;
+
 	class ModuleToRoute {
 		
 		public function findContext(array $modules, string $requestQuery):ModuleInitializer {
@@ -36,7 +38,9 @@
 
 			$container->setServiceProviders($module->getServiceProviders());
 
-			return (new ModuleInitializer($module, $container, $router))
+			$responseManager = $container->getClass(ResponseManager::class);
+
+			return (new ModuleInitializer($module, $responseManager, $router))
 			->assignRoute();
 		}
 	}
