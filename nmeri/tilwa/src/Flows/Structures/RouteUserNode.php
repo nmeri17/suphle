@@ -15,9 +15,11 @@
 
 		private $hits;
 		
-		function __construct(AbstractRenderer $renderer) {
+		function __construct(AbstractRenderer $renderer, $payload) {
 
 			$this->renderer = $renderer;
+
+			$this->payload = $payload;
 		}
 
 		public function getPayload() {

@@ -6,6 +6,10 @@
 
 	use Tilwa\Flows\Structures\{BranchesContext, RouteUserNode};
 
+	use Tilwa\Flows\Previous\UnitNode;
+
+	use Tilwa\Http\Response\ResponseManager;
+
 	// for queueing the cached endpoint on hit and queuing sub-flows
 	class RouteBranches {
 
@@ -30,19 +34,10 @@
 
 			if ($outgoingRenderer->hasBranches())
 			
-				$this->handleSubFlows($outgoingRenderer);
+				$outgoingRenderer->getFlow()->eachBranch($this->eachFlowBranch);
 		}
 
-		private function handleSubFlows(AbstractRenderer $renderer) {
-
-			$flowController = $renderer->getFlow();
-
-			$flowController->setPreviousPayload($renderer->getRawResponse())
-
-			->eachBranch($this->eachFlowBranch);
-		}
-
-		private function eachFlowBranch($urlPattern, $structure) {
+		private function eachFlowBranch(string $urlPattern, UnitNode $structure) {
 
 			$context = $this->context;
 
@@ -50,21 +45,29 @@
 
 			if (!is_null($modules))
 
-				$renderer = $this->getRendererFromModules($modules, $urlPattern);
+				$manager = $this->getManagerFromModules($modules, $urlPattern);
 
-			else $renderer = $context->getRouter()->findRenderer();
+			else $manager = $context->getResponseManager();
 
-			if ($renderer)
+			if ($manager) {
+				
+				$previousPayload = $this->context->getRenderer()->getRawResponse();
 
-				$this->hydrator->runNodes($renderer, $structure, $context->getUserId());
+				$this->hydrator->runNodes(
+
+					$manager, $structure, $context->getUserId(), $previousPayload
+				);
+			}
 		}
 
-		// if the queue can pick app index file, we can just pull its modules. otherwise, it means transitions from non-flow to flow links won't cache the first link if it's outside the active module i.e. routes in moduleA controllers can't visit those in moduleB if the moduleA route wasn't loaded from cache
-		private function getRendererFromModules(array $modules, string $pattern):AbstractRenderer {
+		// transitions from non-flow to flow links won't cache the first link if it's outside the active module i.e. routes in moduleA controllers can't visit those in moduleB if the moduleA route wasn't loaded from cache
+		private function getManagerFromModules(array $modules, string $pattern):ResponseManager {
 
 			$moduleInitializer = $this->moduleFinder->findContext($modules, $pattern);
 
-			return $moduleInitializer->getRouter()->getActiveRenderer();
+			if (!is_null($moduleInitializer))
+
+				return $moduleInitializer->getResponseManager();
 		}
 	}
 ?>

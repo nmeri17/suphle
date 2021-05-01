@@ -1,40 +1,37 @@
 <?php
 	namespace Tilwa\Flows;
 
-	use Tilwa\Contracts\{CacheManager, FlowUnitNode};
+	use Tilwa\Contracts\{CacheManager, Orm};
 
 	use Tilwa\Flows\Structures\{RouteUserNode, RouteUmbrella};
 
-	use Tilwa\Flows\Previous\{ SingleNode, CollectionNode};
+	use Tilwa\Flows\Previous\{ SingleNode, CollectionNode, UnitNode};
+
+	use Tilwa\Http\Request\BaseRequest;
+
+	use Tilwa\Http\Response\ResponseManager;
 
 	class FlowHydrator {
 
-		const ALL_USERS = "*";
+		private $previousResponse, $cacheManager,
 
-		private $context;
+		$responseManager,
 
-		private $computedNodes;
+		$branchHandlers = [
+			SingleNode::class => "handleSingleNodes",
 
-		private $cacheManager;
+			CollectionNode::class => "handleCollectionNodes"
+		];
 
-		private $authenticator;
-
-		private $userId;
-
-		function __construct(CacheManager $cacheManager, Authenticator $authenticator, ) {
+		function __construct(CacheManager $cacheManager, Orm $orm) {
 
 			$this->cacheManager = $cacheManager;
 
-			$this->authenticator = $authenticator;
-		}
-
-		public function setContext(RouteUserNode $context):self {
-
-			$this->context = $context;
+			$this->orm = $orm;
 		}
 
 		# @param {contentType} model type, where present
-		private function storeContext(string $urlPattern, string $contentType):void {
+		private function storeContext(string $urlPattern, RouteUserNode $nodeContent, string $userId, string $contentType):void {
 
 			$manager = $this->cacheManager;
 			
@@ -42,7 +39,7 @@
 
 			if (!$umbrella) $umbrella = new RouteUmbrella($urlPattern);
 
-			$umbrella->addUser($this->getUserId(), $this->context); // it's supposed to be different different contexts per umbrella/user
+			$umbrella->addUser($userId, $nodeContent);
 
 			$saved = $manager->save($urlPattern, $umbrella);
 
@@ -51,47 +48,82 @@
 			// better still, this guy can subscribe to a topic(instead of using tags?). update listener publishes to that topic (so we hopefully have no loop)
 		}
 
-		// call the appropriate triggers depending on action specified on it
-		public function runNodes(AbstractRenderer $renderer, FlowUnitNode $flowStructure):self {
+		/**
+		* Description: Pipes a controlled list of variables to a path's controller action
+		*
+		* @param {flowSignature} $flow->previousResponse()->actionX()
+		* @param {responseManager} the manager designated to handle this request if it entered app organically
+		*/
+		public function runNodes(ResponseManager $responseManager, UnitNode $flowSignature, string $userId, $previousResponse):void {
 
-			//$unitPayload = new RouteUserNode(); // the ultimate goal is to fill up this guy and plug him into the cache
+			$this->previousResponse = $previousResponse;
 
-			$branchTypeHandlers = [
-				SingleNode::class => "handleSingleNodes",
+			$this->responseManager = $responseManager;
 
-				CollectionNode::class => "handleCollectionNodes"
+			$handler = $this->branchHandlers[$flowStructure::class];
+
+			$builtNodes = call_user_func_array([$this, $handler], [$flowStructure, $renderer]); // do these guys need renderers or managers?
+
+			foreach ($builtNodes as $builtNode) { // SingleNodes should only return array of length 1 here
+
+				$contentType = $this->getContentType($builtNode); // find a way to fit this in
+
+				$urlPattern = $this->getPathFromIdentifier($builtNode, $renderer);
+				
+				$unitPayload = new RouteUserNode($renderer, $builtNode);
+
+				$this->storeContext($urlPattern, $unitPayload, $userId, $contentType);
+			}
+			// work with the controller flow expiry time and co
+		}
+
+		private function getContentType($builtNodes):string {
+			# code...
+		}
+
+		private function handleSingleNodes(SingleNode $rawNode) {
+			
+			$singleMap = [
+
+				SingleNode::INCLUDES_PAGINATION => "handlePaginate"
 			];
 
-			$handler = $branchTypeHandlers[$branch::class];
+			foreach($rawNode->getActions() as $attribute)
 
-			$builtNode = $this->$handler($branch);
-
-			$contentType = $this->getContentType($builtNode);
-			$node = $this->getUserNode($urlPattern);
-
-			$this->storeContext($urlPattern, $contentType);
-
-			// work with the controller flow expiry time and co
-			return $this;
+				call_user_func_array([$this, $singleMap[$attribute]], [$rawNode]);
 		}
 
-		private function getUserId():string {
+		// these guys basically mock a request object and run against the underlying controller for this request
+		private function handleCollectionNodes(CollectionNode $rawNode) {
 
-			$userId = $this->userId;
-
-			if (!is_null($userId)) return $userId;
-
-			$user = $this->authenticator->getUser();
-
-			$userId = !$user ? self::ALL_USERS: strval($user->id);
-
-			return $this->userId = $userId;
+			$rawNode->getActions();
 		}
 
-		public function getUserNode(string $pattern):RouteUserNode {
-			// find and set this pattern's renderer. then create a RouteUserNode out of that
-			// there's simply no way of conveying those modules to this guy
-			// is richer in wealth and knowledge than the deep sitted self-esteem
+		private function getPathFromIdentifier($builtNodes, AbstractRenderer $renderer):string {
+			# code...
+		}
+
+		private function getNodeFromPrevious(UnitNode $rawNode) {
+
+			$keyName = $rawNode->getNodeName();
+
+			if (is_object($this->previousResponse))
+
+				return $this->previousResponse->$keyName;
+			
+			return $this->previousResponse[$keyName];
+		}
+
+		// get node name, pull from previous response, get value path
+		private function handlePaginate(SingleNode $rawNode) {
+
+			$ourNode = $this->getNodeFromPrevious($rawNode);
+
+			$valuePath = $ourNode[$this->orm->getPaginationPath()];
+
+			// we want responseManager->getResponse
+
+			// so how do i inject incoming value or request query? maybe pull and update renderer's request before setting the above in motion
 		}
 	}
 ?>

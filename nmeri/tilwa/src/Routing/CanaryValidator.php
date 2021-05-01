@@ -15,6 +15,7 @@
 			$this->container = $container;
 		}
 
+		// @return array of passing canaries
 		public function validate (array $canaries):array {
 
 			return array_filter($canaries, function ($canary) {

@@ -22,5 +22,8 @@
 		public function builderWhere( string $modelName, $modelId, string $columnName)/*:builder*/;
 
 		public function create();
+
+		// @return "next_page_url"
+		public function getPaginationPath():string;
 	}
 ?>

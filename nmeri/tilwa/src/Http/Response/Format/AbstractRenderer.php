@@ -26,19 +26,11 @@
 
 		private $flows;
 
-		private $authenticator;
-
-		private $queueManager;
-
-		public function setDependencies(Container $container, string $controllerClass, Authenticator $authenticator, QueueManager $queueManager):self {
+		public function setDependencies(Container $container, string $controllerClass):self {
 
 			$this->container = $container;
 			
 			$this->controller = $controllerClass;
-
-			$this->authenticator = $authenticator;
-
-			$this->queueManager = $queueManager;
 
 			return $this;
 		}
@@ -73,7 +65,7 @@
 
 		protected function renderHtml():string {
 			
-			return $this->container->getClass(HtmlParser::class)
+			return $this->container->getClass(HtmlParser::class) // lazily pull from container
 
 			->parseAll($this->viewName, $this->rawResponse);
 		}
@@ -127,6 +119,11 @@
 		public function setPath(string $path):void {
 			
 			$this->path = $path;
+		}
+
+		public function getContainer():Container {
+			
+			return $this->container;
 		}
 	}
 ?>

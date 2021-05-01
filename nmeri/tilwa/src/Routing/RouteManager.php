@@ -225,16 +225,10 @@
 			return $this;
 		}
 
-		public function savePayload():static {
+		// note: we are not handling POST yet
+		public function savePayload():self {
 			
-			$payloadAnchor = 'tilwa_request';
-
-			$this->payload = array_filter($_GET + $_POST, function ( $key) use ($payloadAnchor) {
-
-				return $key !== $payloadAnchor;
-			}, ARRAY_FILTER_USE_KEY);
-
-			unset($_GET[$payloadAnchor], $_POST[$payloadAnchor]);
+			$this->payload = array_diff_key(["tilwa_path" => 55], $_GET);
 
 			return $this;
 		}

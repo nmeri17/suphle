@@ -3,24 +3,15 @@
 
 	use Tilwa\Http\Response\Format\AbstractRenderer;
 
-	use Tilwa\Flows\Previous\{ResponseBuilderProxy, SingleNode, CollectionNode};
+	use Tilwa\Flows\Previous\{ResponseBuilderProxy, SingleNode, CollectionNode, UnitNode};
 
 	class ControllerFlows {
 
-		private $branches;
+		private $branches = [];
 
-		private $config;
+		private $config = [];
 
-		private $previousPayload;
-
-		function __construct() {
-
-			$this->branches = [];
-
-			$this->config = [];
-		}
-
-		public function linksTo(string $pattern, $responseStructure):self {
+		public function linksTo(string $pattern, UnitNode $responseStructure):self {
 
 			$this->branches[$pattern] = $responseStructure;
 
@@ -29,14 +20,7 @@
 
 		public function previousResponse():ResponseBuilderProxy {
 
-			return new ResponseBuilderProxy($this);
-		}
-
-		public function setPreviousPayload($payload):self {
-			
-			$this->previousPayload = $payload;
-
-			return $this;
+			return new ResponseBuilderProxy();
 		}
 
 		public function eachBranch(callable $callback) {
@@ -50,9 +34,13 @@
 		/**
 		* @param {sourceService} where we'll be pulling the data we intend to filter into another operation
 		*/
-		public function fromService(string $sourceService, string $method, SingleNode $responseBuilder):CollectionNode {
+		public function fromService(string $sourceService, string $method, UnitNode $responseBuilder):CollectionNode {
 
-			return new CollectionNode($this, $responseBuilder->getNodeName());
+			$node = new CollectionNode( $responseBuilder->getNodeName());
+
+			$node->setFromService($sourceService, $method);
+
+			return $node;
 		}
 		
 		/**
@@ -72,6 +60,11 @@
 			$this->config["max_hits"] = $callback;
 			
 			// return 1;
+		}
+
+		public function getConfig():array {
+			
+			return $this->config;
 		}
 	}
 ?>

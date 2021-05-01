@@ -1,10 +1,10 @@
 <?php
 
-	namespace Tilwa\Modules\Auth\Routes;
+	namespace Tilwa\Tests\Modules\Cart\Routes;
 
 	use Tilwa\Routing\RouteCollection;
 
-	use Tilwa\Modules\Auth\Controllers\HandleAuth;
+	use Tilwa\Tests\Modules\Controllers\HandleCart;
 
 	use Tilwa\Http\Response\Format\{Markup,Json};
 

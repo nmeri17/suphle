@@ -28,7 +28,7 @@
 		
 		private function beginRequest():string {
 
-			$requestPath = $_GET['tilwa_request'];
+			$requestPath = $_GET['tilwa_path'];
 
 			$wrapperName = OuterFlowWrapper::class;
 
