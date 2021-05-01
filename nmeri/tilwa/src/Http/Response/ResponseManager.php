@@ -12,7 +12,7 @@
 
 	use Tilwa\Controllers\ControllerManager;
 
-	use Tilwa\Contracts\{ResponseManager as BaseResponseManager, QueueManager};
+	use Tilwa\Contracts\{BaseResponseManager, QueueManager};
 
 	use Tilwa\Flows\{Structures\BranchesContext, Jobs\RouteBranches}
 
@@ -22,10 +22,10 @@
 
 		private $router;
 
-		private $skipHandler; // is `true` on validation failure
+		private $skipHandler = false; // is `true` on validation failure
 		private $controllerManager;
 
-		public $responseMutations;
+		public $responseMutations = [];
 
 		private $renderer;
 
@@ -38,8 +38,6 @@
 			$this->container = $container;
 
 			$this->router = $router;
-
-			$this->responseMutations = [];
 
 			$this->controllerManager = $controllerManager;
 
@@ -56,33 +54,32 @@
 
 			$this->renderer = $this->getValidRenderer($oldRenderer, $request);
 		}
+
+		public function rendererValidationFailed():bool {
+			
+			return $this->skipHandler == true;
+		}
 		
 		public function getResponse ():string {
 
-			if (!$this->skipHandler) $this->handleValidRequest();
-
-			$body = $renderer->render();
-			
-			if (!$this->skipHandler)
-				
-				$body = $this->mutateResponse($body); // those middleware should only get the response object/headers, not our payload
-			
-			return $body;
+			return $this->renderer->render();
 		}
 
-		public function afterEvaluation() {
+		public function afterRender() {
 
 			if ($this->renderer->hasBranches()) { // the very first request won't be caught in a flow. so, delegate queueing branches
 
 				$user = $this->authenticator->getUser();
 
 				$this->queueManager->push(RouteBranches::class,
-					new BranchesContext(null, $user, $this->renderer, $this->router )
+					new BranchesContext(null, $user, $this->renderer, $this )
 				);
 			}
+
+			return $finalBody;
 		}
 
-		private function handleValidRequest() {
+		public function handleValidRequest() {
 
 			$this->updateControllerManager();
 
@@ -148,7 +145,7 @@
 		}
 
 		// last action before response is flushed. log or profile middleware goes here
-		private function mutateResponse(string $currentBody):string {
+		public function mutateResponse(string $currentBody):string {
 
 			foreach ($this->responseMutations as $handler)
 

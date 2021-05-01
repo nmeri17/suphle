@@ -5,11 +5,17 @@ php_value upload_max_filesize 10M
 php_value post_max_size 11M
 
 
-# QSA = tack query string onto the target tilwa_request
-RewriteRule ^/?(.+)$ public/index.php?tilwa_request=$1 [NC,QSA,L]
+# QSA = tack query string if present onto the target tilwa_path
+RewriteCond %{HTTP_HOST} ^(.*)
+
+RewriteRule ^([\w\/]+)$ public/index.php?tilwa_sub=%1&tilwa_path=$1 [NC,QSA,L]
+
+# I think the sub-domain part still needs review
 
 # serve index
-RewriteRule ^/?$ public/index.php?tilwa_request=index [NC,QSA,L]
+RewriteCond %{HTTP_HOST} ^(.*)
+
+RewriteRule ^/?$ public/index.php?tilwa_sub=%1&tilwa_path=index [NC,QSA,L]
 
 
 # invalid file?
@@ -21,4 +27,4 @@ RewriteCond %{REQUEST_FILENAME} -d
 # extensioned requests, suck it!
 RewriteCond %{REQUEST_URI} ^(.+\.\w{3,4})$
 
-RewriteRule .? public/index.php?tilwa_request=fraudulent_tilwa [L]
+RewriteRule .? public/index.php?tilwa_path=fraudulent_tilwa [L]

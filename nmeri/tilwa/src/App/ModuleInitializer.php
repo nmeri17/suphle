@@ -42,16 +42,31 @@
 
 			$manager->setValidRenderer(); // can set response status codes (on http_response_header or something) here based on this guy's evaluation and renderer type
 
-			$response = $manager->getResponse();
+			$validationPassed = !$manager->rendererValidationFailed();
 
-			$manager->afterEvaluation();
+			if ($validationPassed)
 
-			return $response;
+				$manager->handleValidRequest();
+
+			$preliminary = $manager->getResponse();
+
+			if ($validationPassed)
+				
+				$preliminary = $manager->mutateResponse($preliminary); // those middleware should only get the response object/headers, not our payload
+
+			$manager->afterRender();
+
+			return $preliminary;
 		}
 
 		public function getRouter():RouteManager {
 			
 			return $this->router;
+		}
+
+		public function getResponseManager():ResponseManager {
+			
+			return $this->responseManager;
 		}
 	}
 ?>

@@ -9,9 +9,13 @@
 
 	use Tilwa\Http\Request\BaseRequest;
 
+	use Tilwa\Http\Response\ResponseManager;
+
 	class FlowHydrator {
 
-		private $previousResponse, $cacheManager, 
+		private $previousResponse, $cacheManager,
+
+		$responseManager,
 
 		$branchHandlers = [
 			SingleNode::class => "handleSingleNodes",
@@ -48,14 +52,19 @@
 		* Description: Pipes a controlled list of variables to a path's controller action
 		*
 		* @param {flowSignature} $flow->previousResponse()->actionX()
+		* @param {responseManager} the manager designated to handle this request if it entered app organically
 		*/
-		public function runNodes(AbstractRenderer $renderer, UnitNode $flowSignature, string $userId, $previousResponse):void {
+		public function runNodes(ResponseManager $responseManager, UnitNode $flowSignature, string $userId, $previousResponse):void {
 
 			$this->previousResponse = $previousResponse;
 
+			$this->responseManager = $responseManager;
+
 			$handler = $this->branchHandlers[$flowStructure::class];
 
-			foreach ($this->$handler($flowStructure, $renderer) as $builtNode) { 
+			$builtNodes = call_user_func_array([$this, $handler], [$flowStructure, $renderer]); // do these guys need renderers or managers?
+
+			foreach ($builtNodes as $builtNode) { // SingleNodes should only return array of length 1 here
 
 				$contentType = $this->getContentType($builtNode); // find a way to fit this in
 
@@ -79,12 +88,9 @@
 				SingleNode::INCLUDES_PAGINATION => "handlePaginate"
 			];
 
-			foreach($rawNode->getActions() as $attribute) {
+			foreach($rawNode->getActions() as $attribute)
 
-				$subHandler = $singleMap[$attribute];
-
-				$this->$subHandler($rawNode);
-			}
+				call_user_func_array([$this, $singleMap[$attribute]], [$rawNode]);
 		}
 
 		// these guys basically mock a request object and run against the underlying controller for this request
@@ -108,18 +114,16 @@
 			return $this->previousResponse[$keyName];
 		}
 
-		// get node name, pull from previous response, get value path. the route manager will likely match our own
+		// get node name, pull from previous response, get value path
 		private function handlePaginate(SingleNode $rawNode) {
 
 			$ourNode = $this->getNodeFromPrevious($rawNode);
 
 			$valuePath = $ourNode[$this->orm->getPaginationPath()];
 
-			// find a way to access this renderer's response manager->getResponse
-		}
+			// we want responseManager->getResponse
 
-		private function getRequestFromUrl(string $path):BaseRequest {
-			# pull the request applicable to this controller
+			// so how do i inject incoming value or request query? maybe pull and update renderer's request before setting the above in motion
 		}
 	}
 ?>

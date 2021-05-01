@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Flows;
 
-	use Tilwa\Contracts\{ResponseManager as ManagerInterface, QueueManager, CacheManager, Authenticator};
+	use Tilwa\Contracts\{BaseResponseManager, QueueManager, CacheManager, Authenticator};
 
 	use Tilwa\Flows\Jobs\{RouteBranches, BranchesContext, UpdateCountDelete};
 
@@ -9,7 +9,7 @@
 
 	use Tilwa\Events\EventManager;
 
-	class OuterFlowWrapper implements ManagerInterface {
+	class OuterFlowWrapper implements BaseResponseManager {
 
 		const FLOW_PREFIX = "tilwa_flow";
 
@@ -132,6 +132,8 @@
 		private function queueBranches():void {
 
 			$user = $this->authenticator->getUser();
+
+			$renderer = $this->context->getRenderer();
 
 			$this->queueManager->push(RouteBranches::class, 
 

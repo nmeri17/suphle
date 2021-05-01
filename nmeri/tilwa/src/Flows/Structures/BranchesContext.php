@@ -2,9 +2,7 @@
 
 	namespace Tilwa\Flows\Structures;
 
-	use Tilwa\Http\Response\Format\AbstractRenderer;
-
-	use Tilwa\Routing\RouteManager;
+	use Tilwa\Http\Response\{Format\AbstractRenderer, ResponseManager};
 
 	class BranchesContext {
 
@@ -14,13 +12,13 @@
 
 		private $renderer;
 
-		private $router;
+		private $responseManager;
 
 		/**
 		* @param {user} whether a sub-flow or transition from organic flow, all flow queueing is triggered by a user request. This argument is that user
-		* @param {router} set during organic requests (without flows), when access to the modules has been lost
+		* @param {responseManager} set during organic requests (without flows), when access to the modules has been lost
 		*/
-		function __construct( array $modules, object $user, AbstractRenderer $renderer, RouteManager $router) {
+		function __construct( array $modules, object $user, AbstractRenderer $renderer, ResponseManager $responseManager) {
 
 			$this->modules = $modules;
 
@@ -28,7 +26,7 @@
 
 			$this->user = $user;
 
-			$this->router = $router;
+			$this->responseManager = $responseManager;
 		}
 
 		public function getModules():array {
@@ -46,9 +44,9 @@
 			return $this->user ? strval($this->user->id) ? "*";;
 		}
 
-		public function getRouter():RouteManager {
+		public function getResponseManager():ResponseManager {
 			
-			return $this->router;
+			return $this->responseManager;
 		}
 	}
 ?>

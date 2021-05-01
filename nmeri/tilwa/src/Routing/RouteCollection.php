@@ -35,7 +35,7 @@
 
 			$this->browserEntry = $browserEntry;
 
-			$this->utilities = ["_mirrorBrowserRoutes", "_passover", "_handlingClass", "_crud", "_register", "_setAllow", "_canaryEntry", "_setLocalPrefix"];
+			$this->utilities = ["_mirrorBrowserRoutes", "_passover", "_handlingClass", "_crud", "_register", "_setAllow", "_canaryEntry", "_setLocalPrefix", "_whenUnauthorized"];
 		}
 
 		/** overwrite in your routes file
@@ -133,5 +133,8 @@
 		public function attachFlow() {
 			# code...
 		}
+
+		// will redirect to the route returned from here if route matches but [_passover] failed
+  		protected function _whenUnauthorized () {}
 	}
 ?>

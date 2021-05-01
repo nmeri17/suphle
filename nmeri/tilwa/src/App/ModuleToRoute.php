@@ -8,11 +8,11 @@
 
 	class ModuleToRoute {
 		
-		public function findContext(array $modules, string $requestQuery):ModuleInitializer {
+		public function findContext(array $modules, string $requestPath):ModuleInitializer {
 			
 			foreach($modules as $module) {
 
-				$routeMatcher = $this->getRouteMatcher($module, $requestQuery);
+				$routeMatcher = $this->getRouteMatcher($module, $requestPath);
 				
 				if ($routeMatcher->foundRoute)
 
@@ -28,11 +28,11 @@
 			);
 		}
 
-		private function getRouteMatcher(ParentModule $module, string $requestQuery) {
+		private function getRouteMatcher(ParentModule $module, string $requestPath):ModuleInitializer {
 
 			$container = $module->getContainer();
 
-			$router = new RouteManager($module, $container, $requestQuery, $this->getHttpMethod());
+			$router = new RouteManager($module, $container, $requestPath, $this->getHttpMethod());
 
 			$module->entityBindings($router);
 
