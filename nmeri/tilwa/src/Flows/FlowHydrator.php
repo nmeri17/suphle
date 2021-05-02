@@ -48,59 +48,65 @@
 			// better still, this guy can subscribe to a topic(instead of using tags?). update listener publishes to that topic (so we hopefully have no loop)
 		}
 
+		public function setDependencies(ResponseManager $responseManager, $previousResponse):self {
+
+			$this->previousResponse = $previousResponse;
+
+			$this->responseManager = $responseManager;
+
+			return $this;
+		}
+
 		/**
 		* Description: Pipes a controlled list of variables to a path's controller action
 		*
 		* @param {flowSignature} $flow->previousResponse()->actionX()
 		* @param {responseManager} the manager designated to handle this request if it entered app organically
 		*/
-		public function runNodes(ResponseManager $responseManager, UnitNode $flowSignature, string $userId, $previousResponse):void {
-
-			$this->previousResponse = $previousResponse;
-
-			$this->responseManager = $responseManager;
+		public function runNodes(UnitNode $flowSignature, string $userId):void {
 
 			$handler = $this->branchHandlers[$flowStructure::class];
 
-			$builtNodes = call_user_func_array([$this, $handler], [$flowStructure, $renderer]); // do these guys need renderers or managers?
+			$builtNodes = call_user_func_array([$this, $handler], [$flowStructure, $renderer]);
+			// then remember to handle base actions on the UnitNode
 
 			foreach ($builtNodes as $builtNode) { // SingleNodes should only return array of length 1 here
 
 				$contentType = $this->getContentType($builtNode); // find a way to fit this in
 
-				$urlPattern = $this->getPathFromIdentifier($builtNode, $renderer);
+				$urlPattern = $builtNode->getPath();
 				
-				$unitPayload = new RouteUserNode($renderer, $builtNode);
+				$unitPayload = new RouteUserNode( $builtNode);
 
 				$this->storeContext($urlPattern, $unitPayload, $userId, $contentType);
 			}
-			// work with the controller flow expiry time and co
 		}
 
+		# infer from the dominant type of the first value found
 		private function getContentType($builtNodes):string {
-			# code...
+			
 		}
 
-		private function handleSingleNodes(SingleNode $rawNode) {
+		private function handleSingleNodes(SingleNode $rawNode):array {
 			
 			$singleMap = [
 
 				SingleNode::INCLUDES_PAGINATION => "handlePaginate"
 			];
 
+			$carryRenderer = null;
+
 			foreach($rawNode->getActions() as $attribute)
 
-				call_user_func_array([$this, $singleMap[$attribute]], [$rawNode]);
+				$carryRenderer = call_user_func_array([$this, $singleMap[$attribute]], [$rawNode, $carryRenderer]);
+
+			return [$carryRenderer];
 		}
 
 		// these guys basically mock a request object and run against the underlying controller for this request
 		private function handleCollectionNodes(CollectionNode $rawNode) {
 
 			$rawNode->getActions();
-		}
-
-		private function getPathFromIdentifier($builtNodes, AbstractRenderer $renderer):string {
-			# code...
 		}
 
 		private function getNodeFromPrevious(UnitNode $rawNode) {
@@ -114,16 +120,37 @@
 			return $this->previousResponse[$keyName];
 		}
 
-		// get node name, pull from previous response, get value path
-		private function handlePaginate(SingleNode $rawNode) {
+		private function handlePaginate(SingleNode $rawNode):AbstractRenderer {
 
 			$ourNode = $this->getNodeFromPrevious($rawNode);
 
 			$valuePath = $ourNode[$this->orm->getPaginationPath()];
 
-			// we want responseManager->getResponse
+			$queryPart = parse_url($valuePath)["query"];
 
-			// so how do i inject incoming value or request query? maybe pull and update renderer's request before setting the above in motion
+			$this->updateRequest($queryPart);
+
+			if ($this->canProcessPath())
+
+				return $this->responseManager->handleValidRequest();
+		}
+
+		private function canProcessPath():bool {
+
+			$manager = $this->responseManager;
+
+			$manager->bootControllerManager()
+
+			->assignValidRenderer();
+
+			return !$manager->rendererValidationFailed();
+		}
+
+		private function updateRequest(string $query):void {
+
+			$this->responseManager->getControllerManager()->getRequest()
+
+			->setPlaceholders(parse_str($query));
 		}
 	}
 ?>

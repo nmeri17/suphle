@@ -47,8 +47,6 @@
 
 				if (!is_null($hit)) {
 
-					$this->updateRequestParameters($hit->getRequest());
-
 					$hit->setPath($this->fullTriedPath);
 
 					return $hit;
@@ -126,7 +124,7 @@
 			return $this->prefixMatch($path) && $rendererMethod == $this->httpMethod;
 		}
 
-		/* given hypothetic path: PATH_id_EDIT_id2_EDIT__SAME__OKJh_optionalO_TOMP, clean and return a path similar to a real life path; but still in a regec format so optional segments can be indicated as such
+		/* given hypothetical path: PATH_id_EDIT_id2_EDIT__SAME__OKJh_optionalO_TOMP, clean and return a path similar to a real life path; but still in a regex format so optional segments can be indicated as such
 		PATH/id/EDIT/id2/EDIT-SAME-OKJ/TOMP
 		*/
 		private function regexForm(string $routeState):string {
@@ -190,15 +188,6 @@
 			return preg_match("/^$newRouteState
 				?# neutralize trailing slash in replaced path
 				/ix", $this->incomingPath);
-		}
-		
-		public function updateRequestParameters(BaseRequest $request):void {
-			$pattern = "(?<![A-Z0-9])# negative lookbehind: given PATH_id_EDIT_id2_EDIT__SAME__OKJh_optionalO_TOMP, refuse to match the h in the compound segment
-			([a-z0-9]+)# pick placeholders";
-
-			preg_match("/$pattern/x", $this->fullTriedPath, $matches);
-
-			$request->setPlaceholders($matches[0]);
 		}
 
 		public function setPrevious(AbstractRenderer $renderer ):static {

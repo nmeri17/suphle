@@ -20,5 +20,6 @@ when cacheManager is integrated, refactor its usage wherever it appears in respe
 
 #
 work needed on RouteUserNode, flowHydrator, updateReactor, controllerFlows
+see controllerManager->getRequest and fix its broken occurence on route manager
 
 what container is used to hydrate handler method on the queued job?

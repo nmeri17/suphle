@@ -6,7 +6,7 @@
 
 	use Tilwa\Routing\RouteManager;
 
-	use Tilwa\Http\Response\Format\Markup;
+	use Tilwa\Http\Response\Format\{Markup, AbstractRenderer};
 
 	use Tilwa\Http\Request\BaseRequest;
 
@@ -18,20 +18,13 @@
 
 	class ResponseManager implements BaseResponseManager {
 
-		private $container;
+		private $container, $router, $renderer,
 
-		private $router;
+		$queueManager, $authenticator, $controllerManager;
 
 		private $skipHandler = false; // is `true` on validation failure
-		private $controllerManager;
 
 		public $responseMutations = [];
-
-		private $renderer;
-
-		private $queueManager;
-
-		private $authenticator;
 
 		function __construct (Container $container, RouteManager $router, ControllerManager $controllerManager, QueueManager $queueManager, Authenticator $authenticator) {
 
@@ -44,15 +37,6 @@
 			$this->queueManager = $queueManager;
 
 			$this->authenticator = $authenticator;
-		}
-		
-		public function setValidRenderer ():void {
-
-			$oldRenderer = $this->router->getActiveRenderer();
-
-			$request = $oldRenderer->getRequest();
-
-			$this->renderer = $this->getValidRenderer($oldRenderer, $request);
 		}
 
 		public function rendererValidationFailed():bool {
@@ -79,7 +63,7 @@
 			return $finalBody;
 		}
 
-		public function handleValidRequest() {
+		public function bootControllerManager():self {
 
 			$this->updateControllerManager();
 
@@ -87,38 +71,55 @@
 
 			$this->buildManagerTarget();
 
+			return $this;
+		}
+
+		public function handleValidRequest():AbstractRenderer {
+
 			$renderer = $this->renderer;
 
 			if ($renderer instanceof Markup && $this->router->acceptsJson())
 
 				$renderer->setWantsJson();
 
-			$this->runMiddleware(); // called here so some awesome middleware can override default behavior on our booted controller
+			$manager = $this->controllerManager;
 
-			$renderer->invokeActionHandler($this->controllerManager->getHandlerParameters());
+			$manager->updatePlaceholders()
+
+			->hydrateModels($renderer->routeMethod);
+
+			$this->runMiddleware(); // called here so some awesome middleware can override default behavior on our booted controller. may imply injecting the manager
+
+			return $renderer->invokeActionHandler($manager->getHandlerParameters());
 		}
 
 		/** @description: Validates request and decides whether controller will be invoked
 		*	For requests originating from browser, flow will be reverted to previous request, expecting its view to read the error bag
 		*	For other clients, the handler should be skipped altogether for the errors to be immediately rendered
 		*/
-		private function getValidRenderer (AbstractRenderer $currentRenderer, BaseRequest $request):AbstractRenderer {
+		public function assignValidRenderer ():void {
 
-			$browserOrigin = !$this->router->isApiRoute();
+			$router = $this->router;
+
+			$outgoingRenderer = $router->getActiveRenderer();
+
+			$browserOrigin = !$router->isApiRoute();
+
+			$request = $this->controllerManager->getRequest();
 
 			if ( !$request->isValidated()) {
 
 				if ($browserOrigin)
 
-					$currentRenderer = $this->router->mergeWithPrevious($request);
+					$outgoingRenderer = $router->mergeWithPrevious($request);
 				
 				else $this->skipHandler = true;
 			}
 			else if ($browserOrigin)
 
-				$this->router->setPrevious($currentRenderer);
+				$router->setPrevious($outgoingRenderer);
 
-			return $currentRenderer;
+			$this->renderer = $outgoingRenderer;
 		}
 
 		// middleware delimited by commas. Middleware parameters delimited by colons
@@ -163,15 +164,13 @@
 
 		public function buildManagerTarget():void {
 
-			$manager = $this->controllerManager;
+			$this->controllerManager->bootController()
 
-			$renderer = $this->renderer;
+			->setHandlerParameters($this->renderer->handler)
 
-			$manager->bootController();
+			->assignActionRequest() // this should run before model hydration and before validation
 
-			$manager->setHandlerParameters($renderer->handler);
-
-			$manager->provideModelArguments($renderer->getRequest(), $renderer->routeMethod);
+			->assignModelsInAction();
 		}
 
 		private function updateControllerManager():void {
@@ -180,6 +179,11 @@
 
 				$this->container->getClass($this->renderer->getController())
 			);
+		}
+
+		public function getControllerManager():ControllerManager {
+			
+			return $this->controllerManager;
 		}
 	}
 ?>

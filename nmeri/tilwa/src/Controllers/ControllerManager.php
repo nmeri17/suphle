@@ -14,13 +14,9 @@
 
 	class ControllerManager {
 
-		private $controller;
+		private $controller, $databaseAdapter, $container,
 
-		private $databaseAdapter;
-
-		private $container;
-
-		private $handlerParameters;
+		$handlerParameters, $request, $actionModels;
 
 		function __construct( Container $container, Orm $databaseAdapter) {
 
@@ -47,11 +43,11 @@
 				throw new CrowdedConstructor;
 		}
 
-		public function setHandlerParameters(string $actionMethod):void {
+		public function setHandlerParameters(string $actionMethod):self {
 
-			$c = $this->controller;
+			$this->handlerParameters = $this->container->getMethodParameters($actionMethod, get_class($this->controller));
 
-			$this->handlerParameters = $this->container->getMethodParameters($actionMethod, $c::class);
+			return $this;
 		}
 
 		public function getHandlerParameters():array {
@@ -59,33 +55,25 @@
 			return $this->handlerParameters;
 		}
 
-		public function provideModelArguments(BaseRequest $request, string $httpMethod):void {
+		public function assignModelsInAction():self {
 
-			$modelArguments = $this->findModelsInAction();
+			$this->actionModels = array_filter($this->handlerParameters, function ($parameter) {
 
-			if (!empty($modelArguments))
-
-				$this->hydrateModels($request, $modelArguments, $httpMethod);
-		}
-
-		private function findModelsInAction():array {
-
-			return array_filter($this->handlerParameters, function ($parameter) {
-
-				return $this->databaseAdapter->isModel($argument);
+				return $this->databaseAdapter->isModel($parameter);
 			}, ARRAY_FILTER_USE_KEY);
+
+			return $this;
 		}
 
 		// mutates the underlying handler parameters
-		private function hydrateModels(BaseRequest $request, array $modelArguments, string $httpMethod):void {
+		public function hydrateModels(string $httpMethod):self {
 			
-			if ($httpMethod == "get") {// post has nothing to fetch/build. put/delete can return builders but risk developer using them directly instead of passing it to the service
+			if ($httpMethod != "post") { // post has nothing to fetch/build
+				$hydrator = "loadModelFor". ucfirst($httpMethod);
 
-				foreach ($modelArguments as $parameter => $model)
+				foreach ($this->actionModels as $parameter => $model)
 
-					$this->handlerParameters[ $parameter] = $this->loadModelForGet(
-						$model::class, $request->$parameter, $parameter
-					);
+					$this->handlerParameters[$parameter] =call_user_func_array([$this, $hydrator], [$model::class, $this->request->$parameter]); // so, just drop this into that guy
 			}
 		}
 
@@ -94,9 +82,40 @@
 			return $this->databaseAdapter->findOne( $modelName, $modelId);
 		}
 
-		public function bootController():void {
+		public function bootController():self {
 
 			$this->controller->setContainer($this->container);
+
+			return $this;
+		}
+
+		public function assignActionRequest():self {
+
+			foreach ($this->handlerParameters as $parameter) {
+				
+				if ($parameter instanceof BaseRequest)
+
+					$this->request = $parameter;
+			}
+			return $this;
+		}
+
+		public function getRequest():BaseRequest { // fix all the broken guys relying on this
+			
+			return $this->request;
+		}
+		
+		// this should go first before action argument instantiation
+		public function updatePlaceholders():self {
+
+			$pattern = "(?<![A-Z0-9])# negative lookbehind: given PATH_id_EDIT_id2_EDIT__SAME__OKJh_optionalO_TOMP, refuse to match the h in the compound segment
+			([a-z0-9]+)# pick placeholders"; // confirm this guy works with underscores, not slashes
+
+			preg_match("/$pattern/x", $this->request->getPath(), $matches);
+
+			$this->request->setPlaceholders($matches[0]);
+
+			return $this;
 		}
 	}
 ?>

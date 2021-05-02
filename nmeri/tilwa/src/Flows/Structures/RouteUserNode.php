@@ -9,22 +9,11 @@
 	// this is the smallest unit where the ultimate user related cached information is stored
 	class RouteUserNode {
 
-		private $renderer;
-
-		private $payload;
-
-		private $hits;
+		private $renderer, $hits;
 		
-		function __construct(AbstractRenderer $renderer, $payload) {
+		function __construct(AbstractRenderer $renderer) {
 
 			$this->renderer = $renderer;
-
-			$this->payload = $payload;
-		}
-
-		public function getPayload() {
-			
-			return $this->payload;
 		}
 
 		public function currentHits():int {

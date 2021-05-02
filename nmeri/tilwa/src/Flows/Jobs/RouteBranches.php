@@ -53,10 +53,9 @@
 				
 				$previousPayload = $this->context->getRenderer()->getRawResponse();
 
-				$this->hydrator->runNodes(
-
-					$manager, $structure, $context->getUserId(), $previousPayload
-				);
+				$this->hydrator->setDependencies($manager, $previousPayload)
+				
+				->runNodes( $structure, $context->getUserId());
 			}
 		}
 

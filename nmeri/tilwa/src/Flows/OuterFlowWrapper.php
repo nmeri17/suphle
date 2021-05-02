@@ -83,10 +83,7 @@
 
 		public function getResponse():string {
 
-			return $this->context->getRenderer()->setRawResponse(
-				
-				$this->context->getPayload()
-			)->render();
+			return $this->context->getRenderer()->render();
 		}
 
 		private function getActiveFlow(string $userId):RouteUserNode {

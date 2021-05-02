@@ -10,21 +10,12 @@
 
 	abstract class AbstractRenderer {
 
-		public $handler;
-
-		private $controller;
-
-		private $rawResponse;
+		public $handler, $routeMethod;
 
 		protected $container;
 
-		public $routeMethod;
-
-		private $request;
-
-		private $path;
-
-		private $flows;
+		private $controller, $rawResponse, $path, $flows;
+		
 
 		public function setDependencies(Container $container, string $controllerClass):self {
 
@@ -68,18 +59,6 @@
 			return $this->container->getClass(HtmlParser::class) // lazily pull from container
 
 			->parseAll($this->viewName, $this->rawResponse);
-		}
-
-		public function getRequest():BaseRequest {
-			
-			return $this->request;
-		}
-
-		public function setRequest(BaseRequest $request):self {
-			
-			$this->request = $request;
-
-			return $this;
 		}
 
 		abstract public function render ():string;
