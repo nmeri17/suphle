@@ -100,7 +100,16 @@
 			return $this;
 		}
 
-		public function getRequest():BaseRequest { // fix all the broken guys relying on this
+		public function revertRequest(BaseRequest $previousRequest):self {
+
+			$previousRequest->setValidationErrors( $this->request->validationErrors() );
+			
+			$this->request = $previousRequest;
+
+			return $this;
+		}
+
+		public function getRequest():BaseRequest {
 			
 			return $this->request;
 		}

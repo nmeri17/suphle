@@ -10,21 +10,15 @@
 
 	class RouteManager {
 
-		private $module;
+		const PREV_RENDERER = 'prev_renderer';
 
-		private $activeRenderer;
+		const PREV_REQUEST = 'prev_request';
 
-		private $payload;
+		private $module, $activeRenderer, $payload,
 
-		private $incomingPath;
+		$incomingPath, $httpMethod, $fullTriedPath,
 
-		private $httpMethod;
-
-		private $fullTriedPath;
-
-		private $collectionArguments;
-
-		private $container;
+		$collectionArguments, $container;
 
 		function __construct(ParentModule $module, Container $container, string $incomingPath, string $httpMethod ) {
 
@@ -190,16 +184,23 @@
 				/ix", $this->incomingPath);
 		}
 
-		public function setPrevious(AbstractRenderer $renderer ):static {
+		public function setPrevious(AbstractRenderer $renderer , BaseRequest $request):self {
 
-			$_SESSION['prev_route'] = $renderer;
+			$_SESSION[self::PREV_RENDERER] = $renderer;
+
+			$_SESSION[self::PREV_REQUEST] = $request;
 
 			return $this;
 		}
 
-		public function getPrevious ():AbstractRenderer {
+		public function getPreviousRenderer ():AbstractRenderer {
 
-			return $_SESSION['prev_route'];
+			return $_SESSION[self::PREV_RENDERER];
+		}
+
+		public function getPreviousRequest ():BaseRequest {
+
+			return $_SESSION[self::PREV_REQUEST];
 		}
 
 		public function getActiveRenderer ():AbstractRenderer {
@@ -220,20 +221,6 @@
 			$this->payload = array_diff_key(["tilwa_path" => 55], $_GET);
 
 			return $this;
-		}
-
-		/**
-		* @return previous AbstractRenderer
-		*/
-		public function mergeWithPrevious(BaseRequest $request):AbstractRenderer {
-			
-			$renderer = $this->getPrevious();
-
-			$renderer->getRequest()
-
-			->setValidationErrors( $request->validationErrors() );
-
-			return $renderer;
 		}
 
 		public function isApiRoute ():bool {

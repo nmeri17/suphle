@@ -22,7 +22,9 @@
 
 		public function render() {
 
-			$this->rawResponse += $this->router->getPrevious()->rawResponse; // avoid overwriting our own response
+			// avoid overwriting our own response
+			$this->rawResponse += $this->router->getPreviousRenderer()->getRawResponse();
+			// assumes that response is either a string or array
 			
 			return $this->renderHtml();
 		}

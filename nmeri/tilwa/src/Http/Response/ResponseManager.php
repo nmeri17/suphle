@@ -101,23 +101,29 @@
 
 			$router = $this->router;
 
+			$manager = $this->controllerManager;
+
 			$outgoingRenderer = $router->getActiveRenderer();
 
 			$browserOrigin = !$router->isApiRoute();
 
-			$request = $this->controllerManager->getRequest();
+			$request = $manager->getRequest();
 
 			if ( !$request->isValidated()) {
 
-				if ($browserOrigin)
+				if ($browserOrigin) {
 
-					$outgoingRenderer = $router->mergeWithPrevious($request);
-				
+					$outgoingRenderer = $router->getPreviousRenderer();
+
+					$manager->revertRequest($router->getPreviousRequest());
+				}
+
 				else $this->skipHandler = true;
 			}
+			
 			else if ($browserOrigin)
 
-				$router->setPrevious($outgoingRenderer);
+				$router->setPrevious($outgoingRenderer, $request);
 
 			$this->renderer = $outgoingRenderer;
 		}
