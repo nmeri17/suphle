@@ -5,7 +5,9 @@
 	class UpdateReactor {
 
 		// remember to mount this somewhere during app boot
-		// get all in cache tagged/prefixed with us. for each, get all their users, all their nodes matching us
-		// we're listening for "refresh" events from dev's service of choice. we just collect their service and handle the rest
+
+		// we're listening for "refresh" events from dev's service of choice. emit the path (which we use as topic). the listener just has to refresh collections matching the pattern/topic
+
+		// pub/sub will be more efficient [than tags]; hopefully, they don't loop through subscribers
 	}
 ?>

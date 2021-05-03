@@ -3,7 +3,7 @@
 
 	use Tilwa\Contracts\{CacheManager, Orm};
 
-	use Tilwa\Flows\Structures\{RouteUserNode, RouteUmbrella, RangeContext};
+	use Tilwa\Flows\Structures\{RouteUserNode, RouteUmbrella, RangeContext, ServiceContext};
 
 	use Tilwa\Flows\Previous\{ SingleNode, CollectionNode, UnitNode};
 
@@ -35,16 +35,23 @@
 
 			CollectionNode::IN_RANGE => "handleRange",
 
-			CollectionNode::DATE_RANGE => "",
+			CollectionNode::DATE_RANGE => "handleDateRange",
 
 			CollectionNode::ONE_OF => "handleOneOf",
 
-			CollectionNode::FROM_SERVICE =>	""
+			CollectionNode::FROM_SERVICE =>	"handleServiceSource"
 		],
 			
 		$singleSubHandlers = [
 
 			SingleNode::INCLUDES_PAGINATION => "handlePaginate"
+		],
+
+		$configHandlers = [
+			
+			UnitNode::TTL => "setExpiresAtHydrator",
+
+			UnitNode::MAX_HITS => "setMaxHitsHydrator"
 		];
 
 		// if we can't hydrate this with our container, replace interfaces with hard-coded concretes
@@ -76,7 +83,7 @@
 		}
 
 		/**
-		*	@param {container} Not the container responsible for this request. Just a random that can hydrate services when needed
+		*	@param {responseManager} the manager designated to handle this request if it entered app organically
 		*/
 		public function setDependencies(ResponseManager $responseManager, $previousResponse):self {
 
@@ -88,17 +95,15 @@
 		}
 
 		/**
-		* Description: Pipes a controlled list of variables to a path's controller action
+		*	Pipes a controlled list of variables to a path's controller action
 		*
-		* @param {flowSignature} $flow->previousResponse()->actionX()
-		* @param {responseManager} the manager designated to handle this request if it entered app organically
+		*	@param {flowStructure} $flow->previousResponse()->actionX()
 		*/
-		public function runNodes(UnitNode $flowSignature, string $userId):void {
+		public function runNodes(UnitNode $flowStructure, string $userId):void {
 
 			$handler = $this->branchHandlers[$flowStructure::class];
 
 			$evaluatedRenderers = call_user_func_array([$this, $handler], [$flowStructure, $renderer]);
-			// then remember to handle base actions on the UnitNode
 
 			foreach ($evaluatedRenderers as $renderer) { // SingleNodes should only return array of length 1 here
 
@@ -106,7 +111,9 @@
 
 				$urlPattern = $renderer->getPath();
 				
-				$unitPayload = new RouteUserNode( $renderer);
+				$unitPayload = new RouteUserNode($renderer);
+
+				$this->configureRenderer($unitPayload, $flowStructure);
 
 				$this->storeContext($urlPattern, $unitPayload, $userId, $contentType);
 			}
@@ -156,7 +163,7 @@
 
 			$carryRenderer = null;
 
-			foreach($rawNode->getActions() as $attribute => $value) {
+			foreach ($rawNode->getActions() as $attribute => $value) {
 
 				$handler = $this->collectionSubHandlers[$attribute];
 
@@ -201,11 +208,9 @@
 
 			$queryPart = parse_url($valuePath)["query"];
 
-			$this->updateRequest($queryPart);
-
-			if ($this->canProcessPath())
-
-				return $this->responseManager->handleValidRequest();
+			return $this->updateRequest(parse_str($queryPart))
+			
+			->executeRequest();
 		}
 
 		private function canProcessPath():bool {
@@ -219,11 +224,13 @@
 			return !$manager->rendererValidationFailed();
 		}
 
-		private function updateRequest(string $query):void {
+		private function updateRequest(array $updates):self {
 
 			$this->responseManager->getControllerManager()->getRequest()
 
-			->setPlaceholders(parse_str($query));
+			->setPlaceholders($updates);
+
+			return $this;
 		}
 
 		// @return AbstractRenderer[]
@@ -231,33 +238,78 @@
 
 			$results = [];
 
-			foreach ($indexes as $payload) {
+			foreach ($indexes as $payload)
 
-				$this->updateRequest($payload);
+				$results[] = $this->updateRequest($payload)
 
-				if ($this->canProcessPath()) // note: runs validation for each single item in this stream. validate and boot manager only once instead?
-
-					$results[] = $this->responseManager->handleValidRequest();
-			}
+				->executeRequest(); // note: runs validation for each single item in this stream. validate and boot manager only once instead?
 
 			return $results;
 		}
 
-		private function handleOneOf(array $indexes, string $requestProperty):AbstractRenderer {
+		// @return result of executing the current updated request
+		private function executeRequest() {
 
-				$this->updateRequest([
+			if ($this->canProcessPath())
 
-					$requestProperty => implode(",", $indexes)
-				]);
-
-				if ($this->canProcessPath())
-
-					return $this->responseManager->handleValidRequest();
+				return $this->responseManager->handleValidRequest();
 		}
 
-		private function handleRange(array $indexes, RangeContext $context) {
+		private function handleOneOf(array $indexes, string $requestProperty):AbstractRenderer {
+
+			return $this->updateRequest([
+
+				$requestProperty => implode(",", $indexes)
+			])
+			->executeRequest();
+		}
+
+		private function handleRange(array $indexes, RangeContext $context):AbstractRenderer {
+
+			return $this->updateRequest([
+
+				$context->getParameterMax() => max($indexes),
+
+				$context->getParameterMin() => min($indexes)
+			])
+			->executeRequest();
+		}
+
+		private function handleDateRange(array $indexes, RangeContext $context):AbstractRenderer {
+
+			usort($indexes, function($a, $b) {
+
+				return strtotime($a) - strtotime($b); // asc
+			});
+
+			return $this->updateRequest([
+
+				$context->getParameterMin() => $indexes[0], // use `current` here instead?
+
+				$context->getParameterMax() => end($indexes)
+			])
+			->executeRequest();
+		}
+
+		private function handleServiceSource($currentSource, ServiceContext $context, CollectionNode $rawNode, ):iterable {
+
+			$concrete = $this->container->getClass($context->getServiceName());
+
+			return call_user_func_array(
+				[$concrete, $context->getMethod()],
+
+				[$this->getNodeFromPrevious($rawNode)]
+			);
+		}
+
+		private function configureRenderer(RouteUserNode $newNode, UnitNode $rawNode):void {
 			
-			// if ($context->getBetween())
+			foreach ($rawNode->getConfig() as $config => $value) {
+
+				$handler = $this->configHandlers[$config];
+				
+				call_user_func_array([$newNode, $handler], [$value]);
+			}
 		}
 	}
 ?>

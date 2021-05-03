@@ -177,7 +177,9 @@
 		*/ 
 		public function getMethodParameters ( $callable, string $anchorClass):array {
 
-			$predefinedArguments = $dependencies = [];
+			$predefinedArguments = [];
+
+			$dependencies = [];
 
 			if (isset($anchorClass)) {
 

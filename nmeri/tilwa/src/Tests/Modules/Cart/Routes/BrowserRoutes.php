@@ -31,13 +31,13 @@
 
 			$flow = new ControllerFlows;
 
+			$serviceContext = new ServiceContext(\AbsolutePath\ToModule\Services\OrderService::class, "method");
+
 			$flow->linksTo("submit-register", $flow
 
 				->previousResponse()->getNode("C")
 
 				->includesPagination("path.to.next_url")
-
-				->surviveFor("300")
 			)
 			->linksTo("categories/id", $flow->previousResponse()->collectionNode("nodeD") // assumes we're coming from the category page
 
@@ -47,12 +47,12 @@
 
 				->eachAttribute("key")->oneOf()
 			)
-			->linksTo("orders/sort/id/id2", $flow
-				->fromService(\AbsolutePath\ToModule\Services\OrderService::class, "method",
+			->linksTo("orders/sort/id/id2",
+				$flow->fromService(
+					$serviceContext,
 
 					$flow->previousResponse()->getNode("store.id")
-			)
-
+				)
 				->eachAttribute("key")->inRange()
 			);
 

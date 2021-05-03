@@ -1,6 +1,6 @@
 flesh out auth controller actions. Implement loginAs
 
-install plates
+install transphpform and turbo
 
 ->createQueryBuilder()
 
@@ -21,6 +21,8 @@ when cacheManager is integrated:
 	- is the override pattern we're using good or can it be updated while in the cache?
 
 #
-work needed on RouteUserNode, flowHydrator, updateReactor, controllerFlows
+work needed on updateReactor
 
 what container is used to hydrate handler method on the queued job?
+
+on flow hit, upload the rest into the shared space for all users insted of simply discarding it

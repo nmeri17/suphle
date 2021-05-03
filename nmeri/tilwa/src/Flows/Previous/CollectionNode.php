@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Flows\Previous;
 
-	use Tilwa\Flows\Structures\RangeContext;
+	use Tilwa\Flows\Structures\{RangeContext, ServiceContext};
 
 	// represents a meta map of actions to take on a previous response node when it's hydrated
 	class CollectionNode extends UnitNode {
@@ -58,16 +58,16 @@
 			return $this;
 		}
 		
-		public function dateRange():self {
+		public function dateRange(RangeContext $context):self {
 
-			$this->actions[self::DATE_RANGE] = 1;
+			$this->actions[self::DATE_RANGE] = $context ?? new RangeContext;
 
 			return $this;
 		}
 
-		public function setFromService(string $serviceClass, string $method):self {
+		public function setFromService(ServiceContext $context):self {
 
-			$this->actions[self::FROM_SERVICE] = compact("serviceClass", "method");
+			$this->actions[self::FROM_SERVICE] = $context;
 
 			return $this;
 		}

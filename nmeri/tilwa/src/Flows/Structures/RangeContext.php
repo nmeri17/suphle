@@ -6,17 +6,13 @@
 
 		private $parameterMax = "max",
 
-		$parameterMin = "min",
+		$parameterMin = "min";
 
-		$between = true; // get only the 2 edges or everything in between
-
-		function __construct(string $parameterMax, string $parameterMin, bool $between) {
+		function __construct(string $parameterMax, string $parameterMin) {
 
 			$this->parameterMax = $parameterMax;
 
 			$this->parameterMin = $parameterMin;
-
-			$this->between = $between;
 		}
 
 		public function getParameterMax():string {
@@ -27,11 +23,6 @@
 		public function getParameterMin():string {
 			
 			return $this->parameterMin;
-		}
-
-		public function getBetween():bool {
-			
-			return $this->between;
 		}
 	}
 ?>
