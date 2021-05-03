@@ -3,7 +3,7 @@
 
 	use Tilwa\Contracts\{CacheManager, Orm};
 
-	use Tilwa\Flows\Structures\{RouteUserNode, RouteUmbrella};
+	use Tilwa\Flows\Structures\{RouteUserNode, RouteUmbrella, RangeContext};
 
 	use Tilwa\Flows\Previous\{ SingleNode, CollectionNode, UnitNode};
 
@@ -11,23 +11,50 @@
 
 	use Tilwa\Http\Response\ResponseManager;
 
+	use Tilwa\App\Container;
+
+	use Illuminate\Support\{Collection, Arr};
+
 	class FlowHydrator {
 
 		private $previousResponse, $cacheManager,
 
-		$responseManager,
+		$responseManager, $container,
 
 		$branchHandlers = [
 			SingleNode::class => "handleSingleNodes",
 
 			CollectionNode::class => "handleCollectionNodes"
+		],
+			
+		$collectionSubHandlers = [
+
+			CollectionNode::EACH_ATTRIBUTE => "extractCollectionData",
+
+			CollectionNode::PIPE_TO => "handlePipe",
+
+			CollectionNode::IN_RANGE => "handleRange",
+
+			CollectionNode::DATE_RANGE => "",
+
+			CollectionNode::ONE_OF => "handleOneOf",
+
+			CollectionNode::FROM_SERVICE =>	""
+		],
+			
+		$singleSubHandlers = [
+
+			SingleNode::INCLUDES_PAGINATION => "handlePaginate"
 		];
 
-		function __construct(CacheManager $cacheManager, Orm $orm) {
+		// if we can't hydrate this with our container, replace interfaces with hard-coded concretes
+		function __construct(CacheManager $cacheManager, Orm $orm, Container $randomContainer) {
 
 			$this->cacheManager = $cacheManager;
 
 			$this->orm = $orm;
+
+			$this->container = $randomContainer;
 		}
 
 		# @param {contentType} model type, where present
@@ -48,6 +75,9 @@
 			// better still, this guy can subscribe to a topic(instead of using tags?). update listener publishes to that topic (so we hopefully have no loop)
 		}
 
+		/**
+		*	@param {container} Not the container responsible for this request. Just a random that can hydrate services when needed
+		*/
 		public function setDependencies(ResponseManager $responseManager, $previousResponse):self {
 
 			$this->previousResponse = $previousResponse;
@@ -67,64 +97,107 @@
 
 			$handler = $this->branchHandlers[$flowStructure::class];
 
-			$builtNodes = call_user_func_array([$this, $handler], [$flowStructure, $renderer]);
+			$evaluatedRenderers = call_user_func_array([$this, $handler], [$flowStructure, $renderer]);
 			// then remember to handle base actions on the UnitNode
 
-			foreach ($builtNodes as $builtNode) { // SingleNodes should only return array of length 1 here
+			foreach ($evaluatedRenderers as $renderer) { // SingleNodes should only return array of length 1 here
 
-				$contentType = $this->getContentType($builtNode); // find a way to fit this in
+				$contentType = $this->getContentType($renderer);
 
-				$urlPattern = $builtNode->getPath();
+				$urlPattern = $renderer->getPath();
 				
-				$unitPayload = new RouteUserNode( $builtNode);
+				$unitPayload = new RouteUserNode( $renderer);
 
 				$this->storeContext($urlPattern, $unitPayload, $userId, $contentType);
 			}
 		}
 
-		# infer from the dominant type of the first value found
-		private function getContentType($builtNodes):string {
-			
+		private function getContentType($evaluatedRenderers):string {
+
+			$contentTypes = [
+				Collection::class => "getQueueableClass"
+			];
+
+			$value = current($evaluatedRenderers);
+
+			$typeSpotter = @$contentTypes[get_class($value)];
+
+			if ($typeSpotter)
+
+				return $value->$typeSpotter();
 		}
 
+		// @return AbstractRenderer[]
 		private function handleSingleNodes(SingleNode $rawNode):array {
-			
-			$singleMap = [
-
-				SingleNode::INCLUDES_PAGINATION => "handlePaginate"
-			];
 
 			$carryRenderer = null;
 
-			foreach($rawNode->getActions() as $attribute)
+			foreach($rawNode->getActions() as $attribute) {
 
-				$carryRenderer = call_user_func_array([$this, $singleMap[$attribute]], [$rawNode, $carryRenderer]);
+				$handler = $this->singleSubHandlers[$attribute];
+
+				$previousContent = $this->getNodeFromPrevious($rawNode);
+
+				$carryRenderer = call_user_func_array(
+					[$this, $handler],
+
+					[$previousContent/*, $carryRenderer*/]
+				);
+			}
 
 			return [$carryRenderer];
 		}
 
-		// these guys basically mock a request object and run against the underlying controller for this request
-		private function handleCollectionNodes(CollectionNode $rawNode) {
+		/**
+		*	Will return the result of the last operation
+		*	@return AbstractRenderer[]
+		*/
+		private function handleCollectionNodes(CollectionNode $rawNode):array {
 
-			$rawNode->getActions();
+			$carryRenderer = null;
+
+			foreach($rawNode->getActions() as $attribute => $value) {
+
+				$handler = $this->collectionSubHandlers[$attribute];
+
+				$carryRenderer = call_user_func_array(
+					[$this, $handler],
+					
+					[$carryRenderer, $value, $rawNode]
+				);
+			}
+
+			return $carryRenderer;
+		}
+
+		/**
+		*	@param {dataIndex} previous response = [ourNode => [[dataIndex => 1], [dataIndex => 2]], otherNode => value]
+		*/
+		private function extractCollectionData($currentSource, string $dataIndex, CollectionNode $rawNode):array {
+
+			if (is_null($currentSource))
+
+				$currentSource = $this->getNodeFromPrevious($rawNode);
+
+			$indexes = [];
+
+			foreach ($currentSource as $valueObject)
+				
+				$indexes[] = Arr::get($valueObject, $dataIndex);
+
+			return $indexes;
 		}
 
 		private function getNodeFromPrevious(UnitNode $rawNode) {
 
 			$keyName = $rawNode->getNodeName();
 
-			if (is_object($this->previousResponse))
-
-				return $this->previousResponse->$keyName;
-			
-			return $this->previousResponse[$keyName];
+			return Arr::get($this->previousResponse, $keyName);
 		}
 
-		private function handlePaginate(SingleNode $rawNode):AbstractRenderer {
+		private function handlePaginate($nodeContent):AbstractRenderer {
 
-			$ourNode = $this->getNodeFromPrevious($rawNode);
-
-			$valuePath = $ourNode[$this->orm->getPaginationPath()];
+			$valuePath = $nodeContent[$this->orm->getPaginationPath()];
 
 			$queryPart = parse_url($valuePath)["query"];
 
@@ -151,6 +224,40 @@
 			$this->responseManager->getControllerManager()->getRequest()
 
 			->setPlaceholders(parse_str($query));
+		}
+
+		// @return AbstractRenderer[]
+		private function handlePipe(array $indexes):array {
+
+			$results = [];
+
+			foreach ($indexes as $payload) {
+
+				$this->updateRequest($payload);
+
+				if ($this->canProcessPath()) // note: runs validation for each single item in this stream. validate and boot manager only once instead?
+
+					$results[] = $this->responseManager->handleValidRequest();
+			}
+
+			return $results;
+		}
+
+		private function handleOneOf(array $indexes, string $requestProperty):AbstractRenderer {
+
+				$this->updateRequest([
+
+					$requestProperty => implode(",", $indexes)
+				]);
+
+				if ($this->canProcessPath())
+
+					return $this->responseManager->handleValidRequest();
+		}
+
+		private function handleRange(array $indexes, RangeContext $context) {
+			
+			// if ($context->getBetween())
 		}
 	}
 ?>

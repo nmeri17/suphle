@@ -51,7 +51,7 @@
 
 			if ($manager) {
 				
-				$previousPayload = $this->context->getRenderer()->getRawResponse();
+				$previousPayload = $context->getRenderer()->getRawResponse();
 
 				$this->hydrator->setDependencies($manager, $previousPayload)
 				

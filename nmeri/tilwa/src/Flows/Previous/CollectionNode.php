@@ -1,6 +1,8 @@
 <?php
 	namespace Tilwa\Flows\Previous;
 
+	use Tilwa\Flows\Structures\RangeContext;
+
 	// represents a meta map of actions to take on a previous response node when it's hydrated
 	class CollectionNode extends UnitNode {
 
@@ -37,18 +39,21 @@
 			return $this;
 		}
 		
-		// same as [pipeTo], but is sent in bulk to the service rather than one after the other. service is expected to do a `whereIn`. but the result will be stored separately
-		public function oneOf():self {
+		/**
+		*	same as [pipeTo], but is sent in bulk to the service rather than one after the other. service is expected to do a `whereIn`
+		*	@param {parameterId} property name on the handling request to set the ids to
+		*/
+		public function oneOf(string $parameterId = "ids"):self {
 
-			$this->actions[self::ONE_OF] = 1;
+			$this->actions[self::ONE_OF] = $parameterId;
 
 			return $this;
 		}
 		
 		// this and [dateRange] will plug each of the values they receive from the flow hydrator into the services supplied
-		public function inRange():self {
+		public function inRange(RangeContext $context):self {
 
-			$this->actions[self::IN_RANGE] = 1;
+			$this->actions[self::IN_RANGE] = $context ?? new RangeContext;
 
 			return $this;
 		}

@@ -16,10 +16,11 @@ try to deploy on azure
 
 When you find a way of identifying orm models, revisit NoSqlLogic->setup
 
-when cacheManager is integrated, refactor its usage wherever it appears in respect to accessing nested objects; tags etc. is the override pattern we're using good or can it be updated while in the cache
+when cacheManager is integrated:
+	- refactor its usage wherever it appears in respect to accessing nested objects; tags etc
+	- is the override pattern we're using good or can it be updated while in the cache?
 
 #
 work needed on RouteUserNode, flowHydrator, updateReactor, controllerFlows
-see controllerManager->getRequest and fix its broken occurence on route manager
 
 what container is used to hydrate handler method on the queued job?
