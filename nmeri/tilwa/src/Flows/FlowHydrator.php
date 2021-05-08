@@ -206,7 +206,7 @@
 
 			$valuePath = $nodeContent[$this->orm->getPaginationPath()];
 
-			$queryPart = parse_url($valuePath)["query"];
+			$queryPart = parse_url($valuePath, PHP_URL_QUERY);
 
 			return $this->updateRequest(parse_str($queryPart))
 			

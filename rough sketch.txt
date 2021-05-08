@@ -26,3 +26,26 @@ work needed on updateReactor
 what container is used to hydrate handler method on the queued job?
 
 on flow hit, upload the rest into the shared space for all users insted of simply discarding it
+
+#
+look into uses of [needsArguments]
+
+
+##controllers and services
+type-hint alter classes. we expect them to have a typeHintFactory implementation that returns a closure that when called, yields a builder
+
+<?php
+function jj (NewsRequest $request, NewsRepository $news) {
+
+	/*new way*/
+	$newData = $this->newsService->mergeValues($request, $news->get()); // conceals News::where(id, id) stored on property x of [newsRepository]. calling methods on this triggers the internal closure that releases a builder
+	$news->update($newData); // cleaner. gets are lazier and under developer's control. avoids duplicating builders
+}
+/* after hydration, [typeHintFactory] is called with this id, and passed down */
+
+Bar:
+	- app level service entry into repositories
+	- controllers from app level services
+Meaning they probably need an external factory that boots them the same way executable controllers are booted
+
+Wrap all post commands in transactions

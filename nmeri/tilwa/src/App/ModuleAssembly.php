@@ -60,11 +60,13 @@
 			return $response;
 		}
 
-		private function setContainer():Container {
+		private function setContainer():self {
 
 			$randomModule = current($this->getModules());
 
-			return $this->container = $randomModule->getContainer();
+			$this->container = $randomModule->getContainer();
+
+			return $this;
 		}
 
 		private function provisionWrapper(string $requestPath, string $wrapperName):Container {
