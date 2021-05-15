@@ -8,6 +8,8 @@
 	
 	use Tilwa\App\Templates\CircularBreaker;
 
+	use Tilwa\Contracts\Config\ConfigMarker;
+
 	class Container {
 
 		private $provisionedClasses = [], // ProvisionUnit[]
@@ -18,6 +20,8 @@
 
 		$dependencyChain = [],
 
+		$libraryConfigurations = [],
+
 		$provisionContext, // the active Type before calling `needs`
 
 		$provisionSpace,
@@ -27,6 +31,13 @@
 		public function setServiceProviders (array $providers):self {
 
 			$this->serviceProviders = $providers;
+
+			return $this;
+		}
+
+		public function setLibraryConfigurations (array $configs):self {
+
+			$this->libraryConfigurations = $configs;
 
 			return $this;
 		}
@@ -76,6 +87,8 @@
 
 				$concrete = new $fullName (...$dependencies);
 
+				$this->unchainDependency($fullName);
+
 				$this->provisionedClasses[$this->recursingFor]
 
 				->addConcrete($fullName, $concrete);
@@ -110,6 +123,10 @@
 			if ($this->isRenamedSpace())
 
 				return $this->relocateSpace($service);
+
+			if ($this->isConfig($service))
+
+				return $this->hydrateConfig($service);
 
 			$providerClass = $this->serviceProviders[$service];
 
@@ -340,6 +357,28 @@
 
 			    return new CircularBreaker($types["target"], $this);
 			});
+		}
+
+		private function unchainDependency(string $fullName):void {
+			
+			$this->dependencyChain = array_filter($this->dependencyChain, function ($dependency) use ($fullName) {
+
+				return $dependency != $fullName;
+			});
+		}
+
+		private function isConfig(string $service):bool {
+			
+			return in_array(ConfigMarker::class, class_implements($service));
+		}
+
+		private function hydrateConfig(string $service):object {
+
+			$configs = $this->libraryConfigurations;
+
+			if (array_key_exists($service, $configs))
+				
+				return $this->getClass($configs[$service]);
 		}
 	}
 ?>

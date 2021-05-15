@@ -2,7 +2,7 @@
 
 	namespace Tilwa\Http\Response;
 
-	use Tilwa\App\{Container, ParentModule};
+	use Tilwa\App\{Container, ModuleDescriptor};
 
 	use Tilwa\Routing\RouteManager;
 
@@ -163,7 +163,7 @@
 
 		public function validateManager():void {
 
-			$globalDependencies = $this->container->getClass(ParentModule::class)->getDependsOn();
+			$globalDependencies = $this->container->getClass(ModuleDescriptor::class)->getDependsOn();
 
 			$this->controllerManager->validateController($globalDependencies);
 		}

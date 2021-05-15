@@ -14,6 +14,7 @@
 			$this->authenticator = $authenticator;
 		}
 
+		// this guy should be on his own so he can get custom response header and renderer
 		public function isAuth():bool {
 			
 			return !is_null($this->authenticator->getUser());

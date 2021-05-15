@@ -8,26 +8,24 @@
 	
 	class ModuleInitializer {
 
-		private $router;
+		private $router, $descriptor, $responseManager,
 
-		public $foundRoute;
+		$requestPath, $requestMethod;
 
-		private $module;
+		private $foundRoute = false;
 
-		private $responseManager;
+		function __construct(ModuleDescriptor $descriptor, string $requestPath, string $requestMethod) {
 
-		function __construct(ParentModule $module, ResponseManager $responseManager, RouteManager $router) {
+			$this->descriptor = $descriptor;
 
-			$this->module = $module;
-
-			$this->router = $router;
+			$this->requestPath = $requestPath;
 			
-			$this->responseManager = $responseManager;
+			$this->requestMethod = $requestMethod;
 		}
 
 		public function assignRoute():self {
 			
-			if ($target = $this->router->findRenderer() ) { // what are the chances of the guys inside here looking for a route manager?
+			if ($target = $this->router->findRenderer() ) {
 
 				$this->router->setActiveRenderer($target)->savePayload();
 
@@ -69,6 +67,42 @@
 		public function getResponseManager():ResponseManager {
 			
 			return $this->responseManager;
+		}
+
+		public function initialize():self {
+
+			$descriptor = $this->descriptor;
+
+			$container = $descriptor->getContainer();
+
+			$this->router = new RouteManager($descriptor, $container, $this->requestPath, $this->requestMethod);
+
+			$this->bindDefaultObjects();
+
+			$container->setServiceProviders($descriptor->getServiceProviders())
+
+			->setLibraryConfigurations($descriptor->getLibraryConfigurations());
+
+			$this->responseManager = $container->getClass(ResponseManager::class);
+
+			return $this;
+		}
+
+		private function bindDefaultObjects():void {
+			
+			$this->descriptor->getContainer()->whenTypeAny()
+
+			->needsAny([
+
+				ModuleDescriptor::class => $this->descriptor, // all requests for the parent should respond with the active module
+
+				RouteManager::class => $this->router
+			]);
+		}
+
+		public function didFindRoute():bool {
+			
+			return $this->foundRoute;
 		}
 	}
 ?>

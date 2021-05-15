@@ -1,10 +1,6 @@
 <?php
 
 	namespace Tilwa\App;
-	
-	use Dotenv\Dotenv;
-
-	use Tilwa\Http\Response\ResponseManager;
 
 	class ModuleToRoute {
 		
@@ -14,7 +10,7 @@
 
 				$routeMatcher = $this->getRouteMatcher($module, $requestPath);
 				
-				if ($routeMatcher->foundRoute)
+				if ($routeMatcher->didFindRoute())
 
 					return $routeMatcher;
 			}
@@ -28,20 +24,11 @@
 			);
 		}
 
-		private function getRouteMatcher(ParentModule $module, string $requestPath):ModuleInitializer {
+		private function getRouteMatcher(ModuleDescriptor $descriptor, string $requestPath):ModuleInitializer {
 
-			$container = $module->getContainer();
+			return (new ModuleInitializer($descriptor, $requestPath, $this->getHttpMethod()))
 
-			$router = new RouteManager($module, $container, $requestPath, $this->getHttpMethod());
-
-			$module->entityBindings($router);
-
-			$container->setServiceProviders($module->getServiceProviders());
-
-			$responseManager = $container->getClass(ResponseManager::class);
-
-			return (new ModuleInitializer($module, $responseManager, $router))
-			->assignRoute();
+			->initialize()->assignRoute();
 		}
 	}
 ?>

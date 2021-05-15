@@ -1,36 +1,30 @@
 <?php
 	namespace Tilwa\Events;
 
-	use Tilwa\App\{ParentModule, Container};
+	use Tilwa\App\{ModuleDescriptor, Container};
 
 	class ModuleLevelEvents {
 
-		private $subscriberLog;
+		private $subscriberLog = [],
 
-		private $eventManagers;
+		$eventManagers = [];
 
-		function __construct () {
-
-			$this->eventManagers = [];
-		}
-
-		public function bootReactiveLogger(array $modules):void {
+		public function bootReactiveLogger(array $descriptors):void {
 			
-			foreach ($this->modules as $module)
-				
-				$this->setEventManager($module, $module->getContainer());
-		}
+			foreach ($this->descriptors as $descriptor) {
 
-		private function setEventManager(ParentModule $module, Container $container):void {
+				if ($manager = $descriptor->getEventManager()) {
 
-			$manager = $this->eventManagers[] = new EventManager($module, $this);
+					$this->eventManagers[] = $manager;
 
-			$manager->registerListeners();
+					$manager->registerListeners();
 
-			$container->whenTypeAny()->needsAny([
+					$descriptor->getContainer()->whenTypeAny()->needsAny([
 
-				EventManager::class => $manager
-			]);
+						EventManager::class => $manager
+					]);
+				}
+			}
 		}
 
 		public function gatherForeignSubscribers(string $emittor):self {

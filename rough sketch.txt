@@ -27,9 +27,6 @@ what container is used to hydrate handler method on the queued job?
 
 on flow hit, upload the rest into the shared space for all users insted of simply discarding it
 
-#
-look into uses of [needsArguments]
-
 
 ##controllers and services
 type-hint alter classes. we expect them to have a typeHintFactory implementation that returns a closure that when called, yields a builder
@@ -48,4 +45,18 @@ Bar:
 	- controllers from app level services
 Meaning they probably need an external factory that boots them the same way executable controllers are booted
 
-Wrap all post commands in transactions
+## laravel interoperability
+We don't care about the package existing within our service container. We just wanna replicate the functionality of registering routes, views, migrations etc within our current scope
+
+So, user plugs in their service providers in a laravelProviders array labelled by the class in the provider's register method. Then, we work with public publish properties of this provider, and stuff called in boot, imitating the same behaviour within our own scope
+
+Then we'll have to import some of those helper methods like config, real_path etc, passing them values that make sense to us. Then for packages using stuff like config facade or facades in general, there shouldn't be need to replicate facade-like behavior; the app should be able to hydrate a concrete when we pass the class path to it (hopefully, without calling its service provider anymore )
+
+https://laravel.com/docs/8.x/packages and the github gist I made
+
+
+Package routes with `view` calls point to a function preloaded with package's view path. It wraps the given file path
+
+Correct $this->module usages in routeManager
+
+			//@return AssignListeners::class;

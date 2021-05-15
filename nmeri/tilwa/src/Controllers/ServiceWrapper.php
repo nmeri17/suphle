@@ -4,26 +4,24 @@
 
 	use Tilwa\Errors\UnauthorizedServiceAccess;
 
+	use Tilwa\Contracts\Config\Services;
+
 	class ServiceWrapper {
 
-		private $activeService;
+		private $activeService, $eventManager, $config;
 
-		private $eventManager;
-
-		private $lifeCycle;
-
-		public function __construct (EventManager $eventManager, bool $lifeCycle) {
+		public function __construct (EventManager $eventManager, Services $config) {
 
 			$this->eventManager = $eventManager;
 
-			$this->lifeCycle = $lifeCycle;
+			$this->config = $config;
 		}
 
 		public function __call($method, ...$arguments) {
 
 			$emitter = $this->activeService::class;
 
-			if ($this->lifeCycle)
+			if ($this->config->lifecycle())
 
 				$this->eventManager->emit($emitter, "before_call", compact("method", "arguments"));
 
@@ -32,7 +30,7 @@
 			try {
 				$result = $this->yield($method, $arguments);
 
-				if ($this->lifeCycle)
+				if ($this->config->lifecycle())
 
 					$this->eventManager->emit($emitter, "after_call", compact("method", "result"));
 			}

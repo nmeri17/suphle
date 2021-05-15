@@ -2,7 +2,7 @@
 
 	namespace Tilwa\Routing;
 
-	use Tilwa\App\{ParentModule, Container};
+	use Tilwa\App\{ModuleDescriptor, Container};
 
 	use Tilwa\Http\Response\Format\Markup;
 
@@ -18,9 +18,9 @@
 
 		$incomingPath, $httpMethod, $fullTriedPath,
 
-		$collectionArguments, $container;
+		$container;
 
-		function __construct(ParentModule $module, Container $container, string $incomingPath, string $httpMethod ) {
+		function __construct(ModuleDescriptor $module, Container $container, string $incomingPath, string $httpMethod ) {
 
 			$this->module = $module;
 
@@ -33,7 +33,9 @@
 
 		public function findRenderer ():AbstractRenderer {
 
-			$this->defineCollectionArguments();
+			$this->container->whenType(RouteCollection::class)
+
+			->needsArguments($this->getCollectionArguments())
 
 			foreach ($this->entryRouteMap() as $collection) {
 				
@@ -65,7 +67,9 @@
 		*/
 		private function recursiveSearch(string $patternsCollection, string $routeState = "", string $invokerPrefix = "", bool $fromCache = false):AbstractRenderer {
 
-			$collection = $this->provideCollection($patternsCollection);
+			$collection = $this->container
+			
+			->getClass($patternsCollection, true);
 
 			$patternPrefix = $invokerPrefix ?? $collection->_prefixCurrent();
 
@@ -281,16 +285,6 @@
 			$this->incomingPath = $path[1];
 		}
 
-		// @return concrete instance of given collection class containing list of patterns and renderers
-		private function provideCollection(string $rendererCollection):RouteCollection {
-
-			return $this->container->whenType($rendererCollection)
-
-			->needsArguments($this->collectionArguments)
-			
-			->getClass($rendererCollection);
-		}
-
 		public function acceptsJson():bool {
 
 			foreach (getallheaders() as $key => $value) {
@@ -313,9 +307,9 @@
 			return call_user_func_array([$renderer, $dependencyMethod], $parameters);
 		}
 
-		private function defineCollectionArguments() {
+		private function getCollectionArguments():array {
 
-			$this->collectionArguments = [
+			return [
 				"permissions" => $this->container
 
 				->getClass($this->module->routePermissions()),
