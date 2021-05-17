@@ -6,7 +6,7 @@
 
 	use Tilwa\App\Container;
 
-	use Tilwa\Contracts\Orm;
+	use Tilwa\Contracts\{Orm, ControllerModel};
 
 	use Tilwa\Http\Request\BaseRequest;
 
@@ -14,15 +14,13 @@
 
 	class ControllerManager {
 
-		private $controller, $databaseAdapter, $container,
+		private $controller, $container,
 
 		$handlerParameters, $request, $actionModels;
 
-		function __construct( Container $container, Orm $databaseAdapter) {
+		function __construct( Container $container) {
 
 			$this->container = $container;
-
-			$this->databaseAdapter = $databaseAdapter;
 		}
 
 		public function setController(Executable $controller):void {
@@ -59,8 +57,8 @@
 
 			$this->actionModels = array_filter($this->handlerParameters, function ($parameter) {
 
-				return $this->databaseAdapter->isModel($parameter);
-			}, ARRAY_FILTER_USE_KEY);
+				return $parameter instanceof ControllerModel;
+			});
 
 			return $this;
 		}
@@ -69,17 +67,16 @@
 		public function hydrateModels(string $httpMethod):self {
 			
 			if ($httpMethod != "post") { // post has nothing to fetch/build
-				$hydrator = "loadModelFor". ucfirst($httpMethod);
 
-				foreach ($this->actionModels as $parameter => $model)
+				foreach ($this->actionModels as $parameter => $modelWrapper) {
 
-					$this->handlerParameters[$parameter] =call_user_func_array([$this, $hydrator], [$model::class, $this->request->$parameter]); // so, just drop this into that guy
+					$explicit = $this->container->getClass($modelWrapper);
+
+					$explicit->setIdentifier($this->request->$parameter);
+
+					$this->handlerParameters[$parameter] = new ActionModelProxy($explicit);
+				}
 			}
-		}
-
-		private function loadModelForGet(string $modelName, $modelId):object {
-			
-			return $this->databaseAdapter->findOne( $modelName, $modelId);
 		}
 
 		public function bootController():self {

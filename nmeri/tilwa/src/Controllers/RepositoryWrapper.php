@@ -5,7 +5,7 @@
 
 	use Tilwa\Errors\UnauthorizedServiceAccess;
 
-	use Tilwa\Controllers\Structures\ReboundPayload;
+	use Tilwa\Controllers\Structures\ServiceEventPayload;
 
 	class RepositoryWrapper extends ServiceWrapper {
 
@@ -32,7 +32,7 @@
 
 			if ($service instanceof ReboundsEvents)
 
-				$this->eventManager->emit($serviceName, "refresh", new ReboundPayload($result, $method));
+				$this->eventManager->emit($serviceName, "refresh", new ServiceEventPayload($result, $method));
 
 			return $result;
 		}

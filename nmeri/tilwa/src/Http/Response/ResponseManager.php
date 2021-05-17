@@ -86,7 +86,7 @@
 
 			$manager->updatePlaceholders()
 
-			->hydrateModels($renderer->routeMethod);
+			->hydrateModels($renderer->getRouteMethod());
 
 			$this->runMiddleware(); // called here so some awesome middleware can override default behavior on our booted controller. may imply injecting the manager
 
@@ -120,7 +120,7 @@
 
 				else $this->skipHandler = true;
 			}
-			
+
 			else if ($browserOrigin)
 
 				$router->setPrevious($outgoingRenderer, $request);

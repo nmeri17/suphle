@@ -6,6 +6,8 @@
 
 	use Tilwa\Contracts\Config\Services;
 
+	use Tilwa\Controllers\Structures\ServiceEventPayload;
+
 	class ServiceWrapper {
 
 		private $activeService, $eventManager, $config;
@@ -17,13 +19,13 @@
 			$this->config = $config;
 		}
 
-		public function __call($method, ...$arguments) {
+		public function __call($method, $arguments) {
 
 			$emitter = $this->activeService::class;
 
 			if ($this->config->lifecycle())
 
-				$this->eventManager->emit($emitter, "before_call", compact("method", "arguments"));
+				$this->eventManager->emit($emitter, "before_call", new ServiceEventPayload($arguments, $method));
 
 			$result = null;
 
@@ -32,11 +34,15 @@
 
 				if ($this->config->lifecycle())
 
-					$this->eventManager->emit($emitter, "after_call", compact("method", "result"));
+					$this->eventManager->emit($emitter, "after_call", new ServiceEventPayload($result, $method));
 			}
 			catch (ErrorException $error) {
 
-				$this->eventManager->emit($emitter, "error", compact("method", "arguments", "error"));
+				$payload = new ServiceEventPayload($arguments, $method);
+
+				$payload->setErrors($error);
+
+				$this->eventManager->emit($emitter, "error", $payload);
 
 				$result = $this->failureReturnValue($method);
 			}

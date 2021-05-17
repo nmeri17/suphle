@@ -6,8 +6,6 @@
 
 		protected $permissions;
 
-		abstract public function activeModel():void;
-
 		public function setPermissions(object $modulePermissions):void {
 			
 			$this->permissions = $modulePermissions;

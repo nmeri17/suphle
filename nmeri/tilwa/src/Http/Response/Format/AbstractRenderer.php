@@ -10,12 +10,12 @@
 
 	abstract class AbstractRenderer {
 
-		public $handler, $routeMethod;
+		public $handler;
 
 		protected $container;
 
-		private $controller, $rawResponse, $path, $flows;
-		
+		private $controller, $rawResponse, $path, $flows, $routeMethod;
+
 
 		public function setDependencies(Container $container, string $controllerClass):self {
 
@@ -103,6 +103,16 @@
 		public function getContainer():Container {
 			
 			return $this->container;
+		}
+
+		public function getRouteMethod():string {
+			
+			return $this->routeMethod;
+		}
+
+		public function setRouteMethod(string $httpMethod):void {
+			
+			$this->routeMethod = $httpMethod;
 		}
 	}
 ?>

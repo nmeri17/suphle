@@ -1,45 +1,29 @@
 <?php
 
 	namespace Tilwa\Routing;
-	
-	use Controllers\Home;
 
 	use Tilwa\Http\Response\Format\AbstractRenderer;
 
-	class RouteCollection {
+	use Tilwa\Contracts\Config\Router as RouterConfig;
 
-		private $utilities;
+	abstract class RouteCollection {
 
-		public $prefixClass;
+		private $canaryValidator, $config,
 
-		private $allow;
+		$utilities = ["_mirrorBrowserRoutes", "_passover", "_handlingClass", "_crud", "_register", "_setAllow", "_canaryEntry", "_setLocalPrefix", "_whenUnauthorized"];
 
-		private $canaryValidator;
+		public $prefixClass, $isMirroring, $expectsCrud, $localPrefix;
 
-		private $browserEntry;
+		function __construct(CanaryValidator $validator, RouterConfig $config) {
 
-		public $isMirroring;
-
-		public $expectsCrud;
-
-		public $localPrefix;
-
-		/**
-		* @param {permissions} @see `Bootstrap->routePermissions`
-		*/
-		function __construct(CanaryValidator $validator, string $browserEntry, object $permissions) {
-
-			$this->allow = $permissions;
+			$this->config = $config;
 
 			$this->canaryValidator = $validator;
-
-			$this->browserEntry = $browserEntry;
-
-			$this->utilities = ["_mirrorBrowserRoutes", "_passover", "_handlingClass", "_crud", "_register", "_setAllow", "_canaryEntry", "_setLocalPrefix", "_whenUnauthorized"];
 		}
 
-		/** overwrite in your routes file
-			
+		/**
+		* overwrite in your routes file
+		*	
 		* will be treated specially in the matcher, when path is empty i.e. /, cart/
 		*/
 		public function _index ():array; // register a route here
@@ -52,13 +36,11 @@
 
 			$this->isMirroring = true;
 
-			return $this->_prefixFor($this->browserEntry);
+			return $this->_prefixFor($this->config->getBrowserEntry());
 		}
 
-		public function _handlingClass ():string {
-
-			return Home::class; // default controller
-		}
+		// @return Executable
+		abstract public function _handlingClass ():string;
 		
 		public function _prefixCurrent():string {
 			
@@ -77,7 +59,7 @@
 
 				$this->expectsCrud = true;
 
-				return new CrudBuilder($this, $viewPath); // you must call `save` in the invoking method
+				return new CrudBuilder($this, $viewPath, $this->config->getModelRequestParameter()); // you must call `save` in the invoking method
 			}
 		}
 
@@ -90,7 +72,7 @@
 
 		protected function _register(AbstractRenderer $renderer, string $method):array {
 
-			$renderer->routeMethod = ltrim($method, "_");
+			$renderer->setRouteMethod(ltrim($method, "_"));
 
 			return [$renderer];
 		}
@@ -113,7 +95,10 @@
 			return array_diff($myMethods, $this->utilities);
 		}
 
-		# @return $this->allow->auth();
+		/**
+		* Depending on how this eventually turns out, permissions may have to be hydrated and injected instead of this string
+		* @return $this->config->permissions()->auth();
+		*/
 		public function _passover():bool {
 			
 			return true;
@@ -128,10 +113,6 @@
 				if ($canary->willLoad() )
 
 					return $this->_prefixFor($canary->entryClass());
-		}
-
-		public function attachFlow() {
-			# code...
 		}
 
 		// will redirect to the route returned from here if route matches but [_passover] failed

@@ -19,5 +19,7 @@
 		public function apiStack ():array;
 
 		public function browserEntryRoute ():string;
+
+		public function getModelRequestParameter():string;
 	}
 ?>

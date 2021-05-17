@@ -101,7 +101,7 @@
 
 							$parsed .= $this->regexForm($path);
 
-						if ($this->routeCompare($parsed, $renderer->routeMethod)) {
+						if ($this->routeCompare($parsed, $renderer->getRouteMethod())) {
 
 							$this->fullTriedPath = $parsed;
 
