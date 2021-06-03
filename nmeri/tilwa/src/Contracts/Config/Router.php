@@ -21,5 +21,7 @@
 		public function browserEntryRoute ():string;
 
 		public function getModelRequestParameter():string;
+
+		public function hasLaravelRoutes():bool;
 	}
 ?>

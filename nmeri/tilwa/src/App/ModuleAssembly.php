@@ -42,11 +42,17 @@
 
 				return $this->flowRequestHandler($wrapper);
 
-			return (new ModuleToRoute)
+			$initializer = (new ModuleToRoute)
 
-			->findContext($this->getModules(), $requestPath)
+			->findContext($this->getModules(), $requestPath);
 
-			->trigger();
+			if ($initializer)
+
+				return $initializer->whenActive()
+
+				->triggerRequest();
+
+			// throw a 404 error to be caught by the exception renderer
 		}
 
 		private function flowRequestHandler(OuterFlowWrapper $wrapper):string {

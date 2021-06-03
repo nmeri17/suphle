@@ -8,6 +8,8 @@
 
 	use Tilwa\Contracts\Config\{Authentication, Events as EventConfig, ModuleFiles, Router, Services, Executables};
 
+	use Illuminate\Foundation\Application;
+
 	abstract class ModuleDescriptor {
 
 		protected $container;
@@ -48,11 +50,11 @@
 		// interface from Interactions namespace which will be consumers API with this module
 		abstract public function exportsImplements():string;
 
-		// there's no use for this but I imagine there may be need to boot something unforeseen
-		/*public function entityBindings ():self {
+		// arguments will be auto-wired
+		public function entityBindings ():self {
 
 			return $this;
-		}*/
+		}
 
 		public function getContainer():Container {
 			
@@ -77,7 +79,7 @@
 
 		public function getLibraryConfigurations():array {
 			
-			return []; // populate this with default configs
+			return []; // populate this with tilwa\contracts\config => eachConfig
 		}
 
 		// this is living here instead of on moduleLevelEvents because he's the one who knows what config is applicable to this module

@@ -14,7 +14,7 @@
 
 			return [
 
-				"folder" => $config->getRootPath() . 'views'. DIRECTORY_SEPARATOR // this should push into our HTML view folders array, not set it this way
+				"folder" => $config->activeModulePath() . 'views'. DIRECTORY_SEPARATOR // this should push into our HTML view folders array, not set it this way
 			];
 		}
 

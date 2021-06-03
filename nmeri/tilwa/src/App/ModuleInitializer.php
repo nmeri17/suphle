@@ -5,6 +5,8 @@
 	use Tilwa\Http\Response\ResponseManager;
 
 	use Tilwa\Routing\RouteManager;
+
+	use Tilwa\Contracts\Config\ModuleFiles;
 	
 	class ModuleInitializer {
 
@@ -31,10 +33,12 @@
 
 				$this->foundRoute = true;
 			}
+			// else if routeConfig->hasLaravelRoutes() check with that guy's router
+			
 			return $this;
 		}
 
-		public function trigger():string {
+		public function triggerRequest():string {
 
 			$manager = $this->responseManager;
 
@@ -77,11 +81,9 @@
 
 			$this->router = new RouteManager($descriptor, $container, $this->requestPath, $this->requestMethod);
 
+			$container->setServiceProviders($descriptor->getServiceProviders());
+
 			$this->bindDefaultObjects();
-
-			$container->setServiceProviders($descriptor->getServiceProviders())
-
-			->setLibraryConfigurations($descriptor->getLibraryConfigurations());
 
 			$this->responseManager = $container->getClass(ResponseManager::class);
 
@@ -89,7 +91,7 @@
 		}
 
 		private function bindDefaultObjects():void {
-			
+
 			$this->descriptor->getContainer()->whenTypeAny()
 
 			->needsAny([
@@ -103,6 +105,35 @@
 		public function didFindRoute():bool {
 			
 			return $this->foundRoute;
+		}
+
+		private function lazyContainerBindings(ModuleFiles $fileConfig):void {
+
+			$container->whenType(Application::class)
+
+			->needsArguments([
+				
+				"basePath" => $fileConfig->activeModulePath()
+			]);
+		}
+
+		public function whenActive ():self {
+
+			$descriptor = $this->descriptor;
+
+			$container = $descriptor->getContainer();
+
+			$container->setLibraryConfigurations($descriptor->getLibraryConfigurations());
+
+			$internalBindings = $container->getMethodParameters("lazyContainerBindings", $this);
+
+			$customBindings = $container->getMethodParameters("entityBindings", $descriptor);
+			
+			call_user_func_array([$this, "lazyContainerBindings"], $internalBindings);
+
+			call_user_func_array([$descriptor, "entityBindings"], $customBindings);
+
+			return $this;
 		}
 	}
 ?>

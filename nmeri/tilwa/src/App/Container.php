@@ -10,6 +10,10 @@
 
 	use Tilwa\Contracts\Config\ConfigMarker;
 
+	use Tilwa\Bridge\Laravel\LaravelProviderManager;
+
+	use Illuminate\Foundation\Application;
+
 	class Container {
 
 		private $provisionedClasses = [], // ProvisionUnit[]
@@ -21,6 +25,8 @@
 		$dependencyChain = [],
 
 		$libraryConfigurations = [],
+
+		$laravelProviders = [],
 
 		$provisionContext, // the active Type before calling `needs`
 
@@ -52,6 +58,31 @@
 		*/
 		public function getClass (string $fullName, bool $includeSub = false):object {
 
+			if ($contextConcrete = $this->getClassForContext())
+
+				return $contextConcrete;
+
+			if ($includeSub && $parent = $this->hydrateChildsParent($fullName))
+
+				return $parent;
+
+			if (array_key_exists($fullName, $this->laravelProviders))
+
+				return $this->loadLaravelLibrary($fullName);
+
+			$reflectedClass = new ReflectionClass($fullName);
+
+			if ($reflectedClass->isInterface())
+
+				return $this->provideInterface($fullName);
+
+			if ($reflectedClass->isInstantiable())
+
+				return $this->instantiateConcrete($fullName);
+		}
+
+		private function getClassForContext (string $fullName):object {
+
 			if (is_null($this->recursingFor))
 
 				$this->recursingFor = $this->lastCaller();
@@ -63,44 +94,65 @@
 			if ($context->hasConcrete($this->recursingFor))
 
 				return $concrete->getConcrete($this->recursingFor);
+		}
 
-			if ($includeSub) {
+		private function loadLaravelLibrary(string $fullName):object {
 
-				$providedParent = $this->getProvidedParent($fullName);
+			$laravelApp = $this->getClass(Application::class);
 
-				if ($providedParent)
+			$provider = call_user_func_array(
+				[
+					$this->laravelProviders[$fullName], "__construct"
+				], $laravelApp
+			);
 
-					return $this->getClass($providedParent);
+			$instance = (new LaravelProviderManager($provider, $laravelApp))
+
+			->prepare()->getConcrete();
+
+			if ($fullName == $instance::class) {
+
+				$this->storeConcrete( $fullName, $instance);
+
+				return $instance;
 			}
+		}
 
-			$reflectedClass = new ReflectionClass($fullName);
+		private function hydrateChildsParent(string $fullName):object {
 
-			if ($reflectedClass->isInterface())
+			$providedParent = $this->getProvidedParent($fullName);
 
-				return $this->provideInterface($fullName);
+			if (!is_null($providedParent))
 
-			if ($reflectedClass->isInstantiable()) {
+				return $this->getClass($providedParent);
+		}
 
-				$this->dependencyChain[] = $fullName;
-				
-				$dependencies = $this->getMethodParameters("__construct", $fullName);
+		private function instantiateConcrete (string $fullName, string $alias):object { // casting to [object] may be problematic to the caller
 
-				$concrete = new $fullName (...$dependencies);
+			$this->dependencyChain[] = $fullName;
+			
+			$dependencies = $this->getMethodParameters("__construct", $fullName);
 
-				$this->unchainDependency($fullName);
+			$concrete = new $fullName (...$dependencies);
 
-				$this->provisionedClasses[$this->recursingFor]
+			$this->unchainDependency($fullName);
 
-				->addConcrete($fullName, $concrete);
+			$this->storeConcrete($alias ?? $fullName, $concrete);
 
-				return $concrete;
-			}
+			return $concrete;
+		}
+
+		private function storeConcrete (string $fullName, object $concrete):void {
+
+			$this->provisionedClasses[$this->recursingFor]
+
+			->addConcrete($fullName, $concrete);
 		}
 
 		private function lastCaller ():string {
 
 			// 2=> ignore concrete objects and their args
-			$stack = debug_backtrace ( 2, 3 ); // [lastCaller,getClass,ourGuy]. A more extensible (we won't have to specify limit anymore) but memory intensive way to go about this is to remove the limit and group them by class. then pick the immediate last one that doesn't correspond to `self::class`
+			$stack = debug_backtrace ( 2, 4 ); // [lastCaller,getClassForContext,getClass,ourGuy]. A more extensible (we won't have to specify limit anymore) but memory intensive way to go about this is to remove the limit and group them by class. then pick the immediate last one that doesn't correspond to `self::class`
 
 			return end($stack)["class"];
 		}
@@ -120,13 +172,21 @@
 
 		private function provideInterface(string $service):object {
 
-			if ($this->isRenamedSpace())
+			if ($this->isRenamedSpace()) {
 
-				return $this->relocateSpace($service);
+				$newIdentity = $this->relocateSpace($service);
+
+				return $this->instantiateConcrete($newIdentity);
+			}
 
 			if ($this->isConfig($service))
 
 				return $this->hydrateConfig($service);
+
+			return $this->getClassFromProvider($service);
+		}
+
+		private function getClassFromProvider (string $service):object {
 
 			$providerClass = $this->serviceProviders[$service];
 
@@ -138,7 +198,7 @@
 
 			$concrete = $provider->concrete();
 
-			$this->whenType($concrete) // for easy instantiation by getClass
+			$this->whenType($concrete) // merge any custom args with defaults
 
 			->needsArguments($providerParameters);
 				
@@ -146,9 +206,7 @@
 
 			$provider->afterBind($reflectedClass);
 
-			$this->whenTypeAny()
-
-			->needsAny([$service => $reflectedClass]);
+			$this->storeConcrete ($service, $reflectedClass);
 
 			return $reflectedClass;
 		}
@@ -257,6 +315,7 @@
 			return $defaultValue;
 		}
 
+		// @return the first provided parent of the given class
 		private function getProvidedParent(string $class):string {
 
 			$allSuperiors = array_keys($this->provisionedClasses);
@@ -295,10 +354,7 @@
 			return array_key_exists($namespace, $this->provisionedNamespaces);
 		}
 
-		/**
-		*	@return Concrete instance of the requested namespace
-		*/
-		private function relocateSpace(string $entityFormerName):object {
+		private function relocateSpace(string $entityFormerName):string {
 
 			$locality = $this->localizeNamespace($this->recursingFor, 1);
 			
@@ -372,13 +428,14 @@
 			return in_array(ConfigMarker::class, class_implements($service));
 		}
 
-		private function hydrateConfig(string $service):object {
+		// this just seems to be a shortcut to the [needs] group of methods, but doesn't want to muddle config provisioning with every other class type
+		private function hydrateConfig(string $fullName):object {
 
 			$configs = $this->libraryConfigurations;
 
-			if (array_key_exists($service, $configs))
+			if (array_key_exists($fullName, $configs))
 				
-				return $this->getClass($configs[$service]);
+				return $this->instantiateConcrete($configs[$fullName]); // classes can't have custom config
 		}
 	}
 ?>

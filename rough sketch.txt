@@ -36,13 +36,17 @@ Bar:
 	- app level service entry into repositories
 	- orm in services
 Extract rejection logic into a class and inject that into both service wrapper and executable classes. then implement an interface that informs these parents to run x whenever such interface is met
+	prefersServices, servicePreferenceManager
 
 Revisit NoSqlLogic for implementing the factory pattern
+Correct $this->module usages in routeManager
+Controllers should also accept auth user objects
 
 ## laravel interoperability
 We don't care about the package existing within our service container. We just wanna replicate the functionality of registering routes, views, migrations etc within our current scope
 
 So, user plugs in their service providers in a laravelProviders array labelled by the class in the provider's register method. Then, we work with public publish properties of this provider, and stuff called in boot, imitating the same behaviour within our own scope
+Remember to wire laravel providers from the descriptor to the container
 
 Then we'll have to import some of those helper methods like config, real_path etc, passing them values that make sense to us. Then for packages using stuff like config facade or facades in general, there shouldn't be need to replicate facade-like behavior; the app should be able to hydrate a concrete when we pass the class path to it (hopefully, without calling its service provider anymore )
 
@@ -51,4 +55,29 @@ https://laravel.com/docs/8.x/packages and the github gist I made
 
 Package routes with `view` calls point to a function preloaded with package's view path. It wraps the given file path
 
-Correct $this->module usages in routeManager
+primaryViewPath, addViewPath, viewPaths[] =
+
+Login Request comes in:
+	- (C) we need a guy who intercepts incoming parameters from baseRequest (interface)
+	- he forwards these parameters to (B) and asks him for the user behind that id
+	- there are methods for actions that should happen after successful or failed auth (so we can't pretend this guy is just any other controller)
+	- unlike route methods, these methods are to return renderers
+
+Request for auth route comes in:
+	- (A) depending on the authentication type (jwt/session/custom [meaning, an interface]), user id is retrieved
+	- (B) this id is forwarded to a reliable person accessible to controllers/request/container who are interested in retrieving auth user
+	- in the background, he receives a concrete orm from any container available and can hydrate a user out of the id he was given
+	- he is also overwritable in case dev wants a custom way of user hydration
+	- he's the one responseManager interfaces with and decides a user is unauthenticated when his id is missing
+
+The active overrider goes in an auth config directly injected into the responseManager
+
+Bonus: add auth services (email verification, password recovery) dev can inject in their controllers
+
+			/*if ($manager->requiresAuth()) // this typically goes in responseMager->trigger()
+
+				if ($this->authenticator->verifyUser())
+					// ...etc etc
+			*/
+
+X labels XServiceProvider. A requests X and container tries to pull it from the laravel array. then and only then is XServiceProvider hydrated, X instantiated, the behavior mirrored. In order to prevent facades being used in place of real object names, there has to be another verification to ensure instance name matches A's request

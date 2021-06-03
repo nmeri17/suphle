@@ -2,6 +2,9 @@
 
 	namespace Tilwa\App;
 
+	/**
+	 * Manager/wrapper around [ModuleInitializer]
+	*/
 	class ModuleToRoute {
 		
 		public function findContext(array $modules, string $requestPath):ModuleInitializer {
