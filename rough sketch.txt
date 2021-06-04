@@ -29,6 +29,8 @@ on flow hit, upload the rest into the shared space for all users insted of simpl
 
 AssignListeners::class
 
+we need a cli command for copying laravel config/migrations files from the library locations to dev land i.e. so config can lift the files (from the hard-coded "config" folder)
+
 
 ##controllers and services
 
@@ -40,22 +42,11 @@ Extract rejection logic into a class and inject that into both service wrapper a
 
 Revisit NoSqlLogic for implementing the factory pattern
 Correct $this->module usages in routeManager
-Controllers should also accept auth user objects
 
-## laravel interoperability
-We don't care about the package existing within our service container. We just wanna replicate the functionality of registering routes, views, migrations etc within our current scope
-
-So, user plugs in their service providers in a laravelProviders array labelled by the class in the provider's register method. Then, we work with public publish properties of this provider, and stuff called in boot, imitating the same behaviour within our own scope
 Remember to wire laravel providers from the descriptor to the container
-
-Then we'll have to import some of those helper methods like config, real_path etc, passing them values that make sense to us. Then for packages using stuff like config facade or facades in general, there shouldn't be need to replicate facade-like behavior; the app should be able to hydrate a concrete when we pass the class path to it (hopefully, without calling its service provider anymore )
-
-https://laravel.com/docs/8.x/packages and the github gist I made
+Still need to work on the routing bit
 
 
-Package routes with `view` calls point to a function preloaded with package's view path. It wraps the given file path
-
-primaryViewPath, addViewPath, viewPaths[] =
 
 Login Request comes in:
 	- (C) we need a guy who intercepts incoming parameters from baseRequest (interface)
@@ -71,6 +62,7 @@ Request for auth route comes in:
 	- he's the one responseManager interfaces with and decides a user is unauthenticated when his id is missing
 
 The active overrider goes in an auth config directly injected into the responseManager
+Controller action methods can then accept auth user objects
 
 Bonus: add auth services (email verification, password recovery) dev can inject in their controllers
 
@@ -79,5 +71,3 @@ Bonus: add auth services (email verification, password recovery) dev can inject 
 				if ($this->authenticator->verifyUser())
 					// ...etc etc
 			*/
-
-X labels XServiceProvider. A requests X and container tries to pull it from the laravel array. then and only then is XServiceProvider hydrated, X instantiated, the behavior mirrored. In order to prevent facades being used in place of real object names, there has to be another verification to ensure instance name matches A's request

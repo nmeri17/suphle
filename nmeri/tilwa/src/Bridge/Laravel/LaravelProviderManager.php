@@ -25,18 +25,16 @@
 
 		private function mirrorBehavior ():self {
 
-			require_once $this->getHelperFilePath();
+			require_once $this->getHelperFilePath(); // we need this file active while running their routes so it can pick [view()]
 
-			function app () { // this should live within the scope running the provider
+			function app () { // override their definition
 
 				return $this->laravelContainer;
 			}
-			// run boot method using our own config implementations
-			/*publishes([$configPath => config_path('social-share.php')]);
-	        $this->loadViewsFrom(__DIR__.'/../../views', 'social-share');
-
-	        mergeConfigFrom*/
+			
+			$this->provider->boot();
 		
+			return $this;
 		}
 
 		private function extractConcrete ():self {
