@@ -34,7 +34,7 @@
 				$this->foundRoute = true;
 			}
 			// else if routeConfig->hasLaravelRoutes() check with that guy's router
-			
+
 			return $this;
 		}
 
@@ -107,16 +107,6 @@
 			return $this->foundRoute;
 		}
 
-		private function lazyContainerBindings(ModuleFiles $fileConfig):void {
-
-			$container->whenType(Application::class)
-
-			->needsArguments([
-				
-				"basePath" => $fileConfig->activeModulePath()
-			]);
-		}
-
 		public function whenActive ():self {
 
 			$descriptor = $this->descriptor;
@@ -125,11 +115,7 @@
 
 			$container->setLibraryConfigurations($descriptor->getLibraryConfigurations());
 
-			$internalBindings = $container->getMethodParameters("lazyContainerBindings", $this);
-
 			$customBindings = $container->getMethodParameters("entityBindings", $descriptor);
-			
-			call_user_func_array([$this, "lazyContainerBindings"], $internalBindings);
 
 			call_user_func_array([$descriptor, "entityBindings"], $customBindings);
 

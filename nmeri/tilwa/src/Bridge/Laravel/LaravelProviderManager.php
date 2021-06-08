@@ -3,7 +3,7 @@
 
 	use Illuminate\Support\ServiceProvider;
 
-	use Illuminate\Foundation\Application;
+	use Tilwa\Contracts\LaravelApp;
 
 	use ReflectionClass;
 
@@ -11,7 +11,7 @@
 
 		private $provider, $concrete, $laravelContainer;
 
-		function __construct (ServiceProvider $provider, Application $laravelContainer) {
+		function __construct (ServiceProvider $provider, LaravelApp $laravelContainer) {
 
 			$this->provider = $provider;
 

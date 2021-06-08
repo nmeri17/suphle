@@ -4,13 +4,11 @@
 
 	use Tilwa\App\ServiceProvider;
 
-	use Tilwa\Routing\RouteManager;
-
 	use Tilwa\Contracts\{ModuleFiles, HtmlTemplate};
 
 	class HtmlTemplateProvider extends ServiceProvider {
 
-		public function bindArguments(ModuleFiles $fileConfig, HtmlTemplate $htmlConfig) {
+		public function bindArguments(ModuleFiles $fileConfig, HtmlTemplate $htmlConfig):array {
 
 			$htmlConfig->addViewPath($fileConfig->activeModulePath(). DIRECTORY_SEPARATOR) . 'views';
 

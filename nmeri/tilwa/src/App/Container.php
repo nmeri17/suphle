@@ -12,8 +12,6 @@
 
 	use Tilwa\Bridge\Laravel\LaravelProviderManager;
 
-	use Illuminate\Foundation\Application;
-
 	class Container {
 
 		private $provisionedClasses = [], // ProvisionUnit[]
@@ -98,7 +96,7 @@
 
 		private function loadLaravelLibrary(string $fullName):object {
 
-			$laravelApp = $this->getClass(Application::class);
+			$laravelApp = $this->getClass(LaravelApp::class);
 
 			$provider = call_user_func_array(
 				[
@@ -188,27 +186,32 @@
 
 		private function getClassFromProvider (string $service):object {
 
-			$providerClass = $this->serviceProviders[$service];
+			if (array_key_exists($service, $this->serviceProviders)) {
 
-			$provider = new $providerClass();
+				$providerClass = $this->serviceProviders[$service];
 
-			$providerArguments = $this->getMethodParameters("bindArguments", $providerClass);
+				$provider = new $providerClass();
 
-			$providerParameters = call_user_func_array([$provider, "bindArguments"], $providerArguments);
+				$providerArguments = $this->getMethodParameters("bindArguments", $providerClass);
 
-			$concrete = $provider->concrete();
+				$providerParameters = call_user_func_array([$provider, "bindArguments"], $providerArguments);
 
-			$this->whenType($concrete) // merge any custom args with defaults
+				$concrete = $provider->concrete();
 
-			->needsArguments($providerParameters);
-				
-			$reflectedClass = $this->getClass($concrete);
+				$this->whenType($concrete) // merge any custom args with defaults
 
-			$provider->afterBind($reflectedClass);
+				->needsArguments($providerParameters);
+					
+				$reflectedClass = $this->getClass($concrete);
 
-			$this->storeConcrete ($service, $reflectedClass);
+				$provider->afterBind($reflectedClass);
 
-			return $reflectedClass;
+				$this->storeConcrete ($service, $reflectedClass);
+
+				if ($reflectedClass instanceof $service)
+
+					return $reflectedClass;
+			}
 		}
 
 		public function whenType (string $toProvision):self {

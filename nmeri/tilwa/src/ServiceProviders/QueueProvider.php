@@ -8,9 +8,9 @@
 
 	class QueueProvider extends ServiceProvider {
 
-		public function afterBind($initialized) {
+		public function afterBind(QueueManager $initialized):void {
 
-			return $initialized->addConnection([
+			$initialized->addConnection([
 			    'driver' => 'beanstalkd',
 			    'host' => 'localhost',
 			    'queue' => 'default',

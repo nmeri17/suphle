@@ -12,7 +12,7 @@
 
 	class AuthenticatorProvider extends ServiceProvider {
 
-		public function bindArguments(Authentication $config, RouteManager $router) {
+		public function bindArguments(Authentication $config, RouteManager $router):array {
 
 			return [
 

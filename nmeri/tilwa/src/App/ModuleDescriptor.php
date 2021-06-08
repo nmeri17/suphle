@@ -4,11 +4,9 @@
 
 	use Tilwa\Contracts\{Orm, HtmlParser, Authenticator, RequestValidator, QueueManager};
 
-	use Tilwa\ServiceProviders\{OrmProvider, AuthenticatorProvider, HtmlTemplateProvider, RequestValidatorProvider, QueueProvider};
+	use Tilwa\ServiceProviders\{OrmProvider, AuthenticatorProvider, HtmlTemplateProvider, RequestValidatorProvider, QueueProvider, LaravelAppProvider};
 
-	use Tilwa\Contracts\Config\{Authentication, Events as EventConfig, ModuleFiles, Router, Services, Executables};
-
-	use Illuminate\Foundation\Application;
+	use Tilwa\Contracts\Config\{Authentication, Events as EventConfig, ModuleFiles, Router, Services, Executables, LaravelApp};
 
 	abstract class ModuleDescriptor {
 
@@ -73,7 +71,9 @@
 
 				RequestValidator::class => RequestValidatorProvider::class,
 
-				QueueManager::class => QueueProvider::class
+				QueueManager::class => QueueProvider::class,
+
+				LaravelApp::class => LaravelAppProvider::class
 			];
 		}
 
