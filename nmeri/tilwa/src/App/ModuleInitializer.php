@@ -81,8 +81,6 @@
 
 			$this->router = new RouteManager($descriptor, $container, $this->requestPath, $this->requestMethod);
 
-			$container->setServiceProviders($descriptor->getServiceProviders());
-
 			$this->bindDefaultObjects();
 
 			$this->responseManager = $container->getClass(ResponseManager::class);

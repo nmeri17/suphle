@@ -3,24 +3,77 @@
 
 	use Illuminate\Config\Repository;
 
-	/* in the laravel app provider, we
-	->bind(Transistor::class, function ($app) {
-	    return new ConfigLoader;
-	});
-	we also wanna call Illuminate\Foundation\Bootstrap\LoadConfiguration->bootstrap immediately after app is instanciated
-	*/
-	class ConfigLoader extends Repository { // continue here
+	use Tilwa\Contracts\Config\{Laravel, ConfigMarker};
 
-		// label the key (paystack.come {during retrieval, recursively split by dots}) for its config class [paystack => Config\Paystack::class]
+	use Tilwa\App\Container;
+
+	class ConfigLoader extends Repository {
+
+		private $laravelConfig, $container;
+
+		private $pathSegments = [];
+
+	    public function __construct(array $items = [], Laravel $laravelConfig, Container $container) {
+
+	        $this->items = $items;
+
+	        $this->laravelConfig = $laravelConfig;
+
+	        $this->container = $container;
+	    }
+
 		public function get($key, $default = null) {
 
-	        if (is_array($key)) {
+	        if (is_array($key))
+
 	            return $this->getMany($key);
+
+			$this->setPathSegments($key);
+
+	        $configClass = $this->findEquivalent();
+
+	        if ($configClass) {
+
+	        	$configConcrete = $this->container->getClass($configClass);
+
+	        	$property = $this->findProperty($configConcrete);
+
+	        	if ($property) return $property;
 	        }
 
-	        // check the injected config map. then when no response
-
 	        return Arr::get($this->items, $key, $default);
+	    }
+
+	    private function setPathSegments(string $dotPath):void {
+
+	        $this->pathSegments = explode(".", $dotPath);
+	    }
+
+	    private function findEquivalent ():string {
+
+	        $bridge = $this->laravelConfig->configBridge();
+
+	        $name = array_shift($this->pathSegments);
+
+	        if (array_key_exists($name, $bridge))
+
+	        	return $bridge[$name];
+	    }
+
+	    private function findProperty (ConfigMarker $config) {
+
+	    	$currentContext = null;
+
+	    	foreach ($this->pathSegments as $segment) {
+
+	    		if (is_null($currentContext))
+	    		
+	    			$currentContext = $config->$segment;
+
+	    		else $currentContext = $currentContext->$segment;
+	    	}
+
+	    	return $currentContext;
 	    }
 
 	    // @TODO override [getMany]

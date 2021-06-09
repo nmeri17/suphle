@@ -2,10 +2,6 @@
 
 	namespace Tilwa\App;
 
-	use Tilwa\Contracts\{Orm, HtmlParser, Authenticator, RequestValidator, QueueManager};
-
-	use Tilwa\ServiceProviders\{OrmProvider, AuthenticatorProvider, HtmlTemplateProvider, RequestValidatorProvider, QueueProvider, LaravelAppProvider};
-
 	use Tilwa\Contracts\Config\{Authentication, Events as EventConfig, ModuleFiles, Router, Services, Executables, LaravelApp};
 
 	abstract class ModuleDescriptor {
@@ -57,24 +53,6 @@
 		public function getContainer():Container {
 			
 			return $this->container;
-		}
-
-		// this information belongs on the container, but we're setting it here since containers are injected externally and we don't wanna visually clutter the assembly space
-		public function getServiceProviders():array {
-
-			return [
-				Orm::class => OrmProvider::class,
-
-				HtmlParser::class => HtmlTemplateProvider::class,
-
-				Authenticator::class => AuthenticatorProvider::class,
-
-				RequestValidator::class => RequestValidatorProvider::class,
-
-				QueueManager::class => QueueProvider::class,
-
-				LaravelApp::class => LaravelAppProvider::class
-			];
 		}
 
 		public function getLibraryConfigurations():array {

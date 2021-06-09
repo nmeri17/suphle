@@ -8,7 +8,7 @@
 	
 	use Tilwa\App\Templates\CircularBreaker;
 
-	use Tilwa\Contracts\Config\ConfigMarker;
+	use Tilwa\Contracts\Config\{ConfigMarker, Laravel as LaravelConfig, Services as ServicesConfig};
 
 	use Tilwa\Bridge\Laravel\LaravelProviderManager;
 
@@ -16,28 +16,19 @@
 
 		private $provisionedClasses = [], // ProvisionUnit[]
 
-		$serviceProviders = [],
-
 		$provisionedNamespaces = [], // NamespaceUnit[]
 
 		$dependencyChain = [],
 
 		$libraryConfigurations = [],
 
-		$laravelProviders = [],
+		$laravelConfig, $servicesConfig,
 
 		$provisionContext, // the active Type before calling `needs`
 
 		$provisionSpace,
 
 		$recursingFor; // the active ProvisionUnit
-
-		public function setServiceProviders (array $providers):self {
-
-			$this->serviceProviders = $providers;
-
-			return $this;
-		}
 
 		public function setLibraryConfigurations (array $configs):self {
 
@@ -64,9 +55,11 @@
 
 				return $parent;
 
-			if (array_key_exists($fullName, $this->laravelProviders))
+			$laravelProviders = $this->getLaravelConfig()->getProviders();
 
-				return $this->loadLaravelLibrary($fullName);
+			if (array_key_exists($fullName, $laravelProviders))
+
+				return $this->loadLaravelLibrary($fullName, $laravelProviders);
 
 			$reflectedClass = new ReflectionClass($fullName);
 
@@ -94,14 +87,14 @@
 				return $concrete->getConcrete($this->recursingFor);
 		}
 
-		private function loadLaravelLibrary(string $fullName):object {
+		private function loadLaravelLibrary(string $fullName, array $providers):object {
 
 			$laravelApp = $this->getClass(LaravelApp::class);
 
 			$provider = call_user_func_array(
-				[
-					$this->laravelProviders[$fullName], "__construct"
-				], $laravelApp
+				[ $providers[$fullName], "__construct" ],
+
+				$laravelApp
 			);
 
 			$instance = (new LaravelProviderManager($provider, $laravelApp))
@@ -186,9 +179,11 @@
 
 		private function getClassFromProvider (string $service):object {
 
-			if (array_key_exists($service, $this->serviceProviders)) {
+			$providers = $this->getServicesConfig()->getProviders();
 
-				$providerClass = $this->serviceProviders[$service];
+			if (array_key_exists($service, $providers)) {
+
+				$providerClass = $providers[$service];
 
 				$provider = new $providerClass();
 
@@ -439,6 +434,25 @@
 			if (array_key_exists($fullName, $configs))
 				
 				return $this->instantiateConcrete($configs[$fullName]); // classes can't have custom config
+		}
+
+		// using this to subvert the arduous process of class hydration
+		private function getLaravelConfig():LaravelConfig {
+
+			if (is_null($this->laravelConfig))
+
+				$this->laravelConfig = $this->getClass(LaravelConfig::class);
+
+			return $this->laravelConfig;
+		}
+
+		private function getServicesConfig():ServicesConfig {
+
+			if (is_null($this->servicesConfig))
+
+				$this->servicesConfig = $this->getClass(ServicesConfig::class);
+
+			return $this->servicesConfig;
 		}
 	}
 ?>
