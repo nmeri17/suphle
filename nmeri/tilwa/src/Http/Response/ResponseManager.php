@@ -8,25 +8,23 @@
 
 	use Tilwa\Http\Response\Format\{Markup, AbstractRenderer};
 
-	use Tilwa\Http\Request\BaseRequest;
-
 	use Tilwa\Controllers\ControllerManager;
 
-	use Tilwa\Contracts\{BaseResponseManager, QueueManager};
-
-	use Tilwa\Flows\{Structures\BranchesContext, Jobs\RouteBranches}
+	use Tilwa\Contracts\BaseResponseManager;
 
 	class ResponseManager implements BaseResponseManager {
 
 		private $container, $router, $renderer,
 
-		$queueManager, $authenticator, $controllerManager;
+		$controllerManager, $requestDetails,
+
+		$flowQueuer;
 
 		private $skipHandler = false; // is `true` on validation failure
 
 		public $responseMutations = [];
 
-		function __construct (Container $container, RouteManager $router, ControllerManager $controllerManager, QueueManager $queueManager, Authenticator $authenticator) {
+		function __construct (Container $container, RouteManager $router, ControllerManager $controllerManager, RequestDetails $requestDetails, FlowResponseQueuer $flowQueuer) {
 
 			$this->container = $container;
 
@@ -34,9 +32,9 @@
 
 			$this->controllerManager = $controllerManager;
 
-			$this->queueManager = $queueManager;
+			$this->requestDetails = $requestDetails;
 
-			$this->authenticator = $authenticator;
+			$this->flowQueuer = $flowQueuer;
 		}
 
 		public function rendererValidationFailed():bool {
@@ -49,18 +47,11 @@
 			return $this->renderer->render();
 		}
 
-		public function afterRender() {
+		public function afterRender():void {
 
-			if ($this->renderer->hasBranches()) { // the very first request won't be caught in a flow. so, delegate queueing branches
+			if ($this->renderer->hasBranches())// the very first request won't be caught in a flow. so, delegate queueing branches
 
-				$user = $this->authenticator->getUser();
-
-				$this->queueManager->push(RouteBranches::class,
-					new BranchesContext(null, $user, $this->renderer, $this )
-				);
-			}
-
-			return $finalBody;
+				$this->flowQueuer->insert($this->renderer, $this);
 		}
 
 		public function bootControllerManager():self {
@@ -105,7 +96,7 @@
 
 			$outgoingRenderer = $router->getActiveRenderer();
 
-			$browserOrigin = !$router->isApiRoute();
+			$browserOrigin = !$this->requestDetails->isApiRoute();
 
 			$request = $manager->getRequest();
 

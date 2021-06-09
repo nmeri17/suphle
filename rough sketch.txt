@@ -41,10 +41,8 @@ Extract rejection logic into a class and inject that into both service wrapper a
 	prefersServices, servicePreferenceManager
 
 Revisit NoSqlLogic for implementing the factory pattern
-Correct $this->module usages in routeManager
 
-Remember to wire laravel providers from the descriptor to the container
-Still need to work on the routing bit
+Wrap each call to the library in something that allows us invoke its calls in a sandbox containing helper requires
 
 
 

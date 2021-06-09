@@ -2,11 +2,13 @@
 
 	namespace Tilwa\Routing;
 
-	use Tilwa\App\{ModuleDescriptor, Container};
+	use Tilwa\App\Container;
 
 	use Tilwa\Http\Response\Format\Markup;
 
 	use Generator;
+
+	use Tilwa\Contracts\Config\Router as RouterConfig;
 
 	class RouteManager {
 
@@ -14,21 +16,17 @@
 
 		const PREV_REQUEST = 'prev_request';
 
-		private $module, $activeRenderer, $payload,
+		private $config, $activeRenderer, $payload,
 
-		$incomingPath, $httpMethod, $fullTriedPath,
+		$requestDetails, $fullTriedPath, $container;
 
-		$container;
+		function __construct(RouterConfig $config, Container $container, RequestDetails $requestDetails) {
 
-		function __construct(ModuleDescriptor $module, Container $container, string $incomingPath, string $httpMethod ) {
-
-			$this->module = $module;
-
-			$this->incomingPath = $incomingPath;
-
-			$this->httpMethod = $httpMethod;
+			$this->config = $config;
 
 			$this->container = $container;
+
+			$this->requestDetails = $requestDetails;
 		}
 
 		public function findRenderer ():AbstractRenderer {
@@ -119,7 +117,7 @@
 
 		private function routeCompare(string $path, string $rendererMethod):bool {
 			
-			return $this->prefixMatch($path) && $rendererMethod == $this->httpMethod;
+			return $this->prefixMatch($path) && $rendererMethod == $this->requestDetails->getMethod();
 		}
 
 		/* given hypothetical path: PATH_id_EDIT_id2_EDIT__SAME__OKJh_optionalO_TOMP, clean and return a path similar to a real life path; but still in a regex format so optional segments can be indicated as such
@@ -185,7 +183,7 @@
 			
 			return preg_match("/^$newRouteState
 				?# neutralize trailing slash in replaced path
-				/ix", $this->incomingPath);
+				/ix", $this->requestDetails->getPath());
 		}
 
 		public function setPrevious(AbstractRenderer $renderer , BaseRequest $request):self {
@@ -219,70 +217,17 @@
 			return $this;
 		}
 
-		// note: we are not handling POST yet
-		public function savePayload():self {
-			
-			$this->payload = array_diff_key(["tilwa_path" => 55], $_GET);
-
-			return $this;
-		}
-
-		public function isApiRoute ():bool {
-
-			return preg_match("/^" . $this->module->apiPrefix() . "/", $this->incomingPath);
-		}
-
-		// given a request to api/v3/verb/noun, return v3
-		public function incomingVersion():string {
-			
-			$pattern = $this->module->apiPrefix() . "\/(.+?)\/";
-
-			preg_match("/^" . $pattern . "/i", $this->incomingPath, $version);
-
-			return $version[1];
-		}
-
-		# api/v3/verb/noun should return all versions from v3 and below
-		private function apiVersionClasses():array {
-
-			$versionKeys = array_keys($this->module->apiStack());
-
-			$versionHandlers = array_values($this->module->apiStack());
-
-			$start = array_search( // case-insensitive search
-
-				strtolower($this->incomingVersion()),
-
-				array_map("strtolower", $versionKeys)
-			);
-
-			$versionHandlers = array_slice($versionHandlers, $start, count($versionHandlers)-1);
-
-			$versionKeys = array_slice($versionKeys, $start, count($versionKeys)-1);
-
-			return array_combine($versionKeys, $versionHandlers);
-		}
-
 		// @return Strings[]
 		private function entryRouteMap():array {
 			
-			if ($this->isApiRoute()) {
+			if ($this->requestDetails->isApiRoute()) {
 
-				$this->stripApiPrefix();
+				$this->requestDetails->stripApiPrefix();
 
-				return $this->apiVersionClasses();
+				return $this->requestDetails->apiVersionClasses();
 			}
-			return [$this->module->getAppMainRoutes()];
-		}
 
-		// given a request to api/v3/verb/noun, return verb/noun
-		private function stripApiPrefix():void {
-			
-			$pattern = $this->module->apiPrefix() . "\/.+?\/(.+)";
-
-			preg_match("/^" . $pattern . "/i", $this->incomingPath, $path);
-			
-			$this->incomingPath = $path[1];
+			return [$this->config->browserEntryRoute()];
 		}
 
 		public function acceptsJson():bool {
@@ -312,9 +257,9 @@
 			return [
 				"permissions" => $this->container
 
-				->getClass($this->module->routePermissions()),
+				->getClass($this->config->routePermissions()),
 				
-				"browserEntry" => $this->module->browserEntryRoute()
+				"browserEntry" => $this->config->browserEntryRoute()
 			];
 		}
 

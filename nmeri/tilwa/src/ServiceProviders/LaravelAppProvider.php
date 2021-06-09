@@ -8,13 +8,19 @@
 
 	use Tilwa\Bridge\Laravel\{LaravelAppConcrete, ConfigLoader};
 
-	use Illuminate\Contracts\Config\Repository;
+	use Tilwa\Routing\RequestDetails;
 
 	use Illuminate\Foundation\Bootstrap\LoadConfiguration;
 
+	use Illuminate\Http\Request;
+
 	class LaravelAppProvider extends ServiceProvider {
 
-		public function bindArguments(ModuleFiles $fileConfig):array {
+		private $requestDetails;
+
+		public function bindArguments(ModuleFiles $fileConfig, RequestDetails $requestDetails):array {
+
+			$this->requestDetails = $requestDetails;
 
 			return [
 
@@ -24,18 +30,36 @@
 
 		public function afterBind(LaravelApp $initialized):void {
 
-			// ordering here matters a lot
-			$initialized->bind(Repository::class, function ($app) {
+			// ordering between this 2 matters a lot
+			$initialized->bind("config", function ($app) {
 				
 				return new ConfigLoader;
 			});
 
 			(new LoadConfiguration)->bootstrap($initialized);
+
+			$this->provideRequest($initialized);
 		}
 
 		public function concrete():string {
 
 			return LaravelAppConcrete::class;
+		}
+
+		private function provideRequest (LaravelApp $initialized):void {
+
+			$initialized->bind("request", function ($app) {
+				
+				return Request::create(
+					$this->requestDetails->getPath(),
+
+					$this->requestDetails->getMethod(),
+
+					$this->requestDetails->getPayload(),
+
+					$_COOKIE, $_FILES, $_SERVER
+				);
+			});
 		}
 	}
 ?>

@@ -6,6 +6,6 @@
 		
 		public function getResponse ();
 
-		public function afterRender($data);
+		public function afterRender($data):void;
 	}
 ?>

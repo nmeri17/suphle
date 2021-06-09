@@ -6,39 +6,47 @@
 
 	use Tilwa\Routing\RouteManager;
 
-	use Tilwa\Contracts\Config\ModuleFiles;
+	use Tilwa\Bridge\Laravel\ModuleRouteMatcher;
 	
 	class ModuleInitializer {
 
 		private $router, $descriptor, $responseManager,
 
-		$requestPath, $requestMethod;
+		$laravelMatcher, $container;
 
 		private $foundRoute = false;
 
-		function __construct(ModuleDescriptor $descriptor, string $requestPath, string $requestMethod) {
+		function __construct(ModuleDescriptor $descriptor) {
 
 			$this->descriptor = $descriptor;
 
-			$this->requestPath = $requestPath;
-			
-			$this->requestMethod = $requestMethod;
+			$this->container = $descriptor->getContainer();
 		}
 
 		public function assignRoute():self {
 			
 			if ($target = $this->router->findRenderer() ) {
 
-				$this->router->setActiveRenderer($target)->savePayload();
+				$this->router->setActiveRenderer($target);
 
 				$this->foundRoute = true;
 			}
-			// else if routeConfig->hasLaravelRoutes() check with that guy's router
+
+			else {
+
+				$this->laravelMatcher = $this->container->getClass(ModuleRouteMatcher::class);
+
+				$this->foundRoute = $this->laravelMatcher->canHandleRequest(); // assumes module has booted
+			}
 
 			return $this;
 		}
 
 		public function triggerRequest():string {
+
+			if (!is_null($this->laravelMatcher))
+
+				return $this->laravelMatcher->getResponse();
 
 			$manager = $this->responseManager;
 
@@ -75,22 +83,18 @@
 
 		public function initialize():self {
 
-			$descriptor = $this->descriptor;
-
-			$container = $descriptor->getContainer();
-
-			$this->router = new RouteManager($descriptor, $container, $this->requestPath, $this->requestMethod);
+			$this->router = new RouteManager($this->descriptor, $this->container);
 
 			$this->bindDefaultObjects();
 
-			$this->responseManager = $container->getClass(ResponseManager::class);
+			$this->responseManager = $this->container->getClass(ResponseManager::class);
 
 			return $this;
 		}
 
 		private function bindDefaultObjects():void {
 
-			$this->descriptor->getContainer()->whenTypeAny()
+			$this->container->whenTypeAny()
 
 			->needsAny([
 
@@ -107,13 +111,15 @@
 
 		public function whenActive ():self {
 
+			if (!is_null($this->laravelMatcher))
+
+				return $this;
+
 			$descriptor = $this->descriptor;
 
-			$container = $descriptor->getContainer();
+			$this->container->setLibraryConfigurations($descriptor->getLibraryConfigurations());
 
-			$container->setLibraryConfigurations($descriptor->getLibraryConfigurations());
-
-			$customBindings = $container->getMethodParameters("entityBindings", $descriptor);
+			$customBindings = $this->container->getMethodParameters("entityBindings", $descriptor);
 
 			call_user_func_array([$descriptor, "entityBindings"], $customBindings);
 

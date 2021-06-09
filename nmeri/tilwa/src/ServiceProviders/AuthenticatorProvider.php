@@ -8,17 +8,17 @@
 
 	use Tilwa\Routing\RouteManager;
 
-	use Tilwa\Contracts\Config\Authentication;
+	use Tilwa\Contracts\Config\{Authentication, Router};
 
 	class AuthenticatorProvider extends ServiceProvider {
 
-		public function bindArguments(Authentication $config, RouteManager $router):array {
+		public function bindArguments(Authentication $authConfig, Router $routerConfig):array {
 
 			return [
 
-				"userModel" => $config->getUserModel(),
+				"userModel" => $authConfig->getUserModel(),
 
-				"isApiRoute" => $router->isApiRoute()
+				"isApiRoute" => $routerConfig->isApiRoute()
 			];
 		}
 

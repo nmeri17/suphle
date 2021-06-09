@@ -7,31 +7,18 @@
 	*/
 	class ModuleToRoute {
 		
-		public function findContext(array $modules, string $requestPath):ModuleInitializer {
+		public function findContext(array $descriptors):ModuleInitializer {
 			
-			foreach($modules as $module) {
+			foreach($descriptors as $descriptor) {
 
-				$routeMatcher = $this->getRouteMatcher($module, $requestPath);
+				$routeMatcher = (new ModuleInitializer($descriptor))
+
+				->initialize()->assignRoute();
 				
 				if ($routeMatcher->didFindRoute())
 
 					return $routeMatcher;
 			}
-		}
-
-		private function getHttpMethod ():string {
-
-			return strtolower(
-
-				$_POST["_method"] ?? $_SERVER['REQUEST_METHOD']
-			);
-		}
-
-		private function getRouteMatcher(ModuleDescriptor $descriptor, string $requestPath):ModuleInitializer {
-
-			return (new ModuleInitializer($descriptor, $requestPath, $this->getHttpMethod()))
-
-			->initialize()->assignRoute();
 		}
 	}
 ?>

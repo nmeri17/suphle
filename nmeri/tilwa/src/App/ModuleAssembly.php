@@ -28,8 +28,6 @@
 		
 		private function beginRequest():string {
 
-			$requestPath = $_GET['tilwa_path'];
-
 			$wrapperName = OuterFlowWrapper::class;
 
 			$wrapper = $this->setContainer()
@@ -44,7 +42,7 @@
 
 			$initializer = (new ModuleToRoute)
 
-			->findContext($this->getModules(), $requestPath);
+			->findContext($this->getModules());
 
 			if ($initializer)
 
