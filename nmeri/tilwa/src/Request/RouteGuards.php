@@ -1,6 +1,6 @@
 <?php
 
-	namespace Tilwa\Http\Request;
+	namespace Tilwa\Request;
 
 	use Tilwa\Contracts\Authenticator;
 

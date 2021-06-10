@@ -7,9 +7,9 @@
 
 	use Tilwa\Flows\Previous\{ SingleNode, CollectionNode, UnitNode};
 
-	use Tilwa\Http\Request\BaseRequest;
+	use Tilwa\Request\BaseRequest;
 
-	use Tilwa\Http\Response\ResponseManager;
+	use Tilwa\Response\ResponseManager;
 
 	use Tilwa\App\Container;
 

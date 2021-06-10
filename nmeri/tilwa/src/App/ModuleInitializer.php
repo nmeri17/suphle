@@ -2,7 +2,7 @@
 
 	namespace Tilwa\App;
 
-	use Tilwa\Http\Response\ResponseManager;
+	use Tilwa\Response\ResponseManager;
 
 	use Tilwa\Routing\RouteManager;
 

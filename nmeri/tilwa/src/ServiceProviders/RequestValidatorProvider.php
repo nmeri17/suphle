@@ -2,7 +2,7 @@
 
 	namespace Tilwa\ServiceProviders;
 
-	use Tilwa\Http\Request\Validators\RakitValidator;
+	use Tilwa\Request\Validators\RakitValidator;
 
 	class RequestValidatorProvider extends ServiceProvider {
 

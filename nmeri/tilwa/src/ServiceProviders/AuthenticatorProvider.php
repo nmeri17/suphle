@@ -4,7 +4,7 @@
 
 	use Tilwa\App\ServiceProvider;
 
-	use Tilwa\Http\Request\NativeAuth; // poor location. Should be an auth namespace
+	use Tilwa\Request\NativeAuth; // poor location. Should be an auth namespace
 
 	use Tilwa\Routing\RouteManager;
 

@@ -1,12 +1,12 @@
 <?php
 
-	namespace Tilwa\Http\Response;
+	namespace Tilwa\Response;
 
 	use Tilwa\App\{Container, ModuleDescriptor};
 
 	use Tilwa\Routing\RouteManager;
 
-	use Tilwa\Http\Response\Format\{Markup, AbstractRenderer};
+	use Tilwa\Response\Format\{Markup, AbstractRenderer};
 
 	use Tilwa\Controllers\ControllerManager;
 

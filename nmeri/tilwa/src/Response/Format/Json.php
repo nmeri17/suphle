@@ -1,6 +1,6 @@
 <?php
 
-	namespace Tilwa\Http\Response\Format;
+	namespace Tilwa\Response\Format;
 
 	class Json extends AbstractRenderer {
 

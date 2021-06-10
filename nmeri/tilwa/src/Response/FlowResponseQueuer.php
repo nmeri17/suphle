@@ -1,8 +1,8 @@
 <?php
 
-	namespace Tilwa\Http\Response;
+	namespace Tilwa\Response;
 
-	use Tilwa\Http\Response\Format\AbstractRenderer;
+	use Tilwa\Response\Format\AbstractRenderer;
 
 	use Tilwa\Contracts\{QueueManager, Authenticator};
 

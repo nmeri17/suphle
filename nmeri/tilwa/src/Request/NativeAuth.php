@@ -1,6 +1,6 @@
 <?php
 
-	namespace Tilwa\Http\Request;
+	namespace Tilwa\Request;
 
 	use Tilwa\Contracts\{Orm, Authenticator};
 
@@ -10,17 +10,17 @@
 
 		private $user;
 
-		private $userSearched;
+		private $userSearched = 0;
 
 		private $databaseAdapter;
 
-		private $sessionIdentifier;
+		private $sessionIdentifier = "tilwa_user_id";
 
 		private $userModel;
 
 		private $isApiRoute;
 
-		private $secretKey;
+		private $secretKey = getenv("APP_SECRET_KEY");
 
 		/**
 		* @param {isApiRoute} Since user cannot be authenticated by both session and API at once, the router should bind a property guiding us on what context we should work with
@@ -31,13 +31,7 @@
 
 			$this->isApiRoute = $isApiRoute;
 
-			$this->userSearched = 0;
-
-			$this->sessionIdentifier = "tilwa_user_id";
-
 			$this->userModel = $userModel;
-
-			$this->secretKey = getenv("APP_SECRET_KEY");
 		}
 
 		// return database ID of signed in user

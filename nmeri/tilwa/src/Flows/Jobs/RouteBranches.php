@@ -8,7 +8,7 @@
 
 	use Tilwa\Flows\Previous\UnitNode;
 
-	use Tilwa\Http\Response\ResponseManager;
+	use Tilwa\Response\ResponseManager;
 
 	// for queueing the cached endpoint on hit and queuing sub-flows
 	class RouteBranches {

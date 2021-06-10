@@ -2,7 +2,7 @@
 
 	namespace Tilwa\Routing;
 
-	use Tilwa\Http\Response\Format\AbstractRenderer;
+	use Tilwa\Response\Format\AbstractRenderer;
 
 	use Tilwa\Contracts\Config\Router as RouterConfig;
 

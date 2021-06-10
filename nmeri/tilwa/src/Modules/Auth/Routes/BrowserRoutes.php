@@ -6,7 +6,7 @@
 
 	use Tilwa\Modules\Auth\Controllers\HandleAuth;
 
-	use Tilwa\Http\Response\Format\{Markup, Redirect};
+	use Tilwa\Response\Format\{Markup, Redirect};
 
 	class BrowserRoutes extends RouteCollection {
 		

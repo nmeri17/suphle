@@ -2,7 +2,7 @@
 
 	namespace Tilwa\Flows\Structures;
 
-	use Tilwa\Http\Response\Format\AbstractRenderer;
+	use Tilwa\Response\Format\AbstractRenderer;
 
 	use DateTime;
 

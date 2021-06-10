@@ -1,6 +1,6 @@
 <?php
 
-	namespace Tilwa\Http\Request\Validators;
+	namespace Tilwa\Request\Validators;
 
 	use Rakit\Validation\{Validator, ErrorBag};
 

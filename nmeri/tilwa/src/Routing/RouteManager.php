@@ -4,7 +4,7 @@
 
 	use Tilwa\App\Container;
 
-	use Tilwa\Http\Response\Format\Markup;
+	use Tilwa\Response\Format\Markup;
 
 	use Generator;
 

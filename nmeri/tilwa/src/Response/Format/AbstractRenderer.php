@@ -1,10 +1,10 @@
 <?php
 
-	namespace Tilwa\Http\Response\Format;
+	namespace Tilwa\Response\Format;
 
 	use Tilwa\Contracts\{HtmlParser, Authenticator, QueueManager};
 
-	use Tilwa\Http\Request\BaseRequest;
+	use Tilwa\Request\BaseRequest;
 
 	use Tilwa\Flows\ControllerFlows;
 

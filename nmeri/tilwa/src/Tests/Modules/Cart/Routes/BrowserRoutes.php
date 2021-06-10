@@ -6,7 +6,7 @@
 
 	use Tilwa\Tests\Modules\Controllers\HandleCart;
 
-	use Tilwa\Http\Response\Format\{Markup,Json};
+	use Tilwa\Response\Format\{Markup,Json};
 
 	class BrowserRoutes extends RouteCollection {
 		

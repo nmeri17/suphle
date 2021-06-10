@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Routing;
 
-	use Tilwa\Http\Response\Format\{Markup, Redirect, Reload, AbstractRenderer};
+	use Tilwa\Response\Format\{Markup, Redirect, Reload, AbstractRenderer};
 
 	class CrudBuilder {
 

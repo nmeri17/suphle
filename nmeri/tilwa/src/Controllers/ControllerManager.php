@@ -8,7 +8,7 @@
 
 	use Tilwa\Contracts\{Orm, ControllerModel};
 
-	use Tilwa\Http\Request\BaseRequest;
+	use Tilwa\Request\BaseRequest;
 
 	use Tilwa\Errors\CrowdedConstructor;
 
