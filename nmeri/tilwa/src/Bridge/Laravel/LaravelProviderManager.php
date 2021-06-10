@@ -1,26 +1,32 @@
 <?php
 	namespace Tilwa\Bridge\Laravel;
 
-	use Illuminate\Support\ServiceProvider;
-
 	use Tilwa\Contracts\LaravelApp;
+
+	use Tilwa\App\Container;
 
 	use ReflectionClass;
 
+	use Illuminate\Support\ServiceProvider;
+
 	class LaravelProviderManager {
 
-		private $provider, $concrete, $laravelContainer;
+		private $provider, $concrete, $laravelContainer,
 
-		function __construct (ServiceProvider $provider, LaravelApp $laravelContainer) {
+		$tilwaContainer;
+
+		function __construct (ServiceProvider $provider, LaravelApp $laravelContainer, Container $tilwaContainer) {
 
 			$this->provider = $provider;
 
 			$this->laravelContainer = $laravelContainer;
+
+			$this->tilwaContainer = $tilwaContainer;
 		}
 
 		public function getConcrete():object {
 
-			return $concrete;
+			return $this->wrapConcrete();
 		}
 
 		private function mirrorBehavior ():self {
@@ -67,6 +73,22 @@
 			$namespaces[] = "helpers.php";
 
 			return implode(DIRECTORY_SEPARATOR, $namespaces);
+		}
+
+		private function wrapConcrete ():ProvidedServiceWrapper {
+
+			return $this->tilwaContainer
+
+			->genericFactory(
+				ProvidedServiceWrapper::class,
+
+				["target" => get_class($this->concrete)],
+
+				function ($types) {
+
+				    return new ProvidedServiceWrapper($this->concrete, $this->getHelperFilePath ());
+				}
+			);
 		}
 	}
 ?>

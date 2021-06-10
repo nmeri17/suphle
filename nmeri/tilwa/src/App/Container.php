@@ -97,7 +97,7 @@
 				$laravelApp
 			);
 
-			$instance = (new LaravelProviderManager($provider, $laravelApp))
+			$instance = (new LaravelProviderManager($provider, $laravelApp, $this))
 
 			->prepare()->getConcrete();
 
@@ -303,7 +303,16 @@
 
 					return $this->getClass($typeName);
 
-				return $this->breakCircular($typeName); // A requests B and vice versa. If A makes the first call, we're returning a proxied/fake A to the B instance we pass to the real A
+				return $this->genericFactory(
+					CircularBreaker::class, 
+
+					["target" => $typeName ],
+
+					function ($types) {
+
+				    	return new CircularBreaker($types["target"], $this);
+					}
+				); // A requests B and vice versa. If A makes the first call, we're returning a proxied/fake A to the B instance we pass to the real A
 			}
 
 			$defaultValue = null;
@@ -385,32 +394,21 @@
 		}
 
 		/**
-		*	@return Result of evaluating {initialize}
+		*	@return Result of evaluating {constructor}
 		*/
-		public function genericFactory (string $classDefinition, array $types, callable $initialize):object {
+		public function genericFactory (string $generic, array $types, callable $constructor):object {
+
+			$reflectedGeneric = new ReflectionClass($generic);
+
+			$genericContents = file_get_contents($reflectedGeneric->getFileName());
 
 		    foreach ($types as $placeholder => $type)
 
-		        $classDefinition = str_replace("<$placeholder>", $type, $classDefinition);
+		        $genericContents = str_replace("<$placeholder>", $type, $genericContents);
 
-		    eval($classDefinition);
+		    eval($genericContents);
 
-		    return $initialize($types);
-		}
-
-		/**
-		*	Takes a class with circular dependencies and returns a proxy
-		*/
-		private function breakCircular(string $roundCaller):object {
-
-			$reflectedClass = new ReflectionClass(CircularBreaker::class);
-
-			$breaker = file_get_contents($reflectedClass->getFileName());
-
-			return $this->genericFactory($breaker, ["target" => $roundCaller ], function ($types) {
-
-			    return new CircularBreaker($types["target"], $this);
-			});
+		    return $constructor($types);
 		}
 
 		private function unchainDependency(string $fullName):void {

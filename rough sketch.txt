@@ -42,9 +42,6 @@ Extract rejection logic into a class and inject that into both service wrapper a
 
 Revisit NoSqlLogic for implementing the factory pattern
 
-Wrap each call to the library in something that allows us invoke its calls in a sandbox containing helper requires
-
-
 
 Login Request comes in:
 	- (C) we need a guy who intercepts incoming parameters from baseRequest (interface)
