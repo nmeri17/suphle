@@ -219,12 +219,14 @@
 
 		// @return Strings[]
 		private function entryRouteMap():array {
+
+			$requestDetails = $this->requestDetails;
 			
-			if ($this->requestDetails->isApiRoute()) {
+			if ($requestDetails->isApiRoute()) {
 
-				$this->requestDetails->stripApiPrefix();
+				$requestDetails->stripApiPrefix();
 
-				return $this->requestDetails->apiVersionClasses();
+				return $requestDetails->apiVersionClasses();
 			}
 
 			return [$this->config->browserEntryRoute()];

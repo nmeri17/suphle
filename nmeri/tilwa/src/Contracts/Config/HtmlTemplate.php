@@ -4,8 +4,8 @@
 
 	interface HtmlTemplate extends ConfigMarker {
 
-		public function getViewPaths():array;
+		public function getViewPath():array;
 
-		public function addViewPath(string $path):void; // viewPaths[] =
+		public function setViewPath(string $path):void;
 	}
 ?>

@@ -6,11 +6,13 @@
 
 	use Tilwa\Flows\OuterFlowWrapper;
 
+	use Tilwa\Errors\ExceptionRenderer;
+
 	abstract class ModuleAssembly {
 
 		private $container;
 		
-		abstract public function getModules():array;
+		abstract protected function getModules():array;
 		
 		public function orchestrate():void {
 
@@ -28,13 +30,7 @@
 		
 		private function beginRequest():string {
 
-			$wrapperName = OuterFlowWrapper::class;
-
-			$wrapper = $this->setContainer()
-
-			->provisionWrapper($requestPath, $wrapperName)
-
-			->getClass($wrapperName);
+			$wrapper = $this->getFlowWrapper();
 
 			if ($wrapper->canHandle())
 
@@ -42,7 +38,7 @@
 
 			$initializer = (new ModuleToRoute)
 
-			->findContext($this->getModules());
+			->findContext($this->getModules()); // wrap in try/catch and throw if http method doesn't match
 
 			if ($initializer)
 
@@ -50,7 +46,8 @@
 
 				->triggerRequest();
 
-			// throw a 404 error to be caught by the exception renderer
+			return (new ExceptionRenderer($this->getErrorHandlers))
+			->throw( 404);
 		}
 
 		private function flowRequestHandler(OuterFlowWrapper $wrapper):string {
@@ -64,24 +61,27 @@
 			return $response;
 		}
 
-		private function setContainer():self {
+		private function getFlowWrapper ():OuterFlowWrapper {
 
-			$randomModule = current($this->getModules());
+			$wrapperName = OuterFlowWrapper::class
 
-			$this->container = $randomModule->getContainer();
+			return current($this->getModules())
 
-			return $this;
-		}
-
-		private function provisionWrapper(string $requestPath, string $wrapperName):Container {
-
-			return $this->container->whenType($wrapperName)
+			->getContainer()->whenType($wrapperName)
 
 			->needsArguments([
-				"pattern" => $requestPath,
 
 				"modules" => $this->getModules()
-			]);
+			])
+
+			->getClass($wrapperName);
+		}
+
+		protected function getErrorHandlers ():array {
+
+			// [code => handler]
+			return []; // dev can replace the handler with their instance
+			// these are global handlers taken care of by the errorManager
 		}
 	}
 ?>

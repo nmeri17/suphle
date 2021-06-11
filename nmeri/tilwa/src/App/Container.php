@@ -20,7 +20,7 @@
 
 		$dependencyChain = [],
 
-		$libraryConfigurations = [],
+		$libraryConfigs = [],
 
 		$laravelConfig, $servicesConfig,
 
@@ -30,9 +30,9 @@
 
 		$recursingFor; // the active ProvisionUnit
 
-		public function setLibraryConfigurations (array $configs):self {
+		public function setConfigs (array $configs):self {
 
-			$this->libraryConfigurations = $configs;
+			$this->libraryConfigs = $configs;
 
 			return $this;
 		}
@@ -427,7 +427,7 @@
 		// this just seems to be a shortcut to the [needs] group of methods, but doesn't want to muddle config provisioning with every other class type
 		private function hydrateConfig(string $fullName):object {
 
-			$configs = $this->libraryConfigurations;
+			$configs = $this->libraryConfigs;
 
 			if (array_key_exists($fullName, $configs))
 				

@@ -1,43 +1,34 @@
 <?php
 
-	namespace Tilwa\Request;
+	namespace Tilwa\Auth;
 
-	use Tilwa\Contracts\{Orm, Authenticator};
+	use Tilwa\Contracts\{Orm, Authenticator, Config\{Authenticator as AuthConfig, Router as RouterConfig}};
 
 	use Firebase\JWT\JWT;
 
 	class NativeAuth implements Authenticator {
 
-		private $user;
+		private $user, $databaseAdapter, $config,
+
+		$routerConfig;
 
 		private $userSearched = 0;
 
-		private $databaseAdapter;
-
-		private $sessionIdentifier = "tilwa_user_id";
-
-		private $userModel;
-
-		private $isApiRoute;
-
 		private $secretKey = getenv("APP_SECRET_KEY");
 
-		/**
-		* @param {isApiRoute} Since user cannot be authenticated by both session and API at once, the router should bind a property guiding us on what context we should work with
-		*/
-		function __construct(Orm $databaseAdapter, string $userModel, bool $isApiRoute) {
+		function __construct(Orm $databaseAdapter, AuthConfig $authConfig, RouterConfig $routerConfig) {
 
 			$this->databaseAdapter = $databaseAdapter;
 
-			$this->isApiRoute = $isApiRoute;
+			$this->routerConfig = $routerConfig;
 
-			$this->userModel = $userModel;
+			$this->authConfig = $authConfig;
 		}
 
 		// return database ID of signed in user
 		public function getIdentifier ():int {
 
-			if ($this->isApiRoute) {
+			if ($this->routerConfig->isApiRoute()) {
 
 				$headers = getallheaders();
 
@@ -62,7 +53,7 @@
 			return $_SESSION[$this->sessionIdentifier];
 		}
 
-		public function continueSession ():void {
+		public function hydrateUser ():void {
 
 			$userId = $this->getIdentifier();
 
@@ -70,20 +61,21 @@
 
 			if ($userId) {
 
-				$user = $this->databaseAdapter->findOne($this->userModel, $userId);
+				$user = $this->databaseAdapter->findOne($this->authConfig->getUserModel(), $userId);
 
-				$this->initializeSession($user->id);
+				$this->setIdentifier($user->id);
 			}
 			$this->setUser($user);
 
 			$this->userSearched = 1;
 		}
 
+		// correct this guy's usages
 		public function getUser ():User {
 
 			if ( $this->userSearched === 0)
 
-				$this->continueSession();
+				$this->hydrateUser();
 
 			return $this->user; // clear this on logout
 		}
@@ -93,13 +85,11 @@
 			$this->user = $user;
 		}
 
-		public function initializeSession (int $userId):string {
+		public function setIdentifier (int $userId):void {
 
 			if ($this->isApiRoute)
 				
 				return $this->generateToken($userId);
-
-			return $_SESSION[$this->sessionIdentifier] = "$userId";
 		}
 
 		public function terminateSession (string $identifier):void {

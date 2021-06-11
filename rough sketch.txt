@@ -42,12 +42,7 @@ Extract rejection logic into a class and inject that into both service wrapper a
 
 Revisit NoSqlLogic for implementing the factory pattern
 
-
-Login Request comes in:
-	- (C) we need a guy who intercepts incoming parameters from baseRequest (interface)
-	- he forwards these parameters to (B) and asks him for the user behind that id
-	- there are methods for actions that should happen after successful or failed auth (so we can't pretend this guy is just any other controller)
-	- unlike route methods, these methods are to return renderers
+Remember to plug in new login request handling in module assembly
 
 Request for auth route comes in:
 	- (A) depending on the authentication type (jwt/session/custom [meaning, an interface]), user id is retrieved
@@ -56,7 +51,6 @@ Request for auth route comes in:
 	- he is also overwritable in case dev wants a custom way of user hydration
 	- he's the one responseManager interfaces with and decides a user is unauthenticated when his id is missing
 
-The active overrider goes in an auth config directly injected into the responseManager
 Controller action methods can then accept auth user objects
 
 Bonus: add auth services (email verification, password recovery) dev can inject in their controllers

@@ -55,7 +55,7 @@
 			return $this->container;
 		}
 
-		public function getLibraryConfigurations():array {
+		public function getConfigs():array {
 			
 			return []; // populate this with tilwa\contracts\config => eachConfig
 		}

@@ -12,11 +12,9 @@
 
 	class AuthenticatorProvider extends ServiceProvider {
 
-		public function bindArguments(Authentication $authConfig, Router $routerConfig):array {
+		public function bindArguments( Router $routerConfig):array {
 
 			return [
-
-				"userModel" => $authConfig->getUserModel(),
 
 				"isApiRoute" => $routerConfig->isApiRoute()
 			];

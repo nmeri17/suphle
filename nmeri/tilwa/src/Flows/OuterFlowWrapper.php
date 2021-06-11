@@ -9,31 +9,23 @@
 
 	use Tilwa\Events\EventManager;
 
+	use Tilwa\Routing\RequestDetails;
+
 	class OuterFlowWrapper implements BaseResponseManager {
 
 		const FLOW_PREFIX = "tilwa_flow";
 
 		const ALL_USERS = "*";
 
-		private $incomingPattern;
+		private $requestDetails, $queueManager, $modules,
 
-		private $queueManager;
+		$cacheManager, $authenticator, $routeUmbrella,
 
-		private $modules;
+		$activeUser, $eventManager;
 
-		private $cacheManager;
-
-		private $authenticator;
-
-		private $routeUmbrella;
-
-		private $activeUser;
-
-		private $eventManager;
-
-		public function __construct(string $pattern, QueueManager $queueManager, array $modules, CacheManager $cacheManager, Authenticator $authenticator, EventManager $eventManager) {
+		public function __construct(RequestDetails $requestDetails, QueueManager $queueManager, array $modules, CacheManager $cacheManager, Authenticator $authenticator, EventManager $eventManager) {
 			
-			$this->incomingPattern = $pattern;
+			$this->requestDetails = $requestDetails;
 
 			$this->queueManager = $queueManager;
 
@@ -53,7 +45,7 @@
 
 		private function setRouteUmbrella():void {
 
-			$this->routeUmbrella = $this->cacheManager->get(self::FLOW_PREFIX . $this->incomingPattern); // or combine [tag] with the [get]
+			$this->routeUmbrella = $this->cacheManager->get(self::FLOW_PREFIX . $this->requestDetails->getPath()); // or combine [tag] with the [get]
 		}
 
 		private function getUserId():string { 
@@ -110,7 +102,7 @@
 		
 		public function emptyFlow():void {
 
-			$path = self::FLOW_PREFIX . $this->incomingPattern;
+			$path = self::FLOW_PREFIX . $this->requestDetails->getPath();
 
 			$this->queueManager->push(UpdateCountDelete::class,
 				new AccessContext($path, $this->context, $this->routeUmbrella, $this->activeUser )

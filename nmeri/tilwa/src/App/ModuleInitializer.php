@@ -117,7 +117,7 @@
 
 			$descriptor = $this->descriptor;
 
-			$this->container->setLibraryConfigurations($descriptor->getLibraryConfigurations());
+			$this->container->setConfigs($descriptor->getConfigs());
 
 			$customBindings = $this->container->getMethodParameters("entityBindings", $descriptor);
 
