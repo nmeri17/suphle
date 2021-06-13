@@ -49,13 +49,11 @@
 		}
 
 		public function loadPatterns(RouteCollection $collection):Generator {
-
-			if ($collection->_passover())
 			
-				foreach ($collection->getPatterns() as $pattern)
-				 	
-				 	yield $pattern;
-			else yield;
+			// we can't skip collections where incoming path is not one of the patterns in AuthStorage->claimedRoutes (which would've improved matching speed) cuz of the complexity of such comparison
+			foreach ($collection->getPatterns() as $pattern)
+			 	
+			 	yield $pattern;
 		}
 
 		/**
@@ -116,8 +114,16 @@
 		}
 
 		private function routeCompare(string $path, string $rendererMethod):bool {
-			
-			return $this->prefixMatch($path) && $rendererMethod == $this->requestDetails->getMethod();
+
+			$matchingPaths = $this->prefixMatch($path);
+
+			$matchingMethods = $rendererMethod == $this->requestDetails->getMethod();
+
+			if ($matchingPaths && !$matchingMethods)
+
+				throw new IncompatibleHttpMethod( $rendererMethod);
+
+			return $matchingPaths && $matchingMethods;
 		}
 
 		/* given hypothetical path: PATH_id_EDIT_id2_EDIT__SAME__OKJh_optionalO_TOMP, clean and return a path similar to a real life path; but still in a regex format so optional segments can be indicated as such

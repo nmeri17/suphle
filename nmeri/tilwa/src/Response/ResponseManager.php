@@ -20,11 +20,9 @@
 
 		$flowQueuer;
 
-		private $skipHandler = false; // is `true` on validation failure
-
 		public $responseMutations = [];
 
-		function __construct (Container $container, RouteManager $router, ControllerManager $controllerManager, RequestDetails $requestDetails, FlowResponseQueuer $flowQueuer) {
+		function __construct (Container $container, RouteManager $router, ControllerManager $controllerManager, RequestDetails $requestDetails, FlowResponseQueuer $flowQueuer, AbstractRenderer $renderer) {
 
 			$this->container = $container;
 
@@ -35,11 +33,8 @@
 			$this->requestDetails = $requestDetails;
 
 			$this->flowQueuer = $flowQueuer;
-		}
 
-		public function rendererValidationFailed():bool {
-			
-			return $this->skipHandler == true;
+			$this->renderer = $renderer;
 		}
 		
 		public function getResponse ():string {
@@ -69,11 +64,17 @@
 
 			$renderer = $this->renderer;
 
-			if ($renderer instanceof Markup && $this->router->acceptsJson())
-
-				$renderer->setWantsJson();
+			$router = $this->router;
 
 			$manager = $this->controllerManager;
+
+			if (!$this->requestDetails->isApiRoute())
+
+				$router->setPrevious($renderer, $manager->getRequest());
+
+			if ($renderer instanceof Markup && $router->acceptsJson())
+
+				$renderer->setWantsJson();
 
 			$manager->updatePlaceholders()
 
@@ -84,42 +85,12 @@
 			return $renderer->invokeActionHandler($manager->getHandlerParameters());
 		}
 
-		/** @description: Validates request and decides whether controller will be invoked
-		*	For requests originating from browser, flow will be reverted to previous request, expecting its view to read the error bag
-		*	For other clients, the handler should be skipped altogether for the errors to be immediately rendered
-		*/
-		public function assignValidRenderer ():void {
+		public function isValidRequest ():bool {
 
-			$router = $this->router;
-
-			$manager = $this->controllerManager;
-
-			$outgoingRenderer = $router->getActiveRenderer();
-
-			$browserOrigin = !$this->requestDetails->isApiRoute();
-
-			$request = $manager->getRequest();
-
-			if ( !$request->isValidated()) {
-
-				if ($browserOrigin) {
-
-					$outgoingRenderer = $router->getPreviousRenderer();
-
-					$manager->revertRequest($router->getPreviousRequest());
-				}
-
-				else $this->skipHandler = true;
-			}
-
-			else if ($browserOrigin)
-
-				$router->setPrevious($outgoingRenderer, $request);
-
-			$this->renderer = $outgoingRenderer;
+			return $this->controllerManager->getRequest()->isValidated();
 		}
 
-		// middleware delimited by commas. Middleware parameters delimited by colons
+		// middleware CURRENTLY delimited by commas. Middleware parameters delimited by colons
 		private function runMiddleware ():bool {
 
 			$passed = true;
@@ -181,6 +152,16 @@
 		public function getControllerManager():ControllerManager {
 			
 			return $this->controllerManager;
+		}
+
+		public function patternAuthentication ():AuthStorage {
+
+			// routeManager should update a renderer property after the hit
+		}
+
+		public function requestAuthenticationStatus (AuthStorage $storage):bool {
+
+			return !is_null($storage->getIdentifier());
 		}
 	}
 ?>

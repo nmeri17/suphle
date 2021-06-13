@@ -2,7 +2,7 @@
 
 	namespace Tilwa\App;
 
-	use Tilwa\Response\ResponseManager;
+	use Tilwa\Response\{ResponseManager, Format\AbstractRenderer};
 
 	use Tilwa\Routing\RouteManager;
 
@@ -48,27 +48,25 @@
 
 				return $this->laravelMatcher->getResponse();
 
+			$this->attemptAuthentication();
+
 			$manager = $this->responseManager;
 
-			$manager->bootControllerManager()
+			$validationPassed = $manager
 
-			->assignValidRenderer(); // can set response status codes (on http_response_header or something) here based on this guy's evaluation and renderer type
+			->bootControllerManager()->isValidRequest();
 
-			$validationPassed = !$manager->rendererValidationFailed();
+			if (!$validationPassed)
 
-			if ($validationPassed)
+				throw new ValidationFailure;
 
-				$manager->handleValidRequest();
+			$manager->handleValidRequest();
 
-			$preliminary = $manager->getResponse();
-
-			if ($validationPassed)
-				
-				$preliminary = $manager->mutateResponse($preliminary); // those middleware should only get the response object/headers, not our payload
+			$response = $manager->mutateResponse($manager->getResponse()); // those middleware should only get the response object/headers, not this computed response
 
 			$manager->afterRender();
 
-			return $preliminary;
+			return $response;
 		}
 
 		public function getRouter():RouteManager {
@@ -100,7 +98,9 @@
 
 				ModuleDescriptor::class => $this->descriptor, // all requests for the parent should respond with the active module
 
-				RouteManager::class => $this->router
+				RouteManager::class => $this->router,
+
+				AbstractRenderer::class => $this->router->getActiveRenderer()
 			]);
 		}
 
@@ -124,6 +124,20 @@
 			call_user_func_array([$descriptor, "entityBindings"], $customBindings);
 
 			return $this;
+		}
+
+		private function attemptAuthentication ():void {
+
+			$manager = $this->responseManager;
+
+			if ($authMethod = $manager->patternAuthentication()) {
+
+				if ( !$manager->requestAuthenticationStatus($authMethod))
+
+					throw new Unauthenticated;
+
+				$this->provideAuthMethod($authMethod); // might as well just do it here
+			}
 		}
 	}
 ?>

@@ -10,7 +10,7 @@
 
 	abstract class ModuleAssembly {
 
-		private $container;
+		private $requestDetails;
 		
 		abstract protected function getModules():array;
 		
@@ -25,10 +25,16 @@
 
 			new EnvironmentDefaults;
 
+			new ExceptionRenderer($this->getErrorHandlers(), new Container);
+
 			(new ModuleLevelEvents)->bootReactiveLogger($this->getModules());
 		}
 		
 		private function beginRequest():string {
+
+			if ($this->isLoginRequest())
+
+				return $this->handleLoginRequest();
 
 			$wrapper = $this->getFlowWrapper();
 
@@ -36,9 +42,14 @@
 
 				return $this->flowRequestHandler($wrapper);
 
+			return $this->handleGenericRequest();
+		}
+
+		private function handleGenericRequest ():string {
+
 			$initializer = (new ModuleToRoute)
 
-			->findContext($this->getModules()); // wrap in try/catch and throw if http method doesn't match
+			->findContext($this->getModules());
 
 			if ($initializer)
 
@@ -46,8 +57,7 @@
 
 				->triggerRequest();
 
-			return (new ExceptionRenderer($this->getErrorHandlers))
-			->throw( 404);
+			throw new NotFoundException;
 		}
 
 		private function flowRequestHandler(OuterFlowWrapper $wrapper):string {
@@ -79,9 +89,25 @@
 
 		protected function getErrorHandlers ():array {
 
-			// [code => handler]
-			return []; // dev can replace the handler with their instance
-			// these are global handlers taken care of by the errorManager
+			return [
+				NotFoundException::class => "handler",
+
+				Unauthenticated::class => "handler",
+
+				ValidationFailure::class => "handler",
+
+				IncompatibleHttpMethod::class => "handler"
+			];
+		}
+
+		private function handleLoginRequest ():string {
+
+			// AuthContract
+		}
+
+		private function isLoginRequest ():bool {
+
+			// needs requestDetails and AuthContract, implying the need for a container
 		}
 	}
 ?>

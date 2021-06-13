@@ -4,18 +4,18 @@
 
 	use Orm;
 
-	interface Authenticator {
+	interface AuthStorage {
 
-		function __construct(Orm $databaseAdapter, string $userModel, bool $isApiRoute);
-
-		public function getIdentifier ():int;
-
-		public function continueSession ():void;
-
-		public function getUser ();
+		/*public function getUser ();
 
 		private function setUser ($user);
 
-		public function initializeSession (int $userId):string;
+		public function hydrateUser ():void;*/
+
+		public function getIdentifier ():string;
+
+		public function setIdentifier (string $identifier):void;
+
+		public function claimRoutes (array $paths):self;
 	}
 ?>

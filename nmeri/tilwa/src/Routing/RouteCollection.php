@@ -10,7 +10,7 @@
 
 		private $canaryValidator, $config,
 
-		$utilities = ["_mirrorBrowserRoutes", "_passover", "_handlingClass", "_crud", "_register", "_setAllow", "_canaryEntry", "_setLocalPrefix", "_whenUnauthorized"];
+		$utilities = ["_mirrorBrowserRoutes", "_authenticatedPaths", "_handlingClass", "_crud", "_register", "_setAllow", "_canaryEntry", "_setLocalPrefix", "_whenUnauthorized"];
 
 		public $prefixClass, $isMirroring, $expectsCrud, $localPrefix;
 
@@ -95,13 +95,9 @@
 			return array_diff($myMethods, $this->utilities);
 		}
 
-		/**
-		* Depending on how this eventually turns out, permissions may have to be hydrated and injected instead of this string
-		* @return $this->config->permissions()->auth();
-		*/
-		public function _passover():bool {
+		public function _authenticatedPaths():AuthStorage {
 			
-			return true;
+			return $this->authStorage->claimRoutes([]);
 		}
 
 		protected function _canaryEntry(array $canaries):void {
@@ -114,8 +110,5 @@
 
 					return $this->_prefixFor($canary->entryClass());
 		}
-
-		// will redirect to the route returned from here if route matches but [_passover] failed
-  		protected function _whenUnauthorized () {}
 	}
 ?>

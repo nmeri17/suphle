@@ -215,13 +215,9 @@
 
 		private function canProcessPath():bool {
 
-			$manager = $this->responseManager;
+			return $this->responseManager->bootControllerManager()
 
-			$manager->bootControllerManager()
-
-			->assignValidRenderer();
-
-			return !$manager->rendererValidationFailed();
+			->isValidRequest();
 		}
 
 		private function updateRequest(array $updates):self {
