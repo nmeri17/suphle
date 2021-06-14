@@ -7,6 +7,8 @@
 	use Tilwa\Routing\RouteManager;
 
 	use Tilwa\Bridge\Laravel\ModuleRouteMatcher;
+
+	use Tilwa\Contracts\{AuthStorage, Auth as AuthContract};
 	
 	class ModuleInitializer {
 
@@ -126,9 +128,16 @@
 			return $this;
 		}
 
+		/**
+		 * If route is secured, confirm user is authenticated
+		 * 
+		 * @throws Unauthenticated
+		*/
 		private function attemptAuthentication ():void {
 
 			$manager = $this->responseManager;
+
+			$container = $this->container;
 
 			if ($authMethod = $manager->patternAuthentication()) {
 
@@ -136,7 +145,23 @@
 
 					throw new Unauthenticated;
 
-				$this->provideAuthMethod($authMethod); // might as well just do it here
+				$container->whenTypeAny()
+
+				->needsAny([ AuthStorage::class => $authMethod]);
+			}
+
+			else {
+
+				$defaultStorage = $container->getClass(AuthContract::class)
+
+				->defaultAuthenticationStorage();
+
+				$container->whenTypeAny()
+
+				->needsAny([
+
+					AuthStorage::class => $container->getClass($defaultStorage)
+				]);
 			}
 		}
 	}

@@ -8,7 +8,18 @@
 
 	use Tilwa\Response\Format\{Markup,Json};
 
+	use Tilwa\Contracts\Config\Router as RouterConfig;
+
 	class BrowserRoutes extends RouteCollection {
+
+		function __construct(CanaryValidator $validator, RouterConfig $routerConfig, SessionStorage $authStorage) {
+
+			$this->routerConfig = $routerConfig;
+
+			$this->canaryValidator = $validator;
+
+			$this->authStorage = $authStorage;
+		}
 		
 		public function _prefixCurrent() {
 			

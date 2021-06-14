@@ -2,20 +2,23 @@
 
 	namespace Tilwa\Contracts;
 
-	use Orm;
-
 	interface AuthStorage {
 
-		/*public function getUser ();
+		private function logout ():void;
 
-		private function setUser ($user);
+		public function loginAs ();
 
-		public function hydrateUser ():void;*/
-
+		// used to determine auth status during a request
 		public function getIdentifier ():string;
 
-		public function setIdentifier (string $identifier):void;
+		public function startSession (string $userId):string;
 
-		public function claimRoutes (array $paths):self;
+		public function resumeSession ():void;
+
+		public function claimPatterns (array $paths):self;
+
+		public function getUser ();
+
+		public function isClaimedPattern (string $pattern):bool;
 	}
 ?>

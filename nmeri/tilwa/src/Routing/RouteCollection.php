@@ -4,22 +4,16 @@
 
 	use Tilwa\Response\Format\AbstractRenderer;
 
-	use Tilwa\Contracts\Config\Router as RouterConfig;
+	use Tilwa\Auth\TokenStorage;
 
 	abstract class RouteCollection {
 
-		private $canaryValidator, $config,
+		private $canaryValidator, $routerConfig, $authStorage,
 
-		$utilities = ["_mirrorBrowserRoutes", "_authenticatedPaths", "_handlingClass", "_crud", "_register", "_setAllow", "_canaryEntry", "_setLocalPrefix", "_whenUnauthorized"];
+		$utilities = ["_mirrorBrowserRoutes", "_authenticatedPaths", "_handlingClass", "_crud", "_register", "_setAllow", "_canaryEntry", "_setLocalPrefix", "_whenUnauthorized"
+		];
 
 		public $prefixClass, $isMirroring, $expectsCrud, $localPrefix;
-
-		function __construct(CanaryValidator $validator, RouterConfig $config) {
-
-			$this->config = $config;
-
-			$this->canaryValidator = $validator;
-		}
 
 		/**
 		* overwrite in your routes file
@@ -32,11 +26,13 @@
 		* @description: should be called only in the API first version's _index method
 		* Assumes that _index method is defined last so subsequent methods found within the same scope can overwrite methods from the nested browser route search
 		*/
-		public function _mirrorBrowserRoutes ():void {
+		public function _mirrorBrowserRoutes (TokenStorage $tokenStorage):void {
+
+			$this->authStorage = $tokenStorage;
 
 			$this->isMirroring = true;
 
-			return $this->_prefixFor($this->config->getBrowserEntry());
+			$this->_prefixFor($this->routerConfig->browserEntryRoute());
 		}
 
 		// @return Executable
@@ -44,7 +40,7 @@
 		
 		public function _prefixCurrent():string {
 			
-			return null;
+			return "";
 		}
 		
 		// crud routes must be anchored by either a preceding collection group name, or the current one. So, we make that assertion from this property set externally by the manager
@@ -59,7 +55,7 @@
 
 				$this->expectsCrud = true;
 
-				return new CrudBuilder($this, $viewPath, $this->config->getModelRequestParameter()); // you must call `save` in the invoking method
+				return new CrudBuilder($this, $viewPath, $this->routerConfig->getModelRequestParameter()); // you must call `save` in the invoking method
 			}
 		}
 
@@ -97,7 +93,7 @@
 
 		public function _authenticatedPaths():AuthStorage {
 			
-			return $this->authStorage->claimRoutes([]);
+			return $this->authStorage->claimPatterns([]);
 		}
 
 		protected function _canaryEntry(array $canaries):void {

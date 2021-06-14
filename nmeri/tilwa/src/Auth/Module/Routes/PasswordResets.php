@@ -22,7 +22,10 @@
 
 		public function SUBMIT__MAILh() {
 			
-			return $this->_post(new Redirect("sendConfirmMail", "resets/mail-success"));
+			return $this->_post(new Redirect("sendConfirmMail", function () {
+
+				return "resets/mail-success";
+			}));
 		}
 		
 		public function MAIL__SUCCESSh() {
@@ -37,7 +40,10 @@
 
 		public function NEW__PASSWORDh() {
 			
-			return $this->_post(new Redirect("updatePassword", "/resets/password-updated"));
+			return $this->_post(new Redirect("updatePassword", function () {
+
+				return "/resets/password-updated";
+			}));
 		}
 		
 		public function PASSWORD__UPDATEDh() {
@@ -45,9 +51,9 @@
 			return $this->_get(new Markup("updateSuccess", "password/update-success"));
 		}
 
-		public function _passover():bool {
+		public function _authenticatePaths():bool {
 			
-			return !$this->allow->isAuth();
+			//return !$this->allow->isAuth();
 		}
 	}
 ?>

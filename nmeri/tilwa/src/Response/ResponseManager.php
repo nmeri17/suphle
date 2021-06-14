@@ -90,7 +90,9 @@
 			return $this->controllerManager->getRequest()->isValidated();
 		}
 
-		// middleware CURRENTLY delimited by commas. Middleware parameters delimited by colons
+		/** middleware CURRENTLY delimited by commas. Middleware parameters delimited by colons
+		 * we want middleware that receives and updates requestDetails. we provide whenAny with what is returned. There's also another one that receives the renderer after action invocation but before render
+		*/
 		private function runMiddleware ():bool {
 
 			$passed = true;
@@ -134,7 +136,7 @@
 
 			$this->controllerManager->bootController()
 
-			->setHandlerParameters($this->renderer->handler)
+			->setHandlerParameters($this->renderer->getHandler())
 
 			->assignActionRequest() // this should run before model hydration and before validation
 
@@ -156,10 +158,12 @@
 
 		public function patternAuthentication ():AuthStorage {
 
-			// routeManager should update a renderer property after the hit
+			return $this->router->getPatternAuthentication();
 		}
 
 		public function requestAuthenticationStatus (AuthStorage $storage):bool {
+
+			$storage->resumeSession();
 
 			return !is_null($storage->getIdentifier());
 		}

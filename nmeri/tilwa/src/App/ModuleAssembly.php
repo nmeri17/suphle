@@ -8,13 +8,21 @@
 
 	use Tilwa\Errors\ExceptionRenderer;
 
+	use Tilwa\Routing\RequestDetails;
+
+	use Tilwa\Contracts\{Config\Auth as AuthConfig, LoginRenderers};
+
+	use Tilwa\Auth\LoginRequestHandler;
+
 	abstract class ModuleAssembly {
 
-		private $requestDetails;
+		private $requestDetails, $container;
 		
 		abstract protected function getModules():array;
 		
 		public function orchestrate():void {
+
+			$this->setContainer();
 
 			$this->bootInterceptor();
 
@@ -25,16 +33,19 @@
 
 			new EnvironmentDefaults;
 
-			new ExceptionRenderer($this->getErrorHandlers(), new Container);
+			new ExceptionRenderer($this->getErrorHandlers(), $this->container);
 
 			(new ModuleLevelEvents)->bootReactiveLogger($this->getModules());
 		}
 		
 		private function beginRequest():string {
 
-			if ($this->isLoginRequest())
+			if ($this->requestDetails->getMethod() == "post") {
 
-				return $this->handleLoginRequest();
+				if ($rendererName = $this->getLoginRenderer())
+
+					return $this->handleLoginRequest($rendererName);
+			}
 
 			$wrapper = $this->getFlowWrapper();
 
@@ -75,9 +86,7 @@
 
 			$wrapperName = OuterFlowWrapper::class
 
-			return current($this->getModules())
-
-			->getContainer()->whenType($wrapperName)
+			return $this->container->whenType($wrapperName)
 
 			->needsArguments([
 
@@ -100,14 +109,29 @@
 			];
 		}
 
-		private function handleLoginRequest ():string {
+		private function setContainer ():void {
 
-			// AuthContract
+			$this->container = current($this->getModules())
+
+			->getContainer();
 		}
 
-		private function isLoginRequest ():bool {
+		private function getLoginRenderer ():string {
 
-			// needs requestDetails and AuthContract, implying the need for a container
+			$requestDetails = $this->container->getClass(RequestDetails::class);
+
+			$authConfig = $this->container->getClass(AuthConfig::class);
+
+			return $authConfig->getPathRenderer($requestDetails->getPath());
+		}
+
+		private function handleLoginRequest (string $rendererName):string {
+
+			$renderer = $this->container->getClass($rendererName);
+
+			return (new LoginRequestHandler($renderer, $this->container))
+
+			->getResponse();
 		}
 	}
 ?>

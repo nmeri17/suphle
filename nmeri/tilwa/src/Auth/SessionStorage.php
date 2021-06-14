@@ -2,20 +2,36 @@
 
 	namespace Tilwa\Auth;
 
-	use Tilwa\Contracts\AuthStorage;
+	use Tilwa\Contracts\{Orm, Config\Auth as AuthContract};
 
-	class SessionStorage implements AuthStorage {
+	class SessionStorage extends BaseAuthStorage {
 
-		private $identifier = "tilwa_user_id";
+		private $identifierKey = "tilwa_user_id";
 
-		public function setIdentifier (string $value):void {
+		public function __construct (Orm $databaseAdapter, AuthContract $authConfig) {
 
-			$_SESSION[$this->identifier] = $value;
+			$this->databaseAdapter = $databaseAdapter;
+
+			$this->authConfig = $authConfig;
 		}
 
-		public function getIdentifier (string $value):string {
+		public function startSession (string $value):string {
 
-			return $_SESSION[$this->identifier];
+			return $_SESSION[$this->identifierKey] = $value;
+		}
+
+		public function resumeSession ():void {
+
+			$this->identifier = $_SESSION[$this->identifierKey];
+		}
+
+		public function logout ():void {
+
+			parent::logout();
+
+			$_SESSION = [];
+
+			session_destroy();
 		}
 	}
 ?>

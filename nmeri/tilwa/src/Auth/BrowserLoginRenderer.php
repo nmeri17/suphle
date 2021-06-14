@@ -10,19 +10,22 @@
 
 		private $authService;
 
-		public function __construct (EmailPasswordRepo $authService) {
+		public function __construct (BrowserAuthRepo $authService) {
 
 			$this->authService = $authService;
 		}
 
 		public function successRenderer ():AbstractRenderer {
 
-			return new Redirect( "successLogin", "/");
+			return new Redirect( "successLogin", function () {
+
+				return "/";
+			});
 		}
 
 		public function failedRenderer ():AbstractRenderer {
 
-			return new Reload( "failedLogin", "/");
+			return new Reload( "failedLogin");
 		}
 
 		public function getLoginService ():LoginActions {

@@ -18,7 +18,9 @@
 
 		private $config, $activeRenderer, $payload,
 
-		$requestDetails, $fullTriedPath, $container;
+		$requestDetails, $fullTriedPath, $container,
+
+		$patternAuthentication;
 
 		function __construct(RouterConfig $config, Container $container, RequestDetails $requestDetails) {
 
@@ -30,10 +32,6 @@
 		}
 
 		public function findRenderer ():AbstractRenderer {
-
-			$this->container->whenType(RouteCollection::class)
-
-			->needsArguments($this->getCollectionArguments())
 
 			foreach ($this->entryRouteMap() as $collection) {
 				
@@ -78,17 +76,29 @@
 					- pair empty incoming path with _index method
 					- crud methods disregard their method names
 				*/
-				if (($pattern == "_index") || $collection->expectsCrud) $pattern = "";
+				if (($pattern == "_index") || $collection->expectsCrud)
 
-				if (!empty($patternPrefix) ) $pattern = "$patternPrefix/$pattern";
+					$computedPattern = "";
 
-				$newRouteState = $invokerPrefix ? "$routeState/$pattern": $pattern;
+				else $computedPattern = $pattern;
 
-				$parsed = $this->regexForm($newRouteState);
+				if (!empty($patternPrefix))
+
+					$computedPattern = "$patternPrefix/$computedPattern";
+
+				$fullRouteState = "$routeState/$computedPattern";
+
+				$parsed = $this->regexForm($fullRouteState);
 
 				if (!is_null($collection->prefixClass) && $this->prefixMatch($parsed)) { // only delve deeper if we're on the right track i.e. if nested path = foo/bar/foobar, and nested method "bar" defines prefix, we only wanna explore its contents if requested route matches foo/bar
 
-					return $this->recursiveSearch($collection->prefixClass, $newRouteState, $pattern); // we don't bother checking whether a route was found or not because if there was none after going downwards, searching sideways won't help either
+					$this->setPatternAuthentication($collection, $pattern);
+
+					return $this->recursiveSearch($collection->prefixClass, $fullRouteState, $computedPattern); /** we don't bother checking whether a route was found or not because if there was none after going downwards*, searching sideways* won't help either
+
+					 * downwards = deeper into a collection
+					 * sideways = other patterns on this same collection
+					*/
 				}
 				else {
 					foreach ($rendererList as $path => $renderer) { // we'll usually get one route here, except for CRUD invocations
@@ -98,6 +108,8 @@
 							$parsed .= $this->regexForm($path);
 
 						if ($this->routeCompare($parsed, $renderer->getRouteMethod())) {
+
+							$this->setPatternAuthentication($pattern);
 
 							$this->fullTriedPath = $parsed;
 
@@ -185,9 +197,9 @@
 			}, $routeState);
 		}
 
-		private function prefixMatch (string $newRouteState):bool {
+		private function prefixMatch (string $fullRouteState):bool {
 			
-			return preg_match("/^$newRouteState
+			return preg_match("/^$fullRouteState
 				?# neutralize trailing slash in replaced path
 				/ix", $this->requestDetails->getPath());
 		}
@@ -260,17 +272,6 @@
 			return call_user_func_array([$renderer, $dependencyMethod], $parameters);
 		}
 
-		private function getCollectionArguments():array {
-
-			return [
-				"permissions" => $this->container
-
-				->getClass($this->config->routePermissions()),
-				
-				"browserEntry" => $this->config->browserEntryRoute()
-			];
-		}
-
 		private function provideRendererDependencies(string $renderer, string $controller):Container {
 
 			return $this->container->whenType($renderer)
@@ -278,6 +279,25 @@
 			->needsArguments([
 				"controllerClass" => $controller
 			]);
+		}
+
+		private function setPatternAuthentication(RouteCollection $activeCollection, string $pattern):void {
+
+			if ( method_exists($activeCollection, "_authenticatedPaths")) { // outer auth rules should govern internal ones without any apparent protection
+				
+				$authStorage = $activeCollection->_authenticatedPaths();
+
+				if ($authStorage->isClaimedPattern($pattern)) // if a higher level security was applied to a child collection with its own rules, omitting the current pattern, the security will be withdrawn from that pattern
+
+					$this->patternAuthentication = $authStorage;
+
+				else $this->patternAuthentication = null;
+			}
+		}
+
+		public function getPatternAuthentication ():AuthStorage {
+
+			return $this->patternAuthentication;
 		}
 	}
 ?>
