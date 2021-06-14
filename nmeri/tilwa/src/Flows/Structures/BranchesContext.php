@@ -2,7 +2,7 @@
 
 	namespace Tilwa\Flows\Structures;
 
-	use Tilwa\Http\Response\{Format\AbstractRenderer, ResponseManager};
+	use Tilwa\Response\{Format\AbstractRenderer, ResponseManager};
 
 	class BranchesContext {
 

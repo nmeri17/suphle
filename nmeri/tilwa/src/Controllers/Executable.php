@@ -8,24 +8,7 @@
 
 	class Executable {
 
-		private $factoryList;
-
-		private $services;
-
-		private $container;
-
-		private $invalidService;
-
-		public function alternateFactory(string $interface, ...$arguments):object {
-			
-			$concrete = $this->factoryList[$interface](...$arguments);
-
-			foreach ([self::class, $interface] as $parent)
-				
-				if (!$concrete instanceof $parent) return null;
-			
-			return $concrete;
-		}
+		private $services, $container, $invalidService;
 
 		# ideally, this should be the only expression in controller's constructor
 		protected function loadServices(array $dependencies) {

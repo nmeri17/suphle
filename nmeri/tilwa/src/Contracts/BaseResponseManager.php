@@ -1,11 +1,11 @@
 <?php
 
-	namespace Tilwa\Http\Response;
+	namespace Tilwa\Response;
 
 	interface BaseResponseManager {
 		
 		public function getResponse ();
 
-		public function afterRender($data);
+		public function afterRender($data):void;
 	}
 ?>

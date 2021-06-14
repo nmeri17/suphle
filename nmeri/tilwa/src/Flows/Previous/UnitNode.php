@@ -8,7 +8,11 @@
 
 		private $nodeName; // the key on the previous response body this node is attached to
 
-		const SURVIVE_FOR = 12;
+		private $config = [];
+
+		const TTL = 1;
+
+		const MAX_HITS = 2;
 
 		public function getActions():array {
 			
@@ -20,12 +24,31 @@
 			return $this->nodeName;
 		}
 		
-		// means this won't be cleared on hit and won't be loaded by subsequent flows matching the same builder
-		public function surviveFor(int $duration ):self {
+		/**
+		* @param {callback} int Function(string $userId, string $pattern)
+		*/
+		public function setTTL(callable $callback):self {
 
-			$this->actions[self::SURVIVE_FOR] = $duration;
+			$this->config[self::TTL] = $callback;
 
 			return $this;
+		}
+		
+		/**
+		*	Expire cache contents after this value elapses
+		*
+		*	@param {callback} int Function(string $userId, string $pattern)
+		*/ 
+		public function setMaxHits(callable $callback):self {
+
+			$this->config[self::MAX_HITS] = $callback;
+			
+			return $this;
+		}
+
+		public function getConfig():array {
+			
+			return $this->config;
 		}
 	}
 ?>

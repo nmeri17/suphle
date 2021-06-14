@@ -26,9 +26,12 @@
 
 			$context = $this->users[$userId];
 
-			if (!$context || $context->getExpiresAt() >= new DateTime) return;
+			if ($context) {
 
-			return $context;
+				$expiresAt = $context->getExpiresAt($userId, $this->routeName);
+
+				if ($expiresAt >= new DateTime) return $context;
+			}
 		}
 
 		public function clearUser(string $userId):void {

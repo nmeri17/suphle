@@ -8,7 +8,7 @@
 
 	use Tilwa\Flows\Previous\UnitNode;
 
-	use Tilwa\Http\Response\ResponseManager;
+	use Tilwa\Response\ResponseManager;
 
 	// for queueing the cached endpoint on hit and queuing sub-flows
 	class RouteBranches {
@@ -51,12 +51,11 @@
 
 			if ($manager) {
 				
-				$previousPayload = $this->context->getRenderer()->getRawResponse();
+				$previousPayload = $context->getRenderer()->getRawResponse();
 
-				$this->hydrator->runNodes(
-
-					$manager, $structure, $context->getUserId(), $previousPayload
-				);
+				$this->hydrator->setDependencies($manager, $previousPayload)
+				
+				->runNodes( $structure, $context->getUserId());
 			}
 		}
 

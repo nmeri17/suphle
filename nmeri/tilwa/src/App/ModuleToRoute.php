@@ -1,47 +1,24 @@
 <?php
 
 	namespace Tilwa\App;
-	
-	use Dotenv\Dotenv;
 
-	use Tilwa\Http\Response\ResponseManager;
-
+	/**
+	 * Manager/wrapper around [ModuleInitializer]
+	*/
 	class ModuleToRoute {
 		
-		public function findContext(array $modules, string $requestPath):ModuleInitializer {
+		public function findContext(array $descriptors):ModuleInitializer {
 			
-			foreach($modules as $module) {
+			foreach($descriptors as $descriptor) {
 
-				$routeMatcher = $this->getRouteMatcher($module, $requestPath);
+				$routeMatcher = (new ModuleInitializer($descriptor))
+
+				->initialize()->assignRoute();
 				
-				if ($routeMatcher->foundRoute)
+				if ($routeMatcher->didFindRoute())
 
 					return $routeMatcher;
 			}
-		}
-
-		private function getHttpMethod ():string {
-
-			return strtolower(
-
-				$_POST["_method"] ?? $_SERVER['REQUEST_METHOD']
-			);
-		}
-
-		private function getRouteMatcher(ParentModule $module, string $requestPath):ModuleInitializer {
-
-			$container = $module->getContainer();
-
-			$router = new RouteManager($module, $container, $requestPath, $this->getHttpMethod());
-
-			$module->entityBindings($router);
-
-			$container->setServiceProviders($module->getServiceProviders());
-
-			$responseManager = $container->getClass(ResponseManager::class);
-
-			return (new ModuleInitializer($module, $responseManager, $router))
-			->assignRoute();
 		}
 	}
 ?>

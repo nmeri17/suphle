@@ -6,27 +6,21 @@
 
 	use Tilwa\App\Container;
 
-	use Tilwa\Contracts\Orm;
+	use Tilwa\Contracts\{Orm, ControllerModel};
 
-	use Tilwa\Http\Request\BaseRequest;
+	use Tilwa\Request\BaseRequest;
 
 	use Tilwa\Errors\CrowdedConstructor;
 
 	class ControllerManager {
 
-		private $controller;
+		private $controller, $container,
 
-		private $databaseAdapter;
+		$handlerParameters, $request, $actionModels;
 
-		private $container;
-
-		private $handlerParameters;
-
-		function __construct( Container $container, Orm $databaseAdapter) {
+		function __construct( Container $container) {
 
 			$this->container = $container;
-
-			$this->databaseAdapter = $databaseAdapter;
 		}
 
 		public function setController(Executable $controller):void {
@@ -47,11 +41,11 @@
 				throw new CrowdedConstructor;
 		}
 
-		public function setHandlerParameters(string $actionMethod):void {
+		public function setHandlerParameters(string $actionMethod):self {
 
-			$c = $this->controller;
+			$this->handlerParameters = $this->container->getMethodParameters($actionMethod, get_class($this->controller));
 
-			$this->handlerParameters = $this->container->getMethodParameters($actionMethod, $c::class);
+			return $this;
 		}
 
 		public function getHandlerParameters():array {
@@ -59,44 +53,75 @@
 			return $this->handlerParameters;
 		}
 
-		public function provideModelArguments(BaseRequest $request, string $httpMethod):void {
+		public function assignModelsInAction():self {
 
-			$modelArguments = $this->findModelsInAction();
+			$this->actionModels = array_filter($this->handlerParameters, function ($parameter) {
 
-			if (!empty($modelArguments))
+				return $parameter instanceof ControllerModel;
+			});
 
-				$this->hydrateModels($request, $modelArguments, $httpMethod);
-		}
-
-		private function findModelsInAction():array {
-
-			return array_filter($this->handlerParameters, function ($parameter) {
-
-				return $this->databaseAdapter->isModel($argument);
-			}, ARRAY_FILTER_USE_KEY);
+			return $this;
 		}
 
 		// mutates the underlying handler parameters
-		private function hydrateModels(BaseRequest $request, array $modelArguments, string $httpMethod):void {
+		public function hydrateModels(string $httpMethod):self {
 			
-			if ($httpMethod == "get") {// post has nothing to fetch/build. put/delete can return builders but risk developer using them directly instead of passing it to the service
+			if ($httpMethod != "post") { // post has nothing to fetch/build
 
-				foreach ($modelArguments as $parameter => $model)
+				foreach ($this->actionModels as $parameter => $modelWrapper) {
 
-					$this->handlerParameters[ $parameter] = $this->loadModelForGet(
-						$model::class, $request->$parameter, $parameter
-					);
+					$explicit = $this->container->getClass($modelWrapper);
+
+					$explicit->setIdentifier($this->request->$parameter);
+
+					$this->handlerParameters[$parameter] = new ActionModelProxy($explicit);
+				}
 			}
 		}
 
-		private function loadModelForGet(string $modelName, $modelId):object {
-			
-			return $this->databaseAdapter->findOne( $modelName, $modelId);
-		}
-
-		public function bootController():void {
+		public function bootController():self {
 
 			$this->controller->setContainer($this->container);
+
+			return $this;
+		}
+
+		public function assignActionRequest():self {
+
+			foreach ($this->handlerParameters as $parameter) {
+				
+				if ($parameter instanceof BaseRequest)
+
+					$this->request = $parameter;
+			}
+			return $this;
+		}
+
+		public function revertRequest(BaseRequest $previousRequest):self {
+
+			$previousRequest->setValidationErrors( $this->request->validationErrors() );
+			
+			$this->request = $previousRequest;
+
+			return $this;
+		}
+
+		public function getRequest():BaseRequest {
+			
+			return $this->request;
+		}
+		
+		// this should go first before action argument instantiation
+		public function updatePlaceholders():self {
+
+			$pattern = "(?<![A-Z0-9])# negative lookbehind: given PATH_id_EDIT_id2_EDIT__SAME__OKJh_optionalO_TOMP, refuse to match the h in the compound segment
+			([a-z0-9]+)# pick placeholders"; // confirm this guy works with underscores, not slashes
+
+			preg_match("/$pattern/x", $this->request->getPath(), $matches);
+
+			$this->request->setPlaceholders($matches[0]);
+
+			return $this;
 		}
 	}
 ?>

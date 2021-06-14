@@ -1,6 +1,6 @@
 flesh out auth controller actions. Implement loginAs
 
-install plates
+install transphpform and turbo
 
 ->createQueryBuilder()
 
@@ -16,9 +16,38 @@ try to deploy on azure
 
 When you find a way of identifying orm models, revisit NoSqlLogic->setup
 
-when cacheManager is integrated, refactor its usage wherever it appears in respect to accessing nested objects; tags etc. is the override pattern we're using good or can it be updated while in the cache
+when cacheManager is integrated:
+	- refactor its usage wherever it appears in respect to accessing nested objects; tags etc
+	- is the override pattern we're using good or can it be updated while in the cache?
 
 #
-work needed on RouteUserNode, flowHydrator, updateReactor, controllerFlows
+work needed on updateReactor
 
 what container is used to hydrate handler method on the queued job?
+
+on flow hit, upload the rest into the shared space for all users insted of simply discarding it
+
+AssignListeners::class
+
+we need a cli command for copying laravel config/migrations files from the library locations to dev land i.e. so config can lift the files (from the hard-coded "config" folder)
+
+
+##controllers and services
+
+Bar:
+	- app level service entry into repositories
+	- orm in services
+Extract rejection logic into a class and inject that into both service wrapper and executable classes. then implement an interface that informs these parents to run x whenever such interface is met
+	prefersServices, servicePreferenceManager
+
+Revisit NoSqlLogic for implementing the factory pattern
+
+Bonus: add auth services (email verification, password recovery) dev can inject in their controllers
+
+Pending:
+	- exception renderer
+
+1) want to visit admin page (GET requests). involves no models. blocked at route PREFIX level OR the service delivering admin services is locked (cuz even though services are reusable, there's still the tendency of forgetting to tag a new service method)
+2) a GET/POST request to view x model not belonging to me. locked at model level
+
+In each case, failure to return true throws an error caught by our external handler

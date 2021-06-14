@@ -2,25 +2,25 @@
 
 	namespace Tilwa\ServiceProviders;
 
-	use Tilwa\App\{Bootstrap, ServiceProvider};
+	use Tilwa\App\ServiceProvider;
 
-	use Tilwa\Http\Response\Templating\TemplateEngine;
-
-	use Tilwa\Routing\RouteManager;
+	use Tilwa\Contracts\{ModuleFiles, HtmlTemplate};
 
 	class HtmlTemplateProvider extends ServiceProvider {
 
-		public function bindArguments(Bootstrap $module, RouteManager $router) {
+		public function bindArguments(ModuleFiles $fileConfig, HtmlTemplate $htmlConfig):array {
+
+			$htmlConfig->addViewPath($fileConfig->activeModulePath(). DIRECTORY_SEPARATOR) . 'views';
 
 			return [
 
-				"folder" => $module->getViewPath()
+				"config" => $htmlConfig
 			];
 		}
 
 		public function concrete():string {
 
-			return TemplateEngine::class;
+			return ""; // replace with transphporm adapter
 		}
 	}
 ?>

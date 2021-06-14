@@ -1,45 +1,23 @@
 <?php
 
 	namespace Tilwa\Routing;
-	
-	use Controllers\Home;
 
-	use Tilwa\Http\Response\Format\AbstractRenderer;
+	use Tilwa\Response\Format\AbstractRenderer;
 
-	class RouteCollection {
+	use Tilwa\Auth\TokenStorage;
 
-		private $utilities;
+	abstract class RouteCollection {
 
-		public $prefixClass;
+		private $canaryValidator, $routerConfig, $authStorage,
 
-		private $allow;
+		$utilities = ["_mirrorBrowserRoutes", "_authenticatedPaths", "_handlingClass", "_crud", "_register", "_setAllow", "_canaryEntry", "_setLocalPrefix", "_whenUnauthorized"
+		];
 
-		private $canaryValidator;
-
-		private $browserEntry;
-
-		public $isMirroring;
-
-		public $expectsCrud;
-
-		public $localPrefix;
+		public $prefixClass, $isMirroring, $expectsCrud, $localPrefix;
 
 		/**
-		* @param {permissions} @see `Bootstrap->routePermissions`
-		*/
-		function __construct(CanaryValidator $validator, string $browserEntry, object $permissions) {
-
-			$this->allow = $permissions;
-
-			$this->canaryValidator = $validator;
-
-			$this->browserEntry = $browserEntry;
-
-			$this->utilities = ["_mirrorBrowserRoutes", "_passover", "_handlingClass", "_crud", "_register", "_setAllow", "_canaryEntry", "_setLocalPrefix", "_whenUnauthorized"];
-		}
-
-		/** overwrite in your routes file
-			
+		* overwrite in your routes file
+		*	
 		* will be treated specially in the matcher, when path is empty i.e. /, cart/
 		*/
 		public function _index ():array; // register a route here
@@ -48,21 +26,21 @@
 		* @description: should be called only in the API first version's _index method
 		* Assumes that _index method is defined last so subsequent methods found within the same scope can overwrite methods from the nested browser route search
 		*/
-		public function _mirrorBrowserRoutes ():void {
+		public function _mirrorBrowserRoutes (TokenStorage $tokenStorage):void {
+
+			$this->authStorage = $tokenStorage;
 
 			$this->isMirroring = true;
 
-			return $this->_prefixFor($this->browserEntry);
+			$this->_prefixFor($this->routerConfig->browserEntryRoute());
 		}
 
-		public function _handlingClass ():string {
-
-			return Home::class; // default controller
-		}
+		// @return Executable
+		abstract public function _handlingClass ():string;
 		
 		public function _prefixCurrent():string {
 			
-			return null;
+			return "";
 		}
 		
 		// crud routes must be anchored by either a preceding collection group name, or the current one. So, we make that assertion from this property set externally by the manager
@@ -77,7 +55,7 @@
 
 				$this->expectsCrud = true;
 
-				return new CrudBuilder($this, $viewPath); // you must call `save` in the invoking method
+				return new CrudBuilder($this, $viewPath, $this->routerConfig->getModelRequestParameter()); // you must call `save` in the invoking method
 			}
 		}
 
@@ -90,7 +68,7 @@
 
 		protected function _register(AbstractRenderer $renderer, string $method):array {
 
-			$renderer->routeMethod = ltrim($method, "_");
+			$renderer->setRouteMethod(ltrim($method, "_"));
 
 			return [$renderer];
 		}
@@ -113,10 +91,9 @@
 			return array_diff($myMethods, $this->utilities);
 		}
 
-		# @return $this->allow->auth();
-		public function _passover():bool {
+		public function _authenticatedPaths():AuthStorage {
 			
-			return true;
+			return $this->authStorage->claimPatterns([]);
 		}
 
 		protected function _canaryEntry(array $canaries):void {
@@ -129,12 +106,5 @@
 
 					return $this->_prefixFor($canary->entryClass());
 		}
-
-		public function attachFlow() {
-			# code...
-		}
-
-		// will redirect to the route returned from here if route matches but [_passover] failed
-  		protected function _whenUnauthorized () {}
 	}
 ?>

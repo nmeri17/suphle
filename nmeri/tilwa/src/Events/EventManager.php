@@ -1,25 +1,21 @@
 <?php
 	namespace Tilwa\Events;
 
-	use Tilwa\App\ParentModule;
+	use Tilwa\App\ModuleDescriptor;
+
+	use Tilwa\Events\Structures\HandlerPath;
 
 	abstract class EventManager {
 
-		private $emitters;
+		private $emitters = ["local" => [], "external" => []];
 
-		private $activeHandlerPath;
+		private $activeHandlerPath, $module, $parentManager;
 
-		private $module;
-
-		private $parentManager;
-
-		function __construct(ParentModule $module, ModuleLevelEvents $parentManager) {
+		function __construct(ModuleDescriptor $module, ModuleLevelEvents $parentManager) {
 
 			$this->module = $module;
 
 			$this->parentManager = $parentManager;
-			
-			$this->emitters = ["local" => [], "external" => []];
 		}
 
 		public function local(string $emittingEntity, string $handlingClass):self {
@@ -35,9 +31,9 @@
 		// there's a distinction between local and external emitters because we don't wanna assume each client has a hard dependency on that interface. The client shouldn't care beyond the knowledge that such interface may emit such events if it exists
 		private function initializeHandlingScope(string $scope, string $emitable, string $handlingClass):void {
 
-			$this->emitters[$scope][$emitable] = new EventSubscription($handlingClass, $this->module->container);
+			$this->emitters[$scope][$emitable] = new EventSubscription($handlingClass, $this->module->getContainer());
 
-			$this->activeHandlerPath = compact("scope", "emitable");
+			$this->activeHandlerPath = new HandlerPath($emitable, $scope);
 		}
 
 		/**
@@ -61,9 +57,13 @@
 
 			foreach (explode(" ", $eventNames) as $eventName) {
 
-				["scope" => $activeScope, "emittingEntity" => $emitter] = $this->activeHandlerPath;
+				$path = $this->activeHandlerPath;
 				
-				$this->emitters[$activeScope][$emitter]->addUnit( trim($eventName), $handlingMethod);
+				$this->emitters[$path->getScope()]
+
+				[$path->getEmittable()]
+				
+				->addUnit( trim($eventName), $handlingMethod);
 			}
 		}
 

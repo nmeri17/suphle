@@ -1,27 +1,23 @@
 <?php
 	namespace Tilwa\Routing;
 
-	use Tilwa\Http\Response\Format\{Markup, Redirect, Reload, AbstractRenderer};
+	use Tilwa\Response\Format\{Markup, Redirect, Reload, AbstractRenderer};
 
 	class CrudBuilder {
 
-		private $context;
+		private $context, $viewPath, $resourceId,
 
-		private $viewPath;
+		$allowedActions = ["showCreateForm", "saveNew", "showAll", "showOne", "updateOne", "delete"],
 
-		private $allowedActions;
-
-		private $overwritable;
+		$overwritable = [];
 		
-		function __construct(RouteCollection $context, string $viewPath) {
+		function __construct(RouteCollection $context, string $viewPath, string $resourceId) {
 
 			$this->context = $context;
 
 			$this->viewPath = $viewPath . "/";
 
-			$this->allowedActions = ["showCreateForm", "saveNew", "showAll", "showOne", "updateOne", "delete"];
-
-			$this->overwritable = [];
+			$this->resourceId = $resourceId;
 		}
 
 		public function save():array {
@@ -45,7 +41,7 @@
 
 			$r = new Markup(__FUNCTION__, $this->viewPath . "create-form");
 
-			$r->routeMethod = "get";
+			$r->setRouteMethod("get");
 
 			$pattern = "CREATE";
 
@@ -62,7 +58,7 @@
 				return $relativePath . $this->rawResponse["resource"]->id; // assumes the controller returns an array containing this key
 			});
 
-			$r->routeMethod = "post";
+			$r->setRouteMethod("post");
 
 			$pattern = "SAVE";
 
@@ -73,7 +69,7 @@
 
 			$r = new Markup(__FUNCTION__, $this->viewPath . "show-all");
 
-			$r->routeMethod = "get";
+			$r->setRouteMethod("get");
 
 			$pattern = "";
 
@@ -84,9 +80,9 @@
 
 			$r = new Markup(__FUNCTION__, $this->viewPath . "show-one");
 
-			$r->routeMethod = "get";
+			$r->setRouteMethod("get");
 
-			$pattern = "resourceId"; // request objects for crud routes must implement this key
+			$pattern = $this->resourceId;
 
 			return compact("r", "pattern");
 		}
@@ -95,9 +91,9 @@
 
 			$r = new Reload(__FUNCTION__);
 
-			$r->routeMethod = "put";
+			$r->setRouteMethod("put");
 
-			$pattern = "EDIT_resourceId";
+			$pattern = "EDIT_". $this->resourceId;
 
 			return compact("r", "pattern");
 		}
@@ -111,9 +107,9 @@
 				return "$relativePath";
 			});
 
-			$r->routeMethod = "delete";
+			$r->setRouteMethod("delete");
 
-			$pattern = "resourceId";
+			$pattern = $this->resourceId;
 
 			return compact("r", "pattern");
 		}

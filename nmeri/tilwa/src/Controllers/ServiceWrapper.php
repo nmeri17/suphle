@@ -4,41 +4,45 @@
 
 	use Tilwa\Errors\UnauthorizedServiceAccess;
 
+	use Tilwa\Contracts\Config\Services;
+
+	use Tilwa\Controllers\Structures\ServiceEventPayload;
+
 	class ServiceWrapper {
 
-		private $activeService;
+		private $activeService, $eventManager, $config;
 
-		private $eventManager;
-
-		private $lifeCycle;
-
-		public function __construct (EventManager $eventManager, bool $lifeCycle) {
+		public function __construct (EventManager $eventManager, Services $config) {
 
 			$this->eventManager = $eventManager;
 
-			$this->lifeCycle = $lifeCycle;
+			$this->config = $config;
 		}
 
-		public function __call($method, ...$arguments) {
+		public function __call($method, $arguments) {
 
 			$emitter = $this->activeService::class;
 
-			if ($this->lifeCycle)
+			if ($this->config->lifecycle())
 
-				$this->eventManager->emit($emitter, "before_call", compact("method", "arguments"));
+				$this->eventManager->emit($emitter, "before_call", new ServiceEventPayload($arguments, $method));
 
 			$result = null;
 
 			try {
 				$result = $this->yield($method, $arguments);
 
-				if ($this->lifeCycle)
+				if ($this->config->lifecycle())
 
-					$this->eventManager->emit($emitter, "after_call", compact("method", "result"));
+					$this->eventManager->emit($emitter, "after_call", new ServiceEventPayload($result, $method));
 			}
 			catch (ErrorException $error) {
 
-				$this->eventManager->emit($emitter, "error", compact("method", "arguments", "error"));
+				$payload = new ServiceEventPayload($arguments, $method);
+
+				$payload->setErrors($error);
+
+				$this->eventManager->emit($emitter, "error", $payload);
 
 				$result = $this->failureReturnValue($method);
 			}

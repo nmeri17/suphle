@@ -2,11 +2,12 @@
 
 	namespace Tilwa\Modules\Auth;
 
-	use Tilwa\App\{ParentModule, Container};
+	use Tilwa\App\{ModuleDescriptor, Container};
 
 	use Routes\{BrowserRoutes, ApiRoutes\V1};
 	
-	class CartModule extends ParentModule {
+	// dismantle this into their respective configs
+	class CartModule extends ModuleDescriptor {
 
 		public function getRootPath ():string {
 

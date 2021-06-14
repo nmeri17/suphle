@@ -6,13 +6,23 @@
 
 	use Tilwa\Flows\OuterFlowWrapper;
 
+	use Tilwa\Errors\ExceptionRenderer;
+
+	use Tilwa\Routing\RequestDetails;
+
+	use Tilwa\Contracts\{Config\Auth as AuthConfig, LoginRenderers};
+
+	use Tilwa\Auth\LoginRequestHandler;
+
 	abstract class ModuleAssembly {
 
-		private $container;
+		private $requestDetails, $container;
 		
-		abstract public function getModules():array;
+		abstract protected function getModules():array;
 		
 		public function orchestrate():void {
+
+			$this->setContainer();
 
 			$this->bootInterceptor();
 
@@ -23,30 +33,42 @@
 
 			new EnvironmentDefaults;
 
+			new ExceptionRenderer($this->getErrorHandlers(), $this->container);
+
 			(new ModuleLevelEvents)->bootReactiveLogger($this->getModules());
 		}
 		
 		private function beginRequest():string {
 
-			$requestPath = $_GET['tilwa_path'];
+			if ($this->requestDetails->getMethod() == "post") {
 
-			$wrapperName = OuterFlowWrapper::class;
+				if ($rendererName = $this->getLoginRenderer())
 
-			$wrapper = $this->setContainer()
+					return $this->handleLoginRequest($rendererName);
+			}
 
-			->provisionWrapper($requestPath, $wrapperName)
-
-			->getClass($wrapperName);
+			$wrapper = $this->getFlowWrapper();
 
 			if ($wrapper->canHandle())
 
 				return $this->flowRequestHandler($wrapper);
 
-			return (new ModuleToRoute)
+			return $this->handleGenericRequest();
+		}
 
-			->findContext($this->getModules(), $requestPath)
+		private function handleGenericRequest ():string {
 
-			->trigger();
+			$initializer = (new ModuleToRoute)
+
+			->findContext($this->getModules());
+
+			if ($initializer)
+
+				return $initializer->whenActive()
+
+				->triggerRequest();
+
+			throw new NotFoundException;
 		}
 
 		private function flowRequestHandler(OuterFlowWrapper $wrapper):string {
@@ -60,22 +82,56 @@
 			return $response;
 		}
 
-		private function setContainer():Container {
+		private function getFlowWrapper ():OuterFlowWrapper {
 
-			$randomModule = current($this->getModules());
-
-			return $this->container = $randomModule->getContainer();
-		}
-
-		private function provisionWrapper(string $requestPath, string $wrapperName):Container {
+			$wrapperName = OuterFlowWrapper::class
 
 			return $this->container->whenType($wrapperName)
 
 			->needsArguments([
-				"pattern" => $requestPath,
 
 				"modules" => $this->getModules()
-			]);
+			])
+
+			->getClass($wrapperName);
+		}
+
+		protected function getErrorHandlers ():array {
+
+			return [
+				NotFoundException::class => "handler",
+
+				Unauthenticated::class => "handler",
+
+				ValidationFailure::class => "handler",
+
+				IncompatibleHttpMethod::class => "handler"
+			];
+		}
+
+		private function setContainer ():void {
+
+			$this->container = current($this->getModules())
+
+			->getContainer();
+		}
+
+		private function getLoginRenderer ():string {
+
+			$requestDetails = $this->container->getClass(RequestDetails::class);
+
+			$authConfig = $this->container->getClass(AuthConfig::class);
+
+			return $authConfig->getPathRenderer($requestDetails->getPath());
+		}
+
+		private function handleLoginRequest (string $rendererName):string {
+
+			$renderer = $this->container->getClass($rendererName);
+
+			return (new LoginRequestHandler($renderer, $this->container))
+
+			->getResponse();
 		}
 	}
 ?>

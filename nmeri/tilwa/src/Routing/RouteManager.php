@@ -2,52 +2,42 @@
 
 	namespace Tilwa\Routing;
 
-	use Tilwa\App\{ParentModule, Container};
+	use Tilwa\App\Container;
 
-	use Tilwa\Http\Response\Format\Markup;
+	use Tilwa\Response\Format\Markup;
 
 	use Generator;
 
+	use Tilwa\Contracts\Config\Router as RouterConfig;
+
 	class RouteManager {
 
-		private $module;
+		const PREV_RENDERER = 'prev_renderer';
 
-		private $activeRenderer;
+		const PREV_REQUEST = 'prev_request';
 
-		private $payload;
+		private $config, $activeRenderer, $payload,
 
-		private $incomingPath;
+		$requestDetails, $fullTriedPath, $container,
 
-		private $httpMethod;
+		$patternAuthentication;
 
-		private $fullTriedPath;
+		function __construct(RouterConfig $config, Container $container, RequestDetails $requestDetails) {
 
-		private $collectionArguments;
-
-		private $container;
-
-		function __construct(ParentModule $module, Container $container, string $incomingPath, string $httpMethod ) {
-
-			$this->module = $module;
-
-			$this->incomingPath = $incomingPath;
-
-			$this->httpMethod = $httpMethod;
+			$this->config = $config;
 
 			$this->container = $container;
+
+			$this->requestDetails = $requestDetails;
 		}
 
 		public function findRenderer ():AbstractRenderer {
-
-			$this->defineCollectionArguments();
 
 			foreach ($this->entryRouteMap() as $collection) {
 				
 				$hit = $this->recursiveSearch($collection);
 
 				if (!is_null($hit)) {
-
-					$this->updateRequestParameters($hit->getRequest());
 
 					$hit->setPath($this->fullTriedPath);
 
@@ -57,13 +47,11 @@
 		}
 
 		public function loadPatterns(RouteCollection $collection):Generator {
-
-			if ($collection->_passover())
 			
-				foreach ($collection->getPatterns() as $pattern)
-				 	
-				 	yield $pattern;
-			else yield;
+			// we can't skip collections where incoming path is not one of the patterns in AuthStorage->claimedRoutes (which would've improved matching speed) cuz of the complexity of such comparison
+			foreach ($collection->getPatterns() as $pattern)
+			 	
+			 	yield $pattern;
 		}
 
 		/**
@@ -73,7 +61,9 @@
 		*/
 		private function recursiveSearch(string $patternsCollection, string $routeState = "", string $invokerPrefix = "", bool $fromCache = false):AbstractRenderer {
 
-			$collection = $this->provideCollection($patternsCollection);
+			$collection = $this->container
+			
+			->getClass($patternsCollection, true);
 
 			$patternPrefix = $invokerPrefix ?? $collection->_prefixCurrent();
 
@@ -86,17 +76,29 @@
 					- pair empty incoming path with _index method
 					- crud methods disregard their method names
 				*/
-				if (($pattern == "_index") || $collection->expectsCrud) $pattern = "";
+				if (($pattern == "_index") || $collection->expectsCrud)
 
-				if (!empty($patternPrefix) ) $pattern = "$patternPrefix/$pattern";
+					$computedPattern = "";
 
-				$newRouteState = $invokerPrefix ? "$routeState/$pattern": $pattern;
+				else $computedPattern = $pattern;
 
-				$parsed = $this->regexForm($newRouteState);
+				if (!empty($patternPrefix))
+
+					$computedPattern = "$patternPrefix/$computedPattern";
+
+				$fullRouteState = "$routeState/$computedPattern";
+
+				$parsed = $this->regexForm($fullRouteState);
 
 				if (!is_null($collection->prefixClass) && $this->prefixMatch($parsed)) { // only delve deeper if we're on the right track i.e. if nested path = foo/bar/foobar, and nested method "bar" defines prefix, we only wanna explore its contents if requested route matches foo/bar
 
-					return $this->recursiveSearch($collection->prefixClass, $newRouteState, $pattern); // we don't bother checking whether a route was found or not because if there was none after going downwards, searching sideways won't help either
+					$this->setPatternAuthentication($collection, $pattern);
+
+					return $this->recursiveSearch($collection->prefixClass, $fullRouteState, $computedPattern); /** we don't bother checking whether a route was found or not because if there was none after going downwards*, searching sideways* won't help either
+
+					 * downwards = deeper into a collection
+					 * sideways = other patterns on this same collection
+					*/
 				}
 				else {
 					foreach ($rendererList as $path => $renderer) { // we'll usually get one route here, except for CRUD invocations
@@ -105,7 +107,9 @@
 
 							$parsed .= $this->regexForm($path);
 
-						if ($this->routeCompare($parsed, $renderer->routeMethod)) {
+						if ($this->routeCompare($parsed, $renderer->getRouteMethod())) {
+
+							$this->setPatternAuthentication($pattern);
 
 							$this->fullTriedPath = $parsed;
 
@@ -122,11 +126,19 @@
 		}
 
 		private function routeCompare(string $path, string $rendererMethod):bool {
-			
-			return $this->prefixMatch($path) && $rendererMethod == $this->httpMethod;
+
+			$matchingPaths = $this->prefixMatch($path);
+
+			$matchingMethods = $rendererMethod == $this->requestDetails->getMethod();
+
+			if ($matchingPaths && !$matchingMethods)
+
+				throw new IncompatibleHttpMethod( $rendererMethod);
+
+			return $matchingPaths && $matchingMethods;
 		}
 
-		/* given hypothetic path: PATH_id_EDIT_id2_EDIT__SAME__OKJh_optionalO_TOMP, clean and return a path similar to a real life path; but still in a regec format so optional segments can be indicated as such
+		/* given hypothetical path: PATH_id_EDIT_id2_EDIT__SAME__OKJh_optionalO_TOMP, clean and return a path similar to a real life path; but still in a regex format so optional segments can be indicated as such
 		PATH/id/EDIT/id2/EDIT-SAME-OKJ/TOMP
 		*/
 		private function regexForm(string $routeState):string {
@@ -185,32 +197,30 @@
 			}, $routeState);
 		}
 
-		private function prefixMatch (string $newRouteState):bool {
+		private function prefixMatch (string $fullRouteState):bool {
 			
-			return preg_match("/^$newRouteState
+			return preg_match("/^$fullRouteState
 				?# neutralize trailing slash in replaced path
-				/ix", $this->incomingPath);
-		}
-		
-		public function updateRequestParameters(BaseRequest $request):void {
-			$pattern = "(?<![A-Z0-9])# negative lookbehind: given PATH_id_EDIT_id2_EDIT__SAME__OKJh_optionalO_TOMP, refuse to match the h in the compound segment
-			([a-z0-9]+)# pick placeholders";
-
-			preg_match("/$pattern/x", $this->fullTriedPath, $matches);
-
-			$request->setPlaceholders($matches[0]);
+				/ix", $this->requestDetails->getPath());
 		}
 
-		public function setPrevious(AbstractRenderer $renderer ):static {
+		public function setPrevious(AbstractRenderer $renderer , BaseRequest $request):self {
 
-			$_SESSION['prev_route'] = $renderer;
+			$_SESSION[self::PREV_RENDERER] = $renderer;
+
+			$_SESSION[self::PREV_REQUEST] = $request;
 
 			return $this;
 		}
 
-		public function getPrevious ():AbstractRenderer {
+		public function getPreviousRenderer ():AbstractRenderer {
 
-			return $_SESSION['prev_route'];
+			return $_SESSION[self::PREV_RENDERER];
+		}
+
+		public function getPreviousRequest ():BaseRequest {
+
+			return $_SESSION[self::PREV_REQUEST];
 		}
 
 		public function getActiveRenderer ():AbstractRenderer {
@@ -225,94 +235,19 @@
 			return $this;
 		}
 
-		// note: we are not handling POST yet
-		public function savePayload():self {
-			
-			$this->payload = array_diff_key(["tilwa_path" => 55], $_GET);
-
-			return $this;
-		}
-
-		/**
-		* @return previous AbstractRenderer
-		*/
-		public function mergeWithPrevious(BaseRequest $request):AbstractRenderer {
-			
-			$renderer = $this->getPrevious();
-
-			$renderer->getRequest()
-
-			->setValidationErrors( $request->validationErrors() );
-
-			return $renderer;
-		}
-
-		public function isApiRoute ():bool {
-
-			return preg_match("/^" . $this->module->apiPrefix() . "/", $this->incomingPath);
-		}
-
-		// given a request to api/v3/verb/noun, return v3
-		public function incomingVersion():string {
-			
-			$pattern = $this->module->apiPrefix() . "\/(.+?)\/";
-
-			preg_match("/^" . $pattern . "/i", $this->incomingPath, $version);
-
-			return $version[1];
-		}
-
-		# api/v3/verb/noun should return all versions from v3 and below
-		private function apiVersionClasses():array {
-
-			$versionKeys = array_keys($this->module->apiStack());
-
-			$versionHandlers = array_values($this->module->apiStack());
-
-			$start = array_search( // case-insensitive search
-
-				strtolower($this->incomingVersion()),
-
-				array_map("strtolower", $versionKeys)
-			);
-
-			$versionHandlers = array_slice($versionHandlers, $start, count($versionHandlers)-1);
-
-			$versionKeys = array_slice($versionKeys, $start, count($versionKeys)-1);
-
-			return array_combine($versionKeys, $versionHandlers);
-		}
-
 		// @return Strings[]
 		private function entryRouteMap():array {
+
+			$requestDetails = $this->requestDetails;
 			
-			if ($this->isApiRoute()) {
+			if ($requestDetails->isApiRoute()) {
 
-				$this->stripApiPrefix();
+				$requestDetails->stripApiPrefix();
 
-				return $this->apiVersionClasses();
+				return $requestDetails->apiVersionClasses();
 			}
-			return [$this->module->getAppMainRoutes()];
-		}
 
-		// given a request to api/v3/verb/noun, return verb/noun
-		private function stripApiPrefix():void {
-			
-			$pattern = $this->module->apiPrefix() . "\/.+?\/(.+)";
-
-			preg_match("/^" . $pattern . "/i", $this->incomingPath, $path);
-			
-			$this->incomingPath = $path[1];
-		}
-
-		// @return concrete instance of given collection class containing list of patterns and renderers
-		private function provideCollection(string $rendererCollection):RouteCollection {
-
-			return $this->container->whenType($rendererCollection)
-
-			->needsArguments($this->collectionArguments)
-			
-			->getClass($rendererCollection);
+			return [$this->config->browserEntryRoute()];
 		}
 
 		public function acceptsJson():bool {
@@ -337,17 +272,6 @@
 			return call_user_func_array([$renderer, $dependencyMethod], $parameters);
 		}
 
-		private function defineCollectionArguments() {
-
-			$this->collectionArguments = [
-				"permissions" => $this->container
-
-				->getClass($this->module->routePermissions()),
-				
-				"browserEntry" => $this->module->browserEntryRoute()
-			];
-		}
-
 		private function provideRendererDependencies(string $renderer, string $controller):Container {
 
 			return $this->container->whenType($renderer)
@@ -355,6 +279,25 @@
 			->needsArguments([
 				"controllerClass" => $controller
 			]);
+		}
+
+		private function setPatternAuthentication(RouteCollection $activeCollection, string $pattern):void {
+
+			if ( method_exists($activeCollection, "_authenticatedPaths")) { // outer auth rules should govern internal ones without any apparent protection
+				
+				$authStorage = $activeCollection->_authenticatedPaths();
+
+				if ($authStorage->isClaimedPattern($pattern)) // if a higher level security was applied to a child collection with its own rules, omitting the current pattern, the security will be withdrawn from that pattern
+
+					$this->patternAuthentication = $authStorage;
+
+				else $this->patternAuthentication = null;
+			}
+		}
+
+		public function getPatternAuthentication ():AuthStorage {
+
+			return $this->patternAuthentication;
 		}
 	}
 ?>

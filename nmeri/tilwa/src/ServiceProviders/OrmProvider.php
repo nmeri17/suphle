@@ -8,7 +8,7 @@
 
 	class OrmProvider extends ServiceProvider {
 
-		public function bindArguments() {
+		public function bindArguments():array {
 
 			return [
 
