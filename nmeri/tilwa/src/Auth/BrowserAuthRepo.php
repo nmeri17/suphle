@@ -2,9 +2,7 @@
 
 	namespace Tilwa\Auth;
 
-	use Tilwa\Contracts\LoginActions;
-
-	class BrowserAuthRepo implements LoginActions {
+	class BrowserAuthRepo extends BaseAuthRepo {
 
 		private $comparer, $authStorage;
 
@@ -15,15 +13,8 @@
 			$this->authStorage = $authStorage;
 		}
 
-		public function compareCredentials ():bool {
+		public function successLogin () {
 
-			$this->comparer->setAuthMechanism($this->authStorage);
-
-			return $this->comparer->compare();
+			$this->authStorage->startSession($this->comparer->getUser()->id);
 		}
-
-		// session/jwt values are set, depending on auth guard
-		public function successLogin () {}
-
-		public function failedLogin () {}
 	}

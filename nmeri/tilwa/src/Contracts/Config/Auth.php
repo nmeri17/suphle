@@ -4,8 +4,6 @@
 
 	interface Auth extends ConfigMarker {
 
-		public function getUserModel():string;
-
 		// @return [<string> path => <LoginRenderers> renderer]
 		public function getLoginPaths ():array;
 
@@ -16,8 +14,6 @@
 		public function getTokenIssuer ():string;
 
 		public function getTokenTtl ():int;
-
-		public function defaultAuthenticationStorage ():string;
 
 		public function isAdmin ($user):bool;
 	}

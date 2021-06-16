@@ -165,7 +165,7 @@
 
 			$storage->resumeSession();
 
-			return !is_null($storage->getIdentifier());
+			return !is_null($storage->getUser()); // confirms there's an active session and that its owner exists on the underlying database
 		}
 	}
 ?>

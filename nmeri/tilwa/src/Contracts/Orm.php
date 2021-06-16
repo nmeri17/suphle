@@ -4,8 +4,6 @@
 
 	interface Orm {
 
-		public function findOne(string $model, int $id);
-
 		private function setConnection():self;
 
 		private function getConnection ();
@@ -18,5 +16,7 @@
 		public function getPaginationPath():string;
 
 		public function runTransaction(callable $queries):void;
+
+		public function registerObservers();
 	}
 ?>

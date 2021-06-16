@@ -8,9 +8,7 @@
 
 		private $claimedPatterns = [];
 
-		private $databaseAdapter, $authConfig;
-
-		protected $user, $identifier;
+		protected $userHydrator, $authConfig, $user, $identifier;
 
 		public function claimPatterns (array $paths):self {
 
@@ -28,20 +26,11 @@
 
 				return null;
 
-			if ( is_null($this->user))
+			if ( is_null($this->user)) // when accessed for the first time
 
-				$this->user = $this->hydrateUser();
+				$this->user = $this->userHydrator->findById( $this->identifier );
 
 			return $this->user;
-		}
-
-		private function hydrateUser () {
-
-			return $this->databaseAdapter->findOne(
-				$this->authConfig->getUserModel(),
-
-				$this->identifier
-			);
 		}
 
 		public function loginAs (string $value) {
