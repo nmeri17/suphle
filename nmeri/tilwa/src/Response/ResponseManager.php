@@ -115,16 +115,6 @@
 			return $passed;
 		}
 
-		// last action before response is flushed. log or profile middleware goes here
-		public function mutateResponse(string $currentBody):string {
-
-			foreach ($this->responseMutations as $handler)
-
-				$currentBody = $handler($currentBody);
-			
-			return $currentBody;
-		}
-
 		public function validateManager():void {
 
 			$globalDependencies = $this->container->getClass(ModuleDescriptor::class)->getDependsOn();

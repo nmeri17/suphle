@@ -285,7 +285,9 @@
 
 			if ( method_exists($activeCollection, "_authenticatedPaths")) { // outer auth rules should govern internal ones without any apparent protection
 				
-				$authStorage = $activeCollection->_authenticatedPaths();
+				$activeCollection->_authenticatedPaths();
+
+				$authStorage = $activeCollection->_getAuthenticator();
 
 				if ($authStorage->isClaimedPattern($pattern)) // if a higher level security was applied to a child collection with its own rules, omitting the current pattern, the security will be withdrawn from that pattern
 

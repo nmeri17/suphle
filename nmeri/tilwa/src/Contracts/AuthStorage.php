@@ -15,7 +15,7 @@
 
 		public function resumeSession ():void;
 
-		public function claimPatterns (array $paths):self;
+		public function claimPatterns (array $paths):void;
 
 		public function getUser ();
 

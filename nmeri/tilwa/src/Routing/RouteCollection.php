@@ -13,7 +13,7 @@
 		$utilities = ["_mirrorBrowserRoutes", "_authenticatedPaths", "_handlingClass", "_crud", "_register", "_setAllow", "_canaryEntry", "_setLocalPrefix", "_whenUnauthorized"
 		];
 
-		public $prefixClass, $isMirroring, $expectsCrud, $localPrefix;
+		public $prefixClass, $isMirroring, $expectsCrud, $localPrefix, $middlewareRegistry;
 
 		/**
 		* overwrite in your routes file
@@ -83,7 +83,7 @@
 
 			$myMethods = get_class_methods($this);
 
-			if ($parent_class = get_parent_class($this)) {
+			if ($parent_class = get_parent_class($this)) { // this means collection extension won't work!
 
 				$parentMethods = get_class_methods($parent_class);
 				$myMethods = array_diff($myMethods, $parentMethods);
@@ -91,9 +91,37 @@
 			return array_diff($myMethods, $this->utilities);
 		}
 
-		public function _authenticatedPaths():AuthStorage {
+		public function _authenticatedPaths():void {
 			
-			return $this->authStorage->claimPatterns([]);
+			$this->authStorage->claimPatterns([]);
+		}
+
+		public function _authorizePaths() {
+			
+			$this->pathAuthorizer->securePatterns(["pattern", "pattern2"], $this->routeGuards->isAdmin]); // this obviously has to run after authentication
+		}
+
+		public function _assignMiddleware():void {
+		}
+
+		public function _getMiddlewareRegistry ():MiddlewareRegistry {
+
+			return $this->middlewareRegistry;
+		}
+
+		public function _getAuthenticator ():AuthStorage {
+
+			return $this->authStorage;
+		}
+
+		protected function _only(array $include):array {
+			
+			return array_intersect($this->getPatterns(), $include);
+		}
+
+		protected function _except(array $exclude):array {
+			
+			return array_diff($this->getPatterns(), $exclude);
 		}
 
 		protected function _canaryEntry(array $canaries):void {

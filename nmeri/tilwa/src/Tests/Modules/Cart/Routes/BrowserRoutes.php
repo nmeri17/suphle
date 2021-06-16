@@ -12,13 +12,15 @@
 
 	class BrowserRoutes extends RouteCollection {
 
-		function __construct(CanaryValidator $validator, RouterConfig $routerConfig, SessionStorage $authStorage) {
+		function __construct(CanaryValidator $validator, RouterConfig $routerConfig, SessionStorage $authStorage, MiddlewareRegistry $middlewareRegistry) {
 
 			$this->routerConfig = $routerConfig;
 
 			$this->canaryValidator = $validator;
 
 			$this->authStorage = $authStorage;
+
+			$this->middlewareRegistry = $middlewareRegistry;
 		}
 		
 		public function _prefixCurrent() {
@@ -68,6 +70,13 @@
 			);
 
 			return $this->_get($renderer->setFlow($flow));
+		}
+
+		public function _assignMiddleware():void {
+
+			$this->middlewareRegistry->tagPatterns(["pattern", "pattern2"], [new Middleware]);
+			
+			$this->middlewareRegistry->tagPatterns(["pattern2"], [ new Middleware2]);
 		}
 	}
 ?>

@@ -1,5 +1,3 @@
-flesh out auth controller actions. Implement loginAs
-
 install transphpform and turbo
 
 ->createQueryBuilder()
@@ -42,6 +40,8 @@ Extract rejection logic into a class and inject that into both service wrapper a
 
 Revisit NoSqlLogic for implementing the factory pattern
 
+Refactor RouteCollection->getPatterns() to work with a IRouteCollection interface we reflect and exclude methods not matching the interface's methods
+
 Bonus: add auth services (email verification, password recovery) dev can inject in their controllers
 
 Pending:
@@ -51,3 +51,8 @@ Pending:
 2) a GET/POST request to view x model not belonging to me. locked at model level
 
 In each case, failure to return true throws an error caught by our external handler
+
+wrap up the auth methods then look into the above. we have authorization, middleware and testing as major components left
+
+A middleware component MAY create and return a response without delegating to a request handler, if sufficient conditions are met.
+// remember to call [_assignMiddleware] after route finding completes. for each depth search, store the middleware in the router's middleware stack. visit [_authorizePaths] for injecting the guard

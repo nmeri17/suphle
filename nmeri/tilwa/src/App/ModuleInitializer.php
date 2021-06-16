@@ -64,9 +64,7 @@
 
 			$manager->handleValidRequest();
 
-			$response = $manager->mutateResponse($manager->getResponse()); // those middleware should only get the response object/headers, not this computed response
-
-			$manager->afterRender();
+			$manager->afterRender(); // goes in the middleware default list
 
 			return $response;
 		}

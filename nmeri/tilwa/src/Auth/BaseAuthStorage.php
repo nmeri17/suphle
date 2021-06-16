@@ -10,7 +10,7 @@
 
 		protected $userHydrator, $authConfig, $user, $identifier;
 
-		public function claimPatterns (array $paths):self {
+		public function claimPatterns (array $paths):void {
 
 			$this->claimedPatterns = array_unique($this->claimedPatterns + $paths);
 		}
