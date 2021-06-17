@@ -5,6 +5,6 @@
 	interface Middleware {
 
 		// return response/renderer
-		public function handle ($request, $requestHandler);
+		public function process ($request, $requestHandler);
 	}
 ?>

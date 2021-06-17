@@ -2,9 +2,9 @@
 
 	namespace Tilwa\Middleware;
 
-	use Psr\Http\Server\RequestHandlerInterface;
+	use Tilwa\Contracts\Middleware;
 
-	class FinalHandlerWrapper implements RequestHandlerInterface {
+	class FinalHandlerWrapper implements Middleware {
 
 		private $manager;
 
@@ -13,7 +13,7 @@
 			$this->manager = $manager;
 		}
 
-		public function handle ($request, $requestHandler) {
+		public function process ($request, $requestHandler) { // confirm that [requestHandler]==null
 
 			$this->manager->handleValidRequest();
 

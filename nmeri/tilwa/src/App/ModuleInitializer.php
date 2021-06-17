@@ -62,7 +62,7 @@
 
 				throw new ValidationFailure;
 
-			return (new MiddlewareQueue($manager, $this->router))
+			return (new MiddlewareQueue($manager, $this->router, $manager->getControllerManager()))
 
 			->runStack();
 		}

@@ -1,15 +1,25 @@
 <?php
 	namespace Tilwa\Middleware;
 
+	use Tilwa\Response\ResponseManager;
+
+	use Tilwa\Routing\RouteManager;
+
+	use Tilwa\Controllers\ControllerManager;
+
+	use Tilwa\Contracts\Middleware;
+
 	class MiddlewareQueue {
 
-		private $manager, $router;
+		private $manager, $router, $controllerManager;
 
-		public function __construct (ResponseManager $manager, RouteManager $router) {
+		public function __construct (ResponseManager $manager, RouteManager $router, ControllerManager $controllerManager) {
 
-			$this->manager = $manager;
+			$this->responseManager = $manager;
 
 			$this->router = $router;
+
+			$this->controllerManager = $controllerManager;
 		}
 
 		/**
@@ -35,7 +45,7 @@
 
 			return array_filter($reduced, function (Middleware $middleware) use (&$uniqueNames) {
 
-				$name = $middleware::class;
+				$name = get_class($middleware);
 
 				if (!in_array($name, $uniqueNames))
 
@@ -54,31 +64,28 @@
 
 			$stack = $this->getUniqueMiddleware($stack);
 
-			$handlers = $this->getHandlerInterfaces($stack);
+			array_unshift($stack, new FinalHandlerWrapper($this->responseManager));
 
-			$request = $this->manager->getControllerManager()->getRequest();
+			return end($stack)->process(
+				$this->controllerManager->getRequest(),
 
-			return $stack[0]->handle($request, $handlers[0]); // stops after running the first one
+				$this->getHandlerChain($stack)
+			);
 		}
 
 		// convert each middleware to a request interface carrying the previous one so triggering each one creates a chain effect till the last one
-		private function getHandlerInterfaces (array $middlewareList) {
+		private function getHandlerChain (array $middlewareList, MiddlewareNexts $accumNexts):MiddlewareNexts {
 
-			$wrapped = [];
+			if (empty($middlewareList)) return $accumNexts;
 
-			foreach ($middlewareList as $index => $middleware) {
+			$nextHandler = new MiddlewareNexts(array_shift($middlewareList), $accumNexts);
 
-				if ($index >= 1) {
-
-					$previous = $index-1;
-
-					$wrapped[] = new MiddlewareNexts($middleware, $middlewareList[$previous]);
-				}
-
-				else $wrapped[] = new FinalHandlerWrapper($this->manager);
-			}
-
-			return $wrapped;
+			// [1,2,4] => [4(2(1(cur, null), cur), cur)]
+			/* [1,2,4] => 1,[2,4]
+			[2,4] => 2,[4]
+			[4] = each level injests its predecessor
+			*/
+			return $this->getHandlerChain($middlewareList, $nextHandler);
 		}
 	}
 ?>
