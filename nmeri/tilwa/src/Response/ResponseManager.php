@@ -80,39 +80,12 @@
 
 			->hydrateModels($renderer->getRouteMethod());
 
-			$this->runMiddleware(); // called here so some awesome middleware can override default behavior on our booted controller. may imply injecting the manager
-
 			return $renderer->invokeActionHandler($manager->getHandlerParameters());
 		}
 
 		public function isValidRequest ():bool {
 
 			return $this->controllerManager->getRequest()->isValidated();
-		}
-
-		/** middleware CURRENTLY delimited by commas. Middleware parameters delimited by colons
-		 * we want middleware that receives and updates requestDetails. we provide whenAny with what is returned. There's also another one that receives the renderer after action invocation but before render
-		*/
-		private function runMiddleware ():bool {
-
-			$passed = true;
-
-			foreach ($this->renderer->getMiddlewares() as $mw ) {
-
-				@[$className, $args] = explode(',', $mw);
-
-				$instance = $this->container->getClass($className);
-
-				if (is_callable($instance->postSourceBehavior))
-
-					$this->responseMutations[] = $instance->postSourceBehavior;
-
-				else $passed = $instance->handle( explode(':', $args) );
-
-				if ( !$passed ) return $passed; // terminate
-			}
-
-			return $passed;
 		}
 
 		public function validateManager():void {

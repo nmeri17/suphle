@@ -20,5 +20,12 @@
 					$context->addMiddleware($instance);
 			}
 		}
+
+		public function getStack (string $pattern):PatternMiddleware {
+
+			if (array_key_exists($pattern, $this->registry))
+
+				return $this->registry[$pattern];
+		}
 	}
 ?>

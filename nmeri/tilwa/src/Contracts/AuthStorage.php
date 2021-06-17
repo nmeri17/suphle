@@ -15,10 +15,6 @@
 
 		public function resumeSession ():void;
 
-		public function claimPatterns (array $paths):void;
-
 		public function getUser ();
-
-		public function isClaimedPattern (string $pattern):bool;
 	}
 ?>

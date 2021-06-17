@@ -91,9 +91,9 @@
 			return array_diff($myMethods, $this->utilities);
 		}
 
-		public function _authenticatedPaths():void {
+		public function _authenticatedPaths():array {
 			
-			$this->authStorage->claimPatterns([]);
+			return [];
 		}
 
 		public function _authorizePaths() {

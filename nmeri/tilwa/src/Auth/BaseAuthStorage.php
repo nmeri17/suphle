@@ -6,19 +6,7 @@
 
 	abstract class BaseAuthStorage implements AuthStorage {
 
-		private $claimedPatterns = [];
-
 		protected $userHydrator, $authConfig, $user, $identifier;
-
-		public function claimPatterns (array $paths):void {
-
-			$this->claimedPatterns = array_unique($this->claimedPatterns + $paths);
-		}
-
-		public function isClaimedPattern (string $pattern):bool {
-
-			return in_array($pattern, $this->claimedPatterns);
-		}
 
 		public function getUser () {
 

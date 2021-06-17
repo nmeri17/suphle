@@ -2,9 +2,7 @@
 
 	namespace Tilwa\Response\Format;
 
-	use Tilwa\Contracts\{HtmlParser, Authenticator, QueueManager};
-
-	use Tilwa\Request\BaseRequest;
+	use Tilwa\Contracts\HtmlParser;
 
 	use Tilwa\Flows\ControllerFlows;
 
@@ -54,7 +52,7 @@
 
 		protected function renderHtml():string {
 			
-			return $this->container->getClass(HtmlParser::class) // lazily pull from container
+			return $this->container->getClass(HtmlParser::class)
 
 			->parseAll($this->viewName, $this->rawResponse);
 		}

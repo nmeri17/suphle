@@ -62,11 +62,9 @@
 
 				throw new ValidationFailure;
 
-			$manager->handleValidRequest();
+			return (new MiddlewareQueue($manager, $this->router))
 
-			$manager->afterRender(); // goes in the middleware default list
-
-			return $response;
+			->runStack();
 		}
 
 		public function getRouter():RouteManager {

@@ -243,7 +243,7 @@
 			return $results;
 		}
 
-		// @return result of executing the current updated request
+		// @return executes underlying renderer and returns it
 		private function executeRequest() {
 
 			if ($this->canProcessPath())
