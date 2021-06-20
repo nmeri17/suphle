@@ -52,9 +52,7 @@
 
 			$this->attemptAuthentication();
 
-			$manager = $this->responseManager;
-
-			$validationPassed = $manager
+			$validationPassed = $this->responseManager
 
 			->bootControllerManager()->isValidRequest();
 
@@ -62,7 +60,7 @@
 
 				throw new ValidationFailure;
 
-			return (new MiddlewareQueue($manager, $this->router, $manager->getControllerManager()))
+			return $this->container->getClass (MiddlewareQueue::class)
 
 			->runStack();
 		}
@@ -79,7 +77,9 @@
 
 		public function initialize():self {
 
-			$this->router = new RouteManager($this->descriptor, $this->container);
+			$this->container->setConfigs($descriptor->getConfigs());
+
+			$this->router = $this->container->getClass (RouteManager::class);
 
 			$this->bindDefaultObjects();
 
@@ -114,8 +114,6 @@
 				return $this;
 
 			$descriptor = $this->descriptor;
-
-			$this->container->setConfigs($descriptor->getConfigs());
 
 			$customBindings = $this->container->getMethodParameters("entityBindings", $descriptor);
 

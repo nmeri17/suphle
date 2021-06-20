@@ -2,26 +2,24 @@
 
 	namespace Tilwa\ServiceProviders;
 
-	use Tilwa\App\{ServiceProvider};
+	use Tilwa\App\ServiceProvider;
 
 	use Tilwa\Adapters\Orms\Eloquent;
 
+	use Tilwa\Contracts\Config\{Orm as OrmConfig, Auth as AuthConfig};
+
 	class OrmProvider extends ServiceProvider {
 
-		public function bindArguments():array {
+		private $authConfig;
 
-			return [
+		public function __construct (AuthConfig $authConfig) {
 
-				"credentials" => [
-					'dbname' => getenv('DB_NAME'),
+			$this->authConfig = $authConfig;
+		}
 
-				    'user' => getenv('DB_USERNAME'),
+		public function afterBind($initialized):void {
 
-				    'password' => getenv('DB_PASS'),
-
-				    'driver' => 'pdo_mysql',
-				]
-			];
+			$initialized->registerObservers($this->authConfig->getModelObservers());
 		}
 
 		public function concrete():string {

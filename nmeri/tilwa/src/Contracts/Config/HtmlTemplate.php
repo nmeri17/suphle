@@ -4,8 +4,7 @@
 
 	interface HtmlTemplate extends ConfigMarker {
 
+		// ModuleFiles->activeModulePath(). DIRECTORY_SEPARATOR) . 'views'
 		public function getViewPath():array;
-
-		public function setViewPath(string $path):void;
 	}
 ?>

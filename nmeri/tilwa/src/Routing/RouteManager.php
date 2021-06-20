@@ -24,17 +24,19 @@
 
 		$requestDetails, $fullTriedPath, $container,
 
-		$patternAuthentication,
+		$patternAuthentication, $registry,
 
 		$patternMiddleware = [];
 
-		function __construct(RouterConfig $config, Container $container, RequestDetails $requestDetails) {
+		function __construct(RouterConfig $config, Container $container, RequestDetails $requestDetails, MiddlewareRegistry $registry) {
 
 			$this->config = $config;
 
 			$this->container = $container;
 
 			$this->requestDetails = $requestDetails;
+
+			$this->registry = $registry;
 		}
 
 		public function findRenderer ():AbstractRenderer {
@@ -304,7 +306,7 @@
 
 			$this->setPatternAuthentication($collection, $pattern);
 
-			$this->includeMiddleware($collection->_getMiddlewareRegistry(), $pattern);
+			$this->includeMiddleware($collection, $pattern);
 		}
 
 		public function getPatternAuthentication ():AuthStorage {
@@ -312,9 +314,11 @@
 			return $this->patternAuthentication;
 		}
 
-		private function includeMiddleware (MiddlewareRegistry $registry, string $segment):void {
+		private function includeMiddleware (RouteCollection $collection, string $segment):void {
 
-			if ($stack = $registry->getStack($segment))
+			$collection->_assignMiddleware();
+
+			if ($stack = $this->registry->getStack($segment))
 
 				$this->patternMiddleware[] = $stack;
 		}

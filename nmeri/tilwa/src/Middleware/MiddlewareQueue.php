@@ -1,25 +1,29 @@
 <?php
 	namespace Tilwa\Middleware;
 
-	use Tilwa\Response\ResponseManager;
+	use Tilwa\App\Container;
 
 	use Tilwa\Routing\RouteManager;
 
 	use Tilwa\Controllers\ControllerManager;
 
-	use Tilwa\Contracts\Middleware;
+	use Tilwa\Contracts\{Middleware, Router as RouterConfig};
 
 	class MiddlewareQueue {
 
-		private $manager, $router, $controllerManager;
+		private $controllerManager, $stack,
 
-		public function __construct (ResponseManager $manager, RouteManager $router, ControllerManager $controllerManager) {
+		$routerConfig, $container;
 
-			$this->responseManager = $manager;
+		public function __construct ( RouteManager $router, ControllerManager $controllerManager, RouterConfig $routerConfig, Container $container) {
 
-			$this->router = $router;
+			$this->stack = $router->getPatternMiddleware();
 
 			$this->controllerManager = $controllerManager;
+
+			$this->routerConfig = $routerConfig;
+
+			$this->container = $container;
 		}
 
 		/**
@@ -27,12 +31,12 @@
 		 * foo => patternMiddleware([1,2])
 		 * bar => patternMiddleware([1,3]) to [1,2,3]
 		*/
-		public function getUniqueMiddleware (array $middlewareStack):array {
+		public function filterDuplicates ():self {
 
 			$units = array_map(function (PatternMiddleware $stack) {
 
 				return $stack->getList();
-			}, $middlewareStack);
+			}, $this->stack);
 
 			$reduced = array_reduce($units, function (array $carry, array $current) {
 
@@ -43,7 +47,7 @@
 
 			$uniqueNames = [];
 
-			return array_filter($reduced, function (Middleware $middleware) use (&$uniqueNames) {
+			$this->stack = array_filter($reduced, function (Middleware $middleware) use (&$uniqueNames) {
 
 				$name = get_class($middleware);
 
@@ -55,21 +59,19 @@
 
 				return true;
 			});
+
+			return $this;
 		}
 
 		// this should return ResponseInterface according to psr-15
 		public function runStack ():string {
 
-			$stack = $this->router->getPatternMiddleware();
+			$this->filterDuplicates()->prependDefaults();
 
-			$stack = $this->getUniqueMiddleware($stack);
-
-			array_unshift($stack, new FinalHandlerWrapper($this->responseManager));
-
-			return end($stack)->process(
+			return end($this->stack)->process(
 				$this->controllerManager->getRequest(),
 
-				$this->getHandlerChain($stack)
+				$this->getHandlerChain($this->stack)
 			);
 		}
 
@@ -86,6 +88,19 @@
 			[4] = each level injests its predecessor
 			*/
 			return $this->getHandlerChain($middlewareList, $nextHandler);
+		}
+
+		private function prependDefaults ():self {
+
+			$defaults = array_map(function ($name) {
+
+				return $this->container->getClass($name);
+
+			}, $this->routerConfig->defaultMiddleware());
+
+			$this->stack = [...$defaults, ...$this->stack];
+
+			return $this;
 		}
 	}
 ?>

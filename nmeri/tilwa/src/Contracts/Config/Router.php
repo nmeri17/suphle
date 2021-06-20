@@ -6,9 +6,6 @@
 
 		public function apiPrefix():string;
 
-		# class containing route guard rules
-		public function routePermissions():string;
-
 		// should be listed in descending order of the versions
 		public function apiStack ():array;
 
@@ -16,5 +13,7 @@
 		public function browserEntryRoute ():string;
 
 		public function getModelRequestParameter():string;
+
+		public function defaultMiddleware():array;
 	}
 ?>

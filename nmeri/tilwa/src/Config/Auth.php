@@ -45,5 +45,10 @@
 
 			return false;
 		}
+
+		public function getModelObservers():array {
+
+			return [];
+		}
 	}
 ?>

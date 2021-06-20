@@ -47,12 +47,8 @@ Bonus: add auth services (email verification, password recovery) dev can inject 
 Pending:
 	- exception renderer
 
-1) want to visit admin page (GET requests). involves no models. blocked at route PREFIX level OR the service delivering admin services is locked (cuz even though services are reusable, there's still the tendency of forgetting to tag a new service method)
-2) a GET/POST request to view x model not belonging to me. locked at model level
+we have authorization and testing as major components left
 
-In each case, failure to return true throws an error caught by our external handler
+visit [_authorizePaths]
 
-wrap up the auth methods then look into the above. we have authorization, middleware and testing as major components left
-
-A middleware component MAY create and return a response without delegating to a request handler, if sufficient conditions are met.
-// remember to call [_assignMiddleware] after route finding completes. for each depth search, store the middleware in the router's middleware stack. visit [_authorizePaths] for injecting the guard
+look into UnauthorizedServiceAccess

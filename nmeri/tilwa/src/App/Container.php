@@ -91,11 +91,7 @@
 
 			$laravelApp = $this->getClass(LaravelApp::class);
 
-			$provider = call_user_func_array(
-				[ $providers[$fullName], "__construct" ],
-
-				$laravelApp
-			);
+			$provider = new $providers[$fullName]($laravelApp);
 
 			$instance = (new LaravelProviderManager($provider, $laravelApp, $this))
 
@@ -185,11 +181,9 @@
 
 				$providerClass = $providers[$service];
 
-				$provider = new $providerClass();
+				$provider = $this->instantiateConcrete($providerClass);
 
-				$providerArguments = $this->getMethodParameters("bindArguments", $providerClass);
-
-				$providerParameters = call_user_func_array([$provider, "bindArguments"], $providerArguments);
+				$providerParameters = $provider->bindArguments();
 
 				$concrete = $provider->concrete();
 

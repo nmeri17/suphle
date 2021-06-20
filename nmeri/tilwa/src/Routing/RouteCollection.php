@@ -96,17 +96,9 @@
 			return [];
 		}
 
-		public function _authorizePaths() {
-			
-			$this->pathAuthorizer->securePatterns(["pattern", "pattern2"], $this->routeGuards->isAdmin]); // this obviously has to run after authentication
-		}
+		public function _authorizePaths():void {}
 
 		public function _assignMiddleware():void {
-		}
-
-		public function _getMiddlewareRegistry ():MiddlewareRegistry {
-
-			return $this->middlewareRegistry;
 		}
 
 		public function _getAuthenticator ():AuthStorage {
