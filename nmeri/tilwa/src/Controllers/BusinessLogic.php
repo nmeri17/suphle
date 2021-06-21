@@ -2,11 +2,11 @@
 
 	namespace Tilwa\Controllers;
 
-	use Tilwa\Contracts\{PermissibleService, BootsService, Orm};
+	use Tilwa\Contracts\{BootsService, Orm};
 
 	use Tilwa\App\Container;
 
-	class NoSqlLogic implements PermissibleService, BootsService { // using [BootsService] instead of a service provider since it won't have a concrete. We will also wanna run multiple logic classes within one request
+	class BusinessLogic implements BootsService { // using [BootsService] instead of a service provider since it won't have a concrete. We will also wanna run multiple logic classes within one request
 
 		private $factoryList = [];
 

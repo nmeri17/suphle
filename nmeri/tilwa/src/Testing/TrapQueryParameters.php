@@ -7,11 +7,7 @@
 		public $reboundContext;
 
 		// this should be registered as an event handler on the "before_call" event
-		private function setQueryListener(object $hydratedHandler, $payload):void {
-
-			if (!$hydratedHandler->canCommand($method, $payload))
-
-				throw new UnauthorizedServiceAccess($hydratedHandler::class);
+		private function setQueryListener($hydratedHandler, $payload):void {
 
 			$hydratedHandler->getOrm()->setTrap($this->capturePrepared($hydratedHandler::class));
 		}

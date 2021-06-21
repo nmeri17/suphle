@@ -12,7 +12,7 @@ route caching
 
 try to deploy on azure
 
-When you find a way of identifying orm models, revisit NoSqlLogic->setup
+When you find a way of identifying orm models, revisit BusinessLogic->setup
 
 when cacheManager is integrated:
 	- refactor its usage wherever it appears in respect to accessing nested objects; tags etc
@@ -38,7 +38,7 @@ Bar:
 Extract rejection logic into a class and inject that into both service wrapper and executable classes. then implement an interface that informs these parents to run x whenever such interface is met
 	prefersServices, servicePreferenceManager
 
-Revisit NoSqlLogic for implementing the factory pattern
+Revisit BusinessLogic for implementing the factory pattern
 
 Refactor RouteCollection->getPatterns() to work with a IRouteCollection interface we reflect and exclude methods not matching the interface's methods
 
@@ -47,8 +47,4 @@ Bonus: add auth services (email verification, password recovery) dev can inject 
 Pending:
 	- exception renderer
 
-we have authorization and testing as major components left
-
-visit [_authorizePaths]
-
-look into UnauthorizedServiceAccess
+we have testing as major component left

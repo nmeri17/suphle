@@ -6,7 +6,7 @@
 
 	use Tilwa\Auth\SessionStorage;
 
-	class AuthenticatorProvider extends ServiceProvider {
+	class AuthStorageProvider extends ServiceProvider {
 
 		public function concrete():string {
 

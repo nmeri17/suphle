@@ -9,6 +9,10 @@
 	use Tilwa\Bridge\Laravel\ModuleRouteMatcher;
 
 	use Tilwa\Contracts\AuthStorage;
+
+	use Tilwa\Request\PathAuthorizer;
+
+	use Tilwa\Errors\{UnauthorizedServiceAccess, Unauthenticated};
 	
 	class ModuleInitializer {
 
@@ -50,7 +54,7 @@
 
 				return $this->laravelMatcher->getResponse();
 
-			$this->attemptAuthentication();
+			$this->attemptAuthentication()->authorizePath();
 
 			$validationPassed = $this->responseManager
 
@@ -127,7 +131,7 @@
 		 * 
 		 * @throws Unauthenticated
 		*/
-		private function attemptAuthentication ():void {
+		private function attemptAuthentication ():self {
 
 			$manager = $this->responseManager;
 
@@ -141,6 +145,21 @@
 
 				->needsAny([ AuthStorage::class => $authMethod]);
 			}
+
+			return $this;
+		}
+
+		private function authorizeRequest ():self {
+
+			$authorizer = $this->container->getClass(PathAuthorizer::class);
+
+			foreach ($authorizer->getActiveRules() as $rule)
+
+				if (!$rule->permit())
+
+					throw new UnauthorizedServiceAccess;
+
+			return $this;
 		}
 	}
 ?>

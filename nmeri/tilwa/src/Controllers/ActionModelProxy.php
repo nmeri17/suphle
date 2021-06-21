@@ -4,11 +4,13 @@
 
 	use Tilwa\Errors\IllegalCaller;
 
-	class ActionModelProxy extends ControllerModel {
+	use Tilwa\Contracts\ControllerModel;
+
+	class ActionModelProxy {
 
 		private $builderWrapper;
 
-		public function __construct(object $builderWrapper) {
+		public function __construct(ControllerModel $builderWrapper) {
 
 			$this->builderWrapper = $builderWrapper;
 		}
