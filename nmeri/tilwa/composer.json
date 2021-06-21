@@ -12,13 +12,17 @@
         "monolog/monolog": "*",
         "vlucas/phpdotenv": "*",
         "rakit/validation": "^1.2",
-        "jeremeamia/superclosure": "^2.4",
+        "opis/closure": "^3.6",
         "firebase/php-jwt": "^5.2",
         "doctrine/orm": "^2.7",
         "illuminate/database": "^7.30",
         "illuminate/queue": "^7.30",
         "illuminate/redis": "^7.30",
-        "phpunit/phpunit": "^8.5"
+        "illuminate/validation": "^7.30",
+        "illuminate/container": "^7.30",
+        "illuminate/events": "^7.30",
+        "phpunit/phpunit": "^8.5",
+        "level-2/transphporm": "^1.5.1"
     },
     
     "require-dev": {

@@ -85,12 +85,12 @@
 			return $wrapper->setActiveService($originalService);
 		}
 
-		private function setAllowedServices ( array $foreignServices):void {
+		private function setAllowedServices ( array $services):void {
 			
-			$this->allowedServices = [EventManager::class, QueryInterceptor::class, BusinessLogic::class] + array_map(function ($concrete) {
+			$this->allowedServices = [EventManager::class, QueryInterceptor::class, ConditionalFactory::class] + array_map(function ($concrete) {
 
 				return get_class($concrete);
-			}, $foreignServices);
+			}, $services);
 		}
 	}
 ?>
