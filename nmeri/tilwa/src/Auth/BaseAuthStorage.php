@@ -28,7 +28,7 @@
 				$this->identifier = $value;
 		}
 		
-		public function getIdentifier ():string {
+		public function getId ():string {
 
 			return $this->identifier;
 		}

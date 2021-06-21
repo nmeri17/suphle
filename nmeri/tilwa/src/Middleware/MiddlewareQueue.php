@@ -3,8 +3,6 @@
 
 	use Tilwa\App\Container;
 
-	use Tilwa\Routing\RouteManager;
-
 	use Tilwa\Controllers\ControllerManager;
 
 	use Tilwa\Contracts\{Middleware, Router as RouterConfig};
@@ -15,9 +13,9 @@
 
 		$routerConfig, $container;
 
-		public function __construct ( RouteManager $router, ControllerManager $controllerManager, RouterConfig $routerConfig, Container $container) {
+		public function __construct ( MiddlewareRegistry $registry, ControllerManager $controllerManager, RouterConfig $routerConfig, Container $container) {
 
-			$this->stack = $router->getPatternMiddleware();
+			$this->stack = $registry->getActiveStack();
 
 			$this->controllerManager = $controllerManager;
 

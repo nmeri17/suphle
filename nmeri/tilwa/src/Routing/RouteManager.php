@@ -12,7 +12,7 @@
 
 	use Tilwa\Middleware\MiddlewareRegistry;
 
-	use Tilwa\Request\BaseRequest;
+	use Tilwa\Request\{BaseRequest, PathAuthorizer};
 
 	class RouteManager {
 
@@ -24,11 +24,9 @@
 
 		$requestDetails, $fullTriedPath, $container,
 
-		$patternAuthentication, $registry,
+		$patternAuthentication, $registry, $authorizer;
 
-		$patternMiddleware = [];
-
-		function __construct(RouterConfig $config, Container $container, RequestDetails $requestDetails, MiddlewareRegistry $registry) {
+		function __construct(RouterConfig $config, Container $container, RequestDetails $requestDetails, MiddlewareRegistry $registry, PathAuthorizer $authorizer) {
 
 			$this->config = $config;
 
@@ -37,6 +35,8 @@
 			$this->requestDetails = $requestDetails;
 
 			$this->registry = $registry;
+
+			$this->authorizer = $authorizer;
 		}
 
 		public function findRenderer ():AbstractRenderer {
@@ -307,6 +307,8 @@
 			$this->setPatternAuthentication($collection, $pattern);
 
 			$this->includeMiddleware($collection, $pattern);
+
+			$this->updatePermissions($collection, $pattern);
 		}
 
 		public function getPatternAuthentication ():AuthStorage {
@@ -318,14 +320,14 @@
 
 			$collection->_assignMiddleware();
 
-			if ($stack = $this->registry->getStack($segment))
-
-				$this->patternMiddleware[] = $stack;
+			$this->registry->updateStack($segment);
 		}
 
-		public function getPatternMiddleware ():array {
+		private function updatePermissions (RouteCollection $collection, string $pattern):void {
 
-			return $this->patternMiddleware;
+			$collection->_authorizePaths();
+
+			$this->authorizer->updateRuleStatus($pattern);
 		}
 	}
 ?>

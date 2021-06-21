@@ -91,15 +91,11 @@
 			return array_diff($myMethods, $this->utilities);
 		}
 
-		public function _authenticatedPaths():array {
-			
-			return [];
-		}
+		public function _authenticatedPaths():array {}
 
 		public function _authorizePaths():void {}
 
-		public function _assignMiddleware():void {
-		}
+		public function _assignMiddleware():void {}
 
 		public function _getAuthenticator ():AuthStorage {
 

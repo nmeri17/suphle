@@ -8,8 +8,7 @@
 
 		public function loginAs ();
 
-		// used to determine auth status during a request
-		public function getIdentifier ():string;
+		public function getId ():string;
 
 		public function startSession (string $userId):string;
 
