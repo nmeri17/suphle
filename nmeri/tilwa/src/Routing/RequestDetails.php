@@ -4,6 +4,7 @@
 
 	use Tilwa\Contracts\Config\Router;
 
+	/* A bridge between Router config, actual request detail, and making sense out of the raw incoming request. Also suffices for components without access to their own handlers i.e. login*/
 	class RequestDetails {
 
 		private $config, $path;

@@ -60,7 +60,7 @@
 			return $this;
 		}
 
-		public function handleValidRequest():AbstractRenderer {
+		public function handleValidRequest(BaseRequest $request):AbstractRenderer {
 
 			$renderer = $this->renderer;
 
@@ -70,13 +70,13 @@
 
 			if (!$this->requestDetails->isApiRoute())
 
-				$router->setPrevious($renderer, $manager->getRequest());
+				$router->setPrevious($renderer, $request);
 
 			if ($renderer instanceof Markup && $router->acceptsJson())
 
 				$renderer->setWantsJson();
 
-			$manager->updatePlaceholders()
+			$manager->updateRequest($request)
 
 			->hydrateModels($renderer->getRouteMethod());
 

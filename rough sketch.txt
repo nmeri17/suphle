@@ -1,4 +1,4 @@
-install transphpform and turbo
+install turbo
 
 ->createQueryBuilder()
 
@@ -6,13 +6,7 @@ install transphpform and turbo
 
 ->where('u.email = ?1')->setParameter(1, $reqData['email']) // this should go in "good to know"
 
-route caching
-	- all the routes should pass through regexForm and get saved with the result under a trie the way they were defined. The aim is to skip this replacement phase during runtime
-	- only needed if you're using a lot of dynamic routes
-
 try to deploy on azure
-
-When you find a way of identifying orm models, revisit BusinessLogic->setup
 
 when cacheManager is integrated:
 	- refactor its usage wherever it appears in respect to accessing nested objects; tags etc
@@ -36,15 +30,14 @@ Bar:
 	- app level service entry into repositories
 	- orm in services
 Extract rejection logic into a class and inject that into both service wrapper and executable classes. then implement an interface that informs these parents to run x whenever such interface is met
-	prefersServices, servicePreferenceManager
-
-Revisit BusinessLogic for implementing the factory pattern
 
 Refactor RouteCollection->getPatterns() to work with a IRouteCollection interface we reflect and exclude methods not matching the interface's methods
 
-Bonus: add auth services (email verification, password recovery) dev can inject in their controllers
-
 Pending:
 	- exception renderer
+	- testing
 
-we have testing as major component left
+User-land test interface doesn't rely on the outer module assembly or index.php in order to access app core. testing bits wanna access that core from anywhere
+We use top to bottom approach: interact with the highest level classes, passing down value states that should be there and expecting certain updates/ responses proving we're on track
+
+After/during the time we are working on the internals, as we delve deeper, we reach the controllers. Our aim at this stage is that it returns 200

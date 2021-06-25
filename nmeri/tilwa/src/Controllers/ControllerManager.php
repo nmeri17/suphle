@@ -112,14 +112,16 @@
 		}
 		
 		// this should go first before action argument instantiation
-		public function updatePlaceholders():self {
+		public function updateRequest(BaseRequest $request):self {
 
 			$pattern = "(?<![A-Z0-9])# negative lookbehind: given PATH_id_EDIT_id2_EDIT__SAME__OKJh_optionalO_TOMP, refuse to match the h in the compound segment
 			([a-z0-9]+)# pick placeholders"; // confirm this guy works with underscores, not slashes
 
-			preg_match("/$pattern/x", $this->request->getPath(), $matches);
+			preg_match("/$pattern/x", $request->getPath(), $matches);
 
-			$this->request->setPlaceholders($matches[0]);
+			$request->setPlaceholders($matches[0]);
+
+			$this->request = $request;
 
 			return $this;
 		}

@@ -22,9 +22,10 @@
         "illuminate/container": "^7.30",
         "illuminate/events": "^7.30",
         "phpunit/phpunit": "^8.5",
-        "level-2/transphporm": "^1.5.1"
+        "level-2/transphporm": "^1.5.1",
+        "symfony/browser-kit": "^5.3"
     },
-    
     "require-dev": {
+        "codeception/lib-innerbrowser": "^1.5"
     }
 }

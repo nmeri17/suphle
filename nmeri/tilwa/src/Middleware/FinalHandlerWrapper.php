@@ -15,7 +15,7 @@
 
 		public function process ($request, $requestHandler) { // confirm that [requestHandler]==null
 
-			$this->manager->handleValidRequest();
+			$this->manager->handleValidRequest($request);
 
 			$this->manager->afterRender();
 
