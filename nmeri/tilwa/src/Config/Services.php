@@ -31,5 +31,10 @@
 				LaravelApp::class => LaravelAppProvider::class
 			];
 		}
+
+		public function usesLaravelPackages ():bool {
+
+			return true;
+		}
 	}
 ?>

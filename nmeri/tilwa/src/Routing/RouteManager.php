@@ -4,11 +4,9 @@
 
 	use Tilwa\App\Container;
 
-	use Tilwa\Response\Format\Markup;
-
 	use Generator;
 
-	use Tilwa\Contracts\{AuthStorage, Config\Router as RouterConfig};
+	use Tilwa\Contracts\{AuthStorage, Config\Router as RouterConfig, RouteCollection};
 
 	use Tilwa\Middleware\MiddlewareRegistry;
 
@@ -84,7 +82,7 @@
 					- pair empty incoming path with _index method
 					- crud methods disregard their method names
 				*/
-				if (($pattern == "_index") || $collection->expectsCrud)
+				if (($pattern == "_index") || $collection->expectsCrud())
 
 					$computedPattern = "";
 
@@ -98,11 +96,11 @@
 
 				$parsed = $this->regexForm($fullRouteState);
 
-				if (!is_null($collection->prefixClass) && $this->prefixMatch($parsed)) { // only delve deeper if we're on the right track i.e. if nested path = foo/bar/foobar, and nested method "bar" defines prefix, we only wanna explore its contents if requested route matches foo/bar
+				if (!is_null($collection->getPrefixCollection()) && $this->prefixMatch($parsed)) { // only delve deeper if we're on the right track i.e. if nested path = foo/bar/foobar, and nested method "bar" defines prefix, we only wanna explore its contents if requested route matches foo/bar
 
 					$this->indicatePatternDetails($collection, $pattern);
 
-					return $this->recursiveSearch($collection->prefixClass, $fullRouteState, $computedPattern); /** we don't bother checking whether a route was found or not because if there was none after going downwards*, searching sideways* won't help either
+					return $this->recursiveSearch($collection->getPrefixCollection(), $fullRouteState, $computedPattern); /** we don't bother checking whether a route was found or not because if there was none after going downwards*, searching sideways* won't help either
 
 					 * downwards = deeper into a collection
 					 * sideways = other patterns on this same collection
@@ -111,7 +109,7 @@
 				else {
 					foreach ($rendererList as $path => $renderer) { // we'll usually get one route here, except for CRUD invocations
 
-						if ($collection->expectsCrud)
+						if ($collection->expectsCrud())
 
 							$parsed .= $this->regexForm($path);
 
@@ -121,14 +119,14 @@
 
 							$this->fullTriedPath = $parsed;
 
-							if ($renderer instanceof Markup && $collection->isMirroring)
+							if ($this->requestDetails->isApiRoute() && $collection->isMirroring())
 
 								$renderer->contentIsNegotiable();
 							
 							return $this->bootRenderer($renderer, $collection->_handlingClass());
 						}
 					}
-					$collection->expectsCrud = null; // for subsequent patterns
+					$collection->expectsCrud() = null; // for subsequent patterns
 				}
 			}
 		}

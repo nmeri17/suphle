@@ -4,7 +4,7 @@
 
 	require_once "vendor/autoload.php"; // for composer packages
 	
-	spl_autoload_register(function ($className) {
+	/*spl_autoload_register(function ($className) {
     
         $slash = DIRECTORY_SEPARATOR; $currDir = __DIR__;
 
@@ -23,5 +23,5 @@
 
         	if (!empty($foundInSub)) require_once $currDir. array_values($foundInSub)[0] .$slash. $className;
         }
-    });
+    });*/
 ?>

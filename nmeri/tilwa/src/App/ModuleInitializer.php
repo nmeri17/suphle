@@ -81,7 +81,7 @@
 
 		public function initialize():self {
 
-			$this->container->setConfigs($descriptor->getConfigs());
+			$this->container->setConfigs($this->descriptor->getConfigs());
 
 			$this->router = $this->container->getClass (RouteManager::class);
 
@@ -121,7 +121,7 @@
 
 			$customBindings = $this->container->getMethodParameters("entityBindings", $descriptor);
 
-			call_user_func_array([$descriptor, "entityBindings"], $customBindings);
+			$descriptor->entityBindings(...$customBindings);
 
 			return $this;
 		}

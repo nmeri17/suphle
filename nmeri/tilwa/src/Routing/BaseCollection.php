@@ -6,14 +6,16 @@
 
 	use Tilwa\Auth\TokenStorage;
 
-	abstract class RouteCollection {
+	use Tilwa\Contracts\RouteCollection;
 
-		private $canaryValidator, $routerConfig, $authStorage,
+	abstract class BaseCollection implements RouteCollection {
 
-		$utilities = ["_mirrorBrowserRoutes", "_authenticatedPaths", "_handlingClass", "_crud", "_register", "_setAllow", "_canaryEntry", "_setLocalPrefix", "_whenUnauthorized"
-		];
+		protected $canaryValidator, $routerConfig, $authStorage, $middlewareRegistry;
 
-		public $prefixClass, $isMirroring, $expectsCrud, $localPrefix, $middlewareRegistry;
+		private $utilities = ["_mirrorBrowserRoutes", "_authenticatedPaths", "_handlingClass", "_crud", "_register", "_setAllow", "_canaryEntry", "_setLocalPrefix", "_whenUnauthorized"
+		],
+
+		$mirroring = false, $crudMode = false, $localPrefix, $prefixClass;
 
 		/**
 		* overwrite in your routes file
@@ -30,13 +32,10 @@
 
 			$this->authStorage = $tokenStorage;
 
-			$this->isMirroring = true;
+			$this->mirroring = true;
 
 			$this->_prefixFor($this->routerConfig->browserEntryRoute());
 		}
-
-		// @return Executable
-		abstract public function _handlingClass ():string;
 		
 		public function _prefixCurrent():string {
 			
@@ -53,7 +52,7 @@
 
 			if (!empty($this->localPrefix)) { // confirm setting neither creates no crud routes
 
-				$this->expectsCrud = true;
+				$this->crudMode = true;
 
 				return new CrudBuilder($this, $viewPath, $this->routerConfig->getModelRequestParameter()); // you must call `save` in the invoking method
 			}
@@ -78,17 +77,10 @@
 			$this->prefixClass = $routeClass;
 		}
 
-		# filter off methods that aren't one of us
+		# filter off methods that belong to this base
 		public function getPatterns():array {
 
-			$myMethods = get_class_methods($this);
-
-			if ($parent_class = get_parent_class($this)) { // this means collection extension won't work!
-
-				$parentMethods = get_class_methods($parent_class);
-				$myMethods = array_diff($myMethods, $parentMethods);
-			}
-			return array_diff($myMethods, $this->utilities);
+			return array_diff(get_class_methods($this), $this->utilities);
 		}
 
 		public function _authenticatedPaths():array {}
@@ -121,6 +113,26 @@
 				if ($canary->willLoad() )
 
 					return $this->_prefixFor($canary->entryClass());
+		}
+
+		public function getPrefixCollection ():string {
+
+			return $this->prefixClass;
+		}
+
+		public function isMirroring ():bool {
+
+			return $this->mirroring;
+		}
+
+		public function expectsCrud ():bool {
+
+			return $this->crudMode;
+		}
+
+		public function getLocalPrefix ():string {
+
+			return $this->localPrefix;
 		}
 	}
 ?>

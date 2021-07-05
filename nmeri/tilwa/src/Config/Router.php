@@ -6,7 +6,7 @@
 
 	use Tilwa\Middleware\FinalHandlerWrapper;
 
-	class Router implements RouterConfig {
+	abstract class Router implements RouterConfig {
 
 		public function apiPrefix():string {
 
@@ -14,12 +14,16 @@
 		}
 
 		// should be listed in descending order of the versions
-		public function apiStack ():array {}
+		public function apiStack ():array {
 
-		public function browserEntryRoute ():string {}
+			return [];
+		}
 
-		public function getModelRequestParameter():string {}
+		abstract public function browserEntryRoute ():string;
 
+		abstract public function getModelRequestParameter():string;
+
+		// list in ascending order of execution
 		public function defaultMiddleware():array {
 
 			return [
