@@ -107,15 +107,18 @@
 			$ourB->setCount(5);
 
 			$this->container->whenType(ARequiresBCounter::class)
+			->needsArguments([
+
+				Container::class => $this->container
+			])
 			->needs([
 
-				BCounter::class => $ourB
+				BCounter::class => $ourB,
 			]); // later test that string here won't work
 
 			$a = $this->container->getClass(ARequiresBCounter::class);
 
-			//$this->overrideNativeMethod($consumerName);
-			$this->assertGreaterThan($a->getInternalB()->getCount(), $a->getConstructorB()->getCount());
+			$this->assertGreaterThan($a->getConstructorB()->getCount(), $a->getInternalB()->getCount());
 		}
 
 		/*public function test_provided_caller_needs_internals () {
@@ -144,11 +147,6 @@
 
 				["class" => $consumerName]
 			]);
-		}
-
-		protected function tearDown ():void {
-
-			AspectTest::clean();
 		}
 	}
 ?>

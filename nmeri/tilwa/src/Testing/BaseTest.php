@@ -2,7 +2,11 @@
 
 	namespace Tilwa\Testing;
 
-	use Tilwa\App\{Container, ModuleDescriptor};
+	use Tilwa\App\Container;
+
+	use Tilwa\Contracts\Config\{ Services as IServices, Laravel as ILaravel};
+
+	use Tilwa\Config\{ Services, Laravel};
 
 	use PHPUnit\Framework\TestCase;
 
@@ -28,18 +32,17 @@
 
 		private function bootContainer ():void {
 
-			$configs = $this->containerConfigs(); $h = $this->container->getClass(ModuleDescriptor::class);
-var_dump($configs, $h);die();
-			if (empty($configs))
-
-				$configs = $h->getConfigs();
-
-			$this->container->setConfigs($configs);
+			$this->container->setConfigs($this->containerConfigs());
 		}
 
 		protected function containerConfigs ():array {
 
-			return [];
+			return [
+
+				ILaravel::class => Laravel::class,
+
+				IServices::class => Services::class
+			];
 		}
 	}
 ?>

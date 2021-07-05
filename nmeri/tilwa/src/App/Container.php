@@ -30,7 +30,7 @@
 
 		$provisionSpace,
 
-		$recursingFor; // the active ProvisionUnit
+		$recursingFor; // string of the active ProvisionUnit
 
 		public function __construct () {
 
@@ -53,60 +53,68 @@
 		* @return A class instance if found
 		*/
 		public function getClass (string $fullName, bool $includeSub = false) {
-var_dump($fullName);
+
 			$contextConcrete = $this->getClassForContext($fullName);
 
-			if (!is_null($contextConcrete))
-
-				return $contextConcrete;
+			if (!is_null($contextConcrete)) return $contextConcrete;
 
 			if ($includeSub && $parent = $this->hydrateChildsParent($fullName))
 
 				return $parent;
 
-			$servicesConfig = $this->getServicesConfig();
+			$concrete;
 
-			if (!is_null($servicesConfig)) {
+			$outermost = $this->notRecursing();
 
-				var_dump($servicesConfig->usesLaravelPackages(), $this->laravelHas($fullName), $fullName);
+			$this->setRecursingFor($fullName);
 
-				if ($servicesConfig->usesLaravelPackages() && $this->laravelHas($fullName))
+			$config = $this->getServicesConfig();
 
-					return $this->loadLaravelLibrary($fullName);
+			if (!is_null($config) && $config->usesLaravelPackages() && $this->laravelHas($fullName)) {
+
+				$concrete = $this->loadLaravelLibrary($fullName);
 			}
 
-			$reflectedClass = new ReflectionClass($fullName);
+			else {
 
-			if ($reflectedClass->isInterface())
+				$reflectedClass = new ReflectionClass($fullName);
 
-				return $this->provideInterface($fullName);
+				if ($reflectedClass->isInterface())
 
-			if ($reflectedClass->isInstantiable())
+					$concrete = $this->provideInterface($fullName);
 
-				return $this->instantiateConcrete($fullName);
+				if ($reflectedClass->isInstantiable())
+
+					$concrete = $this->instantiateConcrete($fullName);
+			}
+
+			if ($outermost) $this->unsetRecursingFor();
+
+			return $concrete;
 		}
 
 		public function getClassForContext (string $fullName) {
 
-			$isOriginalCall = false;
+			$outermost = $this->notRecursing();
 
-			if (is_null($this->recursingFor)) {
-
-				$isOriginalCall = true;
-
-				$this->recursingFor = $this->lastCaller();
-			}
-
-			else $this->recursingFor = $fullName; // e.g if we are hydrating dependency B of class A, we want to get provisions for B, not A, the last called
+			$this->setRecursingFor($fullName, $outermost);
 
 			$context = $this->getRecursionContext();
 
-			if ($context->hasConcrete($fullName)) {
+			if ($outermost) $this->unsetRecursingFor();
 
-				if ($isOriginalCall) $this->resetAsker();
+			if ($context->hasConcrete($fullName))
 
 				return $context->getConcrete($fullName);
-			}
+		}
+
+		private function setRecursingFor (string $fullName, bool $isOutermost = false):void {
+
+			if ($isOutermost)
+
+				$this->recursingFor = $this->lastCaller();
+
+			else $this->recursingFor = $fullName; // e.g if we are hydrating dependency B of class A, we want to get provisions for B, not A, the last called
 		}
 
 		private function loadLaravelLibrary(string $fullName ):object {
@@ -140,13 +148,20 @@ var_dump($fullName);
 
 		private function instantiateConcrete (string $fullName):object { // casting to [object] may be problematic to the caller
 
-			$this->dependencyChain[] = $fullName;
+			$constructor = "__construct";
+
+			if (method_exists($fullName, $constructor)) {
+
+				$this->dependencyChain[] = $fullName;
 			
-			$dependencies = $this->getMethodParameters("__construct", $fullName);
+				$dependencies = array_values($this->getMethodParameters($constructor, $fullName));
 
-			$concrete = new $fullName (...$dependencies);
+				$concrete = new $fullName (...$dependencies);
 
-			$this->unchainDependency($fullName);
+				$this->unchainDependency($fullName);
+			}
+
+			else $concrete = new $fullName;
 
 			$this->storeConcrete($fullName, $concrete);
 
@@ -154,6 +169,8 @@ var_dump($fullName);
 		}
 
 		private function storeConcrete (string $fullName, object $concrete):void {
+
+			$this->getRecursionContext();
 
 			$this->provisionedClasses[$this->recursingFor]
 
@@ -182,7 +199,7 @@ var_dump($fullName);
 
 			if (!array_key_exists($this->recursingFor, $this->provisionedClasses))
 
-				$this->recursingFor = $this->universalSelector;
+				$this->setRecursingFor($this->universalSelector);
 
 			return $this->provisionedClasses[$this->recursingFor];
 		}
@@ -297,21 +314,17 @@ var_dump($fullName);
 
 			$dependencies = [];
 
-			$externalCall = false;
+			$explicitCall = $this->notRecursing();
 
 			if (isset($anchorClass)) {
 
 				$reflectedCallable = new ReflectionMethod($anchorClass, $callable);
 
-				if (is_null($this->recursingFor)) {
-
-					$externalCall = true;
-
-					$this->recursingFor = $anchorClass; // Assume class A wanna get parameters for class B->foo. When set to `lastCaller`, we'll be looking through class A's provisions instead of class B
-				}
+				if ($explicitCall) $this->setRecursingFor($anchorClass); // Assume class A wanna get parameters for class B->foo. When set to `lastCaller`, we'll be looking through class A's provisions instead of class B
 
 				$context = $this->getRecursionContext();
 			}
+
 			else $reflectedCallable = new ReflectionFunction($callable);
 
 			foreach ($reflectedCallable->getParameters() as $parameter) {
@@ -320,11 +333,24 @@ var_dump($fullName);
 
 				$parameterType = $parameter->getType();
 
-				$matchesArgument = $context->hasArgument($parameterName) || $context->hasArgument($parameterType);
+				if ($context ) {
 
-				if ($context && $matchesArgument)
+					$provision = null;
 
-					$dependencies[$parameterName] = $context->getArgument($parameterName);
+					$typeName = $parameterType->getName();
+
+					if ($context->hasArgument($parameterName))
+
+						$provision = $context->getArgument($parameterName);
+
+					elseif ($context->hasArgument($typeName))
+
+						$provision = $context->getArgument($typeName);
+
+					else $provision = $this->getParameterValue($parameterType);
+
+					$dependencies[$parameterName] = $provision;
+				}
 
 				elseif ($parameterType)
 
@@ -337,7 +363,7 @@ var_dump($fullName);
 				else $dependencies[$parameterName] = null;
 			}
 
-			if ($externalCall) $this->resetAsker();
+			if ($explicitCall) $this->unsetRecursingFor();
 
 			return $dependencies;
 		}
@@ -477,7 +503,7 @@ var_dump($fullName);
 		private function hydrateConfig(string $fullName) {
 
 			$configs = $this->libraryConfigs;
-var_dump($configs, $fullName);
+
 			if (!array_key_exists($fullName, $configs)) return;
 				
 			return $this->instantiateConcrete($configs[$fullName]); // classes can't have custom config
@@ -502,7 +528,7 @@ var_dump($configs, $fullName);
 			return $this->servicesConfig;
 		}
 
-		private function resetAsker ():void {
+		private function unsetRecursingFor ():void {
 
 			$this->recursingFor = null; // ahead of future invocations by other callers to modular Container
 		}
@@ -514,6 +540,11 @@ var_dump($configs, $fullName);
 
 				$this->getLaravelConfig()->getProviders()
 			);
+		}
+
+		private function notRecursing ():bool {
+
+			return is_null($this->recursingFor);
 		}
 	}
 ?>
