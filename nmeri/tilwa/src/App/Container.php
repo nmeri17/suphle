@@ -2,7 +2,7 @@
 
 	namespace Tilwa\App;
 
-	use { ReflectionMethod, ReflectionClass, ReflectionFunction, ReflectionType};
+	use ReflectionMethod, ReflectionClass, ReflectionFunction, ReflectionType, Exception;
 	
 	use Tilwa\App\Structures\{ProvisionUnit, NamespaceUnit};
 	
@@ -22,13 +22,20 @@
 
 		$libraryConfigs = [],
 
+		$universalSelector = "*",
+
 		$laravelConfig, $servicesConfig,
 
 		$provisionContext, // the active Type before calling `needs`
 
 		$provisionSpace,
 
-		$recursingFor; // the active ProvisionUnit
+		$recursingFor; // string of the active ProvisionUnit
+
+		public function __construct () {
+
+			$this->provisionedClasses[$this->universalSelector] = new ProvisionUnit;
+		}
 
 		public function setConfigs (array $configs):self {
 
@@ -45,63 +52,84 @@
 		*	@param {includeSub} With `needs`, you can supply sub-types in place of their parents, but with this, non-provisioned sub-types can access provisions of their superiors
 		* @return A class instance if found
 		*/
-		public function getClass (string $fullName, bool $includeSub = false):object {
+		public function getClass (string $fullName, bool $includeSub = false) {
 
-			if ($contextConcrete = $this->getClassForContext())
+			$contextConcrete = $this->getClassForContext($fullName);
 
-				return $contextConcrete;
+			if (!is_null($contextConcrete)) return $contextConcrete;
 
 			if ($includeSub && $parent = $this->hydrateChildsParent($fullName))
 
 				return $parent;
 
-			$laravelProviders = $this->getLaravelConfig()->getProviders();
+			$concrete;
 
-			if (array_key_exists($fullName, $laravelProviders))
+			$outermost = $this->notRecursing();
 
-				return $this->loadLaravelLibrary($fullName, $laravelProviders);
+			$this->setRecursingFor($fullName);
 
-			$reflectedClass = new ReflectionClass($fullName);
+			$config = $this->getServicesConfig();
 
-			if ($reflectedClass->isInterface())
+			if (!is_null($config) && $config->usesLaravelPackages() && $this->laravelHas($fullName)) {
 
-				return $this->provideInterface($fullName);
+				$concrete = $this->loadLaravelLibrary($fullName);
+			}
 
-			if ($reflectedClass->isInstantiable())
+			else {
 
-				return $this->instantiateConcrete($fullName);
+				$reflectedClass = new ReflectionClass($fullName);
+
+				if ($reflectedClass->isInterface())
+
+					$concrete = $this->provideInterface($fullName);
+
+				if ($reflectedClass->isInstantiable())
+
+					$concrete = $this->instantiateConcrete($fullName);
+			}
+
+			if ($outermost) $this->unsetRecursingFor();
+
+			return $concrete;
 		}
 
-		private function getClassForContext (string $fullName):object {
+		public function getClassForContext (string $fullName) {
 
-			if (is_null($this->recursingFor))
+			$outermost = $this->notRecursing();
 
-				$this->recursingFor = $this->lastCaller();
-
-			else $this->recursingFor = $fullName;
+			$this->setRecursingFor($fullName, $outermost);
 
 			$context = $this->getRecursionContext();
 
-			if ($context->hasConcrete($this->recursingFor))
+			if ($outermost) $this->unsetRecursingFor();
 
-				return $concrete->getConcrete($this->recursingFor);
+			if ($context->hasConcrete($fullName))
+
+				return $context->getConcrete($fullName);
 		}
 
-		private function loadLaravelLibrary(string $fullName, array $providers):object {
+		private function setRecursingFor (string $fullName, bool $isOutermost = false):void {
+
+			if ($isOutermost)
+
+				$this->recursingFor = $this->lastCaller();
+
+			else $this->recursingFor = $fullName; // e.g if we are hydrating dependency B of class A, we want to get provisions for B, not A, the last called
+		}
+
+		private function loadLaravelLibrary(string $fullName ):object {
+
+			$providers = $this->getLaravelConfig()->getProviders();
 
 			$laravelApp = $this->getClass(LaravelApp::class);
 
-			$provider = call_user_func_array(
-				[ $providers[$fullName], "__construct" ],
-
-				$laravelApp
-			);
+			$provider = new $providers[$fullName]($laravelApp);
 
 			$instance = (new LaravelProviderManager($provider, $laravelApp, $this))
 
 			->prepare()->getConcrete();
 
-			if ($fullName == $instance::class) {
+			if ($fullName == get_class($instance)) {
 
 				$this->storeConcrete( $fullName, $instance);
 
@@ -118,22 +146,31 @@
 				return $this->getClass($providedParent);
 		}
 
-		private function instantiateConcrete (string $fullName, string $alias):object { // casting to [object] may be problematic to the caller
+		private function instantiateConcrete (string $fullName):object { // casting to [object] may be problematic to the caller
 
-			$this->dependencyChain[] = $fullName;
+			$constructor = "__construct";
+
+			if (method_exists($fullName, $constructor)) {
+
+				$this->dependencyChain[] = $fullName;
 			
-			$dependencies = $this->getMethodParameters("__construct", $fullName);
+				$dependencies = array_values($this->getMethodParameters($constructor, $fullName));
 
-			$concrete = new $fullName (...$dependencies);
+				$concrete = new $fullName (...$dependencies);
 
-			$this->unchainDependency($fullName);
+				$this->unchainDependency($fullName);
+			}
 
-			$this->storeConcrete($alias ?? $fullName, $concrete);
+			else $concrete = new $fullName;
+
+			$this->storeConcrete($fullName, $concrete);
 
 			return $concrete;
 		}
 
 		private function storeConcrete (string $fullName, object $concrete):void {
+
+			$this->getRecursionContext();
 
 			$this->provisionedClasses[$this->recursingFor]
 
@@ -142,10 +179,16 @@
 
 		private function lastCaller ():string {
 
-			// 2=> ignore concrete objects and their args
-			$stack = debug_backtrace ( 2, 4 ); // [lastCaller,getClassForContext,getClass,ourGuy]. A more extensible (we won't have to specify limit anymore) but memory intensive way to go about this is to remove the limit and group them by class. then pick the immediate last one that doesn't correspond to `self::class`
+			$stack = debug_backtrace (2 ); // 2=> ignore concrete objects and their args
 
-			return end($stack)["class"];
+			$caller = "class";
+
+			foreach ($stack as $execution)
+
+				if (array_key_exists($caller, $execution) && $execution[$caller] != get_class()) {
+
+					return $execution[$caller];
+				}
 		}
 
 		/**
@@ -156,7 +199,7 @@
 
 			if (!array_key_exists($this->recursingFor, $this->provisionedClasses))
 
-				$this->recursingFor = "*";
+				$this->setRecursingFor($this->universalSelector);
 
 			return $this->provisionedClasses[$this->recursingFor];
 		}
@@ -177,36 +220,37 @@
 			return $this->getClassFromProvider($service);
 		}
 
-		private function getClassFromProvider (string $service):object {
+		private function getClassFromProvider (string $service) {
 
-			$providers = $this->getServicesConfig()->getProviders();
+			$config = $this->getServicesConfig();
 
-			if (array_key_exists($service, $providers)) {
+			if (is_null($config)) return;
 
-				$providerClass = $providers[$service];
+			$providers = $config->getProviders();
 
-				$provider = new $providerClass();
+			if (!array_key_exists($service, $providers)) return;
 
-				$providerArguments = $this->getMethodParameters("bindArguments", $providerClass);
+			$providerClass = $providers[$service];
 
-				$providerParameters = call_user_func_array([$provider, "bindArguments"], $providerArguments);
+			$provider = $this->instantiateConcrete($providerClass);
 
-				$concrete = $provider->concrete();
+			$providerParameters = $provider->bindArguments();
 
-				$this->whenType($concrete) // merge any custom args with defaults
+			$concrete = $provider->concrete();
 
-				->needsArguments($providerParameters);
-					
-				$reflectedClass = $this->getClass($concrete);
+			$this->whenType($concrete) // merge any custom args with defaults
 
-				$provider->afterBind($reflectedClass);
+			->needsArguments($providerParameters);
+				
+			$reflectedClass = $this->getClass($concrete);
 
-				$this->storeConcrete ($service, $reflectedClass);
+			$provider->afterBind($reflectedClass);
 
-				if ($reflectedClass instanceof $service)
+			$this->storeConcrete ($service, $reflectedClass);
 
-					return $reflectedClass;
-			}
+			if ($reflectedClass instanceof $service)
+
+				return $reflectedClass;
 		}
 
 		public function whenType (string $toProvision):self {
@@ -222,10 +266,14 @@
 
 		public function whenTypeAny ():self {
 
-			return $this->whenType("*");
+			return $this->whenType($this->universalSelector);
 		}
 
 		public function needs (array $dependencyList):self {
+
+			if (is_null ($this->provisionContext))
+
+				throw new Exception("Undefined provisionContext");
 
 			$this->provisionedClasses[$this->provisionContext]->updateConcretes($dependencyList);
 			
@@ -234,14 +282,20 @@
 
 		public function needsAny (array $dependencyList):self {
 
-			$this->provisionedClasses[$this->provisionContext]->updateConcretes($dependencyList);
+			$this->needs($dependencyList)
 
-			$this->provisionedClasses[$this->provisionContext]->updateArguments($dependencyList);
-			
+			->needsArguments($dependencyList);
+
+			$this->provisionContext = null;
+
 			return $this;
 		}
 
 		public function needsArguments (array $argumentList):self {
+
+			if (is_null ($this->provisionContext))
+
+				throw new Exception("Undefined provisionContext");
 
 			$this->provisionedClasses[$this->provisionContext]->updateArguments($argumentList);
 			
@@ -260,29 +314,47 @@
 
 			$dependencies = [];
 
+			$explicitCall = $this->notRecursing();
+
 			if (isset($anchorClass)) {
 
 				$reflectedCallable = new ReflectionMethod($anchorClass, $callable);
 
-				if (is_null($this->recursingFor))
-
-					$this->recursingFor = $anchorClass; // Assume class A wanna get parameters for class B->foo. When set to `lastCaller`, we'll be looking through class A's provisions instead of class B
+				if ($explicitCall) $this->setRecursingFor($anchorClass); // Assume class A wanna get parameters for class B->foo. When set to `lastCaller`, we'll be looking through class A's provisions instead of class B
 
 				$context = $this->getRecursionContext();
 			}
+
 			else $reflectedCallable = new ReflectionFunction($callable);
 
 			foreach ($reflectedCallable->getParameters() as $parameter) {
 
 				$parameterName = $parameter->getName();
 
-				if ($context && $context->hasArgument($parameterName))
+				$parameterType = $parameter->getType();
 
-					$dependencies[$parameterName] = $context->getArgument($parameterName]);
+				if ($context ) {
 
-				if ($parameter->hasType())
+					$provision = null;
 
-					$dependencies[$parameterName] = $this->getParameterValue($parameter->getType());
+					$typeName = $parameterType->getName();
+
+					if ($context->hasArgument($parameterName))
+
+						$provision = $context->getArgument($parameterName);
+
+					elseif ($context->hasArgument($typeName))
+
+						$provision = $context->getArgument($typeName);
+
+					else $provision = $this->getParameterValue($parameterType);
+
+					$dependencies[$parameterName] = $provision;
+				}
+
+				elseif ($parameterType)
+
+					$dependencies[$parameterName] = $this->getParameterValue($parameterType);
 				
 				elseif ($parameter->isOptional() )
 
@@ -290,6 +362,9 @@
 
 				else $dependencies[$parameterName] = null;
 			}
+
+			if ($explicitCall) $this->unsetRecursingFor();
+
 			return $dependencies;
 		}
 
@@ -425,13 +500,13 @@
 		}
 
 		// this just seems to be a shortcut to the [needs] group of methods, but doesn't want to muddle config provisioning with every other class type
-		private function hydrateConfig(string $fullName):object {
+		private function hydrateConfig(string $fullName) {
 
 			$configs = $this->libraryConfigs;
 
-			if (array_key_exists($fullName, $configs))
+			if (!array_key_exists($fullName, $configs)) return;
 				
-				return $this->instantiateConcrete($configs[$fullName]); // classes can't have custom config
+			return $this->instantiateConcrete($configs[$fullName]); // classes can't have custom config
 		}
 
 		// using this to subvert the arduous process of class hydration
@@ -439,18 +514,37 @@
 
 			if (is_null($this->laravelConfig))
 
-				$this->laravelConfig = $this->getClass(LaravelConfig::class);
+				$this->laravelConfig = $this->hydrateConfig(LaravelConfig::class);
 
 			return $this->laravelConfig;
 		}
 
-		private function getServicesConfig():ServicesConfig {
+		private function getServicesConfig():?ServicesConfig {
 
 			if (is_null($this->servicesConfig))
 
-				$this->servicesConfig = $this->getClass(ServicesConfig::class);
+				$this->servicesConfig = $this->hydrateConfig(ServicesConfig::class);
 
 			return $this->servicesConfig;
+		}
+
+		private function unsetRecursingFor ():void {
+
+			$this->recursingFor = null; // ahead of future invocations by other callers to modular Container
+		}
+
+		private function laravelHas (string $fullName):bool {
+
+			return array_key_exists(
+				$fullName,
+
+				$this->getLaravelConfig()->getProviders()
+			);
+		}
+
+		private function notRecursing ():bool {
+
+			return is_null($this->recursingFor);
 		}
 	}
 ?>

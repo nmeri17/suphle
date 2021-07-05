@@ -1,6 +1,4 @@
-flesh out auth controller actions. Implement loginAs
-
-install transphpform and turbo
+install turbo
 
 ->createQueryBuilder()
 
@@ -8,13 +6,7 @@ install transphpform and turbo
 
 ->where('u.email = ?1')->setParameter(1, $reqData['email']) // this should go in "good to know"
 
-route caching
-	- all the routes should pass through regexForm and get saved with the result under a trie the way they were defined. The aim is to skip this replacement phase during runtime
-	- only needed if you're using a lot of dynamic routes
-
 try to deploy on azure
-
-When you find a way of identifying orm models, revisit NoSqlLogic->setup
 
 when cacheManager is integrated:
 	- refactor its usage wherever it appears in respect to accessing nested objects; tags etc
@@ -38,16 +30,14 @@ Bar:
 	- app level service entry into repositories
 	- orm in services
 Extract rejection logic into a class and inject that into both service wrapper and executable classes. then implement an interface that informs these parents to run x whenever such interface is met
-	prefersServices, servicePreferenceManager
 
-Revisit NoSqlLogic for implementing the factory pattern
-
-Bonus: add auth services (email verification, password recovery) dev can inject in their controllers
+Refactor RouteCollection->getPatterns() to work with a IRouteCollection interface we reflect and exclude methods not matching the interface's methods
 
 Pending:
 	- exception renderer
+	- testing
 
-1) want to visit admin page (GET requests). involves no models. blocked at route PREFIX level OR the service delivering admin services is locked (cuz even though services are reusable, there's still the tendency of forgetting to tag a new service method)
-2) a GET/POST request to view x model not belonging to me. locked at model level
+User-land test interface doesn't rely on the outer module assembly or index.php in order to access app core. testing bits wanna access that core from anywhere
+We use top to bottom approach: interact with the highest level classes, passing down value states that should be there and expecting certain updates/ responses proving we're on track
 
-In each case, failure to return true throws an error caught by our external handler
+After/during the time we are working on the internals, as we delve deeper, we reach the controllers. Our aim at this stage is that it returns 200

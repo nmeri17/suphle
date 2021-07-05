@@ -6,21 +6,7 @@
 
 	abstract class BaseAuthStorage implements AuthStorage {
 
-		private $claimedPatterns = [];
-
-		private $databaseAdapter, $authConfig;
-
-		protected $user, $identifier;
-
-		public function claimPatterns (array $paths):self {
-
-			$this->claimedPatterns = array_unique($this->claimedPatterns + $paths);
-		}
-
-		public function isClaimedPattern (string $pattern):bool {
-
-			return in_array($pattern, $this->claimedPatterns);
-		}
+		protected $userHydrator, $authConfig, $user, $identifier;
 
 		public function getUser () {
 
@@ -28,20 +14,11 @@
 
 				return null;
 
-			if ( is_null($this->user))
+			if ( is_null($this->user)) // when accessed for the first time
 
-				$this->user = $this->hydrateUser();
+				$this->user = $this->userHydrator->findById( $this->identifier );
 
 			return $this->user;
-		}
-
-		private function hydrateUser () {
-
-			return $this->databaseAdapter->findOne(
-				$this->authConfig->getUserModel(),
-
-				$this->identifier
-			);
 		}
 
 		public function loginAs (string $value) {
@@ -51,7 +28,7 @@
 				$this->identifier = $value;
 		}
 		
-		public function getIdentifier ():string {
+		public function getId ():string {
 
 			return $this->identifier;
 		}

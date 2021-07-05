@@ -6,9 +6,13 @@
 
 	use Tilwa\Events\EventManager;
 
+	use Tilwa\Contracts\{QueryInterceptor};
+
 	class Executable {
 
-		private $services, $container, $invalidService;
+		private $services, $container, $invalidService,
+
+		$allowedServices;
 
 		# ideally, this should be the only expression in controller's constructor
 		protected function loadServices(array $dependencies) {
@@ -17,10 +21,12 @@
 		}
 
 		public function hasValidServices (array $moduleDependencies):bool {
+
+			$this->setAllowedServices($moduleDependencies);
 			
 			foreach ($this->services as $alias => $service)
 				
-				if (!$this->isAcceptableService($service, $moduleDependencies)) {
+				if (!$this->isAcceptableService($service )) {
 
 					$this->invalidService = $alias;
 
@@ -29,14 +35,9 @@
 			return true;
 		}
 
-		private function isAcceptableService(object $dependency, array $foreignServices):bool {
-			
-			$allowed = [EventManager::class, BaseQueryInterceptor::class, NoSqlLogic::class] + array_map(function ($concrete) {
+		private function isAcceptableService( $dependency):bool {
 
-				return $concrete::class;
-			}, $foreignServices);
-
-			foreach ($allowed as $type)
+			foreach ($this->allowedServices as $type)
 
 				if ($dependency instanceof $type) return true;
 
@@ -55,7 +56,6 @@
 			if ($concrete instanceof EventManager)
 
 				return $concrete; // [ExecutionUnit] will eventually wrap the handler in [RepositoryWrapper] if it matches
-			$this->setupBootableService($concrete);
 
 			return $this->getWrappedService($concrete);
 		}
@@ -76,7 +76,7 @@
 			
 			$container = $this->container;
 
-			if ($originalService instanceof BaseQueryInterceptor)
+			if ($originalService instanceof QueryInterceptor)
 
 				$wrapper = $container->getClass(RepositoryWrapper::class);
 
@@ -85,12 +85,12 @@
 			return $wrapper->setActiveService($originalService);
 		}
 
-		// A better location for this would've been while setting it in the service wrapper? But it seems like too little a reason to pass in the container
-		private function setupBootableService(object $concrete):void {
+		private function setAllowedServices ( array $services):void {
 			
-			if ($concrete instanceof BootsService)
+			$this->allowedServices = [EventManager::class, QueryInterceptor::class, ConditionalFactory::class] + array_map(function ($concrete) {
 
-				$concrete->setup($this->container); 
+				return get_class($concrete);
+			}, $services);
 		}
 	}
 ?>

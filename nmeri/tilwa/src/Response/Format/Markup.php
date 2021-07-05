@@ -19,7 +19,7 @@
 			$this->handler = $handler;
 		}
 
-		public function render() {
+		public function render():string {
 			
 			if (!$this->contentNegotiable && !$this->wantsJson())
 
@@ -40,7 +40,7 @@
 
 		public function setWantsJson():void {
 			
-			return $this->wantsJson = true;
+			$this->wantsJson = true;
 		}
 	}
 ?>

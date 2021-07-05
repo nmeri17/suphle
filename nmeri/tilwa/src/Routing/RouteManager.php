@@ -4,11 +4,13 @@
 
 	use Tilwa\App\Container;
 
-	use Tilwa\Response\Format\Markup;
-
 	use Generator;
 
-	use Tilwa\Contracts\Config\Router as RouterConfig;
+	use Tilwa\Contracts\{AuthStorage, Config\Router as RouterConfig, RouteCollection};
+
+	use Tilwa\Middleware\MiddlewareRegistry;
+
+	use Tilwa\Request\{BaseRequest, PathAuthorizer};
 
 	class RouteManager {
 
@@ -20,15 +22,19 @@
 
 		$requestDetails, $fullTriedPath, $container,
 
-		$patternAuthentication;
+		$patternAuthentication, $registry, $authorizer;
 
-		function __construct(RouterConfig $config, Container $container, RequestDetails $requestDetails) {
+		function __construct(RouterConfig $config, Container $container, RequestDetails $requestDetails, MiddlewareRegistry $registry, PathAuthorizer $authorizer) {
 
 			$this->config = $config;
 
 			$this->container = $container;
 
 			$this->requestDetails = $requestDetails;
+
+			$this->registry = $registry;
+
+			$this->authorizer = $authorizer;
 		}
 
 		public function findRenderer ():AbstractRenderer {
@@ -76,7 +82,7 @@
 					- pair empty incoming path with _index method
 					- crud methods disregard their method names
 				*/
-				if (($pattern == "_index") || $collection->expectsCrud)
+				if (($pattern == "_index") || $collection->expectsCrud())
 
 					$computedPattern = "";
 
@@ -90,11 +96,11 @@
 
 				$parsed = $this->regexForm($fullRouteState);
 
-				if (!is_null($collection->prefixClass) && $this->prefixMatch($parsed)) { // only delve deeper if we're on the right track i.e. if nested path = foo/bar/foobar, and nested method "bar" defines prefix, we only wanna explore its contents if requested route matches foo/bar
+				if (!is_null($collection->getPrefixCollection()) && $this->prefixMatch($parsed)) { // only delve deeper if we're on the right track i.e. if nested path = foo/bar/foobar, and nested method "bar" defines prefix, we only wanna explore its contents if requested route matches foo/bar
 
-					$this->setPatternAuthentication($collection, $pattern);
+					$this->indicatePatternDetails($collection, $pattern);
 
-					return $this->recursiveSearch($collection->prefixClass, $fullRouteState, $computedPattern); /** we don't bother checking whether a route was found or not because if there was none after going downwards*, searching sideways* won't help either
+					return $this->recursiveSearch($collection->getPrefixCollection(), $fullRouteState, $computedPattern); /** we don't bother checking whether a route was found or not because if there was none after going downwards*, searching sideways* won't help either
 
 					 * downwards = deeper into a collection
 					 * sideways = other patterns on this same collection
@@ -103,24 +109,24 @@
 				else {
 					foreach ($rendererList as $path => $renderer) { // we'll usually get one route here, except for CRUD invocations
 
-						if ($collection->expectsCrud)
+						if ($collection->expectsCrud())
 
 							$parsed .= $this->regexForm($path);
 
 						if ($this->routeCompare($parsed, $renderer->getRouteMethod())) {
 
-							$this->setPatternAuthentication($pattern);
+							$this->indicatePatternDetails($collection, $pattern);
 
 							$this->fullTriedPath = $parsed;
 
-							if ($renderer instanceof Markup && $collection->isMirroring)
+							if ($this->requestDetails->isApiRoute() && $collection->isMirroring())
 
 								$renderer->contentIsNegotiable();
 							
 							return $this->bootRenderer($renderer, $collection->_handlingClass());
 						}
 					}
-					$collection->expectsCrud = null; // for subsequent patterns
+					$collection->expectsCrud() = null; // for subsequent patterns
 				}
 			}
 		}
@@ -281,23 +287,45 @@
 			]);
 		}
 
-		private function setPatternAuthentication(RouteCollection $activeCollection, string $pattern):void {
+		// if a higher level security was applied to a child collection with its own rules, omitting the current pattern, the security will be withdrawn from that pattern
+		private function setPatternAuthentication(RouteCollection $collection, string $pattern):void {
 
-			if ( method_exists($activeCollection, "_authenticatedPaths")) { // outer auth rules should govern internal ones without any apparent protection
-				
-				$authStorage = $activeCollection->_authenticatedPaths();
+			if ($activePatterns = $collection->_authenticatedPaths()) {
 
-				if ($authStorage->isClaimedPattern($pattern)) // if a higher level security was applied to a child collection with its own rules, omitting the current pattern, the security will be withdrawn from that pattern
+				if (in_array($pattern, $activePatterns))
 
-					$this->patternAuthentication = $authStorage;
+					$this->patternAuthentication = $collection->_getAuthenticator();
 
 				else $this->patternAuthentication = null;
 			}
 		}
 
+		private function indicatePatternDetails (RouteCollection $collection, string $pattern) {
+
+			$this->setPatternAuthentication($collection, $pattern);
+
+			$this->includeMiddleware($collection, $pattern);
+
+			$this->updatePermissions($collection, $pattern);
+		}
+
 		public function getPatternAuthentication ():AuthStorage {
 
 			return $this->patternAuthentication;
+		}
+
+		private function includeMiddleware (RouteCollection $collection, string $segment):void {
+
+			$collection->_assignMiddleware();
+
+			$this->registry->updateStack($segment);
+		}
+
+		private function updatePermissions (RouteCollection $collection, string $pattern):void {
+
+			$collection->_authorizePaths();
+
+			$this->authorizer->updateRuleStatus($pattern);
 		}
 	}
 ?>

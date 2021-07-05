@@ -4,14 +4,16 @@
 
 	use Tilwa\Contracts\Config\Auth as AuthContract;
 
-	use Tilwa\Auth\{BrowserLoginRenderer, SessionStorage};
+	use Tilwa\Auth\{BrowserLoginRenderer, SessionStorage, ApiLoginRenderer};
 
 	class Auth implements AuthContract {
 
 		public function getLoginPaths ():array {
 
 			return [
-				"login" => BrowserLoginRenderer::class
+				"login" => BrowserLoginRenderer::class,
+
+				"api/login" => ApiLoginRenderer::class
 			];
 		}
 
@@ -39,14 +41,14 @@
 			return getenv("JWT_TTL");
 		}
 
-		public function defaultAuthenticationStorage ():string {
-
-			return SessionStorage::class;
-		}
-
 		public function isAdmin ($user):bool {
 
 			return false;
+		}
+
+		public function getModelObservers():array {
+
+			return [];
 		}
 	}
 ?>

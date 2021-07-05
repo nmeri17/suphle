@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<phpunit bootstrap="test-autoload.php">
+	<testsuites>
+		<testsuite name="all_tests">
+			<directory>./tests</directory>
+		</testsuite>
+
+		<testsuite name="integration">
+			<directory>./tests/integration</directory>
+		</testsuite>
+
+		<testsuite name="unit">
+			<directory>./tests/unit</directory>
+		</testsuite>
+	</testsuites>
+
+	<php>
+		<ini name="error_reporting" value="-1" />
+		<env name="dbUser" value="test" />
+		<env name="dbPass" value="password" />
+		<env name="dbName" value="thing_test" />
+		<env name="dbHost" value="127.0.0.1" />
+	</php>
+</phpunit>

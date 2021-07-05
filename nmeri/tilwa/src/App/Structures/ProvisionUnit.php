@@ -28,12 +28,12 @@
 			return $this;
 		}
 
-		public function updateConcretes(array $dependencyList):self {
+		public function updateConcretes(array $dependencyList):void {
 			
 			$this->concretes += $dependencyList;
 		}
 
-		public function updateArguments(array $parameters):self {
+		public function updateArguments(array $parameters):void {
 			
 			$this->arguments += $parameters;
 		}

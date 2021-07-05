@@ -4,23 +4,31 @@
 
 	use Tilwa\Contracts\Config\Router as RouterConfig;
 
-	class Router implements RouterConfig {
+	use Tilwa\Middleware\FinalHandlerWrapper;
+
+	abstract class Router implements RouterConfig {
 
 		public function apiPrefix():string {
 
 			return "api";
 		}
 
-		public function routePermissions():string {
-			
-			return RouteGuards::class;
+		// should be listed in descending order of the versions
+		public function apiStack ():array {
+
+			return [];
 		}
 
-		// should be listed in descending order of the versions
-		public function apiStack ():array {}
+		abstract public function browserEntryRoute ():string;
 
-		public function browserEntryRoute ():string {}
+		abstract public function getModelRequestParameter():string;
 
-		public function getModelRequestParameter():string {}
+		// list in ascending order of execution
+		public function defaultMiddleware():array {
+
+			return [
+				FinalHandlerWrapper::class
+			];
+		}
 	}
 ?>

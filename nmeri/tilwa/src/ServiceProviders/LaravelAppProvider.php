@@ -16,15 +16,20 @@
 
 	class LaravelAppProvider extends ServiceProvider {
 
-		private $requestDetails;
+		private $requestDetails, $fileConfig;
 
-		public function bindArguments(ModuleFiles $fileConfig, RequestDetails $requestDetails):array {
+		public function __construct (RequestDetails $requestDetails, ModuleFiles $fileConfig) {
 
 			$this->requestDetails = $requestDetails;
 
+			$this->fileConfig = $fileConfig;
+		}
+
+		public function bindArguments():array {
+
 			return [
 
-				"basePath" => $fileConfig->activeModulePath()
+				"basePath" => $this->fileConfig->activeModulePath()
 			];
 		}
 

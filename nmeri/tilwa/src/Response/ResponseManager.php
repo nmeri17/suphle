@@ -60,7 +60,7 @@
 			return $this;
 		}
 
-		public function handleValidRequest():AbstractRenderer {
+		public function handleValidRequest(BaseRequest $request):AbstractRenderer {
 
 			$renderer = $this->renderer;
 
@@ -70,17 +70,15 @@
 
 			if (!$this->requestDetails->isApiRoute())
 
-				$router->setPrevious($renderer, $manager->getRequest());
+				$router->setPrevious($renderer, $request);
 
 			if ($renderer instanceof Markup && $router->acceptsJson())
 
 				$renderer->setWantsJson();
 
-			$manager->updatePlaceholders()
+			$manager->updateRequest($request)
 
 			->hydrateModels($renderer->getRouteMethod());
-
-			$this->runMiddleware(); // called here so some awesome middleware can override default behavior on our booted controller. may imply injecting the manager
 
 			return $renderer->invokeActionHandler($manager->getHandlerParameters());
 		}
@@ -88,41 +86,6 @@
 		public function isValidRequest ():bool {
 
 			return $this->controllerManager->getRequest()->isValidated();
-		}
-
-		/** middleware CURRENTLY delimited by commas. Middleware parameters delimited by colons
-		 * we want middleware that receives and updates requestDetails. we provide whenAny with what is returned. There's also another one that receives the renderer after action invocation but before render
-		*/
-		private function runMiddleware ():bool {
-
-			$passed = true;
-
-			foreach ($this->renderer->getMiddlewares() as $mw ) {
-
-				@[$className, $args] = explode(',', $mw);
-
-				$instance = $this->container->getClass($className);
-
-				if (is_callable($instance->postSourceBehavior))
-
-					$this->responseMutations[] = $instance->postSourceBehavior;
-
-				else $passed = $instance->handle( explode(':', $args) );
-
-				if ( !$passed ) return $passed; // terminate
-			}
-
-			return $passed;
-		}
-
-		// last action before response is flushed. log or profile middleware goes here
-		public function mutateResponse(string $currentBody):string {
-
-			foreach ($this->responseMutations as $handler)
-
-				$currentBody = $handler($currentBody);
-			
-			return $currentBody;
 		}
 
 		public function validateManager():void {
@@ -165,7 +128,7 @@
 
 			$storage->resumeSession();
 
-			return !is_null($storage->getIdentifier());
+			return !is_null($storage->getUser()); // confirms there's an active session and that its owner exists on the underlying database
 		}
 	}
 ?>

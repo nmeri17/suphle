@@ -2,11 +2,11 @@
 
 	namespace Tilwa\Controllers;
 
-	use Tilwa\Errors\UnauthorizedServiceAccess;
-
 	use Tilwa\Contracts\Config\Services;
 
 	use Tilwa\Controllers\Structures\ServiceEventPayload;
+
+	use Throwable;
 
 	class ServiceWrapper {
 
@@ -21,7 +21,7 @@
 
 		public function __call($method, $arguments) {
 
-			$emitter = $this->activeService::class;
+			$emitter = get_class($this->activeService);
 
 			if ($this->config->lifecycle())
 
@@ -30,13 +30,14 @@
 			$result = null;
 
 			try {
+
 				$result = $this->yield($method, $arguments);
 
 				if ($this->config->lifecycle())
 
 					$this->eventManager->emit($emitter, "after_call", new ServiceEventPayload($result, $method));
 			}
-			catch (ErrorException $error) {
+			catch (Throwable $error) {
 
 				$payload = new ServiceEventPayload($arguments, $method);
 
@@ -51,13 +52,7 @@
 
 		protected function yield (string $method, array $arguments) {
 
-			$service = $this->activeService;
-
-			if ($service instanceof PermissibleService && !$service->canPerform($method, $arguments))
-
-				throw new UnauthorizedServiceAccess($service::class);
-			
-			return $service->$method(...$arguments);
+			return call_user_func_array([$this->activeService, $method], $arguments);
 		}
 
 		private function failureReturnValue(string $method) {
@@ -73,7 +68,7 @@
 			return $default;
 		}
 
-		public function setActiveService(object $service):void {
+		public function setActiveService($service):void {
 			
 			$this->activeService = $service;
 		}

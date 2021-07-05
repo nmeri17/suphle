@@ -4,7 +4,7 @@
 
 	use Firebase\JWT\JWT;
 
-	use Tilwa\Contracts\{Orm, Config\Auth as AuthContract};
+	use Tilwa\Contracts\{UserHydrator, Config\Auth as AuthContract};
 
 	use Throwable;
 
@@ -12,9 +12,9 @@
 
 		private $identifierKey = "user_id";
 
-		public function __construct (Orm $databaseAdapter, AuthContract $authConfig) {
+		public function __construct (UserHydrator $userHydrator, AuthContract $authConfig) {
 
-			$this->databaseAdapter = $databaseAdapter;
+			$this->userHydrator = $userHydrator;
 
 			$this->authConfig = $authConfig;
 		}

@@ -8,7 +8,11 @@
 
 	use Tilwa\Bridge\Laravel\ModuleRouteMatcher;
 
-	use Tilwa\Contracts\{AuthStorage, Auth as AuthContract};
+	use Tilwa\Contracts\AuthStorage;
+
+	use Tilwa\Request\PathAuthorizer;
+
+	use Tilwa\Errors\{UnauthorizedServiceAccess, Unauthenticated};
 	
 	class ModuleInitializer {
 
@@ -50,11 +54,9 @@
 
 				return $this->laravelMatcher->getResponse();
 
-			$this->attemptAuthentication();
+			$this->attemptAuthentication()->authorizePath();
 
-			$manager = $this->responseManager;
-
-			$validationPassed = $manager
+			$validationPassed = $this->responseManager
 
 			->bootControllerManager()->isValidRequest();
 
@@ -62,13 +64,9 @@
 
 				throw new ValidationFailure;
 
-			$manager->handleValidRequest();
+			return $this->container->getClass (MiddlewareQueue::class)
 
-			$response = $manager->mutateResponse($manager->getResponse()); // those middleware should only get the response object/headers, not this computed response
-
-			$manager->afterRender();
-
-			return $response;
+			->runStack();
 		}
 
 		public function getRouter():RouteManager {
@@ -83,7 +81,9 @@
 
 		public function initialize():self {
 
-			$this->router = new RouteManager($this->descriptor, $this->container);
+			$this->container->setConfigs($this->descriptor->getConfigs());
+
+			$this->router = $this->container->getClass (RouteManager::class);
 
 			$this->bindDefaultObjects();
 
@@ -119,25 +119,21 @@
 
 			$descriptor = $this->descriptor;
 
-			$this->container->setConfigs($descriptor->getConfigs());
-
 			$customBindings = $this->container->getMethodParameters("entityBindings", $descriptor);
 
-			call_user_func_array([$descriptor, "entityBindings"], $customBindings);
+			$descriptor->entityBindings(...$customBindings);
 
 			return $this;
 		}
 
 		/**
-		 * If route is secured, confirm user is authenticated
+		 * If route is secured, confirm user is authenticated. When successful, it'll override the default authStorage method provided
 		 * 
 		 * @throws Unauthenticated
 		*/
-		private function attemptAuthentication ():void {
+		private function attemptAuthentication ():self {
 
 			$manager = $this->responseManager;
-
-			$container = $this->container;
 
 			if ($authMethod = $manager->patternAuthentication()) {
 
@@ -145,24 +141,25 @@
 
 					throw new Unauthenticated;
 
-				$container->whenTypeAny()
+				$this->container->whenTypeAny()
 
 				->needsAny([ AuthStorage::class => $authMethod]);
 			}
 
-			else {
+			return $this;
+		}
 
-				$defaultStorage = $container->getClass(AuthContract::class)
+		private function authorizeRequest ():self {
 
-				->defaultAuthenticationStorage();
+			$authorizer = $this->container->getClass(PathAuthorizer::class);
 
-				$container->whenTypeAny()
+			foreach ($authorizer->getActiveRules() as $rule)
 
-				->needsAny([
+				if (!$rule->permit())
 
-					AuthStorage::class => $container->getClass($defaultStorage)
-				]);
-			}
+					throw new UnauthorizedServiceAccess;
+
+			return $this;
 		}
 	}
 ?>

@@ -10,16 +10,14 @@
 
 	class Doctrine implements Orm {
 
-		protected $connection;
+		private $credentials, $connection;
 
-		private $credentials;
+		function __construct(OrmConfig $config) {
 
-		function __construct(array $credentials) {
-
-			$this->credentials = $credentials;
+			$this->credentials = $config->getCredentials();
 		}
 
-		private function setConnection ():self {
+		private function setConnection ():void {
 
 			try {
 
@@ -42,21 +40,7 @@
 			}
 		}
 
-		public function findOne(string $model, int $id) {
-
-			$this->getConnection()
-
-			->getRepository($model)->find($id);
-		}
-
-		public function isModel( string $class):bool {
-
-		    return !$this->getConnection()
-
-		    ->getMetadataFactory()->isTransient($class);
-		}
-
-		private function getConnection () {
+		public function getConnection () {
 
 			if (!$this->connection) $this->setConnection(); // defer to when it's needed
 

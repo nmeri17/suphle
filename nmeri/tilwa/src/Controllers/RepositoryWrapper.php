@@ -1,9 +1,7 @@
 <?php
 	namespace Tilwa\Controllers;
 
-	use Tilwa\Contracts\{ReboundsEvents, Orm};
-
-	use Tilwa\Errors\UnauthorizedServiceAccess;
+	use Tilwa\Contracts\{ReboundsEvents, Orm, ReboundsEvents, CommandService};
 
 	use Tilwa\Controllers\Structures\ServiceEventPayload;
 
@@ -22,22 +20,16 @@
 
 			$service = $this->activeService;
 
-			$serviceName = $service::class;
-
 			$result = $this->getResult($service, $method, $arguments);
-
-			if ($service instanceof QueryService && !$service->shouldFetch($result))
-
-				throw new UnauthorizedServiceAccess($serviceName);
 
 			if ($service instanceof ReboundsEvents)
 
-				$this->eventManager->emit($serviceName, "refresh", new ServiceEventPayload($result, $method));
+				$this->eventManager->emit(get_class($service), "refresh", new ServiceEventPayload($result, $method));
 
 			return $result;
 		}
 
-		private function getResult(object $service, string $method, $arguments) {
+		private function getResult( $service, string $method, $arguments) {
 
 			if ($service instanceof CommandService)
 

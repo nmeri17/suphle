@@ -4,9 +4,9 @@
 
 	use Tilwa\Contracts\Config\Services as ServicesContract;
 
-	use Tilwa\Contracts\{Orm, HtmlParser, Authenticator, RequestValidator, QueueManager};
+	use Tilwa\Contracts\{Orm, HtmlParser, AuthStorage, RequestValidator, QueueManager};
 
-	use Tilwa\ServiceProviders\{OrmProvider, AuthenticatorProvider, HtmlTemplateProvider, RequestValidatorProvider, QueueProvider, LaravelAppProvider};
+	use Tilwa\ServiceProviders\{OrmProvider, AuthStorageProvider, HtmlTemplateProvider, RequestValidatorProvider, QueueProvider, LaravelAppProvider};
 
 	class Services implements ServicesContract {
 
@@ -22,7 +22,7 @@
 
 				HtmlParser::class => HtmlTemplateProvider::class,
 
-				Authenticator::class => AuthenticatorProvider::class,
+				AuthStorage::class => AuthStorageProvider::class,
 
 				RequestValidator::class => RequestValidatorProvider::class,
 
@@ -30,6 +30,11 @@
 
 				LaravelApp::class => LaravelAppProvider::class
 			];
+		}
+
+		public function usesLaravelPackages ():bool {
+
+			return true;
 		}
 	}
 ?>

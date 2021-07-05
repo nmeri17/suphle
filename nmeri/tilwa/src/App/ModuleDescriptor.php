@@ -2,7 +2,9 @@
 
 	namespace Tilwa\App;
 
-	use Tilwa\Contracts\Config\{Authentication, Events as EventConfig, ModuleFiles, Router, Services, Executables, LaravelApp};
+	use Tilwa\Contracts\Config\{Auth as IAuth, Services as IServices, HtmlTemplate as IHtml, Laravel as ILaravel, Orm as IOrm};
+
+	use Tilwa\Config\{Auth, Services, HtmlTemplate, Laravel, Orm};
 
 	abstract class ModuleDescriptor {
 
@@ -57,7 +59,12 @@
 
 		public function getConfigs():array {
 			
-			return []; // populate this with tilwa\contracts\config => eachConfig
+			return [
+
+				ILaravel::class => Laravel::class,
+
+				IServices::class => Services::class
+			];
 		}
 
 		// this is living here instead of on moduleLevelEvents because he's the one who knows what config is applicable to this module
