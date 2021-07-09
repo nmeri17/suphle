@@ -1,1 +1,0 @@
-These non-existent classes require strongly typed arguments , and static typing cannot be mocked

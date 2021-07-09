@@ -38,6 +38,12 @@ Pending:
 	- testing
 
 User-land test interface doesn't rely on the outer module assembly or index.php in order to access app core. testing bits wanna access that core from anywhere
-We use top to bottom approach: interact with the highest level classes, passing down value states that should be there and expecting certain updates/ responses proving we're on track
 
-After/during the time we are working on the internals, as we delve deeper, we reach the controllers. Our aim at this stage is that it returns 200
+We wanna add new columns on our database/model A for module A but don't wanna break the code in other modules reliant on model A. We create model A2 extending model A, add new columns on database, update occurences/type-hints of A in module A to A2. Model A gets discarded whenever its dependents upgrade to A2
+
+Mock=verify dependency behavior. Was it called? Was it called with xx arguments?
+Stub=when anybody, z, asks for stubbed thing x, return y. The verification is not done on the stubbed thing but on z's result/behavior
+
+Continue the refactor of reload and markup methods, integrating transphporm, asserting the test fixtures
+
+For instance, Laravel5, Phalcon, and Yii2 modules have a seeRecord method which uses the ActiveRecord layer to check that a record exists in the database.

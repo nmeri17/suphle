@@ -37,7 +37,7 @@
 			$this->authorizer = $authorizer;
 		}
 
-		public function findRenderer ():AbstractRenderer {
+		public function findRenderer ():void {
 
 			foreach ($this->entryRouteMap() as $collection) {
 				
@@ -47,7 +47,9 @@
 
 					$hit->setPath($this->fullTriedPath);
 
-					return $hit;
+					$this->activeRenderer = $hit;
+
+					return;
 				}
 			}
 		}
@@ -126,7 +128,8 @@
 							return $this->bootRenderer($renderer, $collection->_handlingClass());
 						}
 					}
-					$collection->expectsCrud() = null; // for subsequent patterns
+
+					$collection->doesntExpectCrud(); // for subsequent patterns
 				}
 			}
 		}
@@ -234,13 +237,6 @@
 			return $this->activeRenderer;
 		}
 
-		public function setActiveRenderer (AbstractRenderer $renderer):self {
-
-			$this->activeRenderer = $renderer;
-
-			return $this;
-		}
-
 		// @return Strings[]
 		private function entryRouteMap():array {
 
@@ -269,13 +265,11 @@
 
 		private function bootRenderer(AbstractRenderer $renderer, string $controllingClass):AbstractRenderer {
 
-			$dependencyMethod = "setDependencies";
-
-			$parameters = $this->provideRendererDependencies($renderer::class, $controllingClass)
+			$parameters = $this->provideRendererDependencies(get_class($renderer), $controllingClass)
 			
-			->getMethodParameters($dependencyMethod, $renderer::class);
+			->getMethodParameters("setDependencies", get_class($renderer));
 
-			return call_user_func_array([$renderer, $dependencyMethod], $parameters);
+			return $renderer->setDependencies(...array_values($parameters));
 		}
 
 		private function provideRendererDependencies(string $renderer, string $controller):Container {

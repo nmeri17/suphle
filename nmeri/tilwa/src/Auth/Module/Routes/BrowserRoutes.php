@@ -59,10 +59,5 @@
 			
 			return $this->_prefixFor(PasswordResets::class);
 		}
-		
-		public function _passover():bool {
-			
-			return !$this->allow->isAuth();
-		}
 	}
 ?>

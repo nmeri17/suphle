@@ -8,14 +8,12 @@
 
 	abstract class AbstractRenderer {
 
-		protected $container;
-
 		private $controller, $rawResponse, $path, $flows, $routeMethod, $handler;
 
 
-		public function setDependencies(Container $container, string $controllerClass):self {
+		public function setDependencies(HtmlParser $htmlParser, string $controllerClass):self {
 
-			$this->container = $container;
+			$this->htmlParser = $htmlParser;
 			
 			$this->controller = $controllerClass;
 
@@ -50,11 +48,9 @@
 			return json_encode($response);
 		}
 
-		protected function renderHtml():string {
+		protected function renderHtml(...$arguments):string { // should return psr responseInterface instead
 			
-			return $this->container->getClass(HtmlParser::class)
-
-			->parseAll($this->viewName, $this->rawResponse);
+			return $this->htmlParser->parseAll(...$arguments);
 		}
 
 		abstract public function render ():string;
@@ -94,11 +90,6 @@
 		public function setPath(string $path):void {
 			
 			$this->path = $path;
-		}
-
-		public function getContainer():Container {
-			
-			return $this->container;
 		}
 
 		public function getRouteMethod():string {

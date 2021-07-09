@@ -130,6 +130,11 @@
 			return $this->crudMode;
 		}
 
+		public function doesntExpectCrud ():void {
+
+			$this->crudMode = false;
+		}
+
 		public function getLocalPrefix ():string {
 
 			return $this->localPrefix;

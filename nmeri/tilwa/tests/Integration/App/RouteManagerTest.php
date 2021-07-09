@@ -1,0 +1,43 @@
+<?php
+
+	namespace Tilwa\Tests\Integration\App;
+
+	use Tilwa\Testing\BaseTest;
+
+	use Tilwa\Routing\RouteManager;
+
+	use Tilwa\Response\Format\{AbstractRenderer, Json};
+
+	class RouteManagerTest extends BaseTest {
+
+		private $router;
+
+		/**
+	     * @dataProvider pathsToHandler
+	     */
+		public function test_route_matching ( string $handler, string $requestPath) {
+
+			$this->setHttpParams($requestPath);
+
+			$router->findRenderer();
+
+			$matchingRenderer = $router->getActiveRenderer();
+			
+			$this->assertTrue($matchingRenderer->getPath(), $requestPath);
+
+			$this->assertEquals($matchingRenderer->getHandler(), $handler);
+		}
+
+		public function pathsToHandler ():array {
+
+			return [
+				[ "plainSegment", "/segment"],
+				[ "simplePair", "/segment/5"],
+				[ "hyphenatedSegments", "/segment-segment/5"],
+				[ "underscoredSegments", "/segment_segment/5"],
+				[ "optionalPlaceholder", "/segment/5/segment/5"],
+				[ "optionalPlaceholder", "/segment/5/segment"]
+			];
+		}
+	}
+?>

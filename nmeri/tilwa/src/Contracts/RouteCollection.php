@@ -26,6 +26,8 @@
 
 		public function expectsCrud ():bool;
 
+		public function doesntExpectCrud ():void;
+
 		public function getLocalPrefix ():string;
 	}
 ?>

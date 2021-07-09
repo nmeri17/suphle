@@ -30,13 +30,10 @@
 		}
 
 		public function assignRoute():self {
+
+			$this->router->findRenderer();
 			
-			if ($target = $this->router->findRenderer() ) {
-
-				$this->router->setActiveRenderer($target);
-
-				$this->foundRoute = true;
-			}
+			if ($this->router->getActiveRenderer() ) $this->foundRoute = true;
 
 			else {
 

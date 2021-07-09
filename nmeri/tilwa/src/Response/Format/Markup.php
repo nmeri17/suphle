@@ -4,26 +4,24 @@
 
 	class Markup extends AbstractRenderer {
 
-		public $viewName;
+		protected $viewName;
 
-		public $handler;
+		private $wantsJson, $contentNegotiable, $viewModel;
 
-		public $contentNegotiable;
+		function __construct(string $handler, string $viewName, string $viewModel) {
 
-		private $wantsJson;
-
-		function __construct(string $handler, string $viewName) {
+			$this->handler = $handler;
 
 			$this->viewName = $viewName;
 
-			$this->handler = $handler;
+			$this->viewModel = $viewModel;
 		}
 
 		public function render():string {
 			
 			if (!$this->contentNegotiable && !$this->wantsJson())
 
-				return $this->renderHtml();
+				return $this->renderHtml($this->viewName, $this->viewModel, $this->rawResponse);
 
 			return $this->renderJson();
 		}
