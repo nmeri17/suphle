@@ -17,6 +17,8 @@
 	     */
 		public function test_route_matching ( string $handler, string $requestPath) {
 
+			$router = $this->container->getClass(RouteManager::class);
+
 			$this->setHttpParams($requestPath);
 
 			$router->findRenderer();

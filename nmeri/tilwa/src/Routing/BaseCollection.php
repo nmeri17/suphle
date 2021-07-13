@@ -6,13 +6,13 @@
 
 	use Tilwa\Auth\TokenStorage;
 
-	use Tilwa\Contracts\RouteCollection;
+	use Tilwa\Contracts\{RouteCollection, AuthStorage};
 
 	abstract class BaseCollection implements RouteCollection {
 
 		protected $canaryValidator, $routerConfig, $authStorage, $middlewareRegistry;
 
-		private $utilities = ["_mirrorBrowserRoutes", "_authenticatedPaths", "_handlingClass", "_crud", "_register", "_setAllow", "_canaryEntry", "_setLocalPrefix", "_whenUnauthorized"
+		private $utilities = ["_mirrorBrowserRoutes", "_authenticatedPaths", "_handlingClass", "_crud", "_register", "_getPrefixCollection", "_canaryEntry", "_setLocalPrefix", "_whenUnauthorized"
 		],
 
 		$mirroring = false, $crudMode = false, $localPrefix, $prefixClass;
@@ -22,7 +22,10 @@
 		*	
 		* will be treated specially in the matcher, when path is empty i.e. /, cart/
 		*/
-		public function _index ():array; // register a route here
+		public function _index ():array {
+
+			// register a route here
+		}
 
 		/**
 		* @description: should be called only in the API first version's _index method
@@ -58,7 +61,9 @@
 			}
 		}
 
-		public function __call ($method, $renderer) {
+		public function __call ($method, $args) {
+
+			$renderer = current($args);
 
 			if (in_array($method, ["_get", "_post", "_delete", "_put"]))
 
@@ -83,7 +88,10 @@
 			return array_diff(get_class_methods($this), $this->utilities);
 		}
 
-		public function _authenticatedPaths():array {}
+		public function _authenticatedPaths():array {
+
+			return [];
+		}
 
 		public function _authorizePaths():void {}
 
@@ -110,32 +118,35 @@
 			
 			foreach ($validEntries as $canary)
 				
-				if ($canary->willLoad() )
+				if ($canary->willLoad() ) {
 
-					return $this->_prefixFor($canary->entryClass());
+					$this->_prefixFor($canary->entryClass());
+
+					break;
+				}
 		}
 
-		public function getPrefixCollection ():string {
+		public function _getPrefixCollection ():?string {
 
 			return $this->prefixClass;
 		}
 
-		public function isMirroring ():bool {
+		public function _isMirroring ():bool {
 
 			return $this->mirroring;
 		}
 
-		public function expectsCrud ():bool {
+		public function _expectsCrud ():bool {
 
 			return $this->crudMode;
 		}
 
-		public function doesntExpectCrud ():void {
+		public function _doesntExpectCrud ():void {
 
 			$this->crudMode = false;
 		}
 
-		public function getLocalPrefix ():string {
+		public function _getLocalPrefix ():string {
 
 			return $this->localPrefix;
 		}

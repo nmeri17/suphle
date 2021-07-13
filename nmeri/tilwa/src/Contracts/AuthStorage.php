@@ -4,9 +4,9 @@
 
 	interface AuthStorage {
 
-		private function logout ():void;
+		public function logout ():void;
 
-		public function loginAs ();
+		public function loginAs (string $value);
 
 		public function getId ():string;
 

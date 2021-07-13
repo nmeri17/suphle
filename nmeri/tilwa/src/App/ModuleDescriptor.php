@@ -63,7 +63,9 @@
 
 				ILaravel::class => Laravel::class,
 
-				IServices::class => Services::class
+				IServices::class => Services::class,
+
+				IAuth::class => Auth::class
 			];
 		}
 

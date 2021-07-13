@@ -93,7 +93,7 @@
 			return $concrete;
 		}
 
-		public function getClassForContext (string $fullName) {
+		private function getClassForContext (string $fullName) {
 
 			$outermost = $this->notRecursing();
 
@@ -137,13 +137,13 @@
 			}
 		}
 
-		private function hydrateChildsParent(string $fullName):object {
+		private function hydrateChildsParent(string $fullName):?object {
 
 			$providedParent = $this->getProvidedParent($fullName);
 
-			if (!is_null($providedParent))
+			if (is_null($providedParent)) return null;
 
-				return $this->getClass($providedParent);
+			return $this->getClass($providedParent);
 		}
 
 		private function instantiateConcrete (string $fullName):object { // casting to [object] may be problematic to the caller
@@ -204,7 +204,10 @@
 			return $this->provisionedClasses[$this->recursingFor];
 		}
 
-		private function provideInterface(string $service):object {
+		/**
+		 * @return Object
+		 * */
+		private function provideInterface(string $service) {
 
 			if ($this->isRenamedSpace()) {
 
@@ -398,7 +401,7 @@
 		}
 
 		// @return the first provided parent of the given class
-		private function getProvidedParent(string $class):string {
+		private function getProvidedParent(string $class):?string {
 
 			$allSuperiors = array_keys($this->provisionedClasses);
 
@@ -406,9 +409,9 @@
 
 			$providedParents = array_intersect($classSuperiors, $allSuperiors);
 
-			if (!empty($providedParents))
+			if (empty($providedParents)) return null;
 
-				return current($providedParents);
+			return current($providedParents);
 		}
 
 		public function whenSpace(string $callerNamespace):self {

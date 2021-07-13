@@ -20,14 +20,14 @@
 
 		public function _getAuthenticator ():AuthStorage;
 
-		public function getPrefixCollection ():string;
+		public function _getPrefixCollection ():?string;
 
-		public function isMirroring ():bool;
+		public function _isMirroring ():bool;
 
-		public function expectsCrud ():bool;
+		public function _expectsCrud ():bool;
 
-		public function doesntExpectCrud ():void;
+		public function _doesntExpectCrud ():void;
 
-		public function getLocalPrefix ():string;
+		public function _getLocalPrefix ():string;
 	}
 ?>

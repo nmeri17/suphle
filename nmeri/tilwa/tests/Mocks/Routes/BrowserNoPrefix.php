@@ -2,7 +2,7 @@
 
 	namespace Tilwa\Tests\Mocks\Routes;
 
-	use Tilwa\Routing\BaseCollection;
+	use Tilwa\Routing\{BaseCollection, CanaryValidator};
 
 	use Tilwa\Contracts\Config\Router as RouterConfig;
 
@@ -10,9 +10,13 @@
 
 	use Tilwa\Response\Format\Json;
 
+	use Tilwa\Auth\SessionStorage;
+
+	use Tilwa\Middleware\MiddlewareRegistry;
+
 	class BrowserNoPrefix extends BaseCollection {
 
-		function __construct(CanaryValidator $validator, RouterConfig $routerConfig, SessionStorage $authStorage, MiddlewareRegistry $middlewareRegistry) {
+		/*function __construct(CanaryValidator $validator, RouterConfig $routerConfig, SessionStorage $authStorage, MiddlewareRegistry $middlewareRegistry) {
 
 			$this->routerConfig = $routerConfig;
 
@@ -21,7 +25,7 @@
 			$this->authStorage = $authStorage;
 
 			$this->middlewareRegistry = $middlewareRegistry;
-		}
+		}*/
 
 		public function _handlingClass ():string {
 

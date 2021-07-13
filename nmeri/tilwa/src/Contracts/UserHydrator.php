@@ -2,7 +2,7 @@
 
 	namespace Tilwa\Contracts;
 
-	interface UserHydrator { // TO BE PROVIDED
+	interface UserHydrator {
 
 		public function findById(string $id);
 

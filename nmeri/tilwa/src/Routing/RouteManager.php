@@ -12,6 +12,8 @@
 
 	use Tilwa\Request\{BaseRequest, PathAuthorizer};
 
+	use Tilwa\Response\Format\AbstractRenderer;
+
 	class RouteManager {
 
 		const PREV_RENDERER = 'prev_renderer';
@@ -84,7 +86,7 @@
 					- pair empty incoming path with _index method
 					- crud methods disregard their method names
 				*/
-				if (($pattern == "_index") || $collection->expectsCrud())
+				if (($pattern == "_index") || $collection->_expectsCrud())
 
 					$computedPattern = "";
 
@@ -98,11 +100,11 @@
 
 				$parsed = $this->regexForm($fullRouteState);
 
-				if (!is_null($collection->getPrefixCollection()) && $this->prefixMatch($parsed)) { // only delve deeper if we're on the right track i.e. if nested path = foo/bar/foobar, and nested method "bar" defines prefix, we only wanna explore its contents if requested route matches foo/bar
+				if (!is_null($collection->_getPrefixCollection()) && $this->prefixMatch($parsed)) { // only delve deeper if we're on the right track i.e. if nested path = foo/bar/foobar, and nested method "bar" defines prefix, we only wanna explore its contents if requested route matches foo/bar
 
 					$this->indicatePatternDetails($collection, $pattern);
 
-					return $this->recursiveSearch($collection->getPrefixCollection(), $fullRouteState, $computedPattern); /** we don't bother checking whether a route was found or not because if there was none after going downwards*, searching sideways* won't help either
+					return $this->recursiveSearch($collection->_getPrefixCollection(), $fullRouteState, $computedPattern); /** we don't bother checking whether a route was found or not because if there was none after going downwards*, searching sideways* won't help either
 
 					 * downwards = deeper into a collection
 					 * sideways = other patterns on this same collection
@@ -111,7 +113,7 @@
 				else {
 					foreach ($rendererList as $path => $renderer) { // we'll usually get one route here, except for CRUD invocations
 
-						if ($collection->expectsCrud())
+						if ($collection->_expectsCrud())
 
 							$parsed .= $this->regexForm($path);
 
@@ -121,7 +123,7 @@
 
 							$this->fullTriedPath = $parsed;
 
-							if ($this->requestDetails->isApiRoute() && $collection->isMirroring())
+							if ($this->requestDetails->isApiRoute() && $collection->_isMirroring())
 
 								$renderer->contentIsNegotiable();
 							
@@ -129,7 +131,7 @@
 						}
 					}
 
-					$collection->doesntExpectCrud(); // for subsequent patterns
+					$collection->_doesntExpectCrud(); // for subsequent patterns
 				}
 			}
 		}
@@ -174,6 +176,8 @@
 				_?# possible trailing slash before next literal
 			)?";
 
+			$escaped = preg_quote($routeState, "/");
+
 			return preg_replace_callback("/$pattern/x", function ($matches) use ( $segmentDelimiters) {
 
 				$builder = "";
@@ -203,11 +207,11 @@
 				elseif ($hasPlaceholder) $builder .= $wordPattern;
 
 				return $builder;
-			}, $routeState);
+			}, $escaped);
 		}
 
 		private function prefixMatch (string $fullRouteState):bool {
-			
+
 			return preg_match("/^$fullRouteState
 				?# neutralize trailing slash in replaced path
 				/ix", $this->requestDetails->getPath());

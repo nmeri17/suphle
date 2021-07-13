@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Tests\StronglyTyped\App;
+	namespace Tilwa\Tests\Mocks\App;
 
 	use Tilwa\App\Container;
 

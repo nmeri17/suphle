@@ -27,8 +27,7 @@
 			]);
 
 			return [
-				new Main, $Cart, $Category, $Product, new Auth, $Sellers,
-				new Errors // this must be the last for it to catch unmatched routes. the route file should have a _notFound method that catches anything thrown at it
+				new Main, $Cart, $Category, $Product, new Auth, $Sellers
 			];
 		}
 	}
