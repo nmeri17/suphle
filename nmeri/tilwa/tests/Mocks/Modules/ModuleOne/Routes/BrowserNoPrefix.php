@@ -1,12 +1,12 @@
 <?php
 
-	namespace Tilwa\Tests\Mocks\Routes;
+	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Routes;
 
 	use Tilwa\Routing\{BaseCollection, CanaryValidator};
 
 	use Tilwa\Contracts\Config\Router as RouterConfig;
 
-	use Tilwa\Tests\Mocks\Controllers\BaseController;
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Controllers\BaseController;
 
 	use Tilwa\Response\Format\Json;
 
@@ -47,7 +47,7 @@
 			return $this->_get(new Json("hyphenatedSegments"));
 		}
 
-		public function SEGMENT_SEGMENTh_id() {
+		public function SEGMENT__SEGMENTu_id() {
 
 			return $this->_get(new Json("underscoredSegments"));
 		}

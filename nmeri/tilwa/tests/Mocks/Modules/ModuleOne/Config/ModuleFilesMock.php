@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Tests\Mocks\Config;
+	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Config;
 
 	use Tilwa\Contracts\Config\ModuleFiles;
 

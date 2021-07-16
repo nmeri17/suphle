@@ -1,10 +1,10 @@
 <?php
 
-	namespace Tilwa\Tests\Mocks\Config;
+	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Config;
 
 	use Tilwa\Config\Router;
 
-	use Tilwa\Tests\Mocks\Routes\BrowserNoPrefix;
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\BrowserNoPrefix;
 
 	class RouterMock extends Router {
 

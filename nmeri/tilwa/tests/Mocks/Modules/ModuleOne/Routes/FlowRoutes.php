@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Tests\Mocks\Routes;
+	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Routes;
 
 	use Tilwa\Flows\ControllerFlows;
 

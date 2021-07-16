@@ -1,21 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="b84e2815-1fdb-4aed-865f-4623a5ccebbd" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/nmeri/tilwa/.phpunit.result.cache" beforeDir="false" afterPath="$PROJECT_DIR$/nmeri/tilwa/.phpunit.result.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nmeri/tilwa/tests/Mocks/Config/ModuleFilesMock.php" beforeDir="false" afterPath="$PROJECT_DIR$/nmeri/tilwa/tests/Mocks/Modules/ModuleOne/Config/ModuleFilesMock.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nmeri/tilwa/tests/Mocks/Config/RouterMock.php" beforeDir="false" afterPath="$PROJECT_DIR$/nmeri/tilwa/tests/Mocks/Modules/ModuleOne/Config/RouterMock.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nmeri/tilwa/tests/Mocks/Controllers/BaseController.php" beforeDir="false" afterPath="$PROJECT_DIR$/nmeri/tilwa/tests/Mocks/Modules/ModuleOne/Controllers/BaseController.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nmeri/tilwa/tests/Mocks/Modules/Cart/Events/AssignListeners.php" beforeDir="false" afterPath="$PROJECT_DIR$/nmeri/tilwa/tests/Mocks/Modules/ModuleOne/Events/AssignListeners.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nmeri/tilwa/tests/Mocks/Modules/Cart/Routes/ApiRoutes/V1.php" beforeDir="false" afterPath="$PROJECT_DIR$/nmeri/tilwa/tests/Mocks/Modules/ModuleOne/Routes/ApiRoutes/V1.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nmeri/tilwa/tests/Mocks/Modules/Cart/Validators/Authentication.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/nmeri/tilwa/tests/Mocks/Routes/AuthorizeRoutes.php" beforeDir="false" afterPath="$PROJECT_DIR$/nmeri/tilwa/tests/Mocks/Modules/ModuleOne/Routes/AuthorizeRoutes.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nmeri/tilwa/tests/Mocks/Routes/BasicBrowserPrefix.php" beforeDir="false" afterPath="$PROJECT_DIR$/nmeri/tilwa/tests/Mocks/Modules/ModuleOne/Routes/BasicBrowserPrefix.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nmeri/tilwa/tests/Mocks/Routes/BrowserNoPrefix.php" beforeDir="false" afterPath="$PROJECT_DIR$/nmeri/tilwa/tests/Mocks/Modules/ModuleOne/Routes/BrowserNoPrefix.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nmeri/tilwa/tests/Mocks/Routes/CrudRoutes.php" beforeDir="false" afterPath="$PROJECT_DIR$/nmeri/tilwa/tests/Mocks/Modules/ModuleOne/Routes/CrudRoutes.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nmeri/tilwa/tests/Mocks/Routes/FlowRoutes.php" beforeDir="false" afterPath="$PROJECT_DIR$/nmeri/tilwa/tests/Mocks/Modules/ModuleOne/Routes/FlowRoutes.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nmeri/tilwa/tests/Mocks/Routes/NestedCollections.php" beforeDir="false" afterPath="$PROJECT_DIR$/nmeri/tilwa/tests/Mocks/Modules/ModuleOne/Routes/NestedCollections.php" afterDir="false" />
-    </list>
+    <list default="true" id="b84e2815-1fdb-4aed-865f-4623a5ccebbd" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -123,8 +109,10 @@
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
+    <property name="ASKED_SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/nmeri/tilwa/tests/Mocks/Modules/ModuleOne/Routes" />
     <property name="vue.rearranger.settings.migration" value="true" />
@@ -143,7 +131,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1626441740719</updated>
-      <workItem from="1626441742719" duration="671000" />
+      <workItem from="1626441742719" duration="958000" />
     </task>
     <servers />
   </component>

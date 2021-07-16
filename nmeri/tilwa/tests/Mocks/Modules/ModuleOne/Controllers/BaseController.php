@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Tests\Mocks\Controllers;
+	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Controllers;
 
 	use Tilwa\Controllers\Executable;
 

@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Tests\Mocks\Routes;
+	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Routes;
 
 	class CrudRoutes extends BrowserNoPrefix { // try with/without prefix, with/without middleware, with/without auth
 		

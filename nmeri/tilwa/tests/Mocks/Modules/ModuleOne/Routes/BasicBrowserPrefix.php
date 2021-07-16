@@ -1,6 +1,6 @@
 <?php
 
-	namespace Tilwa\Tests\Mocks\Routes;
+	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Routes;
 
 	class BasicBrowserPrefix extends BaseBrowserRoutes {
 		
