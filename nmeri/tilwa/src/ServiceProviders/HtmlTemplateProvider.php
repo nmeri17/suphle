@@ -4,13 +4,13 @@
 
 	use Tilwa\App\ServiceProvider;
 
-	use Tilwa\Contracts\{ModuleFiles, HtmlTemplate};
+	use Tilwa\Adapters\Markups\Transphporm;
 
 	class HtmlTemplateProvider extends ServiceProvider {
 
 		public function concrete():string {
 
-			return ""; // replace with transphporm adapter. work with [HtmlTemplate]
+			return Transphporm::class;
 		}
 	}
 ?>

@@ -4,13 +4,13 @@
 
 	use Tilwa\App\Container;
 
-	use Tilwa\Contracts\Config\{ Services as IServices, Laravel as ILaravel, Router as IRouter, Auth as IAuth};
+	use Tilwa\Contracts\Config\{ Services as IServices, Laravel as ILaravel, Router as IRouter, Auth as IAuth, Transphporm as ITransphporm, ModuleFiles as IModuleFiles};
 
 	use Tilwa\Contracts\UserHydrator as IUserHydrator;
 
-	use Tilwa\Config\{ Services, Laravel, Auth}; // using our default config for these
+	use Tilwa\Config\{ Services, Laravel, Auth, Transphporm}; // using our default config for these
 
-	use Tilwa\Tests\Mocks\Config\RouterMock;
+	use Tilwa\Tests\Mocks\Config\{RouterMock, TransphpormMock, ModuleFilesMock};
 
 	use Tilwa\Tests\Mocks\Auth\ArrayUserHydratorMock;
 
@@ -57,7 +57,11 @@
 
 				IRouter::class => RouterMock::class,
 
-				IAuth::class => Auth::class
+				IAuth::class => Auth::class,
+
+				IModuleFiles::class => ModuleFilesMock::class,
+
+				ITransphporm::class => Transphporm::class
 			];
 		}
 
