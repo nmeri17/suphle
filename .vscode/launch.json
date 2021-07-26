@@ -5,6 +5,28 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Launch currently open script with Xdebug 2 (Legacy)",
+            "type": "php",
+            "request": "launch",
+            "program": "${file}",
+            "cwd": "${fileDirname}",
+            "port": 0,
+            "runtimeArgs": [
+                "-dxdebug.remote_enable=yes",
+                "-dxdebug.remote_autostart=yes"
+            ],
+            "env": {
+                "XDEBUG_CONFIG": "remote_port=${port}"
+            }
+        },
+        {
+            "name": "Listen for Xdebug",
+            "type": "php",
+            "request": "launch",
+            "port": 9003
+        },
+
+        {
             "name": "Listen for Xdebug",
             "type": "php",
             "request": "launch",
@@ -43,6 +65,22 @@
                 "uriFormat": "http://localhost:%s",
                 "action": "openExternally"
             }
+        },
+
+        {
+            "name": "Launch Unit Tests",
+            "type": "php",
+            "request": "launch",
+            "program": "${workspaceFolder}/vendor/bin/phpunit",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "XDEBUG_CONFIG": "idekey=VSCODE remote_enable=1 profile_enable=1"
+            },
+            "args": [
+                // "--filter",
+                // "testCanCreateValid"
+            ],
+            "port": 9000
         }
     ]
 }

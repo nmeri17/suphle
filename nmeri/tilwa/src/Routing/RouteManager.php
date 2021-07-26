@@ -121,7 +121,7 @@
 
 							$this->indicatePatternDetails($collection, $pattern);
 
-							$this->fullTriedPath = $parsed;
+							$this->fullTriedPath = strtolower($parsed);
 
 							if ($this->requestDetails->isApiRoute() && $collection->_isMirroring())
 
@@ -176,8 +176,6 @@
 				_?# possible trailing slash before next literal
 			)?";
 
-			$escaped = preg_quote($routeState, "/");
-
 			return preg_replace_callback("/$pattern/x", function ($matches) use ( $segmentDelimiters) {
 
 				$builder = "";
@@ -192,7 +190,7 @@
 							)
 						);
 
-					$builder .=  "$default\/"; // the slash here is probably unrequired since the recursive loop adds that already
+					$builder .=  "$default";
 				}
 				$wordPattern = "[a-z0-9]+?\/";
 
@@ -207,13 +205,14 @@
 				elseif ($hasPlaceholder) $builder .= $wordPattern;
 
 				return $builder;
-			}, $escaped);
+			}, $routeState);
 		}
 
 		private function prefixMatch (string $fullRouteState):bool {
 
-			return preg_match("/^$fullRouteState
-				?# neutralize trailing slash in replaced path
+			$escaped = preg_quote($fullRouteState, "/");
+
+			return preg_match("/^$escaped?# neutralize trailing slash in replaced path
 				/ix", $this->requestDetails->getPath());
 		}
 
@@ -269,9 +268,11 @@
 
 		private function bootRenderer(AbstractRenderer $renderer, string $controllingClass):AbstractRenderer {
 
-			$parameters = $this->provideRendererDependencies(get_class($renderer), $controllingClass)
+			$rendererName = get_class($renderer);
+
+			$parameters = $this->provideRendererDependencies($rendererName, $controllingClass)
 			
-			->getMethodParameters("setDependencies", get_class($renderer));
+			->getMethodParameters("setDependencies", $rendererName);
 
 			return $renderer->setDependencies(...array_values($parameters));
 		}

@@ -40,13 +40,14 @@
 
 			->needsAny([
 
-				IUserHydrator::class => new ArrayUserHydratorMock
+				IUserHydrator::class => new ArrayUserHydratorMock,
+
+				Container::class => $this->container
 			]);
 
 			return $this;
 		}
 
-		// when overriding this, call [bootContainer] as well
 		protected function containerConfigs ():array {
 
 			return [

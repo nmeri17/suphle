@@ -8,7 +8,9 @@
 
 	abstract class AbstractRenderer {
 
-		private $controller, $rawResponse, $path, $flows, $routeMethod, $handler;
+		private $controller, $rawResponse, $path, $flows, $routeMethod;
+
+		protected $handler;
 
 
 		public function setDependencies(HtmlParser $htmlParser, string $controllerClass):self {

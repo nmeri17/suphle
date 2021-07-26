@@ -503,17 +503,17 @@
 		}
 
 		// this just seems to be a shortcut to the [needs] group of methods, but doesn't want to muddle config provisioning with every other class type
-		private function hydrateConfig(string $fullName) {
+		private function hydrateConfig(string $fullName):?ConfigMarker {
 
 			$configs = $this->libraryConfigs;
 
-			if (!array_key_exists($fullName, $configs)) return;
+			if (!array_key_exists($fullName, $configs)) return null;
 				
 			return $this->instantiateConcrete($configs[$fullName]); // classes can't have custom config
 		}
 
 		// using this to subvert the arduous process of class hydration
-		private function getLaravelConfig():LaravelConfig {
+		private function getLaravelConfig():?LaravelConfig {
 
 			if (is_null($this->laravelConfig))
 
@@ -538,11 +538,11 @@
 
 		private function laravelHas (string $fullName):bool {
 
-			return array_key_exists(
-				$fullName,
+			$config = $this->getLaravelConfig();
 
-				$this->getLaravelConfig()->getProviders()
-			);
+			if (is_null($config)) return false;
+
+			return array_key_exists( $fullName, $config->getProviders() );
 		}
 
 		private function notRecursing ():bool {

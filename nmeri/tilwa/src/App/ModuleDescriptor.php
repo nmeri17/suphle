@@ -2,9 +2,9 @@
 
 	namespace Tilwa\App;
 
-	use Tilwa\Contracts\Config\{Auth as IAuth, Services as IServices, HtmlTemplate as IHtml, Laravel as ILaravel, Orm as IOrm};
+	use Tilwa\Contracts\Config\{Auth as IAuth, Services as IServices, Transphporm as ITransphporm, Laravel as ILaravel, Orm as IOrm};
 
-	use Tilwa\Config\{Auth, Services, HtmlTemplate, Laravel, Orm};
+	use Tilwa\Config\{Auth, Services, Transphporm, Laravel, Orm};
 
 	abstract class ModuleDescriptor {
 
@@ -65,7 +65,9 @@
 
 				IServices::class => Services::class,
 
-				IAuth::class => Auth::class
+				IAuth::class => Auth::class,
+
+				ITransphporm::class => Transphporm::class
 			];
 		}
 

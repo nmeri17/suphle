@@ -18,13 +18,15 @@
 			$this->transConfig = $transConfig;
 		}
 
-		public function parseAll (string $markup, string $viewModel, $data):string {
+		public function parseAll (...$arguments):string {
 
-			return new Builder(
+			[$markup, $viewModel, $data] = $arguments;
+
+			return (new Builder(
 				file_get_contents($this->fileConfig->getViewPath() . $markup),
 
 				file_get_contents($this->transConfig->getTssPath() . $viewModel)
-			)
+			))
 			->output($data)->body;
 		}
 	}

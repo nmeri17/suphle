@@ -3,9 +3,11 @@
 
 	use Tilwa\App\Container;
 
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Interfaces\CInterface;
+
 	class ARequiresBCounter {
 
-		private $b1, $container, $primitive;
+		private $b1, $container, $primitive, $cInterface;
 
 		public function __construct (BCounter $b1, Container $container, string $primitive) {
 
@@ -29,6 +31,21 @@
 		public function getPrimitive ():string {
 
 			return $this->primitive;
+		}
+
+		public function receiveBCounter (BCounter $injected):void {
+
+			$this->b1 = $injected;
+		}
+
+		public function receiveProvidedInterface (CInterface $injected):void {
+
+			$this->cInterface = $injected;
+		}
+
+		public function getCInterface():CInterface {
+
+			return $this->cInterface;
 		}
 	}
 ?>

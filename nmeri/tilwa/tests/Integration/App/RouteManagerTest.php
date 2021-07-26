@@ -24,10 +24,10 @@
 			$router->findRenderer();
 
 			$matchingRenderer = $router->getActiveRenderer();
-			
-			$this->assertTrue($matchingRenderer->getPath(), $requestPath);
+			var_dump($matchingRenderer->getPath(), $requestPath);
+			$this->assertSame($matchingRenderer->getPath(), $requestPath);
 
-			$this->assertEquals($matchingRenderer->getHandler(), $handler);
+			$this->assertSame($matchingRenderer->getHandler(), $handler);
 		}
 
 		public function pathsToHandler ():array {
