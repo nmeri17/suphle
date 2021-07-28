@@ -24,9 +24,11 @@
 
 		$requestDetails, $fullTriedPath, $container,
 
-		$patternAuthentication, $registry, $authorizer;
+		$patternAuthentication, $registry, $authorizer,
 
-		function __construct(RouterConfig $config, Container $container, RequestDetails $requestDetails, MiddlewareRegistry $registry, PathAuthorizer $authorizer) {
+		$activePlaceholders;
+
+		function __construct(RouterConfig $config, Container $container, RequestDetails $requestDetails, MiddlewareRegistry $registry, PathAuthorizer $authorizer, PathPlaceholders $placeholderStorage) {
 
 			$this->config = $config;
 
@@ -37,6 +39,8 @@
 			$this->registry = $registry;
 
 			$this->authorizer = $authorizer;
+
+			$this->activePlaceholders = $placeholderStorage;
 		}
 
 		public function findRenderer ():void {
@@ -139,7 +143,7 @@ var_dump($fullRouteState, $parsed, $this->prefixMatch($parsed));
 
 		private function routeCompare(string $path, string $rendererMethod):bool {
 
-			$matchingPaths = $this->prefixMatch($path, true);
+			$matchingPaths = $this->prefixMatch($this->activePlaceholders->replaceInPattern($path), true);
 
 			$matchingMethods = $rendererMethod == $this->requestDetails->getMethod();
 

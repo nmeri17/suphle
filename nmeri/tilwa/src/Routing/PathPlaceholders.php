@@ -3,7 +3,12 @@
 
 	class PathPlaceholders {
 
-		private $fixed = [], $optional = [];
+		private $fixed = [], $optional = [], $requestDetails;
+
+		function __construct( RequestDetails $requestDetails) {
+
+			$this->requestDetails = $requestDetails;
+		}
 
 		public function addFixed (string $name, string $value):void {
 
@@ -23,6 +28,11 @@
 		public function getOptional ():array {
 
 			return $this->optional;
+		}
+
+		public function replaceInPattern (string $computed) {
+
+			// pattern = /static/id. our guy already tells us each segment that's placeholder or static. so just split
 		}
 	}
 ?>

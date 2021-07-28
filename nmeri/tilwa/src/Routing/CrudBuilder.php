@@ -100,7 +100,7 @@
 
 		private function deleteOne():array {
 
-			$relativePath = $this->context->getLocalPrefix() . "/";
+			$relativePath = $this->context->_getLocalPrefix() . "/";
 
 			$r = new Redirect(__FUNCTION__, function () use ($relativePath) {
 				
