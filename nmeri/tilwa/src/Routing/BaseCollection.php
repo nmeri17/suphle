@@ -12,7 +12,7 @@
 
 		protected $canaryValidator, $routerConfig, $authStorage, $middlewareRegistry;
 
-		private $utilities = ["_mirrorBrowserRoutes", "_authenticatedPaths", "_handlingClass", "_crud", "_register", "_getPrefixCollection", "_canaryEntry", "_setLocalPrefix", "_whenUnauthorized"
+		private $utilities = ["_mirrorBrowserRoutes", "_authenticatedPaths", "_handlingClass", "_crud", "_register", "_getPrefixCollection", "_canaryEntry", "_setLocalPrefix", "_prefixCurrent", "_getPatterns", "__call", "_prefixFor", "_getAuthenticator", "_getLocalPrefix", "_doesntExpectCrud", "_expectsCrud", "_isMirroring", "_only", "_except", "_assignMiddleware", "_authorizePaths"
 		],
 
 		$mirroring = false, $crudMode = false, $localPrefix, $prefixClass;
@@ -22,10 +22,10 @@
 		*	
 		* will be treated specially in the matcher, when path is empty i.e. /, cart/
 		*/
-		public function _index ():array {
+		/*public function _index ():array {
 
 			// register a route here
-		}
+		}*/
 
 		/**
 		* @description: should be called only in the API first version's _index method
@@ -83,7 +83,7 @@
 		}
 
 		# filter off methods that belong to this base
-		public function getPatterns():array {
+		public function _getPatterns():array {
 
 			return array_diff(get_class_methods($this), $this->utilities);
 		}
@@ -104,12 +104,12 @@
 
 		protected function _only(array $include):array {
 			
-			return array_intersect($this->getPatterns(), $include);
+			return array_intersect($this->_getPatterns(), $include);
 		}
 
 		protected function _except(array $exclude):array {
 			
-			return array_diff($this->getPatterns(), $exclude);
+			return array_diff($this->_getPatterns(), $exclude);
 		}
 
 		protected function _canaryEntry(array $canaries):void {

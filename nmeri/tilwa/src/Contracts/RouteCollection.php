@@ -10,7 +10,7 @@
 		
 		public function _setLocalPrefix(string $prefix):void;
 
-		public function getPatterns():array;
+		public function _getPatterns():array;
 
 		public function _authenticatedPaths():array;
 

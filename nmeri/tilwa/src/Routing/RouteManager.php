@@ -59,7 +59,7 @@
 		public function loadPatterns(RouteCollection $collection):Generator {
 			
 			// we can't skip collections where incoming path is not one of the patterns in AuthStorage->claimedRoutes (which would've improved matching speed) cuz of the complexity of such comparison
-			foreach ($collection->getPatterns() as $pattern)
+			foreach ($collection->_getPatterns() as $pattern)
 			 	
 			 	yield $pattern;
 		}
@@ -69,7 +69,7 @@
 			- to parse our route before matching
 			- loadPatterns?
 		*/
-		private function recursiveSearch(string $patternsCollection, string $routeState = "", string $invokerPrefix = "", bool $fromCache = false):AbstractRenderer {
+		private function recursiveSearch(string $patternsCollection, string $routeState = "", string $invokerPrefix = "", bool $fromCache = false):?AbstractRenderer {
 
 			$collection = $this->container
 			
@@ -99,7 +99,7 @@
 				$fullRouteState = "$routeState/$computedPattern";
 
 				$parsed = $this->regexForm($fullRouteState);
-
+var_dump($fullRouteState, $parsed, $this->prefixMatch($parsed));
 				if (!is_null($collection->_getPrefixCollection()) && $this->prefixMatch($parsed)) { // only delve deeper if we're on the right track i.e. if nested path = foo/bar/foobar, and nested method "bar" defines prefix, we only wanna explore its contents if requested route matches foo/bar
 
 					$this->indicatePatternDetails($collection, $pattern);
@@ -110,7 +110,7 @@
 					 * sideways = other patterns on this same collection
 					*/
 				}
-				else {
+				elseif (!empty($rendererList)) {
 					foreach ($rendererList as $path => $renderer) { // we'll usually get one route here, except for CRUD invocations
 
 						if ($collection->_expectsCrud())
@@ -134,11 +134,12 @@
 					$collection->_doesntExpectCrud(); // for subsequent patterns
 				}
 			}
+			return null;
 		}
 
 		private function routeCompare(string $path, string $rendererMethod):bool {
 
-			$matchingPaths = $this->prefixMatch($path);
+			$matchingPaths = $this->prefixMatch($path, true);
 
 			$matchingMethods = $rendererMethod == $this->requestDetails->getMethod();
 
@@ -176,9 +177,11 @@
 				_?# possible trailing slash before next literal
 			)?";
 
-			return preg_replace_callback("/$pattern/x", function ($matches) use ( $segmentDelimiters) {
+			return preg_replace_callback("/$pattern/x", function ($matches) use ( $segmentDelimiters, $routeState) {
 
 				$builder = "";
+
+				$slash = "/";
 				
 				if ($default = @$matches["one_word"]) {
 
@@ -190,30 +193,30 @@
 							)
 						);
 
-					$builder .=  "$default";
+					$builder .=  $default . $slash;
 				}
-				$wordPattern = "[a-z0-9]+?\/";
 
 				$hasPlaceholder = @$matches["placeholder"];
 
-				if ($maybe = @$matches["is_optional"]) {
+				if (!empty($matches["is_optional"])) {
 
-					$hasPlaceholder = rtrim($hasPlaceholder, "O");
+					$hasPlaceholder = rtrim($hasPlaceholder, "O") . $slash;
 
-					$builder .= "($wordPattern)?";
+					$builder .= "($hasPlaceholder)?";
 				}
-				elseif ($hasPlaceholder) $builder .= $wordPattern;
+				elseif ($hasPlaceholder) $builder .= $hasPlaceholder . $slash;
 
 				return $builder;
 			}, $routeState);
 		}
 
-		private function prefixMatch (string $fullRouteState):bool {
+		private function prefixMatch (string $fullRouteState, bool $fullMatch = false):bool {
 
-			$escaped = preg_quote($fullRouteState, "/");
+			$escaped = preg_quote($fullRouteState, "/") . "\/?"; # neutralize trailing slash in replaced path
 
-			return preg_match("/^$escaped?# neutralize trailing slash in replaced path
-				/ix", $this->requestDetails->getPath());
+			if ($fullMatch) $escaped .= "$";
+
+			return preg_match("/^$escaped/i", $this->requestDetails->getPath());
 		}
 
 		public function setPrevious(AbstractRenderer $renderer , BaseRequest $request):self {
@@ -235,7 +238,7 @@
 			return $_SESSION[self::PREV_REQUEST];
 		}
 
-		public function getActiveRenderer ():AbstractRenderer {
+		public function getActiveRenderer ():?AbstractRenderer {
 
 			return $this->activeRenderer;
 		}
