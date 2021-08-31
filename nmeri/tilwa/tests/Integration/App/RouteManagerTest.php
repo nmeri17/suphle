@@ -27,7 +27,7 @@
 
 			$this->assertNotNull($matchingRenderer);
 			
-			var_dump($matchingRenderer->getPath(), $requestPath);
+			var_dump($matchingRenderer->getPath(), $requestPath, 30);
 			$this->assertSame($matchingRenderer->getPath(), $requestPath);
 
 			$this->assertSame($matchingRenderer->getHandler(), $handler);

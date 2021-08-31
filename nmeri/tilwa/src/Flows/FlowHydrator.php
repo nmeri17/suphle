@@ -7,19 +7,19 @@
 
 	use Tilwa\Flows\Previous\{ SingleNode, CollectionNode, UnitNode};
 
-	use Tilwa\Request\BaseRequest;
-
 	use Tilwa\Response\ResponseManager;
 
 	use Tilwa\App\Container;
 
 	use Illuminate\Support\{Collection, Arr};
 
+	use Tilwa\Routing\PathPlaceholders;
+
 	class FlowHydrator {
 
 		private $previousResponse, $cacheManager,
 
-		$responseManager, $container,
+		$responseManager, $container, $placeholderStorage,
 
 		$branchHandlers = [
 			SingleNode::class => "handleSingleNodes",
@@ -55,13 +55,15 @@
 		];
 
 		// if we can't hydrate this with our container, replace interfaces with hard-coded concretes
-		function __construct(CacheManager $cacheManager, Orm $orm, Container $randomContainer) {
+		function __construct(CacheManager $cacheManager, Orm $orm, Container $randomContainer, PathPlaceholders $placeholderStorage) {
 
 			$this->cacheManager = $cacheManager;
 
 			$this->orm = $orm;
 
 			$this->container = $randomContainer;
+
+			$this->placeholderStorage = $placeholderStorage;
 		}
 
 		# @param {contentType} model type, where present
@@ -222,9 +224,7 @@
 
 		private function updateRequest(array $updates):self {
 
-			$this->responseManager->getControllerManager()->getRequest()
-
-			->setPlaceholders($updates);
+			$this->placeholderStorage->overwriteValues($updates);
 
 			return $this;
 		}

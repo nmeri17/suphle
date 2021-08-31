@@ -8,19 +8,23 @@
 
 	use Tilwa\Contracts\{Orm, ControllerModel};
 
-	use Tilwa\Request\BaseRequest;
+	use Tilwa\Request\ValidatorDTO;
 
 	use Tilwa\Errors\CrowdedConstructor;
 
+	use Tilwa\Routing\PathPlaceholders;
+
 	class ControllerManager {
 
-		private $controller, $container,
+		private $controller, $container, $placeholderStorage,
 
-		$handlerParameters, $request, $actionModels;
+		$handlerParameters, $actionModels;
 
-		function __construct( Container $container) {
+		function __construct( Container $container, PathPlaceholders $placeholderStorage) {
 
 			$this->container = $container;
+
+			$this->placeholderStorage = $placeholderStorage;
 		}
 
 		public function setController(Executable $controller):void {
@@ -72,7 +76,7 @@
 
 					$explicit = $this->container->getClass($modelWrapper);
 
-					$explicit->setIdentifier($this->request->$parameter);
+					$explicit->setIdentifier($this->placeholderStorage->getSegmentValue($parameter));
 
 					$this->handlerParameters[$parameter] = new ActionModelProxy($explicit);
 				}
@@ -86,42 +90,11 @@
 			return $this;
 		}
 
-		public function assignActionRequest():self {
+		public function revertRequest(ValidatorDTO $previousRequest):self {
 
-			foreach ($this->handlerParameters as $parameter) {
-				
-				if ($parameter instanceof BaseRequest)
-
-					$this->request = $parameter;
-			}
-			return $this;
-		}
-
-		public function revertRequest(BaseRequest $previousRequest):self {
-
-			$previousRequest->setValidationErrors( $this->request->validationErrors() );
+			$previousRequest->setValidationErrors( $this->request->validationErrors() ); 
 			
 			$this->request = $previousRequest;
-
-			return $this;
-		}
-
-		public function getRequest():BaseRequest {
-			
-			return $this->request;
-		}
-		
-		// this should go first before action argument instantiation
-		public function updateRequest(BaseRequest $request):self {
-
-			$pattern = "(?<![A-Z0-9])# negative lookbehind: given PATH_id_EDIT_id2_EDIT__SAME__OKJh_optionalO_TOMP, refuse to match the h in the compound segment
-			([a-z0-9]+)# pick placeholders"; // confirm this guy works with underscores, not slashes
-
-			preg_match("/$pattern/x", $request->getPath(), $matches);
-
-			$request->setPlaceholders($matches[0]);
-
-			$this->request = $request;
 
 			return $this;
 		}

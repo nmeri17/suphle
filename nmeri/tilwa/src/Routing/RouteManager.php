@@ -10,9 +10,11 @@
 
 	use Tilwa\Middleware\MiddlewareRegistry;
 
-	use Tilwa\Request\{BaseRequest, PathAuthorizer};
+	use Tilwa\Request\{ValidatorDTO, PathAuthorizer};
 
 	use Tilwa\Response\Format\AbstractRenderer;
+
+	use Tilwa\Errors\IncompatiblePatternReplacement;
 
 	class RouteManager {
 
@@ -103,7 +105,7 @@
 				$fullRouteState = "$routeState/$computedPattern";
 
 				$parsed = $this->regexForm($fullRouteState);
-var_dump($fullRouteState, $parsed, $this->prefixMatch($parsed));
+
 				if (!is_null($collection->_getPrefixCollection()) && $this->prefixMatch($parsed)) { // only delve deeper if we're on the right track i.e. if nested path = foo/bar/foobar, and nested method "bar" defines prefix, we only wanna explore its contents if requested route matches foo/bar
 
 					$this->indicatePatternDetails($collection, $pattern);
@@ -115,17 +117,16 @@ var_dump($fullRouteState, $parsed, $this->prefixMatch($parsed));
 					*/
 				}
 				elseif (!empty($rendererList)) {
+
 					foreach ($rendererList as $path => $renderer) { // we'll usually get one route here, except for CRUD invocations
 
 						if ($collection->_expectsCrud())
 
-							$parsed .= $this->regexForm($path);
+							$parsed .= $this->regexForm($path); // doesn't this return a regex that should be escaped/normalized? if that be the case, match incoming path against that pattern and return the result to this guy
 
 						if ($this->routeCompare($parsed, $renderer->getRouteMethod())) {
 
 							$this->indicatePatternDetails($collection, $pattern);
-
-							$this->fullTriedPath = strtolower($parsed);
 
 							if ($this->requestDetails->isApiRoute() && $collection->_isMirroring())
 
@@ -143,7 +144,16 @@ var_dump($fullRouteState, $parsed, $this->prefixMatch($parsed));
 
 		private function routeCompare(string $path, string $rendererMethod):bool {
 
-			$matchingPaths = $this->prefixMatch($this->activePlaceholders->replaceInPattern($path), true);
+			try {
+
+				$this->fullTriedPath = strtolower($this->activePlaceholders->replaceInPattern($path));
+			}
+			catch (IncompatiblePatternReplacement $e) {
+
+				return false;
+			}
+
+			$matchingPaths = $this->prefixMatch($this->fullTriedPath, true);
 
 			$matchingMethods = $rendererMethod == $this->requestDetails->getMethod();
 
@@ -155,7 +165,7 @@ var_dump($fullRouteState, $parsed, $this->prefixMatch($parsed));
 		}
 
 		/* given hypothetical path: PATH_id_EDIT_id2_EDIT__SAME__OKJh_optionalO_TOMP, clean and return a path similar to a real life path; but still in a regex format so optional segments can be indicated as such
-		PATH/id/EDIT/id2/EDIT-SAME-OKJ/TOMP
+		PATH/id/EDIT/id2/EDIT-SAME-OKJ/(optional)?/TOMP
 		*/
 		private function regexForm(string $routeState):string {
 
@@ -200,20 +210,32 @@ var_dump($fullRouteState, $parsed, $this->prefixMatch($parsed));
 					$builder .=  $default . $slash;
 				}
 
-				$hasPlaceholder = @$matches["placeholder"];
+				if ($hasPlaceholder = @$matches["placeholder"]) {
 
-				if (!empty($matches["is_optional"])) {
+					if (!empty($matches["is_optional"])) {
 
-					$hasPlaceholder = rtrim($hasPlaceholder, "O") . $slash;
+						$hasPlaceholder = rtrim($hasPlaceholder, "O") . $slash;
 
-					$builder .= "($hasPlaceholder)?";
+						$builder .= "($hasPlaceholder$slash)?";
+
+						$this->activePlaceholders->pushSegment($hasPlaceholder);
+					}
+
+					else {
+
+						$builder .= $hasPlaceholder . $slash;
+
+						$this->activePlaceholders->pushSegment($hasPlaceholder);
+					}
 				}
-				elseif ($hasPlaceholder) $builder .= $hasPlaceholder . $slash;
 
 				return $builder;
 			}, $routeState);
 		}
 
+		/**
+		 * @param {fullRouteState} Regex pattern. @see return value of [regexForm]
+		 * */
 		private function prefixMatch (string $fullRouteState, bool $fullMatch = false):bool {
 
 			$escaped = preg_quote($fullRouteState, "/") . "\/?"; # neutralize trailing slash in replaced path
@@ -223,7 +245,7 @@ var_dump($fullRouteState, $parsed, $this->prefixMatch($parsed));
 			return preg_match("/^$escaped/i", $this->requestDetails->getPath());
 		}
 
-		public function setPrevious(AbstractRenderer $renderer , BaseRequest $request):self {
+		public function setPrevious(AbstractRenderer $renderer , ValidatorDTO $request):self {
 
 			$_SESSION[self::PREV_RENDERER] = $renderer;
 
@@ -237,7 +259,7 @@ var_dump($fullRouteState, $parsed, $this->prefixMatch($parsed));
 			return $_SESSION[self::PREV_RENDERER];
 		}
 
-		public function getPreviousRequest ():BaseRequest {
+		public function getPreviousRequest ():ValidatorDTO {
 
 			return $_SESSION[self::PREV_REQUEST];
 		}

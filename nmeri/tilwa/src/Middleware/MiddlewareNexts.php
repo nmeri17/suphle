@@ -5,7 +5,7 @@
 
 	use Tilwa\Contracts\Middleware;
 
-	use Tilwa\Request\BaseRequest;
+	use Tilwa\Request\ValidatorDTO;
 
 	// wraps the actual middleware in a way that causes it to fire its successor
 	class MiddlewareNexts implements RequestHandlerInterface {
@@ -19,7 +19,7 @@
 			$this->currentMiddleware = $currentMiddleware
 		}
 
-		public function handle (BaseRequest $request) {
+		public function handle (ValidatorDTO $request) {
 
 			return $this->currentMiddleware->process($request, $this->nextHandler);
 		}

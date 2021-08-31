@@ -1,38 +1,69 @@
 <?php
 	namespace Tilwa\Routing;
 
+	use Tilwa\Errors\IncompatiblePatternReplacement;
+
 	class PathPlaceholders {
 
-		private $fixed = [], $optional = [], $requestDetails;
+		private $stack = [], $requestDetails;
 
 		function __construct( RequestDetails $requestDetails) {
 
 			$this->requestDetails = $requestDetails;
 		}
 
-		public function addFixed (string $name, string $value):void {
+		public function pushSegment (string $name):void {
 
-			$this->fixed[$name] = $value;
+			$this->stack[$name] = null;
 		}
 
-		public function addOptional (string $name, string $value):void {
+		public function replaceInPattern (string $computed):string {
 
-			$this->optional[$name] = $value;
+			$newPattern = [];
+
+			$realSegments = explode("/", rtrim($this->requestDetails->getPath(), "/"));
+
+			$computedSegments = explode("/", rtrim($computed, "/"));
+
+			if (count($realSegments) != count($computedSegments))
+
+				throw new IncompatiblePatternReplacement;
+				;
+
+			foreach ($computedSegments as $index => $value) {
+
+				if (!empty($value)) {
+
+					$segmentValue = $realSegments[$index];
+
+					if (!preg_match("/^" . $segmentValue . "$/i", $value))
+
+						$newPattern[] = $this->stack[$value] = $segmentValue;
+
+					else $newPattern[] = $value;
+				}
+			}
+
+			return "/" . implode("/", $newPattern);
 		}
 
-		public function getFixed ():array {
+		public function getSegmentValue (string $name) {
 
-			return $this->fixed;
+			return $this->stack[$name];
 		}
 
-		public function getOptional ():array {
+		public function getAllSegmentValues ():array {
 
-			return $this->optional;
+			return $this->stack;
 		}
 
-		public function replaceInPattern (string $computed) {
+		public function overwriteValues (array $newStack):void {
 
-			// pattern = /static/id. our guy already tells us each segment that's placeholder or static. so just split
+			foreach ($newStack as $index => $value)
+
+				if (array_key_exists($index, $this->stack))
+
+					$this->stack[$index] = $value;
 		}
 	}
 ?>

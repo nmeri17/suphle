@@ -60,7 +60,7 @@
 			return $this;
 		}
 
-		public function handleValidRequest(BaseRequest $request):AbstractRenderer {
+		public function handleValidRequest(ValidatorDTO $request):AbstractRenderer { // can we replace this guy in that method with maybe requestDetails?
 
 			$renderer = $this->renderer;
 
@@ -76,9 +76,7 @@
 
 				$renderer->setWantsJson();
 
-			$manager->updateRequest($request)
-
-			->hydrateModels($renderer->getRouteMethod());
+			$manager->hydrateModels($renderer->getRouteMethod());
 
 			return $renderer->invokeActionHandler($manager->getHandlerParameters());
 		}
