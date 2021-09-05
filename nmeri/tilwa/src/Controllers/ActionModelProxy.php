@@ -21,9 +21,9 @@
 
 			if ($caller instanceof Executable)
 
-				throw new IllegalCaller($caller::class);
+				throw new IllegalCaller(get_class($caller));
 				
-			return $this->builderWrapper->getBuilder()->$method(...$arguments);
+			return call_user_func_array([$this->builderWrapper->getBuilder(), $method], $arguments);
 		}
 	}
 ?>

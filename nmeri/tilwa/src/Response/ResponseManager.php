@@ -12,6 +12,8 @@
 
 	use Tilwa\Contracts\BaseResponseManager;
 
+	use Tilwa\Request\ValidatorManager;
+
 	class ResponseManager implements BaseResponseManager {
 
 		private $container, $router, $renderer,
@@ -60,7 +62,7 @@
 			return $this;
 		}
 
-		public function handleValidRequest(ValidatorDTO $request):AbstractRenderer { // can we replace this guy in that method with maybe requestDetails?
+		public function handleValidRequest(ValidatorManager $validatorManager):AbstractRenderer { // can we replace this guy in that method with maybe requestDetails?
 
 			$renderer = $this->renderer;
 
@@ -70,7 +72,7 @@
 
 			if (!$this->requestDetails->isApiRoute())
 
-				$router->setPrevious($renderer, $request);
+				$router->setPrevious($renderer, $validatorManager); // update [setPrevious] if this is truly what is needed there
 
 			if ($renderer instanceof Markup && $router->acceptsJson())
 

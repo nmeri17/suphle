@@ -1,6 +1,6 @@
 <?php
 
-	namespace Tilwa\Contracts;
+	namespace Tilwa\Contracts\Auth;
 
 	interface AuthStorage {
 

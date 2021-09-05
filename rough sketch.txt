@@ -1,10 +1,10 @@
 install turbo
 
-->createQueryBuilder()
+->createQueryBuilder() // move this to a github gist
 
 ->select('u')->from(User::class, 'u')
 
-->where('u.email = ?1')->setParameter(1, $reqData['email']) // this should go in "good to know"
+->where('u.email = ?1')->setParameter(1, pull email from payloadStorage])
 
 try to deploy on azure
 
@@ -14,8 +14,6 @@ when cacheManager is integrated:
 
 #
 work needed on updateReactor
-
-what container is used to hydrate handler method on the queued job?
 
 on flow hit, upload the rest into the shared space for all users insted of simply discarding it
 
@@ -29,21 +27,30 @@ we need a cli command for copying laravel config/migrations files from the libra
 Bar:
 	- app level service entry into repositories
 	- orm in services
-Extract rejection logic into a class and inject that into both service wrapper and executable classes. then implement an interface that informs these parents to run x whenever such interface is met
-
-Refactor RouteCollection->getPatterns() to work with a IRouteCollection interface we reflect and exclude methods not matching the interface's methods
+Extract rejection logic into a class and inject that into both service wrapper and executable classes. then implement an interface that informs these parents to run x whenever such interface is met [PrefersServices]
 
 Pending:
 	- exception renderer
 	- testing
 
-User-land test interface doesn't rely on the outer module assembly or index.php in order to access app core. testing bits wanna access that core from anywhere
 
+** Good to know/DB/Refactoring Page
 We wanna add new columns on our database/model A for module A but don't wanna break the code in other modules reliant on model A. We create model A2 extending model A, add new columns on database, update occurences/type-hints of A in module A to A2. Model A gets discarded whenever its dependents upgrade to A2
 
 Mock=verify dependency behavior. Was it called? Was it called with xx arguments?
 Stub=when anybody, z, asks for stubbed thing x, return y. The verification is not done on the stubbed thing but on z's result/behavior
 
-Continue the refactor of reload and markup methods, integrating transphporm, asserting the test fixtures
+Continue the refactor of reload and markup methods, asserting the test fixtures
 
-For instance, Laravel5, Phalcon, and Yii2 modules have a seeRecord method which uses the ActiveRecord layer to check that a record exists in the database.
+Codeception module should have a seeRecord method which uses the ActiveRecord layer to check that a record exists in the database.
+
+// ensure the given type is an instance of current/active whenType
+
+C:\wamp64\www\tilwa\nmeri\tilwa\vendor\bin>phpunit ../../tests/
+
+test crud paths/patterns
+write empty test methods for every public method in each library's class
+
+Check Find Results page for clues on where to go from here
+
+responseManager->isValidRequest/handleValidRequest

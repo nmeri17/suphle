@@ -1,6 +1,6 @@
 <?php
 
-	namespace Tilwa\Response;
+	namespace Tilwa\Response\Requests;
 
 	interface BaseResponseManager {
 		

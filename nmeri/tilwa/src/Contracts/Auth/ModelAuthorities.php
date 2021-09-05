@@ -1,6 +1,6 @@
 <?php
 
-	namespace Tilwa\Contracts;
+	namespace Tilwa\Contracts\Auth;
 
 	// Each method is required to throw UnauthorizedServiceAccess when user is unauthorized
 	interface ModelAuthorities {

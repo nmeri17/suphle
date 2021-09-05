@@ -1,11 +1,7 @@
 <?php
-	namespace Tilwa\Contracts;
+	namespace Tilwa\Contracts\Requests;
 
 	interface RequestValidator {
-
-		private $validator;
-
-		private $errorHolder;
 
 		protected function validate ():void;
 

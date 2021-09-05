@@ -4,10 +4,16 @@
 
 	use Tilwa\Contracts\Config\Router;
 
-	/* A bridge between Router config, actual request detail, and making sense out of the raw incoming request. Also suffices for components without access to their own handlers i.e. login*/
+	/**
+	 * A bridge between Router config, actual request detail, and making sense out of the raw incoming request. Also suffices for components without access to their own handlers i.e. login
+	 * 
+	 * Our closest adaptation of the PSR\RequestInterface
+	*/
 	class RequestDetails {
 
-		private $config, $path;
+		private $config, $path,
+		
+		$headers = apache_request_headers();
 
 		public function __construct (Router $config) {
 
@@ -79,11 +85,9 @@
 			return array_combine($versionKeys, $versionHandlers);
 		}
 
-		public function getPayload ():array {
+		public function getContentType ():string {
 
-			if ($this->getMethod() == "get")
-			
-				return array_diff_key(["tilwa_path" => 55], $_GET);
+			return $this->headers["Content-Type"];
 		}
 	}
 ?>

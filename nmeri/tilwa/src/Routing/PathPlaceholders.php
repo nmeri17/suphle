@@ -5,11 +5,11 @@
 
 	class PathPlaceholders {
 
-		private $stack = [], $requestDetails;
+		private $stack = [], $requestPath;
 
 		function __construct( RequestDetails $requestDetails) {
 
-			$this->requestDetails = $requestDetails;
+			$this->requestPath = $requestDetails->getPath();
 		}
 
 		public function pushSegment (string $name):void {
@@ -21,7 +21,7 @@
 
 			$newPattern = [];
 
-			$realSegments = explode("/", rtrim($this->requestDetails->getPath(), "/"));
+			$realSegments = explode("/", rtrim($this->requestPath, "/"));
 
 			$computedSegments = explode("/", rtrim($computed, "/"));
 

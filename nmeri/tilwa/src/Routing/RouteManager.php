@@ -6,11 +6,11 @@
 
 	use Generator;
 
-	use Tilwa\Contracts\{AuthStorage, Config\Router as RouterConfig, RouteCollection};
+	use Tilwa\Contracts\{Auth\AuthStorage, Config\Router as RouterConfig, Routing\RouteCollection};
 
 	use Tilwa\Middleware\MiddlewareRegistry;
 
-	use Tilwa\Request\{ValidatorDTO, PathAuthorizer};
+	use Tilwa\Request\{ValidatorManager, PathAuthorizer};
 
 	use Tilwa\Response\Format\AbstractRenderer;
 
@@ -245,7 +245,7 @@
 			return preg_match("/^$escaped/i", $this->requestDetails->getPath());
 		}
 
-		public function setPrevious(AbstractRenderer $renderer , ValidatorDTO $request):self {
+		public function setPrevious(AbstractRenderer $renderer , ValidatorManager $request):self {
 
 			$_SESSION[self::PREV_RENDERER] = $renderer;
 
@@ -259,7 +259,7 @@
 			return $_SESSION[self::PREV_RENDERER];
 		}
 
-		public function getPreviousRequest ():ValidatorDTO {
+		public function getPreviousRequest ():ValidatorManager {
 
 			return $_SESSION[self::PREV_REQUEST];
 		}

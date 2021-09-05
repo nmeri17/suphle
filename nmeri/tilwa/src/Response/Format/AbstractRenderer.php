@@ -39,15 +39,7 @@
 
 		protected function renderJson():string {
 
-			$request = $this->request;
-
-			if (!$request->isValidated())
-
-				$response = $request->validationErrors();
-
-			else $response = $this->rawResponse;
-			
-			return json_encode($response);
+			return json_encode($this->rawResponse);
 		}
 
 		protected function renderHtml(...$arguments):string { // should return psr responseInterface instead
