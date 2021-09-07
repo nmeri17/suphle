@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Request;
 
-	use Tilwa\Contracts\AuthStorage;
+	use Tilwa\Contracts\Auth\AuthStorage;
 
 	class PathAuthorizer {
 

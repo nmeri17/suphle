@@ -40,16 +40,15 @@ We wanna add new columns on our database/model A for module A but don't wanna br
 Mock=verify dependency behavior. Was it called? Was it called with xx arguments?
 Stub=when anybody, z, asks for stubbed thing x, return y. The verification is not done on the stubbed thing but on z's result/behavior
 
-Continue the refactor of reload and markup methods [renderer?], asserting the test fixtures
+Continue the refactor of reload renderer
 
 Codeception module should have a seeRecord method which uses the ActiveRecord layer to check that a record exists in the database.
 
-// ensure the given type is an instance of current/active whenType
+Ensure the given type is an instance of current/active whenType
 
 C:\wamp64\www\tilwa\nmeri\tilwa\vendor\bin>phpunit ../../tests/
 
-test crud paths/patterns
-write empty test methods for every public method in each library's class
-
-confirm that: request is validated (with action method name o) before parameters are set on the controllerModel
+test cases:
+	- crud paths/patterns
+	- request is validated (with action method name o) before parameters are set on the controllerModel
 		

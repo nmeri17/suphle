@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Auth;
 
-	use Tilwa\Contracts\UserHydrator;
+	use Tilwa\Contracts\Auth\UserHydrator;
 
 	use stdClass;
 

@@ -17,9 +17,9 @@
 	     */
 		public function test_route_matching ( string $handler, string $requestPath) {
 
-			$router = $this->container->getClass(RouteManager::class);
+			$this->setHttpParams($requestPath); // this should be the first line in all the tests involving pulling path from requestDetails?
 
-			$this->setHttpParams($requestPath);
+			$router = $this->container->getClass(RouteManager::class);
 
 			$router->findRenderer();
 

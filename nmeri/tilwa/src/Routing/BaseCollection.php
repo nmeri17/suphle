@@ -6,7 +6,7 @@
 
 	use Tilwa\Auth\TokenStorage;
 
-	use Tilwa\Contracts\{RouteCollection, AuthStorage};
+	use Tilwa\Contracts\{Routing\RouteCollection, Auth\AuthStorage};
 
 	abstract class BaseCollection implements RouteCollection {
 

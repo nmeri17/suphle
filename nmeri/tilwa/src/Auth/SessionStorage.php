@@ -2,7 +2,7 @@
 
 	namespace Tilwa\Auth;
 
-	use Tilwa\Contracts\{UserHydrator, Config\Auth as AuthContract};
+	use Tilwa\Contracts\{Auth\UserHydrator, Config\Auth as AuthContract};
 
 	class SessionStorage extends BaseAuthStorage {
 

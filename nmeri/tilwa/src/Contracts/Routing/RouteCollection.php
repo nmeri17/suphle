@@ -2,6 +2,8 @@
 
 	namespace Tilwa\Contracts\Routing;
 
+	use Tilwa\Contracts\Auth\AuthStorage;
+
 	interface RouteCollection {
 
 		public function _handlingClass ():string;

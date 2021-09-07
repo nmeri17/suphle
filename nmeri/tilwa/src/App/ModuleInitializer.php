@@ -8,7 +8,7 @@
 
 	use Tilwa\Bridge\Laravel\ModuleRouteMatcher;
 
-	use Tilwa\Contracts\AuthStorage;
+	use Tilwa\Contracts\Auth\AuthStorage;
 
 	use Tilwa\Request\PathAuthorizer;
 

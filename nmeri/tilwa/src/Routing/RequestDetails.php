@@ -13,22 +13,24 @@
 
 		const JSON_HEADER_VALUE = "application/json";
 
-		private $config, $path,
-		
-		$headers = apache_request_headers(); // or getallheaders()?
+		private $config, $path, $headers;
 
 		public function __construct (Router $config) {
 
 			$this->config = $config;
+
+			$this->headers = getallheaders();
 		}
 
 		public function getPath ():string {
 
+			$pathKey = "tilwa_path";
+
 			if (is_null($this->path)) {
 
-				$this->path = $_GET['tilwa_path'];
+				$this->path = $_GET[$pathKey];
 
-				unset($_GET['tilwa_path']);
+				unset($_GET[$pathKey]);
 			}
 
 			return $this->path;
@@ -92,12 +94,12 @@
 
 		public function isJsonPayload ():bool {
 
-			return strtolower($this->headers["Content-Type"]) == JSON_HEADER_VALUE;
+			return strtolower($this->headers["Content-Type"]) == self::JSON_HEADER_VALUE;
 		}
 
 		public function acceptsJson():bool {
 
-			return strtolower($this->headers["Accept"]) == JSON_HEADER_VALUE;
+			return strtolower($this->headers["Accept"]) == self::JSON_HEADER_VALUE;
 		}
 
 		public function hasHeader (string $name):bool {

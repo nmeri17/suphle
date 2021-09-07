@@ -4,7 +4,7 @@
 
 	use Tilwa\Contracts\Config\Services as ServicesContract;
 
-	use Tilwa\Contracts\{Orm, HtmlParser, AuthStorage, RequestValidator, QueueManager};
+	use Tilwa\Contracts\{Database\Orm, HtmlParser, Auth\AuthStorage, Requests\RequestValidator, QueueManager};
 
 	use Tilwa\ServiceProviders\{OrmProvider, AuthStorageProvider, HtmlTemplateProvider, RequestValidatorProvider, QueueProvider, LaravelAppProvider};
 

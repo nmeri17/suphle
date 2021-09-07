@@ -2,7 +2,7 @@
 
 	namespace Tilwa\Auth;
 
-	use Tilwa\Contracts\AuthStorage;
+	use Tilwa\Contracts\Auth\AuthStorage;
 
 	abstract class BaseAuthStorage implements AuthStorage {
 

@@ -6,7 +6,7 @@
 
 	use Tilwa\Contracts\Config\{ Services as IServices, Laravel as ILaravel, Router as IRouter, Auth as IAuth, Transphporm as ITransphporm, ModuleFiles as IModuleFiles};
 
-	use Tilwa\Contracts\UserHydrator as IUserHydrator;
+	use Tilwa\Contracts\Auth\UserHydrator as IUserHydrator;
 
 	use Tilwa\Config\{ Services, Laravel, Auth, Transphporm}; // using our default config for these
 
