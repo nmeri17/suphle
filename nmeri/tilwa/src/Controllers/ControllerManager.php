@@ -8,7 +8,7 @@
 
 	use Tilwa\Contracts\{Orm, ControllerModel};
 
-	use Tilwa\Request\ValidatorDTO;
+	use Tilwa\Request\ValidatorManager;
 
 	use Tilwa\Errors\CrowdedConstructor;
 
@@ -18,13 +18,17 @@
 
 		private $controller, $container, $placeholderStorage,
 
-		$handlerParameters, $actionModels;
+		$handlerParameters, $actionModels, $validatorManager,
 
-		function __construct( Container $container, PathPlaceholders $placeholderStorage) {
+		$actionMethod;
+
+		function __construct( Container $container, PathPlaceholders $placeholderStorage, ValidatorManager $validatorManager) {
 
 			$this->container = $container;
 
 			$this->placeholderStorage = $placeholderStorage;
+
+			$this->validatorManager = $validatorManager;
 		}
 
 		public function setController(Executable $controller):void {
@@ -45,9 +49,9 @@
 				throw new CrowdedConstructor;
 		}
 
-		public function setHandlerParameters(string $actionMethod):self {
+		public function setHandlerParameters():self {
 
-			$this->handlerParameters = $this->container->getMethodParameters($actionMethod, get_class($this->controller));
+			$this->handlerParameters = $this->container->getMethodParameters($this->actionMethod, get_class($this->controller));
 
 			return $this;
 		}
@@ -83,20 +87,36 @@
 			}
 		}
 
-		public function bootController():self {
+		public function bootController (string $actionMethod):self {
+
+			$this->actionMethod = $actionMethod;
+
+			$this->updateValidatorMethod();
 
 			$this->controller->setContainer($this->container);
 
 			return $this;
 		}
 
-		public function revertRequest(ValidatorDTO $previousRequest):self {
+		private function updateValidatorMethod ():void {
 
-			$previousRequest->setValidationErrors( $this->request->validationErrors() ); 
-			
-			$this->request = $previousRequest;
+			$actionMethod = $this->actionMethod;
 
-			return $this;
+			$collectionName = $this->controller->validatorCollection ();
+
+			if (empty($collectionName) || !method_exists($collectionName, $actionMethod)) return;
+
+			$this->validatorManager->setActionRules(call_user_func([$collectionName, $actionMethod]))
+		}
+
+		public function isValidatedRequest ():bool {
+
+			return $this->validatorManager->isValidated();
+		}
+
+		public function getValidatorErrors ():array {
+
+			return $this->validatorManager->validationErrors();
 		}
 	}
 ?>

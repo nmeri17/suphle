@@ -6,24 +6,22 @@
 	*/
 	class PayloadStorage {
 
-		private $httpMethod, $contentType;
+		private $requestDetails;
 
 		public function __construct (RequestDetails $requestDetails) {
 
-			$this->httpMethod = $requestDetails->getMethod();
-
-			$this->contentType = $requestDetails->getContentType();
+			$this->requestDetails = $requestDetails;
 		}
 
 		public function fullPayload ():array {
 
-			if ($this->httpMethod == "get")
+			if ($this->requestDetails->getMethod() == "get")
 			
 				return array_diff_key(["tilwa_path" => 55], $_GET);
 
 			$payload = file_get_contents("php://input");
 
-			if ($this->contentType == "application/json")
+			if ($this->requestDetails->isJsonPayload() )
 
 				return json_decode($payload, true);
 

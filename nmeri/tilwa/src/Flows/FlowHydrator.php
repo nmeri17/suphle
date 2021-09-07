@@ -13,11 +13,11 @@
 
 	use Illuminate\Support\{Collection, Arr};
 
-	use Tilwa\Routing\PathPlaceholders;
+	use Tilwa\Routing\{PathPlaceholders, RequestDetails};
 
 	class FlowHydrator {
 
-		private $previousResponse, $cacheManager,
+		private $previousResponse, $cacheManager, $requestDetails,
 
 		$responseManager, $container, $placeholderStorage,
 
@@ -55,7 +55,7 @@
 		];
 
 		// if we can't hydrate this with our container, replace interfaces with hard-coded concretes
-		function __construct(CacheManager $cacheManager, Orm $orm, Container $randomContainer, PathPlaceholders $placeholderStorage) {
+		function __construct(CacheManager $cacheManager, Orm $orm, Container $randomContainer, PathPlaceholders $placeholderStorage, RequestDetails $requestDetails) {
 
 			$this->cacheManager = $cacheManager;
 
@@ -64,6 +64,8 @@
 			$this->container = $randomContainer;
 
 			$this->placeholderStorage = $placeholderStorage;
+
+			$this->requestDetails = $requestDetails;
 		}
 
 		# @param {contentType} model type, where present
@@ -248,7 +250,7 @@
 
 			if ($this->canProcessPath())
 
-				return $this->responseManager->handleValidRequest();
+				return $this->responseManager->handleValidRequest($this->requestDetails);
 		}
 
 		private function handleOneOf(array $indexes, string $requestProperty):AbstractRenderer {

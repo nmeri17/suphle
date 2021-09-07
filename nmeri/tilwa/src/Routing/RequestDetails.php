@@ -1,6 +1,6 @@
 <?php
 
-	namespace Tilwa\Routing;
+	namespace Tilwa\Routing; // relocate this to Request namespace
 
 	use Tilwa\Contracts\Config\Router;
 
@@ -11,9 +11,11 @@
 	*/
 	class RequestDetails {
 
+		const JSON_HEADER_VALUE = "application/json";
+
 		private $config, $path,
 		
-		$headers = apache_request_headers();
+		$headers = apache_request_headers(); // or getallheaders()?
 
 		public function __construct (Router $config) {
 
@@ -22,9 +24,12 @@
 
 		public function getPath ():string {
 
-			if (is_null($this->path))
+			if (is_null($this->path)) {
 
 				$this->path = $_GET['tilwa_path'];
+
+				unset($_GET['tilwa_path']);
+			}
 
 			return $this->path;
 		}
@@ -85,9 +90,24 @@
 			return array_combine($versionKeys, $versionHandlers);
 		}
 
-		public function getContentType ():string {
+		public function isJsonPayload ():bool {
 
-			return $this->headers["Content-Type"];
+			return strtolower($this->headers["Content-Type"]) == JSON_HEADER_VALUE;
+		}
+
+		public function acceptsJson():bool {
+
+			return strtolower($this->headers["Accept"]) == JSON_HEADER_VALUE;
+		}
+
+		public function hasHeader (string $name):bool {
+
+			return array_key_exists($name, $this->headers);
+		}
+
+		public function getHeader (string $name):string {
+
+			return $this->headers[$name];
 		}
 	}
 ?>

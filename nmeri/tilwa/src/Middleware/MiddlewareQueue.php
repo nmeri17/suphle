@@ -3,21 +3,19 @@
 
 	use Tilwa\App\Container;
 
-	use Tilwa\Controllers\ControllerManager;
+	use Tilwa\Routing\RequestDetails;
 
 	use Tilwa\Contracts\{Middleware, Router as RouterConfig};
 
 	class MiddlewareQueue {
 
-		private $controllerManager, $stack,
+		private $requestDetails, $stack, $routerConfig, $container;
 
-		$routerConfig, $container;
-
-		public function __construct ( MiddlewareRegistry $registry, ControllerManager $controllerManager, RouterConfig $routerConfig, Container $container) {
+		public function __construct ( MiddlewareRegistry $registry, RequestDetails $requestDetails, RouterConfig $routerConfig, Container $container) {
 
 			$this->stack = $registry->getActiveStack();
 
-			$this->controllerManager = $controllerManager;
+			$this->requestDetails = $requestDetails;
 
 			$this->routerConfig = $routerConfig;
 
@@ -67,7 +65,7 @@
 			$this->filterDuplicates()->prependDefaults();
 
 			return end($this->stack)->process(
-				$this->controllerManager->getRequest(),
+				$this->requestDetails,
 
 				$this->getHandlerChain($this->stack)
 			);

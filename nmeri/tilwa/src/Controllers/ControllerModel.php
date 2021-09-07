@@ -1,15 +1,25 @@
 <?php
 
-	namespace Tilwa\Contracts;
+	namespace Tilwa\Controllers;
+
+	use Tilwa\Contracts\RequestValidator;
 
 	/**
 	 * Nothing can be done with this guy in the controller. Must be passed to a service
 	*/
-	interface ControllerModel { // change this to an abstract class so [setIdentifier] can be fleshed out
+	abstract class ControllerModel {
 
-		// @return a query builder
-		public function getBuilder(); // so this guy can use inputStorage however he wants
+		private $identifier;
 
-		public function setInputStorage(string $modelId):void; // the request is validated (with action method name o) before getting here
+		/**
+		 * Use [identifier] to build the minimal state shared by all service methods for this model
+		 * @return a query builder
+		*/
+		abstract public function getBuilder();
+
+		public function setIdentifier(string $parameterValue):void {
+
+			$this->identifier = $parameterValue;
+		}
 	}
 ?>

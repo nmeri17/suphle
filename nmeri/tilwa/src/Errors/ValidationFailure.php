@@ -13,15 +13,20 @@
 			$this->router = $router;
 		}
 
-		public function getResponse () {
+		// should return psr\responseInterface instead
+		public function getResponse ():AbstractRenderer {
 
-			if (!$this->requestDetails->isApiRoute()) {
+			$router = $this->router;
 
-				$this->controllerManager->revertRequest($this->router->getPreviousRequest());
+			if (!$this->requestDetails->isApiRoute())
 
-				return $this->router->getPreviousRenderer();
-			}
-			// handle api validation errors
+				return $router->getPreviousRenderer();
+
+			$renderer = $router->getActiveRenderer();
+
+			$renderer->setRawResponse($this->controllerManager->getValidatorErrors());
+
+			return $renderer;
 		}
 	}
 ?>

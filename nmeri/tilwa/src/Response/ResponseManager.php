@@ -4,7 +4,7 @@
 
 	use Tilwa\App\{Container, ModuleDescriptor};
 
-	use Tilwa\Routing\RouteManager;
+	use Tilwa\Routing\{RouteManager, RequestDetails};
 
 	use Tilwa\Response\Format\{Markup, AbstractRenderer};
 
@@ -18,21 +18,15 @@
 
 		private $container, $router, $renderer,
 
-		$controllerManager, $requestDetails,
+		$controllerManager, $flowQueuer;
 
-		$flowQueuer;
-
-		public $responseMutations = [];
-
-		function __construct (Container $container, RouteManager $router, ControllerManager $controllerManager, RequestDetails $requestDetails, FlowResponseQueuer $flowQueuer, AbstractRenderer $renderer) {
+		function __construct (Container $container, RouteManager $router, ControllerManager $controllerManager, FlowResponseQueuer $flowQueuer, AbstractRenderer $renderer) {
 
 			$this->container = $container;
 
 			$this->router = $router;
 
 			$this->controllerManager = $controllerManager;
-
-			$this->requestDetails = $requestDetails;
 
 			$this->flowQueuer = $flowQueuer;
 
@@ -62,7 +56,7 @@
 			return $this;
 		}
 
-		public function handleValidRequest(ValidatorManager $validatorManager):AbstractRenderer { // can we replace this guy in that method with maybe requestDetails?
+		public function handleValidRequest(RequestDetails $requestDetails):AbstractRenderer {
 
 			$renderer = $this->renderer;
 
@@ -70,11 +64,11 @@
 
 			$manager = $this->controllerManager;
 
-			if (!$this->requestDetails->isApiRoute())
+			if (!$requestDetails->isApiRoute())
 
-				$router->setPrevious($renderer, $validatorManager); // update [setPrevious] if this is truly what is needed there
+				$router->setPreviousRenderer($renderer);
 
-			if ($renderer instanceof Markup && $router->acceptsJson())
+			if ($renderer instanceof Markup && $requestDetails->acceptsJson())
 
 				$renderer->setWantsJson();
 
@@ -85,7 +79,7 @@
 
 		public function isValidRequest ():bool {
 
-			return $this->controllerManager->getRequest()->isValidated();
+			return $this->controllerManager->isValidatedRequest();
 		}
 
 		public function validateManager():void {
@@ -97,13 +91,9 @@
 
 		public function buildManagerTarget():void {
 
-			$this->controllerManager->bootController()
+			$this->controllerManager->bootController($this->renderer->getHandler())
 
-			->setHandlerParameters($this->renderer->getHandler())
-
-			->assignActionRequest() // this should run before model hydration and before validation
-
-			->assignModelsInAction();
+			->setHandlerParameters()->assignModelsInAction();
 		}
 
 		private function updateControllerManager():void {

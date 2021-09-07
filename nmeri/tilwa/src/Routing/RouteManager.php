@@ -10,7 +10,7 @@
 
 	use Tilwa\Middleware\MiddlewareRegistry;
 
-	use Tilwa\Request\{ValidatorManager, PathAuthorizer};
+	use Tilwa\Request\{ PathAuthorizer};
 
 	use Tilwa\Response\Format\AbstractRenderer;
 
@@ -18,9 +18,7 @@
 
 	class RouteManager {
 
-		const PREV_RENDERER = 'prev_renderer';
-
-		const PREV_REQUEST = 'prev_request';
+		const PREV_RENDERER = 'prv_rdr';
 
 		private $config, $activeRenderer, $payload,
 
@@ -245,11 +243,9 @@
 			return preg_match("/^$escaped/i", $this->requestDetails->getPath());
 		}
 
-		public function setPrevious(AbstractRenderer $renderer , ValidatorManager $request):self {
+		public function setPreviousRenderer(AbstractRenderer $renderer):self {
 
 			$_SESSION[self::PREV_RENDERER] = $renderer;
-
-			$_SESSION[self::PREV_REQUEST] = $request;
 
 			return $this;
 		}
@@ -257,11 +253,6 @@
 		public function getPreviousRenderer ():AbstractRenderer {
 
 			return $_SESSION[self::PREV_RENDERER];
-		}
-
-		public function getPreviousRequest ():ValidatorManager {
-
-			return $_SESSION[self::PREV_REQUEST];
 		}
 
 		public function getActiveRenderer ():?AbstractRenderer {
@@ -282,17 +273,6 @@
 			}
 
 			return [$this->config->browserEntryRoute()];
-		}
-
-		public function acceptsJson():bool {
-
-			foreach (getallheaders() as $key => $value) {
-				
-				if (strtolower($key) == "accept" && preg_match("/application\/json/i", $value))
-
-					return true;
-			}
-			return false;
 		}
 
 		private function bootRenderer(AbstractRenderer $renderer, string $controllingClass):AbstractRenderer {

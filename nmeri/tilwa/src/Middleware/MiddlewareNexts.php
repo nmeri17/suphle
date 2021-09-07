@@ -5,7 +5,7 @@
 
 	use Tilwa\Contracts\Middleware;
 
-	use Tilwa\Request\ValidatorManager;
+	use Tilwa\Routing\RequestDetails;
 
 	// wraps the actual middleware in a way that causes it to fire its successor
 	class MiddlewareNexts implements RequestHandlerInterface {
@@ -19,9 +19,9 @@
 			$this->currentMiddleware = $currentMiddleware
 		}
 
-		public function handle (ValidatorManager $validatorManager) {
+		public function handle (RequestDetails $requestDetails) {
 
-			return $this->currentMiddleware->process($validatorManager, $this->nextHandler);
+			return $this->currentMiddleware->process($requestDetails, $this->nextHandler);
 		}
 	}
 ?>
