@@ -5,21 +5,17 @@
 	use Tilwa\Contracts\Config\Router;
 
 	/**
-	 * A bridge between Router config, actual request detail, and making sense out of the raw incoming request. Also suffices for components without access to their own handlers i.e. login
+	 * Suffices for components without access to their own handlers i.e. login
 	 * 
 	 * Our closest adaptation of the PSR\RequestInterface
 	*/
 	class RequestDetails {
 
-		const JSON_HEADER_VALUE = "application/json";
-
-		private $config, $path, $headers;
+		private $config, $path;
 
 		public function __construct (Router $config) {
 
 			$this->config = $config;
-
-			$this->headers = getallheaders();
 		}
 
 		public function getPath ():string {
@@ -100,26 +96,6 @@
 			$versionKeys = array_slice($versionKeys, $start, count($versionKeys)-1);
 
 			return array_combine($versionKeys, $versionHandlers);
-		}
-
-		public function isJsonPayload ():bool {
-
-			return strtolower($this->headers["Content-Type"]) == self::JSON_HEADER_VALUE;
-		}
-
-		public function acceptsJson():bool {
-
-			return strtolower($this->headers["Accept"]) == self::JSON_HEADER_VALUE;
-		}
-
-		public function hasHeader (string $name):bool {
-
-			return array_key_exists($name, $this->headers);
-		}
-
-		public function getHeader (string $name):string {
-
-			return $this->headers[$name];
 		}
 
 		public function matchesMethod (string $name):bool {

@@ -12,15 +12,15 @@
 
 	use Tilwa\Contracts\BaseResponseManager;
 
-	use Tilwa\Request\ValidatorManager;
+	use Tilwa\Request\{ValidatorManager, PayloadStorage};
 
 	class ResponseManager implements BaseResponseManager {
 
-		private $container, $router, $renderer,
+		private $container, $router, $renderer, $payloadStorage,
 
 		$controllerManager, $flowQueuer;
 
-		function __construct (Container $container, RouteManager $router, ControllerManager $controllerManager, FlowResponseQueuer $flowQueuer, AbstractRenderer $renderer) {
+		function __construct (Container $container, RouteManager $router, ControllerManager $controllerManager, FlowResponseQueuer $flowQueuer, AbstractRenderer $renderer, PayloadStorage $payloadStorage) {
 
 			$this->container = $container;
 
@@ -31,6 +31,8 @@
 			$this->flowQueuer = $flowQueuer;
 
 			$this->renderer = $renderer;
+
+			$this->payloadStorage = $payloadStorage;
 		}
 		
 		public function getResponse ():string {
@@ -68,7 +70,7 @@
 
 				$router->setPreviousRenderer($renderer);
 
-			if ($renderer instanceof Markup && $requestDetails->acceptsJson())
+			if ($renderer instanceof Markup && $this->payloadStorage->acceptsJson())
 
 				$renderer->setWantsJson();
 

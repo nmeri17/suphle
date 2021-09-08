@@ -8,32 +8,32 @@
 
 	use Throwable;
 
-	use Tilwa\Routing\RequestDetails;
+	use Tilwa\Request\PayloadStorage;
 
 	class TokenStorage extends BaseAuthStorage {
 
-		private $requestDetails, $identifierKey = "user_id";
+		private $payloadStorage, $identifierKey = "user_id";
 
-		public function __construct (UserHydrator $userHydrator, AuthContract $authConfig, RequestDetails $requestDetails) {
+		public function __construct (UserHydrator $userHydrator, AuthContract $authConfig, PayloadStorage $payloadStorage) {
 
 			$this->userHydrator = $userHydrator;
 
 			$this->authConfig = $authConfig;
 
-			$this->requestDetails = $requestDetails;
+			$this->payloadStorage = $payloadStorage;
 		}
 
 		public function resumeSession ():void {
 
-			$requestDetails = $this->requestDetails;
+			$payloadStorage = $this->payloadStorage;
 
 			$headerKey = "Authorization";
 
-			if (!$requestDetails->hasHeader($headerKey))
+			if (!$payloadStorage->hasHeader($headerKey))
 
 				return null;
 
-			$incomingToken = explode(" ", $requestDetails->getHeader($headerKey) )[1]; // the bearer part
+			$incomingToken = explode(" ", $payloadStorage->getHeader($headerKey) )[1]; // the bearer part
 
 			try {
 				$decoded = JWT::decode($incomingToken, $this->config->getTokenSecretKey(), ["HS256"]);
