@@ -15,7 +15,7 @@
 
 		public function fullPayload ():array {
 
-			if ($this->requestDetails->getMethod() == "get")
+			if ($this->requestDetails->isGetRequest())
 			
 				return array_diff_key(["tilwa_path" => 55], $_GET);
 

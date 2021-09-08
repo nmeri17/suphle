@@ -17,6 +17,12 @@
 			$this->stack[$name] = null;
 		}
 
+		/**
+		 * Given computed path such as FOO/id, and incoming request with path foo/5, it synchronizes in-app storage of placeholders, recording id as 5
+		*
+		* @throws IncompatiblePatternReplacement
+		* @return the synchronized path
+		*/
 		public function replaceInPattern (string $computed):string {
 
 			$newPattern = [];
@@ -29,16 +35,25 @@
 
 				throw new IncompatiblePatternReplacement;
 				;
-
+//var_dump($computedSegments, $realSegments);
 			foreach ($computedSegments as $index => $value) {
 
 				if (!empty($value)) {
 
 					$segmentValue = $realSegments[$index];
 
-					if (!preg_match("/^" . $segmentValue . "$/i", $value))
+					$segmentIsPlaceholder = strtolower($value) === $value;
 
-						$newPattern[] = $this->stack[$value] = $segmentValue;
+					$differentSegments = !preg_match("/^" . $segmentValue . "$/i", $value);
+
+					if ($differentSegments) {
+
+						if ($segmentIsPlaceholder)
+
+							$newPattern[] = $this->stack[$value] = $segmentValue;
+
+						else throw new IncompatiblePatternReplacement;
+					}
 
 					else $newPattern[] = $value;
 				}

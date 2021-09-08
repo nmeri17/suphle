@@ -12,7 +12,7 @@
 
 	use Tilwa\Errors\CrowdedConstructor;
 
-	use Tilwa\Routing\PathPlaceholders;
+	use Tilwa\Routing\{PathPlaceholders, RequestDetails};
 
 	class ControllerManager {
 
@@ -20,15 +20,17 @@
 
 		$handlerParameters, $actionModels, $validatorManager,
 
-		$actionMethod;
+		$actionMethod, $requestDetails;
 
-		function __construct( Container $container, PathPlaceholders $placeholderStorage, ValidatorManager $validatorManager) {
+		function __construct( Container $container, PathPlaceholders $placeholderStorage, ValidatorManager $validatorManager, RequestDetails $requestDetails) {
 
 			$this->container = $container;
 
 			$this->placeholderStorage = $placeholderStorage;
 
 			$this->validatorManager = $validatorManager;
+
+			$this->requestDetails = $requestDetails;
 		}
 
 		public function setController(Executable $controller):void {
@@ -104,8 +106,15 @@
 
 			$collectionName = $this->controller->validatorCollection ();
 
-			if (empty($collectionName) || !method_exists($collectionName, $actionMethod)) return;
+			$hasNoValidator = empty($collectionName) || !method_exists($collectionName, $actionMethod);
 
+			if ($hasNoValidator) {
+
+				if ($this->requestDetails->isGetRequest()) return;
+
+				throw new NoCompatibleValidator;
+			}
+			
 			$this->validatorManager->setActionRules(call_user_func([$collectionName, $actionMethod]))
 		}
 

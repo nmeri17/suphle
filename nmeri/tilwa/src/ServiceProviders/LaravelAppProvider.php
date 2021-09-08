@@ -58,7 +58,7 @@
 				return Request::create(
 					$this->requestDetails->getPath(),
 
-					$this->requestDetails->getMethod(),
+					$this->requestDetails->httpMethod(),
 
 					$this->requestDetails->getPayload(),
 

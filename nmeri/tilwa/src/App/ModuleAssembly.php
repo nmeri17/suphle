@@ -40,7 +40,7 @@
 		
 		private function beginRequest():string {
 
-			if ($this->requestDetails->getMethod() == "post") {
+			if ($this->requestDetails->isPostRequest()) {
 
 				if ($rendererName = $this->getLoginRenderer())
 

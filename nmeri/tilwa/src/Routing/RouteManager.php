@@ -14,7 +14,7 @@
 
 	use Tilwa\Response\Format\AbstractRenderer;
 
-	use Tilwa\Errors\IncompatiblePatternReplacement;
+	use Tilwa\Errors\{IncompatiblePatternReplacement, IncompatibleHttpMethod};
 
 	class RouteManager {
 
@@ -73,11 +73,9 @@
 			- to parse our route before matching
 			- loadPatterns?
 		*/
-		private function recursiveSearch(string $patternsCollection, string $routeState = "", string $invokerPrefix = "", bool $fromCache = false):?AbstractRenderer {
+		private function recursiveSearch(string $patternsCollection, string $routeState = "", string $invokerPrefix = ""/*, bool $fromCache = false*/):?AbstractRenderer {
 
-			$collection = $this->container
-			
-			->getClass($patternsCollection, true);
+			$collection = $this->container->getClass($patternsCollection);
 
 			$patternPrefix = $invokerPrefix ?? $collection->_prefixCurrent();
 
@@ -86,25 +84,14 @@
 			foreach ($this->loadPatterns($collection) as $pattern) {
 
 				$rendererList = call_user_func([$collection, $pattern]);
-				/*
-					- pair empty incoming path with _index method
-					- crud methods disregard their method names
-				*/
-				if (($pattern == "_index") || $collection->_expectsCrud())
 
-					$computedPattern = "";
-
-				else $computedPattern = $pattern;
-
-				if (!empty($patternPrefix))
-
-					$computedPattern = "$patternPrefix/$computedPattern";
+				$computedPattern = $this->patternToUrlSegment($pattern, $collection, $patternPrefix);
 
 				$fullRouteState = "$routeState/$computedPattern";
 
 				$parsed = $this->regexForm($fullRouteState);
 
-				if (!is_null($collection->_getPrefixCollection()) && $this->prefixMatch($parsed)) { // only delve deeper if we're on the right track i.e. if nested path = foo/bar/foobar, and nested method "bar" defines prefix, we only wanna explore its contents if requested route matches foo/bar
+				if ($this->shouldDelve($collection, $parsed)) {
 
 					$this->indicatePatternDetails($collection, $pattern);
 
@@ -121,7 +108,13 @@
 						if ($collection->_expectsCrud())
 
 							$parsed .= $this->regexForm($path); // doesn't this return a regex that should be escaped/normalized? if that be the case, match incoming path against that pattern and return the result to this guy
+// var_dump($pattern, $parsed, $renderer->getRouteMethod(), $this->routeCompare($parsed, $renderer->getRouteMethod()));
 
+/*
+string(10) "SEGMENT_id"
+string(12) "/SEGMENT/id/"
+string(3) "get"
+bool(true)*/
 						if ($this->routeCompare($parsed, $renderer->getRouteMethod())) {
 
 							$this->indicatePatternDetails($collection, $pattern);
@@ -140,7 +133,32 @@
 			return null;
 		}
 
-		private function routeCompare(string $path, string $rendererMethod):bool {
+		/**
+			- pair empty incoming path with _index method
+			- crud methods disregard their method names
+		*/
+		private function patternToUrlSegment (string $pattern, RouteCollection $collection, string $prefix):string {
+
+			if (($pattern == "_index") || $collection->_expectsCrud())
+
+				$segment = "";
+
+			else $segment = $pattern;
+
+			if (!empty($prefix)) $segment = "$prefix/$segment";
+
+			return $segment;
+		}
+
+		/** 
+		* Find out if we're on the right track i.e. if nested path = foo/bar/foobar, and nested method "bar" defines prefix, we only wanna explore its contents if requested route matches foo/bar
+		*/
+		private function shouldDelve (RouteCollection $collection, string $routeState):bool {
+
+			return !is_null($collection->_getPrefixCollection()) && $this->prefixMatch($routeState);
+		}
+
+		public function routeCompare(string $path, string $rendererMethod):bool {
 
 			try {
 
@@ -153,11 +171,11 @@
 
 			$matchingPaths = $this->prefixMatch($this->fullTriedPath, true);
 
-			$matchingMethods = $rendererMethod == $this->requestDetails->getMethod();
+			$matchingMethods = $this->requestDetails->matchesMethod($rendererMethod);
 
 			if ($matchingPaths && !$matchingMethods)
 
-				throw new IncompatibleHttpMethod( $rendererMethod);
+				throw new IncompatibleHttpMethod($this->requestDetails, $rendererMethod);
 
 			return $matchingPaths && $matchingMethods;
 		}
@@ -239,7 +257,7 @@
 			$escaped = preg_quote($fullRouteState, "/") . "\/?"; # neutralize trailing slash in replaced path
 
 			if ($fullMatch) $escaped .= "$";
-
+// var_dump($escaped, $this->requestDetails->getPath());
 			return preg_match("/^$escaped/i", $this->requestDetails->getPath());
 		}
 

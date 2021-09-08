@@ -36,12 +36,22 @@
 			return $this->path;
 		}
 
-		public function getMethod ():string {
+		public function httpMethod ():string {
 
 			return strtolower(
 
 				$_POST["_method"] ?? $_SERVER['REQUEST_METHOD']
 			);
+		}
+
+		public function isGetRequest ():bool {
+
+			return $this->httpMethod() == "get";
+		}
+
+		public function isPostRequest ():bool {
+
+			return $this->httpMethod() == "post";
 		}
 
 		public function isApiRoute ():bool {
@@ -110,6 +120,11 @@
 		public function getHeader (string $name):string {
 
 			return $this->headers[$name];
+		}
+
+		public function matchesMethod (string $name):bool {
+
+			return $this->httpMethod() == $name;
 		}
 	}
 ?>

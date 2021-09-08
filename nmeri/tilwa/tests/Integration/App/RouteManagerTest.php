@@ -10,8 +10,6 @@
 
 	class RouteManagerTest extends BaseTest {
 
-		private $router;
-
 		/**
 	     * @dataProvider pathsToHandler
 	     */
@@ -38,10 +36,10 @@
 			return [
 				[ "plainSegment", "/segment"],
 				[ "simplePair", "/segment/5"],
-				/*[ "hyphenatedSegments", "/segment-segment/5"],
+				[ "hyphenatedSegments", "/segment-segment/5"],
 				[ "underscoredSegments", "/segment_segment/5"],
 				[ "optionalPlaceholder", "/segment/5/segment/5"],
-				[ "optionalPlaceholder", "/segment/5/segment"]*/
+				[ "optionalPlaceholder", "/segment/5/segment"]
 			];
 		}
 	}
