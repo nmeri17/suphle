@@ -76,6 +76,12 @@
 	    	return $currentContext;
 	    }
 
-	    // @TODO override [getMany]
+	    /**
+	     *  @TODO override [getMany]
+	    */
+	    public function getMany ():array {
+
+	    	return [];
+	    }
 	}
 ?>

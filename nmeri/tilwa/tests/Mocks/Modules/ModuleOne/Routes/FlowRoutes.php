@@ -17,7 +17,7 @@
 
 				->previousResponse()->getNode("C")
 
-				->includesPagination("path.to.next_url")
+				->includesPagination("path.to.next_url") // break each of these into their individual methods
 			)
 			->linksTo("categories/id", $flow->previousResponse()->collectionNode("nodeD") // assumes we're coming from the category page
 

@@ -8,6 +8,9 @@
 
 	use Tilwa\Response\Format\{Markup, Redirect};
 
+	/**
+	 * Instead of manually testing this, it should be our first candidate for testing test automation
+	*/
 	class BrowserRoutes extends RouteCollection {
 		
 		public function _prefixCurrent() {

@@ -119,5 +119,15 @@
 
 			return $oldConfigs;
 		}
+
+		public function test_whenSpace() {
+
+			//
+		}
+
+		public function test_genericFactory () {
+
+			// if there's more to this than CircularBreaker, test that, too
+		}
 	}
 ?>

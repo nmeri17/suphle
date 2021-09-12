@@ -24,9 +24,14 @@
 
 			if (is_null($this->path)) {
 
-				$this->path = $_GET[$pathKey];
+				if (array_key_exists($pathKey, $_GET)) {
 
-				unset($_GET[$pathKey]);
+					$this->path = $_GET[$pathKey];
+
+					unset($_GET[$pathKey]);
+				}
+
+				else $this->path = "";
 			}
 
 			return $this->path;
