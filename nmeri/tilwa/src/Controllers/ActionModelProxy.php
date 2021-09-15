@@ -4,8 +4,6 @@
 
 	use Tilwa\Errors\IllegalCaller;
 
-	use Tilwa\Contracts\ControllerModel;
-
 	class ActionModelProxy {
 
 		private $builderWrapper;

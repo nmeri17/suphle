@@ -6,6 +6,9 @@
 
 	use Tilwa\Contracts\CacheManager;
 
+	/**
+	 * This job runs after one of the possible renderers stored for a path has been accessed
+	*/
 	class UpdateCountDelete {
 
 		private $accessedContext;

@@ -31,7 +31,7 @@
 			if (
 				is_null($user) ||
 
-				!password_verify($payload["password"], $user->password)
+				!password_verify($payload["password"], $user->getPassword())
 			)
 
 				return false;

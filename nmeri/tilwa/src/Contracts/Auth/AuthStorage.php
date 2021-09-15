@@ -14,6 +14,6 @@
 
 		public function resumeSession ():void;
 
-		public function getUser ();
+		public function getUser ():User;
 	}
 ?>
