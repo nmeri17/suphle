@@ -84,14 +84,14 @@
 			return $this->controllerManager->isValidatedRequest();
 		}
 
-		public function validateManager():void {
+		private function validateManager():void {
 
 			$globalDependencies = $this->container->getClass(ModuleDescriptor::class)->getDependsOn();
 
 			$this->controllerManager->validateController($globalDependencies);
 		}
 
-		public function buildManagerTarget():void {
+		private function buildManagerTarget():void {
 
 			$this->controllerManager->bootController($this->renderer->getHandler())
 

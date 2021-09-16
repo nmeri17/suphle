@@ -4,24 +4,24 @@
 
 	use Tilwa\Response\Format\AbstractRenderer;
 
-	use Tilwa\Contracts\{QueueManager, Authenticator};
+	use Tilwa\Contracts\{QueueManager, Auth\AuthStorage};
 
 	use Tilwa\Flows\Jobs\RouteBranches;
 
 	class FlowResponseQueuer {
 
-		private $queueManager, $authenticator;
+		private $queueManager, $authStorage;
 
-		public function __construct (QueueManager $queueManager, Authenticator $authenticator) {
+		public function __construct (QueueManager $queueManager, AuthStorage $authStorage) {
 
 			$this->queueManager = $queueManager;
 
-			$this->authenticator = $authenticator;
+			$this->authStorage = $authStorage;
 		}
 
 		public function insert (AbstractRenderer $renderer, ResponseManager $responseManager):void {
 
-			$user = $this->authenticator->getUser();
+			$user = $this->authStorage->getUser();
 
 			$this->queueManager->push(RouteBranches::class,
 				new BranchesContext(null, $user, $renderer, $responseManager )

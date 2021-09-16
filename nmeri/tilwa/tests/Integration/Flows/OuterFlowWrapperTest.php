@@ -19,5 +19,10 @@
 
 			// will likely use the underlying queue wrapper
 		}
+ 
+		public function test_will_queueBranches_after_returning_organic_request_with_flow(){
+
+			// SUT ==> ResponseManager->afterRender
+		}
 	}
 ?>

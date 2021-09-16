@@ -51,7 +51,7 @@
 
 				return $this->laravelMatcher->getResponse();
 
-			$this->attemptAuthentication()->authorizePath();
+			$this->attemptAuthentication()->authorizeRequest();
 
 			$validationPassed = $this->responseManager
 
