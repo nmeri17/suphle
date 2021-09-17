@@ -44,11 +44,11 @@ Continue the refactor of reload renderer
 
 Codeception module should have a seeRecord method which uses the ActiveRecord layer to check that a record exists in the database.
 
-Ensure the given type is an instance of current/active whenType
+Ensure the given type is an instance of current/active whenType. Check if any [getClass] caller uses the second argument
 
 C:\wamp64\www\tilwa\nmeri\tilwa\vendor\bin>phpunit ../../tests/
 
 test cases:
-	- crud paths/patterns
-	- request is validated (with action method name o) before parameters are set on the controllerModel
-		
+	*routing
+		- crud paths/patterns
+		- canaries

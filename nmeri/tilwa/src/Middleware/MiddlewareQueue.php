@@ -27,7 +27,7 @@
 		 * foo => patternMiddleware([1,2])
 		 * bar => patternMiddleware([1,3]) to [1,2,3]
 		*/
-		public function filterDuplicates ():self {
+		private function filterDuplicates ():self {
 
 			$units = array_map(function (PatternMiddleware $stack) {
 

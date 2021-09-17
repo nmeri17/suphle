@@ -10,19 +10,23 @@
 
 	use Tilwa\Routing\RequestDetails;
 
+	use Tilwa\Request\PayloadStorage;
+
 	use Illuminate\Foundation\Bootstrap\LoadConfiguration;
 
 	use Illuminate\Http\Request;
 
 	class LaravelAppProvider extends ServiceProvider {
 
-		private $requestDetails, $fileConfig;
+		private $requestDetails, $fileConfig, $payloadStorage;
 
-		public function __construct (RequestDetails $requestDetails, ModuleFiles $fileConfig) {
+		public function __construct (RequestDetails $requestDetails, ModuleFiles $fileConfig, PayloadStorage $payloadStorage) {
 
 			$this->requestDetails = $requestDetails;
 
 			$this->fileConfig = $fileConfig;
+
+			$this->payloadStorage = $payloadStorage;
 		}
 
 		public function bindArguments():array {
@@ -60,7 +64,7 @@
 
 					$this->requestDetails->httpMethod(),
 
-					$this->requestDetails->getPayload(),
+					$this->payloadStorage->fullPayload(),
 
 					$_COOKIE, $_FILES, $_SERVER
 				);
