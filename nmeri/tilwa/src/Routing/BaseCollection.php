@@ -10,12 +10,23 @@
 
 	abstract class BaseCollection implements RouteCollection {
 
-		protected $canaryValidator, $routerConfig, $authStorage, $middlewareRegistry;
+		protected $canaryValidator, $routerConfig, $authStorage, $middlewareRegistry, $lastRegistered;
 
-		private $utilities = ["_mirrorBrowserRoutes", "_authenticatedPaths", "_handlingClass", "_crud", "_register", "_getPrefixCollection", "_canaryEntry", "_setLocalPrefix", "_prefixCurrent", "_getPatterns", "__call", "_prefixFor", "_getAuthenticator", "_getLocalPrefix", "_doesntExpectCrud", "_expectsCrud", "_isMirroring", "_only", "_except", "_assignMiddleware", "_authorizePaths"
+		private $utilities = ["_mirrorBrowserRoutes", "_authenticatedPaths", "_handlingClass", "_crud", "_register", "_getPrefixCollection", "_canaryEntry", "_setLocalPrefix", "_prefixCurrent", "_getPatterns", "__call", "_prefixFor", "_getAuthenticator", "_getLocalPrefix", "_doesntExpectCrud", "_expectsCrud", "_isMirroring", "_only", "_except", "_assignMiddleware", "_authorizePaths", "_getLastRegistered"
 		],
 
 		$mirroring = false, $crudMode = false, $localPrefix, $prefixClass;
+
+		function __construct(CanaryValidator $validator, RouterConfig $routerConfig, SessionStorage $authStorage, MiddlewareRegistry $middlewareRegistry) {
+
+			$this->routerConfig = $routerConfig;
+
+			$this->canaryValidator = $validator;
+
+			$this->authStorage = $authStorage;
+
+			$this->middlewareRegistry = $middlewareRegistry;
+		}
 
 		/**
 		* overwrite in your routes file
@@ -70,11 +81,18 @@
 				return $this->_register($renderer, $method);
 		}
 
-		protected function _register(AbstractRenderer $renderer, string $method):array {
+		protected function _register(AbstractRenderer $renderer, string $method):self {
 
 			$renderer->setRouteMethod(ltrim($method, "_"));
 
-			return [$renderer];
+			$this->lastRegistered = [$renderer];
+
+			return $this;
+		}
+
+		public function _getLastRegistered ():array {
+
+			return $this->lastRegistered;
 		}
 
 		public function _prefixFor (string $routeClass):void {

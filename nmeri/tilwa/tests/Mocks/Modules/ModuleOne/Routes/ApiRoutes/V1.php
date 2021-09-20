@@ -2,9 +2,9 @@
 
 	namespace AppRoutes\ApiRoutes;
 
-	use Tilwa\Routing\{Route, RouteCollection};
+	use Tilwa\Routing\BaseCollection;
 
-	class V1 extends RouteCollection {
+	class V1 extends BaseCollection {
 		
 		public function _index() {
 			

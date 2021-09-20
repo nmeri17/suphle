@@ -31,5 +31,7 @@
 		public function _doesntExpectCrud ():void;
 
 		public function _getLocalPrefix ():string;
+
+		public function _getLastRegistered ():array;
 	}
 ?>

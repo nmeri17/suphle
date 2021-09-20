@@ -51,5 +51,10 @@
 
 			return $this->headers[$name];
 		}
+
+		public function hasKey (string $property):bool {
+
+			return array_key_exists($property, $this->fullPayload());
+		}
 	}
 ?>

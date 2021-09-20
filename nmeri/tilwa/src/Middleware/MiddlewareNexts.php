@@ -12,7 +12,7 @@
 
 		private $currentMiddleware, $nextHandler; 
 
-		public function __construct (Middleware $currentMiddleware, MiddlewareNexts $nextHandler) {
+		public function __construct (Middleware $currentMiddleware, ?self $nextHandler) {
 
 			$this->nextHandler = $nextHandler;
 

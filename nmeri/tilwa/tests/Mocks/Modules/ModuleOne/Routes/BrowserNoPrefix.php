@@ -16,17 +16,6 @@
 
 	class BrowserNoPrefix extends BaseCollection {
 
-		/*function __construct(CanaryValidator $validator, RouterConfig $routerConfig, SessionStorage $authStorage, MiddlewareRegistry $middlewareRegistry) {
-
-			$this->routerConfig = $routerConfig;
-
-			$this->canaryValidator = $validator;
-
-			$this->authStorage = $authStorage;
-
-			$this->middlewareRegistry = $middlewareRegistry;
-		}*/
-
 		public function _handlingClass ():string {
 
 			return BaseController::class;

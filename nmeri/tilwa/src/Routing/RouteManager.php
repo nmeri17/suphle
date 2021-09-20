@@ -83,7 +83,9 @@
 			
 			foreach ($this->loadPatterns($collection) as $pattern) {
 
-				$rendererList = call_user_func([$collection, $pattern]);
+				$collection->$pattern();
+
+				$rendererList = $collection->_getLastRegistered();
 
 				$computedPattern = $this->patternToUrlSegment($pattern, $collection, $patternPrefix);
 
@@ -181,7 +183,7 @@ bool(true)*/
 		}
 
 		/* given hypothetical path: PATH_id_EDIT_id2_EDIT__SAME__OKJh_optionalO_TOMP, clean and return a path similar to a real life path; but still in a regex format so optional segments can be indicated as such
-		PATH/id/EDIT/id2/EDIT-SAME-OKJ/(optional)?/TOMP
+		PATH/id/EDIT/id2/EDIT-SAME-OKJ/(optional/)?TOMP
 		*/
 		public function regexForm(string $routeState):string {
 

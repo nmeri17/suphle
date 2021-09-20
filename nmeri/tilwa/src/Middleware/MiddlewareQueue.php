@@ -64,19 +64,25 @@
 
 			$this->filterDuplicates()->prependDefaults();
 
-			return end($this->stack)->process(
+			$outermost = array_pop($this->stack);
+
+			return $outermost->process(
 				$this->requestDetails,
 
 				$this->getHandlerChain($this->stack)
 			);
 		}
 
-		// convert each middleware to a request interface carrying the previous one so triggering each one creates a chain effect till the last one
-		private function getHandlerChain (array $middlewareList, MiddlewareNexts $accumNexts):MiddlewareNexts {
+		/**
+		 *  convert each middleware to a request interface carrying the previous one so triggering each one creates a chain effect till the last one
+		 * @param {accumNexts} null for the final handler since there's none below it
+		 * @return null for the last handler in the chain
+		*/
+		private function getHandlerChain (array $middlewareList, MiddlewareNexts $accumNexts = null):?MiddlewareNexts {
 
 			if (empty($middlewareList)) return $accumNexts;
 
-			$nextHandler = new MiddlewareNexts(array_shift($middlewareList), $accumNexts);
+			$nextHandler = new MiddlewareNexts(array_pop($middlewareList), $accumNexts);
 
 			// [1,2,4] => [4(2(1(cur, null), cur), cur)]
 			/* [1,2,4] => 1,[2,4]
