@@ -16,13 +16,15 @@
 
 	abstract class ModuleAssembly {
 
-		private $requestDetails, $container;
+		private $requestDetails, $container, $authConfig;
 		
 		abstract protected function getModules():array;
 		
 		public function orchestrate():void {
 
 			$this->setContainer();
+
+			$this->extractFromContainer();
 
 			$this->bootInterceptor();
 
@@ -35,17 +37,16 @@
 
 			new ExceptionRenderer($this->getErrorHandlers(), $this->container);
 
+			$this->injectConfigs();
+
 			(new ModuleLevelEvents)->bootReactiveLogger($this->getModules());
 		}
 		
 		private function beginRequest():string {
 
-			if ($this->requestDetails->isPostRequest()) {
+			if ($this->requestDetails->isPostRequest() && $rendererName = $this->getLoginRenderer())
 
-				if ($rendererName = $this->getLoginRenderer())
-
-					return $this->handleLoginRequest($rendererName);
-			}
+				return $this->handleLoginRequest($rendererName);
 
 			$wrapper = $this->getFlowWrapper();
 
@@ -58,15 +59,11 @@
 
 		private function handleGenericRequest ():string {
 
-			$initializer = (new ModuleToRoute)
-
-			->findContext($this->getModules());
+			$initializer = (new ModuleToRoute)->findContext($this->getModules());
 
 			if ($initializer)
 
-				return $initializer->whenActive()
-
-				->triggerRequest();
+				return $initializer->whenActive()->triggerRequest();
 
 			throw new NotFoundException;
 		}
@@ -84,7 +81,7 @@
 
 		private function getFlowWrapper ():OuterFlowWrapper {
 
-			$wrapperName = OuterFlowWrapper::class
+			$wrapperName = OuterFlowWrapper::class;
 
 			return $this->container->whenType($wrapperName)
 
@@ -111,27 +108,37 @@
 
 		private function setContainer ():void {
 
-			$this->container = current($this->getModules())
-
-			->getContainer();
+			$this->container = current($this->getModules())->getContainer();
 		}
 
-		private function getLoginRenderer ():string {
+		private function extractFromContainer ():void {
 
-			$requestDetails = $this->container->getClass(RequestDetails::class);
+			$this->requestDetails = $this->container->getClass(RequestDetails::class);
 
-			$authConfig = $this->container->getClass(AuthConfig::class);
+			$this->authConfig = $this->container->getClass(AuthConfig::class);
+		}
 
-			return $authConfig->getPathRenderer($requestDetails->getPath());
+		/**
+		 * @return A Tilwa\Contracts\LoginRenderers::class when the incoming path matches one of the login paths configured
+		*/
+		private function getLoginRenderer ():?string {
+
+			return $this->authConfig->getPathRenderer($this->requestDetails->getPath());
 		}
 
 		private function handleLoginRequest (string $rendererName):string {
 
 			$renderer = $this->container->getClass($rendererName);
 
-			return (new LoginRequestHandler($renderer, $this->container))
+			return (new LoginRequestHandler($renderer, $this->container))->getResponse();
+		}
 
-			->getResponse();
+		// We're setting these to be able to attach events soon after
+		private function injectConfigs ():void {
+
+			foreach ($this->getModules() as $descriptor)
+
+				$descriptor->getContainer()->setConfigs($descriptor->getConfigs());
 		}
 	}
 ?>

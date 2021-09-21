@@ -1,11 +1,11 @@
 <?php
 	namespace Tilwa\Events;
 
-	use Tilwa\App\{ModuleDescriptor, Container};
+	use Tilwa\Contracts\Config\Events;
 
 	class ModuleLevelEvents {
 
-		private $subscriberLog = [],
+		private $subscriberLog = [], // this is where subscribers to the immediate last fired event reside
 
 		$eventManagers = [];
 
@@ -13,13 +13,17 @@
 			
 			foreach ($this->descriptors as $descriptor) {
 
-				if ($manager = $descriptor->getEventManager()) {
+				$container = $descriptor->getContainer();
 
-					$this->eventManagers[] = $manager;
+				if ($config = $container->getClass(Events::class)) {
+
+					$manager = $container->getClass($config->getManager());
 
 					$manager->registerListeners();
 
-					$descriptor->getContainer()->whenTypeAny()->needsAny([
+					$this->eventManagers[] = $manager;
+
+					$container->whenTypeAny()->needsAny([
 
 						EventManager::class => $manager
 					]);
@@ -52,6 +56,7 @@
 			$hydratedHandler = $scope->getHandlingClass();
 
 			foreach ($scope->getHandlingUnits() as $executionUnit) {
+				
 				if ($executionUnit->canExecute($eventName))
 
 					$executionUnit->fire($hydratedHandler, $payload);

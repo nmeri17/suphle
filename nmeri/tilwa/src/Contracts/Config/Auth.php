@@ -8,7 +8,7 @@
 		public function getLoginPaths ():array;
 
 		// @return [LoginRenderers] matching path in above array
-		public function getPathRenderer (string $path):string;
+		public function getPathRenderer (string $path):?string;
 
 		public function getTokenSecretKey ():string;
 

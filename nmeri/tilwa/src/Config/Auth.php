@@ -13,11 +13,11 @@
 			return [
 				"login" => BrowserLoginRenderer::class,
 
-				"api/login" => ApiLoginRenderer::class
+				"api/v1/login" => ApiLoginRenderer::class
 			];
 		}
 
-		public function getPathRenderer (string $path):string {
+		public function getPathRenderer (string $path):?string {
 
 			$rendererList = $this->getLoginPaths();
 

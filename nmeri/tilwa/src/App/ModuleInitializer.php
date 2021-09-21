@@ -80,8 +80,6 @@
 
 			$this->containerProvideSelf();
 
-			$this->container->setConfigs($this->descriptor->getConfigs());
-
 			$this->router = $this->container->getClass (RouteManager::class);
 
 			$this->bindDefaultObjects();
@@ -97,7 +95,7 @@
 
 			->needsAny([
 
-				ModuleDescriptor::class => $this->descriptor, // all requests for the parent should respond with the active module
+				ModuleDescriptor::class => $this->descriptor,
 
 				RouteManager::class => $this->router,
 
@@ -112,9 +110,7 @@
 
 		public function whenActive ():self {
 
-			if (!is_null($this->laravelMatcher))
-
-				return $this;
+			if (!is_null($this->laravelMatcher)) return $this;
 
 			$descriptor = $this->descriptor;
 

@@ -21,11 +21,15 @@
 		public function local(string $emittingEntity, string $handlingClass):self {
 			
 			$this->initializeHandlingScope("local", $emittingEntity, $handlingClass);
+
+			return $this;
 		}
 
 		public function external(string $interaction, string $handlingClass):self {
 
 			$this->initializeHandlingScope("external", $interaction, $handlingClass);
+
+			return $this;
 		}
 
 		// there's a distinction between local and external emitters because we don't wanna assume each client has a hard dependency on that interface. The client shouldn't care beyond the knowledge that such interface may emit such events if it exists

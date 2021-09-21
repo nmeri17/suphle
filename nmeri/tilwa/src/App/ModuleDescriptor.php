@@ -70,17 +70,5 @@
 				ITransphporm::class => Transphporm::class
 			];
 		}
-
-		// this is living here instead of on moduleLevelEvents because he's the one who knows what config is applicable to this module
-		public function getEventManager():EventManager {
-
-			$container = $this->container;
-
-			$eventConfig = $container->getClass(EventConfig::class); // we might get stomped here cuz by the time this is running, module hasn't been booted yet
-
-			if ($eventConfig)
-
-				return $container->getClass($eventConfig->getManager());
-		}
 	}
 ?>
