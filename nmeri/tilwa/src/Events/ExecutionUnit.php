@@ -14,12 +14,12 @@
 			$this->handlingMethod = $handlingMethod;
 		}
 
-		public function canExecute(string $eventName):bool {
+		public function matchesEvent(string $eventName):bool {
 			
 			return $eventName ==  $this->eventName;
 		}
 
-		public function fire(object $hydratedHandler, $payload) {
+		public function fire($hydratedHandler, $payload) {
 			
 			return call_user_func_array(
 				[$hydratedHandler, $this->handlingMethod ],

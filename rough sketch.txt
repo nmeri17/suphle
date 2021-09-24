@@ -1,11 +1,5 @@
 install turbo
 
-->createQueryBuilder() // move this to a github gist
-
-->select('u')->from(User::class, 'u')
-
-->where('u.email = ?1')->setParameter(1, pull email from payloadStorage])
-
 try to deploy on azure
 
 when cacheManager is integrated:
@@ -16,8 +10,6 @@ when cacheManager is integrated:
 work needed on updateReactor
 
 on flow hit, upload the rest into the shared space for all users insted of simply discarding it
-
-AssignListeners::class
 
 we need a cli command for copying laravel config/migrations files from the library locations to dev land i.e. so config can lift the files (from the hard-coded "config" folder)
 
@@ -34,9 +26,6 @@ Pending:
 	- testing
 
 
-** Good to know/DB/Refactoring Page
-We wanna add new columns on our database/model A for module A but don't wanna break the code in other modules reliant on model A. We create model A2 extending model A, add new columns on database, update occurences/type-hints of A in module A to A2. Model A gets discarded whenever its dependents upgrade to A2
-
 Mock=verify dependency behavior. Was it called? Was it called with xx arguments?
 Stub=when anybody, z, asks for stubbed thing x, return y. The verification is not done on the stubbed thing but on z's result/behavior
 
@@ -51,4 +40,3 @@ C:\wamp64\www\tilwa\nmeri\tilwa\vendor\bin>phpunit ../../tests/
 test cases:
 	*routing
 		- crud paths/patterns
-		- canaries

@@ -38,9 +38,12 @@
 			$this->handlingUnits[] = new ExecutionUnit($eventName, $handlingMethod);
 		}
 		
-		function getHandlingUnits():array {
-			
-			return $this->handlingUnits;
+		function getMatchingUnits(string $eventName):array {
+
+			return array_filter($this->handlingUnits, function (ExecutionUnit $unit) use ($eventName) {
+
+				return $unit->matchesEvent($eventName);
+			});
 		}
 	}
 ?>

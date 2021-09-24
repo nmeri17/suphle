@@ -55,12 +55,10 @@
 			
 			$hydratedHandler = $scope->getHandlingClass();
 
-			foreach ($scope->getHandlingUnits() as $executionUnit) {
+			foreach ($scope->getMatchingUnits($eventName) as $unit)
 				
-				if ($executionUnit->canExecute($eventName))
+				$unit->fire($hydratedHandler, $payload);
 
-					$executionUnit->fire($hydratedHandler, $payload);
-			}
 			return $this;
 		}
 	}

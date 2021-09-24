@@ -30,5 +30,15 @@
 
 			//
 		}
+
+		public function test_get_user_on_unauth_route_yields_from_default_storage () {
+
+			//
+		}
+
+		public function test_cant_access_api_auth_route_with_session () {
+
+			//
+		}
 	}
 ?>

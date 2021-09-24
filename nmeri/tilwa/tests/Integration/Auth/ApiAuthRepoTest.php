@@ -31,5 +31,15 @@
 
 			//
 		}
+
+		public function test_route_mirroring_works () {
+
+			//
+		}
+
+		public function test_route_mirroring_on_index_affects_all () {
+
+			//
+		}
 	}
 ?>

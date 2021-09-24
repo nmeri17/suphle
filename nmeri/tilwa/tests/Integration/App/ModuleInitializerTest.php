@@ -19,6 +19,8 @@
 		public function test_runStack () {
 
 			// we wanna visit a route containing some middleware, then confirm the underlying middleware were triggered
+
+			// a starting point may be verifying if it got to the middleware collector
 		}
 	}
 ?>

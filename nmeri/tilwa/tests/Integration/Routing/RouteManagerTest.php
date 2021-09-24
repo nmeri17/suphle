@@ -28,6 +28,11 @@
 			$this->assertSame($matchingRenderer->getHandler(), $handler);
 		}
 
+		public function test_api_versioning () {
+
+			//
+		}
+
 		public function pathsToHandler ():array {
 
 			return [
