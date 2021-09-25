@@ -2,19 +2,17 @@
 
 	namespace Tilwa\App;
 
-	use Tilwa\Events\ModuleLevelEvents;
-
 	use Tilwa\Flows\OuterFlowWrapper;
 
 	use Tilwa\Errors\ExceptionRenderer;
 
 	use Tilwa\Routing\RequestDetails;
 
-	use Tilwa\Contracts\{Config\Auth as AuthConfig, LoginRenderers};
+	use Tilwa\Contracts\{Config\Auth as AuthConfig, Auth\LoginRenderers};
 
 	use Tilwa\Auth\LoginRequestHandler;
 
-	abstract class ModuleAssembly {
+	abstract class ModuleHandlerIdentifier {
 
 		private $requestDetails, $container, $authConfig;
 		
@@ -22,44 +20,39 @@
 		
 		public function orchestrate():void {
 
-			$this->setContainer();
+			$modules = $this->getModules();
+
+			$this->setContainer($modules);
 
 			$this->extractFromContainer();
 
-			$this->bootInterceptor();
+			(new ModulesBooter($modules))->prepare();
+
+			new ExceptionRenderer($this->getErrorHandlers(), $this->container);
 
 			echo $this->beginRequest();
 		}
 		
-		private function bootInterceptor():void {
-
-			new EnvironmentDefaults;
-
-			new ExceptionRenderer($this->getErrorHandlers(), $this->container);
-
-			$this->injectConfigs();
-
-			(new ModuleLevelEvents)->bootReactiveLogger($this->getModules());
-		}
-		
 		private function beginRequest():string {
+
+			$modules = $this->getModules();
 
 			if ($this->requestDetails->isPostRequest() && $rendererName = $this->getLoginRenderer())
 
 				return $this->handleLoginRequest($rendererName);
 
-			$wrapper = $this->getFlowWrapper();
+			$wrapper = $this->getFlowWrapper($modules);
 
 			if ($wrapper->canHandle())
 
 				return $this->flowRequestHandler($wrapper);
 
-			return $this->handleGenericRequest();
+			return $this->handleGenericRequest($modules);
 		}
 
-		private function handleGenericRequest ():string {
+		private function handleGenericRequest (array $modules):string {
 
-			$initializer = (new ModuleToRoute)->findContext($this->getModules());
+			$initializer = (new ModuleToRoute)->findContext($modules);
 
 			if ($initializer)
 
@@ -79,7 +72,7 @@
 			return $response;
 		}
 
-		private function getFlowWrapper ():OuterFlowWrapper {
+		private function getFlowWrapper (array $modules):OuterFlowWrapper {
 
 			$wrapperName = OuterFlowWrapper::class;
 
@@ -87,7 +80,7 @@
 
 			->needsArguments([
 
-				"modules" => $this->getModules()
+				"modules" => $modules
 			])
 
 			->getClass($wrapperName);
@@ -106,9 +99,9 @@
 			];
 		}
 
-		private function setContainer ():void {
+		private function setContainer (array $modules):void {
 
-			$this->container = current($this->getModules())->getContainer();
+			$this->container = current($modules)->getContainer();
 		}
 
 		private function extractFromContainer ():void {
@@ -131,14 +124,6 @@
 			$renderer = $this->container->getClass($rendererName);
 
 			return (new LoginRequestHandler($renderer, $this->container))->getResponse();
-		}
-
-		// We're setting these to be able to attach events soon after
-		private function injectConfigs ():void {
-
-			foreach ($this->getModules() as $descriptor)
-
-				$descriptor->getContainer()->setConfigs($descriptor->getConfigs());
 		}
 	}
 ?>

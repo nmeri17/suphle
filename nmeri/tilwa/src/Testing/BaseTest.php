@@ -12,11 +12,13 @@
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Config\{RouterMock, TransphpormMock, ModuleFilesMock};
 
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\BrowserNoPrefix;
+
 	use Tilwa\Tests\Mocks\Auth\ArrayUserHydratorMock;
 
 	use PHPUnit\Framework\TestCase;
 
-	class BaseTest extends TestCase {
+	class BaseTest extends TestCase { // rename this to IsolatedComponentTest
 
 		protected $container;
 
@@ -36,13 +38,13 @@
 
 		protected function bindEntities ():self {
 
-			$this->container->whenTypeAny()
-
-			->needsAny([
+			$this->container->whenTypeAny()->needsAny([
 
 				IUserHydrator::class => new ArrayUserHydratorMock,
 
-				Container::class => $this->container
+				Container::class => $this->container,
+
+				IRouter::class => new RouterMock(BrowserNoPrefix::class)
 			]);
 
 			return $this;
@@ -56,13 +58,11 @@
 
 				IServices::class => Services::class,
 
-				IRouter::class => RouterMock::class,
-
 				IAuth::class => Auth::class,
 
-				IModuleFiles::class => ModuleFilesMock::class,
+				ITransphporm::class => Transphporm::class,
 
-				ITransphporm::class => Transphporm::class
+				IModuleFiles::class => ModuleFilesMock::class
 			];
 		}
 

@@ -2,11 +2,7 @@
 
 	namespace Tilwa\Tests\Integration\Routing;
 
-	use Tilwa\Testing\BaseTest;
-
-	use Tilwa\Routing\RouteManager;
-
-	class RouteManagerTest extends BaseTest {
+	class RouteManagerTest extends BaseRouterTest {
 
 		/**
 	     * @dataProvider pathsToHandler
@@ -15,7 +11,7 @@
 
 			$this->setHttpParams($requestPath); // this should be the first line in all the tests involving pulling path from requestDetails?
 
-			$router = $this->container->getClass(RouteManager::class);
+			$router = $this->getRouter();
 
 			$router->findRenderer();
 
@@ -31,6 +27,11 @@
 		public function test_api_versioning () {
 
 			//
+		}
+
+		public function test_can_spot_crud_route () {
+			
+			// move this to its own test class
 		}
 
 		public function pathsToHandler ():array {

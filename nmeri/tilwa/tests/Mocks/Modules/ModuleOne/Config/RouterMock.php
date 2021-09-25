@@ -4,15 +4,13 @@
 
 	use Tilwa\Config\Router;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\BrowserNoPrefix;
-
 	class RouterMock extends Router {
 
 		private $activeEntryRoute;
 
 		public function __construct (string $entryRoute) {
 
-			$this->activeEntryRoute = !empty($entryRoute) ? $entryRoute: BrowserNoPrefix::class;
+			$this->activeEntryRoute = $entryRoute;
 		}
 
 		public function browserEntryRoute ():string {

@@ -2,13 +2,13 @@
 
 	require '../autoload.php';
 
-	use Tilwa\App\ModuleAssembly;
+	use Tilwa\App\ModuleHandlerIdentifier;
 
 	use Modules\{Main, Cart, Category, Product, Auth, Sellers, Errors}; // correct this import
 
 	use Interactions\{CategoryExports, ProductExports};
 
-	class MyApp extends ModuleAssembly {
+	class MyApp extends ModuleHandlerIdentifier {
 		
 		function getModules():array {
 
