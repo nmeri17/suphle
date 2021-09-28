@@ -43,7 +43,7 @@
 		/**
 		 * @param {$emitter} inserting this without a proxy means a random class can trigger handlers listening on another event, which is not the best
 		 **/
-		public function emit(string $emitter, string $eventName, $payload) {
+		public function emit(string $emitter, string $eventName, $payload = null) {
 
 			$localHandlers = $this->getLocalHandler($emitter);
 

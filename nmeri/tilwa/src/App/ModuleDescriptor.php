@@ -23,7 +23,7 @@
 
 				$service = $concrete->exports();
 				
-				if ($service instanceof $contract) {
+				if ($contract == $concrete->exportsImplements() && $service instanceof $contract) {
 
 					$pair = [$contract => $service];
 

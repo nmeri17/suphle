@@ -26,7 +26,7 @@
 
 			$this->extractFromContainer();
 
-			(new ModulesBooter($modules))->prepare();
+			(new ModulesBooter($modules))->boot();
 
 			new ExceptionRenderer($this->getErrorHandlers(), $this->container);
 

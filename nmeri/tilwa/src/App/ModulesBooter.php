@@ -5,20 +5,27 @@
 
 	class ModulesBooter {
 
-		private $modules;
+		private $modules, $eventManager;
 
 		public function __construct (array $modules) {
 
 			$this->modules = $modules;
+
+			$this->eventManager = new ModuleLevelEvents($modules);
 		}
 		
-		public function prepare():void {
+		public function boot():void {
 
 			new EnvironmentDefaults;
 
 			$this->injectConfigs();
 
-			(new ModuleLevelEvents)->bootReactiveLogger($this->modules);
+			$this->eventManager->bootReactiveLogger();
+		}
+
+		public function getEventManager ():ModuleLevelEvents {
+
+			return $this->eventManager;
 		}
 
 		// We're setting these to be able to attach events soon after

@@ -3,9 +3,11 @@
 
 	use Tilwa\App\ModuleDescriptor;
 
-	use Tilwa\Contracts\Config\{ Services as IServices, Laravel as ILaravel, Router as IRouter, Auth as IAuth, Transphporm as ITransphporm, ModuleFiles as IModuleFiles}; // continue here
+	use Tilwa\Contracts\Config\{ModuleFiles, Events};
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Config\{RouterMock, TransphpormMock, ModuleFilesMock};
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Config\{ModuleFilesMock, EventsMock};
+
+	use Tilwa\Tests\Mocks\Interactions\ModuleOne;
 
 	class ModuleOneDescriptor extends ModuleDescriptor {
 
@@ -13,8 +15,20 @@
 			
 			return parent::getConfigs() + [
 
-				IModuleFiles::class => ModuleFilesMock::class
+				ModuleFiles::class => ModuleFilesMock::class,
+
+				Events::class => EventsMock::class
 			];
+		}
+
+		public function exports():object {
+
+			return $this->container->getClass(ModuleApi::class);
+		}
+
+		public function exportsImplements():string {
+
+			return ModuleOne::class;
 		}
 	}
 ?>

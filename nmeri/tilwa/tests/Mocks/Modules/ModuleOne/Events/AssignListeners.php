@@ -1,19 +1,23 @@
 <?php
-	namespace Tilwa\Modules\Auth\Events;
+	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Events;
 
 	use Tilwa\Events\EventManager;
+
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Concretes\LocalSender, Events\LocalReceiver};
 
 	class AssignListeners extends EventManager {
 
 		public function registerListeners() {
 			
-			$this->local(ControllerB::class, ServiceBHandlers::class)
-	        ->on("on_hit", "yHandler")
-	        ->on(xEvent, "xHandler");
+			$this->local(LocalSender::class, LocalReceiver::class)
+	        
+	        ->on("sample_event", "yHandler")
+	        
+	        ->on("no_payload", "xHandler");
 
-			$this->external(InteractionC::class, ServiceCHandlers::class)
+			/*$this->external(InteractionC::class, ServiceCHandlers::class)
 	        ->on(yEvent, "yHandler")
-	        ->on(xEvent, "xHandler");
+	        ->on(xEvent, "xHandler");*/
 		}
 	}
 ?>

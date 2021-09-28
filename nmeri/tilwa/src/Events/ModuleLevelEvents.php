@@ -5,13 +5,18 @@
 
 	class ModuleLevelEvents {
 
-		private $subscriberLog = [], // this is where subscribers to the immediate last fired event reside
+		private $modules, $fireHard = true, $subscriberLog = [], // this is where subscribers to the immediate last fired external event reside
 
-		$eventManagers = [];
+		$eventManagers = [], $blanks = [];
 
-		public function bootReactiveLogger(array $descriptors):void {
+		public function __construct (array $modules) {
+
+			$this->modules = $modules;
+		}
+
+		public function bootReactiveLogger():void {
 			
-			foreach ($this->descriptors as $descriptor) {
+			foreach ($this->modules as $descriptor) {
 
 				$container = $descriptor->getContainer();
 
@@ -52,6 +57,13 @@
 		}
 
 		public function triggerHandlers(EventSubscription $scope, string $eventName, $payload):self {
+
+			if (!$this->fireHard) {
+
+				$this->blanks[] = $scope;
+
+				return $this;
+			}
 			
 			$hydratedHandler = $scope->getHandlingClass();
 
@@ -60,6 +72,16 @@
 				$unit->fire($hydratedHandler, $payload);
 
 			return $this;
+		}
+
+		public function makeFireSoft ():void {
+
+			$this->fireHard = false;
+		}
+
+		public function getBlanks ():array {
+
+			return $this->blanks;
 		}
 	}
 ?>

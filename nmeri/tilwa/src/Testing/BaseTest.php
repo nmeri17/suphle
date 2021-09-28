@@ -10,7 +10,7 @@
 
 	use Tilwa\Config\{ Services, Laravel, Auth, Transphporm}; // using our default config for these
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Config\{RouterMock, TransphpormMock, ModuleFilesMock};
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Config\{RouterMock, ModuleFilesMock};
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\BrowserNoPrefix;
 
@@ -24,7 +24,7 @@
 
 		protected function setUp ():void {
 
-			$this->container = new Container; // for internal module testing, override this. Cycle through ModuleAssembly looking for which one prefixes our location
+			$this->container = new Container;
 
 			$this->bootContainer()->bindEntities();
 		}

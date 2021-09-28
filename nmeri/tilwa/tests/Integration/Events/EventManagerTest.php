@@ -1,18 +1,43 @@
 <?php
 	namespace Tilwa\Tests\Integration\Events;
 
-	use Tilwa\Testing\BaseTest;
+	use Tilwa\Testing\ModuleLevelTest;
 
-	class EventManagerTest extends BaseTest { // work with [registerListeners]
+	use Tilwa\Tests\Mocks\Interactions\ModuleOne\ModuleOneDescriptor;
 
-		public function test_can_listen_to_local() {
-			
-			// we receive when someone fires
+	class EventManagerTest extends ModuleLevelTest { // work with [registerListeners]
+		
+		protected function getModules():array {
+
+			return [ModuleOneDescriptor::class];
 		}
 
-		public function test_can_emit_to_local() {
+		public function test_can_trap_events() {
+
+			$this->catchEmittingEvents();
+
+			$module = $this->getModuleFor(ModuleOne::class);
+
+			$sender = $module->getLocalSender();
+
+			$sender->sendLocalEventNoPayload();
 			
-			// someone receives when we fire
+			$this->assertFiredEvent($sender, $sender->getEventName());
+		}
+
+		public function test_can_emit_and_fire_local() {
+
+			$module = $this->getModuleFor(ModuleOne::class);
+
+			$payload = 5;
+
+			$sender = $module->getLocalSender();
+
+			$receiver = $module->getLocalReceiver();
+
+			$sender->sendLocalEvent($payload);
+			
+			$this->assertSame($receiver->getPayload(), $payload);
 		}
 
 		public function test_can_listen_to_external () {
