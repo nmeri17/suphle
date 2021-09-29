@@ -45,11 +45,6 @@
 			//
 		}
 
-		public function test_can_emit_to_external () {
-			
-			//
-		}
-
 		public function test_local_emit_cascades_to_local() {
 			
 			//

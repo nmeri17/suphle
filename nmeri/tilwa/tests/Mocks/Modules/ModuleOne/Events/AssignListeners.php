@@ -11,9 +11,9 @@
 			
 			$this->local(LocalSender::class, LocalReceiver::class)
 	        
-	        ->on("sample_event", "yHandler")
+	        ->on("sample_event", "updatePayload")
 	        
-	        ->on("no_payload", "xHandler");
+	        ->on("no_payload", "setDefaultPayload");
 
 			/*$this->external(InteractionC::class, ServiceCHandlers::class)
 	        ->on(yEvent, "yHandler")

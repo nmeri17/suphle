@@ -425,7 +425,7 @@
 			return $this;
 		}
 
-		private function renameServiceSpace(NamespaceUnit $unit):self {
+		public function renameServiceSpace(NamespaceUnit $unit):self {
 			
 			$this->provisionedNamespaces[$this->provisionSpace][] = $unit;
 

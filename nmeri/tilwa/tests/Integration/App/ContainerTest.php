@@ -5,13 +5,15 @@
 
 	use Tilwa\Testing\BaseTest;
 
-	use Tilwa\Tests\Mocks\App\{ARequiresBCounter, BCounter};
+	use Tilwa\Tests\Mocks\App\{ARequiresBCounter, BCounter}; // these should be inside the module
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Interfaces\CInterface;
 
 	use Tilwa\Contracts\Config\Services as ServicesContract;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Config\ServicesMock;
+
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\{NeedsSpace, V1\RewriteSpaceImpl};
 
 	class ContainerTest extends BaseTest {
 
@@ -122,7 +124,27 @@
 
 		public function test_whenSpace() {
 
-			//
+			$container = $this->container;
+
+			$modulePath = "Tilwa\Tests\Mocks\Modules\ModuleOne\\";
+
+			$mock = new RewriteSpaceImpl;
+
+			// given
+			$rewrite = new NamespaceUnit($modulePath . "Interfaces", $modulePath . "Concretes\V1", function (string $contract) {
+
+				return $contract . "Impl";
+			});
+
+			$container->whenSpace($modulePath . "Concretes")
+
+			->renameServiceSpace($rewrite);
+
+			// when
+			$result = $container->getClass(NeedsSpace::class)->getConcreteValue();
+
+			// then
+			$this->assertSame($result, $mock->getValue());
 		}
 
 		public function test_genericFactory () {
