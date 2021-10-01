@@ -3,11 +3,13 @@
 
 	use Tilwa\App\ModuleDescriptor;
 
-	use Tilwa\Contracts\Config\{ModuleFiles, Events};
+	use Tilwa\Contracts\Config\{ModuleFiles, Events, Router};
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Config\{ModuleFilesMock, EventsMock};
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Config\{ModuleFilesMock, EventsMock, RouterMock};
 
 	use Tilwa\Tests\Mocks\Interactions\ModuleOne;
+
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\BrowserNoPrefix;
 
 	class ModuleOneDescriptor extends ModuleDescriptor {
 
@@ -19,6 +21,16 @@
 
 				Events::class => EventsMock::class
 			];
+		}
+
+		public function entityBindings ():self {
+
+			$this->container->whenTypeAny()->needsAny([
+
+				Router::class => new RouterMock(BrowserNoPrefix::class)
+			]);
+
+			return $this;
 		}
 
 		public function exports():object {

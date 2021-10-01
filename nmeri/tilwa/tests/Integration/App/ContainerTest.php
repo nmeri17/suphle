@@ -13,7 +13,7 @@
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Config\ServicesMock;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\{NeedsSpace, V1\RewriteSpaceImpl};
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\{NeedsSpace, CircularConstructor1, CircularConstructor2, V1\RewriteSpaceImpl};
 
 	class ContainerTest extends BaseTest {
 
@@ -149,7 +149,19 @@
 
 		public function test_genericFactory () {
 
-			// if there's more to this than CircularBreaker, test that, too
+			$container = $this->container;
+
+			$count = 5;
+
+			$container->whenType(CircularConstructor2::class)
+
+			->needsArguments(compact("count"));
+
+			// when
+			$result = $container->getClass(CircularConstructor1::class)->getDependencyValue();
+
+			// then
+			$this->assertSame($result, $count);
 		}
 	}
 ?>

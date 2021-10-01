@@ -1,14 +1,36 @@
 <?php
-
 	namespace Tilwa\Tests\Integration\App;
 
-	use Tilwa\Testing\BaseTest;
+	use Tilwa\{Testing\BaseTest, App\ModuleToRoute};
+
+	use Tilwa\Tests\Mocks\Modules\{ModuleTwo\ModuleTwoDescriptor, ModuleOne\ModuleOneDescriptor};
 
 	class ModuleToRouteTest extends BaseTest {
 		
 		public function test_findContext() {
-			
-			// when given more than one module, we can still match a route in a module aside the first one
+
+			$modules = [
+				ModuleOneDescriptor::class, ModuleTwoDescriptor::class
+			];
+
+			$sut = new ModuleToRoute($modules); // given
+
+			$this->setHttpParams("/module-two/5"); // when
+
+			$this->assertNotNull($sut->findContext()); // then
+		}
+		
+		public function test_none_will_be_found() {
+
+			$modules = [
+				ModuleOneDescriptor::class, ModuleTwoDescriptor::class
+			];
+
+			$sut = new ModuleToRoute($modules); // given
+
+			$this->setHttpParams("/non-existent/32"); // when
+
+			$this->assertNull($sut->findContext());
 		}
 	}
 ?>
