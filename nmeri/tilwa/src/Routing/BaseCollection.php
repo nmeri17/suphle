@@ -68,7 +68,7 @@
 
 				$this->crudMode = true;
 
-				return new CrudBuilder($this, $viewPath, $this->routerConfig->getModelRequestParameter()); // you must call `save` in the invoking method
+				return new CrudBuilder($this, $viewPath ); // you must call `save` in the invoking method
 			}
 		}
 

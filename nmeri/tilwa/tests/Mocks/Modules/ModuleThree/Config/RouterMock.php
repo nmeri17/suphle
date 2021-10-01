@@ -3,7 +3,7 @@
 
 	use Tilwa\Config\Router;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleTwo\Routes\BrowserCollection;
+	use Tilwa\Tests\Mocks\Modules\ModuleThree\Routes\BrowserCollection;
 
 	class RouterMock extends Router {
 

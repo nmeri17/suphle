@@ -17,10 +17,5 @@
 
 			return $this->activeEntryRoute;
 		}
-
-		public function getModelRequestParameter():string {
-
-			return "id";
-		}
 	}
 ?>

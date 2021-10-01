@@ -21,6 +21,9 @@
 			$booter->boot();
 		}
 		
+		/**
+		 * @return ModuleDescriptor[]
+		 */
 		abstract protected function getModules():array;
 
 		protected function getModuleFor (string $interface):object {

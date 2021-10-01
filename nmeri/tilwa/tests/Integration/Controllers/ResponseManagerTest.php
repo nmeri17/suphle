@@ -11,9 +11,11 @@
 			// confirm it throws those errors when unsatisfactory
 		}
 
-		public function assignModelsInAction() {
+		public function test_assignModelsInAction() {
 
 			// in the then, call [hydrateModels]. Confirm it only works for post method. Lastly, check the effects on `handlerParameters`
+
+			// also confirm method parameter matches what's in the request placeholder list
 		}
 
 		public function test_handleValidRequest () {

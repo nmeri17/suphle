@@ -5,19 +5,17 @@
 
 	class CrudBuilder {
 
-		private $context, $viewPath, $resourceId,
+		private $context, $viewPath, $idPlaceholder = "id",
 
 		$allowedActions = ["showCreateForm", "saveNew", "showAll", "showOne", "updateOne", "delete"],
 
 		$overwritable = [];
 		
-		function __construct(RouteCollection $context, string $viewPath, string $resourceId) {
+		function __construct(RouteCollection $context, string $viewPath) {
 
 			$this->context = $context;
 
 			$this->viewPath = $viewPath . "/";
-
-			$this->resourceId = $resourceId;
 		}
 
 		public function save():array {
@@ -26,13 +24,13 @@
 			
 			foreach ($this->allowedActions as $action) {
 
-				$definition = $this->$action();
+				["r" => $renderer, "pattern" => $pattern] = $this->$action();
 
 				if (array_key_exists($action, $this->overwritable) )
 
-					$definition["r"] = $this->overwritable[$action];
+					$renderer = $this->overwritable[$action];
 
-				$createdRoutes[$definition["pattern"]] = $definition["r"];
+				$createdRoutes[$pattern] = $renderer;
 			}
 			return $createdRoutes;
 		}
@@ -82,7 +80,7 @@
 
 			$r->setRouteMethod("get");
 
-			$pattern = $this->resourceId;
+			$pattern = $this->idPlaceholder;
 
 			return compact("r", "pattern");
 		}
@@ -93,7 +91,7 @@
 
 			$r->setRouteMethod("put");
 
-			$pattern = "EDIT_". $this->resourceId;
+			$pattern = "EDIT_". $this->idPlaceholder;
 
 			return compact("r", "pattern");
 		}
@@ -109,7 +107,7 @@
 
 			$r->setRouteMethod("delete");
 
-			$pattern = $this->resourceId;
+			$pattern = $this->idPlaceholder;
 
 			return compact("r", "pattern");
 		}

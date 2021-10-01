@@ -5,7 +5,7 @@
 		
 		public function crudRoutes() {
 			
-			return $this->_crud()->save(); // alter before saving. Also needs a view path
+			return $this->_crud()->save(); // alter before saving. Also needs a view path. there are a number of methods on this apart from the crud methods themselves
 		}
 	}
 ?>

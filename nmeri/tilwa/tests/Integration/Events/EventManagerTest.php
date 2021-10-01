@@ -5,11 +5,11 @@
 
 	use Tilwa\Tests\Mocks\Interactions\ModuleOne\ModuleOneDescriptor;
 
-	class EventManagerTest extends ModuleLevelTest { // work with [registerListeners]
+	class EventManagerTest extends ModuleLevelTest {
 		
 		protected function getModules():array {
 
-			return [ModuleOneDescriptor::class];
+			return [ new ModuleOneDescriptor(new Container)];
 		}
 
 		public function test_can_trap_events() {
@@ -52,6 +52,21 @@
 
 		public function test_local_emit_cascades_to_external () {
 			
+			//
+		}
+
+		public function test_space_delimited_event_names () {
+
+			//
+		}
+
+		public function test_Local_listeners_are_decoupled_from_their_emittor () {
+
+			//
+		}
+
+		public function test_Repository_handler_gets_wrapped () {
+
 			//
 		}
 	}

@@ -3,6 +3,6 @@
 
 	interface ModuleTwo {
 
-		//
+		public function getDValueFromModuleThree ():int;
 	}
 ?>

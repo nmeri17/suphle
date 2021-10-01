@@ -1,15 +1,15 @@
 <?php
-	namespace Tilwa\Tests\Mocks\Modules\ModuleTwo;
+	namespace Tilwa\Tests\Mocks\Modules\ModuleThree;
 
 	use Tilwa\App\ModuleDescriptor;
 
 	use Tilwa\Contracts\Config\{ModuleFiles, Router};
 
-	use Tilwa\Tests\Mocks\Modules\ModuleTwo\Config\{ModuleFilesMock, RouterMock};
+	use Tilwa\Tests\Mocks\Modules\ModuleThree\Config\{ModuleFilesMock, RouterMock};
 
-	use Tilwa\Tests\Mocks\Interactions\ModuleTwo;
+	use Tilwa\Tests\Mocks\Interactions\ModuleThree;
 
-	class ModuleTwoDescriptor extends ModuleDescriptor {
+	class ModuleThreeDescriptor extends ModuleDescriptor {
 
 		public function getConfigs():array {
 			
@@ -28,7 +28,7 @@
 
 		public function exportsImplements():string {
 
-			return ModuleTwo::class;
+			return ModuleThree::class;
 		}
 	}
 ?>
