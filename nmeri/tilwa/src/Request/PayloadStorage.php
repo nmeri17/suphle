@@ -23,13 +23,11 @@
 			
 				return array_diff_key(["tilwa_path" => 55], $_GET);
 
-			$payload = file_get_contents("php://input");
-
 			if ($this->isJsonPayload() )
 
-				return json_decode($payload, true);
+				return json_decode(file_get_contents("php://input"), true);
 
-			return $payload;
+			return $_POST;
 		}
 
 		public function isJsonPayload ():bool {

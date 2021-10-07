@@ -68,5 +68,28 @@
 					return $this->authStorage; // guards in those observers will be relying on this value
 				});
 		}
+
+		public function factoryProduce ($model, $amount):void {
+
+			$model->factory() // assumes each model points to its factory
+
+			->count($amount)->create();
+		}
+
+		public function factoryLine ($model, int $amount, array $customAttributes) {
+
+			$builder = $model->factory()->count($amount);
+
+			if (!empty($customAttributes))
+
+				return $builder->make($customAttributes);
+
+			return $builder->make();
+		}
+
+		public function findAny ($model) {
+
+			return $model->inRandomOrder()->first();
+		}
 	}
 ?>

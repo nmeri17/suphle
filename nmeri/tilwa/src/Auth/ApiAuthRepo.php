@@ -1,8 +1,5 @@
 <?php
-
 	namespace Tilwa\Auth;
-
-	use Tilwa\Contracts\LoginActions;
 
 	class ApiAuthRepo extends BaseAuthRepo {
 
@@ -17,7 +14,7 @@
 
 			return [
 
-				"token" => $this->authStorage->startSession($this->comparer->getUser()->id)
+				"token" => $this->authStorage->startSession($this->comparer->getUser()->getId())
 			];
 		}
 	}

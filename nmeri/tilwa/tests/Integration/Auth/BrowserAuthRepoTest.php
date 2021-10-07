@@ -21,11 +21,6 @@
 			// 
 		}
 
-		public function test_login_retention () {
-
-			// 
-		}
-
 		public function test_loginAs () {
 
 			//

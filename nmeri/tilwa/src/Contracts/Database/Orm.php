@@ -14,5 +14,12 @@
 		public function runTransaction(callable $queries):void;
 
 		public function registerObservers(array $observers):void;
+
+		// inserts into the DB rather than returning mere copies
+		public function factoryProduce ($model, $amount):void;
+
+		public function factoryLine ($model, int $amount, array $customAttributes);
+
+		public function findAny ($model);
 	}
 ?>

@@ -6,6 +6,7 @@
 	class ResponseManagerTest extends BaseTest {
 
 		// the next 3 methods all trigger [bootControllerManager]
+		// one of these guys has to make a POST request to confirm underlying controller request validator is called and behaves correctly. [ValidatorController] is already created
 		public function test_validateController () {
 
 			// confirm it throws those errors when unsatisfactory

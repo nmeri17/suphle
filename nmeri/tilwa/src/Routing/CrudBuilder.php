@@ -5,15 +5,15 @@
 
 	class CrudBuilder {
 
-		private $context, $viewPath, $idPlaceholder = "id",
+		private $resourceName, $viewPath, $idPlaceholder = "id",
 
-		$allowedActions = ["showCreateForm", "saveNew", "showAll", "showOne", "updateOne", "delete"],
+		$allowedActions = ["showCreateForm", "saveNew", "showAll", "showOne", "updateOne", "delete", "showSearchForm"],
 
 		$overwritable = [];
 		
-		function __construct(RouteCollection $context, string $viewPath) {
+		public function __construct(RouteCollection $context, string $viewPath) {
 
-			$this->context = $context;
+			$this->resourceName = $context->_getLocalPrefix();
 
 			$this->viewPath = $viewPath . "/";
 		}
@@ -29,6 +29,8 @@
 				if (array_key_exists($action, $this->overwritable) )
 
 					$renderer = $this->overwritable[$action];
+
+				$pattern = $this->resourceName . "_" . $pattern;
 
 				$createdRoutes[$pattern] = $renderer;
 			}
@@ -49,11 +51,9 @@
 		// @return Redirect to "/resource/new_id"
 		private function saveNew():array {
 
-			$relativePath = $this->context->localPrefix . "/";
+			$r = new Redirect(__FUNCTION__, function () {
 
-			$r = new Redirect(__FUNCTION__, function () use ($relativePath) {
-				
-				return $relativePath . $this->rawResponse["resource"]->id; // assumes the controller returns an array containing this key
+				return $this->resourceName . "/" . $this->rawResponse["resource"]->id; // assumes the controller returns an array containing this key
 			});
 
 			$r->setRouteMethod("post");
@@ -98,16 +98,28 @@
 
 		private function deleteOne():array {
 
-			$relativePath = $this->context->_getLocalPrefix() . "/";
-
-			$r = new Redirect(__FUNCTION__, function () use ($relativePath) {
+			$r = new Redirect(__FUNCTION__, function () {
 				
-				return "$relativePath";
+				return $this->context->_getLocalPrefix() . "/";
 			});
 
 			$r->setRouteMethod("delete");
 
 			$pattern = $this->idPlaceholder;
+
+			return compact("r", "pattern");
+		}
+
+		/**
+		 * It's assumed to the same page where the form lives is where the results will be displayed
+		*/
+		private function showSearchForm ():array {
+
+			$r = new Markup(__FUNCTION__, $this->viewPath . "show-search-form");
+
+			$r->setRouteMethod("get");
+
+			$pattern = "SEARCH";
 
 			return compact("r", "pattern");
 		}
