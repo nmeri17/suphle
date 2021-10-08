@@ -10,9 +10,7 @@
 
 	class LoginRequestHandler {
 
-		private $rendererCollection, $container,
-
-		$responseRenderer;
+		private $rendererCollection, $container, $responseRenderer;
 
 		public function __construct (LoginRenderers $renderer, Container $container) {
 
@@ -45,24 +43,28 @@
 
 		private function bootRenderer ():self {
 
-			$dependencies = $this->container->getMethodParameters("setDependencies", $this->responseRenderer);
+			$renderer = $this->responseRenderer;
 
-			$dependencies["controllerClass"] = $this->responseRenderer->getController();
+			$dependencies = $this->container->getMethodParameters("setDependencies", $renderer);
 
-			$this->responseRenderer->setDependencies(...$dependencies);
+			$dependencies["controllerClass"] = $renderer->getController();
+
+			$renderer->setDependencies(...$dependencies);
 
 			return $this;
 		}
 
 		private function executeRenderer ():void {
 
-			$dependencies = $this->container->getMethodParameters(
-				$this->responseRenderer->getHandler(),
+			$renderer = $this->responseRenderer;
 
-				$this->responseRenderer->getController()
+			$dependencies = $this->container->getMethodParameters(
+				$renderer->getHandler(),
+
+				$renderer->getController()
 			);
 
-			$this->responseRenderer->invokeActionHandler($dependencies);
+			$renderer->invokeActionHandler($dependencies);
 		}
 	}
 ?>

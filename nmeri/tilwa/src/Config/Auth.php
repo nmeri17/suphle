@@ -41,11 +41,6 @@
 			return getenv("JWT_TTL");
 		}
 
-		public function isAdmin ($user):bool {
-
-			return false;
-		}
-
 		public function getModelObservers():array {
 
 			return [];

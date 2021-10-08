@@ -15,6 +15,6 @@
 
 		public function successLogin () {
 
-			$this->authStorage->startSession($this->comparer->getUser()->id);
+			$this->authStorage->startSession($this->comparer->getUser()->getId());
 		}
 	}

@@ -23,9 +23,7 @@
 
 		public function loginAs (string $value) {
 
-			if ($this->authConfig->isAdmin($this->user))
-
-				$this->identifier = $value;
+			$this->identifier = $value;
 		}
 		
 		public function getId ():string {

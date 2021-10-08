@@ -16,8 +16,6 @@
 
 		public function getTokenTtl ():int;
 
-		public function isAdmin ($user):bool;
-
 		// [<Model> => <ModelAuthorities>]
 		public function getModelObservers():array;
 	}
