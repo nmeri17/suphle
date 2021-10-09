@@ -3,17 +3,17 @@
 
 	use Tilwa\Contracts\Database\Orm;
 
-	abstract class PopulatesDatabaseTest extends BaseTest {
+	trait PopulatesDatabaseTest {
 
 		private $orm, $entityInstance;
 
-		protected $initialCount = 20;
+		protected $container, $initialCount = 20;
 
 		abstract protected function getActiveEntity ():string;
 
 		protected function setUp ():void {
 
-			parent::setUp();
+			parent::setUp(); // calls the one on the inherited class of the test this is applied to
 
 			$this->entityInstance = $this->container->getClass($this->getActiveEntity()); // may need further customization since these are special kind of objects
 

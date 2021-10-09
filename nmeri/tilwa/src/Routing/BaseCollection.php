@@ -17,7 +17,7 @@
 
 		$mirroring = false, $crudMode = false, $localPrefix, $prefixClass;
 
-		function __construct(CanaryValidator $validator, RouterConfig $routerConfig, SessionStorage $authStorage, MiddlewareRegistry $middlewareRegistry) {
+		public function __construct(CanaryValidator $validator, RouterConfig $routerConfig, SessionStorage $authStorage, MiddlewareRegistry $middlewareRegistry) {
 
 			$this->routerConfig = $routerConfig;
 

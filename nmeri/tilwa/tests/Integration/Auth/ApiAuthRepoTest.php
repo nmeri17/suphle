@@ -1,15 +1,19 @@
 <?php
-
 	namespace Tilwa\Tests\Integration\Auth;
 
-	use Tilwa\Testing\PopulatesDatabaseTest;
+	use Tilwa\Testing\{PopulatesDatabaseTest, DirectHttpTest, BaseTest};
 
 	use Tilwa\Tests\Mocks\Models\User;
 
 	use Tilwa\Auth\{ApiLoginRenderer, LoginRequestHandler, ApiAuthRepo};
 
-	class ApiAuthRepoTest extends PopulatesDatabaseTest { // note: if routing isn't working, recall this is/should be using a separate router
+	class ApiAuthRepoTest extends BaseTest {
+
+		use PopulatesDatabaseTest, DirectHttpTest;
+
 		private $correctPassword = "liquidmetal",
+
+		$loginPath = "api/v1/login",
 
 		$incorrectPassword = "goldenboy";
 
@@ -22,16 +26,11 @@
 
 			$this->sendCorrectRequest(); // given
 
-			$container = $this->container;
+			$response = $this->getLoginResponse(); // when
 
-			$renderer = $container->getClass(ApiLoginRenderer::class);
+			$sut = $this->container->getClass(ApiAuthRepo::class);
 
-			$response = (new LoginRequestHandler($renderer, $container))->getResponse(); // when
-
-			$sut = $container->getClass(ApiAuthRepo::class);
-
-			// then
-			$this->assertSame($response, $sut->successLogin());
+			$this->assertSame($response, $sut->successLogin()); // then
 		}
 
 		private function getInsertedUser (string $password):User {
@@ -50,7 +49,7 @@
 
 			$user = $this->getInsertedUser($this->correctPassword);
 
-			$this->sendJsonPayload("api/v1/login", [
+			$this->sendJsonPayload($this->loginPath, [
 
 				"email" => $user->email,
 
@@ -62,7 +61,7 @@
 
 			$user = $this->getInsertedUser($this->correctPassword);
 
-			$this->sendJsonPayload("api/v1/login", [
+			$this->sendJsonPayload($this->loginPath, [
 
 				"email" => $user->email,
 
@@ -86,14 +85,13 @@
 			$this->assertSame($response, $sut->failedLogin());
 		}
 
-		public function test_logout () {
+		private function getLoginResponse ():array {
 
-			// confirm that running this empties what was stored earlier i.e. two different requests ought to be made inside this
-		}
+			$container = $this->container;
 
-		public function test_loginAs () {
+			$renderer = $container->getClass(ApiLoginRenderer::class);
 
-			//
+			return (new LoginRequestHandler($renderer, $container))->getResponse();
 		}
 
 		public function test_route_mirroring_works () {
