@@ -32,5 +32,5 @@
 		}
 	}
 
-	(new MyApp)->orchestrate();
+	echo (new MyApp)->orchestrate();
 ?>

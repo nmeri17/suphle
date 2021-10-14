@@ -18,7 +18,7 @@
 		
 		abstract protected function getModules():array;
 		
-		public function orchestrate():void {
+		public function orchestrate():string {
 
 			$modules = $this->getModules();
 
@@ -30,7 +30,7 @@
 
 			new ExceptionRenderer($this->getErrorHandlers(), $this->container);
 
-			echo $this->beginRequest();
+			return $this->beginRequest();
 		}
 		
 		private function beginRequest():string {

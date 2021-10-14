@@ -17,6 +17,9 @@
 
 	use PHPUnit\Framework\TestCase;
 
+	/**
+	 * Used for tests that require a container. Boots and provides this container to them
+	*/
 	class BaseTest extends TestCase { // rename this to IsolatedComponentTest
 
 		protected $container;

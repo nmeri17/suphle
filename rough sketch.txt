@@ -21,22 +21,45 @@ Bar:
 	- orm in services
 Extract rejection logic into a class and inject that into both service wrapper and executable classes. then implement an interface that informs these parents to run x whenever such interface is met [PrefersServices]
 
+Allow what's passed into controller get assigned. But it should be  a wrapped subset. on call, rejection happens if unsatisfactory
+
 Pending:
 	- exception renderer
 	- testing
 
-
-Mock=verify dependency behavior. Was it called? Was it called with xx arguments?
-Stub=when anybody, z, asks for stubbed thing x, return y. The verification is not done on the stubbed thing but on z's result/behavior
-
 Continue the refactor of reload renderer
-
-Codeception module should have a seeRecord method which uses the ActiveRecord layer to check that a record exists in the database.
 
 Ensure the given type is an instance of current/active whenType. Check if any [getClass] caller uses the second argument
 
 C:\wamp64\www\tilwa\nmeri\tilwa\vendor\bin>phpunit ../../tests/
 
-test cases:
-	*routing
-		- crud paths/patterns
+Revisit ModuleHandlerIdentifierTest (low-hanging fruit) after fleshing flows (some have been defined in their collection) and login tests
+
+**
+sqlite
+<server name="DB_CONNECTION" value="sqlite"/>
+<server name="DB_DATABASE" value=":memory:"/>
+
+**
+inject an eloquent default for Tilwa\Contracts\Auth\UserHydrator
+
+cause all usages of setHttpParams to use that trait
+
+correct usage of PopulatesDatabaseTest
+
+refactor loginAs to retain the admin
+**
+
+
+\PHPUnit\Framework\AssertionFailedError
+Concerns\MakesHttpRequests,
+            Concerns\InteractsWithAuthentication,
+            Concerns\InteractsWithDatabase
+
+$this->assertAuthenticatedAs($user);
+
+$this->actingAs($user) // updates the authStorage->getUser
+
+login controller should have a validator
+
+Wrap debug_backtrace

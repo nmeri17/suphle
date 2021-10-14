@@ -9,6 +9,8 @@
 
 	use Illuminate\Support\ServiceProvider;
 
+	use Illuminate\Foundation\Application;
+
 	class LaravelProviderManager {
 
 		private $provider, $concrete, $laravelContainer,
