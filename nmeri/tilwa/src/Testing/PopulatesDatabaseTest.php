@@ -32,6 +32,11 @@
 			return $this->orm->findAny($this->entityInstance);
 		}
 
+		protected function getRandomEntities (int $amount):array {
+
+			return $this->orm->findAnyMany($this->entityInstance, $amount);
+		}
+
 		// todo: truncate table in the tearDown
 	}
 ?>

@@ -2,9 +2,9 @@
 
 	namespace Tilwa\Tests\Integration\Auth;
 
-	use Tilwa\Testing\BaseTest;
+	use Tilwa\Testing\IsolatedComponentTest;
 
-	class BrowserAuthRepoTest extends BaseTest {
+	class BrowserAuthRepoTest extends IsolatedComponentTest {
 
 		public function test_successLogin () {
 
@@ -19,11 +19,6 @@
 		public function test_logout () {
 
 			// 
-		}
-
-		public function test_loginAs () {
-
-			//
 		}
 
 		public function test_get_user_on_unauth_route_yields_from_default_storage () {

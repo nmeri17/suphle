@@ -1,11 +1,11 @@
 <?php
 	namespace Tilwa\Tests\Integration\App;
 
-	use Tilwa\{Testing\BaseTest, App\ModuleToRoute};
+	use Tilwa\{Testing\IsolatedComponentTest, App\ModuleToRoute};
 
 	use Tilwa\Tests\Mocks\Modules\{ModuleTwo\ModuleTwoDescriptor, ModuleOne\ModuleOneDescriptor};
 
-	class ModuleToRouteTest extends BaseTest {
+	class ModuleToRouteTest extends IsolatedComponentTest {
 		
 		public function test_findContext() {
 

@@ -21,5 +21,7 @@
 		public function factoryLine ($model, int $amount, array $customAttributes);
 
 		public function findAny ($model);
+
+		public function findAnyMany ($model, int $amount):array;
 	}
 ?>

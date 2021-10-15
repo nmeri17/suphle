@@ -91,5 +91,10 @@
 
 			return $model->inRandomOrder()->first();
 		}
+
+		public function findAnyMany ($model, int $amount):array {
+
+			return $model->inRandomOrder()->limit($amount)->get();
+		}
 	}
 ?>

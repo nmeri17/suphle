@@ -2,15 +2,17 @@
 
 	namespace Tilwa\Tests\Integration\Routing;
 
-	use Tilwa\Testing\BaseTest;
+	use Tilwa\Testing\IsolatedComponentTest;
 
 	use Tilwa\Routing\RouteManager;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\BrowserNoPrefix;
 
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Config\RouterMock;
+
 	use Tilwa\Contracts\Config\Router as IRouter;
 
-	class BaseRouterTest extends BaseTest {
+	class BaseRouterTest extends IsolatedComponentTest {
 
 		public function getRouter ():RouteManager {
 

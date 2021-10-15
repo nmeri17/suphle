@@ -2,9 +2,9 @@
 
 	namespace Tilwa\Tests\Integration\App;
 
-	use Tilwa\Testing\BaseTest;
+	use Tilwa\Testing\IsolatedComponentTest;
 
-	class ModuleInitializerTest extends BaseTest { // SUT for the next 2 methods is [triggerRequest]
+	class ModuleInitializerTest extends IsolatedComponentTest { // SUT for the next 2 methods is [triggerRequest]
 		
 		public function test_session_resumption() {
 

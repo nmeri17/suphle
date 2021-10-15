@@ -1,9 +1,9 @@
 <?php
 	namespace Tilwa\Tests\Integration\Bridge\Laravel;
 
-	use Tilwa\Testing\BaseTest;
+	use Tilwa\Testing\IsolatedComponentTest;
 
-	class LaravelProviderManagerTest extends BaseTest {
+	class LaravelProviderManagerTest extends IsolatedComponentTest {
 
 		public function test_get_provided_returns_wrapped () {
 

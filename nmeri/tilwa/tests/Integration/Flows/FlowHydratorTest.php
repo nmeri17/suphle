@@ -1,9 +1,9 @@
 <?php
 	namespace Tilwa\Flows;
 
-	use Tilwa\Testing\BaseTest;
+	use Tilwa\Testing\IsolatedComponentTest;
 
-	class FlowHydratorTest extends BaseTest {
+	class FlowHydratorTest extends IsolatedComponentTest {
 
 		public function test_pipeTo() {
 

@@ -1,9 +1,9 @@
 <?php
 	namespace Tilwa\Tests\Integration\App;
 
-	use Tilwa\Testing\BaseTest;
+	use Tilwa\Testing\IsolatedComponentTest;
 
-	class ModuleHandlerIdentifierTest extends BaseTest {
+	class ModuleHandlerIdentifierTest extends IsolatedComponentTest {
 		
 		/**
 		 * This functionality is tested in more detail in [BrowserAuthRepoTest]. Here, we are confirming it works as intended within the current context
@@ -22,7 +22,7 @@
 
 		public function test_saved_flow_calls_flow_handler () {
 
-			// use a mock to confirm [flowRequestHandler] is called
+			// use a trapper property like we did for events to confirm [flowRequestHandler] is called
 		}
 	}
 ?>

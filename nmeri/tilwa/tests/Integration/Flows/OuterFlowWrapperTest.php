@@ -1,9 +1,9 @@
 <?php
 	namespace Tilwa\Tests\Integration\Flows;
 
-	use Tilwa\Testing\BaseTest;
+	use Tilwa\Testing\IsolatedComponentTest;
 
-	class OuterFlowWrapperTest extends BaseTest { // this should obviously be written after we've confirmed flows are functional
+	class OuterFlowWrapperTest extends IsolatedComponentTest { // this should obviously be written after we've confirmed flows are functional
 		
 		public function test_empties_cache_entry_after_returning() {
 

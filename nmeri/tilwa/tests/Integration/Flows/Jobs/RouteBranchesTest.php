@@ -2,9 +2,9 @@
 
 	namespace Tilwa\Flows\Jobs;
 
-	use Tilwa\Testing\BaseTest;
+	use Tilwa\Testing\IsolatedComponentTest;
 
-	class RouteBranchesTest extends BaseTest { /*
+	class RouteBranchesTest extends IsolatedComponentTest { /*
 		- inject the [BranchesContext] containing one of the flow states into the constructor, then rig up parameters for the `handle` method from the laravel container
 	*/
 

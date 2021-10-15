@@ -1,21 +1,27 @@
 <?php
 	namespace Tilwa\Tests\Integration\Auth;
 
-	use Tilwa\Testing\{PopulatesDatabaseTest, DirectHttpTest, BaseTest};
+	use Tilwa\Testing\{PopulatesDatabaseTest, DirectHttpTest, IsolatedComponentTest};
 
 	use Tilwa\Tests\Mocks\Models\User;
 
 	use Tilwa\Auth\{ApiLoginRenderer, LoginRequestHandler, ApiAuthRepo};
 
-	class ApiAuthRepoTest extends BaseTest {
+	class ApiAuthRepoTest extends IsolatedComponentTest {
 
-		use PopulatesDatabaseTest, DirectHttpTest;
+		use PopulatesDatabaseTest {
 
-		private $correctPassword = "liquidmetal",
+			PopulatesDatabaseTest::setUp as populateDB
+		}
 
-		$loginPath = "api/v1/login",
+		private $userInserter;
 
-		$incorrectPassword = "goldenboy";
+		public function setUp {
+
+			$this->populateDB();
+
+			$this->userInserter = new UserInserter;
+		}
 
 		protected function getActiveEntity ():string {
 
@@ -24,7 +30,7 @@
 
 		public function test_successLogin () {
 
-			$this->sendCorrectRequest(); // given
+			$this->userInserter->sendCorrectRequest(); // given
 
 			$response = $this->getLoginResponse(); // when
 
@@ -33,56 +39,16 @@
 			$this->assertSame($response, $sut->successLogin()); // then
 		}
 
-		private function getInsertedUser (string $password):User {
-			
-			$user = $this->getBeforeInsertion(1, [ // inserting a new row rather than pulling a random one so we can access the "password" field during login request
-
-				"password" => password_hash($password, PASSWORD_DEFAULT)
-			]);
-
-			$user->save();
-
-			return $user;
-		}
-
-		private function sendCorrectRequest ():void {
-
-			$user = $this->getInsertedUser($this->correctPassword);
-
-			$this->sendJsonPayload($this->loginPath, [
-
-				"email" => $user->email,
-
-				"password" => $this->correctPassword
-			]);
-		}
-
-		private function sendIncorrectRequest ():void {
-
-			$user = $this->getInsertedUser($this->correctPassword);
-
-			$this->sendJsonPayload($this->loginPath, [
-
-				"email" => $user->email,
-
-				"password" => $this->incorrectPassword
-			]);
-		}
-
 		public function test_failedLogin () {
 
-			$this->sendIncorrectRequest(); // given
+			$this->userInserter->sendIncorrectRequest(); // given
 
-			$container = $this->container;
+			$response = $this->getLoginResponse(); // when
 
-			$renderer = $container->getClass(ApiLoginRenderer::class);
-
-			$response = (new LoginRequestHandler($renderer, $container))->getResponse(); // when
-
-			$sut = $container->getClass(ApiAuthRepo::class);
+			$sut = $this->container->getClass(ApiAuthRepo::class);
 
 			// then
-			$this->assertSame($response, $sut->failedLogin());
+			$this->assertSame($response, $sut->failedLogin()); // note, this won't work since that response has already been converted to a string. find a way to either work with the renderer or wrap it in a testResponse
 		}
 
 		private function getLoginResponse ():array {
@@ -96,7 +62,7 @@
 
 		public function test_route_mirroring_works () {
 
-			//
+			// we want to test detection of browser routes and that we can override from our own end as well
 		}
 
 		public function test_route_mirroring_on_index_affects_all () {

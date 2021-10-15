@@ -1,46 +1,34 @@
 <?php
 	namespace Tilwa\Tests\Integration\Auth;
 
-	use Tilwa\Testing\{PopulatesDatabaseTest, DirectHttpTest, BaseTest};
+	use Tilwa\Testing\{PopulatesDatabaseTest, SecureUserTest, BaseTest};
 
 	use Tilwa\Tests\Mocks\Models\User;
 
-	class PostLoginBehaviorTest {
+	use Tilwa\Auth\SessionStorage;
 
-		use PopulatesDatabaseTest, DirectHttpTest;
+	class PostLoginBehaviorTest extends BaseTest {
+
+		use PopulatesDatabaseTest, SecureUserTest;
 
 		protected function getActiveEntity ():string {
 
 			return User::class;
 		}
 
-		// this uses populate db (trait version) and http tests ie go through the front controller, almost similar to what is done with module level tests
-		public function test_cant_get_user_after_logout () {
+		public function test_session_loginAs () {
 
-			// given
-			$this->insertNewUser(); // we want to auto-seed the db, grab a dummy to login with
+			[$user1, $user2] = $this->getRandomEntities(2);
 
-			// when
-			$this->login(); // we don't care about the response
+			$this->actingAs($user1); // given
 
-			$this->assertInstanceOf(User::class, $this->httpGet("/auth/get-user" ));
+			$sut = $this->container->getClass(SessionStorage::class);
 
-			$this->httpPost("/logout" );
+			$sut->loginAs($user2->getId()); // when
 
-			// then
-			$this->assertNull( $this->httpGet("/auth/get-user" ));
-		}
+			$this->assertAuthenticatedAs($user2); // then
 
-		public function test_loginAs () { // login as x legitimately. send another request that loginAs y and confirm pulling user afterwards returns y
-
-			$this->sendCorrectRequest(); // given
-
-			// when
-			$this->getLoginResponse();
-
-			$sampleUser = $this->getRandomEntity();
-
-			//
+			$this->assertSame($sut->getPreviousUser(), $user1->getId());
 		}
 	}
 ?>

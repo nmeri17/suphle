@@ -1,9 +1,9 @@
 <?php
 	namespace Tilwa\Tests\Integration\Bridge\Laravel;
 
-	use Tilwa\Testing\BaseTest;
+	use Tilwa\Testing\IsolatedComponentTest;
 
-	class ConfigLoaderTest extends BaseTest {
+	class ConfigLoaderTest extends IsolatedComponentTest {
 
 		public function test_can_get_their_config() {
 

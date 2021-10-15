@@ -3,7 +3,7 @@
 
 	use Tilwa\App\Container;
 
-	use Tilwa\Testing\BaseTest;
+	use Tilwa\Testing\IsolatedComponentTest;
 
 	use Tilwa\Tests\Mocks\App\{ARequiresBCounter, BCounter}; // these should be inside the module
 
@@ -15,7 +15,7 @@
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\{NeedsSpace, CircularConstructor1, CircularConstructor2, V1\RewriteSpaceImpl};
 
-	class ContainerTest extends BaseTest {
+	class ContainerTest extends IsolatedComponentTest {
 
 		private $aRequires = ARequiresBCounter::class;
 

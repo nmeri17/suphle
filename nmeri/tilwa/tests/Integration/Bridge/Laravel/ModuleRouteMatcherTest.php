@@ -2,7 +2,7 @@
 
 	namespace Tilwa\Tests\Integration\Bridge\Laravel;
 
-	use Tilwa\Testing\BaseTest;
+	use Tilwa\Testing\IsolatedComponentTest;
 
 	class ModuleRouteMatcherTest {
 		

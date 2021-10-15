@@ -10,9 +10,7 @@
 
 		public function getUser () {
 
-			if (is_null($this->identifier))
-
-				return null;
+			if (is_null($this->identifier)) return null;
 
 			if ( is_null($this->user)) // when accessed for the first time
 
@@ -21,9 +19,17 @@
 			return $this->user;
 		}
 
-		public function loginAs (string $value) {
+		/**
+		 * @param {value}: target user identifier
+		 * @return newly minted token for that id or simply returns same value for session-based mechanism
+		*/
+		public function loginAs (string $value):string {
 
 			$this->identifier = $value;
+
+			$this->discardUser();
+
+			return $this->startSession($value);
 		}
 		
 		public function getId ():string {
@@ -33,7 +39,14 @@
 
 		public function logout ():void {
 
-			$this->identifier = $this->user = null;
+			$this->identifier = null;
+
+			$this->discardUser();
+		}
+
+		private function discardUser ():void {
+
+			$this->user = null;
 		}
 	}
 ?>

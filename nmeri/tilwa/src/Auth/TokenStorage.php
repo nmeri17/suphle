@@ -29,9 +29,7 @@
 
 			$headerKey = "Authorization";
 
-			if (!$payloadStorage->hasHeader($headerKey))
-
-				return null;
+			if (!$payloadStorage->hasHeader($headerKey)) return;
 
 			$incomingToken = explode(" ", $payloadStorage->getHeader($headerKey) )[1]; // the bearer part
 

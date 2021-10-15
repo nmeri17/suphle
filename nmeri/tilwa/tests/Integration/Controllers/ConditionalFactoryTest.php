@@ -2,9 +2,9 @@
 
 	namespace Tilwa\Tests\Integration\Controllers;
 
-	use Tilwa\Testing\BaseTest;
+	use Tilwa\Testing\IsolatedComponentTest;
 
-	class ConditionalFactoryTest extends BaseTest {
+	class ConditionalFactoryTest extends IsolatedComponentTest {
 
 		public function test_retrieveConcrete () {
 

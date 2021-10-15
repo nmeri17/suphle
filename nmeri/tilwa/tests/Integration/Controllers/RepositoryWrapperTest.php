@@ -1,9 +1,9 @@
 <?php
 	namespace Tilwa\Tests\Integration\Controllers;
 
-	use Tilwa\Testing\BaseTest;
+	use Tilwa\Testing\IsolatedComponentTest;
 
-	class RepositoryWrapperTest extends BaseTest {
+	class RepositoryWrapperTest extends IsolatedComponentTest {
 
 		public function test_yield_fires_rebound_event() {
 

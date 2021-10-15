@@ -41,25 +41,20 @@ sqlite
 <server name="DB_DATABASE" value=":memory:"/>
 
 **
-inject an eloquent default for Tilwa\Contracts\Auth\UserHydrator
+inject an eloquent default for Tilwa\Contracts\Auth\UserHydrator (5)
 
-cause all usages of setHttpParams to use that trait
-
-correct usage of PopulatesDatabaseTest
-
-refactor loginAs to retain the admin
-**
-
+flesh out SecureUser (3)
 
 \PHPUnit\Framework\AssertionFailedError
-Concerns\MakesHttpRequests,
+Concerns\MakesHttpRequests, // overwrite their inputs (get, post etc) to instantiate properly our own environment. after the call is complete, convert the result to testResponse and return to the test
             Concerns\InteractsWithAuthentication,
             Concerns\InteractsWithDatabase
 
-$this->assertAuthenticatedAs($user);
 
-$this->actingAs($user) // updates the authStorage->getUser
 
-login controller should have a validator
+login controller should have a validator (4)
 
 Wrap debug_backtrace
+
+Illuminate\Testing\TestResponse: overwrite these
+	assertSee[x], assertView[x], assertSession[x]

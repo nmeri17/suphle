@@ -1,9 +1,9 @@
 <?php
 	namespace Tilwa\Tests\Integration\Controllers;
 
-	use Tilwa\Testing\BaseTest;
+	use Tilwa\Testing\IsolatedComponentTest;
 
-	class ResponseManagerTest extends BaseTest {
+	class ResponseManagerTest extends IsolatedComponentTest {
 
 		// the next 3 methods all trigger [bootControllerManager]
 		// one of these guys has to make a POST request to confirm underlying controller request validator is called and behaves correctly. [ValidatorController] is already created

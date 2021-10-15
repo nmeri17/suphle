@@ -2,9 +2,9 @@
 
 	namespace Tilwa\Tests\Integration\Controllers;
 
-	use Tilwa\Testing\BaseTest;
+	use Tilwa\Testing\IsolatedComponentTest;
 
-	class ServiceWrapperTest extends BaseTest { // NOTE: these all go through the controller action method (after getting wrapped in the [load] method). Perhaps, a special baseTest will be needed
+	class ServiceWrapperTest extends IsolatedComponentTest { // NOTE: these all go through the controller action method (after getting wrapped in the [load] method). Perhaps, a special IsolatedComponentTest will be needed
 
 		public function test_emits_events_on_call() {
 
