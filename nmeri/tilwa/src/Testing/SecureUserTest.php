@@ -14,5 +14,10 @@
 
 			//
 		}
+
+		protected function assertGuest ():void {
+
+			//
+		}
 	}
 ?>

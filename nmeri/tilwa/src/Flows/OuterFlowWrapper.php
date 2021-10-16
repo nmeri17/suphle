@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Flows;
 
-	use Tilwa\Contracts\{Requests\BaseResponseManager, QueueManager, CacheManager, Auth\authStorage};
+	use Tilwa\Contracts\{Requests\BaseResponseManager, QueueManager, CacheManager, Auth\AuthStorage, App\HighLevelRequestHandler};
 
 	use Tilwa\Flows\Jobs\{RouteBranches, BranchesContext, UpdateCountDelete};
 
@@ -11,7 +11,7 @@
 
 	use Tilwa\Routing\RequestDetails;
 
-	class OuterFlowWrapper implements BaseResponseManager {
+	class OuterFlowWrapper implements BaseResponseManager, HighLevelRequestHandler {
 
 		const FLOW_PREFIX = "tilwa_flow";
 
@@ -75,7 +75,7 @@
 
 		public function getResponse():string {
 
-			return $this->context->getRenderer()->render();
+			return $this->handlingRenderer()->render();
 		}
 
 		private function getActiveFlow(string $userId):RouteUserNode {
@@ -114,7 +114,7 @@
 
 			$this->eventManager->emit(
 
-				$this->context->getRenderer()->getController(), "on_flow_hit", $cachedResponse
+				$this->handlingRenderer()->getController(), "on_flow_hit", $cachedResponse
 			); // should probably include incoming request parameters?
 		}
  
@@ -122,12 +122,17 @@
 
 			$user = $this->authStorage->getUser();
 
-			$renderer = $this->context->getRenderer();
+			$renderer = ;
 
 			$this->queueManager->push(RouteBranches::class, 
 
 				new BranchesContext( $this->modules, $user, $renderer )
 			);
+		}
+
+		public function handlingRenderer ():AbstractRenderer {
+
+			return $this->context->getRenderer();
 		}
 	}
 ?>

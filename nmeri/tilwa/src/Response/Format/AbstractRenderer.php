@@ -1,17 +1,13 @@
 <?php
-
 	namespace Tilwa\Response\Format;
 
-	use Tilwa\Contracts\HtmlParser;
-
-	use Tilwa\Flows\ControllerFlows;
+	use Tilwa\{Contracts\HtmlParser, Flows\ControllerFlows};
 
 	abstract class AbstractRenderer {
 
 		private $controller, $rawResponse, $path, $flows, $routeMethod;
 
-		protected $handler;
-
+		protected $handler, $statusCode, $headers = [];
 
 		public function setDependencies(HtmlParser $htmlParser, string $controllerClass):self {
 
@@ -99,6 +95,23 @@
 		public function getHandler ():string {
 
 			return $this->handler;
+		}
+
+		public function setHeaders (int $statusCode, array $headers):void {
+
+			$this->statusCode = $statusCode;
+
+			$this->headers += $headers;
+		}
+
+		public function getStatusCode ():int {
+
+			return $this->statusCode;
+		}
+
+		public function getHeaders ():array {
+
+			return $this->headers;
 		}
 	}
 ?>

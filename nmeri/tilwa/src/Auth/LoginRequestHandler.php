@@ -1,40 +1,40 @@
 <?php
-
 	namespace Tilwa\Auth;
 
 	use Tilwa\App\Container;
 
-	use Tilwa\Contracts\LoginRenderers;
+	use Tilwa\Contracts\{Auth\LoginRenderers, App\HighLevelRequestHandler};
 
 	use Tilwa\Response\Format\AbstractRenderer;
 
-	class LoginRequestHandler {
+	class LoginRequestHandler implements HighLevelRequestHandler {
 
 		private $rendererCollection, $container, $responseRenderer;
 
-		public function __construct (LoginRenderers $renderer, Container $container) {
+		public function __construct (LoginRenderers $collection, Container $container) {
 
-			$this->rendererCollection = $renderer;
+			$this->rendererCollection = $collection;
 
 			$this->container = $container;
 		}
 
+		public function setAuthService ():void {
+
+			$this->loginService = $this->rendererCollection->getLoginService();
+		}
+
 		public function getResponse ():string {
 
-			$loginService = $this->rendererCollection->getLoginService();
-
-			$status = $loginService->compareCredentials();
-
-			$this->setResponseRenderer($status);
+			$this->setResponseRenderer();
 
 			$this->bootRenderer()->executeRenderer();
 
 			return $this->responseRenderer->render();
 		}
 
-		private function setResponseRenderer (bool $status):void {
+		private function setResponseRenderer ():void {
 
-			if ($status)
+			if ($this->loginService->compareCredentials())
 
 				$this->responseRenderer = $this->rendererCollection->successRenderer();
 
@@ -49,7 +49,7 @@
 
 			$dependencies["controllerClass"] = $renderer->getController();
 
-			$renderer->setDependencies(...$dependencies);
+			$renderer->setDependencies(...array_values($dependencies));
 
 			return $this;
 		}
@@ -65,6 +65,11 @@
 			);
 
 			$renderer->invokeActionHandler($dependencies);
+		}
+
+		public function handlingRenderer ():AbstractRenderer {
+
+			return $this->responseRenderer;
 		}
 	}
 ?>

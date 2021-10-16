@@ -7,6 +7,8 @@
 
 	use Tilwa\Auth\SessionStorage;
 
+	use Tilwa\Contracts\Auth\AuthStorage;
+
 	class PostLoginBehaviorTest extends BaseTest {
 
 		use PopulatesDatabaseTest, SecureUserTest;
@@ -29,6 +31,19 @@
 			$this->assertAuthenticatedAs($user2); // then
 
 			$this->assertSame($sut->getPreviousUser(), $user1->getId());
+		}
+
+		public function test_logout () {
+
+			$user = $this->getRandomEntity();
+
+			$this->actingAs($user); // given
+
+			$sut = $this->container->getClass(AuthStorage::class);
+
+			$sut->logout(); // when
+
+			$this->assertGuest(); // then
 		}
 	}
 ?>

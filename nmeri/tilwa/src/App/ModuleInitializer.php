@@ -8,13 +8,13 @@
 
 	use Tilwa\Bridge\Laravel\ModuleRouteMatcher;
 
-	use Tilwa\Contracts\Auth\AuthStorage;
+	use Tilwa\Contracts\{Auth\AuthStorage, App\HighLevelRequestHandler};
 
 	use Tilwa\Request\PathAuthorizer;
 
 	use Tilwa\Errors\{UnauthorizedServiceAccess, Unauthenticated};
 	
-	class ModuleInitializer {
+	class ModuleInitializer implements HighLevelRequestHandler {
 
 		private $router, $descriptor, $responseManager,
 
@@ -33,7 +33,7 @@
 
 			$this->router->findRenderer();
 			
-			if ($this->router->getActiveRenderer() ) $this->foundRoute = true;
+			if ($this->handlingRenderer() ) $this->foundRoute = true;
 
 			else {
 
@@ -47,7 +47,7 @@
 
 		public function triggerRequest():string {
 
-			if (!is_null($this->laravelMatcher))
+			if ($this->isLaravelRoute())
 
 				return $this->laravelMatcher->getResponse();
 
@@ -99,7 +99,7 @@
 
 				RouteManager::class => $this->router,
 
-				AbstractRenderer::class => $this->router->getActiveRenderer()
+				AbstractRenderer::class => $this->handlingRenderer()
 			]);
 		}
 
@@ -110,7 +110,7 @@
 
 		public function whenActive ():self {
 
-			if (!is_null($this->laravelMatcher)) return $this;
+			if ($this->isLaravelRoute()) return $this;
 
 			$descriptor = $this->descriptor;
 
@@ -162,6 +162,20 @@
 			$this->container->whenTypeAny()
 
 			->needsAny([Container::class => $this->container]);
+		}
+
+		public function handlingRenderer ():AbstractRenderer { /* ?AbstractRenderer */
+
+			// if (!$this->isLaravelRoute())
+
+				return $this->router->getActiveRenderer();
+
+			// else createFrom(their response object)
+		}
+
+		private function isLaravelRoute ():bool {
+
+			return !is_null($this->laravelMatcher);
 		}
 	}
 ?>

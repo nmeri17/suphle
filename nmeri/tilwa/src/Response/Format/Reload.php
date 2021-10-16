@@ -1,5 +1,4 @@
 <?php
-
 	namespace Tilwa\Response\Format;
 
 	use Tilwa\Routing\RouteManager;
@@ -11,6 +10,8 @@
 		function __construct(string $handler) {
 
 			$this->handler = $handler;
+
+			$this->setHeaders(200, ["Content-Type" => "text/html"]); // or 205 Reset Content
 		}
 
 		public function setDependencies( Container $container, string $controllerClass, RouteManager $router):self {

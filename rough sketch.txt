@@ -45,6 +45,9 @@ inject an eloquent default for Tilwa\Contracts\Auth\UserHydrator (5)
 
 flesh out SecureUser (3)
 
+ApiAuthRepoTest line 52 (2)
+	/
+
 \PHPUnit\Framework\AssertionFailedError
 Concerns\MakesHttpRequests, // overwrite their inputs (get, post etc) to instantiate properly our own environment. after the call is complete, convert the result to testResponse and return to the test
             Concerns\InteractsWithAuthentication,
@@ -53,8 +56,18 @@ Concerns\MakesHttpRequests, // overwrite their inputs (get, post etc) to instant
 
 
 login controller should have a validator (4)
+	the guys extending BaseAuthRepo are the ones where the validator should be planted
+	check controllerManager->updateValidatorMethod
 
 Wrap debug_backtrace
 
+Whoever we're retrieving payload from should have only, all
+
+hasFlowLeadingTo
+
+Merge in-module errors with the general one when request matches that module
+
 Illuminate\Testing\TestResponse: overwrite these
 	assertSee[x], assertView[x], assertSession[x]
+
+When troubleshooting routing, check routeManager line 166

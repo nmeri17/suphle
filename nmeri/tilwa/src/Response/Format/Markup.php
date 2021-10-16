@@ -1,12 +1,11 @@
 <?php
-
 	namespace Tilwa\Response\Format;
 
 	class Markup extends AbstractRenderer {
 
 		protected $viewName;
 
-		private $wantsJson, $contentNegotiable, $viewModel;
+		private $wantsJson, $viewModel;
 
 		function __construct(string $handler, string $viewName, string $viewModel) {
 
@@ -15,25 +14,19 @@
 			$this->viewName = $viewName;
 
 			$this->viewModel = $viewModel;
+
+			$this->setHeaders(200, ["Content-Type" => "text/html"]);
 		}
 
 		public function render():string {
 			
-			if (!$this->contentNegotiable && !$this->wantsJson())
+			if ( !$this->wantsJson)
 
 				return $this->renderHtml($this->viewName, $this->viewModel, $this->rawResponse);
 
+			$this->setHeaders(200, ["Content-Type" => "application/json"]);
+
 			return $this->renderJson();
-		}
-
-		public function contentIsNegotiable():void {
-			
-			$this->contentNegotiable = true;
-		}
-
-		public function wantsJson():bool {
-			
-			return $this->wantsJson;
 		}
 
 		public function setWantsJson():void {

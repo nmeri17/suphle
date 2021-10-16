@@ -1,5 +1,4 @@
 <?php
-
 	namespace Tilwa\Routing;
 
 	use Tilwa\App\Container;
@@ -12,7 +11,7 @@
 
 	use Tilwa\Request\{ PathAuthorizer};
 
-	use Tilwa\Response\Format\AbstractRenderer;
+	use Tilwa\Response\Format\{AbstractRenderer, Markup};
 
 	use Tilwa\Errors\{IncompatiblePatternReplacement, IncompatibleHttpMethod};
 
@@ -121,9 +120,9 @@ bool(true)*/
 
 							$this->indicatePatternDetails($collection, $pattern);
 
-							if ($this->requestDetails->isApiRoute() && $collection->_isMirroring())
+							if ($this->requestDetails->isApiRoute() && $collection->_isMirroring() && $renderer instanceof Markup)
 
-								$renderer->contentIsNegotiable();
+								$renderer->setWantsJson();
 							
 							return $this->bootRenderer($renderer, $collection->_handlingClass());
 						}

@@ -1,5 +1,4 @@
 <?php
-
 	namespace Tilwa\App;
 
 	use Tilwa\Flows\OuterFlowWrapper;
@@ -12,32 +11,42 @@
 
 	use Tilwa\Auth\LoginRequestHandler;
 
+	use Tilwa\Response\Format\AbstractRenderer;
+
+	/**
+	 * The container used here is the one from the topmost descriptor
+	*/
 	abstract class ModuleHandlerIdentifier {
 
-		private $requestDetails, $container, $authConfig;
+		private $requestDetails, $container, $authConfig, $identifiedHandler;
 		
 		abstract protected function getModules():array;
 		
 		public function orchestrate():string {
 
-			$modules = $this->getModules();
-
-			$this->setContainer($modules);
+			$this->setContainer();
 
 			$this->extractFromContainer();
 
-			(new ModulesBooter($modules))->boot();
+			(new ModulesBooter($this->getModules()))->boot();
 
 			new ExceptionRenderer($this->getErrorHandlers(), $this->container);
 
-			return $this->beginRequest();
+			$content = $this->beginRequest();
+
+			$this->transferHeaders();
+
+			return $content;
 		}
 		
+		/**
+		 * Each of the request handlers should update this class with the underlying renderer they're pulling a response from
+		*/
 		private function beginRequest():string {
 
 			$modules = $this->getModules();
 
-			if ($this->requestDetails->isPostRequest() && $rendererName = $this->getLoginRenderer())
+			if ($this->requestDetails->isPostRequest() && $rendererName = $this->getLoginCollection())
 
 				return $this->handleLoginRequest($rendererName);
 
@@ -54,14 +63,19 @@
 
 			$initializer = (new ModuleToRoute)->findContext($modules);
 
-			if ($initializer)
+			if ($initializer) {
+
+				$this->identifiedHandler = $initializer;
 
 				return $initializer->whenActive()->triggerRequest();
+			}
 
 			throw new NotFoundException;
 		}
 
 		private function flowRequestHandler(OuterFlowWrapper $wrapper):string {
+
+			$this->identifiedHandler = $wrapper;
 
 			$response = $wrapper->getResponse();
 			
@@ -99,9 +113,9 @@
 			];
 		}
 
-		private function setContainer (array $modules):void {
+		private function setContainer ():void {
 
-			$this->container = current($modules)->getContainer();
+			$this->container = current($this->getModules())->getContainer();
 		}
 
 		private function extractFromContainer ():void {
@@ -114,16 +128,38 @@
 		/**
 		 * @return A Tilwa\Contracts\LoginRenderers::class when the incoming path matches one of the login paths configured
 		*/
-		private function getLoginRenderer ():?string {
+		private function getLoginCollection ():?string {
 
 			return $this->authConfig->getPathRenderer($this->requestDetails->getPath());
 		}
 
-		private function handleLoginRequest (string $rendererName):string {
+		private function handleLoginRequest (string $collectionName):string {
 
-			$renderer = $this->container->getClass($rendererName);
+			$collection = $this->container->getClass($collectionName);
 
-			return (new LoginRequestHandler($renderer, $this->container))->getResponse();
+			$handler = new LoginRequestHandler($collection, $this->container);
+
+			$handler->setAuthService(); // pull the validator from this guy
+
+			$this->identifiedHandler = $handler; // when validated
+// validation can fall somewhere here
+			return $handler->getResponse();
+		}
+
+		public function underlyingRenderer ():AbstractRenderer {
+
+			return $this->identifiedHandler->handlingRenderer();
+		}
+
+		protected function transferHeaders ():void {
+
+			$renderer = $this->underlyingRenderer();
+
+			http_response_code($renderer->getStatusCode());
+
+			foreach ($renderer->getHeaders() as $name => $value)
+
+				header("$name: $value");
 		}
 	}
 ?>
