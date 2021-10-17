@@ -7,10 +7,12 @@
 
 		const HTML_HEADER_VALUE = "application/x-www-form-urlencoded";
 
+		private $contentTypeKey = "Content-Type";
+
 		/**
 		 * Writes to the superglobals RequestDetails can read from but doesn't actually send any request. Use when we're invoking router/request handler directly
 		*/
-		protected function setHttpParams (string $requestPath, string $httpMethod = "get", string $payload = "", array $headers = []):void {
+		protected function setHttpParams (string $requestPath, string $httpMethod = "get", ?string $payload = "", array $headers = []):void {
 
 			$_GET["tilwa_path"] = $requestPath;
 
@@ -18,12 +20,14 @@
 
 			$_SERVER += $headers;
 
-			$this->writePayload($payload, $headers["Content-Type"]);
+			if (!empty($payload) && array_key_exists($this->contentTypeKey, $headers))
+
+				$this->writePayload($payload, $headers[$this->contentTypeKey]);
 		}
 
-		protected function sendJsonPayload (string $requestPath, array $payload, string $httpMethod = "post"):bool {
+		protected function setJsonParams (string $requestPath, array $payload, string $httpMethod = "post"):bool {
 
-			$contentType = ["Content-Type" => self::JSON_HEADER_VALUE];
+			$headers = [$this->contentTypeKey => self::JSON_HEADER_VALUE];
 
 			if ($this->isValidPayloadType($httpMethod)) {
 
@@ -35,9 +39,9 @@
 			return false;
 		}
 
-		protected function sendHtmlForm (string $requestPath, array $payload, string $httpMethod = "post"):bool {
+		protected function setHtmlForm (string $requestPath, array $payload, string $httpMethod = "post"):bool {
 
-			$headers = ["Content-Type" => self::HTML_HEADER_VALUE];
+			$headers = [$this->contentTypeKey => self::HTML_HEADER_VALUE];
 
 			if ($this->isValidPayloadType($httpMethod)) {
 

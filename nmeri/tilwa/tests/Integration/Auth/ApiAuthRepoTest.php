@@ -1,15 +1,17 @@
 <?php
 	namespace Tilwa\Tests\Integration\Auth;
 
-	use Tilwa\Testing\{PopulatesDatabaseTest, DirectHttpTest, IsolatedComponentTest};
+	use Tilwa\Testing\{PopulatesDatabaseTest, FrontDoorTest, IsolatedComponentTest, ExaminesHttpResponse};
 
 	use Tilwa\Tests\Mocks\Models\User;
 
 	use Tilwa\Auth\{ApiLoginRenderer, LoginRequestHandler, ApiAuthRepo};
 
+	use Illuminate\Testing\TestResponse;
+
 	class ApiAuthRepoTest extends IsolatedComponentTest {
 
-		use PopulatesDatabaseTest {
+		use PopulatesDatabaseTest, FrontDoorTest, ExaminesHttpResponse {
 
 			PopulatesDatabaseTest::setUp as populateDB
 		}
@@ -36,7 +38,7 @@
 
 			$sut = $this->container->getClass(ApiAuthRepo::class);
 
-			$this->assertSame($response, $sut->successLogin()); // then
+			$response->assertJson( $sut->successLogin()); // then
 		}
 
 		public function test_failedLogin () {
@@ -47,17 +49,20 @@
 
 			$sut = $this->container->getClass(ApiAuthRepo::class);
 
-			// then
-			$this->assertSame($response, $sut->failedLogin()); // note, this won't work since that response has already been converted to a string. find a way to either work with the renderer or wrap it in a testResponse
+			$response->assertJson( $sut->failedLogin()); // then
 		}
 
-		private function getLoginResponse ():array {
+		private function getLoginResponse ():TestResponse {
 
 			$container = $this->container;
 
 			$renderer = $container->getClass(ApiLoginRenderer::class);
 
-			return (new LoginRequestHandler($renderer, $container))->getResponse();
+			$identifier = new LoginRequestHandler($renderer, $container);
+
+			$identifier->getResponse();
+
+			return $this->makeExaminable($identifier->handlingRenderer());
 		}
 
 		public function test_route_mirroring_works () {

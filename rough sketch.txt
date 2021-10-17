@@ -45,15 +45,11 @@ inject an eloquent default for Tilwa\Contracts\Auth\UserHydrator (5)
 
 flesh out SecureUser (3)
 
-ApiAuthRepoTest line 52 (2)
-	/
-
-\PHPUnit\Framework\AssertionFailedError
-Concerns\MakesHttpRequests, // overwrite their inputs (get, post etc) to instantiate properly our own environment. after the call is complete, convert the result to testResponse and return to the test
-            Concerns\InteractsWithAuthentication,
-            Concerns\InteractsWithDatabase
 
 
+\PHPUnit\Framework\AssertionFailedError, Concerns\InteractsWithAuthentication, Concerns\InteractsWithDatabase
+
+Complete the few methods left on FrontDoorTest
 
 login controller should have a validator (4)
 	the guys extending BaseAuthRepo are the ones where the validator should be planted
