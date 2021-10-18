@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Integration\Auth;
 
-	use Tilwa\Testing\{PopulatesDatabaseTest, SecureUserTest, BaseTest};
+	use Tilwa\Testing\{PopulatesDatabaseTest, IsolatedComponentSecurity, IsolatedComponentTest};
 
 	use Tilwa\Tests\Mocks\Models\User;
 
@@ -9,9 +9,9 @@
 
 	use Tilwa\Contracts\Auth\AuthStorage;
 
-	class PostLoginBehaviorTest extends BaseTest {
+	class PostLoginBehaviorTest extends IsolatedComponentTest {
 
-		use PopulatesDatabaseTest, SecureUserTest;
+		use PopulatesDatabaseTest, IsolatedComponentSecurity;
 
 		protected function getActiveEntity ():string {
 

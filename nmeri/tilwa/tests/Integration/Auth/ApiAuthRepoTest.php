@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Integration\Auth;
 
-	use Tilwa\Testing\{PopulatesDatabaseTest, FrontDoorTest, IsolatedComponentTest, ExaminesHttpResponse};
+	use Tilwa\Testing\{PopulatesDatabaseTest, IsolatedComponentTest, ExaminesHttpResponse};
 
 	use Tilwa\Tests\Mocks\Models\User;
 
@@ -11,7 +11,7 @@
 
 	class ApiAuthRepoTest extends IsolatedComponentTest {
 
-		use PopulatesDatabaseTest, FrontDoorTest, ExaminesHttpResponse {
+		use PopulatesDatabaseTest, ExaminesHttpResponse {
 
 			PopulatesDatabaseTest::setUp as populateDB
 		}
