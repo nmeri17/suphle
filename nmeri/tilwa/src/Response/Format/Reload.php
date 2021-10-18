@@ -23,12 +23,13 @@
 
 		public function render() {
 
+			$renderer = $this->router->getPreviousRenderer();
+
 			// avoid overwriting our own response
-			$this->rawResponse += $this->router->getPreviousRenderer()->getRawResponse();
+			$this->rawResponse += $renderer->getRawResponse();
 			// assumes that response is either a string or array
-			// viewName, vmName // assign these from previous renderer
 			
-			return $this->renderHtml();
+			return $this->renderHtml($renderer->getViewName(), $renderer->getViewModelName(), $this->rawResponse);
 		}
 	}
 ?>

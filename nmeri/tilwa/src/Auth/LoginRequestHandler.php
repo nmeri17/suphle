@@ -7,20 +7,45 @@
 
 	use Tilwa\Response\Format\AbstractRenderer;
 
+	use Tilwa\Request\ValidatorManager;
+
 	class LoginRequestHandler implements HighLevelRequestHandler {
 
-		private $rendererCollection, $container, $responseRenderer;
+		private $rendererCollection, $container, $responseRenderer,
 
-		public function __construct (LoginRenderers $collection, Container $container) {
+		$validatorManager;
+
+		public function __construct (LoginRenderers $collection, Container $container, ValidatorManager $validatorManager) {
 
 			$this->rendererCollection = $collection;
 
 			$this->container = $container;
+
+			$this->validatorManager = $validatorManager;
 		}
 
 		public function setAuthService ():void {
 
 			$this->loginService = $this->rendererCollection->getLoginService();
+		}
+
+		public function isValidatedRequest ():bool {
+
+			$this->validatorManager->setActionRules($this->getLoginRules());
+	
+			return $this->validatorManager->isValidated();
+		}
+
+		public function getValidatorErrors ():array {
+
+			return $this->validatorManager->validationErrors();
+		}
+
+		private function getLoginRules ():array {
+
+			$validatorName = $this->loginService->validatorCollection();
+
+			return $this->container->getClass($validatorName)->successRules();
 		}
 
 		public function getResponse ():string {

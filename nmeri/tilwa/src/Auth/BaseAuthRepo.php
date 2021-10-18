@@ -18,5 +18,10 @@
 
 			return ["message" => "Incorrect credentials"];
 		}
+
+		public function validatorCollection ():string {
+
+			return EmailPasswordValidator::class;
+		}
 	}
 ?>

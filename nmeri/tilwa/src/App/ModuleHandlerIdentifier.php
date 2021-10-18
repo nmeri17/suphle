@@ -135,15 +135,32 @@
 
 		private function handleLoginRequest (string $collectionName):string {
 
-			$collection = $this->container->getClass($collectionName);
+			$handler = $this->getLoginHandler();
 
-			$handler = new LoginRequestHandler($collection, $this->container);
+			$handler->setAuthService();
 
-			$handler->setAuthService(); // pull the validator from this guy
+			if (!$handler->isValidRequest())
 
-			$this->identifiedHandler = $handler; // when validated
-// validation can fall somewhere here
+				throw new ValidationFailure;
+
+			$this->identifiedHandler = $handler;
+
 			return $handler->getResponse();
+		}
+
+		private function getLoginHandler ():LoginRequestHandler {
+
+			$container = $this->container;
+
+			$handlerName = LoginRequestHandler::class;
+
+			$collection = $container->getClass($collectionName);
+
+			return $container->whenType($handlerName)
+
+			->needsArguments(compact("collection"))
+
+			->getClass($handlerName);
 		}
 
 		public function underlyingRenderer ():AbstractRenderer {

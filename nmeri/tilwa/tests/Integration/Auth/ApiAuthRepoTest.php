@@ -54,15 +54,26 @@
 
 		private function getLoginResponse ():TestResponse {
 
-			$container = $this->container;
-
-			$renderer = $container->getClass(ApiLoginRenderer::class);
-
-			$identifier = new LoginRequestHandler($renderer, $container);
+			$identifier = $this->getIdentifier();
 
 			$identifier->getResponse();
 
 			return $this->makeExaminable($identifier->handlingRenderer());
+		}
+
+		private function getIdentifier ():LoginRequestHandler {
+
+			$container = $this->container;
+
+			$identifierName = LoginRequestHandler::class;
+
+			$collection = $container->getClass(ApiLoginRenderer::class);
+
+			return $container->whenType($identifierName)
+
+			->needsArguments(compact("collection"))
+
+			->getClass($identifierName);
 		}
 
 		public function test_route_mirroring_works () {

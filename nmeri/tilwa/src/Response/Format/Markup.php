@@ -33,5 +33,15 @@
 			
 			$this->wantsJson = true;
 		}
+
+		public function getViewName ():string {
+
+			return $this->viewName;
+		}
+
+		public function getViewModelName ():string {
+
+			return $this->viewModel;
+		}
 	}
 ?>

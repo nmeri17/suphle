@@ -19,15 +19,21 @@ we need a cli command for copying laravel config/migrations files from the libra
 Bar:
 	- app level service entry into repositories
 	- orm in services
-Extract rejection logic into a class and inject that into both service wrapper and executable classes. then implement an interface that informs these parents to run x whenever such interface is met [PrefersServices]
 
-Allow what's passed into controller get assigned. But it should be  a wrapped subset. on call, rejection happens if unsatisfactory
+*Extract rejection logic into a class and inject that into both service wrapper and executable classes. then implement an interface that informs these parents to run x whenever such interface is met [PrefersServices]
+
+*Now, we wanna block user on middleware. So this should prolly be promoted to the container and connected in a way (ConcreteDecorator) that the attached handler (in this case, PrefersServices) runs even when hydrating a concrete
+
+
+*Allow what's passed into controller get assigned. But it should be  a wrapped subset. on call, rejection happens if unsatisfactory
+Note: assign freely but constructor should be void of calculations
 
 Pending:
 	- exception renderer
+		Merge in-module errors with the general one when request matches that module (pending approval)
 	- testing
 
-Continue the refactor of reload renderer
+
 
 Ensure the given type is an instance of current/active whenType. Check if any [getClass] caller uses the second argument
 
@@ -43,27 +49,19 @@ sqlite
 **
 inject an eloquent default for Tilwa\Contracts\Auth\UserHydrator (5)
 
-flesh out SecureUser (3)
 
+\PHPUnit\Framework\AssertionFailedError, Concerns\InteractsWithDatabase
+	- extend and override getConnection
 
-
-\PHPUnit\Framework\AssertionFailedError, Concerns\InteractsWithAuthentication, Concerns\InteractsWithDatabase
+	- Illuminate\Testing\TestResponse: overwrite these, then use the new trait/class in place of the above
+		- assertSee[x] (they need the `e` method)
+		- assertView[x] (needs to work with our view)
+		- assertSession[x]
 
 Complete the few methods left on FrontDoorTest
 
-login controller should have a validator (4)
-	the guys extending BaseAuthRepo are the ones where the validator should be planted
-	check controllerManager->updateValidatorMethod
-
 Wrap debug_backtrace
 
-Whoever we're retrieving payload from should have only, all
-
 hasFlowLeadingTo
-
-Merge in-module errors with the general one when request matches that module
-
-Illuminate\Testing\TestResponse: overwrite these
-	assertSee[x], assertView[x], assertSession[x]
 
 When troubleshooting routing, check routeManager line 166

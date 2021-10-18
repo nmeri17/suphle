@@ -10,4 +10,6 @@
 		public function successLogin ();
 
 		public function failedLogin ();
+
+		public function validatorCollection ():string;
 	}
