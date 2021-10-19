@@ -1,10 +1,11 @@
 <?php
-
 	namespace Tilwa\Config;
 
 	use Tilwa\Contracts\Config\Auth as AuthContract;
 
-	use Tilwa\Auth\{BrowserLoginRenderer, SessionStorage, ApiLoginRenderer};
+	use Tilwa\Auth\Renderers\{BrowserLoginRenderer, ApiLoginRenderer};
+
+	use Tilwa\Auth\Storage\SessionStorage;
 
 	class Auth implements AuthContract {
 

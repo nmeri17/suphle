@@ -3,7 +3,7 @@
 
 	use Tilwa\Testing\{PopulatesDatabaseTest, IsolatedComponentTest, ExaminesHttpResponse};
 
-	use Tilwa\Tests\Mocks\Models\User;
+	use Tilwa\Contracts\Auth\User;
 
 	use Tilwa\Auth\{ApiLoginRenderer, LoginRequestHandler, ApiAuthRepo};
 

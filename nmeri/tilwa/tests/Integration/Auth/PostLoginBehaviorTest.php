@@ -1,13 +1,13 @@
 <?php
 	namespace Tilwa\Tests\Integration\Auth;
 
-	use Tilwa\Testing\{PopulatesDatabaseTest, IsolatedComponentSecurity, IsolatedComponentTest};
+	use Tilwa\Testing\Condiments\{PopulatesDatabaseTest, IsolatedComponentSecurity};
 
-	use Tilwa\Tests\Mocks\Models\User;
+	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
+
+	use Tilwa\Contracts\Auth\{AuthStorage, User};
 
 	use Tilwa\Auth\SessionStorage;
-
-	use Tilwa\Contracts\Auth\AuthStorage;
 
 	class PostLoginBehaviorTest extends IsolatedComponentTest {
 

@@ -3,7 +3,7 @@
 
 	use Tilwa\Testing\{PopulatesDatabaseTest, DirectHttpTest};
 
-	use Tilwa\Tests\Mocks\Models\User;
+	use Tilwa\Contracts\Auth\User;
 
 	/**
 	 * Helper class for adding a fresh user, then using his details for login

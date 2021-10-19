@@ -1,5 +1,4 @@
 <?php
-
 	namespace Tilwa\App;
 
 	use ReflectionMethod, ReflectionClass, ReflectionFunction, ReflectionType, Exception;
@@ -220,16 +219,16 @@
 
 				return $this->hydrateConfig($service);
 
-			return $this->getClassFromProvider($service);
+			return $this->getClassFromLoader($service);
 		}
 
-		private function getClassFromProvider (string $service) {
+		private function getClassFromLoader (string $service) {
 
 			$config = $this->getServicesConfig();
 
 			if (is_null($config)) return;
 
-			$providers = $config->getProviders();
+			$providers = $config->getLoaders();
 
 			if (!array_key_exists($service, $providers)) return;
 

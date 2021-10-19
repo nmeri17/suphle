@@ -45,9 +45,9 @@ Revisit ModuleHandlerIdentifierTest (low-hanging fruit) after fleshing flows (so
 sqlite
 <server name="DB_CONNECTION" value="sqlite"/>
 <server name="DB_DATABASE" value=":memory:"/>
+class DB extends Illuminate\Database\Capsule\Manager {} in the global namespace fixed the problem.
 
-**
-inject an eloquent default for Tilwa\Contracts\Auth\UserHydrator (5)
+If the models don't work, it'll mean they're setting each model's connection at some point
 
 
 \PHPUnit\Framework\AssertionFailedError, Concerns\InteractsWithDatabase
@@ -65,3 +65,4 @@ Wrap debug_backtrace
 hasFlowLeadingTo
 
 When troubleshooting routing, check routeManager line 166
+

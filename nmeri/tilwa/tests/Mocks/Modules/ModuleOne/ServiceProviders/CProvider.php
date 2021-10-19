@@ -1,11 +1,11 @@
 <?php
-	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\ServiceProviders;
+	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\InterfaceLoader;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\CConcrete;
 
-	use Tilwa\App\ServiceProvider;
+	use Tilwa\App\BaseInterfaceLoader;
 
-	class CProvider extends ServiceProvider {
+	class CProvider extends BaseInterfaceLoader {
 
 		public function bindArguments ():array {
 

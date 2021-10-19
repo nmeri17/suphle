@@ -6,11 +6,11 @@
 
 	use Tilwa\Contracts\HtmlParser;
 
-	use Tilwa\ServiceProviders\HtmlTemplateProvider;
+	use Tilwa\InterfaceLoader\HtmlTemplateProvider;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Interfaces\CInterface;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\ServiceProviders\CProvider;
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\InterfaceLoader\CProvider;
 
 	class ServicesMock implements ServicesContract {
 
@@ -19,7 +19,7 @@
 			return false; // test probably wants this on
 		}
 
-		public function getProviders():array {
+		public function getLoaders():array {
 
 			return [
 
