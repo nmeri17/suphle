@@ -1,16 +1,15 @@
 <?php
-
 	namespace Tilwa\Routing;
 
 	use Tilwa\App\Container;
 
-	use Tilwa\Contracts\CanaryGateway;
+	use Tilwa\Contracts\{CanaryGateway, RouteCollection};
 
 	class CanaryValidator {
 
 		private $container;
 
-		function __construct(Container $container) {
+		public function __construct(Container $container) {
 			
 			$this->container = $container;
 		}
@@ -22,10 +21,9 @@
 
 				$instance = $this->container->getClass($canary);
 				
-				return $instance instanceof CanaryGateway && $this->container->getClass($instance->entryClass()) instanceof RouteCollection;
+				return is_subclass_of($instance, CanaryGateway::class) &&
+				is_subclass_of($instance->entryClass(), RouteCollection::class);
 			});
-			
-			
 		}
 	}
 ?>

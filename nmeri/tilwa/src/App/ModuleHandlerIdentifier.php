@@ -13,18 +13,20 @@
 
 	use Tilwa\Response\Format\AbstractRenderer;
 
-	/**
-	 * The container used here is the one from the topmost descriptor
-	*/
 	abstract class ModuleHandlerIdentifier {
 
 		private $requestDetails, $container, $authConfig, $identifiedHandler;
+
+		public function __construct () {
+
+			$this->container = current($this->getModules())->getContainer();
+
+			$this->container->provideSelf();
+		}
 		
 		abstract protected function getModules():array;
 		
 		public function orchestrate():string {
-
-			$this->setContainer();
 
 			$this->extractFromContainer();
 
@@ -61,7 +63,9 @@
 
 		private function handleGenericRequest (array $modules):string {
 
-			$initializer = (new ModuleToRoute)->findContext($modules);
+			$initializer = $this->container->getClass(ModuleToRoute::class) // pulling from a container so tests can replace properties on the singleton
+
+			->findContext($modules);
 
 			if ($initializer) {
 
@@ -111,11 +115,6 @@
 
 				IncompatibleHttpMethod::class => "handler"
 			];
-		}
-
-		private function setContainer ():void {
-
-			$this->container = current($this->getModules())->getContainer();
 		}
 
 		private function extractFromContainer ():void {

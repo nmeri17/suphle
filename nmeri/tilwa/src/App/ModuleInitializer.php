@@ -78,7 +78,7 @@
 
 		public function initialize():self {
 
-			$this->containerProvideSelf();
+			$this->container->provideSelf();
 
 			$this->router = $this->container->getClass (RouteManager::class);
 
@@ -155,13 +155,6 @@
 					throw new UnauthorizedServiceAccess;
 
 			return $this;
-		}
-
-		private function containerProvideSelf ():void {
-
-			$this->container->whenTypeAny()
-
-			->needsAny([Container::class => $this->container]);
 		}
 
 		public function handlingRenderer ():AbstractRenderer { /* ?AbstractRenderer */

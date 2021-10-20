@@ -7,6 +7,8 @@
 
 	use Tilwa\Testing\Proxies\Extensions\FrontDoor;
 
+	use Tilwa\App\{Container, ModuleToRoute};
+
 	trait FrontDoorTest {
 
 		use DirectHttpTest, ExaminesHttpResponse;
@@ -41,7 +43,22 @@
 	    	return $this;
 	    }
 
+		private function getContainer ():Container {
+
+			return $this->entrance->firstContainer();
+		}
+
 	    public function from(string $url):self {
+
+	    	$this->setHttpParams($url);
+
+	    	$initializer = $this->getContainer()->getClass(ModuleToRoute::class)
+
+	    	->findContext($this->getModules());
+
+	    	$router = $initializer->getRouter();
+
+	    	$renderer = $router->setPreviousRenderer($router->getActiveRenderer());
 
 	    	return $this;
 	    }

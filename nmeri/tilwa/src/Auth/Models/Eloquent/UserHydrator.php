@@ -1,11 +1,11 @@
 <?php
 	namespace Tilwa\Auth\Models\Eloquent;
 
-	use Tilwa\Contracts\Auth\UserHydrator;
+	use Tilwa\Contracts\Auth\UserHydrator as HydratorContract;
 
 	use Tilwa\Request\PayloadStorage;
 
-	class UserHydrator implements UserHydrator {
+	class UserHydrator implements HydratorContract {
 
 		private $blankModel, $payloadStorage;
 

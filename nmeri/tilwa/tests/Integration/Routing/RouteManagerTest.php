@@ -1,5 +1,4 @@
 <?php
-
 	namespace Tilwa\Tests\Integration\Routing;
 
 	class RouteManagerTest extends BaseRouterTest {
@@ -22,16 +21,6 @@
 			// var_dump($matchingRenderer->getPath(), $requestPath, 30);
 
 			$this->assertSame($matchingRenderer->getHandler(), $handler);
-		}
-
-		public function test_api_versioning () {
-
-			//
-		}
-
-		public function test_can_spot_crud_route () {
-			
-			// move this to its own test class
 		}
 
 		public function pathsToHandler ():array {

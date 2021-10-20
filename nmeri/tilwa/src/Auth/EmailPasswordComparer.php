@@ -2,7 +2,7 @@
 
 	namespace Tilwa\Auth;
 
-	use Tilwa\Contracts\{AuthStorage, UserHydrator};
+	use Tilwa\Contracts\Auth\{AuthStorage, UserHydrator};
 
 	use Tilwa\Routing\PayloadStorage;
 

@@ -3,6 +3,7 @@
 
 	use Tilwa\Testing\IsolatedComponentTest;
 
+	/* I think these should be unit tests sha. Call the high level methods here */
 	class ResponseManagerTest extends IsolatedComponentTest {
 
 		// the next 3 methods all trigger [bootControllerManager]
@@ -27,6 +28,11 @@
 		public function test_isValidRequest () {
 
 			// confirm can find its way to its validator and returns true and false where applicable
+		}
+
+		public function test_failed_request_validation_reverts_renderer () {
+			
+			// 
 		}
 	}
 ?>

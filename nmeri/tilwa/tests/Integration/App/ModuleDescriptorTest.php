@@ -42,5 +42,10 @@
 			// then
 			$this->assertSame($result, $moduleThree->getDValue());
 		}
+
+		public function test_nested_modules_are_internally_accessible () {
+			
+			// if this doesn't work, it means during getDepends or something, the internally imported/chained will be booted
+		}
 	}
 ?>

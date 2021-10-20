@@ -1,18 +1,17 @@
 <?php
-
 	namespace Tilwa\Tests\Integration\Routing;
 
-	use Tilwa\Testing\IsolatedComponentTest;
+	use Tilwa\Testing\{TestTypes\IsolatedComponentTest, Condiments\DirectHttpTest};
 
 	use Tilwa\Routing\RouteManager;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\BrowserNoPrefix;
-
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Config\RouterMock;
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\BrowserNoPrefix, Config\RouterMock};
 
 	use Tilwa\Contracts\Config\Router as IRouter;
 
 	class BaseRouterTest extends IsolatedComponentTest {
+
+		use DirectHttpTest;
 
 		public function getRouter ():RouteManager {
 
@@ -24,9 +23,9 @@
 			return BrowserNoPrefix::class;
 		}
 
-		protected function bindEntities ():self {
+		protected function entityBindings ():self {
 
-			parent::bindEntities();
+			parent::entityBindings();
 
 			$this->container->whenTypeAny()->needsAny([
 
@@ -34,6 +33,17 @@
 			]);
 
 			return $this;
+		}
+
+		protected function fakeRequest (string $url):AbstractRenderer {
+
+			$this->setHttpParams($url); // this should be the first line in all the tests involving pulling path from requestDetails?
+
+			$router = $this->getRouter();
+
+			$router->findRenderer();
+
+			return $router->getActiveRenderer();
 		}
 	}
 ?>

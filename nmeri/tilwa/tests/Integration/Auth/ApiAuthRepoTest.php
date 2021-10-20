@@ -1,11 +1,13 @@
 <?php
 	namespace Tilwa\Tests\Integration\Auth;
 
-	use Tilwa\Testing\{PopulatesDatabaseTest, IsolatedComponentTest, ExaminesHttpResponse};
+	use Tilwa\Testing\{Condiments\PopulatesDatabaseTest, TestTypes\IsolatedComponentTest, Proxies\ExaminesHttpResponse};
 
 	use Tilwa\Contracts\Auth\User;
 
-	use Tilwa\Auth\{ApiLoginRenderer, LoginRequestHandler, ApiAuthRepo};
+	use Tilwa\Auth\Renderers\{ApiLoginRenderer, ApiAuthRepo};
+
+	use Tilwa\Auth\LoginRequestHandler;
 
 	use Illuminate\Testing\TestResponse;
 
@@ -74,16 +76,6 @@
 			->needsArguments(compact("collection"))
 
 			->getClass($identifierName);
-		}
-
-		public function test_route_mirroring_works () {
-
-			// we want to test detection of browser routes and that we can override from our own end as well
-		}
-
-		public function test_route_mirroring_on_index_affects_all () {
-
-			//
 		}
 	}
 ?>

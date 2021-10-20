@@ -6,6 +6,10 @@
 
 	use Tilwa\Config\{Auth, Services, Transphporm, Laravel, Orm};
 
+	use Tilwa\Contracts\Auth\UserHydrator as HydratorContract;
+
+	use Tilwa\Auth\Models\Eloquent\UserHydrator;
+
 	abstract class ModuleDescriptor {
 
 		protected $container;
@@ -67,7 +71,9 @@
 
 				IAuth::class => Auth::class,
 
-				ITransphporm::class => Transphporm::class
+				ITransphporm::class => Transphporm::class,
+
+				HydratorContract::class => UserHydrator::class
 			];
 		}
 	}

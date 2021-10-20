@@ -548,5 +548,10 @@
 
 			return is_null($this->recursingFor);
 		}
+
+		public function provideSelf ():void {
+
+			$this->whenTypeAny()->needsAny([get_class() => $this]);
+		}
 	}
 ?>
