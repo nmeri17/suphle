@@ -22,5 +22,10 @@
 
 			//
 		}
+
+		public function test_can_find_api_only_routes () {
+			
+			// 
+		}
 	}
 ?>

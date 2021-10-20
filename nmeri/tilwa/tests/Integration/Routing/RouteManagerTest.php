@@ -8,13 +8,7 @@
 	     */
 		public function test_route_matching ( string $handler, string $requestPath) {
 
-			$this->setHttpParams($requestPath); // this should be the first line in all the tests involving pulling path from requestDetails?
-
-			$router = $this->getRouter();
-
-			$router->findRenderer();
-
-			$matchingRenderer = $router->getActiveRenderer();
+			$matchingRenderer = $this->fakeRequest($requestPath);
 
 			$this->assertNotNull($matchingRenderer);
 			

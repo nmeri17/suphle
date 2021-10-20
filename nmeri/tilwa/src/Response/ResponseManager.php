@@ -111,11 +111,6 @@
 			return $this->controllerManager;
 		}
 
-		public function patternAuthentication ():AuthStorage {
-
-			return $this->router->getPatternAuthentication();
-		}
-
 		public function requestAuthenticationStatus (AuthStorage $storage):bool {
 
 			$storage->resumeSession();

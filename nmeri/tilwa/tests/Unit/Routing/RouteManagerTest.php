@@ -2,11 +2,13 @@
 
 	namespace Tilwa\Tests\Unit\Routing;
 
-	use Tilwa\Testing\IsolatedComponentTest;
+	use Tilwa\Testing\{TestTypes\IsolatedComponentTest, Condiments\DirectHttpTest};
 
 	use Tilwa\Routing\RouteManager;
 
 	class RouteManagerTest extends IsolatedComponentTest {
+
+		use DirectHttpTest;
 
 		public function test_route_compare_hyphen () {
 

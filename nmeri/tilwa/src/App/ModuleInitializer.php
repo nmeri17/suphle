@@ -10,15 +10,13 @@
 
 	use Tilwa\Contracts\{Auth\AuthStorage, App\HighLevelRequestHandler};
 
-	use Tilwa\Request\PathAuthorizer;
-
 	use Tilwa\Errors\{UnauthorizedServiceAccess, Unauthenticated};
 	
 	class ModuleInitializer implements HighLevelRequestHandler {
 
 		private $router, $descriptor, $responseManager,
 
-		$laravelMatcher, $container;
+		$laravelMatcher, $container, $indicator;
 
 		private $foundRoute = false;
 
@@ -50,6 +48,8 @@
 			if ($this->isLaravelRoute())
 
 				return $this->laravelMatcher->getResponse();
+
+			$this->setRouteDetailsIndicator();
 
 			$this->attemptAuthentication()->authorizeRequest();
 
@@ -128,11 +128,11 @@
 		*/
 		private function attemptAuthentication ():self {
 
-			$manager = $this->responseManager;
+			$authMethod = $this->indicator->activeAuthStorage();
 
-			if ($authMethod = $manager->patternAuthentication()) {
+			if (!is_null($authMethod)) {
 
-				if ( !$manager->requestAuthenticationStatus($authMethod))
+				if ( !$this->responseManager->requestAuthenticationStatus($authMethod))
 
 					throw new Unauthenticated;
 
@@ -146,7 +146,7 @@
 
 		private function authorizeRequest ():self {
 
-			$authorizer = $this->container->getClass(PathAuthorizer::class);
+			$authorizer = $this->indicator->getAuthorizer();
 
 			foreach ($authorizer->getActiveRules() as $rule)
 
@@ -169,6 +169,11 @@
 		private function isLaravelRoute ():bool {
 
 			return !is_null($this->laravelMatcher);
+		}
+
+		private function setRouteDetailsIndicator ():void {
+
+			$this->indicator = $this->router->getIndicator();
 		}
 	}
 ?>

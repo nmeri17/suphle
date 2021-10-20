@@ -7,10 +7,6 @@
 
 	use Tilwa\Contracts\{Auth\AuthStorage, Config\Router as RouterConfig, Routing\RouteCollection};
 
-	use Tilwa\Middleware\MiddlewareRegistry;
-
-	use Tilwa\Request\{ PathAuthorizer};
-
 	use Tilwa\Response\Format\{AbstractRenderer, Markup};
 
 	use Tilwa\Errors\{IncompatiblePatternReplacement, IncompatibleHttpMethod};
@@ -23,11 +19,9 @@
 
 		$requestDetails, $fullTriedPath, $container,
 
-		$patternAuthentication, $registry, $authorizer,
+		$activePlaceholders, $patternIndicator;
 
-		$activePlaceholders;
-
-		function __construct(RouterConfig $config, Container $container, RequestDetails $requestDetails, MiddlewareRegistry $registry, PathAuthorizer $authorizer, PathPlaceholders $placeholderStorage) {
+		function __construct(RouterConfig $config, Container $container, RequestDetails $requestDetails, PathPlaceholders $placeholderStorage, PatternIndicator $patternIndicator) {
 
 			$this->config = $config;
 
@@ -35,11 +29,9 @@
 
 			$this->requestDetails = $requestDetails;
 
-			$this->registry = $registry;
-
-			$this->authorizer = $authorizer;
-
 			$this->activePlaceholders = $placeholderStorage;
+
+			$this->patternIndicator = $patternIndicator;
 		}
 
 		public function findRenderer ():void {
@@ -61,7 +53,6 @@
 
 		public function loadPatterns(RouteCollection $collection):Generator {
 			
-			// we can't skip collections where incoming path is not one of the patterns in AuthStorage->claimedRoutes (which would've improved matching speed) cuz of the complexity of such comparison
 			foreach ($collection->_getPatterns() as $pattern)
 			 	
 			 	yield $pattern;
@@ -94,7 +85,7 @@
 
 				if ($this->shouldDelve($collection, $parsed)) {
 
-					$this->indicatePatternDetails($collection, $pattern);
+					$this->patternIndicator->indicate($collection, $pattern);
 
 					return $this->recursiveSearch($collection->_getPrefixCollection(), $fullRouteState, $computedPattern); /** we don't bother checking whether a route was found or not because if there was none after going downwards*, searching sideways* won't help either
 
@@ -118,7 +109,7 @@ string(3) "get"
 bool(true)*/
 						if ($this->routeCompare($parsed, $renderer->getRouteMethod())) {
 
-							$this->indicatePatternDetails($collection, $pattern);
+							$this->patternIndicator->indicate($collection, $pattern);
 
 							if ($this->requestDetails->isApiRoute() && $collection->_isMirroring() && $renderer instanceof Markup)
 
@@ -314,45 +305,9 @@ bool(true)*/
 			]);
 		}
 
-		// if a higher level security was applied to a child collection with its own rules, omitting the current pattern, the security will be withdrawn from that pattern
-		private function setPatternAuthentication(RouteCollection $collection, string $pattern):void {
+		public function getIndicator ():PatternIndicator {
 
-			if ($activePatterns = $collection->_authenticatedPaths()) {
-
-				if (in_array($pattern, $activePatterns))
-
-					$this->patternAuthentication = $collection->_getAuthenticator();
-
-				else $this->patternAuthentication = null;
-			}
-		}
-
-		private function indicatePatternDetails (RouteCollection $collection, string $pattern) {
-
-			$this->setPatternAuthentication($collection, $pattern);
-
-			$this->includeMiddleware($collection, $pattern);
-
-			$this->updatePermissions($collection, $pattern);
-		}
-
-		public function getPatternAuthentication ():AuthStorage {
-
-			return $this->patternAuthentication;
-		}
-
-		private function includeMiddleware (RouteCollection $collection, string $segment):void {
-
-			$collection->_assignMiddleware();
-
-			$this->registry->updateStack($segment);
-		}
-
-		private function updatePermissions (RouteCollection $collection, string $pattern):void {
-
-			$collection->_authorizePaths();
-
-			$this->authorizer->updateRuleStatus($pattern);
+			return $this->patternIndicator;
 		}
 	}
 ?>
