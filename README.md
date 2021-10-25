@@ -1,0 +1,1 @@
+Documentation in progress over at https://github.com/nmeri17/suphple-docs/. Help needed with writing tests. Framework code itself is mostly complete, pending the user-facing testing component. Please check the contribution page on the docs first
