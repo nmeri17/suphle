@@ -1,18 +1,27 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\CanaryCollections;
 
-	use Tilwa\Contracts\Routing\CanaryGateway;
+	use Tilwa\Routing\BaseCollection;
 
-	class DefaultCollection implements CanaryGateway {
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Controllers\CanaryController;
 
-		public function willLoad ():bool {
+	use Tilwa\Response\Format\Json;
 
-			return;
+	class DefaultCollection extends BaseCollection {
+
+		public function _handlingClass ():string {
+
+			return CanaryController::class; // in a real app, these canaries and their collections will point to different controllers
 		}
 
-		public function entryClass ():string {
+		public function SAME__URLh () {
 
-			return ::class;
+			$this->_get(new Json("defaultHandler"));
+		}
+
+		public function id () {
+
+			$this->_get(new Json("defaultPlaceholder"));
 		}
 	}
 ?>

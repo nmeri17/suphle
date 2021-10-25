@@ -33,5 +33,7 @@
 		public function _getLocalPrefix ():string;
 
 		public function _getLastRegistered ():array;
+
+		public function _setLastRegistered (array $renderers):void
 	}
 ?>

@@ -12,5 +12,10 @@
 			
 			// 
 		}
+
+		public function test_nested_route_overwrites_current_prefix () {
+			
+			// 
+		}
 	}
 ?>

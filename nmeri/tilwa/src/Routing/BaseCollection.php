@@ -8,11 +8,13 @@
 
 	use Tilwa\Contracts\{Routing\RouteCollection, Auth\AuthStorage};
 
+	use Tilwa\Routing\Crud\{BaseBuilder, ApiBuilder, BrowserBuilder};
+
 	abstract class BaseCollection implements RouteCollection {
 
 		protected $canaryValidator, $routerConfig, $authStorage, $middlewareRegistry, $lastRegistered;
 
-		private $utilities = ["_mirrorBrowserRoutes", "_authenticatedPaths", "_handlingClass", "_crud", "_register", "_getPrefixCollection", "_canaryEntry", "_setLocalPrefix", "_prefixCurrent", "_getPatterns", "__call", "_prefixFor", "_getAuthenticator", "_getLocalPrefix", "_doesntExpectCrud", "_expectsCrud", "_isMirroring", "_only", "_except", "_assignMiddleware", "_authorizePaths", "_getLastRegistered"
+		private $utilities = ["_mirrorBrowserRoutes", "_authenticatedPaths", "_handlingClass", "_crud", "_crudJson", "_register", "_getPrefixCollection", "_canaryEntry", "_setLocalPrefix", "_prefixCurrent", "_getPatterns", "__call", "_prefixFor", "_getAuthenticator", "_getLocalPrefix", "_doesntExpectCrud", "_expectsCrud", "_isMirroring", "_only", "_except", "_assignMiddleware", "_authorizePaths", "_getLastRegistered", "_setLastRegistered"
 		],
 
 		$mirroring = false, $crudMode = false, $localPrefix, $prefixClass;
@@ -62,13 +64,26 @@
 			$this->localPrefix = $prefix;
 		}
 
-		protected function _crud (string $viewPath):CrudBuilder {
+		/**
+		 * `save` must be called in the invoking method
+		*/
+		protected function _crud (string $viewPath, string $viewModelPath = null):BaseBuilder {
 
-			if (!empty($this->localPrefix)) { // confirm setting neither creates no crud routes
+			if (!empty($this->localPrefix)) {
 
 				$this->crudMode = true;
 
-				return new CrudBuilder($this, $viewPath ); // you must call `save` in the invoking method
+				return new BrowserBuilder($this, $viewPath, $viewModelPath );
+			}
+		}
+
+		protected function _crudJson ():BaseBuilder {
+
+			if (!empty($this->localPrefix)) {
+
+				$this->crudMode = true;
+
+				return new ApiBuilder($this );
 			}
 		}
 
@@ -93,6 +108,11 @@
 		public function _getLastRegistered ():array {
 
 			return $this->lastRegistered;
+		}
+
+		public function _setLastRegistered (array $renderers):void {
+
+			$this->lastRegistered = $renderers;
 		}
 
 		public function _prefixFor (string $routeClass):void {

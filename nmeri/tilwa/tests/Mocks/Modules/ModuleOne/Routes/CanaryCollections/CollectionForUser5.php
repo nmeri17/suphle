@@ -1,18 +1,22 @@
 <?php
-	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\Canaries;
+	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\CanaryCollections;
 
-	use Tilwa\Contracts\Routing\CanaryGateway;
+	use Tilwa\Routing\BaseCollection;
 
-	class CanaryForUser5 implements CanaryGateway {
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Controllers\CanaryController;
 
-		public function willLoad ():bool {
+	use Tilwa\Response\Format\Json;
 
-			return;
+	class CollectionForUser5 extends BaseCollection {
+
+		public function _handlingClass ():string {
+
+			return CanaryController::class;
 		}
 
-		public function entryClass ():string {
+		public function SAME__URLh () {
 
-			return ::class;
+			$this->_get(new Json("user5Handler"));
 		}
 	}
 ?>

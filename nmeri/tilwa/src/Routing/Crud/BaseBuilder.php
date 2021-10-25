@@ -1,22 +1,11 @@
 <?php
-	namespace Tilwa\Routing;
+	namespace Tilwa\Routing\Crud;
 
-	use Tilwa\Response\Format\{Markup, Redirect, Reload, AbstractRenderer};
+	abstract class BaseBuilder {
 
-	class CrudBuilder {
+		private $idPlaceholder = "id";
 
-		private $resourceName, $viewPath, $idPlaceholder = "id",
-
-		$allowedActions = ["showCreateForm", "saveNew", "showAll", "showOne", "updateOne", "delete", "showSearchForm"],
-
-		$overwritable = [];
-		
-		public function __construct(RouteCollection $context, string $viewPath) {
-
-			$this->resourceName = $context->_getLocalPrefix();
-
-			$this->viewPath = $viewPath . "/";
-		}
+		protected $overwritable = [], $allowedActions = [];
 
 		public function save():array {
 
@@ -34,12 +23,14 @@
 
 				$createdRoutes[$pattern] = $renderer;
 			}
-			return $createdRoutes;
+			return $createdRoutes; // instead of this, call something that'll trigger $this->lastRegistered on the collection
 		}
 
-		private function showCreateForm():array {
+		protected function showCreateForm():array {
 
 			$r = new Markup(__FUNCTION__, $this->viewPath . "create-form");
+
+			new Markup(__FUNCTION__, $this->viewPath . "create-form", $this->viewModelPath . "create-form"); // when vm path not found, use view own
 
 			$r->setRouteMethod("get");
 
@@ -49,7 +40,7 @@
 		}
 
 		// @return Redirect to "/resource/new_id"
-		private function saveNew():array {
+		protected function saveNew():array {
 
 			$r = new Redirect(__FUNCTION__, function () {
 
@@ -63,7 +54,7 @@
 			return compact("r", "pattern");
 		}
 
-		private function showAll():array {
+		protected function showAll():array {
 
 			$r = new Markup(__FUNCTION__, $this->viewPath . "show-all");
 
@@ -74,7 +65,7 @@
 			return compact("r", "pattern");
 		}
 
-		private function showOne():array {
+		protected function showOne():array {
 
 			$r = new Markup(__FUNCTION__, $this->viewPath . "show-one");
 
@@ -85,7 +76,7 @@
 			return compact("r", "pattern");
 		}
 
-		private function updateOne():array {
+		protected function updateOne():array {
 
 			$r = new Reload(__FUNCTION__);
 
@@ -96,7 +87,7 @@
 			return compact("r", "pattern");
 		}
 
-		private function deleteOne():array {
+		protected function deleteOne():array {
 
 			$r = new Redirect(__FUNCTION__, function () {
 				
@@ -113,7 +104,7 @@
 		/**
 		 * It's assumed to the same page where the form lives is where the results will be displayed
 		*/
-		private function showSearchForm ():array {
+		protected function showSearchForm ():array {
 
 			$r = new Markup(__FUNCTION__, $this->viewPath . "show-search-form");
 

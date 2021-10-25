@@ -3,11 +3,28 @@
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\Canaries\{DefaultCanary, InvalidCanary, CanaryRequestHasFoo, CanaryForUser5};
 
-	class CanaryRoutes extends BrowserNoPrefix { // try with/without prefix, with/without middleware, with/without auth
+	use Tilwa\Routing\BaseCollection;
+
+	class CanaryRoutes extends BaseCollection { // try with/without prefix, with/without middleware, with/without auth
+
+		public function __construct(CanaryValidator $validator, TokenStorage $authStorage) {
+
+			$this->validator = $validator;
+
+			$this->authStorage = $authStorage;
+		}
+
+		public function _handlingClass ():string {
+
+			return "";
+		}
 		
 		public function LOAD__DEFAULTh () {
 			
-			return $this->_canaryEntry([DefaultCanary::class, InvalidCanary::class]);
+			return $this->_canaryEntry([
+
+				InvalidCanary::class, DefaultCanary::class
+			]);
 		}
 		
 		public function OTHER__USERS__SKIPh () {

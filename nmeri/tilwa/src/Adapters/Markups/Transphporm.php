@@ -9,23 +9,29 @@
 
 	class Transphporm implements HtmlParser {
 
-		private $fileConfig, $transConfig;
+		private $fileConfig, $transphpormConfig;
 
-		public function __construct (ModuleFiles $fileConfig, TConfig $transConfig) {
+		public function __construct (ModuleFiles $fileConfig, TConfig $tConfig) {
 
 			$this->fileConfig = $fileConfig;
 
-			$this->transConfig = $transConfig;
+			$this->transphpormConfig = $tConfig;
 		}
 
 		public function parseAll (...$arguments):string {
 
+			$tConfig = $this->transphpormConfig;
+
 			[$markup, $viewModel, $data] = $arguments;
 
-			return (new Builder(
-				file_get_contents($this->fileConfig->getViewPath() . $markup),
+			if ($tConfig->inferFromViewName() && empty($viewModel))
 
-				file_get_contents($this->transConfig->getTssPath() . $viewModel)
+				$viewModel = $markup;
+
+			return (new Builder(
+				file_get_contents($this->fileConfig->getViewPath() . $markup . ".php"),
+
+				file_get_contents($tConfig->getTssPath() . $viewModel . ".php")
 			))
 			->output($data)->body;
 		}

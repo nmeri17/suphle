@@ -6,5 +6,7 @@
 		public function getId ();
 
 		public function getPassword ();
+
+		public function find ():User;
 	}
 ?>

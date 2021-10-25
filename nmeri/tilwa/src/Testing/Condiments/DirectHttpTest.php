@@ -14,7 +14,11 @@
 		*/
 		protected function setHttpParams (string $requestPath, string $httpMethod = "get", ?string $payload = "", array $headers = []):void {
 
-			$_GET["tilwa_path"] = $requestPath;
+			$components = parse_url($requestPath);
+
+			$_GET["tilwa_path"] = $components["path"];
+
+			$_GET += $components["query"];
 
 			$_SERVER["REQUEST_METHOD"] = $httpMethod;
 
