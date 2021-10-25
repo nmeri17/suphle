@@ -8,7 +8,10 @@
 
 		private $factoryList = [];
 
-		abstract public function manufacture ();
+		/**
+		 * This features the [whenCase] stack that runs against that argument
+		*/
+		abstract protected function manufacture (...$arguments);
 
 		// Interface implemented by all the use-cases
 		abstract protected function getInterface ():string;
@@ -22,7 +25,12 @@
 			return $this;
 		}
 
-		protected function evaluate() {
+		/**
+		 * This is the method user calls from their controller
+		*/
+		public function retrieveConcrete(...$arguments) {
+
+			$this->manufacture(...$arguments);
 			
 			foreach ($this->factoryList as $handler => $case)
 

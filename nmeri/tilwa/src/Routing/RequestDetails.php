@@ -1,10 +1,14 @@
 <?php
 
-	namespace Tilwa\Routing;
+	namespace Tilwa\Routing; // relocate this to Request namespace
 
 	use Tilwa\Contracts\Config\Router;
 
-	/* A bridge between Router config, actual request detail, and making sense out of the raw incoming request. Also suffices for components without access to their own handlers i.e. login*/
+	/**
+	 * Suffices for components without access to their own handlers i.e. login
+	 * 
+	 * Our closest adaptation of the PSR\RequestInterface
+	*/
 	class RequestDetails {
 
 		private $config, $path;
@@ -16,19 +20,39 @@
 
 		public function getPath ():string {
 
-			if (is_null($this->path))
+			$pathKey = "tilwa_path";
 
-				$this->path = $_GET['tilwa_path'];
+			if (is_null($this->path)) {
+
+				if (array_key_exists($pathKey, $_GET)) {
+
+					$this->path = $_GET[$pathKey];
+
+					unset($_GET[$pathKey]);
+				}
+
+				else $this->path = "";
+			}
 
 			return $this->path;
 		}
 
-		public function getMethod ():string {
+		public function httpMethod ():string {
 
 			return strtolower(
 
 				$_POST["_method"] ?? $_SERVER['REQUEST_METHOD']
 			);
+		}
+
+		public function isGetRequest ():bool {
+
+			return $this->httpMethod() == "get";
+		}
+
+		public function isPostRequest ():bool {
+
+			return $this->httpMethod() == "post";
 		}
 
 		public function isApiRoute ():bool {
@@ -79,11 +103,9 @@
 			return array_combine($versionKeys, $versionHandlers);
 		}
 
-		public function getPayload ():array {
+		public function matchesMethod (string $name):bool {
 
-			if ($this->getMethod() == "get")
-			
-				return array_diff_key(["tilwa_path" => 55], $_GET);
+			return $this->httpMethod() == $name;
 		}
 	}
 ?>

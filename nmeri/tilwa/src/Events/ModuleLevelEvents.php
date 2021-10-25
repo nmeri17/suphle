@@ -1,25 +1,34 @@
 <?php
 	namespace Tilwa\Events;
 
-	use Tilwa\App\{ModuleDescriptor, Container};
+	use Tilwa\Contracts\Config\Events;
 
 	class ModuleLevelEvents {
 
-		private $subscriberLog = [],
+		private $modules, $fireHard = true, $subscriberLog = [], // this is where subscribers to the immediate last fired external event reside
 
-		$eventManagers = [];
+		$eventManagers = [], $blanks = [];
 
-		public function bootReactiveLogger(array $descriptors):void {
+		public function __construct (array $modules) {
+
+			$this->modules = $modules;
+		}
+
+		public function bootReactiveLogger():void {
 			
-			foreach ($this->descriptors as $descriptor) {
+			foreach ($this->modules as $descriptor) {
 
-				if ($manager = $descriptor->getEventManager()) {
+				$container = $descriptor->getContainer();
 
-					$this->eventManagers[] = $manager;
+				if ($config = $container->getClass(Events::class)) {
+
+					$manager = $container->getClass($config->getManager());
 
 					$manager->registerListeners();
 
-					$descriptor->getContainer()->whenTypeAny()->needsAny([
+					$this->eventManagers[] = $manager;
+
+					$container->whenTypeAny()->needsAny([
 
 						EventManager::class => $manager
 					]);
@@ -48,15 +57,31 @@
 		}
 
 		public function triggerHandlers(EventSubscription $scope, string $eventName, $payload):self {
+
+			if (!$this->fireHard) {
+
+				$this->blanks[] = $scope;
+
+				return $this;
+			}
 			
 			$hydratedHandler = $scope->getHandlingClass();
 
-			foreach ($scope->getHandlingUnits() as $executionUnit) {
-				if ($executionUnit->canExecute($eventName))
+			foreach ($scope->getMatchingUnits($eventName) as $unit)
+				
+				$unit->fire($hydratedHandler, $payload);
 
-					$executionUnit->fire($hydratedHandler, $payload);
-			}
 			return $this;
+		}
+
+		public function makeFireSoft ():void {
+
+			$this->fireHard = false;
+		}
+
+		public function getBlanks ():array {
+
+			return $this->blanks;
 		}
 	}
 ?>

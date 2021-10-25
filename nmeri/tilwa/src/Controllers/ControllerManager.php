@@ -8,19 +8,29 @@
 
 	use Tilwa\Contracts\{Orm, ControllerModel};
 
-	use Tilwa\Request\BaseRequest;
+	use Tilwa\Request\ValidatorManager;
 
 	use Tilwa\Errors\CrowdedConstructor;
 
+	use Tilwa\Routing\{PathPlaceholders, RequestDetails};
+
 	class ControllerManager {
 
-		private $controller, $container,
+		private $controller, $container, $placeholderStorage,
 
-		$handlerParameters, $request, $actionModels;
+		$handlerParameters, $actionModels, $validatorManager,
 
-		function __construct( Container $container) {
+		$actionMethod, $requestDetails;
+
+		function __construct( Container $container, PathPlaceholders $placeholderStorage, ValidatorManager $validatorManager, RequestDetails $requestDetails) {
 
 			$this->container = $container;
+
+			$this->placeholderStorage = $placeholderStorage;
+
+			$this->validatorManager = $validatorManager;
+
+			$this->requestDetails = $requestDetails;
 		}
 
 		public function setController(Executable $controller):void {
@@ -41,9 +51,9 @@
 				throw new CrowdedConstructor;
 		}
 
-		public function setHandlerParameters(string $actionMethod):self {
+		public function setHandlerParameters():self {
 
-			$this->handlerParameters = $this->container->getMethodParameters($actionMethod, get_class($this->controller));
+			$this->handlerParameters = $this->container->getMethodParameters($this->actionMethod, get_class($this->controller));
 
 			return $this;
 		}
@@ -72,58 +82,50 @@
 
 					$explicit = $this->container->getClass($modelWrapper);
 
-					$explicit->setIdentifier($this->request->$parameter);
+					$explicit->setIdentifier($this->placeholderStorage->getSegmentValue($parameter));
 
 					$this->handlerParameters[$parameter] = new ActionModelProxy($explicit);
 				}
 			}
 		}
 
-		public function bootController():self {
+		public function bootController (string $actionMethod):self {
+
+			$this->actionMethod = $actionMethod;
+
+			$this->updateValidatorMethod();
 
 			$this->controller->setContainer($this->container);
 
 			return $this;
 		}
 
-		public function assignActionRequest():self {
+		private function updateValidatorMethod ():void {
 
-			foreach ($this->handlerParameters as $parameter) {
-				
-				if ($parameter instanceof BaseRequest)
+			$actionMethod = $this->actionMethod;
 
-					$this->request = $parameter;
+			$collectionName = $this->controller->validatorCollection ();
+
+			$hasNoValidator = empty($collectionName) || !method_exists($collectionName, $actionMethod);
+
+			if ($hasNoValidator) {
+
+				if ($this->requestDetails->isGetRequest()) return;
+
+				throw new NoCompatibleValidator;
 			}
-			return $this;
-		}
-
-		public function revertRequest(BaseRequest $previousRequest):self {
-
-			$previousRequest->setValidationErrors( $this->request->validationErrors() );
 			
-			$this->request = $previousRequest;
-
-			return $this;
+			$this->validatorManager->setActionRules(call_user_func([$collectionName, $actionMethod]))
 		}
 
-		public function getRequest():BaseRequest {
-			
-			return $this->request;
+		public function isValidatedRequest ():bool {
+
+			return $this->validatorManager->isValidated();
 		}
-		
-		// this should go first before action argument instantiation
-		public function updateRequest(BaseRequest $request):self {
 
-			$pattern = "(?<![A-Z0-9])# negative lookbehind: given PATH_id_EDIT_id2_EDIT__SAME__OKJh_optionalO_TOMP, refuse to match the h in the compound segment
-			([a-z0-9]+)# pick placeholders"; // confirm this guy works with underscores, not slashes
+		public function getValidatorErrors ():array {
 
-			preg_match("/$pattern/x", $request->getPath(), $matches);
-
-			$request->setPlaceholders($matches[0]);
-
-			$this->request = $request;
-
-			return $this;
+			return $this->validatorManager->validationErrors();
 		}
 	}
 ?>

@@ -4,7 +4,7 @@
 
 	use Tilwa\App\{Container, ModuleDescriptor};
 
-	use Tilwa\Routing\RouteManager;
+	use Tilwa\Routing\{RouteManager, RequestDetails};
 
 	use Tilwa\Response\Format\{Markup, AbstractRenderer};
 
@@ -12,17 +12,15 @@
 
 	use Tilwa\Contracts\BaseResponseManager;
 
+	use Tilwa\Request\{ValidatorManager, PayloadStorage};
+
 	class ResponseManager implements BaseResponseManager {
 
-		private $container, $router, $renderer,
+		private $container, $router, $renderer, $payloadStorage,
 
-		$controllerManager, $requestDetails,
+		$controllerManager, $flowQueuer;
 
-		$flowQueuer;
-
-		public $responseMutations = [];
-
-		function __construct (Container $container, RouteManager $router, ControllerManager $controllerManager, RequestDetails $requestDetails, FlowResponseQueuer $flowQueuer, AbstractRenderer $renderer) {
+		function __construct (Container $container, RouteManager $router, ControllerManager $controllerManager, FlowResponseQueuer $flowQueuer, AbstractRenderer $renderer, PayloadStorage $payloadStorage) {
 
 			$this->container = $container;
 
@@ -30,11 +28,11 @@
 
 			$this->controllerManager = $controllerManager;
 
-			$this->requestDetails = $requestDetails;
-
 			$this->flowQueuer = $flowQueuer;
 
 			$this->renderer = $renderer;
+
+			$this->payloadStorage = $payloadStorage;
 		}
 		
 		public function getResponse ():string {
@@ -60,7 +58,7 @@
 			return $this;
 		}
 
-		public function handleValidRequest(BaseRequest $request):AbstractRenderer {
+		public function handleValidRequest(RequestDetails $requestDetails):AbstractRenderer {
 
 			$renderer = $this->renderer;
 
@@ -68,42 +66,36 @@
 
 			$manager = $this->controllerManager;
 
-			if (!$this->requestDetails->isApiRoute())
+			if (!$requestDetails->isApiRoute())
 
-				$router->setPrevious($renderer, $request);
+				$router->setPreviousRenderer($renderer);
 
-			if ($renderer instanceof Markup && $router->acceptsJson())
+			if ($renderer instanceof Markup && $this->payloadStorage->acceptsJson())
 
 				$renderer->setWantsJson();
 
-			$manager->updateRequest($request)
-
-			->hydrateModels($renderer->getRouteMethod());
+			$manager->hydrateModels($renderer->getRouteMethod());
 
 			return $renderer->invokeActionHandler($manager->getHandlerParameters());
 		}
 
 		public function isValidRequest ():bool {
 
-			return $this->controllerManager->getRequest()->isValidated();
+			return $this->controllerManager->isValidatedRequest();
 		}
 
-		public function validateManager():void {
+		private function validateManager():void {
 
 			$globalDependencies = $this->container->getClass(ModuleDescriptor::class)->getDependsOn();
 
 			$this->controllerManager->validateController($globalDependencies);
 		}
 
-		public function buildManagerTarget():void {
+		private function buildManagerTarget():void {
 
-			$this->controllerManager->bootController()
+			$this->controllerManager->bootController($this->renderer->getHandler())
 
-			->setHandlerParameters($this->renderer->getHandler())
-
-			->assignActionRequest() // this should run before model hydration and before validation
-
-			->assignModelsInAction();
+			->setHandlerParameters()->assignModelsInAction();
 		}
 
 		private function updateControllerManager():void {
@@ -117,11 +109,6 @@
 		public function getControllerManager():ControllerManager {
 			
 			return $this->controllerManager;
-		}
-
-		public function patternAuthentication ():AuthStorage {
-
-			return $this->router->getPatternAuthentication();
 		}
 
 		public function requestAuthenticationStatus (AuthStorage $storage):bool {

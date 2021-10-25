@@ -1,0 +1,95 @@
+<?php
+	$service->doXToProduct($request); // we originally have this; until we wanna do Y which intersects with X
+
+?>
+
+<?php
+
+	if ($request->hasX) // note: this can be much more complex, so it's recommended we use a strategy factory
+
+		$service->doXToProduct($request);
+
+	else $service->doYToProduct($request); // now internally, doYToProduct changes a dependency [DpDUtility] that either affects [doXToProduct] or another method used in another controller
+
+	// so we change DpDUtility into DpDUtilityInterface and pass/autowire DpDUtilityOld to [doXToProduct] and DpDUtilityNew to [doYToProduct]
+
+	class Service {
+
+		function __construct(XBusiness $xBusiness, YBusiness $yBusiness) {
+
+			$this->xBusiness = $xBusiness;
+
+			$this->yBusiness = $yBusiness;
+		}
+
+		function doXToProduct(Request $request) {
+
+			$a = $this->xBusiness->thingA($request);
+
+			return $this->xBusiness->otherThingB($a);
+		}
+
+		function doYToProduct(Request $request) {
+
+			return $this->yBusiness->oh($request);
+		}
+	}
+
+	class XBusiness { // these are the guys provided with new and old implementations of [sharedDependency]
+
+		function __construct(DpDUtilityInterface $sharedDependency) {
+
+			$this->sharedDependency = $sharedDependency;
+		}
+	}
+
+	class YBusiness { // so we are free to work on the improved/modified implementation of [DpDUtilityInterface] that makes room for this guy's requirements and inject that into this guy
+	// When everything is ready/tested, we equally inject that concrete into [XBusiness]
+
+		function __construct(DpDUtilityInterface $sharedDependency) {
+
+			$this->sharedDependency = $sharedDependency;
+		}
+	}
+
+?>
+
+<?php
+	
+	// injected from constructor
+	$handler = $factory->manufacture($request); // can pass other variable here
+
+	$handler->doToProduct();
+
+	class XYHandlerFactory extends Factory {
+
+		function getInterface () {
+
+			return XYHandlerInterface::class; // Interface implemented by both
+		}
+
+		function manufacture (Request $request) {
+
+			return $this->whenTrue(
+				$this->isLagosReceiver($request->hasX),
+
+				XBusiness::class, // so we don't hydrate instances we don't need
+				// note that we also move the contents of Service::doXToProduct into the eventual method shared by the interfaces
+
+				$request->XValue
+			)
+
+			->whenTrue (
+				$this->anotherCondition($request->hasY),
+
+				YBusiness::class, $request->yValue // variadic argument list
+			);
+		}
+
+		private function isLagosReceiver (int $param):bool {
+
+			return $this->lagosChecker->matches($param);
+		}
+
+		private function anotherCondition (string $param):bool {}
+	}

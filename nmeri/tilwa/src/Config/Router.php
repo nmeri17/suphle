@@ -21,8 +21,6 @@
 
 		abstract public function browserEntryRoute ():string;
 
-		abstract public function getModelRequestParameter():string;
-
 		// list in ascending order of execution
 		public function defaultMiddleware():array {
 

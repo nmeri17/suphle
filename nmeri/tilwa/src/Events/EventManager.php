@@ -21,11 +21,15 @@
 		public function local(string $emittingEntity, string $handlingClass):self {
 			
 			$this->initializeHandlingScope("local", $emittingEntity, $handlingClass);
+
+			return $this;
 		}
 
 		public function external(string $interaction, string $handlingClass):self {
 
 			$this->initializeHandlingScope("external", $interaction, $handlingClass);
+
+			return $this;
 		}
 
 		// there's a distinction between local and external emitters because we don't wanna assume each client has a hard dependency on that interface. The client shouldn't care beyond the knowledge that such interface may emit such events if it exists
@@ -39,7 +43,7 @@
 		/**
 		 * @param {$emitter} inserting this without a proxy means a random class can trigger handlers listening on another event, which is not the best
 		 **/
-		public function emit(string $emitter, string $eventName, $payload) {
+		public function emit(string $emitter, string $eventName, $payload = null) {
 
 			$localHandlers = $this->getLocalHandler($emitter);
 

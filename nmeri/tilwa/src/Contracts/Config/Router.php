@@ -12,8 +12,6 @@
 		// point to the entry collection
 		public function browserEntryRoute ():string;
 
-		public function getModelRequestParameter():string;
-
 		public function defaultMiddleware():array;
 	}
 ?>

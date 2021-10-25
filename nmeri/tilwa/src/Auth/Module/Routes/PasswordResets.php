@@ -50,10 +50,5 @@
 			
 			return $this->_get(new Markup("updateSuccess", "password/update-success"));
 		}
-
-		public function _authenticatePaths():bool {
-			
-			//return !$this->allow->isAuth();
-		}
 	}
 ?>

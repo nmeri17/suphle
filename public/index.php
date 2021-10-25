@@ -2,13 +2,13 @@
 
 	require '../autoload.php';
 
-	use Tilwa\App\ModuleAssembly;
+	use Tilwa\App\ModuleHandlerIdentifier;
 
 	use Modules\{Main, Cart, Category, Product, Auth, Sellers, Errors}; // correct this import
 
 	use Interactions\{CategoryExports, ProductExports};
 
-	class MyApp extends ModuleAssembly {
+	class MyApp extends ModuleHandlerIdentifier {
 		
 		function getModules():array {
 
@@ -27,11 +27,10 @@
 			]);
 
 			return [
-				new Main, $Cart, $Category, $Product, new Auth, $Sellers,
-				new Errors // this must be the last for it to catch unmatched routes. the route file should have a _notFound method that catches anything thrown at it
+				new Main, $Cart, $Category, $Product, new Auth, $Sellers
 			];
 		}
 	}
 
-	(new MyApp)->orchestrate();
+	echo (new MyApp)->orchestrate();
 ?>

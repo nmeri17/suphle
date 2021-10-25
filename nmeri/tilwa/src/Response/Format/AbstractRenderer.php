@@ -1,21 +1,17 @@
 <?php
-
 	namespace Tilwa\Response\Format;
 
-	use Tilwa\Contracts\HtmlParser;
-
-	use Tilwa\Flows\ControllerFlows;
+	use Tilwa\{Contracts\HtmlParser, Flows\ControllerFlows};
 
 	abstract class AbstractRenderer {
 
-		protected $container;
+		private $controller, $rawResponse, $path, $flows, $routeMethod;
 
-		private $controller, $rawResponse, $path, $flows, $routeMethod, $handler;
+		protected $handler, $statusCode, $headers = [];
 
+		public function setDependencies(HtmlParser $htmlParser, string $controllerClass):self {
 
-		public function setDependencies(Container $container, string $controllerClass):self {
-
-			$this->container = $container;
+			$this->htmlParser = $htmlParser;
 			
 			$this->controller = $controllerClass;
 
@@ -39,22 +35,12 @@
 
 		protected function renderJson():string {
 
-			$request = $this->request;
-
-			if (!$request->isValidated())
-
-				$response = $request->validationErrors();
-
-			else $response = $this->rawResponse;
-			
-			return json_encode($response);
+			return json_encode($this->rawResponse);
 		}
 
-		protected function renderHtml():string {
+		protected function renderHtml(...$arguments):string { // should return psr responseInterface instead
 			
-			return $this->container->getClass(HtmlParser::class)
-
-			->parseAll($this->viewName, $this->rawResponse);
+			return $this->htmlParser->parseAll(...$arguments);
 		}
 
 		abstract public function render ():string;
@@ -96,11 +82,6 @@
 			$this->path = $path;
 		}
 
-		public function getContainer():Container {
-			
-			return $this->container;
-		}
-
 		public function getRouteMethod():string {
 			
 			return $this->routeMethod;
@@ -114,6 +95,23 @@
 		public function getHandler ():string {
 
 			return $this->handler;
+		}
+
+		public function setHeaders (int $statusCode, array $headers):void {
+
+			$this->statusCode = $statusCode;
+
+			$this->headers += $headers;
+		}
+
+		public function getStatusCode ():int {
+
+			return $this->statusCode;
+		}
+
+		public function getHeaders ():array {
+
+			return $this->headers;
 		}
 	}
 ?>

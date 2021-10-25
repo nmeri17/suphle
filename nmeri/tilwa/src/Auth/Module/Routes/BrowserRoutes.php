@@ -8,6 +8,9 @@
 
 	use Tilwa\Response\Format\{Markup, Redirect};
 
+	/**
+	 * Instead of manually testing this, it should be our first candidate for testing test automation
+	*/
 	class BrowserRoutes extends RouteCollection {
 		
 		public function _prefixCurrent() {
@@ -58,11 +61,6 @@
 		public function resets() {
 			
 			return $this->_prefixFor(PasswordResets::class);
-		}
-		
-		public function _passover():bool {
-			
-			return !$this->allow->isAuth();
 		}
 	}
 ?>

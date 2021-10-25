@@ -2,19 +2,19 @@
 
 	namespace Tilwa\Auth;
 
-	use Tilwa\Contracts\{AuthStorage, UserHydrator};
+	use Tilwa\Contracts\Auth\{AuthStorage, UserHydrator};
 
-	use Tilwa\Routing\RequestDetails;
+	use Tilwa\Routing\PayloadStorage;
 
 	class EmailPasswordComparer {
 
-		private $userHydrator, $requestDetails, $user;
+		private $userHydrator, $payloadStorage, $user;
 
-		public function __construct (UserHydrator $userHydrator, RequestDetails $requestDetails) {
+		public function __construct (UserHydrator $userHydrator, PayloadStorage $payloadStorage) {
 
 			$this->userHydrator = $userHydrator;
 
-			$this->requestDetails = $requestDetails;
+			$this->payloadStorage = $payloadStorage;
 		}
 
 		public function setAuthMechanism (AuthStorage $authStorage) {
@@ -24,14 +24,14 @@
 
 		public function compare ():bool {
 
-			$payload = $this->requestDetails->getPayload();
+			$payload = $this->payloadStorage->fullPayload();
 
 			$user = $this->userHydrator->findAtLogin();
 
 			if (
 				is_null($user) ||
 
-				!password_verify($payload["password"], $user->password)
+				!password_verify($payload["password"], $user->getPassword())
 			)
 
 				return false;

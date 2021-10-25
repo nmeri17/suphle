@@ -4,9 +4,11 @@
 
 	use Tilwa\Contracts\Config\Services as ServicesContract;
 
-	use Tilwa\Contracts\{Orm, HtmlParser, AuthStorage, RequestValidator, QueueManager};
+	use Tilwa\Contracts\{Database\Orm, HtmlParser, Requests\RequestValidator, QueueManager};
 
-	use Tilwa\ServiceProviders\{OrmProvider, AuthStorageProvider, HtmlTemplateProvider, RequestValidatorProvider, QueueProvider, LaravelAppProvider};
+	use Tilwa\Contracts\Auth\{AuthStorage, User};
+
+	use Tilwa\InterfaceLoader\{OrmLoader, AuthStorageLoader, HtmlTemplateLoader, RequestValidatorLoader, QueueLoader, LaravelAppLoader, UserEntityLoader};
 
 	class Services implements ServicesContract {
 
@@ -15,20 +17,22 @@
 			return false; // test probably wants this on
 		}
 
-		public function getProviders():array {
+		public function getLoaders():array {
 
 			return [
-				Orm::class => OrmProvider::class,
+				Orm::class => OrmLoader::class,
 
-				HtmlParser::class => HtmlTemplateProvider::class,
+				HtmlParser::class => HtmlTemplateLoader::class,
 
-				AuthStorage::class => AuthStorageProvider::class,
+				AuthStorage::class => AuthStorageLoader::class,
 
-				RequestValidator::class => RequestValidatorProvider::class,
+				RequestValidator::class => RequestValidatorLoader::class,
 
-				QueueManager::class => QueueProvider::class,
+				QueueManager::class => QueueLoader::class,
 
-				LaravelApp::class => LaravelAppProvider::class
+				LaravelApp::class => LaravelAppLoader::class,
+
+				User::class => UserEntityLoader::class
 			];
 		}
 

@@ -1,5 +1,4 @@
 <?php
-
 	namespace Tilwa\App;
 
 	use ReflectionMethod, ReflectionClass, ReflectionFunction, ReflectionType, Exception;
@@ -93,7 +92,7 @@
 			return $concrete;
 		}
 
-		public function getClassForContext (string $fullName) {
+		private function getClassForContext (string $fullName) {
 
 			$outermost = $this->notRecursing();
 
@@ -137,13 +136,13 @@
 			}
 		}
 
-		private function hydrateChildsParent(string $fullName):object {
+		private function hydrateChildsParent(string $fullName):?object {
 
 			$providedParent = $this->getProvidedParent($fullName);
 
-			if (!is_null($providedParent))
+			if (is_null($providedParent)) return null;
 
-				return $this->getClass($providedParent);
+			return $this->getClass($providedParent);
 		}
 
 		private function instantiateConcrete (string $fullName):object { // casting to [object] may be problematic to the caller
@@ -204,7 +203,10 @@
 			return $this->provisionedClasses[$this->recursingFor];
 		}
 
-		private function provideInterface(string $service):object {
+		/**
+		 * @return Object
+		 * */
+		private function provideInterface(string $service) {
 
 			if ($this->isRenamedSpace()) {
 
@@ -217,16 +219,16 @@
 
 				return $this->hydrateConfig($service);
 
-			return $this->getClassFromProvider($service);
+			return $this->getClassFromLoader($service);
 		}
 
-		private function getClassFromProvider (string $service) {
+		private function getClassFromLoader (string $service) {
 
 			$config = $this->getServicesConfig();
 
 			if (is_null($config)) return;
 
-			$providers = $config->getProviders();
+			$providers = $config->getLoaders();
 
 			if (!array_key_exists($service, $providers)) return;
 
@@ -398,7 +400,7 @@
 		}
 
 		// @return the first provided parent of the given class
-		private function getProvidedParent(string $class):string {
+		private function getProvidedParent(string $class):?string {
 
 			$allSuperiors = array_keys($this->provisionedClasses);
 
@@ -406,9 +408,9 @@
 
 			$providedParents = array_intersect($classSuperiors, $allSuperiors);
 
-			if (!empty($providedParents))
+			if (empty($providedParents)) return null;
 
-				return current($providedParents);
+			return current($providedParents);
 		}
 
 		public function whenSpace(string $callerNamespace):self {
@@ -422,7 +424,7 @@
 			return $this;
 		}
 
-		private function renameServiceSpace(NamespaceUnit $unit):self {
+		public function renameServiceSpace(NamespaceUnit $unit):self {
 			
 			$this->provisionedNamespaces[$this->provisionSpace][] = $unit;
 
@@ -500,17 +502,17 @@
 		}
 
 		// this just seems to be a shortcut to the [needs] group of methods, but doesn't want to muddle config provisioning with every other class type
-		private function hydrateConfig(string $fullName) {
+		private function hydrateConfig(string $fullName):?ConfigMarker {
 
 			$configs = $this->libraryConfigs;
 
-			if (!array_key_exists($fullName, $configs)) return;
+			if (!array_key_exists($fullName, $configs)) return null;
 				
 			return $this->instantiateConcrete($configs[$fullName]); // classes can't have custom config
 		}
 
 		// using this to subvert the arduous process of class hydration
-		private function getLaravelConfig():LaravelConfig {
+		private function getLaravelConfig():?LaravelConfig {
 
 			if (is_null($this->laravelConfig))
 
@@ -535,16 +537,21 @@
 
 		private function laravelHas (string $fullName):bool {
 
-			return array_key_exists(
-				$fullName,
+			$config = $this->getLaravelConfig();
 
-				$this->getLaravelConfig()->getProviders()
-			);
+			if (is_null($config)) return false;
+
+			return array_key_exists( $fullName, $config->getProviders() );
 		}
 
 		private function notRecursing ():bool {
 
 			return is_null($this->recursingFor);
+		}
+
+		public function provideSelf ():void {
+
+			$this->whenTypeAny()->needsAny([get_class() => $this]);
 		}
 	}
 ?>

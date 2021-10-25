@@ -2,100 +2,34 @@
 
 	namespace Tilwa\Tests\Integration\App;
 
-	use Tilwa\App\{ModuleInitializer, ModuleDescriptor};
+	use Tilwa\Testing\IsolatedComponentTest;
 
-	use Tilwa\Testing\BaseTest;
+	class ModuleInitializerTest extends IsolatedComponentTest { // SUT for the next 2 methods is [triggerRequest]
+		
+		public function test_session_resumption() {
 
-	use Tilwa\Routing\{RouteManager, BaseCollection};
+			// user with x token/session does y thing on request to a protected route z; makes a 2nd request to route A expecting to find y again
 
-	use Tilwa\Response\Format\{AbstractRenderer, Markup};
-
-	use Prophecy\Prophecy\ObjectProphecy;
-
-	class ModuleInitializerTest extends BaseTest {
-
-		private $routeMatcher;
-
-		protected function setUp ():void {
-
-			parent::setUp();
-
-			$this->routeMatcher = (new ModuleInitializer($this->getDescriptor()->reveal()));
-		}
-
-		/**
-	     * @dataProvider getCaseData
-	     */
-		public function test_assign_route (string $methodName, AbstractRenderer $renderer, string $requestPath) {
-
-			/*- Needs a route collection passed to route manager
-			- That guy contains a renderer we know/tag
-			- Afterwards, we assert that it foundRoute and renderer matches our guy*/
-
-			$this->routeMatcher->initialize();
-
-			$router = $this->injectCollectionToRouter($methodName, $renderer);
-
-			$_GET["tilwa_path"] = $requestPath;
-
-			$_SERVER["REQUEST_METHOD"] = "get";
-
-			$this->routeMatcher->assignRoute();
+			// requires login to get token and stuff
 			
-			$this->assertTrue($this->routeMatcher->didFindRoute());
-
-			$this->assertEquals($router->findRenderer(), $renderer);
+			// we want to call [attemptAuthentication] but the routes need to be ready or something. We can either upgrade this to [ModuleAssembly] or mock out all those dependencies (the stuff done by the router to activate the auth state for that route)
 		}
 
-		private function getDescriptor():ObjectProphecy {
+		public function test_stranger_cant_get_creators_resource () {
 
-			$descriptor = $this->prophet->prophesize(ModuleDescriptor::class);
-
-			$descriptor->getContainer()->willReturn($this->container);
-
-			$descriptor->getConfigs()->willReturn([]);
-
-			return $descriptor;
+			// should throw [Unauthenticated]
 		}
 
-		# @return Router double
-		private function injectCollectionToRouter (string $methodName, AbstractRenderer $renderer) {
+		public function test_authorizeRequest() {
 
-			$router = $this->prophet->prophesize(RouteManager::class);
-
-			$collection = $this->prophet->prophesize("collection");
-
-			$collection->willExtend(BaseCollection::class)
-
-			->$methodName()->will(function ($args) use ($methodName, $renderer) {
-
-				$method = "_$methodName";
-
-				$this->$method($renderer); // for nested collections, exchange this callback for one containing prefix, canary etc
-			});
-
-			$router->entryRouteMap()->willReturn([$collection->reveal()]);
-
-			$routerInstance = $router->reveal();
-
-			$this->container->whenTypeAny()->needsAny([
-
-				RouteManager::class => $routerInstance
-			]);
-
-			return $routerInstance;
+			//
 		}
 
-		public function getCaseData ():array {
+		public function test_runStack () {
 
-			return [
-				["SEGMENT", new Markup("", ""), "/segment"],
-				["SEGMENT_id", new Markup("", ""), "/segment/5"],
-				["SEGMENT__SEGMENTh_id", new Markup("", ""), "/segment-segment/5"],
-				["SEGMENT_SEGMENTh_id", new Markup("", ""), "/segment_segment/5"],
-				["SEGMENT_id_SEGMENT_id0", new Markup("", ""), "/segment/5/segment/5"],
-				["SEGMENT_id_SEGMENT_id0", new Markup("", ""), "/segment/5/segment"]
-			];
+			// we wanna visit a route containing some middleware, then confirm the underlying middleware were triggered
+
+			// a starting point may be verifying if it got to the middleware collector
 		}
 	}
 ?>

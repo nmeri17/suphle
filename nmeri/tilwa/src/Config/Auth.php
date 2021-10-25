@@ -1,10 +1,11 @@
 <?php
-
 	namespace Tilwa\Config;
 
 	use Tilwa\Contracts\Config\Auth as AuthContract;
 
-	use Tilwa\Auth\{BrowserLoginRenderer, SessionStorage, ApiLoginRenderer};
+	use Tilwa\Auth\Renderers\{BrowserLoginRenderer, ApiLoginRenderer};
+
+	use Tilwa\Auth\Storage\SessionStorage;
 
 	class Auth implements AuthContract {
 
@@ -13,11 +14,11 @@
 			return [
 				"login" => BrowserLoginRenderer::class,
 
-				"api/login" => ApiLoginRenderer::class
+				"api/v1/login" => ApiLoginRenderer::class
 			];
 		}
 
-		public function getPathRenderer (string $path):string {
+		public function getPathRenderer (string $path):?string {
 
 			$rendererList = $this->getLoginPaths();
 
@@ -39,11 +40,6 @@
 		public function getTokenTtl ():int {
 
 			return getenv("JWT_TTL");
-		}
-
-		public function isAdmin ($user):bool {
-
-			return false;
 		}
 
 		public function getModelObservers():array {

@@ -10,7 +10,7 @@
 
 	class ModuleRouteMatcher {
 
-		private $config, $laravelContainer, $router;
+		private $config, $laravelContainer, $router, $request;
 
 		public function __construct (LaravelConfig $config, LaravelApp $laravelContainer) {
 
@@ -37,7 +37,7 @@
 
 			if ($this->hasLaravelRoutes()) {
 
-				$request = $this->laravelContainer->make(Request::class);
+				$this->request = $this->laravelContainer->make(Request::class);
 
 				return $this->getRouter()->getRoutes()->match($request);
 			}
@@ -47,9 +47,7 @@
 		
 		public function getResponse ():Response {
 
-			$request = $this->laravelContainer->make(Request::class);
-
-			return $this->getRouter()->dispatch($request);
+			return $this->getRouter()->dispatch($this->request);
 		}
 	}
 ?>

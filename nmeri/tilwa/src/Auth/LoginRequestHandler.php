@@ -1,42 +1,65 @@
 <?php
-
 	namespace Tilwa\Auth;
 
 	use Tilwa\App\Container;
 
-	use Tilwa\Contracts\LoginRenderers;
+	use Tilwa\Contracts\{Auth\LoginRenderers, App\HighLevelRequestHandler};
 
 	use Tilwa\Response\Format\AbstractRenderer;
 
-	class LoginRequestHandler {
+	use Tilwa\Request\ValidatorManager;
 
-		private $rendererCollection, $container,
+	class LoginRequestHandler implements HighLevelRequestHandler {
 
-		$responseRenderer;
+		private $rendererCollection, $container, $responseRenderer,
 
-		public function __construct (LoginRenderers $renderer, Container $container) {
+		$validatorManager;
 
-			$this->rendererCollection = $renderer;
+		public function __construct (LoginRenderers $collection, Container $container, ValidatorManager $validatorManager) {
+
+			$this->rendererCollection = $collection;
 
 			$this->container = $container;
+
+			$this->validatorManager = $validatorManager;
+		}
+
+		public function setAuthService ():void {
+
+			$this->loginService = $this->rendererCollection->getLoginService();
+		}
+
+		public function isValidatedRequest ():bool {
+
+			$this->validatorManager->setActionRules($this->getLoginRules());
+	
+			return $this->validatorManager->isValidated();
+		}
+
+		public function getValidatorErrors ():array {
+
+			return $this->validatorManager->validationErrors();
+		}
+
+		private function getLoginRules ():array {
+
+			$validatorName = $this->loginService->validatorCollection();
+
+			return $this->container->getClass($validatorName)->successRules();
 		}
 
 		public function getResponse ():string {
 
-			$loginService = $this->rendererCollection->getLoginService();
-
-			$status = $loginService->compareCredentials();
-
-			$this->setResponseRenderer($status);
+			$this->setResponseRenderer();
 
 			$this->bootRenderer()->executeRenderer();
 
 			return $this->responseRenderer->render();
 		}
 
-		private function setResponseRenderer (bool $status):void {
+		private function setResponseRenderer ():void {
 
-			if ($status)
+			if ($this->loginService->compareCredentials())
 
 				$this->responseRenderer = $this->rendererCollection->successRenderer();
 
@@ -45,24 +68,33 @@
 
 		private function bootRenderer ():self {
 
-			$dependencies = $this->container->getMethodParameters("setDependencies", $this->responseRenderer);
+			$renderer = $this->responseRenderer;
 
-			$dependencies["controllerClass"] = $this->responseRenderer->getController();
+			$dependencies = $this->container->getMethodParameters("setDependencies", $renderer);
 
-			$this->responseRenderer->setDependencies(...$dependencies);
+			$dependencies["controllerClass"] = $renderer->getController();
+
+			$renderer->setDependencies(...array_values($dependencies));
 
 			return $this;
 		}
 
 		private function executeRenderer ():void {
 
-			$dependencies = $this->container->getMethodParameters(
-				$this->responseRenderer->getHandler(),
+			$renderer = $this->responseRenderer;
 
-				$this->responseRenderer->getController()
+			$dependencies = $this->container->getMethodParameters(
+				$renderer->getHandler(),
+
+				$renderer->getController()
 			);
 
-			$this->responseRenderer->invokeActionHandler($dependencies);
+			$renderer->invokeActionHandler($dependencies);
+		}
+
+		public function handlingRenderer ():AbstractRenderer {
+
+			return $this->responseRenderer;
 		}
 	}
 ?>

@@ -1,6 +1,8 @@
 <?php
 	namespace Tilwa\Request;
 
+	use Tilwa\Contracts\Auth\AuthStorage;
+
 	class PathAuthorizer {
 
 		private $authStorage, $allRules = [],

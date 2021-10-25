@@ -1,7 +1,8 @@
 <?php
+	namespace Tilwa\Contracts;
 
 	interface HtmlParser {
 
-		public function parseAll():string;
+		public function parseAll(...$arguments):string;
 	}
 ?>

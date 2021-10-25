@@ -92,5 +92,10 @@
 				return get_class($concrete);
 			}, $services);
 		}
+
+		public function validatorCollection ():?string {
+
+			return null;
+		}
 	}
 ?>

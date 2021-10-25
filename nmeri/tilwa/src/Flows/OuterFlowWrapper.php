@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Flows;
 
-	use Tilwa\Contracts\{BaseResponseManager, QueueManager, CacheManager, Authenticator};
+	use Tilwa\Contracts\{Requests\BaseResponseManager, QueueManager, CacheManager, Auth\AuthStorage, App\HighLevelRequestHandler};
 
 	use Tilwa\Flows\Jobs\{RouteBranches, BranchesContext, UpdateCountDelete};
 
@@ -11,7 +11,7 @@
 
 	use Tilwa\Routing\RequestDetails;
 
-	class OuterFlowWrapper implements BaseResponseManager {
+	class OuterFlowWrapper implements BaseResponseManager, HighLevelRequestHandler {
 
 		const FLOW_PREFIX = "tilwa_flow";
 
@@ -19,11 +19,11 @@
 
 		private $requestDetails, $queueManager, $modules,
 
-		$cacheManager, $authenticator, $routeUmbrella,
+		$cacheManager, $authStorage, $routeUmbrella,
 
 		$activeUser, $eventManager;
 
-		public function __construct(RequestDetails $requestDetails, QueueManager $queueManager, array $modules, CacheManager $cacheManager, Authenticator $authenticator, EventManager $eventManager) {
+		public function __construct(RequestDetails $requestDetails, QueueManager $queueManager, array $modules, CacheManager $cacheManager, AuthStorage $authStorage, EventManager $eventManager) {
 			
 			$this->requestDetails = $requestDetails;
 
@@ -33,7 +33,7 @@
 
 			$this->cacheManager = $cacheManager;
 
-			$this->authenticator = $authenticator;
+			$this->authStorage = $authStorage;
 
 			$this->eventManager = $eventManager;
 		}
@@ -50,9 +50,9 @@
 
 		private function getUserId():string { 
 
-			$user = $this->authenticator->getUser();
+			$user = $this->authStorage->getUser();
 
-			return !$user ? self::ALL_USERS: strval($user->id);
+			return !$user ? self::ALL_USERS: strval($user->getId());
 		}
 
 		public function canHandle():bool {
@@ -75,7 +75,7 @@
 
 		public function getResponse():string {
 
-			return $this->context->getRenderer()->render();
+			return $this->handlingRenderer()->render();
 		}
 
 		private function getActiveFlow(string $userId):RouteUserNode {
@@ -114,20 +114,25 @@
 
 			$this->eventManager->emit(
 
-				$this->context->getRenderer()->getController(), "on_flow_hit", $cachedResponse
+				$this->handlingRenderer()->getController(), "on_flow_hit", $cachedResponse
 			); // should probably include incoming request parameters?
 		}
  
 		private function queueBranches():void {
 
-			$user = $this->authenticator->getUser();
+			$user = $this->authStorage->getUser();
 
-			$renderer = $this->context->getRenderer();
+			$renderer = ;
 
 			$this->queueManager->push(RouteBranches::class, 
 
 				new BranchesContext( $this->modules, $user, $renderer )
 			);
+		}
+
+		public function handlingRenderer ():AbstractRenderer {
+
+			return $this->context->getRenderer();
 		}
 	}
 ?>

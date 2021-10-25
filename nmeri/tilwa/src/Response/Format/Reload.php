@@ -1,5 +1,4 @@
 <?php
-
 	namespace Tilwa\Response\Format;
 
 	use Tilwa\Routing\RouteManager;
@@ -11,6 +10,8 @@
 		function __construct(string $handler) {
 
 			$this->handler = $handler;
+
+			$this->setHeaders(200, ["Content-Type" => "text/html"]); // or 205 Reset Content
 		}
 
 		public function setDependencies( Container $container, string $controllerClass, RouteManager $router):self {
@@ -22,11 +23,13 @@
 
 		public function render() {
 
+			$renderer = $this->router->getPreviousRenderer();
+
 			// avoid overwriting our own response
-			$this->rawResponse += $this->router->getPreviousRenderer()->getRawResponse();
+			$this->rawResponse += $renderer->getRawResponse();
 			// assumes that response is either a string or array
 			
-			return $this->renderHtml();
+			return $this->renderHtml($renderer->getViewName(), $renderer->getViewModelName(), $this->rawResponse);
 		}
 	}
 ?>

@@ -1,5 +1,4 @@
 <?php
-
 	namespace Tilwa\Response\Format;
 
 	use SuperClosure\Serializer;
@@ -13,6 +12,8 @@
 			$this->destination = (new Serializer())->serialize($destination); // liquefy it so it can be cached later under previous requests
 
 			$this->handler = $handler;
+
+			$this->statusCode = 302;
 		}
 
 		public function render() {
@@ -21,7 +22,7 @@
 
 			$parameters = $this->container->getMethodParameters($this->destination); // autowiring in case next location will be dictated by another library
 
-			return header('Location: '. call_user_func_array($callable, $parameters) );
+			$this->headers["Location"] = call_user_func_array($callable, $parameters);
 		}
 	}
 ?>

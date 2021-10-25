@@ -8,17 +8,15 @@
 
 	use Tilwa\Bridge\Laravel\ModuleRouteMatcher;
 
-	use Tilwa\Contracts\AuthStorage;
-
-	use Tilwa\Request\PathAuthorizer;
+	use Tilwa\Contracts\{Auth\AuthStorage, App\HighLevelRequestHandler};
 
 	use Tilwa\Errors\{UnauthorizedServiceAccess, Unauthenticated};
 	
-	class ModuleInitializer {
+	class ModuleInitializer implements HighLevelRequestHandler {
 
 		private $router, $descriptor, $responseManager,
 
-		$laravelMatcher, $container;
+		$laravelMatcher, $container, $indicator;
 
 		private $foundRoute = false;
 
@@ -30,13 +28,10 @@
 		}
 
 		public function assignRoute():self {
+
+			$this->router->findRenderer();
 			
-			if ($target = $this->router->findRenderer() ) {
-
-				$this->router->setActiveRenderer($target);
-
-				$this->foundRoute = true;
-			}
+			if ($this->handlingRenderer() ) $this->foundRoute = true;
 
 			else {
 
@@ -50,11 +45,13 @@
 
 		public function triggerRequest():string {
 
-			if (!is_null($this->laravelMatcher))
+			if ($this->isLaravelRoute())
 
 				return $this->laravelMatcher->getResponse();
 
-			$this->attemptAuthentication()->authorizePath();
+			$this->setRouteDetailsIndicator();
+
+			$this->attemptAuthentication()->authorizeRequest();
 
 			$validationPassed = $this->responseManager
 
@@ -81,7 +78,7 @@
 
 		public function initialize():self {
 
-			$this->container->setConfigs($this->descriptor->getConfigs());
+			$this->container->provideSelf();
 
 			$this->router = $this->container->getClass (RouteManager::class);
 
@@ -98,11 +95,11 @@
 
 			->needsAny([
 
-				ModuleDescriptor::class => $this->descriptor, // all requests for the parent should respond with the active module
+				ModuleDescriptor::class => $this->descriptor,
 
 				RouteManager::class => $this->router,
 
-				AbstractRenderer::class => $this->router->getActiveRenderer()
+				AbstractRenderer::class => $this->handlingRenderer()
 			]);
 		}
 
@@ -113,9 +110,7 @@
 
 		public function whenActive ():self {
 
-			if (!is_null($this->laravelMatcher))
-
-				return $this;
+			if ($this->isLaravelRoute()) return $this;
 
 			$descriptor = $this->descriptor;
 
@@ -133,11 +128,11 @@
 		*/
 		private function attemptAuthentication ():self {
 
-			$manager = $this->responseManager;
+			$authMethod = $this->indicator->activeAuthStorage();
 
-			if ($authMethod = $manager->patternAuthentication()) {
+			if (!is_null($authMethod)) {
 
-				if ( !$manager->requestAuthenticationStatus($authMethod))
+				if ( !$this->responseManager->requestAuthenticationStatus($authMethod))
 
 					throw new Unauthenticated;
 
@@ -151,7 +146,7 @@
 
 		private function authorizeRequest ():self {
 
-			$authorizer = $this->container->getClass(PathAuthorizer::class);
+			$authorizer = $this->indicator->getAuthorizer();
 
 			foreach ($authorizer->getActiveRules() as $rule)
 
@@ -160,6 +155,25 @@
 					throw new UnauthorizedServiceAccess;
 
 			return $this;
+		}
+
+		public function handlingRenderer ():AbstractRenderer { /* ?AbstractRenderer */
+
+			// if (!$this->isLaravelRoute())
+
+				return $this->router->getActiveRenderer();
+
+			// else createFrom(their response object)
+		}
+
+		private function isLaravelRoute ():bool {
+
+			return !is_null($this->laravelMatcher);
+		}
+
+		private function setRouteDetailsIndicator ():void {
+
+			$this->indicator = $this->router->getIndicator();
 		}
 	}
 ?>

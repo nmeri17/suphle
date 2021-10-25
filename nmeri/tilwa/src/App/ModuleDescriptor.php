@@ -2,9 +2,13 @@
 
 	namespace Tilwa\App;
 
-	use Tilwa\Contracts\Config\{Auth as IAuth, Services as IServices, HtmlTemplate as IHtml, Laravel as ILaravel, Orm as IOrm};
+	use Tilwa\Contracts\Config\{Auth as IAuth, Services as IServices, Transphporm as ITransphporm, Laravel as ILaravel, Orm as IOrm};
 
-	use Tilwa\Config\{Auth, Services, HtmlTemplate, Laravel, Orm};
+	use Tilwa\Config\{Auth, Services, Transphporm, Laravel, Orm};
+
+	use Tilwa\Contracts\Auth\UserHydrator as HydratorContract;
+
+	use Tilwa\Auth\Models\Eloquent\UserHydrator;
 
 	abstract class ModuleDescriptor {
 
@@ -23,7 +27,7 @@
 
 				$service = $concrete->exports();
 				
-				if ($service instanceof $contract) {
+				if ($contract == $concrete->exportsImplements() && $service instanceof $contract) {
 
 					$pair = [$contract => $service];
 
@@ -63,20 +67,14 @@
 
 				ILaravel::class => Laravel::class,
 
-				IServices::class => Services::class
+				IServices::class => Services::class,
+
+				IAuth::class => Auth::class,
+
+				ITransphporm::class => Transphporm::class,
+
+				HydratorContract::class => UserHydrator::class
 			];
-		}
-
-		// this is living here instead of on moduleLevelEvents because he's the one who knows what config is applicable to this module
-		public function getEventManager():EventManager {
-
-			$container = $this->container;
-
-			$eventConfig = $container->getClass(EventConfig::class); // we might get stomped here cuz by the time this is running, module hasn't been booted yet
-
-			if ($eventConfig)
-
-				return $container->getClass($eventConfig->getManager());
 		}
 	}
 ?>

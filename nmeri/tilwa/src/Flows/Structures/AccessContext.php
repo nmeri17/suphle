@@ -4,13 +4,7 @@
 
 	class AccessContext {
 
-		private $path;
-
-		private $unitPayload;
-
-		private $umbrella;
-
-		private $userId;
+		private $path, $unitPayload, $umbrella, $userId;
 
 		function __construct(string $path, RouteUserNode $unitPayload, RouteUmbrella $umbrella, string $userId) {
 

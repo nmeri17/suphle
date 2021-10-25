@@ -1,46 +1,47 @@
 <?php
-
 	namespace Tilwa\Response\Format;
 
 	class Markup extends AbstractRenderer {
 
-		public $viewName;
+		protected $viewName;
 
-		public $handler;
+		private $wantsJson, $viewModel;
 
-		public $contentNegotiable;
+		function __construct(string $handler, string $viewName, string $viewModel) {
 
-		private $wantsJson;
-
-		function __construct(string $handler, string $viewName) {
+			$this->handler = $handler;
 
 			$this->viewName = $viewName;
 
-			$this->handler = $handler;
+			$this->viewModel = $viewModel;
+
+			$this->setHeaders(200, ["Content-Type" => "text/html"]);
 		}
 
 		public function render():string {
 			
-			if (!$this->contentNegotiable && !$this->wantsJson())
+			if ( !$this->wantsJson)
 
-				return $this->renderHtml();
+				return $this->renderHtml($this->viewName, $this->viewModel, $this->rawResponse);
+
+			$this->setHeaders(200, ["Content-Type" => "application/json"]);
 
 			return $this->renderJson();
-		}
-
-		public function contentIsNegotiable():void {
-			
-			$this->contentNegotiable = true;
-		}
-
-		public function wantsJson():bool {
-			
-			return $this->wantsJson;
 		}
 
 		public function setWantsJson():void {
 			
 			$this->wantsJson = true;
+		}
+
+		public function getViewName ():string {
+
+			return $this->viewName;
+		}
+
+		public function getViewModelName ():string {
+
+			return $this->viewModel;
 		}
 	}
 ?>

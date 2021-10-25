@@ -7,19 +7,19 @@
 
 	use Tilwa\Flows\Previous\{ SingleNode, CollectionNode, UnitNode};
 
-	use Tilwa\Request\BaseRequest;
-
 	use Tilwa\Response\ResponseManager;
 
 	use Tilwa\App\Container;
 
-	use Illuminate\Support\{Collection, Arr};
+	use Illuminate\Support\{Collection as LaravelCollection, Arr};
+
+	use Tilwa\Routing\{PathPlaceholders, RequestDetails};
 
 	class FlowHydrator {
 
-		private $previousResponse, $cacheManager,
+		private $previousResponse, $cacheManager, $requestDetails,
 
-		$responseManager, $container,
+		$responseManager, $container, $placeholderStorage,
 
 		$branchHandlers = [
 			SingleNode::class => "handleSingleNodes",
@@ -55,13 +55,17 @@
 		];
 
 		// if we can't hydrate this with our container, replace interfaces with hard-coded concretes
-		function __construct(CacheManager $cacheManager, Orm $orm, Container $randomContainer) {
+		function __construct(CacheManager $cacheManager, Orm $orm/*, Container $randomContainer*/, PathPlaceholders $placeholderStorage, RequestDetails $requestDetails) {
 
 			$this->cacheManager = $cacheManager;
 
 			$this->orm = $orm;
 
-			$this->container = $randomContainer;
+			// $this->container = $randomContainer;
+
+			$this->placeholderStorage = $placeholderStorage;
+
+			$this->requestDetails = $requestDetails;
 		}
 
 		# @param {contentType} model type, where present
@@ -101,7 +105,7 @@
 		*/
 		public function runNodes(UnitNode $flowStructure, string $userId):void {
 
-			$handler = $this->branchHandlers[$flowStructure::class];
+			$handler = $this->branchHandlers[get_class($flowStructure)];
 
 			$evaluatedRenderers = call_user_func_array([$this, $handler], [$flowStructure, $renderer]);
 
@@ -113,25 +117,26 @@
 				
 				$unitPayload = new RouteUserNode($renderer);
 
-				$this->configureRenderer($unitPayload, $flowStructure);
+				$this->runNodeConfigs($unitPayload, $flowStructure);
 
 				$this->storeContext($urlPattern, $unitPayload, $userId, $contentType);
 			}
 		}
 
-		private function getContentType($evaluatedRenderers):string {
+		private function getContentType(AbstractRenderer $renderer):string {
 
 			$contentTypes = [
-				Collection::class => "getQueueableClass"
+				
+				LaravelCollection::class => "getQueueableClass"
 			];
 
-			$value = current($evaluatedRenderers);
+			$payload = $renderer->getRawResponse();
 
-			$typeSpotter = @$contentTypes[get_class($value)];
+			$payloadType = get_class($payload);
 
-			if ($typeSpotter)
+			if (array_key_exists($payloadType, $contentTypes))
 
-				return $value->$typeSpotter();
+				return call_user_func([$payload, $contentTypes[$payloadType]]);
 		}
 
 		// @return AbstractRenderer[]
@@ -222,9 +227,7 @@
 
 		private function updateRequest(array $updates):self {
 
-			$this->responseManager->getControllerManager()->getRequest()
-
-			->setPlaceholders($updates);
+			$this->placeholderStorage->overwriteValues($updates);
 
 			return $this;
 		}
@@ -248,7 +251,7 @@
 
 			if ($this->canProcessPath())
 
-				return $this->responseManager->handleValidRequest();
+				return $this->responseManager->handleValidRequest($this->requestDetails);
 		}
 
 		private function handleOneOf(array $indexes, string $requestProperty):AbstractRenderer {
@@ -287,24 +290,24 @@
 			->executeRequest();
 		}
 
-		private function handleServiceSource($currentSource, ServiceContext $context, CollectionNode $rawNode, ):iterable {
+		private function handleServiceSource($currentSource, ServiceContext $context, CollectionNode $rawNode ):iterable {
 
-			$concrete = $this->container->getClass($context->getServiceName());
+			// $concrete = $this->container->getClass($context->getServiceName());
 
 			return call_user_func_array(
-				[$concrete, $context->getMethod()],
+				[$context->getServiceName(), $context->getMethod()],
 
 				[$this->getNodeFromPrevious($rawNode)]
 			);
 		}
 
-		private function configureRenderer(RouteUserNode $newNode, UnitNode $rawNode):void {
+		private function runNodeConfigs(RouteUserNode $savedNode, UnitNode $rawNode):void {
 			
 			foreach ($rawNode->getConfig() as $config => $value) {
 
 				$handler = $this->configHandlers[$config];
 				
-				call_user_func_array([$newNode, $handler], [$value]);
+				call_user_func_array([$savedNode, $handler], [$value]);
 			}
 		}
 	}
