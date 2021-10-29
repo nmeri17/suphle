@@ -7,6 +7,9 @@
 
 	use PHPUnit\Framework\TestCase;
 
+	/**
+	 * Used for testing components on a modular scale but that don't necessarily require interaction with the HTTP passage
+	*/
 	abstract class ModuleLevelTest extends TestCase {
 
 		private $eventManager;

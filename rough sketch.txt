@@ -30,7 +30,17 @@ Note: assign freely but constructor should be void of calculations
 
 Pending:
 	- exception renderer
-		Merge in-module errors with the general one when request matches that module (pending approval)
+		- Merge in-module errors with the general one when request matches that module. First checks App->universalRenderers. When no overrides for current error is present, we check $activeModule->getHandlerFor(Error::class). That guy contains defaults that can be internally overidden
+
+		- The handler needs:
+			- the renderer
+			- data for the above (gotten at runtime)
+			- action that runs before rendering is done
+
+		- Then, execute beginRequest in a try catch that works with the handler list
+
+		- When this becomes the active handler, assign it to the relevant property on MHI so its ultimate response can be intercepted by the tester
+
 	- testing
 
 
@@ -45,9 +55,6 @@ Revisit ModuleHandlerIdentifierTest (low-hanging fruit) after fleshing flows (so
 sqlite
 <server name="DB_CONNECTION" value="sqlite"/>
 <server name="DB_DATABASE" value=":memory:"/>
-class DB extends Illuminate\Database\Capsule\Manager {} in the global namespace fixed the problem.
-
-If the models don't work, it'll mean they're setting each model's connection at some point
 
 
 \PHPUnit\Framework\AssertionFailedError, Concerns\InteractsWithDatabase
@@ -64,5 +71,24 @@ Wrap debug_backtrace
 
 hasFlowLeadingTo
 
-When troubleshooting routing, check routeManager line 166
+on the tearDown methods, you wanna:
+	- empty container
+	- $model->truncate()
 
+Repository transaction method:
+	- Has to throw on error so dev can pick that up
+	- Should be able to be turned off on a per-method basis
+
+==when doesn't work==
+	- routing: check routeManager line 166
+
+	- models: are they setting each model's connection at some point? if yes, we'd have to do this for all the models of this particular orm
+
+	- DB facade: class DB extends Illuminate\Database\Capsule\Manager {} in the global namespace fixed the problem
+
+	- crud index: use "_index" instead of leaving it blank
+
+
+*Work on exception renderer so that auth test can work
+
+*When done with the crud tests, fill up the collection methods attached to them

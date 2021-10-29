@@ -9,6 +9,9 @@
 
 	use Tilwa\App\{Container, ModuleToRoute};
 
+	/**
+	 * Useful when running http tests that need to go through app entry point and get handled end-to-end
+	*/
 	trait FrontDoorTest {
 
 		use DirectHttpTest, ExaminesHttpResponse;
@@ -43,7 +46,7 @@
 	    	return $this;
 	    }
 
-		private function getContainer ():Container {
+		protected function getContainer ():Container {
 
 			return $this->entrance->firstContainer();
 		}
@@ -75,7 +78,7 @@
 
 	    public function get(string $url, array $headers = []):TestResponse {
 
-	    	return $this->gatewayResponse($url, __METHOD__, null, $headers);
+	    	return $this->gatewayResponse($url, __FUNCTION__, null, $headers);
 	    }
 
 	    public function getJson(string $url, array $headers = []):TestResponse {

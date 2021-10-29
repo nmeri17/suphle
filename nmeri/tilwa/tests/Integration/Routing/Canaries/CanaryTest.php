@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Tests\Integration\Routing;
+	namespace Tilwa\Tests\Integration\Routing\Canaries;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\CanaryRoutes;
 

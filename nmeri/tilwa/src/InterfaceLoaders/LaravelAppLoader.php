@@ -1,8 +1,7 @@
 <?php
+	namespace Tilwa\InterfaceLoaders;
 
-	namespace Tilwa\ServiceProviders;
-
-	use Tilwa\App\ServiceProvider;
+	use Tilwa\App\BaseInterfaceLoader;
 
 	use Tilwa\Contracts\{Config\ModuleFiles, LaravelApp};
 
@@ -16,7 +15,7 @@
 
 	use Illuminate\Http\Request;
 
-	class LaravelAppProvider extends ServiceProvider {
+	class LaravelAppLoader extends BaseInterfaceLoader {
 
 		private $requestDetails, $fileConfig, $payloadStorage;
 

@@ -5,9 +5,11 @@
 
 		private $idPlaceholder = "id";
 
-		protected $overwritable = [], $allowedActions = [];
+		protected $overwritable = [], $allowedActions = [],
 
-		public function save():array {
+		$rendererMap = [], $collection;
+
+		public function save():void {
 
 			$createdRoutes = [];
 			
@@ -19,18 +21,17 @@
 
 					$renderer = $this->overwritable[$action];
 
-				$pattern = $this->resourceName . "_" . $pattern;
+				$computedPattern = strtoupper($this->collection->_getLocalPrefix()) . "_" . $pattern;
 
-				$createdRoutes[$pattern] = $renderer;
+				$createdRoutes[$computedPattern] = $renderer;
 			}
-			return $createdRoutes; // instead of this, call something that'll trigger $this->lastRegistered on the collection
+			
+			$this->collection->_setLastRegistered($createdRoutes);
 		}
 
 		protected function showCreateForm():array {
 
-			$r = new Markup(__FUNCTION__, $this->viewPath . "create-form");
-
-			new Markup(__FUNCTION__, $this->viewPath . "create-form", $this->viewModelPath . "create-form"); // when vm path not found, use view own
+			$r = $this->rendererMap[__FUNCTION__];
 
 			$r->setRouteMethod("get");
 
@@ -42,10 +43,7 @@
 		// @return Redirect to "/resource/new_id"
 		protected function saveNew():array {
 
-			$r = new Redirect(__FUNCTION__, function () {
-
-				return $this->resourceName . "/" . $this->rawResponse["resource"]->id; // assumes the controller returns an array containing this key
-			});
+			$r = $this->rendererMap[__FUNCTION__];
 
 			$r->setRouteMethod("post");
 
@@ -56,7 +54,7 @@
 
 		protected function showAll():array {
 
-			$r = new Markup(__FUNCTION__, $this->viewPath . "show-all");
+			$r = $this->rendererMap[__FUNCTION__];
 
 			$r->setRouteMethod("get");
 
@@ -67,7 +65,7 @@
 
 		protected function showOne():array {
 
-			$r = new Markup(__FUNCTION__, $this->viewPath . "show-one");
+			$r = $this->rendererMap[__FUNCTION__];
 
 			$r->setRouteMethod("get");
 
@@ -78,7 +76,7 @@
 
 		protected function updateOne():array {
 
-			$r = new Reload(__FUNCTION__);
+			$r = $this->rendererMap[__FUNCTION__];
 
 			$r->setRouteMethod("put");
 
@@ -89,10 +87,7 @@
 
 		protected function deleteOne():array {
 
-			$r = new Redirect(__FUNCTION__, function () {
-				
-				return $this->context->_getLocalPrefix() . "/";
-			});
+			$r = $this->rendererMap[__FUNCTION__];
 
 			$r->setRouteMethod("delete");
 
@@ -101,18 +96,23 @@
 			return compact("r", "pattern");
 		}
 
-		/**
-		 * It's assumed to the same page where the form lives is where the results will be displayed
-		*/
+		private function registerSearchRoute (string $name):array {
+
+			$renderer = $this->rendererMap[$name];
+
+			$renderer->setRouteMethod("get");
+
+			return ["r" => $renderer, "pattern" => "SEARCH"];
+		}
+
 		protected function showSearchForm ():array {
 
-			$r = new Markup(__FUNCTION__, $this->viewPath . "show-search-form");
+			return $this->registerSearchRoute(__FUNCTION__);
+		}
 
-			$r->setRouteMethod("get");
+		protected function getSearchResults ():array {
 
-			$pattern = "SEARCH";
-
-			return compact("r", "pattern");
+			return $this->registerSearchRoute(__FUNCTION__);
 		}
 
 		public function disableHandlers(array $handlers) {
@@ -125,13 +125,13 @@
 			}
 		}
 
-		public function __call(string $method, AbstractRenderer $renderer):self {
+		public function __call(string $method, $arguments):self {
 			
 			$action = $this->getToReplace($method);
 
 			if (!empty($action))
 
-				$this->overwritable[$action] = $renderer;
+				$this->overwritable[$action] = current($arguments);
 
 			return $this;
 		}
@@ -142,7 +142,9 @@
 			$internal = lcfirst(ltrim($updating, "replace"));
 
 			if (array_key_exists($internal, $this->allowedActions))
+				
 				return $internal;
+			
 			return "";
 		}
 	}
