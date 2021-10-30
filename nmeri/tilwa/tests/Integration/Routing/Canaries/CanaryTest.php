@@ -15,11 +15,11 @@
 	     */
 		public function test_will_filter_invalid_canaries (string $segment, string $handler) {
 
-			$matchingRenderer = $this->fakeRequest("/load-default/$segment");
+			$matchingRenderer = $this->fakeRequest("/load-default/$segment"); // when
 
 			$this->assertNotNull($matchingRenderer);
 
-			$this->assertSame($matchingRenderer->getHandler(), $handler);
+			$this->assertTrue($matchingRenderer->matchesHandler($handler) ); // then
 		}
 
 		public function pathsToValidCanaries ():array {

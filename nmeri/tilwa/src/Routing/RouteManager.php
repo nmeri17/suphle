@@ -73,10 +73,6 @@
 			
 			foreach ($this->loadPatterns($collection) as $pattern) {
 
-				$collection->$pattern();
-
-				$rendererList = $collection->_getLastRegistered();
-
 				$computedPattern = $this->patternToUrlSegment($pattern, $collection, $patternPrefix);
 
 				$fullRouteState = "$routeState/$computedPattern";
@@ -93,35 +89,33 @@
 					 * sideways = other patterns on this same collection
 					*/
 				}
-				elseif (!empty($rendererList)) {
 
-					foreach ($rendererList as $path => $renderer) { // we'll usually get one route here, except for CRUD invocations
+				call_user_func([$collection, $pattern]);
+				
+				foreach ($collection->_getLastRegistered() as $path => $renderer) { // we'll usually get one route here, except for CRUD invocations
 
-						if ($collection->_expectsCrud())
+					$routeMethod = $renderer->getRouteMethod();
 
-							$parsed .= $this->regexForm($path); // doesn't this return a regex that should be escaped/normalized? if that be the case, match incoming path against that pattern and return the result to this guy
-// var_dump($pattern, $parsed, $renderer->getRouteMethod(), $this->routeCompare($parsed, $renderer->getRouteMethod()));
+					if ($collection->_expectsCrud()) {
 
-/*
-string(10) "SEGMENT_id"
-string(12) "/SEGMENT/id/"
-string(3) "get"
-bool(true)*/
-						if ($this->routeCompare($parsed, $renderer->getRouteMethod())) {
+						$collection->_setCrudPrefix($pattern);
 
-							$this->patternIndicator->indicate($collection, $pattern);
-
-							if ($this->requestDetails->isApiRoute() && $collection->_isMirroring() && $renderer instanceof Markup)
-
-								$renderer->setWantsJson();
-							
-							return $this->bootRenderer($renderer, $collection->_handlingClass());
-						}
+						$isHit = $this->routeCompare($parsed . "/" . $this->regexForm($path), $routeMethod);
 					}
 
-					$collection->_doesntExpectCrud(); // for subsequent patterns
+					else $isHit = $this->routeCompare($parsed, $routeMethod);
+
+					if ($isHit) {
+
+						$this->onSearchHit($collection, $renderer, $pattern);
+
+						return $renderer;
+					}
 				}
+
+				$collection->_doesntExpectCrud(); // for subsequent patterns
 			}
+
 			return null;
 		}
 
@@ -140,6 +134,22 @@ bool(true)*/
 			if (!empty($prefix)) $segment = "$prefix/$segment";
 
 			return $segment;
+		}
+
+		private function whenMirroring (RouteCollection $collection, AbstractRenderer $renderer):void {
+
+			if ($this->requestDetails->isApiRoute() && $collection->_isMirroring() && $renderer instanceof Markup)
+
+				$renderer->setWantsJson();
+		}
+
+		private function onSearchHit (RouteCollection $collection, AbstractRenderer $renderer, string $pattern):void {
+
+			$this->patternIndicator->indicate($collection, $pattern);
+
+			$this->whenMirroring($collection, $renderer);
+			
+			$this->bootRenderer($renderer, $collection->_handlingClass());
 		}
 
 		/** 
@@ -285,7 +295,7 @@ bool(true)*/
 			return [$this->config->browserEntryRoute()];
 		}
 
-		private function bootRenderer(AbstractRenderer $renderer, string $controllingClass):AbstractRenderer {
+		private function bootRenderer(AbstractRenderer $renderer, string $controllingClass):void {
 
 			$rendererName = get_class($renderer);
 
@@ -293,7 +303,7 @@ bool(true)*/
 			
 			->getMethodParameters("setDependencies", $rendererName);
 
-			return $renderer->setDependencies(...array_values($parameters));
+			$renderer->setDependencies(...array_values($parameters));
 		}
 
 		private function provideRendererDependencies(string $renderer, string $controller):Container {

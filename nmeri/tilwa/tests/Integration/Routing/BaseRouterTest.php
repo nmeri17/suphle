@@ -35,9 +35,12 @@
 			return $this;
 		}
 
-		protected function fakeRequest (string $url):AbstractRenderer {
+		/**
+		 * Use in tests involving pulling path from requestDetails
+		*/
+		protected function fakeRequest (string $url, string $httpMethod = "get"):AbstractRenderer {
 
-			$this->setHttpParams($url); // this should be the first line in all the tests involving pulling path from requestDetails?
+			$this->setHttpParams($url, $httpMethod);
 
 			$router = $this->getRouter();
 

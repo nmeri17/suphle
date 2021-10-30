@@ -21,9 +21,7 @@
 
 					$renderer = $this->overwritable[$action];
 
-				$computedPattern = strtoupper($this->collection->_getLocalPrefix()) . "_" . $pattern;
-
-				$createdRoutes[$computedPattern] = $renderer;
+				$createdRoutes[$pattern] = $renderer;
 			}
 			
 			$this->collection->_setLastRegistered($createdRoutes);
@@ -40,7 +38,6 @@
 			return compact("r", "pattern");
 		}
 
-		// @return Redirect to "/resource/new_id"
 		protected function saveNew():array {
 
 			$r = $this->rendererMap[__FUNCTION__];

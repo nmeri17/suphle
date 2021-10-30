@@ -10,7 +10,7 @@
 		
 		public function _prefixCurrent():string;
 		
-		public function _setLocalPrefix(string $prefix):void;
+		public function _setCrudPrefix(string $prefix):void;
 
 		public function _getPatterns():array;
 
@@ -30,7 +30,7 @@
 
 		public function _doesntExpectCrud ():void;
 
-		public function _getLocalPrefix ():string;
+		public function _getCrudPrefix ():string;
 
 		public function _getLastRegistered ():array;
 

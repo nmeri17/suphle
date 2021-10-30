@@ -97,6 +97,11 @@
 			return $this->handler;
 		}
 
+		public function matchesHandler (string $name):bool {
+
+			return $this->handler == $name;
+		}
+
 		public function setHeaders (int $statusCode, array $headers):void {
 
 			$this->statusCode = $statusCode;

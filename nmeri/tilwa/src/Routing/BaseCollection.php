@@ -14,10 +14,10 @@
 
 		protected $canaryValidator, $routerConfig, $authStorage, $middlewareRegistry, $lastRegistered;
 
-		private $utilities = ["_mirrorBrowserRoutes", "_authenticatedPaths", "_handlingClass", "_crud", "_crudJson", "_register", "_getPrefixCollection", "_canaryEntry", "_setLocalPrefix", "_prefixCurrent", "_getPatterns", "__call", "_prefixFor", "_getAuthenticator", "_getLocalPrefix", "_doesntExpectCrud", "_expectsCrud", "_isMirroring", "_only", "_except", "_assignMiddleware", "_authorizePaths", "_getLastRegistered", "_setLastRegistered"
+		private $utilities = ["_mirrorBrowserRoutes", "_authenticatedPaths", "_handlingClass", "_crud", "_crudJson", "_register", "_getPrefixCollection", "_canaryEntry", "_setCrudPrefix", "_prefixCurrent", "_getPatterns", "__call", "_prefixFor", "_getAuthenticator", "_getCrudPrefix", "_doesntExpectCrud", "_expectsCrud", "_isMirroring", "_only", "_except", "_assignMiddleware", "_authorizePaths", "_getLastRegistered", "_setLastRegistered"
 		],
 
-		$mirroring = false, $crudMode = false, $localPrefix, $prefixClass;
+		$mirroring = false, $crudMode = false, $crudPrefix, $prefixClass;
 
 		public function __construct(CanaryValidator $validator, RouterConfig $routerConfig, SessionStorage $authStorage, MiddlewareRegistry $middlewareRegistry) {
 
@@ -58,10 +58,9 @@
 			return "";
 		}
 		
-		// crud routes must be anchored by either a preceding collection group name, or the current one. So, we make that assertion from this property set externally by the manager
-		public function _setLocalPrefix(string $prefix):void {
+		public function _setCrudPrefix(string $prefix):void {
 			
-			$this->localPrefix = $prefix;
+			$this->crudPrefix = $prefix;
 		}
 
 		/**
@@ -69,22 +68,16 @@
 		*/
 		protected function _crud (string $viewPath, string $viewModelPath = null):BaseBuilder {
 
-			if (!empty($this->localPrefix)) {
+			$this->crudMode = true;
 
-				$this->crudMode = true;
-
-				return new BrowserBuilder($this, $viewPath, $viewModelPath );
-			}
+			return new BrowserBuilder($this, $viewPath, $viewModelPath );
 		}
 
 		protected function _crudJson ():BaseBuilder {
 
-			if (!empty($this->localPrefix)) {
+			$this->crudMode = true;
 
-				$this->crudMode = true;
-
-				return new ApiBuilder($this );
-			}
+			return new ApiBuilder($this );
 		}
 
 		public function __call ($method, $args) {
@@ -184,9 +177,9 @@
 			$this->crudMode = false;
 		}
 
-		public function _getLocalPrefix ():string {
+		public function _getCrudPrefix ():string {
 
-			return $this->localPrefix;
+			return $this->crudPrefix;
 		}
 	}
 ?>

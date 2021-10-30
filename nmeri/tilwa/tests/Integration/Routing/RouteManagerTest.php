@@ -14,7 +14,7 @@
 			
 			// var_dump($matchingRenderer->getPath(), $requestPath, 30);
 
-			$this->assertSame($matchingRenderer->getHandler(), $handler);
+			$this->assertTrue($matchingRenderer->matchesHandler($handler));
 		}
 
 		public function pathsToHandler ():array {

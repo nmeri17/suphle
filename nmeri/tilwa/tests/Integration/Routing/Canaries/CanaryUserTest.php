@@ -29,9 +29,9 @@
 
 			$this->actingAs($user); // given
 
-			$matchingRenderer = $this->fakeRequest("/special-foo/same-url");
+			$matchingRenderer = $this->fakeRequest("/special-foo/same-url"); // when
 
-			$this->assertSame($matchingRenderer->getHandler(), $handlerName);
+			$this->assertTrue($matchingRenderer->matchesHandler($handlerName) ); // then
 		}
 
 		protected function getUserAndResult ():array {
