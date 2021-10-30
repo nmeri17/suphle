@@ -28,8 +28,6 @@
 
 		public function _expectsCrud ():bool;
 
-		public function _doesntExpectCrud ():void;
-
 		public function _getCrudPrefix ():string;
 
 		public function _getLastRegistered ():array;

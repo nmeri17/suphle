@@ -14,7 +14,7 @@
 
 		protected $canaryValidator, $routerConfig, $authStorage, $middlewareRegistry, $lastRegistered;
 
-		private $utilities = ["_mirrorBrowserRoutes", "_authenticatedPaths", "_handlingClass", "_crud", "_crudJson", "_register", "_getPrefixCollection", "_canaryEntry", "_setCrudPrefix", "_prefixCurrent", "_getPatterns", "__call", "_prefixFor", "_getAuthenticator", "_getCrudPrefix", "_doesntExpectCrud", "_expectsCrud", "_isMirroring", "_only", "_except", "_assignMiddleware", "_authorizePaths", "_getLastRegistered", "_setLastRegistered"
+		private $utilities = ["_mirrorBrowserRoutes", "_authenticatedPaths", "_handlingClass", "_crud", "_crudJson", "_register", "_getPrefixCollection", "_canaryEntry", "_setCrudPrefix", "_prefixCurrent", "_getPatterns", "__call", "_prefixFor", "_getAuthenticator", "_getCrudPrefix", "_expectsCrud", "_isMirroring", "_only", "_except", "_assignMiddleware", "_authorizePaths", "_getLastRegistered", "_setLastRegistered"
 		],
 
 		$mirroring = false, $crudMode = false, $crudPrefix, $prefixClass;
@@ -170,11 +170,6 @@
 		public function _expectsCrud ():bool {
 
 			return $this->crudMode;
-		}
-
-		public function _doesntExpectCrud ():void {
-
-			$this->crudMode = false;
 		}
 
 		public function _getCrudPrefix ():string {

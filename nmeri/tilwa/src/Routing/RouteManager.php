@@ -68,8 +68,6 @@
 			$collection = $this->container->getClass($patternsCollection);
 
 			$patternPrefix = $invokerPrefix ?? $collection->_prefixCurrent();
-
-			$collection->_setLocalPrefix($patternPrefix);
 			
 			foreach ($this->loadPatterns($collection) as $pattern) {
 
@@ -79,18 +77,22 @@
 
 				$parsed = $this->regexForm($fullRouteState);
 
-				if ($this->shouldDelve($collection, $parsed)) {
+				if (!$this->prefixMatch($parsed)) continue;
+
+				call_user_func([$collection, $pattern]);
+
+				$nested = $collection->_getPrefixCollection();
+
+				if (!is_null($nested)) {
 
 					$this->patternIndicator->indicate($collection, $pattern);
 
-					return $this->recursiveSearch($collection->_getPrefixCollection(), $fullRouteState, $computedPattern); /** we don't bother checking whether a route was found or not because if there was none after going downwards*, searching sideways* won't help either
+					return $this->recursiveSearch($nested, $fullRouteState, $computedPattern); /** we don't bother checking whether a route was found or not because if there was none after going downwards*, searching sideways* won't help either
 
 					 * downwards = deeper into a collection
 					 * sideways = other patterns on this same collection
 					*/
 				}
-
-				call_user_func([$collection, $pattern]);
 				
 				foreach ($collection->_getLastRegistered() as $path => $renderer) { // we'll usually get one route here, except for CRUD invocations
 
@@ -112,8 +114,6 @@
 						return $renderer;
 					}
 				}
-
-				$collection->_doesntExpectCrud(); // for subsequent patterns
 			}
 
 			return null;
@@ -150,14 +150,6 @@
 			$this->whenMirroring($collection, $renderer);
 			
 			$this->bootRenderer($renderer, $collection->_handlingClass());
-		}
-
-		/** 
-		* Find out if we're on the right track i.e. if nested path = foo/bar/foobar, and nested method "bar" defines prefix, we only wanna explore its contents if requested route matches foo/bar
-		*/
-		private function shouldDelve (RouteCollection $collection, string $routeState):bool {
-
-			return !is_null($collection->_getPrefixCollection()) && $this->prefixMatch($routeState);
 		}
 
 		public function routeCompare(string $path, string $rendererMethod):bool {
