@@ -14,17 +14,32 @@
 		
 		public function SAVE__ALLh () {
 			
-			return $this->_crud()->save(); // Also needs a view path
+			$this->_crud("envelope")->save();
 		}
 		
-		public function DISABLE () {
+		public function DISABLE__SOMEh () {
 			
-			return $this->_crud()->save(); // Also needs a view path
+			$this->_crud("handicap")->disableHandlers(["saveNew"])
+
+			->save();
 		}
 		
-		public function OVERRIDE () { // continue here
+		public function OVERRIDE () {
 			
-			return $this->_crud()->save(); // alter before saving. Also needs a view path
+			$this->_crud("usurp")
+
+			->replaceShowOne(new Markup("myOverride", "usurp/show-one"))
+
+			->save();
+		}
+		
+		public function NON__EXISTENTh () {
+			
+			$this->_crud("missing")
+
+			->replaceFooBar(new Markup("atLarge", "missing/show-one"))
+
+			->save();
 		}
 	}
 ?>

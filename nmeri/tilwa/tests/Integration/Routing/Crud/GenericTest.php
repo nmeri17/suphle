@@ -17,7 +17,7 @@
 	     */
 		public function test_can_find_all_routes (string $requestPath, string $handler, string $httpMethod) {
 
-			$matchingRenderer = $this->fakeRequest("/all/$requestPath", $httpMethod);
+			$matchingRenderer = $this->fakeRequest("/save-all/$requestPath", $httpMethod);
 
 			$this->assertNotNull($matchingRenderer);
 
@@ -57,6 +57,13 @@
 			$this->assertNotNull($matchingRenderer);
 
 			$this->assertTrue($matchingRenderer->matchesHandler("myOverride")); // then
+		}
+
+		public function test_override_non_existent_throws_error () {
+
+			$this->setExpectedException("PHPUnit_Framework_Error"); // then
+
+			$this->fakeRequest("/non-existent/save"); // when
 		}
 	}
 ?>

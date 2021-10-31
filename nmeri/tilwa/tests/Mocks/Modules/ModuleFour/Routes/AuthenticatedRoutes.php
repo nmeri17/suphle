@@ -14,7 +14,12 @@
 		
 		public function SECURE__SOMEh () {
 			
-			return $this->_crud()->save(); // Also needs a view path
+			$this->_crud("secure-some")->save();
+		}
+
+		public function _authenticatedPaths():array {
+
+			return ["EDIT_id"];
 		}
 	}
 ?>

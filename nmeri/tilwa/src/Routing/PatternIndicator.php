@@ -30,9 +30,11 @@
 		// if a higher level security was applied to a child collection with its own rules, omitting the current pattern, the security will be withdrawn from that pattern
 		public function setPatternAuthentication(RouteCollection $collection, string $pattern):void {
 
-			if ($activePatterns = $collection->_authenticatedPaths()) {
+			$activePatterns = $collection->_authenticatedPaths();
 
-				if (in_array($pattern, $activePatterns))
+			if (!empty($activePatterns)) {
+
+				if (in_array($pattern, $activePatterns)) // case-sensitive comparison
 
 					$this->patternAuthentication = $collection->_getAuthenticator();
 

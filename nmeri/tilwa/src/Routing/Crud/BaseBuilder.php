@@ -124,25 +124,19 @@
 
 		public function __call(string $method, $arguments):self {
 			
-			$action = $this->getToReplace($method);
-
-			if (!empty($action))
-
-				$this->overwritable[$action] = current($arguments);
+			$this->overwritable[$this->getToReplace($method)] = current($arguments);
 
 			return $this;
 		}
 
 		// convert `replaceSaveNew` to "saveNew"
-		private function getToReplace(string $updating):string {
+		private function getToReplace(string $updating):?string {
 			
 			$internal = lcfirst(ltrim($updating, "replace"));
 
 			if (array_key_exists($internal, $this->allowedActions))
 				
 				return $internal;
-			
-			return "";
 		}
 	}
 ?>

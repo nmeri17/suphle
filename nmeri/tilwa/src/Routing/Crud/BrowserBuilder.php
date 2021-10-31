@@ -11,7 +11,7 @@
 
 		protected $allowedActions = ["showCreateForm", "saveNew", "showAll", "showOne", "updateOne", "delete", "showSearchForm"];
 		
-		public function __construct(RouteCollection $collection, string $viewPath, ?string $viewModelPath) {
+		public function __construct(RouteCollection $collection, string $viewPath, string $viewModelPath = null) {
 
 			$this->collection = $collection;
 
@@ -79,7 +79,7 @@
 
 		private function callParentWith (string $handler, AbstractRenderer $renderer):array {
 
-			$this->rendererMap[$handler] = new Json($handler);
+			$this->rendererMap[$handler] = $renderer;
 
 			return parent::$handler();
 		}
