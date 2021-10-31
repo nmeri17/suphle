@@ -1031,7 +1031,7 @@
                 },
                 "laravel": {
                     "providers": [
-                        "Carbon\\Laravel\\ServiceProvider"
+                        "Carbon\\Laravel\\BaseInterfaceLoader"
                     ]
                 },
                 "phpstan": {
