@@ -3,13 +3,13 @@
 
 	use Tilwa\Routing\BaseCollection;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Controllers\BaseController;
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Controllers\CrudController;
 
 	class BasicRoutes extends BaseCollection {
 
 		public function _handlingClass ():string {
 
-			return BaseController::class;
+			return CrudController::class;
 		}
 		
 		public function SAVE__ALLh () {

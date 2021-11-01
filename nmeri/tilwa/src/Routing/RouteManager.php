@@ -71,7 +71,7 @@
 			
 			foreach ($this->loadPatterns($collection) as $pattern) {
 
-				$computedPattern = $this->patternToUrlSegment($pattern, $collection, $patternPrefix);
+				$computedPattern = $this->patternToUrlSegment($pattern, $patternPrefix);
 
 				$fullRouteState = "$routeState/$computedPattern";
 
@@ -121,13 +121,10 @@
 
 		/**
 			- pair empty incoming path with _index method
-			- crud methods disregard their method names
 		*/
-		private function patternToUrlSegment (string $pattern, RouteCollection $collection, string $prefix):string {
+		private function patternToUrlSegment (string $pattern, string $prefix):string {
 
-			if (($pattern == "_index") || $collection->_expectsCrud())
-
-				$segment = "";
+			if ($pattern == "_index") $segment = "";
 
 			else $segment = $pattern;
 
