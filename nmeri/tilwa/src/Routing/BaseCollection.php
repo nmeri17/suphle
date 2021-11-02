@@ -1,56 +1,29 @@
 <?php
-
 	namespace Tilwa\Routing;
 
 	use Tilwa\Response\Format\AbstractRenderer;
 
-	use Tilwa\Auth\TokenStorage;
-
 	use Tilwa\Contracts\{Routing\RouteCollection, Auth\AuthStorage};
 
-	use Tilwa\Routing\Crud\{BaseBuilder, ApiBuilder, BrowserBuilder};
+	use Tilwa\Routing\Crud\{BaseBuilder, BrowserBuilder};
 
 	abstract class BaseCollection implements RouteCollection {
 
-		protected $canaryValidator, $routerConfig, $authStorage, $middlewareRegistry, $lastRegistered;
+		protected $collectionParent = BaseCollection::class,
 
-		private $utilities = ["_mirrorBrowserRoutes", "_authenticatedPaths", "_handlingClass", "_crud", "_crudJson", "_register", "_getPrefixCollection", "_canaryEntry", "_setCrudPrefix", "_prefixCurrent", "_getPatterns", "__call", "_prefixFor", "_getAuthenticator", "_getCrudPrefix", "_expectsCrud", "_isMirroring", "_only", "_except", "_assignMiddleware", "_authorizePaths", "_getLastRegistered", "_setLastRegistered"
-		],
+		$crudMode = false,
 
-		$mirroring = false, $crudMode = false, $crudPrefix, $prefixClass;
+		$canaryValidator, $authStorage, $middlewareRegistry;
 
-		public function __construct(CanaryValidator $validator, RouterConfig $routerConfig, SessionStorage $authStorage, MiddlewareRegistry $middlewareRegistry) {
+		private $crudPrefix, $prefixClass, $lastRegistered;
 
-			$this->routerConfig = $routerConfig;
+		public function __construct(CanaryValidator $validator, SessionStorage $authStorage, MiddlewareRegistry $middlewareRegistry) {
 
 			$this->canaryValidator = $validator;
 
 			$this->authStorage = $authStorage;
 
 			$this->middlewareRegistry = $middlewareRegistry;
-		}
-
-		/**
-		* overwrite in your routes file
-		*	
-		* will be treated specially in the matcher, when path is empty i.e. /, cart/
-		*/
-		/*public function _index ():array {
-
-			// register a route here
-		}*/
-
-		/**
-		* @description: should be called only in the API first version's _index method
-		* Assumes that _index method is defined last so subsequent methods found within the same scope can overwrite methods from the nested browser route search
-		*/
-		public function _mirrorBrowserRoutes (TokenStorage $tokenStorage):void {
-
-			$this->authStorage = $tokenStorage;
-
-			$this->mirroring = true;
-
-			$this->_prefixFor($this->routerConfig->browserEntryRoute());
 		}
 		
 		public function _prefixCurrent():string {
@@ -71,13 +44,6 @@
 			$this->crudMode = true;
 
 			return new BrowserBuilder($this, $viewPath, $viewModelPath );
-		}
-
-		protected function _crudJson ():BaseBuilder {
-
-			$this->crudMode = true;
-
-			return new ApiBuilder($this );
 		}
 
 		public function __call ($method, $args) {
@@ -116,7 +82,7 @@
 		# filter off methods that belong to this base
 		public function _getPatterns():array {
 
-			return array_diff(get_class_methods($this), $this->utilities);
+			return array_diff(get_class_methods($this), $this->collectionParent);
 		}
 
 		public function _authenticatedPaths():array {
@@ -160,11 +126,6 @@
 		public function _getPrefixCollection ():?string {
 
 			return $this->prefixClass;
-		}
-
-		public function _isMirroring ():bool {
-
-			return $this->mirroring;
 		}
 
 		public function _expectsCrud ():bool {

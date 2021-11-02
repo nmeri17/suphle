@@ -1,10 +1,11 @@
 <?php
-
 	namespace Tilwa\Config;
 
 	use Tilwa\Contracts\Config\Router as RouterConfig;
 
 	use Tilwa\Middleware\FinalHandlerWrapper;
+
+	use Tilwa\Auth\Storage\TokenStorage;
 
 	abstract class Router implements RouterConfig {
 
@@ -27,6 +28,16 @@
 			return [
 				FinalHandlerWrapper::class
 			];
+		}
+
+		public function mirrorsCollections ():bool {
+
+			return false;
+		}
+
+		public function mirrorAuthenticator ():string {
+
+			return TokenStorage::class;
 		}
 	}
 ?>

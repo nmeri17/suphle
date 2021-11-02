@@ -58,11 +58,6 @@
 			 	yield $pattern;
 		}
 
-		/**
-		* to find from cache, we won't need:
-			- to parse our route before matching
-			- loadPatterns?
-		*/
 		private function recursiveSearch(string $patternsCollection, string $routeState = "", string $invokerPrefix = ""/*, bool $fromCache = false*/):?AbstractRenderer {
 
 			$collection = $this->container->getClass($patternsCollection);
@@ -85,7 +80,7 @@
 
 				if (!is_null($nested)) {
 
-					$this->patternIndicator->indicate($collection, $pattern);
+					$this->indicatorProxy($collection, $pattern);
 
 					return $this->recursiveSearch($nested, $fullRouteState, $computedPattern); /** we don't bother checking whether a route was found or not because if there was none after going downwards*, searching sideways* won't help either
 
@@ -115,8 +110,6 @@
 					}
 				}
 			}
-
-			return null;
 		}
 
 		/**
@@ -133,20 +126,35 @@
 			return $segment;
 		}
 
-		private function whenMirroring (RouteCollection $collection, AbstractRenderer $renderer):void {
+		private function isMirroring ():bool {
 
-			if ($this->requestDetails->isApiRoute() && $collection->_isMirroring() && $renderer instanceof Markup)
-
-				$renderer->setWantsJson();
+			return $this->requestDetails->isApiRoute() && $this->config->mirrorsCollections();
 		}
 
 		private function onSearchHit (RouteCollection $collection, AbstractRenderer $renderer, string $pattern):void {
 
-			$this->patternIndicator->indicate($collection, $pattern);
+			$this->indicatorProxy($collection, $pattern);
 
-			$this->whenMirroring($collection, $renderer);
+			if ($this->isMirroring() && $renderer instanceof Markup)
+
+				$renderer->setWantsJson();
 			
 			$this->bootRenderer($renderer, $collection->_handlingClass());
+		}
+
+		private function indicatorProxy (RouteCollection $collection, string $pattern):void {
+
+			if ( $this->isMirroring())
+
+				$this->patternIndicator->setDefaultAuthenticator(
+
+					$this->container->getClass(
+
+						$this->config->mirrorAuthenticator()
+					)
+				);
+
+			$this->patternIndicator->indicate($collection, $pattern);
 		}
 
 		public function routeCompare(string $path, string $rendererMethod):bool {
@@ -273,15 +281,25 @@
 		private function entryRouteMap():array {
 
 			$requestDetails = $this->requestDetails;
+
+			$config = $this->config;
+
+			$browserList = [$config->browserEntryRoute()];
 			
 			if ($requestDetails->isApiRoute()) {
 
 				$requestDetails->stripApiPrefix();
 
-				return $requestDetails->apiVersionClasses();
+				$apiStack = $requestDetails->apiVersionClasses();
+
+				if ($config->mirrorsCollections())
+
+					$apiStack += $browserList;
+
+				return $apiStack;
 			}
 
-			return [$this->config->browserEntryRoute()];
+			return $browserList;
 		}
 
 		private function bootRenderer(AbstractRenderer $renderer, string $controllingClass):void {

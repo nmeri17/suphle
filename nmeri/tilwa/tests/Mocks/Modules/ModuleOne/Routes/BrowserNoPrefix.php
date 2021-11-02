@@ -16,27 +16,32 @@
 
 		public function SEGMENT() {
 
-			return $this->_get(new Json("plainSegment"));
+			$this->_get(new Json("plainSegment"));
 		}
 
 		public function SEGMENT_id() {
 
-			return $this->_get(new Json("simplePair"));
+			$this->_get(new Json("simplePair"));
 		}
 
 		public function SEGMENT__SEGMENTh_id() {
 
-			return $this->_get(new Json("hyphenatedSegments"));
+			$this->_get(new Json("hyphenatedSegments"));
 		}
 
 		public function SEGMENT__SEGMENTu_id() {
 
-			return $this->_get(new Json("underscoredSegments"));
+			$this->_get(new Json("underscoredSegments"));
 		}
 
 		public function SEGMENT_id_SEGMENT_idO() {
 
-			return $this->_get(new Json("optionalPlaceholder"));
+			$this->_get(new Json("optionalPlaceholder"));
+		}
+
+		public function _index () {
+
+			$this->_get(new Json("indexHandler"));
 		}
 	}
 ?>

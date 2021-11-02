@@ -20,6 +20,8 @@
 		public function pathsToHandler ():array {
 
 			return [
+				[ "indexHandler", "/"],
+
 				[ "plainSegment", "/segment"],
 				[ "plainSegment", "/segment/"],
 
