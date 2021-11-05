@@ -9,28 +9,28 @@
 
 		abstract protected function getContainer ():Container;
 
-		private function getStorage (string $storageName):AuthStorage {
+		protected function getAuthStorage (string $storageName = AuthStorage::class):AuthStorage {
 
 			return $this->getContainer()->getClass($authStorage);
 		}
 
-		protected function actingAs(User $user, string $storageName = AuthStorage::class):self {
+		protected function actingAs(User $user, string $storageName):self {
 
-			$this->getStorage($storageName)->impersonate($user->getId());
-
-			return $this;
-		}
-
-		protected function assertAuthenticatedAs(User $user, string $storageName = AuthStorage::class):self {
-
-			$this->assertSame($user, $this->getStorage($storageName)->getUser());
+			$this->getAuthStorage($storageName)->impersonate($user->getId());
 
 			return $this;
 		}
 
-		protected function assertGuest (string $storageName = AuthStorage::class):self {
+		protected function assertAuthenticatedAs(User $user, string $storageName):self {
 
-			$this->assertNull( $this->getStorage($storageName)->getUser());
+			$this->assertSame($user, $this->getAuthStorage($storageName)->getUser());
+
+			return $this;
+		}
+
+		protected function assertGuest (string $storageName):self {
+
+			$this->assertNull( $this->getAuthStorage($storageName)->getUser());
 
 			return $this;
 		}

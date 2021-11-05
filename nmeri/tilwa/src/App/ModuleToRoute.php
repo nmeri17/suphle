@@ -6,6 +6,8 @@
 	 * Manager/wrapper around [ModuleInitializer]
 	*/
 	class ModuleToRoute {
+
+		private $activeDescriptor;
 		
 		public function findContext(array $descriptors):ModuleInitializer {
 			
@@ -15,10 +17,18 @@
 
 				->initialize()->assignRoute();
 				
-				if ($routeMatcher->didFindRoute())
+				if ($routeMatcher->didFindRoute()) {
+
+					$this->activeDescriptor = $descriptor;
 
 					return $routeMatcher;
+				}
 			}
+		}
+		
+		public function getActiveModule ():ModuleDescriptor {
+
+			return $this->activeDescriptor;
 		}
 	}
 ?>

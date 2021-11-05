@@ -3,9 +3,7 @@
 
 	use Tilwa\Tests\Integration\Routing\BaseRouterTest;
 
-	use Tilwa\Testing\Proxies\FrontDoorTest;
-
-	use Tilwa\Testing\Condiments\{ModuleUserSecurity, PopulatesDatabaseTest};
+	use Tilwa\Testing\{Proxies\FrontDoorTest, Condiments\PopulatesDatabaseTest};
 
 	use Tilwa\Tests\Mocks\Modules\ModuleFour\ModuleFourDescriptor;
 
@@ -17,7 +15,7 @@
 
 	class AuthSecureTest extends TestCase {
 
-		use FrontDoorTest, ModuleUserSecurity, PopulatesDatabaseTest;
+		use FrontDoorTest, PopulatesDatabaseTest;
 
 		protected function getModules():array {
 

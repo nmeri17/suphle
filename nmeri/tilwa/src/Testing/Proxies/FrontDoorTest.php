@@ -5,7 +5,7 @@
 
 	use Tilwa\Testing\Condiments\DirectHttpTest;
 
-	use Tilwa\Testing\Proxies\Extensions\FrontDoor;
+	use Tilwa\Testing\Proxies\{Extensions\FrontDoor, SecureUserAssertions};
 
 	use Tilwa\App\{Container, ModuleToRoute};
 
@@ -14,7 +14,7 @@
 	*/
 	trait FrontDoorTest {
 
-		use DirectHttpTest, ExaminesHttpResponse;
+		use DirectHttpTest, ExaminesHttpResponse, SecureUserAssertions;
 
 		const JSON_HEADER_VALUE = "application/json";
 
@@ -46,26 +46,40 @@
 	    	return $this;
 	    }
 
+		protected function getInitializerWrapper ():ModuleToRoute {
+
+			return $this->entrance->firstContainer()->getClass(ModuleToRoute::class);
+		}
+
 		protected function getContainer ():Container {
 
-			return $this->entrance->firstContainer();
+			return $this->activeModuleContainer();
+		}
+
+		/**
+		 * Assumes [gatewayResponse] has already been called
+		*/
+		protected function activeModuleContainer ():Container {
+
+			return $this->getInitializerWrapper()->getActiveModule()->getContainer();
 		}
 
 	    public function from(string $url):self {
 
 	    	$this->setHttpParams($url);
 
-	    	$initializer = $this->getContainer()->getClass(ModuleToRoute::class)
+	    	$initializer = $this->getInitializerWrapper()
 
 	    	->findContext($this->getModules());
 
-	    	$router = $initializer->getRouter();
+	    	$initializer->getRouter()
 
-	    	$renderer = $router->setPreviousRenderer($router->getActiveRenderer());
+	    	->setPreviousRenderer($initializer->handlingRenderer());
 
 	    	return $this;
 	    }
 
+	    // store these somewhere, then when routing is done and we're about to begin handling, grab the registry in the active module and exclude what's given here
 	    public function withoutMiddleware($middleware = null):self {
 
 	    	return $this;
