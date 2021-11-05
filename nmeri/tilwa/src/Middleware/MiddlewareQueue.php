@@ -36,7 +36,7 @@
 
 			$reduced = array_reduce($units, function (array $carry, array $current) {
 
-				$carry += $current;
+				$carry = array_merge($carry, $current);
 
 				return $carry;
 			}, []);

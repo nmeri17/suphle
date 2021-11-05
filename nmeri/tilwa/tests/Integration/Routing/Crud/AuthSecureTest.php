@@ -3,7 +3,9 @@
 
 	use Tilwa\Tests\Integration\Routing\BaseRouterTest;
 
-	use Tilwa\Testing\{Proxies\FrontDoorTest, Condiments\ModuleUserSecurity};
+	use Tilwa\Testing\Proxies\FrontDoorTest;
+
+	use Tilwa\Testing\Condiments\{ModuleUserSecurity, PopulatesDatabaseTest};
 
 	use Tilwa\Tests\Mocks\Modules\ModuleFour\ModuleFourDescriptor;
 
@@ -15,11 +17,16 @@
 
 	class AuthSecureTest extends TestCase {
 
-		use FrontDoorTest, ModuleUserSecurity;
+		use FrontDoorTest, ModuleUserSecurity, PopulatesDatabaseTest;
 
 		protected function getModules():array {
 
 			return [new ModuleFourDescriptor(new Container)];
+		}
+
+		protected function getActiveEntity ():string {
+
+			return User::class;
 		}
 
 		public function test_no_authenticated_user_throws_error () {
@@ -31,7 +38,7 @@
 
 		public function test_with_authentication_throws_no_error () {
 
-			$this->actingAs($this->getContainer()->getClass(User::class)) // given
+			$this->actingAs($this->getRandomEntity()) // given
 
 			->get("/secure-some/edit/5") // when
 

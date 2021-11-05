@@ -28,11 +28,11 @@
 			$this->identifier = $_SESSION[$this->identifierKey];
 		}
 
-		public function loginAs (string $value):string {
+		public function impersonate (string $value):string {
 
 			$this->setPreviousUser();
 
-			return parent::loginAs($value);
+			return parent::impersonate($value);
 		}
 
 		protected function setPreviousUser ():void {

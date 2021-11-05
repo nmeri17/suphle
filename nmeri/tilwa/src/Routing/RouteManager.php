@@ -284,7 +284,7 @@
 
 			$config = $this->config;
 
-			$browserList = [$config->browserEntryRoute()];
+			$entryRoute = $config->browserEntryRoute();
 			
 			if ($requestDetails->isApiRoute()) {
 
@@ -294,12 +294,12 @@
 
 				if ($config->mirrorsCollections())
 
-					$apiStack += $browserList;
+					$apiStack = array_push($apiStack, $entryRoute); // push it to the bottom
 
 				return $apiStack;
 			}
 
-			return $browserList;
+			return [$entryRoute];
 		}
 
 		private function bootRenderer(AbstractRenderer $renderer, string $controllingClass):void {

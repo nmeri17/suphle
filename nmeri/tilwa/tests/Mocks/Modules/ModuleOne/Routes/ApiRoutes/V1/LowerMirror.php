@@ -5,7 +5,14 @@
 
 	use Tilwa\Response\Format\Json;
 
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Controllers\ApiEntryController;
+
 	class LowerMirror extends BaseApiCollection {
+
+		public function _handlingClass ():string {
+
+			return ApiEntryController::class;
+		}
 		
 		public function API__SEGMENTh () {
 			

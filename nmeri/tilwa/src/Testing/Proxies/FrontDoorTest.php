@@ -34,7 +34,7 @@
 
 	    public function withHeaders(array $headers):self {
 
-	    	$this->staticHeaders += $headers;
+	    	$this->staticHeaders = array_merge($this->staticHeaders, $headers);
 
 	    	return $this;
 	    }

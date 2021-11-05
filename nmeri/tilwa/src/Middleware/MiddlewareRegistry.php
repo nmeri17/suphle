@@ -56,7 +56,7 @@
 
 				$this->excludePatterns[$parent] = [];
 
-			$this->excludePatterns[$parent] += $patterns;
+			$this->excludePatterns[$parent] = array_merge($this->excludePatterns[$parent], $patterns);
 
 			return $this;
 		}

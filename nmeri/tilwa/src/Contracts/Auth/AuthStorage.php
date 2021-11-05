@@ -6,7 +6,7 @@
 
 		public function logout ():void;
 
-		public function loginAs (string $value):string;
+		public function impersonate (string $value):string;
 
 		public function getId ():string;
 

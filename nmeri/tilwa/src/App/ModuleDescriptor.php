@@ -31,7 +31,7 @@
 
 					$pair = [$contract => $service];
 
-					$this->dependsOn += $pair;
+					$this->dependsOn = array_merge($this->dependsOn, $pair);
 
 					$this->container->whenTypeAny()->needsAny($pair);
 				}

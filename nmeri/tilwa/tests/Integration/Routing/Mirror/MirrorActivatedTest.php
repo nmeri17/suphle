@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Integration\Routing\Mirror;
 
-	class MirrorActivated extends BaseRouterTest {
+	class MirrorActivatedTest extends BaseRouterTest {
 
 		protected function getEntryCollection ():string {
 
@@ -27,11 +27,6 @@
 			$matchingRenderer = $this->fakeRequest("/api/v1/segment/5"); // when
 
 			$this->assertTrue($matchingRenderer->matchesHandler("simplePairOverride")); // then
-		}
-
-		public function test_auth_storage_changes () {
-
-			//
 		}
 	}
 ?>

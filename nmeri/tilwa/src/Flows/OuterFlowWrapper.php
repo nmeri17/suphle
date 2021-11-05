@@ -120,13 +120,15 @@
  
 		private function queueBranches():void {
 
-			$user = $this->authStorage->getUser();
-
-			$renderer = ;
-
 			$this->queueManager->push(RouteBranches::class, 
 
-				new BranchesContext( $this->modules, $user, $renderer )
+				new BranchesContext(
+					$this->modules,
+
+					$this->authStorage->getUser(),
+
+					$this->handlingRenderer()
+				)
 			);
 		}
 

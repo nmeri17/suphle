@@ -22,7 +22,7 @@
 		 * @param {value}: target user identifier
 		 * @return newly minted token for that id or simply returns same value for session-based mechanism
 		*/
-		public function loginAs (string $value):string {
+		public function impersonate (string $value):string {
 
 			$this->identifier = $value;
 

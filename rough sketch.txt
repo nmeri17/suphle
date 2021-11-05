@@ -25,7 +25,7 @@ Bar:
 *Now, we wanna block user on middleware. So this should prolly be promoted to the container and connected in a way (ConcreteDecorator) that the attached handler (in this case, PrefersServices) runs even when hydrating a concrete
 
 
-*Allow what's passed into controller get assigned. But it should be  a wrapped subset. on call, rejection happens if unsatisfactory
+*Allow what's passed into controller get assigned (rather enforcing a loadServices). But it should be a wrapped subset. on call, rejection happens if unsatisfactory
 Note: assign freely but constructor should be void of calculations
 
 Pending:
@@ -58,7 +58,7 @@ sqlite
 
 
 \PHPUnit\Framework\AssertionFailedError, Concerns\InteractsWithDatabase
-	- extend and override getConnection
+	- extend and override getConnection (see portion of this doc on how to boot models)
 
 	- Illuminate\Testing\TestResponse: overwrite these, then use the new trait/class in place of the above
 		- assertSee[x] (they need the `e` method)
@@ -66,8 +66,11 @@ sqlite
 		- assertSession[x]
 
 Complete the few methods left on FrontDoorTest
+- Replace laravel with lumen
 
-Wrap debug_backtrace
+Wrap:
+	- debug_backtrace
+	- Session so we can configure its duration (an adapter)
 
 hasFlowLeadingTo
 
@@ -78,17 +81,29 @@ on the tearDown methods, you wanna:
 Repository transaction method:
 	- Has to throw on error so dev can pick that up
 	- Should be able to be turned off on a per-method basis
+	- Should also lock i.e. lock for read, start transaction, update, close and release
 
 ==when doesn't work==
-	- routing: check routeManager line 166
+	- routing:
+		- check routeManager line 166
+			var_dump($pattern, $parsed, $renderer->getRouteMethod(), $this->routeCompare($parsed, $renderer->getRouteMethod()));
+
+			/*
+			string(10) "SEGMENT_id"
+			string(12) "/SEGMENT/id/"
+			string(3) "get"
+			bool(true)*/
+	- crud
+		- index: use "_index" instead of leaving it blank
+		- line 102
+			- doesn't this return a regex that should be escaped/normalized? if that be the case, match incoming path against that pattern and return the result to this guy
 
 	- models: are they setting each model's connection at some point? if yes, we'd have to do this for all the models of this particular orm
+	- Think there's a static setConnection method
 
 	- DB facade: class DB extends Illuminate\Database\Capsule\Manager {} in the global namespace fixed the problem
 
-	- crud index: use "_index" instead of leaving it blank
 
+*Implement exception renderer so that auth test can work
 
-*Work on exception renderer so that auth test can work
-
-*When done with the crud tests, fill up the collection methods attached to them
+test only and except from routeCollection

@@ -106,7 +106,7 @@
 
 			$this->statusCode = $statusCode;
 
-			$this->headers += $headers;
+			$this->headers = array_merge($this->headers, $headers);
 		}
 
 		public function getStatusCode ():int {

@@ -3,13 +3,13 @@
 
 	use Tilwa\Config\Router;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleFour\Routes\AuthenticatedRoutes;
+	use Tilwa\Tests\Mocks\Modules\ModuleFour\Routes\AuthenticateCrudCollection;
 
 	class RouterMock extends Router {
 
 		public function browserEntryRoute ():string {
 
-			return AuthenticatedRoutes::class;
+			return AuthenticateCrudCollection::class;
 		}
 	}
 ?>

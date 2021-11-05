@@ -3,9 +3,9 @@
 
 	use Tilwa\Routing\BaseCollection;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleTwo\Controllers\BaseController;
+	use Tilwa\Tests\Mocks\Modules\ModuleFour\Controllers\BaseController;
 
-	class AuthenticatedRoutes extends BaseCollection {
+	class AuthenticateCrudCollection extends BaseCollection {
 
 		public function _handlingClass ():string {
 
