@@ -1,25 +1,35 @@
 <?php
 	namespace Tilwa\Tests\Integration\Routing\Mirror;
 
-	use Tilwa\Testing\{Condiments\PopulatesDatabaseTest, Proxies\FrontDoorTest};
+	use Tilwa\Testing\{Condiments\PopulatesDatabaseTest, Proxies\FrontDoorTest, TestTypes\ModuleLevelTest};
 
 	use Tilwa\Contracts\Auth\User;
 
 	use Tilwa\Auth\Storage\TokenStorage;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleFive\ModuleFiveDescriptor;
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{ModuleOneDescriptor, Routes\Auth\SecureBrowserCollection};
 
-	use Tilwa\App\Container;
-
-	use PHPUnit\Framework\TestCase;
-
-	class InvolvesAuthTest extends TestCase {
+	class InvolvesAuthTest extends ModuleLevelTest {
 
 		use FrontDoorTest, PopulatesDatabaseTest;
 
 		protected function getModules():array {
 
-			return [new ModuleFiveDescriptor(new Container)];
+			return [
+				$this->replicateModule(ModuleOneDescriptor::class, function (Container $container) {
+
+					$container->whenTypeAny()->needsAny([
+
+						IRouter::class => $this->positiveMock(
+							RouterMock::class,
+
+							[
+								"browserEntryRoute" => SecureBrowserCollection::class
+							]
+						)
+					]);
+				})
+			];
 		}
 
 		protected function getActiveEntity ():string {

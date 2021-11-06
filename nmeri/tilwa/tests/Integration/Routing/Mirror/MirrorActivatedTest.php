@@ -1,12 +1,10 @@
 <?php
 	namespace Tilwa\Tests\Integration\Routing\Mirror;
 
+	/**
+	 * As with other configs on [BaseRouterTest], the apiStack is pulled from [ModuleOne]
+	*/
 	class MirrorActivatedTest extends BaseRouterTest {
-
-		protected function getEntryCollection ():string {
-
-			return BrowserNoPrefix::class;
-		}
 
 		public function test_can_switch_to_api_collection () {
 

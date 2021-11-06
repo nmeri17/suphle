@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Unit\App;
 
-	use Tilwa\Testing\BaseTest;
+	use Tilwa\Testing\IsolatedComponentTest;
 
 	use Tilwa\Contracts\HtmlParser;
 
@@ -11,7 +11,7 @@
 
 	use Tilwa\Config\Transphporm;
 
-	class ProviderTest extends BaseTest {
+	class ProviderTest extends IsolatedComponentTest {
 
 		public function test_can_hydrate_from_provider () {
 

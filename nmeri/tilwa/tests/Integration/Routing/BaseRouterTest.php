@@ -1,7 +1,9 @@
 <?php
 	namespace Tilwa\Tests\Integration\Routing;
 
-	use Tilwa\Testing\{TestTypes\IsolatedComponentTest, Condiments\DirectHttpTest};
+	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
+
+	use Tilwa\Testing\Condiments\{DirectHttpTest, MockFacilitator};
 
 	use Tilwa\Routing\RouteManager;
 
@@ -11,7 +13,7 @@
 
 	class BaseRouterTest extends IsolatedComponentTest {
 
-		use DirectHttpTest;
+		use DirectHttpTest, MockFacilitator;
 
 		public function getRouter ():RouteManager {
 
@@ -29,7 +31,13 @@
 
 			$this->container->whenTypeAny()->needsAny([
 
-				IRouter::class => new RouterMock($this->getEntryCollection())
+				IRouter::class => $this->positiveMock(
+					RouterMock::class,
+
+					[
+						"browserEntryRoute" => $this->getEntryCollection()
+					]
+				)
 			]);
 
 			return $this;

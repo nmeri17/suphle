@@ -1,9 +1,11 @@
 <?php
 	namespace Tilwa\Testing\TestTypes;
 
-	use Tilwa\App\ModulesBooter;
+	use Tilwa\App\{ModulesBooter, ModuleDescriptor, Container};
 
 	use Tilwa\Events\ExecutionUnit;
+
+	use Tilwa\Testing\Condiments\MockFacilitator;
 
 	use PHPUnit\Framework\TestCase;
 
@@ -11,6 +13,8 @@
 	 * Used for testing components on a modular scale but that don't necessarily require interaction with the HTTP passage
 	*/
 	abstract class ModuleLevelTest extends TestCase {
+
+		use MockFacilitator;
 
 		private $eventManager;
 
@@ -60,6 +64,18 @@
 		public function catchEmittingEvents ():void {
 
 			$this->eventManager->makeFireSoft();
+		}
+
+		/**
+		 * A blank container is given to the new module, with the assumption that we possibly wanna overwrite even the default objects (aside from only injecting absent configs)
+		*/
+		protected function replicateModule(string $descriptor, callable $customizer):ModuleDescriptor {
+
+			$container = new Container;
+
+			$customizer($container);
+
+			return new $descriptor($container);
 		}
 	}
 ?>

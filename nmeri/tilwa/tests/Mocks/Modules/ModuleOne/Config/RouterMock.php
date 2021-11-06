@@ -4,20 +4,13 @@
 
 	use Tilwa\Config\Router;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\ApiRoutes\V1\LowerMirror;
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\{ApiRoutes\V1\LowerMirror, BrowserNoPrefix};
 
 	class RouterMock extends Router {
 
-		private $activeEntryRoute;
-
-		public function __construct (string $entryRoute) {
-
-			$this->activeEntryRoute = $entryRoute;
-		}
-
 		public function browserEntryRoute ():string {
 
-			return $this->activeEntryRoute;
+			return BrowserNoPrefix::class;
 		}
 
 		public function apiStack ():array {

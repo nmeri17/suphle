@@ -1,15 +1,15 @@
 <?php
-	namespace Tilwa\Tests\Mocks\Modules\ModuleFour\Routes;
+	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Routes;
 
 	use Tilwa\Routing\BaseCollection;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleFour\Controllers\BaseController;
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Controllers\CrudController;
 
 	class AuthenticateCrudCollection extends BaseCollection {
 
 		public function _handlingClass ():string {
 
-			return BaseController::class;
+			return CrudController::class;
 		}
 		
 		public function SECURE__SOMEh () {

@@ -1,9 +1,11 @@
 <?php
-	namespace Tilwa\Tests\Integration\Routing;
+	namespace Tilwa\Tests\Integration\Routing\Nested;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\Prefix\OuterCollection;
 
-	class NestedRouteTest extends BaseRouterTest {
+	use Tilwa\Tests\Integration\Routing\BaseRouterTest;
+
+	class PlainPrefixTest extends BaseRouterTest {
 
 		protected function getEntryCollection ():string {
 

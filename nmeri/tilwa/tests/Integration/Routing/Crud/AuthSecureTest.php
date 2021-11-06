@@ -3,23 +3,35 @@
 
 	use Tilwa\Tests\Integration\Routing\BaseRouterTest;
 
-	use Tilwa\Testing\{Proxies\FrontDoorTest, Condiments\PopulatesDatabaseTest};
+	use Tilwa\Testing\{Proxies\FrontDoorTest, Condiments\PopulatesDatabaseTest, TestTypes\ModuleLevelTest};
 
-	use Tilwa\Tests\Mocks\Modules\ModuleFour\ModuleFourDescriptor;
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{ModuleOneDescriptor, Routes\Crud\AuthenticateCrudCollection};
 
 	use Tilwa\Contracts\Auth\User;
 
 	use Tilwa\App\Container;
 
-	use PHPUnit\Framework\TestCase;
-
-	class AuthSecureTest extends TestCase {
+	class AuthSecureTest extends ModuleLevelTest {
 
 		use FrontDoorTest, PopulatesDatabaseTest;
 
 		protected function getModules():array {
 
-			return [new ModuleFourDescriptor(new Container)];
+			return [
+				$this->replicateModule(ModuleOneDescriptor::class, function (Container $container) {
+
+					$container->whenTypeAny()->needsAny([
+
+						IRouter::class => $this->positiveMock(
+							RouterMock::class,
+
+							[
+								"browserEntryRoute" => AuthenticateCrudCollection::class
+							]
+						)
+					]);
+				})
+			];
 		}
 
 		protected function getActiveEntity ():string {
