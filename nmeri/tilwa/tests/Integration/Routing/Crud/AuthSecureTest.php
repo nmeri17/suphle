@@ -3,13 +3,13 @@
 
 	use Tilwa\Tests\Integration\Routing\BaseRouterTest;
 
-	use Tilwa\Testing\{Proxies\FrontDoorTest, Condiments\PopulatesDatabaseTest, TestTypes\ModuleLevelTest};
+	use Tilwa\Testing\{Condiments\PopulatesDatabaseTest, TestTypes\ModuleLevelTest};
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\{ModuleOneDescriptor, Routes\Crud\AuthenticateCrudCollection};
+	use Tilwa\Testing\Proxies\{FrontDoorTest, WriteOnlyContainer};
 
-	use Tilwa\Contracts\Auth\User;
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{ModuleOneDescriptor, Routes\Crud\AuthenticateCrudCollection, Config\RouterMock};
 
-	use Tilwa\App\Container;
+	use Tilwa\Contracts\{Auth\User, Config\Router};
 
 	class AuthSecureTest extends ModuleLevelTest {
 
@@ -18,18 +18,13 @@
 		protected function getModules():array {
 
 			return [
-				$this->replicateModule(ModuleOneDescriptor::class, function (Container $container) {
+				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-					$container->whenTypeAny()->needsAny([
+					$container->replaceWithMock(Router::class, RouterMock::class, [
 
-						IRouter::class => $this->positiveMock(
-							RouterMock::class,
-
-							[
-								"browserEntryRoute" => AuthenticateCrudCollection::class
-							]
-						)
-					]);
+							"browserEntryRoute" => AuthenticateCrudCollection::class
+						]
+					);
 				})
 			];
 		}

@@ -5,16 +5,12 @@
 
 	use Tilwa\Events\ExecutionUnit;
 
-	use Tilwa\Testing\Condiments\MockFacilitator;
-
 	use PHPUnit\Framework\TestCase;
 
 	/**
 	 * Used for testing components on a modular scale but that don't necessarily require interaction with the HTTP passage
 	*/
 	abstract class ModuleLevelTest extends TestCase {
-
-		use MockFacilitator;
 
 		private $eventManager;
 
@@ -71,11 +67,11 @@
 		*/
 		protected function replicateModule(string $descriptor, callable $customizer):ModuleDescriptor {
 
-			$container = new Container;
+			$writer = new WriteOnlyContainer; // using unique instances rather than a fixed one so test can make multiple calls to clone modules
 
-			$customizer($container);
+			$customizer($writer);
 
-			return new $descriptor($container);
+			return new $descriptor($writer->getContainer());
 		}
 	}
 ?>

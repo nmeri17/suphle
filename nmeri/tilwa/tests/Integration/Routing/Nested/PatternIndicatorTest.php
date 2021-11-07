@@ -1,7 +1,13 @@
 <?php
 	namespace Tilwa\Tests\Integration\Routing\Nested;
 
-	use Tilwa\Testing\{Proxies\FrontDoorTest, TestTypes\ModuleLevelTest};
+	use Tilwa\Testing\TestTypes\ModuleLevelTest;
+
+	use Tilwa\Testing\Proxies\{FrontDoorTest, WriteOnlyContainer};
+
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Prefix\SecureUpperCollection, ModuleOneDescriptor, Config\RouterMock};
+
+	use Tilwa\Contracts\Config\Router;
 
 	class PatternIndicatorTest extends ModuleLevelTest {
 
@@ -21,17 +27,11 @@
 
 			return [
 
-				$this->replicateModule(ModuleOneDescriptor::class, function (Container $container) {
+				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-					$container->whenTypeAny()->needsAny([
+					$container->replaceWithMock(Router::class, RouterMock::class, [
 
-						IRouter::class => $this->positiveMock(
-							RouterMock::class,
-
-							[
-								"browserEntryRoute" => $this->getEntryCollection() // change to desired collection
-							]
-						)
+						"browserEntryRoute" => SecureUpperCollection::class
 					]);
 				})
 			];
@@ -39,8 +39,16 @@
 
 		public function test_nested_route_can_unlink_auth () {
 
-			// requires entry
-			// visit one occupied above but unlinked below, without impersonation and assert passage
+			$this->get("/prefix/unlink") // when
+
+			->assertOk(); // then
+		}
+
+		public function test_nested_route_accesses_parent_auth () {
+
+			$this->get("/prefix/retain-auth") // when
+
+			->assertUnauthorized(); // then
 		}
 	}
 ?>

@@ -1,13 +1,15 @@
 <?php
 	namespace Tilwa\Tests\Integration\Routing\Mirror;
 
-	use Tilwa\Testing\{Condiments\PopulatesDatabaseTest, Proxies\FrontDoorTest, TestTypes\ModuleLevelTest};
+	use Tilwa\Testing\{Condiments\PopulatesDatabaseTest, TestTypes\ModuleLevelTest};
 
-	use Tilwa\Contracts\Auth\User;
+	use Tilwa\Testing\Proxies\{FrontDoorTest, WriteOnlyContainer};
+
+	use Tilwa\Contracts\{Auth\User, Config\Router};
 
 	use Tilwa\Auth\Storage\TokenStorage;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\{ModuleOneDescriptor, Routes\Auth\SecureBrowserCollection};
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{ModuleOneDescriptor, Routes\Auth\SecureBrowserCollection, Config\RouterMock};
 
 	class InvolvesAuthTest extends ModuleLevelTest {
 
@@ -16,18 +18,13 @@
 		protected function getModules():array {
 
 			return [
-				$this->replicateModule(ModuleOneDescriptor::class, function (Container $container) {
+				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-					$container->whenTypeAny()->needsAny([
+					$container->replaceWithMock(Router::class, RouterMock::class, [
 
-						IRouter::class => $this->positiveMock(
-							RouterMock::class,
-
-							[
-								"browserEntryRoute" => SecureBrowserCollection::class
-							]
-						)
-					]);
+							"browserEntryRoute" => SecureBrowserCollection::class
+						]
+					);
 				})
 			];
 		}
