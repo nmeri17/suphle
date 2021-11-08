@@ -85,20 +85,24 @@
 
 			$apiStack = $this->config->apiStack();
 
-			$versionKeys = array_keys($apiStack);
+			$versionKeys = array_map("strtolower", array_keys($apiStack) );
 
 			$versionHandlers = array_values($apiStack);
 
-			$start = array_search( // case-insensitive search
+			$versionPresent = strtolower($this->incomingVersion()); // case-insensitive search
 
-				strtolower($this->incomingVersion()),
+			$versionCount = count($versionHandlers) - 1;
 
-				array_map("strtolower", $versionKeys)
-			);
+			// if there's no specific version, we will serve the most recent
+			if ( !empty($versionPresent))
 
-			$versionHandlers = array_slice($versionHandlers, $start, count($versionHandlers)-1);
+				$startIndex = array_search($versionPresent, $versionKeys);
 
-			$versionKeys = array_slice($versionKeys, $start, count($versionKeys)-1);
+			else $startIndex = $versionCount;
+
+			$versionHandlers = array_slice($versionHandlers, $startIndex, $versionCount);
+
+			$versionKeys = array_slice($versionKeys, $startIndex, $versionCount);
 
 			return array_combine($versionKeys, $versionHandlers);
 		}

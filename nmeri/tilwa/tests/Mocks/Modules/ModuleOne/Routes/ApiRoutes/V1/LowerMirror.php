@@ -23,5 +23,10 @@
 
 			$this->_get(new Json("simplePairOverride"));
 		}
+
+		public function CASCADE () {
+
+			$this->_get(new Json("originalCascade"));
+		}
 	}
 ?>

@@ -2,7 +2,7 @@
 
 	namespace Tilwa\Auth;
 
-	use Tilwa\Contracts\Auth\{AuthStorage, UserHydrator};
+	use Tilwa\Contracts\Auth\UserHydrator;
 
 	use Tilwa\Routing\PayloadStorage;
 
@@ -15,11 +15,6 @@
 			$this->userHydrator = $userHydrator;
 
 			$this->payloadStorage = $payloadStorage;
-		}
-
-		public function setAuthMechanism (AuthStorage $authStorage) {
-
-			$this->authStorage = $authStorage;
 		}
 
 		public function compare ():bool {

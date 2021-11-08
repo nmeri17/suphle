@@ -9,7 +9,9 @@
 
 		private $identifierKey = "tilwa_user_id",
 
-		$previousUserKey = "previous_user";
+		$previousUserKey = "previous_user",
+
+		$isImpersonating;
 
 		public function __construct (UserHydrator $userHydrator, AuthContract $authConfig) {
 
@@ -19,6 +21,13 @@
 		}
 
 		public function startSession (string $value):string {
+
+			if (!$this->isImpersonating) { // protection against session fixation
+
+				$this->logout();
+
+				session_start();
+			}
 
 			return $_SESSION[$this->identifierKey] = $value;
 		}
@@ -31,6 +40,8 @@
 		public function impersonate (string $value):string {
 
 			$this->setPreviousUser();
+
+			$this->isImpersonating = true;
 
 			return parent::impersonate($value);
 		}

@@ -32,9 +32,8 @@
 			$this->container->whenTypeAny()->needsAny([
 
 				IRouter::class => $this->positiveMock(
-					RouterMock::class,
+					RouterMock::class, [
 
-					[
 						"browserEntryRoute" => $this->getEntryCollection()
 					]
 				)
