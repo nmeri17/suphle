@@ -37,18 +37,20 @@
 			$this->identifier = $_SESSION[$this->identifierKey];
 		}
 
-		public function impersonate (string $value):string {
+		public function imitate (string $value):string {
 
 			$this->setPreviousUser();
 
 			$this->isImpersonating = true;
 
-			return parent::impersonate($value);
+			return parent::imitate($value);
 		}
 
 		protected function setPreviousUser ():void {
 
-			$_SESSION[$this->previousUserKey] = $this->identifier;
+			if (!$this->hasActiveAdministrator())
+
+				$_SESSION[$this->previousUserKey] = $this->identifier;
 		}
 
 		public function getPreviousUser ():string {
@@ -56,7 +58,7 @@
 			return $_SESSION[$this->previousUserKey];
 		}
 
-		public function hasPreviousUser ():bool {
+		public function hasActiveAdministrator ():bool {
 
 			return array_key_exists($this->previousUserKey, $_SESSION);
 		}

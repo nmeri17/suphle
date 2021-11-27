@@ -1,13 +1,13 @@
 <?php
 	namespace Tilwa\Auth\Storage;
 
-	use Tilwa\Contracts\Auth\AuthStorage;
+	use Tilwa\Contracts\Auth\{AuthStorage, User};
 
 	abstract class BaseAuthStorage implements AuthStorage {
 
 		protected $userHydrator, $authConfig, $user, $identifier;
 
-		public function getUser () {
+		public function getUser ():?User {
 
 			if (is_null($this->identifier)) return null;
 
@@ -22,7 +22,7 @@
 		 * @param {value}: target user identifier
 		 * @return newly minted token for that id or simply returns same value for session-based mechanism
 		*/
-		public function impersonate (string $value):string {
+		public function imitate (string $value):string {
 
 			$this->identifier = $value;
 

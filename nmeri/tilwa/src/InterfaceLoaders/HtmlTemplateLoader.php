@@ -1,12 +1,11 @@
 <?php
+	namespace Tilwa\InterfaceLoaders;
 
-	namespace Tilwa\ServiceProviders;
-
-	use Tilwa\App\ServiceProvider;
+	use Tilwa\App\BaseInterfaceLoader;
 
 	use Tilwa\Adapters\Markups\Transphporm;
 
-	class HtmlTemplateProvider extends ServiceProvider {
+	class HtmlTemplateLoader extends BaseInterfaceLoader {
 
 		public function concrete():string {
 

@@ -1,13 +1,19 @@
 <?php
-	namespace Tilwa\Flows;
+	namespace Tilwa\Tests\Unit\Flows;
 
-	use Tilwa\Testing\IsolatedComponentTest;
+	use Tilwa\Tests\Integration\Routing\BaseRouterTest;
 
-	class FlowHydratorTest extends IsolatedComponentTest {
+	class FlowHydratorTest extends BaseRouterTest { /**
+	 fill unitNode with a config, run and assert result
+
+	 these guys should not call `runNodes`
+	 */
 
 		public function test_pipeTo() {
 
-			//
+			// given
+			// when
+			// then
 		}
 
 		public function test_includesPagination() {
@@ -48,6 +54,11 @@
 		public function test_setExpiresAtHydrator () {
 
 		 //
+		}
+		
+		public function test_will_trigger_underlying_format () {
+
+			// call `runNodes`, then inject mocks
 		}
 	}
 ?>

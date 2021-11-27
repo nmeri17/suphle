@@ -5,7 +5,7 @@
 
 	use Tilwa\Events\ExecutionUnit;
 
-	use PHPUnit\Framework\TestCase;
+	use PHPUnit\Framework\{TestCase, AssertionFailedError};
 
 	/**
 	 * Used for testing components on a modular scale but that don't necessarily require interaction with the HTTP passage
@@ -43,9 +43,9 @@
 
 			if (is_null($subscription))
 
-				throw new Exception("Event not fired");
+				throw new AssertionFailedError("Event not fired");
 			
-			assert(!empty($subscription->getMatchingUnits($eventName)));
+			$this->assertNotEmpty($subscription->getMatchingUnits($eventName));
 		}
 
 		private function findInBlanks ($sender):?EventSubscription {

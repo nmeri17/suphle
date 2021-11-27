@@ -1,5 +1,4 @@
 <?php
-
 	namespace Tilwa\Flows\Jobs;
 
 	use Tilwa\App\ModuleToRoute;
@@ -13,22 +12,18 @@
 	// for queueing the cached endpoint on hit and queuing sub-flows
 	class RouteBranches {
 
-		private $context;
+		private $context, $moduleFinder, $hydrator;
 
-		private $moduleFinder;
-
-		private $hydrator;
-
-		function __construct(BranchesContext $context) {
+		function __construct(BranchesContext $context, ModuleToRoute $moduleFinder, FlowHydrator $hydrator) {
 			
 			$this->context = $context;
-		}
-
-		public function handle(ModuleToRoute $moduleFinder, FlowHydrator $hydrator) {
 
 			$this->moduleFinder = $moduleFinder;
 
 			$this->hydrator = $hydrator;
+		}
+
+		public function handle() {
 
 			$outgoingRenderer = $this->context->getRenderer();
 
@@ -59,8 +54,12 @@
 			}
 		}
 
-		// transitions from non-flow to flow links won't cache the first link if it's outside the active module i.e. routes in moduleA controllers can't visit those in moduleB if the moduleA route wasn't loaded from cache
-		private function getManagerFromModules(array $modules, string $pattern):ResponseManager {
+		/**
+		 * Transitions from non-flow to flow links won't cache the first link if it's outside the active module i.e. routes in moduleA controllers can't visit those in moduleB if the moduleA route wasn't loaded from cache
+		 * 
+		 * Given the origin path stored a flow pointing to "sub-path/id", this tries to uproot the responseManager in the module containing that path
+		*/
+		private function getManagerFromModules(array $modules, string $pattern):?ResponseManager {
 
 			$moduleInitializer = $this->moduleFinder->findContext($modules, $pattern);
 

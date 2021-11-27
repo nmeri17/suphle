@@ -3,22 +3,24 @@
 
 	use Tilwa\App\{Bootstrap, BaseInterfaceLoader};
 
-	use Illuminate\Queue\Capsule\Manager as QueueManager;
+	use Tilwa\Adapters\Queues\LaravelQueue;
 
 	class QueueLoader extends BaseInterfaceLoader {
 
-		public function afterBind(QueueManager $initialized):void {
+		public function afterBind(LaravelQueue $initialized):void {
 
 			$initialized->addConnection([
-			    'driver' => 'beanstalkd',
-			    'host' => 'localhost',
-			    'queue' => 'default',
+			    "driver" => "beanstalkd",
+			    
+			    "host" => "localhost",
+			    
+			    "queue" => "default",
 			]);
 		}
 
 		public function concrete():string {
 
-			return QueueManager::class;
+			return LaravelQueue::class;
 		}
 	}
 ?>

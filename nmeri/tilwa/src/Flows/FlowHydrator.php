@@ -54,14 +54,13 @@
 			UnitNode::MAX_HITS => "setMaxHitsHydrator"
 		];
 
-		// if we can't hydrate this with our container, replace interfaces with hard-coded concretes
-		function __construct(CacheManager $cacheManager, Orm $orm/*, Container $randomContainer*/, PathPlaceholders $placeholderStorage, RequestDetails $requestDetails) {
+		function __construct(CacheManager $cacheManager, Orm $orm, Container $randomContainer, PathPlaceholders $placeholderStorage, RequestDetails $requestDetails) {
 
 			$this->cacheManager = $cacheManager;
 
 			$this->orm = $orm;
 
-			// $this->container = $randomContainer;
+			$this->container = $randomContainer;
 
 			$this->placeholderStorage = $placeholderStorage;
 
@@ -207,7 +206,7 @@
 			return Arr::get($this->previousResponse, $keyName);
 		}
 
-		private function handlePaginate($nodeContent):AbstractRenderer {
+		public function handlePaginate($nodeContent):AbstractRenderer {
 
 			$valuePath = $nodeContent[$this->orm->getPaginationPath()];
 
@@ -233,7 +232,7 @@
 		}
 
 		// @return AbstractRenderer[]
-		private function handlePipe(array $indexes):array {
+		public function handlePipe(array $indexes):array {
 
 			$results = [];
 
@@ -247,14 +246,14 @@
 		}
 
 		// @return executes underlying renderer and returns it
-		private function executeRequest() {
+		private function executeRequest():?AbstractRenderer {
 
 			if ($this->canProcessPath())
 
 				return $this->responseManager->handleValidRequest($this->requestDetails);
 		}
 
-		private function handleOneOf(array $indexes, string $requestProperty):AbstractRenderer {
+		public function handleOneOf(array $indexes, string $requestProperty):AbstractRenderer {
 
 			return $this->updateRequest([
 
@@ -263,7 +262,7 @@
 			->executeRequest();
 		}
 
-		private function handleRange(array $indexes, RangeContext $context):AbstractRenderer {
+		public function handleRange(array $indexes, RangeContext $context):AbstractRenderer {
 
 			return $this->updateRequest([
 
@@ -274,7 +273,7 @@
 			->executeRequest();
 		}
 
-		private function handleDateRange(array $indexes, RangeContext $context):AbstractRenderer {
+		public function handleDateRange(array $indexes, RangeContext $context):AbstractRenderer {
 
 			usort($indexes, function($a, $b) {
 
@@ -290,18 +289,18 @@
 			->executeRequest();
 		}
 
-		private function handleServiceSource($currentSource, ServiceContext $context, CollectionNode $rawNode ):iterable {
+		public function handleServiceSource($currentSource, ServiceContext $context, CollectionNode $rawNode ):iterable {
 
-			// $concrete = $this->container->getClass($context->getServiceName());
+			$concrete = $this->container->getClass($context->getServiceName());
 
 			return call_user_func_array(
-				[$context->getServiceName(), $context->getMethod()],
+				[$concrete, $context->getMethod()],
 
 				[$this->getNodeFromPrevious($rawNode)]
 			);
 		}
 
-		private function runNodeConfigs(RouteUserNode $savedNode, UnitNode $rawNode):void {
+		public function runNodeConfigs(RouteUserNode $savedNode, UnitNode $rawNode):void {
 			
 			foreach ($rawNode->getConfig() as $config => $value) {
 

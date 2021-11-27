@@ -18,8 +18,6 @@
 
 		public function setUp () {
 
-			parent::setUp();
-
 			$this->frontSetup();
 		}
 

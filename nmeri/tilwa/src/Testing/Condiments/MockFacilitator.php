@@ -1,58 +1,82 @@
 <?php
 	namespace Tilwa\Testing\Condiments;
 
-	use PHPUnit\Framework\MockObject\MockObject;
+	use Mockery\{MockInterface, Adapter\Phpunit\MockeryPHPUnitIntegration};
 
 	trait MockFacilitator {
 
-		protected function positiveMock (string $target, array $overrides, array $constructorArguments):MockObject {
+		use MockeryPHPUnitIntegration;
 
-			return $this->positiveMockRaw($target, array_map(function ($value) {
+		protected function positiveStub (string $target, array $overrides, array $constructorArguments = []):MockInterface {
 
-				return $this->returnValue($value);
-			}, $overrides), $constructorArguments);
+			$builder = $this->getBuilder($target, $constructorArguments, true);
+
+			$this->stubSingle($overrides, $builder);
+
+			return $builder;
 		}
 
-		protected function positiveMockRaw (string $target, array $overrides, array $constructorArguments):MockObject {
+		protected function positiveStubMany (string $target, array $overrides, array $constructorArguments = []):MockInterface {
 
-			return $this->mockRaw($target, $overrides, true, $constructorArguments);
+			$builder = $this->getBuilder($target, $constructorArguments, true);
+
+			$this->stubMany($overrides, $builder);
+
+			return $builder;
 		}
 
 		/**
 		 * Use when the other methods contain actions we don't wanna trigger
 		*/
-		protected function negativeMock (string $target, array $overrides, array $constructorArguments):MockObject {
+		protected function negativeStub (string $target, array $overrides, array $constructorArguments = []):MockInterface {
 
-			return $this->negativeMockRaw($target, array_map(function ($value) {
+			$builder = $this->getBuilder($target, $constructorArguments, false);
 
-				return $this->returnValue($value);
-			}, $overrides), $constructorArguments);
+			$this->stubSingle($overrides, $builder);
+
+			return $builder;
 		}
 
-		protected function negativeMockRaw (string $target, array $overrides, array $constructorArguments):MockObject {
+		protected function negativeStubMany (string $target, array $overrides, array $constructorArguments = []):MockInterface {
 
-			return $this->mockRaw($target, $overrides, false, $constructorArguments);
+			$builder = $this->getBuilder($target, $constructorArguments, false);
+
+			$this->stubMany($overrides, $builder);
+
+			return $builder;
 		}
 
-		private function mockRaw (string $target, array $overrides, bool $retainOtherMethods, array $constructorArguments = null):MockObject {
-
-			$builder = $this->getMockBuilder($target);
-
-			if ($retainOtherMethods)
-
-				$builder->setMethods(array_keys($overrides));
-
-			if (!is_null($constructorArguments))
-
-				$builder->setConstructorArgs($constructorArguments);
-
-			$builder = $builder->getMock();
-
-            $built = $builder->expects($this->any());
+		private function stubSingle (array $overrides, MockInterface $builder):void {
 
             foreach ($overrides as $method => $newValue)
 
-            	$built->method($method)->will($newValue);
+            	$builder->shouldReceive($method)->andReturn($newValue);
+		}
+
+		/**
+		 * Allows for stubbing multiple calls to SUT and receiving different results each time
+		*/
+		private function stubMany (array $overrides, MockInterface $builder):void {
+
+            foreach ($overrides as $method => $newValue) {
+
+            	$expectation = $builder->shouldReceive($method);
+
+            	if (is_array($newValue))
+
+            		$expectation->willReturn(...$newValue);
+
+            	else $expectation->andReturn($newValue);
+            }
+		}
+
+		private function getBuilder (string $target, array $constructorArguments, bool $retainOtherMethods):MockInterface {
+
+			$builder = Mockery::mock($target, $constructorArguments);
+
+			if ($retainOtherMethods)
+
+				$builder = $builder->makePartial();
 
 			return $builder;
 		}

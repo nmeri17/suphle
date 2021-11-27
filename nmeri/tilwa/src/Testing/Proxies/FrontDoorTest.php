@@ -24,6 +24,8 @@
 
 		public function setUp () {
 
+			parent::setUp(); // calls the one on the inherited class of the test this is applied to
+
 			$this->entrance = new FrontDoor($this->getModules());
 		}
 		
@@ -46,9 +48,14 @@
 	    	return $this;
 	    }
 
+	    protected function firstModuleContainer ():Container {
+
+	    	return $this->entrance->firstContainer();
+	    }
+
 		protected function getInitializerWrapper ():ModuleToRoute {
 
-			return $this->entrance->firstContainer()->getClass(ModuleToRoute::class);
+			return $this->firstModuleContainer()->getClass(ModuleToRoute::class);
 		}
 
 		protected function getContainer ():Container {

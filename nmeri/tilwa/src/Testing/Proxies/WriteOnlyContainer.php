@@ -25,9 +25,9 @@
 
 				$interface => $retainOtherMethods ?
 
-					$this->positiveMock($concrete, $overrides):
+					$this->positiveStub($concrete, $overrides):
 
-					$this->negativeMock($concrete, $overrides)
+					$this->negativeStub($concrete, $overrides)
 			]);
 
 			return $this;
@@ -37,7 +37,7 @@
 
 			$this->container->whenTypeAny()->needsAny([
 
-				$interface => $concrete, $overrides
+				$interface => $concrete
 			]);
 
 			return $this;

@@ -23,6 +23,7 @@
     "require-dev": {
         "nategood/commando": "^0.4.0",
         "phpunit/phpunit": "^8.5",
+        "mockery/mockery": "dev-master",
         "illuminate/testing": "^7.30",
         "laravel/framework": "^7.30"
     }

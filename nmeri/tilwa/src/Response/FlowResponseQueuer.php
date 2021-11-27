@@ -1,5 +1,4 @@
 <?php
-
 	namespace Tilwa\Response;
 
 	use Tilwa\Response\Format\AbstractRenderer;
@@ -21,10 +20,17 @@
 
 		public function insert (AbstractRenderer $renderer, ResponseManager $responseManager):void {
 
-			$user = $this->authStorage->getUser();
+			$this->queueManager->addJob(RouteBranches::class, 
 
-			$this->queueManager->push(RouteBranches::class,
-				new BranchesContext(null, $user, $renderer, $responseManager )
+				$this->queueManager->augmentArguments([
+					new BranchesContext(
+						$renderer,
+
+						$this->authStorage->getUser(),
+
+						null, $responseManager
+					)
+				])
 			);
 		}
 	}

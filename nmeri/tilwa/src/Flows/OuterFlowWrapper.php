@@ -38,16 +38,6 @@
 			$this->eventManager = $eventManager;
 		}
 
-		private function matchesUrl():bool {
-
-			return !is_null($this->routeUmbrella);
-		}
-
-		private function setRouteUmbrella():void {
-
-			$this->routeUmbrella = $this->cacheManager->get(self::FLOW_PREFIX . $this->requestDetails->getPath()); // or combine [tag] with the [get]
-		}
-
 		private function getUserId():string { 
 
 			$user = $this->authStorage->getUser();
@@ -57,20 +47,13 @@
 
 		public function canHandle():bool {
 
-			$this->setRouteUmbrella();
+			$this->routeUmbrella = $this->cacheManager->get($this->dataPath()); // or combine [tag] with the [get]
 
-			if (!$this->matchesUrl()) return false;
+			if (is_null($this->routeUmbrella)) return false;
 
-			$this->setContext();
+			$this->context = $this->getActiveFlow($this->getUserId() );
 
 			return !is_null($this->context);
-		}
-
-		private function setContext():void {
-
-			$userId = $this->getUserId();
-
-			$this->context = $this->getActiveFlow( $userId);
 		}
 
 		public function getResponse():string {
@@ -102,11 +85,22 @@
 		
 		public function emptyFlow():void {
 
-			$path = self::FLOW_PREFIX . $this->requestDetails->getPath();
-
 			$this->queueManager->push(UpdateCountDelete::class,
-				new AccessContext($path, $this->context, $this->routeUmbrella, $this->activeUser )
+				new AccessContext(
+					$this->dataPath(),
+
+					$this->context,
+
+					$this->routeUmbrella,
+
+					$this->activeUser
+				)
 			);
+		}
+
+		private function dataPath ():string {
+
+			return self::FLOW_PREFIX . $this->requestDetails->getPath();
 		}
 
 		// it is safest for listeners to listen "external" on the target controller
@@ -120,15 +114,17 @@
  
 		private function queueBranches():void {
 
-			$this->queueManager->push(RouteBranches::class, 
+			$this->queueManager->addJob(RouteBranches::class, 
 
-				new BranchesContext(
-					$this->modules,
+				$this->queueManager->augmentArguments([
+					new BranchesContext(
+						$this->handlingRenderer(),
 
-					$this->authStorage->getUser(),
+						$this->authStorage->getUser(),
 
-					$this->handlingRenderer()
-				)
+						$this->modules
+					)
+				])
 			);
 		}
 
