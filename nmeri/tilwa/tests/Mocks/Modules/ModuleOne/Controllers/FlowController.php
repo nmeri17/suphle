@@ -6,5 +6,7 @@
 	class FlowController extends Executable {
 
 		public function noFlowHandler () {}
+
+		public function getPostDetails () {}
 	}
 ?>

@@ -246,7 +246,7 @@
 		}
 
 		// @return executes underlying renderer and returns it
-		private function executeRequest():?AbstractRenderer {
+		protected function executeRequest():?AbstractRenderer {
 
 			if ($this->canProcessPath())
 

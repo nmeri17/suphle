@@ -33,7 +33,7 @@
 			return $this;
 		}
 
-		public function replace (string $interface, string $concrete):self {
+		public function replaceWithConcrete (string $interface, object $concrete):self {
 
 			$this->container->whenTypeAny()->needsAny([
 

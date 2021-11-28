@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Routes;
+	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\Flows;
 
 	use Tilwa\Response\Format\Json;
 
@@ -9,7 +9,7 @@
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\FlowService;
 
-	class FlowRoutes extends BaseCollection {
+	class OriginCollection extends BaseCollection {
 
 		public function _handlingClass ():string {
 
@@ -99,6 +99,11 @@
 			);
 			
 			$this->_get($renderer->setFlow($flow));
+		}
+
+		public function NO__FLOWh() {
+
+			$this->_get(new Json("noFlowHandler"));
 		}
 	}
 ?>
