@@ -1,28 +1,134 @@
 <?php
 	namespace Tilwa\Tests\Integration\Flows;
 
-	use Tilwa\Testing\IsolatedComponentTest;
+	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\QueueInterceptor, Proxies\WriteOnlyContainer};
 
-	class FlowRoutesTest extends IsolatedComponentTest {
-		
-		public function test_flow_response_matches_organic_response () {
+	use Tilwa\Contracts\{Auth\User, Config\Router};
 
-			// Assert that the result of an organic call to one endpoint matches the flow request to the same endpoint. Note: this needs 2 requests -- 1 to the storer, and 2 to the flow url
+	use Tilwa\Flows\BranchesContext;
+
+	use Tilwa\Tests\Integration\Flows\Jobs\BaseJobGenerator;
+
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\OriginCollection, ModuleOneDescriptor, Config\RouterMock};
+
+	class FlowRoutesTest extends BaseJobGenerator {
+
+		use QueueInterceptor;
+
+		private $userUrl = "/user-content/5";
+
+		protected function getModules():array { // using this since we intend to make front door requests
+
+			return [
+
+				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+
+					$container->replaceWithMock(Router::class, RouterMock::class, [
+
+						"browserEntryRoute" => OriginCollection::class // used by `test_visiting_origin_path_pushes_caching_job`
+					]);
+				})
+			];
 		}
 		
-		public function test_only_specialized_user_can_access_his_content () {
+		/**
+		 * @dataProvider specializedUser
+		*/
+		public function test_specialized_user_can_access_his_content (BranchesContext $context, User $visitor) {
 
-			// Confirm they can view the same content when assigned to both and are restricted when set to one user
+			$this->actingAs($visitor); // given
+
+			$this->makeJob($context)->handle(); // when
+
+			$this->assertHandledByFlow($this->userUrl); // then
+		}
+
+		public function specializedUser ():array {
+
+			$user = $this->makeUser(5);
+
+			return [
+
+				[$this->makeBranchesContext($user), $user],
+
+				[$this->makeBranchesContext(null), null] // create content to be mass consumed. Visiting user 5's resource as nobody should access it
+			];
+		}
+
+		private function makeBranchesContext (?User $user):BranchesContext {
+
+			return new BranchesContext(
+
+				$this->getLoadedRenderer("all_users", "user-content/id"),
+
+				$user, // creates 10 content models, but assigns the given user as their owner
+
+				$this->getModules(), null
+			);
 		}
 		
-		public function test_all_can_access_generalized_content () {
+		/**
+		 * @dataProvider strangeUsers
+		*/
+		public function test_other_users_cant_access_specialized_user_content (BranchesContext $context, ?User $visitor) {
 
-			//
+			if (!is_null($visitor))
+
+				$this->actingAs($visitor); // given
+
+			$this->makeJob($context)->handle(); // when
+
+			$this->assertNotHandledByFlow($this->userUrl); // then
+		}
+
+		public function strangeUsers ():array {
+
+			$user3 = $this->makeUser(3);
+
+			return [
+
+				[$this->makeBranchesContext($user3), $user3], // create for user 3. Visit user 5's content as user 3 should hit a brick wall
+
+				[$this->makeBranchesContext($this->makeUser(5)), null] // create content for user 5. Visiting as nobody should hit a brick wall
+			];
 		}
 		
-		public function test_pushed_to_flow () {
+		/**
+		 * @dataProvider specializedUser
+		 * @dataProvider strangeUsers
+		*/
+		public function test_all_can_access_generalized_content (BranchesContext $dummyContext, ?User $visitor) {
 
-			// get organic through front door and confirm it pushed our job to the queue {assertPushedToFlow(name)}
+			if (!is_null($visitor))
+
+				$this->actingAs($visitor);
+
+			$this->makeJob($this->makeBranchesContext(null)) // given
+			->handle(); // when
+
+			// then
+			$this->assertHandledByFlow($this->userUrl);
+
+			$this->assertHandledByFlow("/user-content/3");
+		}
+
+		/**
+		 * @dataProvider getOriginUrls
+		*/
+		public function test_visiting_origin_path_pushes_caching_job (string $url) {
+
+			$this->assertPushedToFlow($url);
+		}
+
+		public function getOriginUrls ():array {
+
+			return [
+				["/single-node"],
+				["/combine-flows"],
+				["/from-service"],
+				["/pipe-to"],
+				["/one-of"]
+			];
 		}
 	}
 ?>

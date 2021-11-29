@@ -11,6 +11,8 @@
 
 	use Tilwa\Flows\{ ControllerFlows, Jobs\RouteBranches, Structures\BranchesContext};
 
+	use Tilwa\Contracts\Auth\User;
+
 	class BaseJobGenerator extends ModuleLevelTest {
 
 		use QueueInterceptor, MockFacilitator;
@@ -60,6 +62,15 @@
 				BranchesContext::class => $context
 			])
 			->getClass($jobName);
+		}
+
+		protected function makeUser (int $id):User {
+
+			$entity = $this->firstModuleContainer()->getClass(User::class);
+
+			$entity->setId($id);
+
+			return $entity;
 		}
 	}
 ?>

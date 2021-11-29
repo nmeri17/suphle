@@ -3,7 +3,7 @@
 
 	use Tilwa\Testing\Proxies\WriteOnlyContainer;
 
-	use Tilwa\Flows\{FlowHydrator, OuterFlowWrapper, ControllerFlows, Jobs\RouteBranches, Structures\BranchesContext};
+	use Tilwa\Flows\{FlowHydrator, OuterFlowWrapper, Structures\BranchesContext};
 
 	use Tilwa\Contracts\{CacheManager, Auth\User, Config\Router};
 
@@ -42,15 +42,6 @@
 			];
 		}
 
-		public function test_visiting_origin_path_pushes_caching_job () {
-
-			$this->catchQueuedTasks();
-
-			$this->get("/single-node");
-
-			$this->assertPushed(RouteBranches::class);
-		}
-
 		/**
 		 * @dataProvider contextParameters
 		*/
@@ -76,7 +67,7 @@
 		 * The test this goes into doesn't do any auth related stuff. It is content with running the flow and expecting to find it in the cache
 		 * 
 		 * @return [
-			 * 	RouteBranches => configured to match what we expect an origin url to populate a task with
+			 * 	BranchesContext => configured to match what we expect an origin url to populate a task with
 			 * url => the flow link expected to enable us access the given task
 		 * ]
 		*/
@@ -84,9 +75,7 @@
 
 			$responseManager = $this->negativeStub(ResponseManager::class); // stubbing since the information this naturally expects to carry is too contextual to be pulled from just a container
 
-			$user = $this->container->getClass(User::class);
-
-			$user->setId(5);
+			$user = $this->makeUser(5);
 
 			$renderer = $this->getLoadedRenderer("all_categories", "categories/id");
 
@@ -109,26 +98,20 @@
 		*/
 		public function test_will_be_handled_by_flow (BranchesContext $context) {
 
-			// given => see setup
+			// given => see dataProvider
 			$this->makeJob($context)->handle(); // When
-
-			// Note: we can get away with not even creating an endpoint for this since if the above call behaves correctly, request won't even go there
-			$this->get("/categories/5"); // When => we visit the flow link (not its origin)
-
+			
+			// then
+			$this->assertHandledByFlow("/categories/5"); // Note: we can get away with not even creating an endpoint for this since if the above call behaves correctly, request won't even go there
+			
 			$wrapper = $this->container->getClass(OuterFlowWrapper::class);
-
-			$this->assertTrue($wrapper->canHandle()); // then
 
 			$this->assertSame($wrapper->handlingRenderer(), $this->flowGeneratedRenderer());
 		}
 
 		public function test_no_flow_does_nothing () {
 
-			$this->catchQueuedTasks();
-
-			$this->get("/single-node");
-
-			$this->assertNotPushed(RouteBranches::class);
+			$this->assertNotPushedToFlow("/no-flow");
 		}
 	}
 ?>
