@@ -8,5 +8,7 @@
 		public function noFlowHandler () {}
 
 		public function getPostDetails () {}
+
+		public function preloaded () {}
 	}
 ?>

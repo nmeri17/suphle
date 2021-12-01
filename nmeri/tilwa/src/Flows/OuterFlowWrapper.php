@@ -13,9 +13,9 @@
 
 	class OuterFlowWrapper implements BaseResponseManager, HighLevelRequestHandler {
 
-		const FLOW_PREFIX = "tilwa_flow";
+		const FLOW_PREFIX = "tilwa_flow",
 
-		const ALL_USERS = "*";
+		ALL_USERS = "*", HIT_EVENT = "flow_hit";
 
 		private $requestDetails, $queueManager, $modules,
 
@@ -42,7 +42,7 @@
 
 			$user = $this->authStorage->getUser();
 
-			return !$user ? self::ALL_USERS: strval($user->getId());
+			return is_null($user) ? self::ALL_USERS: strval($user->getId());
 		}
 
 		public function canHandle():bool {
@@ -85,16 +85,16 @@
 		
 		public function emptyFlow():void {
 
-			$this->queueManager->push(UpdateCountDelete::class,
-				new AccessContext(
-					$this->dataPath(),
+			$this->queueManager->addJob(UpdateCountDelete::class,
+				
+				$this->queueManager->augmentArguments([
+					new AccessContext(
 
-					$this->context,
+						$this->dataPath(), $this->context,
 
-					$this->routeUmbrella,
-
-					$this->activeUser
-				)
+						$this->routeUmbrella, $this->activeUser
+					)
+				])
 			);
 		}
 
@@ -108,7 +108,7 @@
 
 			$this->eventManager->emit(
 
-				$this->handlingRenderer()->getController(), "on_flow_hit", $cachedResponse
+				$this->handlingRenderer()->getController(), self::HIT_EVENT, $cachedResponse
 			); // should probably include incoming request parameters?
 		}
  

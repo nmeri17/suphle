@@ -37,6 +37,7 @@
 					return $descriptor->exports();
 		}
 
+		// spies may equally be good here but this has the advantage of not running the listener, I think
 		protected function assertFiredEvent ($emitter, string $eventName):void {
 
 			$subscription = $this->findInBlanks($emitter);

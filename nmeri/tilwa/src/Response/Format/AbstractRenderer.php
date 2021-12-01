@@ -60,6 +60,8 @@
 		public function setFlow(ControllerFlows $flow):self {
 			
 			$this->flows = $flow;
+
+			return $this;
 		}
 
 		public function getFlow():ControllerFlows {

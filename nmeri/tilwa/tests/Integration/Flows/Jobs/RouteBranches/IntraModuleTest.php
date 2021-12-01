@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Tests\Integration\Flows\Jobs;
+	namespace Tilwa\Tests\Integration\Flows\Jobs\RouteBranches;
 
 	use Tilwa\Testing\Proxies\WriteOnlyContainer;
 
@@ -13,14 +13,11 @@
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\OriginCollection, ModuleOneDescriptor, Config\RouterMock};
 
-	class RouteBranchesTest extends BaseJobGenerator {
+	class IntraModuleTest extends JobFactory {
 
-		private $container;
+		protected $originDataName = "all_categories",
 
-		public function setUp () {
-
-			$this->container = $this->firstModuleContainer();
-		}
+		$flowUrl = "categories/id";
 
 		protected function getModules():array {
 
@@ -77,7 +74,7 @@
 
 			$user = $this->makeUser(5);
 
-			$renderer = $this->getLoadedRenderer("all_categories", "categories/id");
+			$renderer = $this->getLoadedRenderer();
 
 			return [
 				[new BranchesContext($renderer, null, $this->getModules(), null)],

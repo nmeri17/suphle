@@ -7,15 +7,13 @@
 
 	use Tilwa\Flows\BranchesContext;
 
-	use Tilwa\Tests\Integration\Flows\Jobs\BaseJobGenerator;
+	use Tilwa\Tests\Integration\Flows\Jobs\RouteBranches\JobFactory;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\OriginCollection, ModuleOneDescriptor, Config\RouterMock};
 
-	class FlowRoutesTest extends BaseJobGenerator {
+	class FlowRoutesTest extends JobFactory {
 
 		use QueueInterceptor;
-
-		private $userUrl = "/user-content/5";
 
 		protected function getModules():array { // using this since we intend to make front door requests
 
@@ -53,18 +51,6 @@
 
 				[$this->makeBranchesContext(null), null] // create content to be mass consumed. Visiting user 5's resource as nobody should access it
 			];
-		}
-
-		private function makeBranchesContext (?User $user):BranchesContext {
-
-			return new BranchesContext(
-
-				$this->getLoadedRenderer("all_users", "user-content/id"),
-
-				$user, // creates 10 content models, but assigns the given user as their owner
-
-				$this->getModules(), null
-			);
 		}
 		
 		/**

@@ -1,13 +1,21 @@
 <?php
-	namespace Tilwa\Tests\Integration\Flows\Jobs;
+	namespace Tilwa\Tests\Integration\Flows\Jobs\RouteBranches;
 
-	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
+	use Tilwa\Testing\Proxies\WriteOnlyContainer;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\FlowRoutes, ModuleOneDescriptor, Config\RouterMock};
 
+	use Tilwa\Contracts\Config\Router;
+
+	use Tilwa\Flows\Structures\BranchesContext;
+
 	use Mockery;
 
-	class RouteBranchesMultiModuleTest extends BaseJobGenerator {
+	class MultiModuleTest extends JobFactory {
+
+		protected $originDataName = "post_titles",
+
+		$flowUrl = "posts/id"; // the name used here is determined by the pattern name at the target module
 
 		protected function getModules():array {
 
@@ -43,10 +51,8 @@
 
 			$this->makeJob(
 				new BranchesContext(
-					$this->getLoadedRenderer(
+					$this->getLoadedRenderer(),
 
-						"post_titles", "posts/id" // the name used here is determined by the pattern name at the target module
-					),
 					null, $this->getModules(), null
 				)
 			)->handle(); // when
@@ -61,8 +67,6 @@
 			->setDependencies(
 				$this->getModuleTwo()->getContainer()->getClass(ResponseManager::class)
 			);
-
-			Mockery::close();
 		}
 
 		private function mockHydrator():FlowHydrator {
