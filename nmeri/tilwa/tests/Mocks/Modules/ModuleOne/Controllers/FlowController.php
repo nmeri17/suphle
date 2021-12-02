@@ -7,7 +7,10 @@
 
 		public function noFlowHandler () {}
 
-		public function getPostDetails () {}
+		public function getPostDetails () {
+
+			return [];
+		}
 
 		public function preloaded () {}
 	}

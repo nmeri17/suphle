@@ -75,10 +75,8 @@
 
 			return $this->container->whenType($jobName)
 
-			->needs([
-
-				BranchesContext::class => $context
-			])
+			->needs([ get_class($context) => $context ])
+			
 			->getClass($jobName);
 		}
 
