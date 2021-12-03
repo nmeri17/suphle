@@ -39,10 +39,7 @@
 		
 		public function test_empties_cache_entry () {
 
-			$this->makeJob($this->makeAccessContext(
-				
-				$this->positiveStub( RouteUserNode::class, [] ) // default behavior
-			))->handle(); // given
+			$this->defaultJobBehavior(); // given
 
 			$this->assertHandledByFlow($this->resourceUrl); // when
 
@@ -71,6 +68,18 @@
 			$this->makeJob($context)->handle(); // given
 
 			$this->assertNotHandledByFlow($this->resourceUrl); // then
+		}
+		
+		public function test_clears_only_accessed_but_retains_others () {
+
+			$this->defaultJobBehavior(); // given
+
+			$this->assertHandledByFlow($this->resourceUrl); // when
+
+			// then
+			$this->assertNotHandledByFlow($this->resourceUrl);
+
+			$this->assertHandledByFlow("/posts/6");
 		}
 
 		protected function expiredContexts ():array {
@@ -113,6 +122,14 @@
 
 				OuterFlowWrapper::ALL_USERS
 			); 
-		}	
+		}
+
+		private function defaultJobBehavior ():void {
+
+			$this->makeJob($this->makeAccessContext(
+				
+				$this->positiveStub( RouteUserNode::class, [] )
+			))->handle();
+		}
 	}
 ?>

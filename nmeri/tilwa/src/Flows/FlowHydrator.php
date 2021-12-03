@@ -206,15 +206,20 @@
 			return Arr::get($this->previousResponse, $keyName);
 		}
 
-		public function handlePaginate($nodeContent):AbstractRenderer {
+		public function handlePaginate($nodeContent):?AbstractRenderer {
 
 			$valuePath = $nodeContent[$this->orm->getPaginationPath()];
 
-			$queryPart = parse_url($valuePath, PHP_URL_QUERY);
+			if (!is_null($valuePath)) {
 
-			return $this->updateRequest(parse_str($queryPart))
-			
-			->executeRequest();
+				$queryPart = parse_url($valuePath, PHP_URL_QUERY);
+
+				parse_str($queryPart, $queryArray);
+
+				return $this->updateRequest($queryArray)
+				
+				->executeRequest();
+			}
 		}
 
 		private function canProcessPath():bool {

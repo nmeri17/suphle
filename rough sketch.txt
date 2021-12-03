@@ -34,6 +34,11 @@ class x implements y with methods `handler` (to be hydrated) and `blanket` (rece
 
 they should receive an object that allows them wrap the arguments and does something to do the concrete after it loads (as should be the case with eloquent models? or should they all inherit a special class where that static property is already set)
 
+Repository transaction method:
+	- Has to throw on error so dev can pick that up
+	- Should be able to be turned off on a per-method basis
+	- Should also lock i.e. lock for read, start transaction, update, close and release
+
 Pending:
 	- exception renderer
 		- Merge in-module errors with the general one when request matches that module. First checks App->universalRenderers. When no overrides for current error is present, we check $activeModule->getHandlerFor(Error::class). That guy contains defaults that can be internally overidden
@@ -47,15 +52,11 @@ Pending:
 
 		- When this becomes the active handler, assign it to the relevant property on MHI so its ultimate response can be intercepted by the tester
 
-	- testing
-
 
 
 Ensure the given type is an instance of current/active whenType. Check if any [getClass] caller uses the second argument
 
 C:\wamp64\www\tilwa\nmeri\tilwa\vendor\bin>phpunit ../../tests/
-
-Revisit ModuleHandlerIdentifierTest (low-hanging fruit) after fleshing flows (some have been defined in their collection) and login tests
 
 **
 sqlite
@@ -71,9 +72,6 @@ sqlite
 		- assertView[x] (needs to work with our view)
 		- assertSession[x]
 
-Complete the few methods left on FrontDoorTest and ModuleDescriptorTest
-- Replace laravel with lumen
-
 Wrap:
 	- debug_backtrace
 	- Session so we can configure its duration (an adapter)
@@ -82,11 +80,6 @@ on the tearDown methods, you wanna:
 	- empty container
 	- $model->truncate()
 	- reset session
-
-Repository transaction method:
-	- Has to throw on error so dev can pick that up
-	- Should be able to be turned off on a per-method basis
-	- Should also lock i.e. lock for read, start transaction, update, close and release
 
 ==when doesn't work==
 	- routing:
@@ -98,30 +91,40 @@ Repository transaction method:
 			string(12) "/SEGMENT/id/"
 			string(3) "get"
 			bool(true)*/
-	- crud
+	- crud:
 		- index: use "_index" instead of leaving it blank
 		- line 102
 			- doesn't this return a regex that should be escaped/normalized? if that be the case, match incoming path against that pattern and return the result to this guy
 
-	- models: are they setting each model's connection at some point? if yes, we'd have to do this for all the models of this particular orm
-	- Think there's a static setConnection method
+	- models:
+		- are they setting each model's connection at some point? if yes, we'd have to do this for all the models of this particular orm
+		- Think there's a static setConnection method
 
-	- DB facade: class DB extends Illuminate\Database\Capsule\Manager {} in the global namespace fixed the problem
+		- DB facade: class DB extends Illuminate\Database\Capsule\Manager {} in the global namespace fixed the problem
 
-	- flows: finding in cache after job runs, consider delegating path fetching to outerFlowWrapper->dataPath (although there's a chance that prefix wasn't even added in the hydrator, see line 84)
+	- flows:
+		- finding in cache after job runs, consider delegating path fetching to outerFlowWrapper->dataPath (although there's a chance that prefix wasn't even added in the hydrator, see line 84)
+		- [OuterFlowWrapperTest->test_empties_cache_entry_after_returning], write a sub test that checks the cache directly to confirm it was removed
 
 
 *Implement exception renderer so that auth test can work
 
 test only and except from routeCollection
 
-write tests for model level authorization
 
+1) when you are done with the flow integration tests, write their unit counterparts. they should confirm:
+	- the controller manager methods were called
+	- RouteUserNode injected to accessContext receives the correct arguments passed from the flow config i.e. when it's retrieved from the cache or something
 
-when you are done with the flow integration tests, write their unit counterparts
+2) Work on the adapters and stuff. QueueManager should no longer be an interface
 
-See Illuminate\Queue\Console\WorkCommand for programmatic trigger of the jobs
-and Illuminate\Support\Testing\Fakes\QueueFake
+	- See Illuminate\Queue\Console\WorkCommand for programmatic trigger of the jobs
+	and Illuminate\Support\Testing\Fakes\QueueFake
 
-Work on the adapters and stuff. QueueManager should no longer be an interface
+3) Revisit ModuleHandlerIdentifierTest (low-hanging fruit) after fleshing flows (some have been defined in their collection) and login tests
+
+	- Complete the few methods left on FrontDoorTest and ModuleDescriptorTest
+	- Replace laravel with lumen
+
+4) [AFTER YOU ARE DONE WITH THE OTHER TESTS] write tests for model level authorization, contracts\config
 
