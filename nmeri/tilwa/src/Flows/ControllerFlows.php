@@ -29,13 +29,11 @@
 				$callback($path, $branch);
 		}
 
-		public function fromService(ServiceContext $context, UnitNode $responseBuilder):CollectionNode {
+		public function fromService(ServiceContext $context, UnitNode $responseBuilder, string $columnName):CollectionNode {
 
-			$node = new CollectionNode( $responseBuilder->getNodeName());
+			$node = new CollectionNode( $responseBuilder->getNodeName(), $columnName);
 
-			$node->setFromService($context);
-
-			return $node;
+			return $node->setFromService($context);
 		}
 	}
 ?>

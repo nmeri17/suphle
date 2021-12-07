@@ -11,6 +11,8 @@
 
 	class OriginCollection extends BaseCollection {
 
+		private $queryNodeHolder = "next_page_url";
+
 		public function _handlingClass ():string {
 
 			return FlowController::class;
@@ -22,15 +24,15 @@
 
 			$flow = new ControllerFlows;
 
-			$flow->linksTo("submit-register", $flow
+			$flow->linksTo("paged-data", $flow
 
 				->previousResponse()->getNode("C")
 
-				->includesPagination("path.to.next_url")
+				->altersQuery($this->queryNodeHolder)
 			)
-			->linksTo("categories/id", $flow->previousResponse()->collectionNode("nodeD") // assumes we're coming from the category page
+			->linksTo("categories/id", $flow->previousResponse()->collectionNode("data") // assumes we're coming from "/categories"
 
-				->eachAttribute("key")->pipeTo(),
+				->pipeTo(),
 			);
 
 			$this->_get($renderer->setFlow($flow));
@@ -42,11 +44,11 @@
 
 			$flow = new ControllerFlows;
 
-			$flow->linksTo("submit-register", $flow
+			$flow->linksTo("paged-data", $flow
 
 				->previousResponse()->getNode("C")
 
-				->includesPagination("path.to.next_url")
+				->altersQuery($this->queryNodeHolder)
 			);
 
 			$this->_get($renderer->setFlow($flow));
@@ -58,15 +60,19 @@
 
 			$flow = new ControllerFlows;
 
-			$serviceContext = new ServiceContext(FlowService::class, "method");
+			$serviceContext = new ServiceContext(FlowService::class, "customHandlePrevious");
 
 			$flow->linksTo("orders/sort/id/id2",
 				$flow->fromService(
 					$serviceContext,
 
-					$flow->previousResponse()->getNode("store.id")
+					$flow->previousResponse()->getNode("store.id"),
+
+					"id"
 				)
-				->eachAttribute("key")->inRange() // has a parameterised variant
+				->inRange() // has a parameterised and date variant
+				// try using any other collection based method aside ranges
+				// after adding them, update [flroutest->getOriginUrls]
 			);
 
 			$this->_get($renderer->setFlow($flow));
@@ -79,9 +85,9 @@
 			$flow = new ControllerFlows;
 
 			$flow->linksTo("categories/id", $flow->previousResponse()
-				->collectionNode("nodeD") // assumes we're coming from the category page
+				->collectionNode("data") // assumes we're coming from "/categories"
 
-				->eachAttribute("key")->pipeTo(),
+				->pipeTo(),
 			);
 			
 			$this->_get($renderer->setFlow($flow));
@@ -93,9 +99,9 @@
 
 			$flow = new ControllerFlows;
 
-			$flow->linksTo("store/id", $flow->previousResponse()->collectionNode("nodeB")
+			$flow->linksTo("store/id", $flow->previousResponse()->collectionNode("data", "product_name")
 
-				->eachAttribute("key")->oneOf() // has a parameterised variant
+				->oneOf() // has a parameterised variant
 			);
 			
 			$this->_get($renderer->setFlow($flow));

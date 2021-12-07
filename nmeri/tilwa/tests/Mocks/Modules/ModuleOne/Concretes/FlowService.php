@@ -3,6 +3,9 @@
 
 	class FlowService {
 
-		//
+		public function customHandlePrevious () {
+
+			//
+		}
 	}
 ?>

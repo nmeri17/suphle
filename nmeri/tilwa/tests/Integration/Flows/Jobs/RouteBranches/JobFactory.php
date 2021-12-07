@@ -63,9 +63,7 @@
 
 			return $flow->linksTo($this->flowUrl, $flow->previousResponse()
 				
-				->collectionNode($this->originDataName)
-
-				->eachAttribute("id")->pipeTo(),
+				->collectionNode($this->originDataName)->pipeTo(),
 			);
 		}
 
@@ -76,7 +74,7 @@
 			return $this->container->whenType($jobName)
 
 			->needs([ get_class($context) => $context ])
-			
+
 			->getClass($jobName);
 		}
 

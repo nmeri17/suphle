@@ -1,7 +1,9 @@
 <?php
 	namespace Tilwa\Tests\Integration\Flows\Jobs\RouteBranches;
 
-	use Tilwa\Testing\Proxies\WriteOnlyContainer;
+	use Tilwa\Testing\{Proxies\WriteOnlyContainer, Condiments\ProphecyWrapper};
+
+	use Prophecy\Argument\Token\AnyValuesToken;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\FlowRoutes, ModuleOneDescriptor, Config\RouterMock};
 
@@ -9,13 +11,27 @@
 
 	use Tilwa\Flows\Structures\BranchesContext;
 
-	use Mockery;
-
 	class MultiModuleTest extends JobFactory {
+
+		use ProphecyWrapper {
+
+			ProphecyWrapper::setup as prophecySetup;
+		};
 
 		protected $originDataName = "post_titles",
 
 		$flowUrl = "posts/id"; // the name used here is determined by the pattern name at the target module
+
+		private $mockFlowHydrator;
+
+		protected function setUp () {
+
+			parent::setUp();
+
+			$this->prophecySetup();
+
+			$this->mockFlowHydrator = $this->prophesize(FlowHydrator::class);
+		}
 
 		protected function getModules():array {
 
@@ -41,7 +57,7 @@
 
 					"browserEntryRoute" => FlowRoutes::class
 				])
-				->replaceWithConcrete(FlowHydrator::class, $this->mockHydrator());
+				->replaceWithConcrete(FlowHydrator::class, $this->mockFlowHydrator->reveal());
 			});
 		}
 		
@@ -57,21 +73,17 @@
 				)
 			)->handle(); // when
 
-			$sut = $this->mockHydrator();
+			$sut = $this->mockFlowHydrator;
 
 			// then
-			$sut->shouldHaveReceived()->executeRequest();
+			$sut->executeRequest()->shouldBeCalled();
 
-			$sut->shouldHaveReceived()
+			$sut->setDependencies(
+				$this->getModuleTwo()->getContainer()->getClass(ResponseManager::class),
 
-			->setDependencies(
-				$this->getModuleTwo()->getContainer()->getClass(ResponseManager::class)
-			);
-		}
-
-		private function mockHydrator():FlowHydrator {
-
-			return Mockery::spy(FlowHydrator::class);
+				new AnyValuesToken
+			)
+			->shouldBeCalled();
 		}
 	}
 ?>

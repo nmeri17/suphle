@@ -25,9 +25,7 @@
 
 			$flow->linksTo("internal-flow/id", $flow
 
-				->previousResponse()->collectionNode("anchor")
-
-				->eachAttribute("id")->pipeTo()
+				->previousResponse()->collectionNode("anchor")->pipeTo()
 			);
 
 			$this->_get($renderer->setFlow($flow));

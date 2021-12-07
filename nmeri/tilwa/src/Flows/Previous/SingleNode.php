@@ -1,22 +1,18 @@
 <?php
 	namespace Tilwa\Flows\Previous;
 
-	// represents a meta map of actions to take on a previous response node when it's hydrated
 	class SingleNode extends UnitNode {
 
-		const INCLUDES_PAGINATION = 1; // expects these methods to be called in a meaningful sequence
+		const ALTERS_QUERY_SEGMENT = 1;
 
 		function __construct(string $nodeName) {
 
 			$this->nodeName = $nodeName;
 		}
 		
-		/**
-		* @param {nextPagePath} needs the router to find the controller servicing this path
-		*/
-		public function includesPagination(string $nextPagePath):self {
+		public function altersQuery (string $newQuery):self {
 
-			$this->actions[self::INCLUDES_PAGINATION] = $nextPagePath;
+			$this->actions[self::ALTERS_QUERY_SEGMENT] = $newQuery;
 
 			return $this;
 		}

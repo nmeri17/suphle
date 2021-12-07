@@ -1,18 +1,18 @@
 <?php
-
 	namespace Tilwa\Flows\Previous;
 
+	/**
+	 * Represents a meta map of actions to take on a previous response node when it's hydrated
+	*/
 	abstract class UnitNode {
 
-		private $actions = []; // on CollectionNodes, this is the list of actions to take, while on SingleNodes, this is the list of attributes applied
+		protected $nodeName; // the key on the previous response body this node is attached to
 
-		private $nodeName; // the key on the previous response body this node is attached to
+		private $actions = [], // on CollectionNodes, this is the list of actions to take, while on SingleNodes, this is the list of attributes applied
 
-		private $config = [];
+		$config = [];
 
-		const TTL = 1;
-
-		const MAX_HITS = 2;
+		const TTL = 1, MAX_HITS = 2;
 
 		public function getActions():array {
 			
@@ -25,7 +25,7 @@
 		}
 		
 		/**
-		* @param {callback} int Function(string $userId, string $pattern)
+		 * @param {callback} => Function (string $userId, string $pattern):DateTime
 		*/
 		public function setTTL(callable $callback):self {
 
@@ -35,10 +35,10 @@
 		}
 		
 		/**
-		*	Expire cache contents after this value elapses
-		*
-		*	@param {callback} int Function(string $userId, string $pattern)
-		*/ 
+		 * Expire cache contents after this value elapses
+		 *
+		 * @param {callback} => Function (string $userId, string $pattern):int
+		*/
 		public function setMaxHits(callable $callback):self {
 
 			$this->config[self::MAX_HITS] = $callback;

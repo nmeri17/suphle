@@ -3,10 +3,9 @@
 
 	use Tilwa\Flows\Structures\{RangeContext, ServiceContext};
 
-	// represents a meta map of actions to take on a previous response node when it's hydrated
 	class CollectionNode extends UnitNode {
 
-		const EACH_ATTRIBUTE = 1; // expects these methods to be called in a meaningful sequence
+		private $leafName;
 
 		const PIPE_TO = 2;
 
@@ -18,20 +17,16 @@
 
 		const FROM_SERVICE = 6;
 
-		function __construct(string $nodeName) {
+		public function __construct(string $nodeName, string $leafName) {
 
 			$this->nodeName = $nodeName;
+
+			$this->leafName = $leafName;
 		}
 		
-		 // works like `reduce`. should recursively load [attribute] but only match request to the last one?
-		public function eachAttribute(string $attribute):self {
-
-			$this->actions[self::EACH_ATTRIBUTE] = $attribute;
-
-			return $this;
-		}
-		
-		// will create multiple versions of the node attached. when a request where the wildcard matches the key passed in [eachAttribute], we return the key corresponding to what was evaluated here
+		/**
+		 * Will create multiple versions of the node attached. When a request where the wildcard matches the key passed in [leafName], we return the key corresponding to what was evaluated here
+		*/
 		public function pipeTo():self {
 
 			$this->actions[self::PIPE_TO] = 1;
@@ -50,15 +45,14 @@
 			return $this;
 		}
 		
-		// this and [dateRange] will plug each of the values they receive from the flow hydrator into the services supplied
-		public function inRange(RangeContext $context):self {
+		public function inRange (RangeContext $context = null):self {
 
 			$this->actions[self::IN_RANGE] = $context ?? new RangeContext;
 
 			return $this;
 		}
 		
-		public function dateRange(RangeContext $context):self {
+		public function dateRange (RangeContext $context = null):self {
 
 			$this->actions[self::DATE_RANGE] = $context ?? new RangeContext;
 
@@ -70,6 +64,11 @@
 			$this->actions[self::FROM_SERVICE] = $context;
 
 			return $this;
+		}
+
+		public function getLeafName ():string {
+
+			return $this->leafName;
 		}
 	}
 ?>
