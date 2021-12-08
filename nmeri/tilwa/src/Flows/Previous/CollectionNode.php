@@ -59,6 +59,9 @@
 			return $this;
 		}
 
+		/**
+		 * Behaves like a singleNode in that the service won't be called repeatedly. Whatever value is retrieved from the payload is handed over, verbatim, to the underlying service
+		*/
 		public function setFromService(ServiceContext $context):self {
 
 			$this->actions[self::FROM_SERVICE] = $context;
@@ -69,6 +72,14 @@
 		public function getLeafName ():string {
 
 			return $this->leafName;
+		}
+
+		/**
+		 * Indicates that the active handler is responsible for pulling content from the previous node, and as such, the collectionNode handler shouldn't bother
+		*/
+		public function deferExtraction ():bool {
+
+			return in_array(self::FROM_SERVICE, $this->actions);
 		}
 	}
 ?>

@@ -28,12 +28,5 @@
 				
 				$callback($path, $branch);
 		}
-
-		public function fromService(ServiceContext $context, UnitNode $responseBuilder, string $columnName):CollectionNode {
-
-			$node = new CollectionNode( $responseBuilder->getNodeName(), $columnName);
-
-			return $node->setFromService($context);
-		}
 	}
 ?>

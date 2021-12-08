@@ -7,8 +7,10 @@
 
 	use Prophecy\Argument\Token\InArrayToken;
 
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\FlowService;
+
 	class FlowHydratorTest extends IsolatedComponentTest {
-		
+
 	 	use ProphecyWrapper, MockFacilitator {
 
 			ProphecyWrapper::setup as prophecySetup;
@@ -16,7 +18,7 @@
 
 		private $payloadKey = "data", $columnName = "id",
 
-		$indexes;
+		$flowService = FlowService::class, $indexes;
 
 		public function setUp () {
 
@@ -100,9 +102,54 @@
 			return [[2], [3]];
 		}
 
-		public function test_fromService() {
+		public function test_fromService_returns_service_call_result() {
 
-			//
+			$sut = $this->getHydratorForService(); // given
+
+			$result = $sut->handleServiceSource(null, $this->getServiceContext(), $this->getCollectionNode() ); // when
+
+			$flowServiceInstance = $this->container->getClass($this->flowService);
+
+			$this->assertSame($result, $flowServiceInstance->customHandlePrevious($this->indexesToModels())); // then
+		}
+
+		private function getHydratorForService ():FlowHydrator {
+
+			return $this->replaceConstructorArguments(FlowHydrator::class, [
+
+				"randomContainer" => $this->container
+			], [
+
+				"getNodeFromPrevious" => [$this->payloadKey => $this->indexesToModels()]
+			]);
+		}
+
+		private function indexesToModels ():array {
+
+			return array_map(function ($id) {
+
+				return compact("id");
+			}, $this->indexes);
+		}
+
+		public function test_fromService_doesnt_edit_request_or_trigger_controller() {
+
+			$sut = $this->prophesize(FlowHydrator::class);
+
+			// then
+			$sut->updateRequest()->shouldNotBeCalled();
+
+			$sut->executeRequest()->shouldNotBeCalled();
+
+			// when
+			$sut->reveal()
+
+			->handleServiceSource(null, $this->getServiceContext(), $this->getCollectionNode() );
+		}
+
+		private function getServiceContext ():ServiceContext {
+
+			return new ServiceContext($this->flowService, "customHandlePrevious");
 		}
 
 		public function test_handleRange () {
@@ -138,6 +185,11 @@
 		}
 		
 		public function test_executeRequest_triggers_controller () {
+
+			//
+		}
+
+		public function test_getNodeFromPrevious() {
 
 			//
 		}

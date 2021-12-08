@@ -62,14 +62,12 @@
 
 			$serviceContext = new ServiceContext(FlowService::class, "customHandlePrevious");
 
-			$flow->linksTo("orders/sort/id/id2",
-				$flow->fromService(
-					$serviceContext,
+			$flow->linksTo("orders/sort/id/id2", $flow->previousResponse()
 
-					$flow->previousResponse()->getNode("store.id"),
+				->collectionNode("store.id")
 
-					"id"
-				)
+				->setFromService($serviceContext)
+
 				->inRange() // has a parameterised and date variant
 				// try using any other collection based method aside ranges
 				// after adding them, update [flroutest->getOriginUrls]

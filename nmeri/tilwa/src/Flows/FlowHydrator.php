@@ -102,7 +102,7 @@
 
 			$handler = $this->branchHandlers[get_class($flowStructure)];
 
-			$evaluatedRenderers = call_user_func_array([$this, $handler], [$flowStructure, $renderer]);
+			$evaluatedRenderers = call_user_func_array([$this, $handler], [$flowStructure, $renderer]); // this either triggers single or collection node overall handlers
 
 			foreach ($evaluatedRenderers as $renderer) { // SingleNodes should only return array of length 1 here
 
@@ -139,7 +139,7 @@
 
 			$carryRenderer = null;
 
-			foreach($rawNode->getActions() as $attribute) {
+			foreach($rawNode->getActions() as $attribute => $value) {
 
 				$handler = $this->singleSubHandlers[$attribute];
 
@@ -148,7 +148,7 @@
 				$carryRenderer = call_user_func_array(
 					[$this, $handler],
 
-					[$previousContent/*, $carryRenderer*/]
+					[$previousContent, $value/*, $carryRenderer*/]
 				);
 			}
 
@@ -160,7 +160,11 @@
 		*/
 		private function handleCollectionNodes(CollectionNode $rawNode):array {
 
-			$carryRenderer = $this->extractCollectionData($rawNode);
+			if ($rawNode->deferExtraction())
+
+				$carryRenderer = null;
+
+			else $carryRenderer = $this->extractCollectionData($rawNode);
 
 			foreach ($rawNode->getActions() as $attribute => $value) {
 
@@ -186,7 +190,7 @@
 			}, $this->getNodeFromPrevious($rawNode));
 		}
 
-		private function getNodeFromPrevious(UnitNode $rawNode):iterable {
+		public function getNodeFromPrevious(UnitNode $rawNode):iterable {
 
 			return Arr::get($this->previousResponse, $rawNode->getNodeName());
 		}
@@ -283,17 +287,15 @@
 			->executeRequest();
 		}
 
-		public function handleServiceSource($currentSource, ServiceContext $context, CollectionNode $rawNode ):array {
+		public function handleServiceSource($dummyPrevious, ServiceContext $context, CollectionNode $rawNode ):iterable {
 
 			$concrete = $this->container->getClass($context->getServiceName());
 
-			$this->previousResponse = call_user_func_array(
+			return call_user_func_array(
 				[$concrete, $context->getMethod()],
 
 				[$this->getNodeFromPrevious($rawNode)]
-			); // so the result can be picked up by chained handlers
-
-			return $this->extractCollectionData($rawNode); // trim to a state those handlers are familiar with
+			);
 		}
 
 		public function runNodeConfigs(RouteUserNode $savedNode, UnitNode $rawNode):void {

@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\App;
 
-	use ReflectionMethod, ReflectionClass, ReflectionFunction, ReflectionType, Exception;
+	use ReflectionMethod, ReflectionClass, ReflectionFunction, ReflectionType, ReflectionFunctionAbstract, Exception;
 	
 	use Tilwa\App\Structures\{ProvisionUnit, NamespaceUnit};
 	
@@ -314,8 +314,6 @@
 
 			$context;
 
-			$dependencies = [];
-
 			$explicitCall = $this->notRecursing();
 
 			if (isset($anchorClass)) {
@@ -329,32 +327,26 @@
 
 			else $reflectedCallable = new ReflectionFunction($callable);
 
+			if ($explicitCall) $this->unsetRecursingFor();
+
+			return $this->populateDependencies($reflectedCallable, $context);
+		}
+
+		private function populateDependencies (ReflectionFunctionAbstract $callable, ?ProvisionUnit $callerProvision):array {
+
+			$dependencies = [];
+
 			foreach ($reflectedCallable->getParameters() as $parameter) {
 
 				$parameterName = $parameter->getName();
 
 				$parameterType = $parameter->getType();
 
-				if ($context ) {
+				if (!is_null($callerProvision) )
 
-					$provision = null;
+					$dependencies[$parameterName] = $this->populateForProvided($callerProvision, $parameterType, $parameterName);
 
-					$typeName = $parameterType->getName();
-
-					if ($context->hasArgument($parameterName))
-
-						$provision = $context->getArgument($parameterName);
-
-					elseif ($context->hasArgument($typeName))
-
-						$provision = $context->getArgument($typeName);
-
-					else $provision = $this->getParameterValue($parameterType);
-
-					$dependencies[$parameterName] = $provision;
-				}
-
-				elseif ($parameterType)
+				elseif (is_null($parameterType)) // untyped
 
 					$dependencies[$parameterName] = $this->getParameterValue($parameterType);
 				
@@ -365,9 +357,27 @@
 				else $dependencies[$parameterName] = null;
 			}
 
-			if ($explicitCall) $this->unsetRecursingFor();
-
 			return $dependencies;
+		}
+
+		/**
+		 * Pulls out a provided instance of a dependency when present, or creates a fresh one
+		 * 
+		 * @return object matching type at given parameter
+		*/
+		private function populateForProvided (ProvisionUnit $callerProvision, ReflectionType $parameterType, string $parameterName) {
+
+			if ($callerProvision->hasArgument($parameterName))
+
+				return $callerProvision->getArgument($parameterName);
+
+			$typeName = $parameterType->getName();
+
+			if ($callerProvision->hasArgument($typeName))
+
+				return $callerProvision->getArgument($typeName);
+
+			return $this->getParameterValue($parameterType);
 		}
 
 		private function getParameterValue(ReflectionType $parameterType) {

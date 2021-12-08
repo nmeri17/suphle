@@ -1,13 +1,15 @@
 <?php
 	namespace Tilwa\Testing\Condiments;
 
+	use ReflectionMethod;
+
 	use PHPUnit\Framework\MockObject\MockBuilder;
 
 	trait MockFacilitator {
 
 		protected function positiveStub (string $target, array $overrides, array $constructorArguments = []):MockBuilder {
 
-			$builder = $this->getBuilder($target, $constructorArguments, true);
+			$builder = $this->getBuilder($target, $constructorArguments, $overrides);
 
 			$this->stubSingle($overrides, $builder);
 
@@ -16,7 +18,7 @@
 
 		protected function positiveStubMany (string $target, array $overrides, array $constructorArguments = []):MockBuilder {
 
-			$builder = $this->getBuilder($target, $constructorArguments, true);
+			$builder = $this->getBuilder($target, $constructorArguments, $overrides);
 
 			$this->stubMany($overrides, $builder);
 
@@ -28,7 +30,7 @@
 		*/
 		protected function negativeStub (string $target, array $overrides, array $constructorArguments = []):MockBuilder {
 
-			$builder = $this->getBuilder($target, $constructorArguments, false);
+			$builder = $this->getBuilder($target, $constructorArguments, []);
 
 			$this->stubSingle($overrides, $builder);
 
@@ -37,7 +39,7 @@
 
 		protected function negativeStubMany (string $target, array $overrides, array $constructorArguments = []):MockBuilder {
 
-			$builder = $this->getBuilder($target, $constructorArguments, false);
+			$builder = $this->getBuilder($target, $constructorArguments, []);
 
 			$this->stubMany($overrides, $builder);
 
@@ -72,7 +74,7 @@
             }
 		}
 
-		private function getBuilder (string $target, array $constructorArguments, bool $retainOtherMethods):MockBuilder {
+		private function getBuilder (string $target, array $constructorArguments, array $methodsToRetain):MockBuilder {
 
 			$builder = $this->getMockBuilder($target);
 
@@ -80,11 +82,34 @@
 
 				$builder->setConstructorArgs($constructorArguments);
 
-			if ($retainOtherMethods)
+			if (!empty($methodsToRetain))
 
-				$builder->setMethods(null);
+				$builder->setMethods(array_keys($methodsToRetain));
 
 			return $builder->getMock();
+		}
+
+		protected function replaceConstructorArguments (string $target, array $constructorOverrides, array $methodOverrides):MockBuilder {
+
+			$reflectedConstructor = new ReflectionMethod($target, "__construct");
+
+			$arguments = $this->mockDummyUnion($reflectedConstructor->getParameters(), $constructorOverrides);
+
+			return $this->positiveStub($target, $methodOverrides, $arguments);
+		}
+
+		private function mockDummyUnion (array $parameters, array $replacements):array {
+
+			return array_map(function ($parameter) use ($replacements) {
+
+				$parameterName = $parameter->getName();
+
+				if (array_key_exists($parameterName, $replacements))
+
+					return $replacements[$parameterName];
+
+				return $this->positiveStub($parameter->getType()->getName(), []);
+			}, $parameters);
 		}
 	}
 ?>
