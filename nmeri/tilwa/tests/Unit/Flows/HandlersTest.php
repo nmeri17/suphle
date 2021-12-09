@@ -9,16 +9,18 @@
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\FlowService;
 
-	class FlowHydratorTest extends IsolatedComponentTest {
+	use Tilwa\Flows\{FlowHydrator, Structures\RangeContext, Previous\CollectionNode};
 
-	 	use ProphecyWrapper, MockFacilitator {
+	class Handlers extends IsolatedComponentTest {
+
+	 	use ProphecyWrapper, MockFacilitator, FlowData {
 
 			ProphecyWrapper::setup as prophecySetup;
 	 	};
 
-		private $payloadKey = "data", $columnName = "id",
+		private $columnName = "id",
 
-		$flowService = FlowService::class, $indexes;
+		$flowService = FlowService::class;
 
 		public function setUp () {
 
@@ -37,6 +39,10 @@
 
 			// then
 			$sut->updateRequest(new InArrayToken($indexes))
+
+			->shouldBeCalledTimes(count($indexes));
+
+			$sut->executeRequest()
 
 			->shouldBeCalledTimes(count($indexes));
 
@@ -61,15 +67,6 @@
 			return new CollectionNode($this->payloadKey, $this->columnName);
 		}
 
-		private function getIndexes ():array {
-
-			$indexes = [];
-
-			for ($i=1; $i < 11; $i++) $indexes[] = $i;
-
-			return $indexes;
-		}
-
 		/**
 	     * @dataProvider getPageNumbers
 	     */
@@ -90,6 +87,8 @@
 
 			// then
 			$sut->updateRequest($queryUpdate)->shouldBeCalled();
+
+			$sut->executeRequest()->shouldBeCalled();
 
 			// when
 			$sut->reveal()
@@ -120,16 +119,11 @@
 				"randomContainer" => $this->container
 			], [
 
-				"getNodeFromPrevious" => [$this->payloadKey => $this->indexesToModels()]
+				"getNodeFromPrevious" => [
+
+					$this->payloadKey => $this->indexesToModels() // should this be returned, or the models, directly
+				]
 			]);
-		}
-
-		private function indexesToModels ():array {
-
-			return array_map(function ($id) {
-
-				return compact("id");
-			}, $this->indexes);
 		}
 
 		public function test_fromService_doesnt_edit_request_or_trigger_controller() {
@@ -147,51 +141,112 @@
 			->handleServiceSource(null, $this->getServiceContext(), $this->getCollectionNode() );
 		}
 
+		public function test_fromService_passes_previous_payload() {
+
+			$sut = $this->getHydratorForService();
+
+			$mockService = $this->prophesize($this->flowService);
+
+			// then
+			$mockService
+
+			->customHandlePrevious($this->indexesToModels())
+
+			->shouldBeCalled();
+
+			// given
+			$this->container->whenTypeAny()->needsAny([
+
+				$this->flowService => $mockService->reveal()
+			]);
+
+			// when
+			$sut->handleServiceSource(null, $this->getServiceContext(), $this->getCollectionNode() );
+		}
+
 		private function getServiceContext ():ServiceContext {
 
 			return new ServiceContext($this->flowService, "customHandlePrevious");
 		}
 
-		public function test_handleRange () {
+		public function test_handleOneOf () {
 
-			//
+			$sut = $this->mockFlowHydrator();
+
+			$indexes = $this->indexes;
+
+			$requestProperty = "ids"; // given
+
+			// then
+			$sut->updateRequest([
+
+				$requestProperty => implode(",", $indexes)
+			])
+			->shouldBeCalled();
+
+			$sut->executeRequest()->shouldBeCalled();
+
+			// when
+			$sut->reveal()
+
+			->handleOneOf($indexes, $requestProperty, $this->getCollectionNode());
+		}
+
+		/**
+		 * @dataProvider getRegularRanges
+		*/
+		public function test_handleRange (RangeContext $range) {
+
+			$sut = $this->mockFlowHydrator();
+
+			$range = new RangeContext;
+
+			$indexes = $this->indexes; // given
+
+			// then
+			$sut->updateRequest([
+
+				$range->getParameterMax() => max($indexes),
+
+				$range->getParameterMin() => min($indexes)
+			])
+			->shouldBeCalled();
+
+			$sut->executeRequest()->shouldBeCalled();
+
+			// when
+			$sut->reveal()->handleRange($indexes, $range);
+		}
+
+		protected function getRegularRanges ():array {
+
+			return [
+				[new RangeContext],
+				[new RangeContext(null, "min_value")]
+			];
 		}
 
 		public function test_handleDateRange () {
 
-			//
-		}
+			$sut = $this->mockFlowHydrator();
 
-		public function test_handleOneOf () {
+			$range = new RangeContext;
 
-			//
-		}
+			$dates = ["2021-01-15", "2021-07-01", "2021-08-15", "2021-07-17", "2021-12-09"]; // given
 
-		public function test_setMaxHitsHydrator () {
+			// then
+			$sut->updateRequest([
 
-			// configs. call the methods on the unitNode
-		}
+				$range->getParameterMax() => current($dates),
 
-		public function test_setExpiresAtHydrator () {
+				$range->getParameterMin() => end($dates)
+			])
+			->shouldBeCalled();
 
-		 //
-		}
-		
-		public function test_will_trigger_underlying_format () {
+			$sut->executeRequest()->shouldBeCalled();
 
-			// call `runNodes` with pre-configured unitNodes. we wanna confirm it'll hit each of the internals with the arguments they are accustomed to
-			// alternatively, you might wanna use the immediate lower layer. test that one then calls the final ones (rather than going directly)
-			// will need `$sut->previousResponse` set
-		}
-		
-		public function test_executeRequest_triggers_controller () {
-
-			//
-		}
-
-		public function test_getNodeFromPrevious() {
-
-			//
+			// when
+			$sut->reveal()->handleDateRange($dates, $range);
 		}
 	}
 ?>

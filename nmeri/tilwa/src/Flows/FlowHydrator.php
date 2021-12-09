@@ -70,13 +70,17 @@
 			
 			$umbrella = $manager->get($urlPattern);
 
-			if (!$umbrella) $umbrella = new RouteUmbrella($urlPattern);
+			if (!$umbrella)
+
+				$umbrella = new RouteUmbrella($urlPattern);
 
 			$umbrella->addUser($userId, $nodeContent);
 
 			$saved = $manager->save($urlPattern, $umbrella);
 
-			if ($contentType) $saved->tag($contentType);
+			if ($contentType)
+
+				$saved->tag($contentType);
 
 			// better still, this guy can subscribe to a topic(instead of using tags?). update listener publishes to that topic (so we hopefully have no loop)
 		}
@@ -100,21 +104,30 @@
 		*/
 		public function runNodes(UnitNode $flowStructure, string $userId):void {
 
-			$handler = $this->branchHandlers[get_class($flowStructure)];
+			$parentHandler = $this->branchHandlers[get_class($flowStructure)];
 
-			$evaluatedRenderers = call_user_func_array([$this, $handler], [$flowStructure, $renderer]); // this either triggers single or collection node overall handlers
+			$this->rendererToStorable(
+				$this->$parentHandler($flowStructure),
 
-			foreach ($evaluatedRenderers as $renderer) { // SingleNodes should only return array of length 1 here
+				$flowStructure, $userId
+			);
+		}
 
-				$contentType = $this->getContentType($renderer);
+		public function rendererToStorable (array $generatedRenderers, UnitNode $flowStructure, string $userId):void {
 
-				$urlPattern = $renderer->getPath();
+			foreach ($generatedRenderers as $renderer) {
 				
 				$unitPayload = new RouteUserNode($renderer);
 
 				$this->runNodeConfigs($unitPayload, $flowStructure);
 
-				$this->storeContext($urlPattern, $unitPayload, $userId, $contentType);
+				$this->storeContext(
+					$renderer->getPath(),
+
+					$unitPayload, $userId,
+
+					$this->getContentType($renderer)
+				);
 			}
 		}
 
@@ -211,7 +224,7 @@
 			}
 		}
 
-		private function canProcessPath():bool {
+		protected function canProcessPath():bool {
 
 			return $this->responseManager->bootControllerManager()
 
@@ -260,7 +273,7 @@
 			->executeRequest();
 		}
 
-		public function handleRange(array $indexes, RangeContext $context):AbstractRenderer {
+		public function handleRange(iterable $indexes, RangeContext $context):AbstractRenderer {
 
 			return $this->updateRequest([
 
