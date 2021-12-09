@@ -114,8 +114,8 @@
 
 				throw new NoCompatibleValidator;
 			}
-			
-			$this->validatorManager->setActionRules(call_user_func([$collectionName, $actionMethod]))
+
+			$this->validatorManager->setActionRules(call_user_func([$collectionName, $actionMethod]));
 		}
 
 		public function isValidatedRequest ():bool {

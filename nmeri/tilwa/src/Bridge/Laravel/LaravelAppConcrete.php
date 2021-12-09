@@ -1,6 +1,5 @@
 <?php
-
-	namespace Tilwa\ServiceProviders;
+	namespace Tilwa\Bridge\Laravel;
 
 	use Illuminate\Foundation\Application;
 

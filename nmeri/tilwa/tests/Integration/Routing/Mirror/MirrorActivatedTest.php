@@ -1,6 +1,8 @@
 <?php
 	namespace Tilwa\Tests\Integration\Routing\Mirror;
 
+	use Tilwa\Tests\Integration\Routing\BaseRouterTest;
+
 	/**
 	 * As with other configs on [BaseRouterTest], the apiStack is pulled from [ModuleOne]
 	*/
