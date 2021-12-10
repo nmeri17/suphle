@@ -83,11 +83,67 @@
 			$this->assertSame($content, $models);
 		}
 		
-		public function test_will_trigger_underlying_format () {
+		/**
+		 * @dataProvider getCollectionNodes
+		*/
+		public function test_collection_triggers_underlying_format (CollectionNode $unitNode, string $handler, $value ) {
 
-			// call `runNodes` with pre-configured unitNodes. we wanna confirm it'll hit each of the internals with the arguments they are accustomed to
-			// alternatively, you might wanna use the immediate lower layer. test that one then calls the final ones (rather than going directly)
-			// will need `$sut->previousResponse` set
+			$sut = $this->getHydratorForRunNode($handler, $value);
+
+			$sut->runNodes($unitNode, "*"); // when
+		}
+
+		public function getCollectionNodes ():array {
+
+			$serviceContext = new ServiceContext("Foo", "bar");
+
+			return [
+				[$this->createCollectionNode()->pipeTo(), "handlePipe"],
+
+				[$this->createCollectionNode()->oneOf(), "handleOneOf", "ids"],
+
+				[$this->createCollectionNode()->oneOf("concat"), "handleOneOf", "concat"],
+
+				[$this->createCollectionNode()->inRange(), "handleRange"], // too lazy to extract the context from getActions
+
+				[$this->createCollectionNode()->dateRange(), "handleDateRange"],
+
+				[$this->createCollectionNode()->setFromService($serviceContext), "handleServiceSource", $serviceContext]
+			];
+		}
+
+		private function getHydratorForRunNode (string $handler, $value = null):FlowHydrator {
+
+			// given
+			$payload = $this->payloadFromPrevious();
+
+			$hydrator = $this->positiveStub(FlowHydrator::class, [
+
+				"getNodeFromPrevious" => $payload,
+
+				$handler => null
+			]);
+
+			$parameter = !is_null($value) ? $this->equalTo($value): $this->anything();
+
+			$hydrator->expects($this->once())->method($handler)
+			
+			->with( $this->equalTo($payload), $parameter ); // then
+
+			return $hydrator;
+		}
+
+		public function test_single_triggers_underlying_format () {
+
+			$argument = "next_page_url";
+
+			$unitNode = (new SingleNode($this->payloadKey))
+
+			->altersQuery($argument);
+
+			$sut = $this->getHydratorForRunNode("handleQuerySegmentAlter", $argument);
+
+			$sut->runNodes($unitNode, "*"); // when
 		}
 	}
 ?>

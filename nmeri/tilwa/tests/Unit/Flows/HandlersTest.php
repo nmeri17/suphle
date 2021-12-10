@@ -18,9 +18,7 @@
 			ProphecyWrapper::setup as prophecySetup;
 	 	};
 
-		private $columnName = "id",
-
-		$flowService = FlowService::class;
+		private $flowService = FlowService::class;
 
 		public function setUp () {
 
@@ -49,7 +47,7 @@
 			// when
 			$sut->reveal()
 
-			->handlePipe($indexes, 1, $this->getCollectionNode());
+			->handlePipe($indexes, 1, $this->createCollectionNode());
 		}
 
 		// Note: Always returns a new instance. Store in a variable if behavior is unwanted
@@ -60,11 +58,6 @@
 			$hydrator->executeRequest()->shouldBeCalled();
 
 			return $hydrator;
-		}
-
-		private function getCollectionNode ():CollectionNode {
-
-			return new CollectionNode($this->payloadKey, $this->columnName);
 		}
 
 		/**
@@ -105,7 +98,7 @@
 
 			$sut = $this->getHydratorForService(); // given
 
-			$result = $sut->handleServiceSource(null, $this->getServiceContext(), $this->getCollectionNode() ); // when
+			$result = $sut->handleServiceSource(null, $this->getServiceContext(), $this->createCollectionNode() ); // when
 
 			$flowServiceInstance = $this->container->getClass($this->flowService);
 
@@ -119,10 +112,7 @@
 				"randomContainer" => $this->container
 			], [
 
-				"getNodeFromPrevious" => [
-
-					$this->payloadKey => $this->indexesToModels() // should this be returned, or the models, directly
-				]
+				"getNodeFromPrevious" => $this->payloadFromPrevious()
 			]);
 		}
 
@@ -138,7 +128,7 @@
 			// when
 			$sut->reveal()
 
-			->handleServiceSource(null, $this->getServiceContext(), $this->getCollectionNode() );
+			->handleServiceSource(null, $this->getServiceContext(), $this->createCollectionNode() );
 		}
 
 		public function test_fromService_passes_previous_payload() {
@@ -161,7 +151,7 @@
 			]);
 
 			// when
-			$sut->handleServiceSource(null, $this->getServiceContext(), $this->getCollectionNode() );
+			$sut->handleServiceSource(null, $this->getServiceContext(), $this->createCollectionNode() );
 		}
 
 		private function getServiceContext ():ServiceContext {
@@ -189,7 +179,7 @@
 			// when
 			$sut->reveal()
 
-			->handleOneOf($indexes, $requestProperty, $this->getCollectionNode());
+			->handleOneOf($indexes, $requestProperty, $this->createCollectionNode());
 		}
 
 		/**

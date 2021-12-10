@@ -3,7 +3,9 @@
 
 	trait FlowData {
 
-		protected $payloadKey = "data", $indexes;
+		protected $payloadKey = "data", $columnName = "id",
+
+		$indexes;
 
 		protected function getIndexes ():array {
 
@@ -20,6 +22,19 @@
 
 				return compact("id");
 			}, $this->indexes);
+		}
+
+		protected function createCollectionNode ():CollectionNode {
+
+			return new CollectionNode($this->payloadKey, $this->columnName);
+		}
+
+		protected function payloadFromPrevious ():array {
+
+			return [ // should this be returned, or the models, directly
+
+				$this->payloadKey => $this->indexesToModels()
+			];
 		}
 	}
 ?>

@@ -21,7 +21,7 @@
 
 		$responseManager, $container, $placeholderStorage,
 
-		$branchHandlers = [
+		$parentHandlers = [
 			SingleNode::class => "handleSingleNodes",
 
 			CollectionNode::class => "handleCollectionNodes"
@@ -104,7 +104,7 @@
 		*/
 		public function runNodes(UnitNode $flowStructure, string $userId):void {
 
-			$parentHandler = $this->branchHandlers[get_class($flowStructure)];
+			$parentHandler = $this->parentHandlers[get_class($flowStructure)];
 
 			$this->rendererToStorable(
 				$this->$parentHandler($flowStructure),
