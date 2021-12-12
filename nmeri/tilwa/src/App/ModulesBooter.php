@@ -18,7 +18,9 @@
 
 			new EnvironmentDefaults;
 
-			$this->injectConfigs();
+			foreach ($this->modules as $descriptor)
+
+				$descriptor->absorbConfigs(); // We're setting these to be able to attach events soon after
 
 			$this->eventManager->bootReactiveLogger();
 		}
@@ -26,14 +28,6 @@
 		public function getEventManager ():ModuleLevelEvents {
 
 			return $this->eventManager;
-		}
-
-		// We're setting these to be able to attach events soon after
-		private function injectConfigs ():void {
-
-			foreach ($this->modules as $descriptor)
-
-				$descriptor->getContainer()->setConfigs($descriptor->getConfigs());
 		}
 	}
 ?>

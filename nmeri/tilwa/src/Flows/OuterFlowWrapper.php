@@ -1,7 +1,9 @@
 <?php
 	namespace Tilwa\Flows;
 
-	use Tilwa\Contracts\{Requests\BaseResponseManager, QueueManager, CacheManager, Auth\AuthStorage, App\HighLevelRequestHandler};
+	use Tilwa\Contracts\{Requests\BaseResponseManager, CacheManager, Auth\AuthStorage, App\HighLevelRequestHandler};
+
+	use Tilwa\Queues\AdapterManager;
 
 	use Tilwa\Flows\Jobs\{RouteBranches, BranchesContext, UpdateCountDelete};
 
@@ -23,7 +25,7 @@
 
 		$activeUser, $eventManager;
 
-		public function __construct(RequestDetails $requestDetails, QueueManager $queueManager, array $modules, CacheManager $cacheManager, AuthStorage $authStorage, EventManager $eventManager) {
+		public function __construct(RequestDetails $requestDetails, AdapterManager $queueManager, array $modules, CacheManager $cacheManager, AuthStorage $authStorage, EventManager $eventManager) {
 			
 			$this->requestDetails = $requestDetails;
 
@@ -85,17 +87,14 @@
 		
 		public function emptyFlow():void {
 
-			$this->queueManager->addJob(UpdateCountDelete::class,
-				
-				$this->queueManager->augmentArguments([
-					new AccessContext(
+			$this->queueManager->augmentArguments(UpdateCountDelete::class, [
+				new AccessContext(
 
-						$this->dataPath(), $this->context,
+					$this->dataPath(), $this->context,
 
-						$this->routeUmbrella, $this->activeUser
-					)
-				])
-			);
+					$this->routeUmbrella, $this->activeUser
+				)
+			]);
 		}
 
 		private function dataPath ():string {
@@ -114,18 +113,15 @@
  
 		private function queueBranches():void {
 
-			$this->queueManager->addJob(RouteBranches::class, 
+			$this->queueManager->augmentArguments(RouteBranches::class, [
+				new BranchesContext(
+					$this->handlingRenderer(),
 
-				$this->queueManager->augmentArguments([
-					new BranchesContext(
-						$this->handlingRenderer(),
+					$this->authStorage->getUser(),
 
-						$this->authStorage->getUser(),
-
-						$this->modules
-					)
-				])
-			);
+					$this->modules
+				)
+			]);
 		}
 
 		public function handlingRenderer ():AbstractRenderer {

@@ -9,11 +9,15 @@ when cacheManager is integrated:
 #
 work needed on updateReactor
 
-on flow hit, upload the rest into the shared space for all users insted of simply discarding it
+on flow hit, upload the rest into the shared space for all users instead of simply discarding it
 
 we need a cli command for copying laravel config/migrations files from the library locations to dev land i.e. so config can lift the files (from the hard-coded "config" folder)
 
 named renderers for the purpose of portable links that don't break in transit.
+
+graphql clone
+	- The multi requests need to run in a loop preceding us reaching the middleware stack.
+	- The incoming ids will have to be transferred to payloadStorage
 
 
 ##controllers and services
@@ -22,9 +26,12 @@ Bar:
 	- app level service entry into repositories
 	- orm in services
 
-*Extract rejection logic into a class and inject that into both service wrapper and executable classes. then implement an interface that informs these parents to run x whenever such interface is met [PrefersServices]
+*Extract rejection logic into a class and inject that into both service wrapper and executable (ServiceCoordinator) classes. then implement an interface that informs these parents to run x whenever such interface is met [PrefersServices]
 
 *Now, we wanna block user on middleware. So this should prolly be promoted to the container and connected in a way (ConcreteDecorator) that the attached handler (in this case, PrefersServices) runs even when hydrating a concrete
+
+*Emails should only go into Task classes, while HTTP only goes to controller (so, bar in other places)
+	- http library should support retries and possibly lazy load collections
 
 
 *Allow what's passed into controller get assigned (rather enforcing a loadServices). But it should be a wrapped subset. on call, rejection happens if unsatisfactory
@@ -33,6 +40,8 @@ Note: assign freely but constructor should be void of calculations
 class x implements y with methods `handler` (to be hydrated) and `blanket` (receives the arguments used to hydrate x). this guy doesn't return a concrete. the container only instantiates the concrete with the arguments returned from here
 
 they should receive an object that allows them wrap the arguments and does something to do the concrete after it loads (as should be the case with eloquent models? or should they all inherit a special class where that static property is already set)
+
+*Action models need a method for specifying what fields to select
 
 Repository transaction method:
 	- Has to throw on error so dev can pick that up
@@ -112,10 +121,6 @@ on the tearDown methods, you wanna:
 test only and except from routeCollection
 
 
-1) when you are done with the flow integration tests, write their unit counterparts. they should confirm:
-	- the controller manager methods were called
-	- RouteUserNode injected to accessContext receives the correct arguments passed from the flow config i.e. when it's retrieved from the cache or something
-
 2) Work on the adapters and stuff. QueueManager should no longer be an interface
 
 	- See Illuminate\Queue\Console\WorkCommand for programmatic trigger of the jobs
@@ -124,7 +129,6 @@ test only and except from routeCollection
 3) Revisit ModuleHandlerIdentifierTest (low-hanging fruit) after fleshing flows (some have been defined in their collection) and login tests
 
 	- Complete the few methods left on FrontDoorTest and ModuleDescriptorTest
-	- Replace laravel with lumen
 
 4) [AFTER YOU ARE DONE WITH THE OTHER TESTS] write tests for model level authorization, contracts\config
 

@@ -51,6 +51,8 @@
 
 			$this->setRouteDetailsIndicator();
 
+			$this->responseManager = $this->container->getClass(ResponseManager::class);
+
 			$this->attemptAuthentication()->authorizeRequest();
 
 			$validationPassed = $this->responseManager
@@ -82,22 +84,16 @@
 
 			$this->router = $this->container->getClass (RouteManager::class);
 
-			$this->bindDefaultObjects();
-
-			$this->responseManager = $this->container->getClass(ResponseManager::class);
-
 			return $this;
 		}
 
-		private function bindDefaultObjects():void {
+		private function bindContextualGlobals():void {
 
 			$this->container->whenTypeAny()
 
 			->needsAny([
 
 				ModuleDescriptor::class => $this->descriptor,
-
-				RouteManager::class => $this->router,
 
 				AbstractRenderer::class => $this->handlingRenderer()
 			]);
@@ -117,6 +113,8 @@
 			$customBindings = $this->container->getMethodParameters("entityBindings", $descriptor);
 
 			$descriptor->entityBindings(...$customBindings);
+
+			$this->bindContextualGlobals();
 
 			return $this;
 		}

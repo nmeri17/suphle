@@ -1,5 +1,4 @@
 <?php
-
 	namespace Tilwa\App;
 
 	use Tilwa\Contracts\Config\{Auth as IAuth, Services as IServices, Transphporm as ITransphporm, Laravel as ILaravel, Orm as IOrm};
@@ -61,7 +60,7 @@
 			return $this->container;
 		}
 
-		public function getConfigs():array {
+		protected function getConfigs():array {
 			
 			return [
 
@@ -75,6 +74,11 @@
 
 				HydratorContract::class => UserHydrator::class
 			];
+		}
+
+		public function absorbConfigs ():void {
+
+			$this->container->setConfigs($this->getConfigs())
 		}
 	}
 ?>

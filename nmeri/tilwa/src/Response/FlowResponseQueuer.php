@@ -3,7 +3,9 @@
 
 	use Tilwa\Response\Format\AbstractRenderer;
 
-	use Tilwa\Contracts\{QueueManager, Auth\AuthStorage};
+	use Tilwa\Contracts\Auth\AuthStorage;
+
+	use Tilwa\Queues\AdapterManager;
 
 	use Tilwa\Flows\Jobs\RouteBranches;
 
@@ -11,7 +13,7 @@
 
 		private $queueManager, $authStorage;
 
-		public function __construct (QueueManager $queueManager, AuthStorage $authStorage) {
+		public function __construct (AdapterManager $queueManager, AuthStorage $authStorage) {
 
 			$this->queueManager = $queueManager;
 
@@ -20,18 +22,15 @@
 
 		public function insert (AbstractRenderer $renderer, ResponseManager $responseManager):void {
 
-			$this->queueManager->addJob(RouteBranches::class, 
+			$this->queueManager->augmentArguments(RouteBranches::class, [
+				new BranchesContext(
+					$renderer,
 
-				$this->queueManager->augmentArguments([
-					new BranchesContext(
-						$renderer,
+					$this->authStorage->getUser(),
 
-						$this->authStorage->getUser(),
-
-						null, $responseManager
-					)
-				])
-			);
+					null, $responseManager
+				)
+			]);
 		}
 	}
 ?>
