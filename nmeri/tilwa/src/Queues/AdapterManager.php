@@ -3,13 +3,13 @@
 
 	use Tilwa\App\Container;
 
-	use Tilwa\Contracts\QueueAdapter;
+	use Tilwa\Contracts\Queues\Adapter;
 
 	class AdapterManager {
 
 		private $adapter, $container;
 
-		public function __construct (QueueAdapter $activeAdapter, Container $container) {
+		public function __construct (Adapter $activeAdapter, Container $container) {
 
 			$this->adapter = $activeAdapter;
 
@@ -22,6 +22,8 @@
 		}
 
 		public function beginProcessing ():void {
+
+			$this->adapter->configureNative();
 
 			$this->adapter->processTasks();
 		}
@@ -39,7 +41,7 @@
 				$parameters[$index] = $override;
 			}
 
-			$this->addtask($taskClass, $parameters);
+			$this->addTask($taskClass, $parameters);
 		}
 
 	}

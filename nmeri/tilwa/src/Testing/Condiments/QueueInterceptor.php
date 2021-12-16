@@ -1,22 +1,36 @@
 <?php
 	namespace Tilwa\Testing\Condiments;
 
-	use Tilwa\Testing\Proxies\{FrontDoorTest, Extensions\AdapterTester};
+	use Tilwa\Testing\Proxies\{FrontDoorTest, StubbedQueueAdapter};
 
 	use Tilwa\Flows\{Jobs\RouteBranches, OuterFlowWrapper};
+
+	use Tilwa\Contracts\Queues\Adapter;
 
 	trait QueueInterceptor {
 
 		use FrontDoorTest; // this should be the same instance used to send the request
 
+		private $adapter, $isCatching = false;
+
 		public function catchQueuedTasks ():void {
 
-			/*this guy should extend the adapter manager*/ new AdapterTester // this should be in the active container instead
+			if (!$this->isCatching) { // using this nonce so we can assert more than once in the same test without overwriting the instance
+				$this->isCatching = true;
+
+				$this->adapter = new StubbedQueueAdapter;
+
+				foreach ($this->getModules() as $descriptor) // since we don't know yet what the active module is at this point this
+
+					$descriptor->getContainer()->whenTypeAny()
+
+					->needsAny([Adapter::class => $this->adapter]);
+			}
 		}
 
 		protected function assertPushed (string $taskName):void {
 
-			// interact with the queueFaker
+			$this->assertTrue($this->adapter->didPushTask($taskName));
 		}
 
 		protected function assertPushedToFlow(string $originUrl):void {

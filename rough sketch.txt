@@ -9,15 +9,9 @@ when cacheManager is integrated:
 #
 work needed on updateReactor
 
-on flow hit, upload the rest into the shared space for all users instead of simply discarding it
-
 we need a cli command for copying laravel config/migrations files from the library locations to dev land i.e. so config can lift the files (from the hard-coded "config" folder)
 
 named renderers for the purpose of portable links that don't break in transit.
-
-graphql clone
-	- The multi requests need to run in a loop preceding us reaching the middleware stack.
-	- The incoming ids will have to be transferred to payloadStorage
 
 
 ##controllers and services
@@ -47,6 +41,7 @@ Repository transaction method:
 	- Has to throw on error so dev can pick that up
 	- Should be able to be turned off on a per-method basis
 	- Should also lock i.e. lock for read, start transaction, update, close and release
+	- Since we're no more generating tests, TrapQueryParameters should return to the repository layer
 
 Pending:
 	- exception renderer
@@ -120,11 +115,6 @@ on the tearDown methods, you wanna:
 
 test only and except from routeCollection
 
-
-2) Work on the adapters and stuff. QueueManager should no longer be an interface
-
-	- See Illuminate\Queue\Console\WorkCommand for programmatic trigger of the jobs
-	and Illuminate\Support\Testing\Fakes\QueueFake
 
 3) Revisit ModuleHandlerIdentifierTest (low-hanging fruit) after fleshing flows (some have been defined in their collection) and login tests
 

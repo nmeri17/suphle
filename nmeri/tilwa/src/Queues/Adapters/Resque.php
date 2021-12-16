@@ -29,7 +29,7 @@
 			include("bin/resque");
 		}
 
-		public function configureNative ():void { // should be called in app boot? :o for each request? :oo
+		public function configureNative ():void {
 
 			ResqueLib::setBackend("localhost:6379");
 		}

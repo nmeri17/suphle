@@ -30,7 +30,7 @@
 			}
 		}
 
-		public function configureNative ():void { // should be called in app boot? :o for each request? :oo
+		public function configureNative ():void {
 
 			$queuePersistor = new Redis;
 

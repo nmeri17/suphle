@@ -6,7 +6,7 @@
 	use Tilwa\Testing\Condiments\MockFacilitator;
 
 	/**
-	 * Using a wrapper than extension cuz we don't the container's methods leaking into the callback
+	 * Using a wrapper rather than an extension cuz we don't want Container's methods polluting the callback where this will be used
 	*/
 	class WriteOnlyContainer {
 

@@ -2,13 +2,19 @@
 
 	namespace Tilwa\Config;
 
-	use Tilwa\Contracts\Config\Services as ServicesContract;
-
-	use Tilwa\Contracts\{Database\Orm, HtmlParser, Requests\RequestValidator, QueueManager};
+	use Tilwa\Contracts\{HtmlParser, Database\Orm, Requests\RequestValidator, Queues\Adapter as QueueAdapter, Config\Services as ServicesContract};
 
 	use Tilwa\Contracts\Auth\{AuthStorage, User};
 
-	use Tilwa\InterfaceLoader\{OrmLoader, AuthStorageLoader, HtmlTemplateLoader, RequestValidatorLoader, QueueLoader, LaravelAppLoader, UserEntityLoader};
+	use Tilwa\InterfaceLoader\{OrmLoader, LaravelAppLoader};
+
+	use Tilwa\Queues\Adapters\Resque;
+
+	use Tilwa\Auth\{Storage\SessionStorage, Models\Eloquent\User as EloquentUser};
+
+	use Tilwa\Adapters\Markups\Transphporm;
+
+	use Tilwa\Request\Validators\RakitValidator;
 
 	class Services implements ServicesContract {
 
@@ -22,17 +28,17 @@
 			return [
 				Orm::class => OrmLoader::class,
 
-				HtmlParser::class => HtmlTemplateLoader::class,
+				HtmlParser::class => Transphporm::class,
 
-				AuthStorage::class => AuthStorageLoader::class,
+				AuthStorage::class => SessionStorage::class,
 
-				RequestValidator::class => RequestValidatorLoader::class,
+				RequestValidator::class => RakitValidator::class,
 
-				QueueManager::class => QueueLoader::class,
+				QueueAdapter::class => Resque::class,
 
 				LaravelApp::class => LaravelAppLoader::class,
 
-				User::class => UserEntityLoader::class
+				User::class => EloquentUser::class
 			];
 		}
 
