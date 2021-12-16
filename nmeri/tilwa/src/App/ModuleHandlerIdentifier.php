@@ -147,7 +147,7 @@
 			return $handler->getResponse();
 		}
 
-		private function getLoginHandler (string $collectionName):LoginRequestHandler {
+		protected function getLoginHandler (string $collectionName):LoginRequestHandler {
 
 			$container = $this->container;
 
