@@ -3,7 +3,7 @@
 
 	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
-	use Tilwa\Testing\Condiments\{MockFacilitator, ProphecyWrapper};
+	use Tilwa\Testing\Condiments\MockFacilitator;
 
 	use Prophecy\Argument\Token\InArrayToken;
 
@@ -11,20 +11,15 @@
 
 	use Tilwa\Flows\{FlowHydrator, Structures\RangeContext, Previous\CollectionNode};
 
-	class Handlers extends IsolatedComponentTest {
+	class HandlersTest extends IsolatedComponentTest {
 
-	 	use ProphecyWrapper, MockFacilitator, FlowData {
-
-			ProphecyWrapper::setup as prophecySetup;
-	 	};
+	 	use MockFacilitator, FlowData;
 
 		private $flowService = FlowService::class;
 
 		public function setUp () {
 
 			parent::setUp();
-
-			$this->prophecySetup();
 
 			$this->indexes = $this->getIndexes();
 		}
@@ -53,7 +48,7 @@
 		// Note: Always returns a new instance. Store in a variable if behavior is unwanted
 		private function mockFlowHydrator () {
 
-			$hydrator = $this->prophesize(FlowHydrator::class);
+			$hydrator = $this->getProphet()->prophesize(FlowHydrator::class);
 
 			$hydrator->executeRequest()->shouldBeCalled();
 
@@ -118,7 +113,7 @@
 
 		public function test_fromService_doesnt_edit_request_or_trigger_controller() {
 
-			$sut = $this->prophesize(FlowHydrator::class);
+			$sut = $this->getProphet()->prophesize(FlowHydrator::class);
 
 			// then
 			$sut->updateRequest()->shouldNotBeCalled();
@@ -135,7 +130,7 @@
 
 			$sut = $this->getHydratorForService();
 
-			$mockService = $this->prophesize($this->flowService);
+			$mockService = $this->getProphet()->prophesize($this->flowService);
 
 			// then
 			$mockService

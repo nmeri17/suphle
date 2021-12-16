@@ -3,7 +3,7 @@
 
 	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
-	use Tilwa\Testing\Condiments\{MockFacilitator, ProphecyWrapper};
+	use Tilwa\Testing\Condiments\MockFacilitator;
 
 	use Tilwa\Flows\{FlowHydrator, Structures\RouteUserNode, Previous\SingleNode};
 
@@ -11,18 +11,13 @@
 
 	class FlowConfigTest extends IsolatedComponentTest {
 
-	 	use ProphecyWrapper, MockFacilitator {
-
-			ProphecyWrapper::setup as prophecySetup;
-	 	};
+	 	use MockFacilitator;
 
 	 	private $hydrator, $unitNode;
 
 		public function setUp () {
 
 			parent::setUp();
-
-			$this->prophecySetup();
 
 			$this->hydrator = $this->container->getClass(FlowHydrator::class); // we don't wanna replace any of the methods
 
@@ -40,7 +35,7 @@
 			$this->unitNode->setMaxHits($callback);
 
 			// then
-			$sut = $this->prophesize(RouteUserNode::class);
+			$sut = $this->getProphet()->prophesize(RouteUserNode::class);
 
 			$sut->setMaxHitsHydrator($callback)->shouldBeCalled();
 
@@ -58,7 +53,7 @@
 			$this->unitNode->setTTL($callback);
 
 			// then
-			$sut = $this->prophesize(RouteUserNode::class);
+			$sut = $this->getProphet()->prophesize(RouteUserNode::class);
 
 			$sut->setExpiresAtHydrator($callback)->shouldBeCalled();
 

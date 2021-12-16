@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Integration\Flows\Jobs\RouteBranches;
 
-	use Tilwa\Testing\{Proxies\WriteOnlyContainer, Condiments\ProphecyWrapper};
+	use Tilwa\Testing\Proxies\WriteOnlyContainer;
 
 	use Prophecy\Argument\Token\AnyValuesToken;
 
@@ -13,11 +13,6 @@
 
 	class MultiModuleTest extends JobFactory {
 
-		use ProphecyWrapper {
-
-			ProphecyWrapper::setup as prophecySetup;
-		};
-
 		protected $originDataName = "post_titles",
 
 		$flowUrl = "posts/id"; // the name used here is determined by the pattern name at the target module
@@ -28,9 +23,7 @@
 
 			parent::setUp();
 
-			$this->prophecySetup();
-
-			$this->mockFlowHydrator = $this->prophesize(FlowHydrator::class);
+			$this->mockFlowHydrator = $this->getProphet()->prophesize(FlowHydrator::class);
 		}
 
 		protected function getModules():array {

@@ -3,7 +3,7 @@
 
 	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
-	use Tilwa\Testing\Condiments\{MockFacilitator, ProphecyWrapper};
+	use Tilwa\Testing\Condiments\MockFacilitator;
 
 	use Tilwa\Flows\{FlowHydrator, Structures\RouteUserNode, Previous\SingleNode};
 
@@ -11,18 +11,13 @@
 
 	class FlowExecutionTest extends IsolatedComponentTest {
 
-	 	use ProphecyWrapper, MockFacilitator, FlowData {
-
-			ProphecyWrapper::setup as prophecySetup;
-	 	};
+	 	use MockFacilitator, FlowData;
 
 	 	private $responseManager = ResponseManager::class;
 
 	 	public function setUp () {
 
 			parent::setUp();
-
-			$this->prophecySetup();
 
 			$this->indexes = $this->getIndexes();
 		}
@@ -32,7 +27,7 @@
 			// given
 			$hydrator = $this->getHydratorForExecuteRequest(true);
 
-			$responseManager = $this->prophesize($this->responseManager);
+			$responseManager = $this->getProphet()->prophesize($this->responseManager);
 
 			$responseManager->handleValidRequest()->shouldBeCalled();
  
@@ -52,7 +47,7 @@
 			// given
 			$hydrator = $this->getHydratorForExecuteRequest(false);
 
-			$responseManager = $this->prophesize($this->responseManager);
+			$responseManager = $this->getProphet()->prophesize($this->responseManager);
 
 			$responseManager->handleValidRequest()->shouldNotBeCalled();
  
