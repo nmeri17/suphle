@@ -3,11 +3,13 @@
 
 	use Illuminate\Testing\TestResponse;
 
-	use Tilwa\Testing\Condiments\DirectHttpTest;
+	use Tilwa\Testing\Proxies\Extensions\{FrontDoor, MiddlewareManipulator};
 
-	use Tilwa\Testing\Proxies\{Extensions\FrontDoor, SecureUserAssertions};
+	use Tilwa\Testing\{Proxies\SecureUserAssertions, Condiments\DirectHttpTest};
 
 	use Tilwa\App\{Container, ModuleToRoute};
+
+	use Tilwa\Middleware\MiddlewareRegistry;
 
 	/**
 	 * Useful when running http tests that need to go through app entry point and get handled end-to-end
@@ -18,7 +20,9 @@
 
 		const JSON_HEADER_VALUE = "application/json";
 
-		private $entrance, $staticHeaders = [],
+		private $entrance, $mockMiddlewareRegistry,
+
+		$staticHeaders = [],
 
 		$contentTypeKey = "Content-Type";
 
@@ -86,15 +90,52 @@
 	    	return $this;
 	    }
 
-	    // store these somewhere, then when routing is done and we're about to begin handling, grab the registry in the active module and exclude what's given here
-	    public function withoutMiddleware($middleware = null):self {
+	    /**
+	     * Assumes there's some behavior this middleware may have that we aren't comfortable triggering
+	     * 
+		 * @param {middleware} Middleware[]
+	    */
+	    public function withoutMiddleware(array $middlewares = []):self {
+
+	    	$this->setMiddlewareRegistry();
+
+	    	if (empty($middlewares))
+
+	    		$this->mockMiddlewareRegistry->disableAll();
+
+	    	else $this->mockMiddlewareRegistry->disable($middlewares);
 
 	    	return $this;
 	    }
 
-	    public function withMiddleware($middleware = null):self {
+	    /**
+	     * Useful when we want to see the implication of using a particular middleware, in test
+	     * 
+		 * @param {middleware} Middleware[]
+	    */
+	    public function withMiddleware(array $middlewares):self {
+
+	    	$this->setMiddlewareRegistry();
+
+	    	$this->mockMiddlewareRegistry->addToActiveStack($middlewares);
 
 	    	return $this;
+	    }
+
+	    private function setMiddlewareRegistry ():void {
+
+	    	if (is_null($this->mockMiddlewareRegistry)) {
+
+	    		$this->mockMiddlewareRegistry = new MiddlewareManipulator;
+
+	    		$provision = [MiddlewareRegistry::class => $this->mockMiddlewareRegistry];
+
+	    		foreach ($this->getModules() as $descriptor)
+
+	    			$descriptor->getContainer()->whenTypeAny()
+
+	    			->needsAny($provision);
+	    	}
 	    }
 
 	    public function get(string $url, array $headers = []):TestResponse {

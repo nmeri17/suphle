@@ -16,5 +16,14 @@
 
 			return $this->middlewareList;
 		}
+
+		public function omitWherePresent (Middleware $toOmit):void {
+
+			foreach ($this->middlewareList as $index => $existing)
+
+				if ($existing == $toOmit) // losse comparison
+
+					unset($this->middlewareList[$index]);
+		}
 	}
 ?>

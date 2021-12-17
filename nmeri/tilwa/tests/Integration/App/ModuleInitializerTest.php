@@ -1,8 +1,7 @@
 <?php
-
 	namespace Tilwa\Tests\Integration\App;
 
-	use Tilwa\Testing\IsolatedComponentTest;
+	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
 	class ModuleInitializerTest extends IsolatedComponentTest { // SUT for the next 2 methods is [triggerRequest]
 		
