@@ -108,13 +108,7 @@
 
 			if ($this->isLaravelRoute()) return $this;
 
-			$descriptor = $this->descriptor;
-
-			$customBindings = $this->container->getMethodParameters("entityBindings", $descriptor);
-
-			$descriptor->entityBindings(...$customBindings);
-
-			$this->bindContextualGlobals();
+			$this->descriptor->prepareToRun();
 
 			return $this;
 		}

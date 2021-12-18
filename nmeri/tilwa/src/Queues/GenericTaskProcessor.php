@@ -20,6 +20,8 @@
 
 			$this->container->provideSelf();
 
+			$this->descriptor->prepareToRun();
+
 			return $this;
 		}
 
