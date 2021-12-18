@@ -10,7 +10,7 @@
 		/**
 		 * Whenever router decides on the active pattern, it'll ultimately include middlewares applied here
 		 * 
-		 * @param {middlewares} Middleware[], not class names
+		 * @param {middlewares} Middleware class names
 		*/
 		public function addToActiveStack (array $middlewares):void {
 

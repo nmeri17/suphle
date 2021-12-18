@@ -24,14 +24,14 @@
 
 		/**
 		 * Convert a path foo/bar with stack
-		 * foo => patternMiddleware([1,2])
-		 * bar => patternMiddleware([1,3]) to [1,2,3]
+		 * foo => patternMiddleware([middleware1,middleware2])
+		 * bar => patternMiddleware([middleware1,middleware3]) to [middleware1,middleware2,middleware3]
 		*/
-		private function filterDuplicates ():self {
+		private function filterDuplicates ():void {
 
-			$units = array_map(function (PatternMiddleware $stack) {
+			$units = array_map(function (PatternMiddleware $pattern) {
 
-				return $stack->getList();
+				return $pattern->getList();
 			}, $this->stack);
 
 			$reduced = array_reduce($units, function (array $carry, array $current) {
@@ -41,28 +41,17 @@
 				return $carry;
 			}, []);
 
-			$uniqueNames = [];
-
-			$this->stack = array_filter($reduced, function (Middleware $middleware) use (&$uniqueNames) {
-
-				$name = get_class($middleware);
-
-				if (!in_array($name, $uniqueNames))
-
-					return false;
-
-				$uniqueNames[] = $name;
-
-				return true;
-			});
-
-			return $this;
+			$this->stack = array_unique($reduced);
 		}
 
 		// this should return ResponseInterface according to psr-15
 		public function runStack ():string {
 
-			$this->filterDuplicates()->prependDefaults();
+			$this->filterDuplicates();
+
+			$this->stack = [...$this->routerConfig->defaultMiddleware(), ...$this->stack];
+
+			$this->hydrateMiddlewares();
 
 			$outermost = array_pop($this->stack);
 
@@ -92,17 +81,12 @@
 			return $this->getHandlerChain($middlewareList, $nextHandler);
 		}
 
-		private function prependDefaults ():self {
+		private function hydrateMiddlewares ():void {
 
-			$defaults = array_map(function ($name) {
+			$this->stack = array_map(function ($name) {
 
 				return $this->container->getClass($name);
-
-			}, $this->routerConfig->defaultMiddleware());
-
-			$this->stack = [...$defaults, ...$this->stack];
-
-			return $this;
+			}, $this->stack);
 		}
 	}
 ?>

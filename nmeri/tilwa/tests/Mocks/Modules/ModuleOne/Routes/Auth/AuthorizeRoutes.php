@@ -7,9 +7,9 @@
 
 		public function _assignMiddleware():void {
 
-			$this->middlewareRegistry->tagPatterns(["pattern", "pattern2"], [new Middleware]);
+			$this->middlewareRegistry->tagPatterns(["pattern", "pattern2"], [Middleware::class]);
 			
-			$this->middlewareRegistry->tagPatterns(["pattern2"], [ new Middleware2]);
+			$this->middlewareRegistry->tagPatterns(["pattern2"], [ Middleware2::class]);
 		}
 	}
 ?>
