@@ -7,7 +7,7 @@
 
 		private $wantsJson, $viewModel;
 
-		function __construct(string $handler, string $viewName, string $viewModel) {
+		function __construct(string $handler, string $viewName, string $viewModel = null) {
 
 			$this->handler = $handler;
 

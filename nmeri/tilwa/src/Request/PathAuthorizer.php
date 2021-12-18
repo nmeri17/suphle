@@ -28,7 +28,7 @@
 
 				$this->excludeRules[$rule] = [];
 
-			$this->excludeRules[$rule] += $patterns;
+			$this->excludeRules[$rule] = array_merge($this->excludeRules[$rule], $patterns);
 
 			return $this;
 		}
@@ -42,12 +42,14 @@
 
 		private function setActiveRules (string $pattern):void {
 
-			$this->activeRules += array_filter($this->allRules, function (RouteRule $rule) use ($pattern) {
+			$matches = array_filter($this->allRules, function (RouteRule $rule) use ($pattern) {
 
 				$rule->setAuthStorage($this->authStorage);
 
 				return $rule->hasPattern($pattern);
 			});
+
+			$this->activeRules = array_merge($this->activeRules, $matches);
 		}
 
 		private function detachUnwanted ():void {

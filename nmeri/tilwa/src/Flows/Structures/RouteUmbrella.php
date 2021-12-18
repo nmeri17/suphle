@@ -6,9 +6,7 @@
 	// this is the object value for each route key in the cache i.e. cache = ["path-x" => RouteUmbrella]
 	class RouteUmbrella {
 
-		private $users;
-
-		private $routeName;
+		private $users, $routeName;
 
 		//private $nodeTags; // should give us a bird's eye view of the path to each model [collection] i.e. [Cows => "user35,foo", "user*,bar"]
 
@@ -22,7 +20,7 @@
 			$this->users[$userId] = $unitPayload;
 		}
 
-		public function getUserPayload(string $userId):RouteUserNode {
+		public function getUserPayload(string $userId):?RouteUserNode {
 
 			$context = $this->users[$userId];
 

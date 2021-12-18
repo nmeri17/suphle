@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Flows;
 
-	use Tilwa\Contracts\{CacheManager, Orm};
+	use Tilwa\Contracts\CacheManager;
 
 	use Tilwa\Flows\Structures\{RouteUserNode, RouteUmbrella, RangeContext, ServiceContext};
 
@@ -21,15 +21,13 @@
 
 		$responseManager, $container, $placeholderStorage,
 
-		$branchHandlers = [
+		$parentHandlers = [
 			SingleNode::class => "handleSingleNodes",
 
 			CollectionNode::class => "handleCollectionNodes"
 		],
 			
 		$collectionSubHandlers = [
-
-			CollectionNode::EACH_ATTRIBUTE => "extractCollectionData",
 
 			CollectionNode::PIPE_TO => "handlePipe",
 
@@ -44,7 +42,7 @@
 			
 		$singleSubHandlers = [
 
-			SingleNode::INCLUDES_PAGINATION => "handlePaginate"
+			SingleNode::ALTERS_QUERY_SEGMENT => "handleQuerySegmentAlter"
 		],
 
 		$configHandlers = [
@@ -54,14 +52,11 @@
 			UnitNode::MAX_HITS => "setMaxHitsHydrator"
 		];
 
-		// if we can't hydrate this with our container, replace interfaces with hard-coded concretes
-		function __construct(CacheManager $cacheManager, Orm $orm/*, Container $randomContainer*/, PathPlaceholders $placeholderStorage, RequestDetails $requestDetails) {
+		function __construct(CacheManager $cacheManager, Container $randomContainer, PathPlaceholders $placeholderStorage, RequestDetails $requestDetails) {
 
 			$this->cacheManager = $cacheManager;
 
-			$this->orm = $orm;
-
-			// $this->container = $randomContainer;
+			$this->container = $randomContainer;
 
 			$this->placeholderStorage = $placeholderStorage;
 
@@ -75,13 +70,17 @@
 			
 			$umbrella = $manager->get($urlPattern);
 
-			if (!$umbrella) $umbrella = new RouteUmbrella($urlPattern);
+			if (!$umbrella)
+
+				$umbrella = new RouteUmbrella($urlPattern);
 
 			$umbrella->addUser($userId, $nodeContent);
 
 			$saved = $manager->save($urlPattern, $umbrella);
 
-			if ($contentType) $saved->tag($contentType);
+			if ($contentType)
+
+				$saved->tag($contentType);
 
 			// better still, this guy can subscribe to a topic(instead of using tags?). update listener publishes to that topic (so we hopefully have no loop)
 		}
@@ -101,25 +100,34 @@
 		/**
 		*	Pipes a controlled list of variables to a path's controller action
 		*
-		*	@param {flowStructure} $flow->previousResponse()->actionX()
+		*	@param {flowStructure} $flow->previousResponse()->handler()
 		*/
 		public function runNodes(UnitNode $flowStructure, string $userId):void {
 
-			$handler = $this->branchHandlers[get_class($flowStructure)];
+			$parentHandler = $this->parentHandlers[get_class($flowStructure)];
 
-			$evaluatedRenderers = call_user_func_array([$this, $handler], [$flowStructure, $renderer]);
+			$this->rendererToStorable(
+				$this->$parentHandler($flowStructure),
 
-			foreach ($evaluatedRenderers as $renderer) { // SingleNodes should only return array of length 1 here
+				$flowStructure, $userId
+			);
+		}
 
-				$contentType = $this->getContentType($renderer);
+		public function rendererToStorable (array $generatedRenderers, UnitNode $flowStructure, string $userId):void {
 
-				$urlPattern = $renderer->getPath();
+			foreach ($generatedRenderers as $renderer) {
 				
 				$unitPayload = new RouteUserNode($renderer);
 
 				$this->runNodeConfigs($unitPayload, $flowStructure);
 
-				$this->storeContext($urlPattern, $unitPayload, $userId, $contentType);
+				$this->storeContext(
+					$renderer->getPath(),
+
+					$unitPayload, $userId,
+
+					$this->getContentType($renderer)
+				);
 			}
 		}
 
@@ -144,7 +152,7 @@
 
 			$carryRenderer = null;
 
-			foreach($rawNode->getActions() as $attribute) {
+			foreach($rawNode->getActions() as $attribute => $value) {
 
 				$handler = $this->singleSubHandlers[$attribute];
 
@@ -153,7 +161,7 @@
 				$carryRenderer = call_user_func_array(
 					[$this, $handler],
 
-					[$previousContent/*, $carryRenderer*/]
+					[$previousContent, $value/*, $carryRenderer*/]
 				);
 			}
 
@@ -161,12 +169,15 @@
 		}
 
 		/**
-		*	Will return the result of the last operation
 		*	@return AbstractRenderer[]
 		*/
 		private function handleCollectionNodes(CollectionNode $rawNode):array {
 
-			$carryRenderer = null;
+			if ($rawNode->deferExtraction())
+
+				$carryRenderer = null;
+
+			else $carryRenderer = $this->extractCollectionData($rawNode);
 
 			foreach ($rawNode->getActions() as $attribute => $value) {
 
@@ -182,79 +193,78 @@
 			return $carryRenderer;
 		}
 
-		/**
-		*	@param {dataIndex} previous response = [ourNode => [[dataIndex => 1], [dataIndex => 2]], otherNode => value]
-		*/
-		private function extractCollectionData($currentSource, string $dataIndex, CollectionNode $rawNode):array {
+		private function extractCollectionData(CollectionNode $rawNode):array {
 
-			if (is_null($currentSource))
+			$dataIndex = $rawNode->getLeafName();
 
-				$currentSource = $this->getNodeFromPrevious($rawNode);
-
-			$indexes = [];
-
-			foreach ($currentSource as $valueObject)
+			return array_map(function ($valueObject) use ($dataIndex) { 
 				
-				$indexes[] = Arr::get($valueObject, $dataIndex);
-
-			return $indexes;
+				return Arr::get($valueObject, $dataIndex);
+			}, $this->getNodeFromPrevious($rawNode));
 		}
 
-		private function getNodeFromPrevious(UnitNode $rawNode) {
+		public function getNodeFromPrevious(UnitNode $rawNode):iterable {
 
-			$keyName = $rawNode->getNodeName();
-
-			return Arr::get($this->previousResponse, $keyName);
+			return Arr::get($this->previousResponse, $rawNode->getNodeName());
 		}
 
-		private function handlePaginate($nodeContent):AbstractRenderer {
+		public function handleQuerySegmentAlter(array $nodeContent, string $newQueryHolder):?AbstractRenderer {
 
-			$valuePath = $nodeContent[$this->orm->getPaginationPath()];
+			$valuePath = $nodeContent[$newQueryHolder];
 
-			$queryPart = parse_url($valuePath, PHP_URL_QUERY);
+			if (!is_null($valuePath)) {
 
-			return $this->updateRequest(parse_str($queryPart))
-			
-			->executeRequest();
+				$queryPart = parse_url($valuePath, PHP_URL_QUERY);
+
+				parse_str($queryPart, $queryArray); // we don't bother passing the path part since it is expected that that is the flow anchor url
+
+				return $this->updateRequest($queryArray)
+				
+				->executeRequest();
+			}
 		}
 
-		private function canProcessPath():bool {
+		protected function canProcessPath():bool {
 
 			return $this->responseManager->bootControllerManager()
 
 			->isValidRequest();
 		}
 
-		private function updateRequest(array $updates):self {
+		protected function updateRequest(array $updates):self {
 
 			$this->placeholderStorage->overwriteValues($updates);
 
 			return $this;
 		}
 
-		// @return AbstractRenderer[]
-		private function handlePipe(array $indexes):array {
+		/**
+		 * This runs the validation sequence for each single item in this stream just in case any of the ids in the list is invalid
+		 * @param {indexes} Array of ids
+		 * 
+		 * @return AbstractRenderer[]
+		*/
+		public function handlePipe(array $indexes, int $dummyValue, CollectionNode $rawNode):array {
 
-			$results = [];
+			return array_map (function($value) {
 
-			foreach ($indexes as $payload)
+				return $this->updateRequest([
 
-				$results[] = $this->updateRequest($payload)
-
-				->executeRequest(); // note: runs validation for each single item in this stream. validate and boot manager only once instead?
-
-			return $results;
+					$rawNode->getLeafName() => $value
+				])
+				->executeRequest();
+			}, $indexes );
 		}
 
 		// @return executes underlying renderer and returns it
-		private function executeRequest() {
+		protected function executeRequest():?AbstractRenderer {
 
 			if ($this->canProcessPath())
 
 				return $this->responseManager->handleValidRequest($this->requestDetails);
 		}
 
-		private function handleOneOf(array $indexes, string $requestProperty):AbstractRenderer {
+		public function handleOneOf(array $indexes, string $requestProperty):AbstractRenderer {
 
 			return $this->updateRequest([
 
@@ -263,7 +273,7 @@
 			->executeRequest();
 		}
 
-		private function handleRange(array $indexes, RangeContext $context):AbstractRenderer {
+		public function handleRange(iterable $indexes, RangeContext $context):AbstractRenderer {
 
 			return $this->updateRequest([
 
@@ -274,7 +284,7 @@
 			->executeRequest();
 		}
 
-		private function handleDateRange(array $indexes, RangeContext $context):AbstractRenderer {
+		public function handleDateRange(array $indexes, RangeContext $context):AbstractRenderer {
 
 			usort($indexes, function($a, $b) {
 
@@ -290,18 +300,18 @@
 			->executeRequest();
 		}
 
-		private function handleServiceSource($currentSource, ServiceContext $context, CollectionNode $rawNode ):iterable {
+		public function handleServiceSource($dummyPrevious, ServiceContext $context, CollectionNode $rawNode ):iterable {
 
-			// $concrete = $this->container->getClass($context->getServiceName());
+			$concrete = $this->container->getClass($context->getServiceName());
 
 			return call_user_func_array(
-				[$context->getServiceName(), $context->getMethod()],
+				[$concrete, $context->getMethod()],
 
 				[$this->getNodeFromPrevious($rawNode)]
 			);
 		}
 
-		private function runNodeConfigs(RouteUserNode $savedNode, UnitNode $rawNode):void {
+		public function runNodeConfigs(RouteUserNode $savedNode, UnitNode $rawNode):void {
 			
 			foreach ($rawNode->getConfig() as $config => $value) {
 

@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Routing;
 
-	use Tilwa\Contracts\Routing\RouteCollection;
+	use Tilwa\Contracts\{Routing\RouteCollection, Auth\AuthStorage};
 
 	use Tilwa\Request\PathAuthorizer;
 
@@ -9,7 +9,9 @@
 
 	class PatternIndicator {
 
-		private $patternAuthentication, $registry, $authorizer;
+		private $patternAuthentication, $registry, $authorizer,
+
+		$defaultAuthenticator;
 
 		public function __construct (MiddlewareRegistry $registry, PathAuthorizer $authorizer) {
 
@@ -27,14 +29,23 @@
 			$this->updatePermissions($collection, $pattern);
 		}
 
-		// if a higher level security was applied to a child collection with its own rules, omitting the current pattern, the security will be withdrawn from that pattern
+		public function setDefaultAuthenticator (AuthStorage $mechanism):void {
+
+			$this->defaultAuthenticator = $mechanism;
+		}
+
+		/**
+		 *  If a higher level security was applied to a child collection with its own rules, omitting the current pattern, the security will be withdrawn from that pattern
+		*/
 		public function setPatternAuthentication(RouteCollection $collection, string $pattern):void {
 
-			if ($activePatterns = $collection->_authenticatedPaths()) {
+			$activePatterns = $collection->_authenticatedPaths();
 
-				if (in_array($pattern, $activePatterns))
+			if (!empty($activePatterns)) {
 
-					$this->patternAuthentication = $collection->_getAuthenticator();
+				if (in_array($pattern, $activePatterns)) // case-sensitive comparison
+
+					$this->patternAuthentication = $this->defaultAuthenticator ?? $collection->_getAuthenticator();
 
 				else $this->patternAuthentication = null;
 			}

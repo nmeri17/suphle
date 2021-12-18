@@ -13,5 +13,10 @@
 		public function browserEntryRoute ():string;
 
 		public function defaultMiddleware():array;
+
+		public function mirrorsCollections ():bool;
+
+		// names the storage mechanism to be used on the browser collection when we've switched to those collections
+		public function mirrorAuthenticator ():string;
 	}
 ?>

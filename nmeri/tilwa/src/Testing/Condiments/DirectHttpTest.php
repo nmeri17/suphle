@@ -18,11 +18,11 @@
 
 			$_GET["tilwa_path"] = $components["path"];
 
-			$_GET += $components["query"];
+			$_GET = array_merge($_GET, $components["query"]);
 
 			$_SERVER["REQUEST_METHOD"] = $httpMethod;
 
-			$_SERVER += $headers;
+			$_SERVER = array_merge($_SERVER, $headers);
 
 			if (!empty($payload) && array_key_exists($this->contentTypeKey, $headers))
 

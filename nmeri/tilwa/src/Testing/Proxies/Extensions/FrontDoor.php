@@ -17,7 +17,7 @@
 			return $this->descriptors;
 		}
 
-		protected function firstContainer ():Container {
+		public function firstContainer ():Container {
 
 			return $this->container;
 		}

@@ -30,12 +30,12 @@
 
 		public function updateConcretes(array $dependencyList):void {
 			
-			$this->concretes += $dependencyList;
+			$this->concretes = array_merge($this->concretes, $dependencyList);
 		}
 
 		public function updateArguments(array $parameters):void {
 			
-			$this->arguments += $parameters;
+			$this->arguments = array_merge($this->arguments, $parameters);
 		}
 
 		public function hasArgument(string $parameter):bool {

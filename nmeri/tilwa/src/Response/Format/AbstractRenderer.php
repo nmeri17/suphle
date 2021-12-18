@@ -60,6 +60,8 @@
 		public function setFlow(ControllerFlows $flow):self {
 			
 			$this->flows = $flow;
+
+			return $this;
 		}
 
 		public function getFlow():ControllerFlows {
@@ -97,11 +99,16 @@
 			return $this->handler;
 		}
 
+		public function matchesHandler (string $name):bool {
+
+			return $this->handler == $name;
+		}
+
 		public function setHeaders (int $statusCode, array $headers):void {
 
 			$this->statusCode = $statusCode;
 
-			$this->headers += $headers;
+			$this->headers = array_merge($this->headers, $headers);
 		}
 
 		public function getStatusCode ():int {

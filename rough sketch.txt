@@ -6,12 +6,15 @@ when cacheManager is integrated:
 	- refactor its usage wherever it appears in respect to accessing nested objects; tags etc
 	- is the override pattern we're using good or can it be updated while in the cache?
 
-#
-work needed on updateReactor
-
-on flow hit, upload the rest into the shared space for all users insted of simply discarding it
+Work needed on updateReactor
 
 we need a cli command for copying laravel config/migrations files from the library locations to dev land i.e. so config can lift the files (from the hard-coded "config" folder)
+
+Named renderers for the purpose of portable links that don't break in transit
+	- instead of checking for url combinations matching requestDetails, we check for name but while building the combination so that on hit, we simply extract the name
+Url map generation
+	- for each pattern, we treat it as if it's requestDetails (by setting it as requestDetails)
+	- if it's not the end of the thread (contains a _prefixFor), we create a sub to contain the patterns below it
 
 
 ##controllers and services
@@ -20,18 +23,44 @@ Bar:
 	- app level service entry into repositories
 	- orm in services
 
-*Extract rejection logic into a class and inject that into both service wrapper and executable classes. then implement an interface that informs these parents to run x whenever such interface is met [PrefersServices]
+*Extract rejection logic into a class and inject that into both service wrapper and executable (ServiceCoordinator) classes. then implement an interface that informs these parents to run x whenever such interface is met [PrefersServices]
 
 *Now, we wanna block user on middleware. So this should prolly be promoted to the container and connected in a way (ConcreteDecorator) that the attached handler (in this case, PrefersServices) runs even when hydrating a concrete
 
+*Emails should only go into Task classes, while HTTP only goes to controller (so, bar in other places)
+	- http library should support retries and possibly lazy load collections
 
-*Allow what's passed into controller get assigned. But it should be  a wrapped subset. on call, rejection happens if unsatisfactory
+
+*Allow what's passed into controller get assigned (rather enforcing a loadServices). But it should be a wrapped subset. on call, rejection happens if unsatisfactory
 Note: assign freely but constructor should be void of calculations
+
+class x implements y with methods `handler` (to be hydrated) and `blanket` (receives the arguments used to hydrate x). this guy doesn't return a concrete. the container only instantiates the concrete with the arguments returned from here
+
+they should receive an object that allows them wrap the arguments and does something to do the concrete after it loads (as should be the case with eloquent models? or should they all inherit a special class where that static property is already set)
+
+*Action models need a method for specifying what fields to select
+We also have ActionTransform->getDomainObject() for payloads not working with models
+
+*Any argument that doesn't match a payload parameter will be set to null or discarded
+
+Repository transaction method:
+	- Has to throw on error so dev can pick that up
+	- Should be able to be turned off on a per-method basis
+	- Should also lock i.e. lock for read, start transaction, update, close and release
+	- Since we're no more generating tests, TrapQueryParameters should return to the repository layer
 
 Pending:
 	- exception renderer
-		Merge in-module errors with the general one when request matches that module (pending approval)
-	- testing
+		- Merge in-module errors with the general one when request matches that module. First checks App->universalRenderers. When no overrides for current error is present, we check $activeModule->getHandlerFor(Error::class). That guy contains defaults that can be internally overidden
+
+		- The handler needs:
+			- the renderer
+			- data for the above (gotten at runtime)
+			- action that runs before rendering is done
+
+		- Then, execute beginRequest in a try catch that works with the handler list
+
+		- When this becomes the active handler, assign it to the relevant property on MHI so its ultimate response can be intercepted by the tester
 
 
 
@@ -39,30 +68,64 @@ Ensure the given type is an instance of current/active whenType. Check if any [g
 
 C:\wamp64\www\tilwa\nmeri\tilwa\vendor\bin>phpunit ../../tests/
 
-Revisit ModuleHandlerIdentifierTest (low-hanging fruit) after fleshing flows (some have been defined in their collection) and login tests
-
 **
 sqlite
 <server name="DB_CONNECTION" value="sqlite"/>
 <server name="DB_DATABASE" value=":memory:"/>
-class DB extends Illuminate\Database\Capsule\Manager {} in the global namespace fixed the problem.
-
-If the models don't work, it'll mean they're setting each model's connection at some point
 
 
 \PHPUnit\Framework\AssertionFailedError, Concerns\InteractsWithDatabase
-	- extend and override getConnection
+	- extend and override getConnection (see portion of this doc on how to boot models)
 
 	- Illuminate\Testing\TestResponse: overwrite these, then use the new trait/class in place of the above
 		- assertSee[x] (they need the `e` method)
 		- assertView[x] (needs to work with our view)
 		- assertSession[x]
 
-Complete the few methods left on FrontDoorTest
+Wrap:
+	- debug_backtrace
+	- Session so we can configure its duration (an adapter)
 
-Wrap debug_backtrace
+on the tearDown methods, you wanna:
+	- empty container
+	- $model->truncate()
+	- reset session
 
-hasFlowLeadingTo
+==when doesn't work==
+	- routing:
+		- check routeManager line 166
+			var_dump($pattern, $parsed, $renderer->getRouteMethod(), $this->routeCompare($parsed, $renderer->getRouteMethod()));
 
-When troubleshooting routing, check routeManager line 166
+			/*
+			string(10) "SEGMENT_id"
+			string(12) "/SEGMENT/id/"
+			string(3) "get"
+			bool(true)*/
+	- crud:
+		- index: use "_index" instead of leaving it blank
+		- line 102
+			- doesn't this return a regex that should be escaped/normalized? if that be the case, match incoming path against that pattern and return the result to this guy
+
+	- models:
+		- are they setting each model's connection at some point? if yes, we'd have to do this for all the models of this particular orm
+		- Think there's a static setConnection method
+
+		- DB facade: class DB extends Illuminate\Database\Capsule\Manager {} in the global namespace fixed the problem
+
+	- flows:
+		- finding in cache after job runs, consider delegating path fetching to outerFlowWrapper->dataPath (although there's a chance that prefix wasn't even added in the hydrator, see line 84)
+		- [OuterFlowWrapperTest->test_empties_cache_entry_after_returning], write a sub test that checks the cache directly to confirm it was removed
+
+
+*Implement exception renderer so that auth test can work
+
+test only and except from routeCollection
+
+
+3) Complete the few methods left on ModuleDescriptorTest
+	- ModuleLevelTest event section
+
+4) [AFTER YOU ARE DONE WITH THE OTHER TESTS] write tests for model level authorization, contracts\config
+
+Work on resetting the pattern indicator
 

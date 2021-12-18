@@ -3,23 +3,32 @@
 
 	use Illuminate\Testing\TestResponse;
 
-	use Tilwa\Testing\Condiments\DirectHttpTest;
+	use Tilwa\Testing\Proxies\Extensions\{FrontDoor, MiddlewareManipulator};
 
-	use Tilwa\Testing\Proxies\Extensions\FrontDoor;
+	use Tilwa\Testing\{Proxies\SecureUserAssertions, Condiments\DirectHttpTest};
 
 	use Tilwa\App\{Container, ModuleToRoute};
 
+	use Tilwa\Middleware\MiddlewareRegistry;
+
+	/**
+	 * Useful when running http tests that need to go through app entry point and get handled end-to-end
+	*/
 	trait FrontDoorTest {
 
-		use DirectHttpTest, ExaminesHttpResponse;
+		use DirectHttpTest, ExaminesHttpResponse, SecureUserAssertions;
 
 		const JSON_HEADER_VALUE = "application/json";
 
-		private $entrance, $staticHeaders = [],
+		private $entrance, $mockMiddlewareRegistry,
+
+		$staticHeaders = [],
 
 		$contentTypeKey = "Content-Type";
 
 		public function setUp () {
+
+			parent::setUp(); // calls the one on the inherited class of the test this is applied to
 
 			$this->entrance = new FrontDoor($this->getModules());
 		}
@@ -31,7 +40,7 @@
 
 	    public function withHeaders(array $headers):self {
 
-	    	$this->staticHeaders += $headers;
+	    	$this->staticHeaders = array_merge($this->staticHeaders, $headers);
 
 	    	return $this;
 	    }
@@ -43,39 +52,95 @@
 	    	return $this;
 	    }
 
-		private function getContainer ():Container {
+	    protected function firstModuleContainer ():Container {
 
-			return $this->entrance->firstContainer();
+	    	return $this->entrance->firstContainer();
+	    }
+
+		protected function getInitializerWrapper ():ModuleToRoute {
+
+			return $this->firstModuleContainer()->getClass(ModuleToRoute::class);
+		}
+
+		protected function getContainer ():Container {
+
+			return $this->activeModuleContainer();
+		}
+
+		/**
+		 * Assumes [gatewayResponse] has already been called
+		*/
+		protected function activeModuleContainer ():Container {
+
+			return $this->getInitializerWrapper()->getActiveModule()->getContainer();
 		}
 
 	    public function from(string $url):self {
 
 	    	$this->setHttpParams($url);
 
-	    	$initializer = $this->getContainer()->getClass(ModuleToRoute::class)
+	    	$initializer = $this->getInitializerWrapper()
 
 	    	->findContext($this->getModules());
 
-	    	$router = $initializer->getRouter();
+	    	$initializer->getRouter()
 
-	    	$renderer = $router->setPreviousRenderer($router->getActiveRenderer());
-
-	    	return $this;
-	    }
-
-	    public function withoutMiddleware($middleware = null):self {
+	    	->setPreviousRenderer($initializer->handlingRenderer());
 
 	    	return $this;
 	    }
 
-	    public function withMiddleware($middleware = null):self {
+	    /**
+	     * Assumes there's some behavior this middleware may have that we aren't comfortable triggering
+	     * 
+		 * @param {middleware} Middleware[]
+	    */
+	    public function withoutMiddleware(array $middlewares = []):self {
+
+	    	$this->setMiddlewareRegistry();
+
+	    	if (empty($middlewares))
+
+	    		$this->mockMiddlewareRegistry->disableAll();
+
+	    	else $this->mockMiddlewareRegistry->disable($middlewares);
 
 	    	return $this;
+	    }
+
+	    /**
+	     * Useful when we want to see the implication of using a particular middleware, in test
+	     * 
+		 * @param {middleware} Middleware[]
+	    */
+	    public function withMiddleware(array $middlewares):self {
+
+	    	$this->setMiddlewareRegistry();
+
+	    	$this->mockMiddlewareRegistry->addToActiveStack($middlewares);
+
+	    	return $this;
+	    }
+
+	    private function setMiddlewareRegistry ():void {
+
+	    	if (is_null($this->mockMiddlewareRegistry)) {
+
+	    		$this->mockMiddlewareRegistry = new MiddlewareManipulator;
+
+	    		$provision = [MiddlewareRegistry::class => $this->mockMiddlewareRegistry];
+
+	    		foreach ($this->getModules() as $descriptor)
+
+	    			$descriptor->getContainer()->whenTypeAny()
+
+	    			->needsAny($provision);
+	    	}
 	    }
 
 	    public function get(string $url, array $headers = []):TestResponse {
 
-	    	return $this->gatewayResponse($url, __METHOD__, null, $headers);
+	    	return $this->gatewayResponse($url, __FUNCTION__, null, $headers);
 	    }
 
 	    public function getJson(string $url, array $headers = []):TestResponse {

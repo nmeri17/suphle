@@ -1,18 +1,15 @@
 <?php
-
 	namespace Tilwa\Flows\Structures;
 
 	class RangeContext {
 
-		private $parameterMax = "max",
+		private $parameterMax, $parameterMin;
 
-		$parameterMin = "min";
+		public function __construct(?string $parameterMax = null, ?string $parameterMin = null) {
 
-		function __construct(string $parameterMax, string $parameterMin) {
+			$this->parameterMax = $parameterMax ?? "max";
 
-			$this->parameterMax = $parameterMax;
-
-			$this->parameterMin = $parameterMin;
+			$this->parameterMin = $parameterMin ?? "min";
 		}
 
 		public function getParameterMax():string {

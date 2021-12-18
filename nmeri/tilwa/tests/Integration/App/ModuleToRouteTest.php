@@ -1,19 +1,28 @@
 <?php
 	namespace Tilwa\Tests\Integration\App;
 
-	use Tilwa\{Testing\IsolatedComponentTest, App\ModuleToRoute};
+	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\DirectHttpTest};
+
+	use Tilwa\App\{ModuleToRoute, Container};
 
 	use Tilwa\Tests\Mocks\Modules\{ModuleTwo\ModuleTwoDescriptor, ModuleOne\ModuleOneDescriptor};
 
-	class ModuleToRouteTest extends IsolatedComponentTest {
+	class ModuleToRouteTest extends ModuleLevelTest {
+
+		use DirectHttpTest;
+
+		private function getModules ():array {
+
+			return [
+				new ModuleOneDescriptor(new Container),
+
+				new ModuleTwoDescriptor(new Container)
+			];
+		}
 		
 		public function test_findContext() {
 
-			$modules = [
-				ModuleOneDescriptor::class, ModuleTwoDescriptor::class
-			];
-
-			$sut = new ModuleToRoute($modules); // given
+			$$sut = new ModuleToRoute($this->getModules()); // given
 
 			$this->setHttpParams("/module-two/5"); // when
 
@@ -22,11 +31,7 @@
 		
 		public function test_none_will_be_found() {
 
-			$modules = [
-				ModuleOneDescriptor::class, ModuleTwoDescriptor::class
-			];
-
-			$sut = new ModuleToRoute($modules); // given
+			$sut = new ModuleToRoute($this->getModules()); // given
 
 			$this->setHttpParams("/non-existent/32"); // when
 

@@ -1,9 +1,9 @@
 <?php
 	namespace Tilwa\Tests\Unit\Controllers;
 
-	use Tilwa\Testing\BaseTest;
+	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
-	class ResponseManagerTest extends BaseTest {
+	class ResponseManagerTest extends IsolatedComponentTest {
 
 		// invoke [handleValidRequest]
 		public function test_sets_previous_renderer() {

@@ -58,82 +58,66 @@
 			 	yield $pattern;
 		}
 
-		/**
-		* to find from cache, we won't need:
-			- to parse our route before matching
-			- loadPatterns?
-		*/
 		private function recursiveSearch(string $patternsCollection, string $routeState = "", string $invokerPrefix = ""/*, bool $fromCache = false*/):?AbstractRenderer {
 
 			$collection = $this->container->getClass($patternsCollection);
 
 			$patternPrefix = $invokerPrefix ?? $collection->_prefixCurrent();
-
-			$collection->_setLocalPrefix($patternPrefix);
 			
 			foreach ($this->loadPatterns($collection) as $pattern) {
 
-				$collection->$pattern();
-
-				$rendererList = $collection->_getLastRegistered();
-
-				$computedPattern = $this->patternToUrlSegment($pattern, $collection, $patternPrefix);
+				$computedPattern = $this->patternToUrlSegment($pattern, $patternPrefix);
 
 				$fullRouteState = "$routeState/$computedPattern";
 
 				$parsed = $this->regexForm($fullRouteState);
 
-				if ($this->shouldDelve($collection, $parsed)) {
+				if (!$this->prefixMatch($parsed)) continue;
 
-					$this->patternIndicator->indicate($collection, $pattern);
+				call_user_func([$collection, $pattern]);
 
-					return $this->recursiveSearch($collection->_getPrefixCollection(), $fullRouteState, $computedPattern); /** we don't bother checking whether a route was found or not because if there was none after going downwards*, searching sideways* won't help either
+				$nested = $collection->_getPrefixCollection();
+
+				if (!is_null($nested)) {
+
+					$this->indicatorProxy($collection, $pattern);
+
+					return $this->recursiveSearch($nested, $fullRouteState, $computedPattern); /** we don't bother checking whether a route was found or not because if there was none after going downwards*, searching sideways* won't help either
 
 					 * downwards = deeper into a collection
 					 * sideways = other patterns on this same collection
 					*/
 				}
-				elseif (!empty($rendererList)) {
+				
+				foreach ($collection->_getLastRegistered() as $path => $renderer) { // we'll usually get one route here, except for CRUD invocations
 
-					foreach ($rendererList as $path => $renderer) { // we'll usually get one route here, except for CRUD invocations
+					$routeMethod = $renderer->getRouteMethod();
 
-						if ($collection->_expectsCrud())
+					if ($collection->_expectsCrud()) {
 
-							$parsed .= $this->regexForm($path); // doesn't this return a regex that should be escaped/normalized? if that be the case, match incoming path against that pattern and return the result to this guy
-// var_dump($pattern, $parsed, $renderer->getRouteMethod(), $this->routeCompare($parsed, $renderer->getRouteMethod()));
+						$collection->_setCrudPrefix($pattern);
 
-/*
-string(10) "SEGMENT_id"
-string(12) "/SEGMENT/id/"
-string(3) "get"
-bool(true)*/
-						if ($this->routeCompare($parsed, $renderer->getRouteMethod())) {
-
-							$this->patternIndicator->indicate($collection, $pattern);
-
-							if ($this->requestDetails->isApiRoute() && $collection->_isMirroring() && $renderer instanceof Markup)
-
-								$renderer->setWantsJson();
-							
-							return $this->bootRenderer($renderer, $collection->_handlingClass());
-						}
+						$isHit = $this->routeCompare($parsed . "/" . $this->regexForm($path), $routeMethod);
 					}
 
-					$collection->_doesntExpectCrud(); // for subsequent patterns
+					else $isHit = $this->routeCompare($parsed, $routeMethod);
+
+					if ($isHit) {
+
+						$this->onSearchHit($collection, $renderer, $pattern);
+
+						return $renderer;
+					}
 				}
 			}
-			return null;
 		}
 
 		/**
 			- pair empty incoming path with _index method
-			- crud methods disregard their method names
 		*/
-		private function patternToUrlSegment (string $pattern, RouteCollection $collection, string $prefix):string {
+		private function patternToUrlSegment (string $pattern, string $prefix):string {
 
-			if (($pattern == "_index") || $collection->_expectsCrud())
-
-				$segment = "";
+			if ($pattern == "_index") $segment = "";
 
 			else $segment = $pattern;
 
@@ -142,12 +126,35 @@ bool(true)*/
 			return $segment;
 		}
 
-		/** 
-		* Find out if we're on the right track i.e. if nested path = foo/bar/foobar, and nested method "bar" defines prefix, we only wanna explore its contents if requested route matches foo/bar
-		*/
-		private function shouldDelve (RouteCollection $collection, string $routeState):bool {
+		private function isMirroring ():bool {
 
-			return !is_null($collection->_getPrefixCollection()) && $this->prefixMatch($routeState);
+			return $this->requestDetails->isApiRoute() && $this->config->mirrorsCollections();
+		}
+
+		private function onSearchHit (RouteCollection $collection, AbstractRenderer $renderer, string $pattern):void {
+
+			$this->indicatorProxy($collection, $pattern);
+
+			if ($this->isMirroring() && $renderer instanceof Markup)
+
+				$renderer->setWantsJson();
+			
+			$this->bootRenderer($renderer, $collection->_handlingClass());
+		}
+
+		private function indicatorProxy (RouteCollection $collection, string $pattern):void {
+
+			if ( $this->isMirroring())
+
+				$this->patternIndicator->setDefaultAuthenticator(
+
+					$this->container->getClass(
+
+						$this->config->mirrorAuthenticator()
+					)
+				);
+
+			$this->patternIndicator->indicate($collection, $pattern);
 		}
 
 		public function routeCompare(string $path, string $rendererMethod):bool {
@@ -274,18 +281,28 @@ bool(true)*/
 		private function entryRouteMap():array {
 
 			$requestDetails = $this->requestDetails;
+
+			$config = $this->config;
+
+			$entryRoute = $config->browserEntryRoute();
 			
 			if ($requestDetails->isApiRoute()) {
 
 				$requestDetails->stripApiPrefix();
 
-				return $requestDetails->apiVersionClasses();
+				$apiStack = $requestDetails->apiVersionClasses();
+
+				if ($config->mirrorsCollections())
+
+					$apiStack = array_push($apiStack, $entryRoute); // push it to the bottom
+
+				return $apiStack;
 			}
 
-			return [$this->config->browserEntryRoute()];
+			return [$entryRoute];
 		}
 
-		private function bootRenderer(AbstractRenderer $renderer, string $controllingClass):AbstractRenderer {
+		private function bootRenderer(AbstractRenderer $renderer, string $controllingClass):void {
 
 			$rendererName = get_class($renderer);
 
@@ -293,7 +310,7 @@ bool(true)*/
 			
 			->getMethodParameters("setDependencies", $rendererName);
 
-			return $renderer->setDependencies(...array_values($parameters));
+			$renderer->setDependencies(...array_values($parameters));
 		}
 
 		private function provideRendererDependencies(string $renderer, string $controller):Container {

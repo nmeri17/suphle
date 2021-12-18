@@ -23,6 +23,11 @@
 			return $this->id;
 		}
 
+		public function setId ($id):void {
+
+			$this->id = $id;
+		}
+
 		public function getPassword () {
 
 			return $this->password;

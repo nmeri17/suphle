@@ -1,20 +1,35 @@
 <?php
 	namespace Tilwa\Middleware;
 
-	use Tilwa\Contracts\Middleware;
-
 	class PatternMiddleware {
 
 		private $middlewareList = [];
 
-		public function addMiddleware (Middleware $instance) {
+		/**
+		 * Defer their hydration since not all middleware are guaranteed to run on each request. We're using strings cuz we wanna control their hydration. We don't want to pollute the route collection with their possible dependencies
+		 * 
+		 * @param {name} Middleware class name
+		*/
+		public function addMiddleware (string $name) {
 
-			$this->middlewareList[] = $instance;
+			$this->middlewareList[] = $name;
 		}
 
 		public function getList ():array {
 
 			return $this->middlewareList;
+		}
+
+		/**
+		 * @param {toOmit} Middleware class name
+		*/
+		public function omitWherePresent (string $toOmit):void {
+
+			$index = array_search($toOmit, $this->middlewareList);
+
+			if ($index !== false)
+
+				unset($this->middlewareList[$index]);
 		}
 	}
 ?>

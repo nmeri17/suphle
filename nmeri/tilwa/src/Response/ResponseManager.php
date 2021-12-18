@@ -86,7 +86,7 @@
 
 		private function validateManager():void {
 
-			$globalDependencies = $this->container->getClass(ModuleDescriptor::class)->getDependsOn();
+			$globalDependencies = $this->container->getClass(ModuleDescriptor::class)->getExpatriates();
 
 			$this->controllerManager->validateController($globalDependencies);
 		}

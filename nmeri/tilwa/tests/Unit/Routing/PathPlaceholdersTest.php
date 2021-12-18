@@ -1,11 +1,11 @@
 <?php
 	namespace Tilwa\Tests\Unit\Routing;
 
-	use Tilwa\Testing\BaseTest;
+	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
 	use Tilwa\Routing\PathPlaceholders;
 
-	class PathPlaceholdersTest extends BaseTest {
+	class PathPlaceholdersTest extends IsolatedComponentTest {
 
 		/**
 	     * @dataProvider pathsAndPatterns

@@ -7,11 +7,9 @@
 
 	abstract class BaseAuthRepo implements LoginActions {
 
-		protected $comparer, $authStorage;
+		protected $comparer;
 
 		public function compareCredentials ():bool {
-
-			$this->comparer->setAuthMechanism($this->authStorage);
 
 			return $this->comparer->compare();
 		}

@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Integration\Events;
 
-	use Tilwa\Testing\ModuleLevelTest;
+	use Tilwa\Testing\TestTypes\ModuleLevelTest;
 
 	use Tilwa\Tests\Mocks\Interactions\ModuleOne\ModuleOneDescriptor;
 

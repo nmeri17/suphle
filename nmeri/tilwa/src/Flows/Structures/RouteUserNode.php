@@ -1,5 +1,4 @@
 <?php
-
 	namespace Tilwa\Flows\Structures;
 
 	use Tilwa\Response\Format\AbstractRenderer;
@@ -8,23 +7,31 @@
 
 	use DateInterval;
 
-	// this is the smallest unit where the ultimate user related cached information is stored
+	/**
+	 *  This is the smallest unit where the ultimate user related cached information is stored
+	*/
 	class RouteUserNode {
 
-		private $renderer, $hits, $maxHitsHydrator,
+		private $renderer, $hits = 0,
 
-		$expiresAtHydrator;
+		$maxHitsHydrator = function() {
+
+			return 1;
+		},
+
+		$expiresAtHydrator = function () {
+
+			return (new DateTime)->add(new DateInterval("PT10M")); // store for 10 minutes
+		};
 		
-		function __construct(AbstractRenderer $renderer) {
+		public function __construct(AbstractRenderer $renderer) {
 
 			$this->renderer = $renderer;
-
-			$this->setDefaultHydrators();
 		}
 
 		public function currentHits():int {
 
-			return $hits;
+			return $this->hits;
 		}
 
 		public function getMaxHits(string $userId, string $pattern):int {
@@ -42,6 +49,9 @@
 			return $this->expiresAtHydrator($userId, $pattern);
 		}
 
+		/**
+		 * @param {callback} => Function (string $userId, string $pattern):DateTime
+		*/
 		public function setExpiresAtHydrator(callable $callback):self {
 			
 			$this->expiresAtHydrator = $callback;
@@ -49,6 +59,9 @@
 			return $this;
 		}
 
+		/**
+		 * @param {callback} => Function (string $userId, string $pattern):int
+		*/
 		public function setMaxHitsHydrator(callable $callback):self {
 			
 			$this->maxHitsHydrator = $callback;
@@ -59,21 +72,6 @@
 		public function getRenderer():AbstractRenderer {
 			
 			return $this->renderer;
-		}
-
-		private function setDefaultHydrators():void {
-			
-			$this->expiresAtHydrator = function () {
-
-				return (new DateTime)
-
-				->add(new DateInterval("PT1M")); // store for a minute
-			};
-			
-			$this->maxHitsHydrator = function() {
-
-				return 1;
-			};
 		}
 	}
 ?>

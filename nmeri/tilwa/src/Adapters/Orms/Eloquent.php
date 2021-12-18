@@ -42,11 +42,6 @@
 			//
 		}
 
-		public function getPaginationPath():string {
-
-			return "next_page_url";
-		}
-
 		public function runTransaction(callable $queries):void {
 
 			//

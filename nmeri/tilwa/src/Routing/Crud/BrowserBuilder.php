@@ -11,7 +11,7 @@
 
 		protected $allowedActions = ["showCreateForm", "saveNew", "showAll", "showOne", "updateOne", "delete", "showSearchForm"];
 		
-		public function __construct(RouteCollection $collection, string $viewPath, ?string $viewModelPath) {
+		public function __construct(RouteCollection $collection, string $viewPath, string $viewModelPath = null) {
 
 			$this->collection = $collection;
 
@@ -30,13 +30,13 @@
 		*/
 		protected function saveNew():array {
 
-			$prefix = $this->collection->_getLocalPrefix();
+			$collection = $this->collection;
 
 			$handler = __FUNCTION__;
 
-			return $this->callParentWith($handler, new Redirect($handler, function () use ($prefix) {
+			return $this->callParentWith($handler, new Redirect($handler, function () use ($collection) {
 
-				return $prefix . "/" . $this->rawResponse["resource"]->id; // assumes the controller returns an array containing this key
+				return $collection->_getCrudPrefix() . "/" . $this->rawResponse["resource"]->id; // assumes the controller returns an array containing this key
 			}));
 		}
 
@@ -59,13 +59,13 @@
 
 		protected function deleteOne():array {
 
-			$prefix = $this->collection->_getLocalPrefix();
+			$collection = $this->collection;
 
 			$handler = __FUNCTION__;
 
-			return $this->callParentWith($handler, new Redirect($handler, function () use ($prefix) {
+			return $this->callParentWith($handler, new Redirect($handler, function () use ($collection) {
 				
-				return $prefix . "/";
+				return $collection->_getCrudPrefix() . "/";
 			}));
 		}
 
@@ -79,7 +79,7 @@
 
 		private function callParentWith (string $handler, AbstractRenderer $renderer):array {
 
-			$this->rendererMap[$handler] = new Json($handler);
+			$this->rendererMap[$handler] = $renderer;
 
 			return parent::$handler();
 		}

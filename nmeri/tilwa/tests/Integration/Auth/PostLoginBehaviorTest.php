@@ -18,7 +18,7 @@
 			return User::class;
 		}
 
-		public function test_session_loginAs () {
+		public function test_session_impersonate () {
 
 			[$user1, $user2] = $this->getRandomEntities(2);
 
@@ -26,7 +26,7 @@
 
 			$sut = $this->container->getClass(SessionStorage::class);
 
-			$sut->loginAs($user2->getId()); // when
+			$sut->impersonate($user2->getId()); // when
 
 			$this->assertAuthenticatedAs($user2); // then
 

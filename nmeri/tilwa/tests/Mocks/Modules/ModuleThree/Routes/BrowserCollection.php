@@ -3,7 +3,7 @@
 
 	use Tilwa\Routing\BaseCollection;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleTwo\Controllers\BaseController;
+	use Tilwa\Tests\Mocks\Modules\ModuleThree\Controllers\BaseController;
 
 	use Tilwa\Response\Format\Json;
 

@@ -25,9 +25,9 @@
 
 			$renderer = $this->router->getPreviousRenderer();
 
-			// avoid overwriting our own response
-			$this->rawResponse += $renderer->getRawResponse();
-			// assumes that response is either a string or array
+			// keys clashes between current and previous should prioritise contents of the current response
+			// assumes that response is an array
+			$this->rawResponse = array_merge($renderer->getRawResponse(), $this->rawResponse);
 			
 			return $this->renderHtml($renderer->getViewName(), $renderer->getViewModelName(), $this->rawResponse);
 		}

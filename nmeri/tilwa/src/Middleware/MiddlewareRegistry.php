@@ -3,9 +3,11 @@
 
 	class MiddlewareRegistry {
 
-		private $registry = [], $activeStack = [],
+		private $registry = [], // [patternName => PatternMiddleware]
 
 		$excludePatterns = [];
+
+		protected $activeStack = []; // same as [registry]
 
 		public function tagPatterns (array $patterns, array $middlewares):self {
 
@@ -25,11 +27,14 @@
 			return $this;
 		}
 
+		/**
+		 * Used to update the stack of the given pattern; ostensibly, there's been some changes to the registry (most likely during route finding) since its initialization
+		*/
 		public function updateStack (string $pattern):void {
 
 			$this->filterParents();
 
-			$this->pushToStack($pattern);
+			$this->overwriteInActiveStack($pattern);
 		}
 
 		private function filterParents ():void {
@@ -41,26 +46,34 @@
 				unset($this->activeStack[$parent]);
 		}
 
-		// if current path was recently registered, update the stack
-		private function pushToStack (string $pattern):void {
+		private function overwriteInActiveStack (string $pattern):void {
 
-			if (array_key_exists($pattern, $this->registry))
+			if (array_key_exists($pattern, $this->registry)) // we're making sure this isn't just any pattern, but one that has been tagged previously
 
 				$this->activeStack[$pattern] = $this->registry[$pattern];
 		}
 
-		// these will ultimately be detached from whatever route is active
+		/**
+		 * These will ultimately be detached from whatever route is active
+		 * 
+		 * @param {parent} A pattern that has previously been tagged/assigned middlewares while descending the route collections to the point where this is called
+		 * 
+		 * @param {patterns} If any of these turns out to be the active pattern, [parent]'s middlewares will be detached
+		*/
 		public function removeTag (array $patterns, string $parent):self {
 
 			if (!array_key_exists($parent, $this->excludePatterns))
 
 				$this->excludePatterns[$parent] = [];
 
-			$this->excludePatterns[$parent] += $patterns;
+			$this->excludePatterns[$parent] = array_merge($this->excludePatterns[$parent], $patterns);
 
 			return $this;
 		}
 
+		/**
+		 * @return PatternMiddleware[]
+		*/
 		public function getActiveStack ():array {
 
 			return $this->activeStack;

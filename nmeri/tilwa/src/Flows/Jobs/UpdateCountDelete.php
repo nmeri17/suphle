@@ -1,5 +1,4 @@
 <?php
-
 	namespace Tilwa\Flows\Jobs;
 
 	use Tilwa\Flows\Structures\AccessContext;
@@ -11,14 +10,16 @@
 	*/
 	class UpdateCountDelete {
 
-		private $accessedContext;
+		private $accessedContext, $cacheManager;
 
-		public function __construct (AccessContext $theAccessed) {
+		public function __construct (AccessContext $theAccessed, CacheManager $cacheManager) {
 
 			$this->accessedContext = $theAccessed;
+
+			$this->cacheManager = $cacheManager;
 		}
 
-		public function handle(CacheManager $cacheManager) {
+		public function handle() {
 
 			$accessed = $this->accessedContext;
 

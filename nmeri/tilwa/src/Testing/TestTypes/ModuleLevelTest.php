@@ -1,12 +1,15 @@
 <?php
 	namespace Tilwa\Testing\TestTypes;
 
-	use Tilwa\App\ModulesBooter;
+	use Tilwa\App\{ModulesBooter, ModuleDescriptor, Container};
 
 	use Tilwa\Events\ExecutionUnit;
 
-	use PHPUnit\Framework\TestCase;
+	use PHPUnit\Framework\{TestCase, AssertionFailedError};
 
+	/**
+	 * Used for testing components on a modular scale but that don't necessarily require interaction with the HTTP passage
+	*/
 	abstract class ModuleLevelTest extends TestCase {
 
 		private $eventManager;
@@ -34,15 +37,16 @@
 					return $descriptor->exports();
 		}
 
+		// spies may equally be good here but this has the advantage of not running the listener, I think
 		protected function assertFiredEvent ($emitter, string $eventName):void {
 
 			$subscription = $this->findInBlanks($emitter);
 
 			if (is_null($subscription))
 
-				throw new Exception("Event not fired");
+				throw new AssertionFailedError("Event not fired");
 			
-			assert(!empty($subscription->getMatchingUnits($eventName)));
+			$this->assertNotEmpty($subscription->getMatchingUnits($eventName));
 		}
 
 		private function findInBlanks ($sender):?EventSubscription {
@@ -57,6 +61,18 @@
 		public function catchEmittingEvents ():void {
 
 			$this->eventManager->makeFireSoft();
+		}
+
+		/**
+		 * A blank container is given to the new module, with the assumption that we possibly wanna overwrite even the default objects (aside from only injecting absent configs)
+		*/
+		protected function replicateModule(string $descriptor, callable $customizer):ModuleDescriptor {
+
+			$writer = new WriteOnlyContainer; // using unique instances rather than a fixed one so test can make multiple calls to clone modules
+
+			$customizer($writer);
+
+			return new $descriptor($writer->getContainer());
 		}
 	}
 ?>

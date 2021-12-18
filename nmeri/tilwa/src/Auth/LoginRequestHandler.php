@@ -29,7 +29,7 @@
 			$this->loginService = $this->rendererCollection->getLoginService();
 		}
 
-		public function isValidatedRequest ():bool {
+		public function isValidRequest ():bool {
 
 			$this->validatorManager->setActionRules($this->getLoginRules());
 	

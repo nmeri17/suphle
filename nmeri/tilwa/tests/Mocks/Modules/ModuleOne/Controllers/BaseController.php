@@ -5,6 +5,11 @@
 
 	class BaseController extends Executable {
 
+		public function indexHandler () {
+
+			//
+		}
+
 		public function plainSegment () {
 
 			//

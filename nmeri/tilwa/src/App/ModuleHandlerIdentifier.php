@@ -44,7 +44,7 @@
 		/**
 		 * Each of the request handlers should update this class with the underlying renderer they're pulling a response from
 		*/
-		private function beginRequest():string {
+		protected function beginRequest ():string {
 
 			$modules = $this->getModules();
 
@@ -61,7 +61,7 @@
 			return $this->handleGenericRequest($modules);
 		}
 
-		private function handleGenericRequest (array $modules):string {
+		protected function handleGenericRequest (array $modules):string {
 
 			$initializer = $this->container->getClass(ModuleToRoute::class) // pulling from a container so tests can replace properties on the singleton
 
@@ -77,7 +77,7 @@
 			throw new NotFoundException;
 		}
 
-		private function flowRequestHandler(OuterFlowWrapper $wrapper):string {
+		protected function flowRequestHandler(OuterFlowWrapper $wrapper):string {
 
 			$this->identifiedHandler = $wrapper;
 
@@ -132,9 +132,9 @@
 			return $this->authConfig->getPathRenderer($this->requestDetails->getPath());
 		}
 
-		private function handleLoginRequest (string $collectionName):string {
+		protected function handleLoginRequest (string $collectionName):string {
 
-			$handler = $this->getLoginHandler();
+			$handler = $this->getLoginHandler($collectionName);
 
 			$handler->setAuthService();
 
@@ -147,7 +147,7 @@
 			return $handler->getResponse();
 		}
 
-		private function getLoginHandler ():LoginRequestHandler {
+		protected function getLoginHandler (string $collectionName):LoginRequestHandler {
 
 			$container = $this->container;
 
