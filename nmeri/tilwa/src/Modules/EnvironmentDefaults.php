@@ -1,6 +1,5 @@
 <?php
-
-	namespace Tilwa\App;
+	namespace Tilwa\Modules;
 
 	class EnvironmentDefaults {
 

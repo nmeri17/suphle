@@ -1,15 +1,15 @@
 <?php
-	namespace Tilwa\App;
+	namespace Tilwa\Hydration;
 
 	use ReflectionMethod, ReflectionClass, ReflectionFunction, ReflectionType, ReflectionFunctionAbstract, Exception;
 	
-	use Tilwa\App\Structures\{ProvisionUnit, NamespaceUnit};
+	use Tilwa\Hydration\Structures\{ProvisionUnit, NamespaceUnit};
 	
-	use Tilwa\App\Templates\CircularBreaker;
-
-	use Tilwa\Contracts\Config\{ConfigMarker, Laravel as LaravelConfig, Services as ServicesConfig};
+	use Tilwa\Hydration\Templates\CircularBreaker;
 
 	use Tilwa\Bridge\Laravel\LaravelProviderManager;
+
+	use Tilwa\Errors\InvalidImplementor;
 
 	class Container {
 
@@ -19,15 +19,13 @@
 
 		$dependencyChain = [],
 
-		$libraryConfigs = [],
-
 		$universalSelector = "*",
 
-		$laravelConfig, $servicesConfig,
+		$laravelHydrator, $interfaceHydrator,
 
 		$provisionContext, // the active Type before calling `needs`
 
-		$provisionSpace,
+		$provisionSpace, // same as above, but for namespaces
 
 		$recursingFor; // string of the active ProvisionUnit
 
@@ -36,11 +34,11 @@
 			$this->provisionedClasses[$this->universalSelector] = new ProvisionUnit;
 		}
 
-		public function setConfigs (array $configs):self {
+		public function setInterfaceHydrator (string $collection):void {
 
-			$this->libraryConfigs = $configs;
+			$concrete = $this->instantiateConcrete($collection);
 
-			return $this;
+			$this->interfaceHydrator = new InterfaceHydrator($concrete, $this);
 		}
 
 		/**
@@ -67,14 +65,9 @@
 
 			$this->setRecursingFor($fullName);
 
-			$config = $this->getServicesConfig();
+			$concrete = $this->loadLaravelLibrary($fullName);
 
-			if (!is_null($config) && $config->usesLaravelPackages() && $this->laravelHas($fullName)) {
-
-				$concrete = $this->loadLaravelLibrary($fullName);
-			}
-
-			else {
+			if (is_null($concrete)) {
 
 				$reflectedClass = new ReflectionClass($fullName);
 
@@ -116,24 +109,28 @@
 			else $this->recursingFor = $fullName; // e.g if we are hydrating dependency B of class A, we want to get provisions for B, not A, the last called
 		}
 
-		private function loadLaravelLibrary(string $fullName ):object {
+		private function loadLaravelLibrary( string $fullName ) {
 
-			$providers = $this->getLaravelConfig()->getProviders();
+			$hydrator = $this->getLaravelHydrator();
 
-			$laravelApp = $this->getClass(LaravelApp::class);
+			if (!$hydrator->canProvide($fullName))
 
-			$provider = new $providers[$fullName]($laravelApp);
+				return null;
 
-			$instance = (new LaravelProviderManager($provider, $laravelApp, $this))
+			$concrete = $hydrator->manageService($fullName);
 
-			->prepare()->getConcrete();
+			$this->saveWhenImplements($fullName, $concrete);
 
-			if ($fullName == get_class($instance)) {
+			return $concrete;
+		}
 
-				$this->storeConcrete( $fullName, $instance);
+		private function saveWhenImplements (string $interface, $concrete):void {
 
-				return $instance;
-			}
+			if (!($concrete instanceof $interface))
+
+				throw new InvalidImplementor($interface, get_class($concrete));
+
+			$this->storeConcrete( $interface, $concrete);
 		}
 
 		private function hydrateChildsParent(string $fullName):?object {
@@ -145,7 +142,7 @@
 			return $this->getClass($providedParent);
 		}
 
-		private function instantiateConcrete (string $fullName):object { // casting to [object] may be problematic to the caller
+		public function instantiateConcrete (string $fullName) {
 
 			$constructor = "__construct";
 
@@ -204,55 +201,24 @@
 		}
 
 		/**
-		 * @return Object
+		 * @return Concrete of the given [Interface] if it has been provided
 		 * */
-		private function provideInterface(string $service) {
+		private function provideInterface(string $interface) {
 
 			if ($this->isRenamedSpace()) {
 
-				$newIdentity = $this->relocateSpace($service);
+				$newIdentity = $this->relocateSpace($interface);
 
 				return $this->instantiateConcrete($newIdentity);
 			}
 
-			if ($this->isConfig($service))
+			$concrete = $this->interfaceHydrator->deriveConcrete($interface);
 
-				return $this->hydrateConfig($service);
+			if (is_null($concrete)) return;
 
-			return $this->getClassFromLoader($service);
-		}
+			$this->saveWhenImplements($fullName, $concrete);
 
-		private function getClassFromLoader (string $service) {
-
-			$config = $this->getServicesConfig();
-
-			if (is_null($config)) return;
-
-			$providers = $config->getLoaders();
-
-			if (!array_key_exists($service, $providers)) return;
-
-			$providerClass = $providers[$service];
-
-			$provider = $this->instantiateConcrete($providerClass);
-
-			$providerParameters = $provider->bindArguments();
-
-			$concrete = $provider->concrete();
-
-			$this->whenType($concrete) // merge any custom args with defaults
-
-			->needsArguments($providerParameters);
-				
-			$reflectedClass = $this->getClass($concrete);
-
-			$provider->afterBind($reflectedClass);
-
-			$this->storeConcrete ($service, $reflectedClass);
-
-			if ($reflectedClass instanceof $service)
-
-				return $reflectedClass;
+			return $concrete;
 		}
 
 		public function whenType (string $toProvision):self {
@@ -506,52 +472,18 @@
 			});
 		}
 
-		private function isConfig(string $service):bool {
-			
-			return in_array(ConfigMarker::class, class_implements($service));
-		}
+		private function getLaravelHydrator ():LaravelService {
 
-		// this just seems to be a shortcut to the [needs] group of methods, but doesn't want to muddle config provisioning with every other class type
-		private function hydrateConfig(string $fullName):?ConfigMarker {
+			if (is_null($this->laravelHydrator))
 
-			$configs = $this->libraryConfigs;
+				$this->laravelHydrator = $this->instantiateConcrete(LaravelService::class);
 
-			if (!array_key_exists($fullName, $configs)) return null;
-				
-			return $this->instantiateConcrete($configs[$fullName]); // classes can't have custom config
-		}
-
-		// using this to subvert the arduous process of class hydration
-		private function getLaravelConfig():?LaravelConfig {
-
-			if (is_null($this->laravelConfig))
-
-				$this->laravelConfig = $this->hydrateConfig(LaravelConfig::class);
-
-			return $this->laravelConfig;
-		}
-
-		private function getServicesConfig():?ServicesConfig {
-
-			if (is_null($this->servicesConfig))
-
-				$this->servicesConfig = $this->hydrateConfig(ServicesConfig::class);
-
-			return $this->servicesConfig;
+			return $this->laravelHydrator;
 		}
 
 		private function unsetRecursingFor ():void {
 
 			$this->recursingFor = null; // ahead of future invocations by other callers to modular Container
-		}
-
-		private function laravelHas (string $fullName):bool {
-
-			$config = $this->getLaravelConfig();
-
-			if (is_null($config)) return false;
-
-			return array_key_exists( $fullName, $config->getProviders() );
 		}
 
 		private function notRecursing ():bool {

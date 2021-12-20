@@ -3,7 +3,7 @@
 
 	use Exception;
 
-	class InvalidModuleImport extends Exception {
+	class InvalidImplementor extends Exception {
 
 		private $interface, $concrete;
 

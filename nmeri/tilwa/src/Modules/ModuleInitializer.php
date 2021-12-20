@@ -1,6 +1,5 @@
 <?php
-
-	namespace Tilwa\App;
+	namespace Tilwa\Modules;
 
 	use Tilwa\Response\{ResponseManager, Format\AbstractRenderer};
 
@@ -68,26 +67,24 @@
 			->runStack();
 		}
 
-		public function getRouter():RouteManager {
+		public function getRouter ():RouteManager {
 			
 			return $this->router;
 		}
 
-		public function getResponseManager():ResponseManager {
+		public function getResponseManager ():ResponseManager {
 			
 			return $this->responseManager;
 		}
 
-		public function initialize():self {
-
-			$this->container->provideSelf();
+		public function initialize ():self {
 
 			$this->router = $this->container->getClass (RouteManager::class);
 
 			return $this;
 		}
 
-		private function bindContextualGlobals():void {
+		private function bindContextualGlobals ():void {
 
 			$this->container->whenTypeAny()
 

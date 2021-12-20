@@ -1,6 +1,5 @@
 <?php
-
-	namespace Tilwa\App\Structures;
+	namespace Tilwa\Hydration\Structures;
 
 	/**
 	*	Blueprint for each provided entity

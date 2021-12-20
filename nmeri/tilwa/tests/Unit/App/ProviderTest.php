@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Unit\App;
 
-	use Tilwa\Testing\IsolatedComponentTest;
+	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
 	use Tilwa\Contracts\HtmlParser;
 

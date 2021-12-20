@@ -1,6 +1,5 @@
 <?php
-
-	namespace Tilwa\App;
+	namespace Tilwa\Modules;
 
 	/**
 	 * Manager/wrapper around [ModuleInitializer]

@@ -3,7 +3,7 @@
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\CConcrete;
 
-	use Tilwa\App\BaseInterfaceLoader;
+	use Tilwa\Hydration\BaseInterfaceLoader;
 
 	class CProvider extends BaseInterfaceLoader {
 

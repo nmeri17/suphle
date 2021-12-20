@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\App;
+	namespace Tilwa\Modules;
 
 	use Tilwa\Events\ModuleLevelEvents;
 
@@ -20,7 +20,7 @@
 
 			foreach ($this->modules as $descriptor)
 
-				$descriptor->absorbConfigs(); // We're setting these to be able to attach events soon after
+				$descriptor->warmUp(); // We're setting these to be able to attach events soon after
 
 			$this->eventManager->bootReactiveLogger();
 		}

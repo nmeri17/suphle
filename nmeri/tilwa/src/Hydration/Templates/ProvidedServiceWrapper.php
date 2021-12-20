@@ -1,6 +1,5 @@
 <?php
-
-	namespace Tilwa\Bridge\Laravel;
+	namespace Tilwa\Hydration\Templates;
 
 	class ProvidedServiceWrapper extends <target> {
 

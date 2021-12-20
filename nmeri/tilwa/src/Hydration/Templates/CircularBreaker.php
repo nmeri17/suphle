@@ -1,6 +1,5 @@
 <?php
-
-	namespace Tilwa\App\Templates;
+	namespace Tilwa\Hydration\Templates;
 
 	class CircularBreaker extends <target> {
 

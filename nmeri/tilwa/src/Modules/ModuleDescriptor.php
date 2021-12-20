@@ -1,17 +1,13 @@
 <?php
-	namespace Tilwa\App;
+	namespace Tilwa\Modules;
 
-	use Tilwa\Contracts\Config\{Auth as IAuth, Services as IServices, Transphporm as ITransphporm, Laravel as ILaravel, Orm as IOrm};
+	use Tilwa\Contracts\{Hydration\InterfaceCollection, App\BlankModule};
 
-	use Tilwa\Config\{Auth, Services, Transphporm, Laravel, Orm};
+	use Tilwa\Hydration\{Container, BaseInterfaceCollection};
 
-	use Tilwa\Contracts\Auth\UserHydrator as HydratorContract;
+	use Tilwa\Errors\UnexpectedModules;
 
-	use Tilwa\Auth\Models\Eloquent\UserHydrator;
-
-	use Tilwa\Errors\{InvalidModuleImport, UnexpectedModules};
-
-	abstract class ModuleDescriptor {
+	class ModuleDescriptor {
 
 		protected $container;
 
@@ -35,20 +31,26 @@
 			return $this->expatriates;
 		}
 
+		/**
+		 * @return Interfaces implemented by sibling modules that this module requires to function
+		*/
 		public function expatriateNames():array {
 
 			return [];
 		}
 
-		/**
-		 * @return concrete implementing `exportsImplements`
-		*/
-		abstract public function exports():object;
+		public function materialize () {
+
+			return $this->container->getClass($this->exportsImplements());
+		}
 
 		/**
-		 * Interface from Interactions namespace which will be consumers API with this module
+		 * Interface which will be consumers' API on this module
 		*/
-		abstract public function exportsImplements():string;
+		public function exportsImplements():string {
+
+			return BlankModule::class;
+		}
 
 		/**
 		 * Arguments will be auto-wired
@@ -63,33 +65,27 @@
 			return $this->container;
 		}
 
-		protected function getConfigs():array {
-			
-			return [
+		/**
+		 * @return Class implementing InterfaceCollection
+		*/
+		public function interfaceCollection ():string {
 
-				ILaravel::class => Laravel::class,
-
-				IServices::class => Services::class,
-
-				IAuth::class => Auth::class,
-
-				ITransphporm::class => Transphporm::class,
-
-				HydratorContract::class => UserHydrator::class
-			];
+			return BaseInterfaceCollection::class;
 		}
 
-		public function absorbConfigs ():void {
+		public function warmUp ():void {
 
-			$this->container->setConfigs($this->getConfigs())
+			$this->container->provideSelf();
+
+			$this->container->setInterfaceHydrator($this->interfaceCollection());
 		}
 
-		// this should be on its own class, but that'll make all the loaded descriptors create new instances of that ExpatriateManager
+		// this should be on an [ExpatriateManager], but that'll make all the loaded descriptors create new instances of that class
 		protected function validateExpatriates ():self {
 
 			$this->deportUnexpected();
 
-			$this->container->whenTypeAny()->needsAny($this->getModuleShells());
+			$this->assignModuleShells();
 
 			return $this;
 		}
@@ -120,26 +116,11 @@
 				throw new UnexpectedModules($incompatible, get_class($this));
 		}
 
-		private function getModuleShells ():array {
+		private function assignModuleShells ():void {
 
-			$shells = [];
+			$collection = $this->container->getClass($this->interfaceCollection());
 
-			foreach ($dependencies as $contract => $concrete) {
-
-				$service = $concrete->exports();
-
-				$compatible = $contract == $concrete->exportsImplements();
-
-				$correctExport = $service instanceof $contract;
-				
-				if (!($compatible && $correctExport))
-
-					throw new InvalidModuleImport($contract);
-
-				$shells[$contract] = $service;
-			}
-
-			return $shells;
+			$collection->delegateHydrants ($this->expatriates);
 		}
 
 		/**

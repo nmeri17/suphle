@@ -1,5 +1,4 @@
 <?php
-
 	namespace Tilwa\Contracts\Config;
 
 	interface Laravel extends ConfigMarker {
@@ -11,5 +10,7 @@
 		public function getProviders ():array;
 
 		public function hasRoutes():bool;
+
+		public function usesPackages ():bool;
 	}
 ?>

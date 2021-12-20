@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\App;
+	namespace Tilwa\Modules;
 
 	use Tilwa\Flows\OuterFlowWrapper;
 

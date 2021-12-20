@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Queues;
 
-	use Tilwa\App\ModuleDescriptor;
+	use Tilwa\Modules\ModuleDescriptor;
 
 	class GenericTaskProcessor {
 
@@ -16,9 +16,7 @@
 
 		public function bootModule ():self {
 
-			$this->descriptor->absorbConfigs();
-
-			$this->container->provideSelf();
+			$this->descriptor->warmUp();
 
 			$this->descriptor->prepareToRun();
 

@@ -62,6 +62,8 @@ Pending:
 
 		- When this becomes the active handler, assign it to the relevant property on MHI so its ultimate response can be intercepted by the tester
 
+		- any errors without a handler (renderer etc) should be handled by a default handler that extracts the message and flushes
+
 
 
 Ensure the given type is an instance of current/active whenType. Check if any [getClass] caller uses the second argument
@@ -125,7 +127,7 @@ test only and except from routeCollection
 3) Complete the few methods left on ModuleDescriptorTest
 	- ModuleLevelTest event section
 
-4) [AFTER YOU ARE DONE WITH THE OTHER TESTS] write tests for model level authorization, contracts\config
+4) [AFTER YOU ARE DONE WITH THE OTHER TESTS] write tests for model level authorization, contracts\config, loading laravel libraries
 
-Work on resetting the pattern indicator
+Work on PatternIndicator->resetIndications
 

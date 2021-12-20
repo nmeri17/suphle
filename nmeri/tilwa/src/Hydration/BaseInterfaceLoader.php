@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\App;
+	namespace Tilwa\Hydration;
 
 	abstract class BaseInterfaceLoader {
 

@@ -48,6 +48,8 @@
 
 					return;
 				}
+
+				$this->patternIndicator->resetIndications();
 			}
 		}
 

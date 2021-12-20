@@ -1,34 +1,52 @@
 <?php
-	namespace Tilwa\Bridge\Laravel;
+	namespace Tilwa\Hydration;
 
-	use Tilwa\Contracts\LaravelApp;
+	use Tilwa\Hydration\Templates\ProvidedServiceWrapper;
 
-	use Tilwa\App\Container;
+	use Tilwa\Contracts\{LaravelApp, Config\Laravel as LaravelConfig};
 
 	use ReflectionClass;
 
-	use Illuminate\Support\ServiceProvider;
-
-	use Illuminate\Foundation\Application;
+	use Illuminate\{Support\ServiceProvider, Foundation\Application};
 
 	class LaravelProviderManager {
 
 		private $provider, $concrete, $laravelContainer,
 
-		$tilwaContainer;
+		$config, $tilwaContainer;
 
-		function __construct (ServiceProvider $provider, LaravelApp $laravelContainer, Container $tilwaContainer) {
-
-			$this->provider = $provider;
+		public function __construct ( LaravelApp $laravelContainer, LaravelConfig $config, Container $tilwaContainer) {
 
 			$this->laravelContainer = $laravelContainer;
 
 			$this->tilwaContainer = $tilwaContainer;
+
+			$this->config = $config;
 		}
 
-		public function getConcrete():object {
+		public function setActiveProvider (string $provider):void {
 
-			return $this->wrapConcrete();
+			$this->provider = new $provider($this->laravelContainer);
+		}
+
+		public function canProvide (string $fullName):bool {
+
+			$config = $this->config;
+
+			return $config->usesPackages() && array_key_exists( $fullName, $config->getProviders() );
+		}
+
+		public function manageService (string $fullName):ProvidedServiceWrapper {
+
+			$providerName = $this->config->getProviders()[$fullName];
+
+			$this->setActiveProvider($providerName);
+
+			return $this->extractConcrete()
+
+			->mirrorBehavior()
+
+			->wrapConcrete();
 		}
 
 		private function mirrorBehavior ():self {
@@ -58,11 +76,6 @@
 			$this->concrete = $newBindings[current($latestKey)]["concrete"]();
 
 			return $this;
-		}
-
-		public function prepare ():self {
-
-			return $this->extractConcrete()->mirrorBehavior();
 		}
 
 		// use a known class within that namespace to pull the file's directory

@@ -1,6 +1,5 @@
 <?php
-
-	namespace Tilwa\App\Structures;
+	namespace Tilwa\Hydration\Structures;
 
 	class NamespaceUnit {
 
