@@ -5,9 +5,11 @@
 
 	class ModuleApi implements ModuleThree {
 
-		public function getDValue ():int {
+		public function getLocalValue ():int {
 
 			return 10;
 		}
+
+		public function 
 	}
 ?>

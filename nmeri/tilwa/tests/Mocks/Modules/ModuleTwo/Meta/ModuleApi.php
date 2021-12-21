@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Tests\Mocks\Modules\ModuleTwo;
+	namespace Tilwa\Tests\Mocks\Modules\ModuleTwo\Meta;
 
 	use Tilwa\Tests\Mocks\Interactions\{ModuleTwo, ModuleThree};
 
@@ -12,9 +12,14 @@
 			$this->moduleThree = $moduleThree;
 		}
 
-		public function getDValueFromModuleThree ():int {
+		public function getShallowValue ():int {
 
-			return $this->moduleThree->getDValue();
+			return $this->moduleThree->getLocalValue();
+		}
+
+		public function getNestedModuleValue ():int {
+
+			return $this->moduleThree->
 		}
 	}
 ?>

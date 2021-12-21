@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Tests\Mocks\Modules\ModuleOne;
+	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Meta;
 
 	use Tilwa\Tests\Mocks\Interactions\ModuleOne;
 
