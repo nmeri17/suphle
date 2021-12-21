@@ -3,7 +3,9 @@
 
 	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\DirectHttpTest};
 
-	use Tilwa\App\{ModuleToRoute, Container};
+	use Tilwa\Modules\ModuleToRoute;
+
+	use Tilwa\Hydration\Container;
 
 	use Tilwa\Tests\Mocks\Modules\{ModuleTwo\ModuleTwoDescriptor, ModuleOne\ModuleOneDescriptor};
 

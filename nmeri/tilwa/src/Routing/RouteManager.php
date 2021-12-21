@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Routing;
 
-	use Tilwa\App\Container;
+	use Tilwa\Hydration\Container;
 
 	use Generator;
 

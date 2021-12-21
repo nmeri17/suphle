@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Testing\TestTypes;
 
-	use Tilwa\App\Container;
+	use Tilwa\Hydration\Container;
 
 	use Tilwa\Contracts\Config\{ Services as IServices, Laravel as ILaravel, Router as IRouter, Auth as IAuth, Transphporm as ITransphporm, ModuleFiles as IModuleFiles};
 

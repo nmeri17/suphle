@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Middleware;
 
-	use Tilwa\App\Container;
+	use Tilwa\Hydration\Container;
 
 	use Tilwa\Routing\RequestDetails;
 

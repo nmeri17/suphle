@@ -2,7 +2,7 @@
 
 	namespace Tilwa\Controllers;
 
-	use Tilwa\App\Container;
+	use Tilwa\Hydration\Container;
 
 	use Tilwa\Events\EventManager;
 

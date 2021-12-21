@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Integration\App;
 
-	use Tilwa\App\Container;
+	use Tilwa\Hydration\Container;
 
 	use Tilwa\Testing\IsolatedComponentTest;
 

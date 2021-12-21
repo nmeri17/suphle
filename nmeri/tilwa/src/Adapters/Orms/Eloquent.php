@@ -4,7 +4,7 @@
 
 	use Tilwa\Contracts\{Orm, \Config\Orm as OrmConfig, LaravelApp};
 
-	use Tilwa\App\Container;
+	use Tilwa\Hydration\Container;
 
 	use PDO;
 

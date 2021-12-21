@@ -3,8 +3,6 @@
 
 	use Tilwa\Contracts\{Config\ConfigMarker, Hydration\InterfaceCollection};
 
-	use Tilwa\Errors\InvalidModuleImport;
-
 	use Tilwa\Modules\ModuleDescriptor;
 
 	class InterfaceHydrator {
@@ -76,17 +74,7 @@
 		// ask their container to hydrate it on our behalf
 		protected function moduleDependencyConnector(string $contract, ModuleDescriptor $descriptor) {
 
-			$compatible = $contract == $descriptor->exportsImplements();
-
-			$shell = $descriptor->materialize();
-
-			$correctExport = $shell instanceof $contract;
-			
-			if (!($compatible && $correctExport))
-
-				throw new InvalidModuleImport($contract, get_class($descriptor));
-
-			return $shell;
+			return $descriptor->materialize();
 		}
 	}
 ?>

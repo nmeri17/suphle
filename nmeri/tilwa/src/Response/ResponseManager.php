@@ -1,8 +1,9 @@
 <?php
-
 	namespace Tilwa\Response;
 
-	use Tilwa\App\{Container, ModuleDescriptor};
+	use Tilwa\Modules\ModuleDescriptor;
+
+	use Tilwa\Hydration\Container;
 
 	use Tilwa\Routing\{RouteManager, RequestDetails};
 

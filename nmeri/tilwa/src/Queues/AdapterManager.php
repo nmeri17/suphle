@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Queues;
 
-	use Tilwa\App\Container;
+	use Tilwa\Hydration\Container;
 
 	use Tilwa\Contracts\Queues\Adapter;
 

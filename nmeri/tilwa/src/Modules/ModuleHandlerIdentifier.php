@@ -24,6 +24,9 @@
 			$this->container->provideSelf();
 		}
 		
+		/**
+		 * Not all modules should go here. Only those expected to contain routes
+		*/
 		abstract protected function getModules():array;
 		
 		public function orchestrate():string {

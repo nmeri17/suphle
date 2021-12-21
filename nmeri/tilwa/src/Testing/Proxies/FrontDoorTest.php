@@ -7,7 +7,9 @@
 
 	use Tilwa\Testing\{Proxies\SecureUserAssertions, Condiments\DirectHttpTest};
 
-	use Tilwa\App\{Container, ModuleToRoute};
+	use Tilwa\Modules\ModuleToRoute;
+
+	use Tilwa\Hydration\Container; 
 
 	use Tilwa\Middleware\MiddlewareRegistry;
 

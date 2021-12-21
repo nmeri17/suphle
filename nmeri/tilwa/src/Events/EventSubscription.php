@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Events;
 
-	use Tilwa\App\Container;
+	use Tilwa\Hydration\Container;
 
 	use Tilwa\Controllers\{CommandService, RepositoryWrapper};
 

@@ -5,7 +5,7 @@
 
 	use Tilwa\Contracts\Config\{Laravel, ConfigMarker};
 
-	use Tilwa\App\Container;
+	use Tilwa\Hydration\Container;
 
 	class ConfigLoader extends Repository {
 

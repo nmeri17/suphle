@@ -5,7 +5,9 @@
 
 	use Tilwa\Testing\Condiments\DirectHttpTest;
 
-	use Tilwa\App\{Container, ModuleHandlerIdentifier};
+	use Tilwa\Modules\ModuleHandlerIdentifier;
+
+	use Tilwa\Hydration\Container; 
 
 	use Tilwa\Auth\LoginRequestHandler;
 

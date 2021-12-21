@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\InterfaceLoaders;
 
-	use Tilwa\App\BaseInterfaceLoader;
+	use Tilwa\Hydration\BaseInterfaceLoader;
 
 	use Tilwa\Adapters\Orms\Eloquent;
 

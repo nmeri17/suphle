@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Testing\Proxies;
 
-	use Tilwa\App\Container;
+	use Tilwa\Hydration\Container;
 
 	use Tilwa\Testing\Condiments\MockFacilitator;
 

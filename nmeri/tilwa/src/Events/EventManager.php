@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Events;
 
-	use Tilwa\App\ModuleDescriptor;
+	use Tilwa\Modules\ModuleDescriptor;
 
 	use Tilwa\Events\Structures\HandlerPath;
 

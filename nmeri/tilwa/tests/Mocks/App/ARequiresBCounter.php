@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Mocks\App;
 
-	use Tilwa\App\Container;
+	use Tilwa\Hydration\Container;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Interfaces\CInterface;
 

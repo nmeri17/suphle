@@ -3,7 +3,7 @@
 
 	use Tilwa\Contracts\Auth\{User, AuthStorage};
 
-	use Tilwa\App\Container;
+	use Tilwa\Hydration\Container;
 
 	trait SecureUserAssertions {
 

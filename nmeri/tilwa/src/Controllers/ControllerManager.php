@@ -4,7 +4,7 @@
 
 	use \InvalidArgumentException;
 
-	use Tilwa\App\Container;
+	use Tilwa\Hydration\Container;
 
 	use Tilwa\Contracts\{Orm, ControllerModel};
 

@@ -9,7 +9,7 @@
 
 	use Tilwa\Response\ResponseManager;
 
-	use Tilwa\App\Container;
+	use Tilwa\Hydration\Container;
 
 	use Illuminate\Support\{Collection as LaravelCollection, Arr};
 

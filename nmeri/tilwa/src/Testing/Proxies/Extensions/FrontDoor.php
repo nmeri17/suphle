@@ -1,7 +1,9 @@
 <?php
 	namespace Tilwa\Testing\Proxies\Extensions;
 
-	use Tilwa\App\{ModuleHandlerIdentifier, Container};
+	use Tilwa\Modules\ModuleHandlerIdentifier;
+
+	use Tilwa\Hydration\Container;
 
 	class FrontDoor extends ModuleHandlerIdentifier {
 
