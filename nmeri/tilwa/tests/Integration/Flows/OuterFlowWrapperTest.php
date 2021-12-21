@@ -5,13 +5,23 @@
 
 	use Tilwa\Contracts\Config\Router;
 
-	use Tilwa\Testing\Proxies\WriteOnlyContainer;
+	use Tilwa\Testing\Proxies\{WriteOnlyContainer, Extensions\MockModuleEvents};
 
 	use Tilwa\Tests\Integration\Flows\Jobs\RouteBranches\JobFactory;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\FlowRoutes, ModuleOneDescriptor, Config\RouterMock};
 
 	class OuterFlowWrapperTest extends JobFactory {
+
+		use MockModuleEvents {
+
+			MockModuleEvents::setUp as eventsSetup;
+		};
+
+		public function setUp () {
+
+			$this->eventsSetup();
+		}
 
 		protected function getModules():array {
 

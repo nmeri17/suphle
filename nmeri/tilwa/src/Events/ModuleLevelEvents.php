@@ -3,11 +3,13 @@
 
 	use Tilwa\Contracts\Config\Events;
 
+	use Tilwa\Hydration\Container;
+
 	class ModuleLevelEvents {
 
-		private $modules, $fireHard = true, $subscriberLog = [], // this is where subscribers to the immediate last fired external event reside
+		private $modules, $subscriberLog = [], // this is where subscribers to the immediate last fired external event reside
 
-		$eventManagers = [], $blanks = [];
+		$eventManagers = [];
 
 		public function __construct (array $modules) {
 
@@ -20,20 +22,24 @@
 
 				$container = $descriptor->getContainer();
 
-				if ($config = $container->getClass(Events::class)) {
+				if ($config = $container->getClass(Events::class))
 
-					$manager = $container->getClass($config->getManager());
-
-					$manager->registerListeners();
-
-					$this->eventManagers[] = $manager;
-
-					$container->whenTypeAny()->needsAny([
-
-						EventManager::class => $manager
-					]);
-				}
+					$this->moduleHasListeners($config, $container);
 			}
+		}
+
+		protected function moduleHasListeners (Events $config, Container $container):void {
+
+			$manager = $container->getClass($config->getManager());
+
+			$manager->registerListeners();
+
+			$this->eventManagers[] = $manager;
+
+			$container->whenTypeAny()->needsAny([
+
+				EventManager::class => $manager
+			]);
 		}
 
 		public function gatherForeignSubscribers(string $emittor):self {
@@ -57,13 +63,6 @@
 		}
 
 		public function triggerHandlers(EventSubscription $scope, string $eventName, $payload):self {
-
-			if (!$this->fireHard) {
-
-				$this->blanks[] = $scope;
-
-				return $this;
-			}
 			
 			$hydratedHandler = $scope->getHandlingClass();
 
@@ -72,16 +71,6 @@
 				$unit->fire($hydratedHandler, $payload);
 
 			return $this;
-		}
-
-		public function makeFireSoft ():void {
-
-			$this->fireHard = false;
-		}
-
-		public function getBlanks ():array {
-
-			return $this->blanks;
 		}
 	}
 ?>

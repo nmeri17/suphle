@@ -1,11 +1,21 @@
 <?php
 	namespace Tilwa\Tests\Integration\Events;
 
-	use Tilwa\Testing\TestTypes\ModuleLevelTest;
+	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Proxies\Extensions\MockModuleEvents};
 
 	use Tilwa\Tests\Mocks\Interactions\ModuleOne\ModuleOneDescriptor;
 
 	class EventManagerTest extends ModuleLevelTest {
+
+		use MockModuleEvents {
+
+			MockModuleEvents::setUp as eventsSetup;
+		};
+
+		public function setUp () {
+
+			$this->eventsSetup();
+		}
 		
 		protected function getModules():array {
 
@@ -13,8 +23,6 @@
 		}
 
 		public function test_can_trap_events() {
-
-			$this->catchEmittingEvents();
 
 			$module = $this->getModuleFor(ModuleOne::class);
 

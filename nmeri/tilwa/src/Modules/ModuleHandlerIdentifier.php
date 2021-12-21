@@ -13,6 +13,8 @@
 
 	use Tilwa\Response\Format\AbstractRenderer;
 
+	use Tilwa\Events\ModuleLevelEvents;
+
 	abstract class ModuleHandlerIdentifier {
 
 		private $requestDetails, $container, $authConfig, $identifiedHandler;
@@ -33,7 +35,11 @@
 
 			$this->extractFromContainer();
 
-			(new ModulesBooter($this->getModules()))->boot();
+			$modules = $this->getModules();
+
+			$bootStarter = new ModulesBooter($modules, new ModuleLevelEvents($modules));
+
+			$bootStarter->boot();
 
 			new ExceptionRenderer($this->getErrorHandlers(), $this->container);
 

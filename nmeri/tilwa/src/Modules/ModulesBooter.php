@@ -7,11 +7,11 @@
 
 		private $modules, $eventManager;
 
-		public function __construct (array $modules) {
+		public function __construct (array $modules, ModuleLevelEvents $eventManager) {
 
 			$this->modules = $modules;
 
-			$this->eventManager = new ModuleLevelEvents($modules);
+			$this->eventManager = $eventManager;
 		}
 		
 		public function boot():void {
@@ -23,11 +23,6 @@
 				$descriptor->warmUp(); // We're setting these to be able to attach events soon after
 
 			$this->eventManager->bootReactiveLogger();
-		}
-
-		public function getEventManager ():ModuleLevelEvents {
-
-			return $this->eventManager;
 		}
 	}
 ?>

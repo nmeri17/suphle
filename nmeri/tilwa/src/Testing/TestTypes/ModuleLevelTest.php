@@ -1,26 +1,26 @@
 <?php
 	namespace Tilwa\Testing\TestTypes;
 
-	use Tilwa\App\{ModulesBooter, ModuleDescriptor, Container};
+	use Tilwa\Modules\{ModulesBooter, ModuleDescriptor};
 
-	use Tilwa\Events\ExecutionUnit;
+	use Tilwa\Hydration\Container;
 
-	use PHPUnit\Framework\{TestCase, AssertionFailedError};
+	use Tilwa\Events\{ExecutionUnit, ModuleLevelEvents};
+
+	use PHPUnit\Framework\TestCase;
 
 	/**
 	 * Used for testing components on a modular scale but that don't necessarily require interaction with the HTTP passage
 	*/
 	abstract class ModuleLevelTest extends TestCase {
 
-		private $eventManager;
-
 		protected function setUp ():void {
 
-			$booter = new ModulesBooter($this->getModules());
+			$modules = $this->getModules();
 
-			$this->eventManager = $booter->getEventManager();
+			$bootStarter = new ModulesBooter($modules, new ModuleLevelEvents($modules));
 
-			$booter->boot();
+			$bootStarter->boot();
 		}
 		
 		/**
@@ -32,35 +32,14 @@
 
 			foreach ($this->getModules() as $descriptor)
 
-				if ($interface == $descriptor->exportsImplements())
+				if ($interface == $descriptor->exportsImplements()) {
 
-					return $descriptor->exports();
-		}
+					$descriptor->warmUp();
 
-		// spies may equally be good here but this has the advantage of not running the listener, I think
-		protected function assertFiredEvent ($emitter, string $eventName):void {
+					$descriptor->prepareToRun();
 
-			$subscription = $this->findInBlanks($emitter);
-
-			if (is_null($subscription))
-
-				throw new AssertionFailedError("Event not fired");
-			
-			$this->assertNotEmpty($subscription->getMatchingUnits($eventName));
-		}
-
-		private function findInBlanks ($sender):?EventSubscription {
-
-			foreach ($this->eventManager->getBlanks() as $subscription)
-
-				if ($subscription->matchesHandler($sender))
-
-					return $subscription;
-		}
-
-		public function catchEmittingEvents ():void {
-
-			$this->eventManager->makeFireSoft();
+					return $descriptor->materialize();
+				}
 		}
 
 		/**
