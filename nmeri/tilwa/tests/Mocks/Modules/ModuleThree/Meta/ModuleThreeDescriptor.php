@@ -14,7 +14,7 @@
 
 		public function expatriateNames ():array {
 
-			return [/*ModuleThree::class*/]; // possibly four
+			return [ModuleOne::class];
 		}
 
 		/**

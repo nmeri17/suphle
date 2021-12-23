@@ -1,51 +1,102 @@
 <?php
 	namespace Tilwa\Tests\Integration\App;
 
+	use Tilwa\Hydration\Container;
+
 	use Tilwa\Testing\TestTypes\ModuleLevelTest;
 
-	use Tilwa\Tests\Mocks\Interactions\ModuleThree;
+	use Tilwa\Tests\Mocks\Interactions\{ModuleThree, ModuleOne, ModuleTwo};
 
-	use Tilwa\Tests\Mocks\Modules\{ModuleTwo\ModuleTwoDescriptor, ModuleThree\ModuleThreeDescriptor};
+	use Tilwa\Tests\Mocks\Modules\{ModuleTwo\Meta\ModuleTwoDescriptor, ModuleThree\Meta\ModuleThreeDescriptor, ModuleOne\Meta\ModuleOneDescriptor};
 
 	class ModuleDescriptorTest extends ModuleLevelTest {
 
+		private $moduleOne, $moduleTwo, $moduleThree;
+
+		protected function setUp ():void {
+
+			$this->setModuleOne();
+
+			$this->setModuleThree();
+
+			$this->setModuleTwo();
+
+			parent::setUp();
+		}
+
 		protected function getModules():array {
 
-			return [$this->getModuleTwo(), $this->getModuleThree()];
+			return [
+				$this->moduleOne, $this->moduleTwo,
+
+				$this->moduleThree
+			];
 		}
 
-		private function getModuleThree ():ModuleThreeDescriptor {
+		private function setModuleThree ():void {
 
-			return new ModuleThreeDescriptor(new Container);
-		}
+			$this->moduleThree = (new ModuleThreeDescriptor(new Container))
 
-		private function getModuleTwo ():ModuleTwoDescriptor {
+			->sendExpatriates([
 
-			return (new ModuleTwoDescriptor(new Container))
-
-			->setDependsOn([
-
-				ModuleThree::class => $this->getModuleThree()
+				ModuleOne::class => $this->moduleOne
 			]);
 		}
 
-		public function test_getDependsOn() {
+		private function setModuleOne ():void {
 
-			// given
-			$moduleTwo = $this->getModuleTwo();
+			$this->moduleOne = new ModuleOneDescriptor(new Container);
+		}
 
-			// when
-			$result = $moduleTwo->getDValueFromModuleThree();
+		private function setModuleTwo ():void {
+
+			$this->moduleTwo = (new ModuleTwoDescriptor(new Container))
+
+			->sendExpatriates([
+
+				ModuleThree::class => $this->moduleThree
+			]);
+		}
+
+		public function test_simple_import () {
+
+			$result = $this->getModuleFor(ModuleTwo::class)
+
+			->getShallowValue(); // when
 
 			$moduleThree = $this->getModuleFor(ModuleThree::class);
 
-			// then
-			$this->assertSame($result, $moduleThree->getDValue());
+			$this->assertSame($result, $moduleThree->getLocalValue()); // then
 		}
 
-		public function test_nested_modules_are_internally_accessible () {
+		public function test_intermediary_module_can_access_nested_module_when_called_by_importer () {
 			
-			// if this doesn't work, it means during getDepends or something, the internally imported/chained will be booted
+			$moduleTwo = $this->getModuleFor(ModuleTwo::class);
+
+			$moduleOne = $this->getModuleFor(ModuleOne::class);
+
+			$moduleTwo->setNestedModuleValue(); // when
+
+			$this->assertSame(
+				$moduleTwo->newExternalValue(),
+
+				$moduleOne->getBCounterValue()
+			); // then
+		}
+
+		public function test_cant_pair_module_with_invalid_interfaces () {
+
+			// given
+		}
+
+		public function test_exportImplements_matches_we_provide () {
+
+			// sut ==> the importer
+		}
+
+		public function test_imported_shell_matches_requested_interface () {
+
+			// try to send wrong stuff
 		}
 	}
 ?>

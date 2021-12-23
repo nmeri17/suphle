@@ -8,5 +8,9 @@
 		public function getLocalSender ():LocalSender;
 
 		public function getLocalReceiver ():LocalReceiver;
+
+		public function setBCounterValue (int $newCount):void;
+
+		public function getBCounterValue ():int;
 	}
 ?>

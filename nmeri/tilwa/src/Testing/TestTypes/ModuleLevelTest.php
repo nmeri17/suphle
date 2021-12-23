@@ -28,7 +28,7 @@
 		 */
 		abstract protected function getModules():array;
 
-		protected function getModuleFor (string $interface):object {
+		protected function getModuleFor (string $interface) {
 
 			foreach ($this->getModules() as $descriptor)
 

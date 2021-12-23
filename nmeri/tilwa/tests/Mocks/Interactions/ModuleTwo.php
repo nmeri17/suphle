@@ -3,6 +3,10 @@
 
 	interface ModuleTwo {
 
-		public function getDValueFromModuleThree ():int;
+		public function getShallowValue ():int;
+
+		public function setNestedModuleValue ():void;
+
+		public function newExternalValue ():int;
 	}
 ?>

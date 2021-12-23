@@ -5,15 +5,13 @@
 
 	use Tilwa\Testing\IsolatedComponentTest;
 
-	use Tilwa\Tests\Mocks\App\{ARequiresBCounter, BCounter}; // these should be inside the module
-
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Interfaces\CInterface;
 
 	use Tilwa\Contracts\Config\Services as ServicesContract;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Config\ServicesMock;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\{NeedsSpace, CircularConstructor1, CircularConstructor2, V1\RewriteSpaceImpl};
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\{NeedsSpace, CircularConstructor1, CircularConstructor2, ARequiresBCounter, BCounter, V1\RewriteSpaceImpl};
 
 	class ContainerTest extends IsolatedComponentTest {
 

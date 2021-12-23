@@ -17,9 +17,14 @@
 			return $this->moduleThree->getLocalValue();
 		}
 
-		public function getNestedModuleValue ():int {
+		public function setNestedModuleValue ():void {
 
-			return $this->moduleThree->
+			$this->moduleThree->changeExternalValueProxy($this->newExternalValue());
+		}
+
+		public function newExternalValue ():int {
+
+			return 67;
 		}
 	}
 ?>

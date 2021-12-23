@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Tests\Mocks\App;
+	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes;
 
 	class BCounter {
 
