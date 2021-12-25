@@ -5,9 +5,9 @@
 
 	class MiddlewareRegistryTest extends IsolatedComponentTest {
 
-		public function test_tags_in_failed_collections_dont_affect_siblings () {
+		public function test_glued_pattern_can_only_be_tagged_with_segment () {
 
-			// [resetIndications]
+			// given
 		}
 	}
 ?>

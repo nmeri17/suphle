@@ -140,6 +140,34 @@
 	    	}
 	    }
 
+	    protected function assertUsedMiddleware (array $middlewares) {
+
+	    	$matches = $this->getMatchingMiddleware($middlewares);
+
+	    	$this->assertEmpty(array_diff($middlewares, $matches));
+	    }
+
+	    protected function assertDidntUseMiddleware (array $middlewares) {
+
+	    	$this->assertEmpty($this->getMatchingMiddleware($middlewares));
+	    }
+
+	    private function getMatchingMiddleware (array $middlewares):array {
+
+	    	$registry = $this->activeModuleContainer()->getClass(MiddlewareRegistry::class);
+
+	    	$matches = [];
+
+	    	foreach ($registry->getActiveStack() as $collection) {
+
+	    		$intersect = array_intersect($collection->getList(), $middlewares);
+
+	    		$matches = array_merge($matches, $intersect);
+	    	}
+
+	    	return $matches;
+	    }
+
 	    public function get(string $url, array $headers = []):TestResponse {
 
 	    	return $this->gatewayResponse($url, __FUNCTION__, null, $headers);

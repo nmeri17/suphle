@@ -5,7 +5,7 @@
 
 	use Tilwa\Hydration\Container;
 
-	use Tilwa\Events\{ExecutionUnit, ModuleLevelEvents};
+	use Tilwa\Events\ModuleLevelEvents;
 
 	use PHPUnit\Framework\TestCase;
 

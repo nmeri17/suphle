@@ -15,6 +15,13 @@ Named renderers for the purpose of portable links that don't break in transit
 Url map generation
 	- for each pattern, we treat it as if it's requestDetails (by setting it as requestDetails)
 	- if it's not the end of the thread (contains a _prefixFor), we create a sub to contain the patterns below it
+Alternate route finder implementation
+	- we loop over the incoming path instead of the collection. progress is determined by the path matching
+	- matching will have to take into account that segment could be placeholder
+		- we send user/5 and user/settings
+		- patterns settings and id exist
+		- matcher looks for 5 (literal) or lower-case version of 5
+	- matcher uses in_array instead of comparing with each collection entry
 
 
 ##controllers and services
@@ -123,9 +130,8 @@ on the tearDown methods, you wanna:
 
 test only and except from routeCollection
 
+rework/dismantle EnvironmentDefaults
 
-3) Complete the few methods left on ModuleDescriptorTest
-	- ModuleLevelTest event section
 
 4) [AFTER YOU ARE DONE WITH THE OTHER TESTS] write tests for model level authorization, contracts\config, loading laravel libraries
 

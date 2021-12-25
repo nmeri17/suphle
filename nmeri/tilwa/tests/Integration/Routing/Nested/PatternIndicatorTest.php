@@ -5,7 +5,7 @@
 
 	use Tilwa\Testing\Proxies\{FrontDoorTest, WriteOnlyContainer};
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Prefix\SecureUpperCollection, ModuleOneDescriptor, Config\RouterMock};
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Prefix\SecureUpperCollection, Meta\ModuleOneDescriptor, Config\RouterMock};
 
 	use Tilwa\Contracts\Config\Router;
 

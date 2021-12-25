@@ -33,6 +33,15 @@
 			return $this;
 		}
 
+		public function forgetAllRules ():void {
+
+			$this->excludeRules = [];
+
+			$this->allRules = [];
+
+			$this->activeRules = [];
+		}
+
 		public function updateRuleStatus (string $pattern):void {
 
 			$this->setActiveRules($pattern);

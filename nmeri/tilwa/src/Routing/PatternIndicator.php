@@ -74,5 +74,17 @@
 
 			$this->authorizer->updateRuleStatus($pattern);
 		}
+
+		/**
+		 * Useful in settings where a module has more than one route collection. The preceding one could have updated lists that would undesirably affect the oncoming collection
+		*/
+		public function resetIndications ():void {
+
+			$this->patternAuthentication = null;
+
+			$this->registry->emptyAllStacks();
+
+			$this->authorizer->forgetAllRules();
+		}
 	}
 ?>

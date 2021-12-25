@@ -78,5 +78,12 @@
 
 			return $this->activeStack;
 		}
+
+		public function emptyAllStacks ():void {
+
+			$this->activeStack = [];
+
+			$this->registry = [];
+		}
 	}
 ?>
