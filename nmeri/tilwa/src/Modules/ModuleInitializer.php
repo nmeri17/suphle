@@ -135,13 +135,9 @@
 
 		private function authorizeRequest ():self {
 
-			$authorizer = $this->indicator->getAuthorizer();
+			if (!$this->indicator->getAuthorizer()->passesActiveRules())
 
-			foreach ($authorizer->getActiveRules() as $rule)
-
-				if (!$rule->permit())
-
-					throw new UnauthorizedServiceAccess;
+				throw new UnauthorizedServiceAccess;
 
 			return $this;
 		}

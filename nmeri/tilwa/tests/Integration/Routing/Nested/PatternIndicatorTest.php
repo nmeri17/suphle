@@ -5,7 +5,7 @@
 
 	use Tilwa\Testing\Proxies\{FrontDoorTest, WriteOnlyContainer};
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Prefix\SecureUpperCollection, Meta\ModuleOneDescriptor, Config\RouterMock};
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Prefix\Secure\UpperCollection, Meta\ModuleOneDescriptor, Config\RouterMock};
 
 	use Tilwa\Contracts\Config\Router;
 
@@ -29,7 +29,7 @@
 
 					$container->replaceWithMock(Router::class, RouterMock::class, [
 
-						"browserEntryRoute" => SecureUpperCollection::class
+						"browserEntryRoute" => UpperCollection::class
 					]);
 				})
 			];
