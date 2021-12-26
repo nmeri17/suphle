@@ -20,6 +20,11 @@
 			return $this->middlewareList;
 		}
 
+		public function setList (array $middlewares):void {
+
+			$this->middlewareList = $middlewares;
+		}
+
 		/**
 		 * @param {toOmit} Middleware class name
 		*/

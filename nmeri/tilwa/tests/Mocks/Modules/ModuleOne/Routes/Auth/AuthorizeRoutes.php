@@ -3,13 +3,15 @@
 
 	class AuthorizeRoutes extends BrowserNoPrefix {
 
-		// add method for authentication
+		// add method for authorization
 
 		public function _assignMiddleware():void {
 
-			$this->middlewareRegistry->tagPatterns(["pattern", "pattern2"], [Middleware::class]);
+			$this->middlewareRegistry->tagPatterns(["pattern", "pattern2"], [Middleware::class])
 			
-			$this->middlewareRegistry->tagPatterns(["pattern2"], [ Middleware2::class]);
+			->tagPatterns(["pattern2"], [ Middleware2::class])
+
+			->removeTag (["pattern3"], [ Middleware2::class]); // ostensibly, on a prefix referencing this collection, Middleware2 was set
 		}
 	}
 ?>

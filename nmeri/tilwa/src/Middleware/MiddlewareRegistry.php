@@ -5,9 +5,7 @@
 
 		private $registry = [], // [patternName => PatternMiddleware]
 
-		$excludePatterns = [];
-
-		protected $activeStack = []; // same as [registry]
+		$excludePatterns = [], $interactedPatterns = [];
 
 		public function tagPatterns (array $patterns, array $middlewares):self {
 
@@ -27,46 +25,28 @@
 			return $this;
 		}
 
-		/**
-		 * Used to update the stack of the given pattern; ostensibly, there's been some changes to the registry (most likely during route finding) since its initialization
-		*/
-		public function updateStack (string $pattern):void {
+		public function updateInteractedPatterns (string $pattern):void {
 
-			$this->filterParents();
-
-			$this->overwriteInActiveStack($pattern);
-		}
-
-		private function filterParents ():void {
-
-			$toExclude = array_intersect_key($this->activeStack, $this->excludePatterns);
-
-			foreach ($toExclude as $parent)
-
-				unset($this->activeStack[$parent]);
-		}
-
-		private function overwriteInActiveStack (string $pattern):void {
-
-			if (array_key_exists($pattern, $this->registry)) // we're making sure this isn't just any pattern, but one that has been tagged previously
-
-				$this->activeStack[$pattern] = $this->registry[$pattern];
+			$this->interactedPatterns[] = $pattern;
 		}
 
 		/**
 		 * These will ultimately be detached from whatever route is active
 		 * 
-		 * @param {parent} A pattern that has previously been tagged/assigned middlewares while descending the route collections to the point where this is called
+		 * @param {parentTags} Middlewares previously tagged while descending the route collections to the point where this is called
 		 * 
-		 * @param {patterns} If any of these turns out to be the active pattern, [parent]'s middlewares will be detached
+		 * @param {patterns} If any of these turns out to be the active pattern, [parentTag] will be detached
 		*/
-		public function removeTag (array $patterns, string $parent):self {
+		public function removeTag (array $patterns, array $parentTags):self {
 
-			if (!array_key_exists($parent, $this->excludePatterns))
+			foreach ($patterns as $pattern) {
 
-				$this->excludePatterns[$parent] = [];
+				if (!array_key_exists($pattern, $this->excludePatterns))
 
-			$this->excludePatterns[$parent] = array_merge($this->excludePatterns[$parent], $patterns);
+					$this->excludePatterns[$pattern] = [];
+
+				$this->excludePatterns[$pattern] = array_merge($this->excludePatterns[$pattern], $patterns);
+			}
 
 			return $this;
 		}
@@ -76,12 +56,32 @@
 		*/
 		public function getActiveStack ():array {
 
-			return $this->activeStack;
+			$activeHolders = array_filter ($this->registry, function ($pattern) {
+
+				return in_array($pattern, $this->interactedPatterns);
+			}, ARRAY_FILTER_USE_KEY);
+
+			foreach ($activeHolders as $pattern => $holder)
+
+				if (array_key_exists($pattern, $this->excludePatterns))
+
+					$this->extractFromHolders($holder, $this->excludePatterns[$pattern]);
+
+			return $activeHolders;
+		}
+
+		protected function extractFromHolders (PatternMiddleware $holder, array $toOmit):void {
+
+			foreach ($toOmit as $middleware)
+
+				$holder->omitWherePresent($middleware);
 		}
 
 		public function emptyAllStacks ():void {
 
-			$this->activeStack = [];
+			$this->interactedPatterns = [];
+
+			$this->excludePatterns = [];
 
 			$this->registry = [];
 		}

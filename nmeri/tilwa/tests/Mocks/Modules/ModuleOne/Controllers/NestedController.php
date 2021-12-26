@@ -14,5 +14,10 @@
 
 			//
 		}
+
+		public function thirdSegmentHandler () {
+
+			//
+		}
 	}
 ?>

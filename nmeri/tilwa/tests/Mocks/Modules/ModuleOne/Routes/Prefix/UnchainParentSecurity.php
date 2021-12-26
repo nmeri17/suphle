@@ -5,7 +5,7 @@
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Controllers\MixedNestedSecuredController;
 
-	class UnsecureNested extends BaseCollection {
+	class UnchainParentSecurity extends BaseCollection {
 
 		public function _handlingClass ():string {
 

@@ -65,7 +65,7 @@
 
 			$collection->_assignMiddleware();
 
-			$this->registry->updateStack($segment);
+			$this->registry->updateInteractedPatterns($segment);
 		}
 
 		public function updatePermissions (RouteCollection $collection, string $pattern):void {
