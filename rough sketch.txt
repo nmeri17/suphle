@@ -20,8 +20,11 @@ Alternate route finder implementation
 	- matching will have to take into account that segment could be placeholder
 		- we send user/5 and user/settings
 		- patterns settings and id exist
-		- matcher looks for 5 (literal) or lower-case version of 5
-	- matcher uses in_array instead of comparing with each collection entry
+		- matcher looks for 5 (literal) OR lower-case character/placeholder
+		- remember several path segments can be represented under one pattern. which means the above would have to be pushed into an array
+			- USE__METHODh_id, after the breakup, map into normalised segments
+			- route Segment incrementally in_array
+	- matcher uses in_array instead of comparing with each collection entry. No more need for prefixCurrent and co
 
 
 ##controllers and services
@@ -36,6 +39,7 @@ Bar:
 
 *Emails should only go into Task classes, while HTTP only goes to controller (so, bar in other places)
 	- http library should support retries and possibly lazy load collections
+	- request payload can go on controller
 
 
 *Allow what's passed into controller get assigned (rather enforcing a loadServices). But it should be a wrapped subset. on call, rejection happens if unsatisfactory
@@ -50,11 +54,13 @@ We also have ActionTransform->getDomainObject() for payloads not working with mo
 
 *Any argument that doesn't match a payload parameter will be set to null or discarded
 
+*getEditMethods comes from an interface optionally implemented on the controller. It's an additional step we check for for them after getting rawResponse
+
 Repository transaction method:
 	- Has to throw on error so dev can pick that up
 	- Should be able to be turned off on a per-method basis
 	- Should also lock i.e. lock for read, start transaction, update, close and release
-	- Since we're no more generating tests, TrapQueryParameters should return to the repository layer
+	- Since we're no more generating tests, TrapQueryParameters should return to the repository layer (or be discarded since we can't keep track of possible single db calls )
 
 Pending:
 	- exception renderer
@@ -83,7 +89,7 @@ sqlite
 <server name="DB_DATABASE" value=":memory:"/>
 
 
-\PHPUnit\Framework\AssertionFailedError, Concerns\InteractsWithDatabase
+\PHPUnit\Framework\AssertionFailedError, Concerns\InteractsWithDatabase, Testing\Constraints
 	- extend and override getConnection (see portion of this doc on how to boot models)
 
 	- Illuminate\Testing\TestResponse: overwrite these, then use the new trait/class in place of the above
@@ -94,6 +100,9 @@ sqlite
 Wrap:
 	- debug_backtrace
 	- Session so we can configure its duration (an adapter)
+		- different user roles can have different durations
+		- config->ttl method receives user (given a fixed duration). this guy is expected to return a custom one for us to modify the current user with
+		- framework calls this after resuming session
 
 on the tearDown methods, you wanna:
 	- empty container
@@ -134,6 +143,4 @@ rework/dismantle EnvironmentDefaults
 
 
 4) [AFTER YOU ARE DONE WITH THE OTHER TESTS] write tests for model level authorization, contracts\config, loading laravel libraries
-
-Work on PatternIndicator->resetIndications
 

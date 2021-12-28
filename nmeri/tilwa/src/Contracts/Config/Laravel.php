@@ -12,5 +12,7 @@
 		public function hasRoutes():bool;
 
 		public function usesPackages ():bool;
+
+		public function frameworkDirectory ():string;
 	}
 ?>

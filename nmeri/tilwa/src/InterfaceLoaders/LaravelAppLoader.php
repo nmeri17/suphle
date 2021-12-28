@@ -3,48 +3,52 @@
 
 	use Tilwa\Hydration\BaseInterfaceLoader;
 
-	use Tilwa\Contracts\{Config\ModuleFiles, LaravelApp};
+	use Tilwa\Contracts\Config\{ModuleFiles, Laravel as LaravelConfig};
 
-	use Tilwa\Bridge\Laravel\{LaravelAppConcrete, ConfigLoader};
+	use Tilwa\Contracts\Bridge\LaravelApp;
+
+	use Tilwa\Bridge\Laravel\{LaravelAppConcrete, ConfigLoader, ConfigFileFinder};
 
 	use Tilwa\Routing\RequestDetails;
 
 	use Tilwa\Request\PayloadStorage;
 
-	use Illuminate\Foundation\Bootstrap\LoadConfiguration;
-
 	use Illuminate\Http\Request;
 
 	class LaravelAppLoader extends BaseInterfaceLoader {
 
-		private $requestDetails, $fileConfig, $payloadStorage;
+		private $requestDetails, $fileConfig, $payloadStorage,
 
-		public function __construct (RequestDetails $requestDetails, ModuleFiles $fileConfig, PayloadStorage $payloadStorage) {
+		$laravelConfig;
+
+		public function __construct (RequestDetails $requestDetails, ModuleFiles $fileConfig, PayloadStorage $payloadStorage, LaravelConfig $laravelConfig) {
 
 			$this->requestDetails = $requestDetails;
 
 			$this->fileConfig = $fileConfig;
 
 			$this->payloadStorage = $payloadStorage;
+
+			$this->laravelConfig = $laravelConfig;
 		}
 
 		public function bindArguments():array {
 
 			return [
 
-				"basePath" => $this->fileConfig->activeModulePath()
+				"basePath" => $this->fileConfig->activeModulePath() . DIRECTORY_SEPARATOR . $this->laravelConfig->frameworkDirectory();
 			];
 		}
 
 		public function afterBind(LaravelApp $initialized):void {
 
-			// ordering between this 2 matters a lot
-			$initialized->bind("config", function ($app) {
-				
-				return new ConfigLoader;
-			});
+			$replaceConfig = new ConfigLoader;
 
-			(new LoadConfiguration)->bootstrap($initialized);
+			$initialized->instance("config", $replaceConfig);
+
+			(new ConfigFileFinder)
+
+			->loadConfigurationFiles($initialized, $replaceConfig);
 
 			$this->provideRequest($initialized);
 		}

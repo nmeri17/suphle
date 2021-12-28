@@ -3,64 +3,57 @@
 
 	use Illuminate\Config\Repository;
 
-	use Tilwa\Contracts\Config\{Laravel, ConfigMarker};
+	use Tilwa\Contracts\Config\Laravel;
 
 	use Tilwa\Hydration\Container;
 
 	class ConfigLoader extends Repository {
 
-		private $laravelConfig, $container;
+		private $laravelConfig, $container, $pathSegments = [];
 
-		private $pathSegments = [];
-
-	    public function __construct(array $items = [], Laravel $laravelConfig, Container $container) {
-
-	        $this->items = $items;
+	    public function __construct(Laravel $laravelConfig, Container $container) {
 
 	        $this->laravelConfig = $laravelConfig;
 
 	        $this->container = $container;
 	    }
 
+	    /**
+	     * Any call by their config function to access value in a file should defer to their paired OOP counterpart
+	    */
 		public function get($key, $default = null) {
 
 	        if (is_array($key))
 
 	            return $this->getMany($key);
 
-			$this->setPathSegments($key);
-
-	        $configClass = $this->findEquivalent();
-
-	        if ($configClass) {
-
-	        	$configConcrete = $this->container->getClass($configClass);
-
-	        	$property = $this->findProperty($configConcrete);
-
-	        	if ($property) return $property;
-	        }
-
-	        return Arr::get($this->items, $key, $default);
-	    }
-
-	    private function setPathSegments(string $dotPath):void {
-
-	        $this->pathSegments = explode(".", $dotPath);
-	    }
-
-	    private function findEquivalent ():string {
-
-	        $bridge = $this->laravelConfig->configBridge();
+			$this->pathSegments = explode(".", $key);
 
 	        $name = array_shift($this->pathSegments);
+
+	        if ($configClass = $this->findEquivalent($name)) {
+
+	        	$property = $this->findProperty($this->getConfigConcrete($configClass, $name));
+
+	        	if (!is_null($property)) return $property;
+	        }
+
+	        return parent::get( $key, $default);
+	    }
+
+	    private function findEquivalent (string $name):?string {
+
+	        $bridge = $this->laravelConfig->configBridge();
 
 	        if (array_key_exists($name, $bridge))
 
 	        	return $bridge[$name];
 	    }
 
-	    private function findProperty (ConfigMarker $config) {
+	    /**
+	     * @return mixed. Result of calling methods on the config
+	    */
+	    private function findProperty (BaseConfigLink $config) {
 
 	    	$currentContext = null;
 
@@ -68,16 +61,28 @@
 
 	    		if (is_null($currentContext))
 	    		
-	    			$currentContext = $config->$segment;
+	    			$currentContext = $config->$segment();
 
-	    		else $currentContext = $currentContext->$segment;
+	    		else $currentContext = $currentContext->$segment();
 	    	}
 
 	    	return $currentContext;
 	    }
 
+	    private function getConfigConcrete (string $className, string $configName):BaseConfigLink {
+
+	    	return $this->container->whenType($className)
+
+	    	->needsArguments([
+
+	    		"nativeValues" => parent::get($configName)
+	    	])
+
+	    	->getClass($className);
+	    }
+
 	    /**
-	     *  @TODO override [getMany]
+	     *  @todo override [getMany]
 	    */
 	    public function getMany ():array {
 

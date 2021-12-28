@@ -36,5 +36,10 @@
 
 			return false;
 		}
+
+		public function frameworkDirectory ():string {
+
+			return  "Bridge/Laravel";
+		}
 	}
 ?>
