@@ -13,7 +13,7 @@
 
 		private $provider, $concrete, $laravelContainer,
 
-		$config, $tilwaContainer;
+		$config, $tilwaContainer, $helperFilePath;
 
 		public function __construct ( LaravelApp $laravelContainer, LaravelConfig $config, Container $tilwaContainer) {
 
@@ -27,6 +27,11 @@
 		public function setActiveProvider (string $provider):void {
 
 			$this->provider = new $provider($this->laravelContainer);
+		}
+		
+		public function getActiveProvider ():ServiceProvider {
+
+			return $this->provider;
 		}
 
 		public function canProvide (string $fullName):bool {
@@ -42,28 +47,17 @@
 
 			$this->setActiveProvider($providerName);
 
-			return $this->extractConcrete()
+			return $this->createSandbox(function () {
 
-			->mirrorBehavior()
-
-			->wrapConcrete();
-		}
-
-		private function mirrorBehavior ():self {
-
-			require_once $this->getHelperFilePath(); // we need this file active while running their routes so it can pick [view()]
-
-			function app () { // override their definition
-
-				return $this->laravelContainer;
-			}
+				$this->extractConcrete();
 			
-			$this->provider->boot();
-		
-			return $this;
+				$this->provider->boot();
+
+				return $this->wrapConcrete();
+			});
 		}
 
-		private function extractConcrete ():self {
+		private function extractConcrete ():void {
 
 			$currentBindings = $this->laravelContainer->getBindings();
 
@@ -74,12 +68,33 @@
 			$latestKey = array_diff_key($currentBindings, $newBindings);
 
 			$this->concrete = $newBindings[current($latestKey)]["concrete"]();
-
-			return $this;
 		}
 
 		// use a known class within that namespace to pull the file's directory
 		private function getHelperFilePath ():string {
+
+			if (!is_null($this->helperFilePath))
+
+				return $this->helperFilePath;
+
+			$this->setHelperFilePath();
+
+			return $this->helperFilePath;
+		}
+
+		public function createSandbox (callable $explosive) {
+
+			require_once $this->getHelperFilePath(); // we need this file active while running their routes so it can pick [view()]
+
+			function app () { // override their definition
+
+				return $this->laravelContainer;
+			}
+
+			return $explosive();
+		}
+
+		private function setHelperFilePath ():void {
 
 			$knownClass = new ReflectionClass(Application::class);
 
@@ -87,7 +102,7 @@
 
 			$namespaces[] = "helpers.php";
 
-			return implode(DIRECTORY_SEPARATOR, $namespaces);
+			$this->helperFilePath = implode(DIRECTORY_SEPARATOR, $namespaces);
 		}
 
 		private function wrapConcrete ():ProvidedServiceWrapper {
@@ -101,7 +116,7 @@
 
 				function ($types) {
 
-				    return new ProvidedServiceWrapper($this->concrete, $this->getHelperFilePath ());
+				    return new ProvidedServiceWrapper($this->concrete, $this);
 				}
 			);
 		}

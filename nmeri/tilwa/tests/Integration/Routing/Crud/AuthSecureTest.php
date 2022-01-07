@@ -1,8 +1,6 @@
 <?php
 	namespace Tilwa\Tests\Integration\Routing\Crud;
 
-	use Tilwa\Tests\Integration\Routing\BaseRouterTest;
-
 	use Tilwa\Testing\{Condiments\PopulatesDatabaseTest, TestTypes\ModuleLevelTest};
 
 	use Tilwa\Testing\Proxies\{FrontDoorTest, WriteOnlyContainer};

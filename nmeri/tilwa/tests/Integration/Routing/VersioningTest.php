@@ -7,7 +7,7 @@
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\ApiRoutes\{V1\LowerMirror, V2\ApiUpdate2Entry, V3\ApiUpdate3Entry};
 
-	class VersioningTest extends BaseRouterTest {
+	class VersioningTest extends TestsRouter {
 
 		protected function entityBindings ():self {
 

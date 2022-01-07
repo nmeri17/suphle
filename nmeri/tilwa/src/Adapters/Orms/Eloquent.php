@@ -1,8 +1,7 @@
 <?php
-
 	namespace Tilwa\Adapters\Orms;
 
-	use Tilwa\Contracts\{Orm, \Config\Orm as OrmConfig, LaravelApp};
+	use Tilwa\Contracts\{Database\Orm, Config\Database, Bridge\LaravelContainer};
 
 	use Tilwa\Hydration\Container;
 
@@ -14,7 +13,7 @@
 
 		$authStorage;
 
-		public function __construct (OrmConfig $config, Container $container, LaravelApp $laravelContainer, AuthStorage $authStorage) {
+		public function __construct (Database $config, Container $container, LaravelContainer $laravelContainer, AuthStorage $authStorage) {
 
 			$this->credentials = $config->getCredentials();
 
@@ -49,12 +48,9 @@
 
 		public function registerObservers(array $observers):void {
 
-			foreach ($observers as $model => $observer) {
+			foreach ($observers as $model => $observer)
 
-				$concrete = $this->container->getClass($model);
-
-				$concrete::observe($observer);
-			}
+				$this->container->getClass($model)::observe($observer);
 
 			if (!empty($observers))
 

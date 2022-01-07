@@ -1,12 +1,12 @@
 <?php
 	namespace Tilwa\Tests\Integration\Routing\Mirror;
 
-	use Tilwa\Tests\Integration\Routing\BaseRouterTest;
+	use Tilwa\Tests\Integration\Routing\TestsRouter;
 
 	/**
-	 * As with other configs on [BaseRouterTest], the apiStack is pulled from [ModuleOne]
+	 * As with other configs on [TestsRouter], the apiStack is pulled from [ModuleOne]
 	*/
-	class MirrorActivatedTest extends BaseRouterTest {
+	class MirrorActivatedTest extends TestsRouter {
 
 		public function test_can_switch_to_api_collection () {
 

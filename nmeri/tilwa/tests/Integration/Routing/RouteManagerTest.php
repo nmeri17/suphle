@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Integration\Routing;
 
-	class RouteManagerTest extends BaseRouterTest {
+	class RouteManagerTest extends TestsRouter {
 
 		/**
 	     * @dataProvider pathsToHandler

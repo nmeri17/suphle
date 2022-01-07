@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Contracts\Config;
 
-	interface Orm {
+	interface Database {
 
 		public function getCredentials ():array;
 	}

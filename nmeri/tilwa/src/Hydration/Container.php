@@ -472,11 +472,11 @@
 			});
 		}
 
-		private function getLaravelHydrator ():LaravelService {
+		private function getLaravelHydrator ():LaravelProviderManager {
 
 			if (is_null($this->laravelHydrator))
 
-				$this->laravelHydrator = $this->instantiateConcrete(LaravelService::class);
+				$this->laravelHydrator = $this->instantiateConcrete(LaravelProviderManager::class);
 
 			return $this->laravelHydrator;
 		}

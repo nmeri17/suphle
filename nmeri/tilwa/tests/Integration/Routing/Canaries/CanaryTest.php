@@ -1,9 +1,11 @@
 <?php
 	namespace Tilwa\Tests\Integration\Routing\Canaries;
 
+	use Tilwa\Tests\Integration\Routing\TestsRouter;
+
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\CanaryRoutes;
 
-	class CanaryTest extends BaseRouterTest {
+	class CanaryTest extends TestsRouter {
 
 		protected function getEntryCollection ():string {
 

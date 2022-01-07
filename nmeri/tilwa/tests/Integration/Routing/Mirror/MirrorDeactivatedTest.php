@@ -5,9 +5,9 @@
 
 	use Tilwa\Contracts\Config\Router as IRouter;
 
-	use Tilwa\Tests\Integration\Routing\BaseRouterTest;
+	use Tilwa\Tests\Integration\Routing\TestsRouter;
 
-	class MirrorDeactivatedTest extends BaseRouterTest {
+	class MirrorDeactivatedTest extends TestsRouter {
 
 		protected function entityBindings ():self {
 

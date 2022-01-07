@@ -9,5 +9,10 @@
 
 			// given
 		}
+
+		public function test_stack_execution_ordering () {
+
+			// 
+		}
 	}
 ?>
