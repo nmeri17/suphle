@@ -1,8 +1,9 @@
 <?php
-
 	namespace Tilwa\Bridge\Laravel;
 
-	use Tilwa\Contracts\Config\Laravel as LaravelConfig;
+	use Tilwa\Contracts\{Config\Laravel as LaravelConfig, Bridge\LaravelContainer};
+
+	use Tilwa\Hydration\LaravelProviderManager;
 
 	use Illuminate\Routing\Router;
 
@@ -10,44 +11,60 @@
 
 	class ModuleRouteMatcher {
 
-		private $config, $laravelContainer, $router, $request;
+		private $config, $laravelContainer, $router, $request,
 
-		public function __construct (LaravelConfig $config, LaravelApp $laravelContainer) {
+		$providerBooter;
+
+		public function __construct (LaravelConfig $config, LaravelContainer $laravelContainer, LaravelProviderManager $providerBooter) {
 
 			$this->config = $config;
 
 			$this->laravelContainer = $laravelContainer;
-		}
 
-		private function hasLaravelRoutes ():bool {
-			
-			return $this->config->hasRoutes();
-		}
-
-		private function getRouter():Router {
-
-			if (is_null($this->router))
-
-				$this->router = $this->laravelContainer->make(Router::class);
-
-			return $this->router;
+			$this->providerBooter = $providerBooter;
 		}
 
 		public function canHandleRequest ():bool {
 
-			if ($this->hasLaravelRoutes()) {
+			$routeProviders = $this->config->registersRoutes();
+
+			if (!empty($routeProviders)) {
+
+				$this->activateProviders($routeProviders);
+
+				$this->router = $this->laravelContainer->make(Router::class);
 
 				$this->request = $this->laravelContainer->make(Request::class);
 
-				return $this->getRouter()->getRoutes()->match($request);
+				return $this->router->getRoutes()->match($this->request);
 			}
 
 			return false;
 		}
+
+		private function activateProviders (array $providers):void {
+
+			$booter = $this->providerBooter;
+
+			foreach ($providers as $providerName) {
+
+				$booter->setActiveProvider($providerName);
+				
+				$concrete = $booter->getActiveProvider();
+
+				// we're using this instead of actually providing the service, to slightly speed up boot process since we don't know if this will be the eventual handler
+				$booter->createSandbox(function () use ($concrete) {
+
+					$concrete->register(); // idk how necessary this is since routes are registered in the boot method
+				
+					$concrete->boot();
+				});
+			}
+		}
 		
 		public function getResponse ():Response {
 
-			return $this->getRouter()->dispatch($this->request);
+			return $this->router->dispatch($this->request);
 		}
 	}
 ?>

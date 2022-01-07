@@ -1,15 +1,17 @@
 <?php
 	namespace Tilwa\Hydration\Templates;
 
+    use Tilwa\Hydration\LaravelProviderManager;
+
 	class ProvidedServiceWrapper extends <target> {
 
-        protected $target, $sandboxPath;
+        protected $target, $manager;
 
-		function __construct( $target, string $sandboxUrl) {
+		function __construct( $target, LaravelProviderManager $manager) {
 
             $this->target = $target;
 
-            $this->sandboxPath = $sandboxUrl;
+            $this->manager = $manager;
         }
 
         public function __get($property) {
@@ -19,9 +21,10 @@
 
         public function __call($method, $arguments) {
 
-        	require_once $this->sandboxPath;
+            return $this->manager->createSandbox(function () use ($method, $arguments) {
 
-        	return call_user_func_array([$this->target, $method], $arguments);
+                return $this->target->$method( ...$arguments);
+            });
         }
     }
 ?>

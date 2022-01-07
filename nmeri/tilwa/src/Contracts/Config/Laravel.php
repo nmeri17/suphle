@@ -9,7 +9,8 @@
 		// [concrete::class => provider]
 		public function getProviders ():array;
 
-		public function hasRoutes():bool;
+		// @return names of providers that register routes
+		public function registersRoutes ():array;
 
 		public function usesPackages ():bool;
 

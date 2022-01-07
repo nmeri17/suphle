@@ -1,14 +1,36 @@
 <?php
-
 	namespace Tilwa\Tests\Integration\Bridge\Laravel;
 
-	use Tilwa\Testing\IsolatedComponentTest;
+	use Tilwa\Bridge\Laravel\ModuleRouteMatcher;
 
-	class ModuleRouteMatcherTest {
+	use Tilwa\Testing\{TestTypes\IsolatedComponentTest, Condiments\DirectHttpTest};
+
+	use Tilwa\Contracts\Config\Laravel as ILaravel;
+
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Config\LaravelMock;
+
+	class ModuleRouteMatcherTest extends IsolatedComponentTest {
+
+		use DirectHttpTest;
 		
-		public function test_getResponse_from_provided_route ():Response {
+		public function test_getResponse_from_provided_route () {
 
-			// register service provider with route and try sending a request for that route. Remember to update [hasLaravelRoutes] on the config or something. If it doesn't work, start tracing from [ModuleInitializer/ModuleRouteMatcher]
+			// given ==> [containerConfigs]
+
+		    // when
+		    $this->setHttpParams("/laravel/entry"); // calling this before sut is created since LaravelContainer needs the information
+
+			$sut = $this->container->getClass(ModuleRouteMatcher::class);
+
+		   $this->assertTrue($sut->canHandleRequest()); // then
+		}
+
+		protected function containerConfigs ():array {
+
+			return array_merge(parent::containerConfigs(), [
+
+				ILaravel::class => LaravelMock::class
+			]);
 		}
 	}
 ?>

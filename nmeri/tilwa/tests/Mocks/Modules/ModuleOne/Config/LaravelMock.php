@@ -5,7 +5,9 @@
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Bridge\Laravel\ConfigLinks\{AppConfig, NestedConfig};
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Bridge\Laravel\ServiceProviders\RegistersRouteProvider;
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Bridge\Laravel\ServiceProviders\{RegistersRouteProvider, ConfigInternalProvider};
+
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Bridge\Laravel\ServiceProviders\Exports\{ConfigInternal, ConfigConstructor};
 
 	class Laravel extends ParentConfig {
 
@@ -29,16 +31,21 @@
 
 			return [
 
-				RegistersRouteProvider::class
+				ConfigConstructor::class => RegistersRouteProvider::class,
+
+				ConfigInternal::class => ConfigInternalProvider::class
 			];
 		}
 
 		/**
 		 * {@inheritdoc}
 		*/
-		public function hasRoutes():bool {
+		public function hasRoutes ():array {
 
-			return true;
+			return [
+
+				RegistersRouteProvider::class
+			];
 		} 
 
 		/**

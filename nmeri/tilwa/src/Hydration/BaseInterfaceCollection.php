@@ -5,7 +5,7 @@
 
 	use Tilwa\Errors\InvalidModuleImport;
 
-	use Tilwa\Contracts\{HtmlParser, Database\Orm as OrmApi, Requests\RequestValidator, Queues\Adapter as QueueAdapter, Hydration\InterfaceCollection, Bridge\LaravelApp, App\BlankModule};
+	use Tilwa\Contracts\{HtmlParser, Database\Orm as OrmApi, Requests\RequestValidator, Queues\Adapter as QueueAdapter, Hydration\InterfaceCollection, Bridge\LaravelContainer, App\BlankModule};
 
 	use Tilwa\Contracts\Auth\{AuthStorage, User as UserEntity, UserHydrator as IUserHydrator};
 
@@ -36,7 +36,7 @@
 			return [
 				OrmApi::class => OrmLoader::class,
 
-				LaravelApp::class => LaravelAppLoader::class,
+				LaravelContainer::class => LaravelAppLoader::class,
 			];
 		}
 

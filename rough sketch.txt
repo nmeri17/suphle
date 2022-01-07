@@ -40,6 +40,7 @@ Bar:
 *Emails should only go into Task classes, while HTTP only goes to controller (so, bar in other places)
 	- http library should support retries and possibly lazy load collections
 	- request payload can go on controller
+	- controller can get the conditional wrapper (assuming it's a type of service in itself)
 
 
 *Allow what's passed into controller get assigned (rather enforcing a loadServices). But it should be a wrapped subset. on call, rejection happens if unsatisfactory
@@ -59,7 +60,7 @@ We also have ActionTransform->getDomainObject() for payloads not working with mo
 Repository transaction method:
 	- Has to throw on error so dev can pick that up
 	- Should be able to be turned off on a per-method basis
-	- Should also lock i.e. lock for read, start transaction, update, close and release
+	- See the note on locking
 	- Since we're no more generating tests, TrapQueryParameters should return to the repository layer (or be discarded since we can't keep track of possible single db calls )
 
 Pending:
@@ -142,5 +143,9 @@ test only and except from routeCollection
 rework/dismantle EnvironmentDefaults
 
 
-4) [AFTER YOU ARE DONE WITH THE OTHER TESTS] write tests for model level authorization, contracts\config, loading laravel libraries
+4) [AFTER YOU ARE DONE WITH THE OTHER TESTS] write tests for:
+	- model level authorization
+		- see adapter\eloquent->registerObservers
+		- test whether permissions affect when the model is fetched from a parent relationship
+	- some of contracts\config
 

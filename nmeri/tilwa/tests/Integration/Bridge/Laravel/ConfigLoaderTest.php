@@ -1,18 +1,14 @@
 <?php
 	namespace Tilwa\Tests\Integration\Bridge\Laravel;
 
-	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
-
 	use Tilwa\Contracts\Bridge\LaravelApp;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Bridge\Laravel\ConfigLinks\{AppConfig, NestedConfig};
 
-	use Illuminate\Contracts\Config\Repository as RepositoryContract;
-
 	/**
 	 * The idea demonstrated here is to compare results from the [RepositoryContract] given to laravel, and the one gotten after hydrating the object paired to that config i.e. [app => appOOP], we compare the results of [RepositoryContract] with directly calling [appOOP]
 	*/
-	class ConfigLoaderTest extends IsolatedComponentTest {
+	class ConfigLoaderTest extends TestsConfig {
 
 		public function test_their_config_can_get_ours () {
 
@@ -39,13 +35,6 @@
 			$value = $this->container->getClass(NestedConfig::class)->first_level()->second_level()["value"];
 
 			$this->assertSame($value, $sut->get("nested.first_level.second_level.value")); // then
-	    }
-
-	    private function getUnderlyingConfig ():RepositoryContract {
-
-			return $this->container->getClass(LaravelApp::class) // trigger config lifting
-
-			->make("config");
 	    }
 
 		public function test_fallsback_to_theirs_when_missing_property () {

@@ -5,7 +5,7 @@
 
 	use Tilwa\Contracts\Config\{ModuleFiles, Laravel as LaravelConfig};
 
-	use Tilwa\Contracts\Bridge\LaravelApp;
+	use Tilwa\Contracts\Bridge\LaravelContainer;
 
 	use Tilwa\Bridge\Laravel\{LaravelAppConcrete, ConfigLoader, ConfigFileFinder};
 
@@ -40,7 +40,7 @@
 			];
 		}
 
-		public function afterBind(LaravelApp $initialized):void {
+		public function afterBind(LaravelContainer $initialized):void {
 
 			$replaceConfig = new ConfigLoader;
 
@@ -58,7 +58,7 @@
 			return LaravelAppConcrete::class;
 		}
 
-		private function provideRequest (LaravelApp $initialized):void {
+		private function provideRequest (LaravelContainer $initialized):void {
 
 			$initialized->bind("request", function ($app) {
 				

@@ -11,7 +11,7 @@
 
 	use Tilwa\Contracts\Config\Router as IRouter;
 
-	class BaseRouterTest extends IsolatedComponentTest {
+	class TestsRouter extends IsolatedComponentTest {
 
 		use DirectHttpTest, MockFacilitator;
 
