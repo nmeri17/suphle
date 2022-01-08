@@ -24,14 +24,7 @@
 
 			$this->container = new Container;
 
-			$this->bootContainer()->entityBindings();
-		}
-
-		protected function bootContainer ():self {
-
-			$this->container->setConfigs($this->containerConfigs());
-
-			return $this;
+			$this->entityBindings();
 		}
 
 		protected function entityBindings ():self {

@@ -1,61 +1,65 @@
 <?php
 	namespace Tilwa\Tests\Integration\Events;
 
-	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Proxies\Extensions\MockModuleEvents};
+	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\EmittedEventsCatcher};
 
-	use Tilwa\Tests\Mocks\Interactions\ModuleOne\ModuleOneDescriptor;
+	use Tilwa\Tests\Mocks\Interactions\{ModuleThree, ModuleOne};
 
-	class EventManagerTest extends ModuleLevelTest {
+	use Tilwa\Tests\Integration\App\ModuleDescriptor\DescriptorCollection;
 
-		use MockModuleEvents {
+	class EventManagerTest extends DescriptorCollection {
+
+		use EmittedEventsCatcher {
 
 			MockModuleEvents::setUp as eventsSetup;
 		};
 
+		private $payload = 5;
+
 		public function setUp () {
+
+			$this->setModuleOne();
+
+			$this->setModuleThree();
 
 			$this->eventsSetup();
 		}
 		
-		protected function getModules():array {
+		protected function getModules ():array {
 
-			return [ new ModuleOneDescriptor(new Container)];
+			return [ $this->moduleOne, $this->moduleThree];
 		}
 
 		public function test_can_trap_events() {
 
 			$module = $this->getModuleFor(ModuleOne::class);
 
-			$sender = $module->getLocalSender();
-
-			$sender->sendLocalEventNoPayload();
-			
-			$this->assertFiredEvent($sender, $sender->getEventName());
+			$this->assertFiredEvent($module->noPayloadEvent(), $module->emittedEventName());
 		}
 
-		public function test_can_emit_and_fire_local() {
+		public function test_can_receive_emitted_payload () {
 
 			$module = $this->getModuleFor(ModuleOne::class);
 
-			$payload = 5;
-
-			$sender = $module->getLocalSender();
-
-			$receiver = $module->getLocalReceiver();
-
-			$sender->sendLocalEvent($payload);
+			$module->payloadEvent($this->payload);
 			
-			$this->assertSame($receiver->getPayload(), $payload);
+			$this->assertSame($module->getLocalReceivedPayload(), $this->payload);
 		}
 
 		public function test_can_listen_to_external () {
+
+			$module1 = $this->getModuleFor(ModuleOne::class);
+
+			$module1->payloadEvent($this->payload);
+
+			$module3 = $this->getModuleFor(ModuleThree::class);
 			
-			//
+			$this->assertSame($module3->getExternalReceivedPayload(), $this->payload);
 		}
 
 		public function test_local_emit_cascades_to_local() {
 			
-			//
+			// when a listener equally emits
 		}
 
 		public function test_local_emit_cascades_to_external () {
@@ -65,17 +69,7 @@
 
 		public function test_space_delimited_event_names () {
 
-			//
-		}
-
-		public function test_Local_listeners_are_decoupled_from_their_emittor () {
-
-			//
-		}
-
-		public function test_Repository_handler_gets_wrapped () {
-
-			//
+			// that's, multiple events to one handler
 		}
 	}
 ?>

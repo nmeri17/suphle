@@ -13,6 +13,8 @@
 
 		/**
 		 * We avoid calling parent::setUp here, to circumvent the actual listeners getting bound, which would result in both stubed and real event managers running
+		 * 
+		 * Tests making use of this trait are expected to only call its [setUp], and not that of [parent]
 		*/
 		protected function setUp ():void {
 
@@ -20,14 +22,14 @@
 
 			$this->eventManager = new MockModuleEvents($modules);
 
-			$bootStarter = new ModulesBooter($modules, $this->eventManager);
+			(new ModulesBooter($modules, $this->eventManager))
 
-			$bootStarter->boot();
+			->boot();
 		}
 
 		abstract protected function getModules ():array;
 
-		protected function assertFiredEvent ($emitter, string $eventName):void {
+		protected function assertFiredEvent (string $emitter, string $eventName):void {
 
 			$subscription = $this->findInBlanks($emitter);
 
@@ -36,7 +38,7 @@
 			$this->assertNotEmpty($subscription->getMatchingUnits($eventName));
 		}
 
-		private function findInBlanks ($sender):?EventSubscription {
+		private function findInBlanks (string $sender):?EventSubscription {
 
 			foreach ($this->eventManager->getBlanks() as $subscription)
 

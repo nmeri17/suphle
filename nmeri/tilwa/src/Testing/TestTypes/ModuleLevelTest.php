@@ -18,9 +18,8 @@
 
 			$modules = $this->getModules();
 
-			$bootStarter = new ModulesBooter($modules, new ModuleLevelEvents($modules));
-
-			$bootStarter->boot();
+			(new ModulesBooter($modules, new ModuleLevelEvents($modules)))
+			->boot();
 		}
 		
 		/**

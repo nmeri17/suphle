@@ -7,8 +7,6 @@
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Interfaces\CInterface;
 
-	use Tilwa\Contracts\Config\Services as ServicesContract;
-
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Config\ServicesMock;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\{NeedsSpace, CircularConstructor1, CircularConstructor2, ARequiresBCounter, BCounter, V1\RewriteSpaceImpl};
@@ -100,8 +98,6 @@
 
 			$container = $this->container;
 
-			$container->setConfigs($this->getMockServiceConfig());
-
 			$parameters = $container->getMethodParameters ( "receiveProvidedInterface", $this->aRequires);
 
 			$aConcrete = $container->getClass($this->aRequires);
@@ -109,15 +105,6 @@
 			$aConcrete->receiveProvidedInterface(...array_values($parameters));
 
 			$this->assertEquals($aConcrete->getCInterface()->getValue(), 10);
-		}
-
-		private function getMockServiceConfig ():array {
-
-			$oldConfigs = $this->containerConfigs();
-
-			$oldConfigs[ServicesContract::class] = ServicesMock::class;
-
-			return $oldConfigs;
 		}
 
 		public function test_whenSpace() {

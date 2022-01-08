@@ -23,19 +23,11 @@
 
 			$emitter = get_class($this->activeService);
 
-			if ($this->config->lifecycle())
-
-				$this->eventManager->emit($emitter, "before_call", new ServiceEventPayload($arguments, $method));
-
 			$result = null;
 
 			try {
 
 				$result = $this->yield($method, $arguments);
-
-				if ($this->config->lifecycle())
-
-					$this->eventManager->emit($emitter, "after_call", new ServiceEventPayload($result, $method));
 			}
 			catch (Throwable $error) {
 
@@ -43,7 +35,7 @@
 
 				$payload->setErrors($error);
 
-				$this->eventManager->emit($emitter, "error", $payload);
+				$this->eventManager->emit($emitter, "error", $payload); // NOTE: emitter is not the guy for this. contact the error notifier
 
 				$result = $this->failureReturnValue($method);
 			}

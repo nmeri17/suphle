@@ -3,7 +3,11 @@
 
 	class LocalSender {
 
-		private $eventManager, $defaultEvent = "sample_event";
+		const DEFAULT_EVENT = "sample_event";
+
+		const EMPTY_PAYLOAD_EVENT = "no_payload";
+
+		private $eventManager, $lastEmittedEvent;
 
 		public function __construct (EventManager $eventManager) {
 
@@ -12,17 +16,21 @@
 
 		public function sendLocalEvent ($payload):void {
 
-			$this->eventManager->emit(get_class(), $this->defaultEvent, $payload);
+			$this->lastEmittedEvent = self::DEFAULT_EVENT;
+
+			$this->eventManager->emit(get_class(), $this->lastEmittedEvent, $payload);
 		}
 
 		public function sendLocalEventNoPayload ():void {
 
-			$this->eventManager->emit(get_class(), "no_payload");
+			$this->lastEmittedEvent = self::EMPTY_PAYLOAD_EVENT;
+
+			$this->eventManager->emit(get_class(), $this->lastEmittedEvent);
 		}
 
 		public function getEventName ():string {
 
-			return $this->defaultEvent;
+			return $this->lastEmittedEvent;
 		}
 	}
 ?>

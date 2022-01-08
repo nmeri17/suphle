@@ -1,9 +1,7 @@
 <?php
 	namespace Tilwa\Controllers;
 
-	use Tilwa\Contracts\{ReboundsEvents, Orm, ReboundsEvents, CommandService};
-
-	use Tilwa\Controllers\Structures\ServiceEventPayload;
+	use Tilwa\Contracts\{ Database\Orm, Services\CommandService};
 
 	class RepositoryWrapper extends ServiceWrapper {
 
@@ -18,22 +16,14 @@
 
 		protected function yield(string $method, array $arguments) {
 
-			$service = $this->activeService;
-
-			$result = $this->getResult($service, $method, $arguments);
-
-			if ($service instanceof ReboundsEvents)
-
-				$this->eventManager->emit(get_class($service), "refresh", new ServiceEventPayload($result, $method));
-
-			return $result;
+			return $this->getResult($this->activeService, $method, $arguments);
 		}
 
 		private function getResult( $service, string $method, $arguments) {
 
-			if ($service instanceof CommandService)
+			if ($service instanceof CommandService) // NOTE: we now have alternate way of detecting who this belongs to
 
-				return $this->orm->runTransaction(function () use ($method, $arguments) {
+				return $this->orm->runTransaction(function () use ($method, $arguments) { // you didn't lock before transacting
 
 					parent::yield($method, $arguments);
 				});

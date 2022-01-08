@@ -3,21 +3,17 @@
 
 	use Tilwa\Events\EventManager;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Concretes\LocalSender, Events\LocalReceiver};
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Concretes\LocalSender as Emitter, Events\LocalReceiver};
 
 	class AssignListeners extends EventManager {
 
 		public function registerListeners() {
 			
-			$this->local(LocalSender::class, LocalReceiver::class)
+			$this->local(Emitter::class, LocalReceiver::class)
 	        
-	        ->on("sample_event", "updatePayload")
+	        ->on(Emitter::DEFAULT_EVENT, "updatePayload")
 	        
-	        ->on("no_payload", "setDefaultPayload");
-
-			/*$this->external(InteractionC::class, ServiceCHandlers::class)
-	        ->on(yEvent, "yHandler")
-	        ->on(xEvent, "xHandler");*/
+	        ->on(Emitter::EMPTY_PAYLOAD_EVENT, "setDefaultPayload");
 		}
 	}
 ?>

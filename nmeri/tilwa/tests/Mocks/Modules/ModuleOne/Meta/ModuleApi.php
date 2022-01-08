@@ -20,16 +20,6 @@
 			$this->bCounter = $bCounter;
 		}
 
-		public function getLocalSender ():LocalSender {
-
-			return $this->localReceiver;
-		}
-
-		public function getLocalReceiver ():LocalReceiver {
-
-			return $this->localReceiver;
-		}
-
 		public function setBCounterValue (int $newCount):void {
 
 			$this->bCounter->setCount($newCount);
@@ -38,6 +28,28 @@
 		public function getBCounterValue ():int {
 
 			return $this->bCounter->getCount();
+		}
+
+		public function noPayloadEvent ():string {
+
+			$this->localSender->sendLocalEventNoPayload();
+
+			return get_class($this->localSender);
+		}
+
+		public function emittedEventName ():string {
+
+			$this->localSender->getEventName();
+		}
+
+		public function payloadEvent (int $value):void {
+
+			$this->localSender->sendLocalEvent($value);
+		}
+
+		public function getLocalReceivedPayload ():?int {
+
+			$this->localReceiver->getPayload();
 		}
 	}
 ?>

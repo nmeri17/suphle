@@ -1,8 +1,6 @@
 <?php
 	namespace Tilwa\Tests\Integration\Bridge\Laravel;
 
-	use Tilwa\Contracts\Bridge\LaravelApp;
-
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Bridge\Laravel\ConfigLinks\{AppConfig, NestedConfig};
 
 	/**
