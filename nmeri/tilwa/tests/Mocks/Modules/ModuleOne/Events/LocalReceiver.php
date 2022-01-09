@@ -1,23 +1,23 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Events;
 
-	class LocalReceiver {
+	class LocalReceiver extends PayloadReceptor {
 
-		private $payload;
-
-		public function getPayload () {
-
-			return $this->payload;
-		}
+		const CASCADE_REBOUND_EVENT = "rebounding";
 
 		public function updatePayload ($payload):void {
 
 			$this->payload = $payload;
 		}
 
-		public function setDefaultPayload ():void {
+		public function doNothing ():void {
 
-			$this->payload = 10;
+			//
+		}
+
+		public function reboundsNewEvent ($payload):void {
+
+			$this->eventManager->emit(get_class(), self::CASCADE_REBOUND_EVENT, $payload);
 		}
 	}
 ?>

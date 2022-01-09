@@ -3,9 +3,9 @@
 
 	use Tilwa\Hydration\BaseInterfaceCollection;
 
-	use Tilwa\Contracts\Config\{ModuleFiles, Router};
+	use Tilwa\Contracts\Config\{ModuleFiles, Router, Events};
 
-	use Tilwa\Tests\Mocks\Modules\ModuleTwo\Config\{ModuleFilesMock, RouterMock};
+	use Tilwa\Tests\Mocks\Modules\ModuleTwo\Config\{ModuleFilesMock, RouterMock, EventsMock};
 
 	use Tilwa\Tests\Mocks\Interactions\ModuleTwo;
 
@@ -17,7 +17,9 @@
 
 				ModuleFiles::class => ModuleFilesMock::class,
 
-				Router::class => RouterMock::class
+				Router::class => RouterMock::class,
+
+				Events::class => EventsMock::class
 			]);
 		}
 

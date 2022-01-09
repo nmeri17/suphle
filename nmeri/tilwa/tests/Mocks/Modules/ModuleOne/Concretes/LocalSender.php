@@ -1,13 +1,13 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes;
 
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Meta\ModuleApi;
+
 	class LocalSender {
 
-		const DEFAULT_EVENT = "sample_event";
+		const CASCADE_BEGIN_EVENT = "cascading";
 
-		const EMPTY_PAYLOAD_EVENT = "no_payload";
-
-		private $eventManager, $lastEmittedEvent;
+		private $eventManager;
 
 		public function __construct (EventManager $eventManager) {
 
@@ -16,21 +16,17 @@
 
 		public function sendLocalEvent ($payload):void {
 
-			$this->lastEmittedEvent = self::DEFAULT_EVENT;
-
-			$this->eventManager->emit(get_class(), $this->lastEmittedEvent, $payload);
+			$this->eventManager->emit(get_class(), ModuleApi::DEFAULT_EVENT, $payload);
 		}
 
 		public function sendLocalEventNoPayload ():void {
 
-			$this->lastEmittedEvent = self::EMPTY_PAYLOAD_EVENT;
-
-			$this->eventManager->emit(get_class(), $this->lastEmittedEvent);
+			$this->eventManager->emit(get_class(), ModuleApi::EMPTY_PAYLOAD_EVENT);
 		}
 
-		public function getEventName ():string {
+		public function cascadingEntry ($payload):void {
 
-			return $this->lastEmittedEvent;
+			$this->eventManager->emit(get_class(), self::CASCADE_BEGIN_EVENT, $payload);
 		}
 	}
 ?>

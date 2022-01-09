@@ -3,13 +3,17 @@
 
 	use Tilwa\Tests\Mocks\Interactions\{ModuleTwo, ModuleThree};
 
+	use Tilwa\Tests\Mocks\Modules\ModuleTwo\Events\ExternalReactor;
+
 	class ModuleApi implements ModuleTwo {
 
-		private $moduleThree;
+		private $moduleThree, $externalReactor;
 
-		public function __construct (ModuleThree $moduleThree) {
+		public function __construct (ModuleThree $moduleThree, ExternalReactor $externalReactor) {
 
 			$this->moduleThree = $moduleThree;
+
+			$this->externalReactor = $externalReactor;
 		}
 
 		public function getShallowValue ():int {
@@ -25,6 +29,11 @@
 		public function newExternalValue ():int {
 
 			return 67;
+		}
+
+		public function decoupledExternalReceivedPayload ():?int {
+
+			return $this->externalReactor->getPayload();
 		}
 	}
 ?>
