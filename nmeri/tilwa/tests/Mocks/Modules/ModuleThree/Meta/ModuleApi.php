@@ -26,7 +26,7 @@
 			return $this->moduleOne->setBCounterValue($newCount);
 		}
 
-		public function getExternalReceivedPayload ():?int {
+		public function coupledExternalReceivedPayload ():?int {
 
 			return $this->eventsHandler->getExternalPayload();
 		}

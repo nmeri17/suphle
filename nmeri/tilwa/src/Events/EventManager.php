@@ -5,6 +5,8 @@
 
 	use Tilwa\Events\Structures\HandlerPath;
 
+	use InvalidArgumentException;
+
 	abstract class EventManager {
 
 		private $emitters = ["local" => [], "external" => []];
@@ -32,8 +34,14 @@
 			return $this;
 		}
 
-		// there's a distinction between local and external emitters because we don't wanna assume each client has a hard dependency on that interface. The client shouldn't care beyond the knowledge that such interface may emit such events if it exists
+		/**
+		 * There's a distinction between local and external emitters because we don't wanna assume each client has a hard dependency on that interface. The client shouldn't care beyond the knowledge that such interface may emit such events if it exists
+		*/
 		private function initializeHandlingScope(string $scope, string $emitable, string $handlingClass):void {
+
+			if ($emitable == $handlingClass)
+
+				throw new InvalidArgumentException("Cannot listen to events emitted by '$emitable' on the same class");
 
 			$this->emitters[$scope][$emitable] = new EventSubscription($handlingClass, $this->module->getContainer());
 

@@ -11,7 +11,7 @@
 			
 			$this->external(ModuleOne::class, EventsHandler::class)
 	        
-	        ->on("sample_event", "setExternalPayload")
+	        ->on(ModuleOne::DEFAULT_EVENT, "setExternalPayload")
 	        
 	        /*->on(xEvent, "xHandler")*/;
 		}

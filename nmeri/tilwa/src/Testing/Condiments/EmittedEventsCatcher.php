@@ -33,9 +33,23 @@
 
 			$subscription = $this->findInBlanks($emitter);
 
-			$this->assertNotNull($subscription, "Event not fired");
+			$this->assertNotNull($subscription, "Event '$eventName' not fired");
 			
 			$this->assertNotEmpty($subscription->getMatchingUnits($eventName));
+		}
+
+		protected function assertNotFiredEvent (string $emitter, string $eventName):void {
+
+			$subscription = $this->findInBlanks($emitter);
+
+			if (is_null($subscription)) {
+
+				$this->assertNull($subscription); // to avoid risky test
+
+				return;
+			}
+
+			$this->assertEmpty($subscription->getMatchingUnits($eventName), "Event '$eventName' fired by '$emitter'");
 		}
 
 		private function findInBlanks (string $sender):?EventSubscription {
