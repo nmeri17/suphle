@@ -3,9 +3,9 @@
 
 	use Tilwa\Modules\ModuleDescriptor;
 
-	use Tilwa\Tests\Integration\App\ModuleDescriptor\DescriptorCollection;
+	use Tilwa\Testing\{Proxies\WriteOnlyContainer, Condiments\EmittedEventsCatcher};
 
-	use Tilwa\Testing\Proxies\WriteOnlyContainer;
+	use Tilwa\Tests\Integration\App\ModuleDescriptor\DescriptorCollection;
 
 	class TestEventManager extends DescriptorCollection {
 
@@ -58,15 +58,6 @@
 		}
 
 // move these to their own test classes
-		public function test_cant_listen_on_emitter () {
-
-			// then
-		}
-
-		public function test_local_bind_cant_react_to_external_emission () {
-
-			//
-		}
 
 		public function test_local_emit_cascades_to_external () {
 			

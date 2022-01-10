@@ -31,9 +31,9 @@
 			$this->emitHelper (self::CASCADE_BEGIN_EVENT, $payload);
 		}
 
-		public function sendConcatHalf ():void {
+		public function sendConcatHalf ($payload):void {
 
-			$this->emitHelper (self::CONCAT_EVENT);
+			$this->emitHelper (self::CONCAT_EVENT, $payload);
 		}
 
 		private function emitHelper (string $eventName, $payload = null):void {

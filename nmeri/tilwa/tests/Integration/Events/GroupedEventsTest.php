@@ -5,9 +5,11 @@
 
 	use Tilwa\Testing\Proxies\WriteOnlyContainer;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Events\LocalReceiver};
 
 	class GroupedEventsTest extends TestEventManager {
+
+		protected $eventReceiverName = LocalReceiver::class;
 
 		protected function setModuleOne ():void {
 
@@ -15,12 +17,15 @@
 		}
 
 		public function test_space_delimited_event_names () {
-// sendConcatHalf
-			$module = $this->getModuleFor(ModuleOne::class);
-// concatBindings
-			$this->assertFiredEvent($module->noPayloadEvent(), ModuleOne::EMPTY_PAYLOAD_EVENT); // continue here/ see 
 
-			// you wanna ensure handlers got called
+			// given => see module injection
+
+			// then
+			$this->mockEventReceiver->doNothing()->shouldBeCalled();
+
+			$this->mockEventReceiver->unionHandler()->shouldBeCalledTimes(2);
+
+			$this->getModuleFor(ModuleOne::class)->sendConcatEvents($this->payload); // when
 		}
 	}
 ?>

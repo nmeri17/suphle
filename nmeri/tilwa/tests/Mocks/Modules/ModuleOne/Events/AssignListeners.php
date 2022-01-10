@@ -14,8 +14,6 @@
 			$this->localSenderBindings();
 
 			$this->localReceiverBindings();
-
-			$this->concatBindings();
 		}
 
 		private function localSenderBindings ():void {
@@ -26,7 +24,9 @@
 	        
 	        ->on(Emitter::EMPTY_PAYLOAD_EVENT, "doNothing")
 	        
-	        ->on(Emitter::CASCADE_BEGIN_EVENT, "reboundsNewEvent");
+	        ->on(Emitter::CASCADE_BEGIN_EVENT, "reboundsNewEvent")
+	        
+	        ->on(Emitter::EMPTY_PAYLOAD_EVENT . " " . Emitter::CONCAT_EVENT, "unionHandler");
 		}
 
 		private function localReceiverBindings ():void {
@@ -34,15 +34,6 @@
 			$this->local(LocalReceiver::class, ReboundReceiver::class)
 	        
 	        ->on(LocalReceiver::CASCADE_REBOUND_EVENT, "ricochetReactor");
-	    }
-
-	    private function concatBindings ():void {
-			
-			$this->local(Emitter::class, LocalReceiver::class)
-	        
-	        ->on(LocalReceiver::CASCADE_REBOUND_EVENT, "unionHandler");
-
-	        // will not work if manager returns on first hit or if adding handlers overwrites existing
 	    }
 	}
 ?>

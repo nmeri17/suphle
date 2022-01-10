@@ -9,5 +9,10 @@
 			
 			$this->payload = $payload;
 		}
+
+		public function reactToExternalEmit (int $payload) {
+			
+			$this->payload = $payload;
+		}
 	}
 ?>

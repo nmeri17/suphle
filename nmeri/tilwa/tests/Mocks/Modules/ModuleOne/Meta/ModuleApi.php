@@ -26,11 +26,9 @@
 			return $this->bCounter->getCount();
 		}
 
-		public function noPayloadEvent ():string {
+		public function noPayloadEvent ():void {
 
 			$this->localSender->sendLocalEventNoPayload();
-
-			return get_class($this->localSender);
 		}
 
 		public function payloadEvent (int $value):void {
@@ -41,6 +39,13 @@
 		public function cascadeEntryEvent (int $value):void {
 
 			$this->localSender->cascadingEntry($value);
+		}
+
+		public function sendConcatEvents (int $value):void {
+
+			$this->localSender->sendConcatHalf($value);
+
+			$this->localSender->sendLocalEventNoPayload();
 		}
 	}
 ?>

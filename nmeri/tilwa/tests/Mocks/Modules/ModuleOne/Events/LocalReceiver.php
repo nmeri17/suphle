@@ -28,5 +28,10 @@
 
 			$this->eventManager->emit(get_class(), self::CASCADE_REBOUND_EVENT, $payload);
 		}
+
+		public function unionHandler ($payload = null):void {
+
+			$this->payload = $payload;
+		}
 	}
 ?>

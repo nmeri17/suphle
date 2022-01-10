@@ -11,10 +11,12 @@
 
 		public function getBCounterValue ():int;
 
-		public function noPayloadEvent ():string;
+		public function noPayloadEvent ():void;
 
 		public function payloadEvent (int $value):void;
 
 		public function cascadeEntryEvent (int $value):void;
+
+		public function sendConcatEvents (int $value):void;
 	}
 ?>

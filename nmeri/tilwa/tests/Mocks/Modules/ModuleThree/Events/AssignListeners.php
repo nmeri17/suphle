@@ -9,11 +9,23 @@
 
 		public function registerListeners() {
 			
+			$this->moduleOneBindings();
+
+			$this->incompatibleBindings();
+		}
+
+	    private function moduleOneBindings ():void {
+			
 			$this->external(ModuleOne::class, EventsHandler::class)
 	        
-	        ->on(ModuleOne::DEFAULT_EVENT, "setExternalPayload")
+	        ->on(ModuleOne::DEFAULT_EVENT, "setExternalPayload");
+	    }
+
+	    private function incompatibleBindings ():void {
+			
+			$this->local(ModuleOne::class, EventsHandler::class)
 	        
-	        /*->on(xEvent, "xHandler")*/;
-		}
+	        ->on(ModuleOne::DEFAULT_EVENT, "reactToExternalEmit");
+	    }
 	}
 ?>

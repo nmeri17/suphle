@@ -26,5 +26,14 @@
 
 			$this->getModuleFor(ModuleOne::class)->payloadEvent($this->payload); // when
 		}
+
+		public function test_local_bind_cant_react_to_external_emission () {
+
+			// given => see module injection
+
+			$this->mockEventReceiver->reactToExternalEmit($this->payload)->shouldNotBeCalled(); // then
+
+			$this->getModuleFor(ModuleOne::class)->payloadEvent($this->payload); // when
+		}
 	}
 ?>

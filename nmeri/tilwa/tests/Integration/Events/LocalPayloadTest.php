@@ -3,11 +3,7 @@
 
 	use Tilwa\Tests\Mocks\Interactions\ModuleOne;
 
-	use Tilwa\Testing\Proxies\WriteOnlyContainer;
-
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
-
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Events\LocalReceiver;
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Events\LocalReceiver};
 
 	class LocalPayloadTest extends TestEventManager {
 
