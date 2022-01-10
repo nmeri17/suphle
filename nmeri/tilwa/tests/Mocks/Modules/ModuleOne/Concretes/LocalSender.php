@@ -7,6 +7,8 @@
 
 		const CASCADE_BEGIN_EVENT = "cascading";
 
+		const CONCAT_EVENT = "concating";
+
 		private $eventManager;
 
 		public function __construct (EventManager $eventManager) {
@@ -16,17 +18,27 @@
 
 		public function sendLocalEvent ($payload):void {
 
-			$this->eventManager->emit(get_class(), ModuleApi::DEFAULT_EVENT, $payload);
+			$this->emitHelper (ModuleApi::DEFAULT_EVENT, $payload);
 		}
 
 		public function sendLocalEventNoPayload ():void {
 
-			$this->eventManager->emit(get_class(), ModuleApi::EMPTY_PAYLOAD_EVENT);
+			$this->emitHelper (ModuleApi::EMPTY_PAYLOAD_EVENT);
 		}
 
 		public function cascadingEntry ($payload):void {
 
-			$this->eventManager->emit(get_class(), self::CASCADE_BEGIN_EVENT, $payload);
+			$this->emitHelper (self::CASCADE_BEGIN_EVENT, $payload);
+		}
+
+		public function sendConcatHalf ():void {
+
+			$this->emitHelper (self::CONCAT_EVENT);
+		}
+
+		private function emitHelper (string $eventName, $payload = null):void {
+
+			$this->eventManager->emit(get_class(), $eventName, $payload);
 		}
 	}
 ?>

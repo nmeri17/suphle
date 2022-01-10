@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Events;
 
-	class ReboundReceiver extends PayloadReceptor {
+	class ReboundReceiver {
 
 		public function ricochetReactor ($payload):void {
 
