@@ -15,10 +15,6 @@
 
 		public function payloadEvent (int $value):void;
 
-		public function getLocalReceivedPayload ():?int;
-
 		public function cascadeEntryEvent (int $value):void;
-
-		public function cascadeFinalPayload ():?int;
 	}
 ?>

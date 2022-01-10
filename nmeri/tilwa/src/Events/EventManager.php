@@ -67,7 +67,9 @@
 		*/
 		public function on(string $eventNames, string $handlingMethod):self {
 
-			foreach (explode(" ", $eventNames) as $eventName) {
+			$eventList = explode(" ", $eventNames);
+
+			foreach ($eventList as $eventName) {
 
 				$path = $this->activeHandlerPath;
 				

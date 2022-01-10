@@ -9,10 +9,5 @@
 			
 			$this->payload = $payload;
 		}
-
-		public function getExternalPayload ():?int {
-			
-			return $this->payload;
-		}
 	}
 ?>
