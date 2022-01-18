@@ -3,6 +3,8 @@
 
 	class ReboundReceiver {
 
+		private $payload;
+
 		public function ricochetReactor ($payload):void {
 
 			$this->payload = $payload;

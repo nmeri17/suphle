@@ -3,17 +3,19 @@
 
 	use Tilwa\Tests\Mocks\Interactions\ModuleOne;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\{LocalSender, BCounter};
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\{LocalSender, BCounter, SenderExtension};
 
 	class ModuleApi implements ModuleOne {
 
-		private $localSender, $bCounter;
+		private $localSender, $bCounter, $localSenderExtended;
 
-		public function __construct (LocalSender $localSender, BCounter $bCounter) {
+		public function __construct (LocalSender $localSender, BCounter $bCounter, SenderExtension $senderExtension) {
 
 			$this->localSender = $localSender;
 
 			$this->bCounter = $bCounter;
+
+			$this->localSenderExtended = $senderExtension;
 		}
 
 		public function setBCounterValue (int $newCount):void {
@@ -46,6 +48,16 @@
 			$this->localSender->sendConcatHalf($value);
 
 			$this->localSender->sendLocalEventNoPayload();
+		}
+
+		public function sendExtendedEvent (int $value):void {
+
+			$this->localSenderExtended->sendLocalEvent($value);
+		}
+
+		public function multiModuleCascadeEvent (bool $value):void {
+
+			$this->localSender->beginExternalCascade($value);
 		}
 	}
 ?>

@@ -19,21 +19,23 @@
 		private function localSenderBindings ():void {
 
 			$this->local(Emitter::class, LocalReceiver::class)
-	        
-	        ->on(ModuleApi::DEFAULT_EVENT, "updatePayload")
-	        
-	        ->on(Emitter::EMPTY_PAYLOAD_EVENT, "doNothing")
-	        
-	        ->on(Emitter::CASCADE_BEGIN_EVENT, "reboundsNewEvent")
-	        
-	        ->on(Emitter::EMPTY_PAYLOAD_EVENT . " " . Emitter::CONCAT_EVENT, "unionHandler");
+
+			->on(ModuleApi::DEFAULT_EVENT, "updatePayload")
+
+			->on(Emitter::EMPTY_PAYLOAD_EVENT, "doNothing")
+
+			->on(Emitter::CASCADE_BEGIN_EVENT, "reboundsNewEvent")
+
+			->on(Emitter::EMPTY_PAYLOAD_EVENT . " " . Emitter::CONCAT_EVENT, "unionHandler")
+
+			->on(Emitter::CASCADE_EXTERNAL_BEGIN_EVENT, "reboundExternalEvent");
 		}
 
 		private function localReceiverBindings ():void {
 			
 			$this->local(LocalReceiver::class, ReboundReceiver::class)
-	        
-	        ->on(LocalReceiver::CASCADE_REBOUND_EVENT, "ricochetReactor");
+
+			->on(LocalReceiver::CASCADE_REBOUND_EVENT, "ricochetReactor");
 	    }
 	}
 ?>

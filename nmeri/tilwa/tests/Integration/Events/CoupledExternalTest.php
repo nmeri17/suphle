@@ -31,7 +31,7 @@
 
 			// given => see module injection
 
-			$this->mockEventReceiver->reactToExternalEmit($this->payload)->shouldNotBeCalled(); // then
+			$this->mockEventReceiver->handleImpossibleEmit($this->payload)->shouldNotBeCalled(); // then
 
 			$this->getModuleFor(ModuleOne::class)->payloadEvent($this->payload); // when
 		}

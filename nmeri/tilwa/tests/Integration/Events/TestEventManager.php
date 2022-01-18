@@ -56,17 +56,5 @@
 				$container->replaceWithConcrete($this->eventReceiverName, $this->mockEventReceiver->reveal());
 			});
 		}
-
-// move these to their own test classes
-
-		public function test_local_emit_cascades_to_external () {
-			
-			// 2nd => external, 1st => external, rebound to external
-		}
-
-		public function test_listeners_can_listen_to_subclass_emittor () {
-
-			// we listen on the parent, then a child emits
-		}
 	}
 ?>

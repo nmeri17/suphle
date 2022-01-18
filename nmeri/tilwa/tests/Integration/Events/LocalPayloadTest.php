@@ -22,5 +22,15 @@
 
 			$this->getModuleFor(ModuleOne::class)->payloadEvent($this->payload); // when
 		}
+
+		// we listen on the parent, then a child emits
+		public function test_listeners_can_listen_to_subclass_emittor () {
+
+			// given => see module injection
+
+			$this->mockEventReceiver->updatePayload($this->payload)->shouldBeCalled(); // then
+
+			$this->getModuleFor(ModuleOne::class)->sendExtendedEvent($this->payload); // when
+		}
 	}
 ?>

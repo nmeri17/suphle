@@ -1,13 +1,19 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes;
 
+	use Tilwa\Events\{EmitProxy, EventManager};
+
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Meta\ModuleApi;
 
 	class LocalSender {
 
+		use EmitProxy;
+
 		const CASCADE_BEGIN_EVENT = "cascading";
 
 		const CONCAT_EVENT = "concating";
+
+		const CASCADE_EXTERNAL_BEGIN_EVENT = "begin_external_cascade";
 
 		private $eventManager;
 
@@ -36,9 +42,9 @@
 			$this->emitHelper (self::CONCAT_EVENT, $payload);
 		}
 
-		private function emitHelper (string $eventName, $payload = null):void {
+		public function beginExternalCascade ($payload):void {
 
-			$this->eventManager->emit(get_class(), $eventName, $payload);
+			$this->emitHelper (self::CASCADE_EXTERNAL_BEGIN_EVENT, $payload);
 		}
 	}
 ?>

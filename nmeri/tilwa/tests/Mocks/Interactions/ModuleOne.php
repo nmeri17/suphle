@@ -7,6 +7,8 @@
 
 		const EMPTY_PAYLOAD_EVENT = "no_payload";
 
+		const OUTSIDERS_REBOUND_EVENT = "outsiders_rebound";
+
 		public function setBCounterValue (int $newCount):void;
 
 		public function getBCounterValue ():int;
@@ -18,5 +20,9 @@
 		public function cascadeEntryEvent (int $value):void;
 
 		public function sendConcatEvents (int $value):void;
+
+		public function sendExtendedEvent (int $value):void;
+
+		public function multiModuleCascadeEvent (bool $value);
 	}
 ?>
