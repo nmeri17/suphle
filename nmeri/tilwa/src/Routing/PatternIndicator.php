@@ -72,7 +72,7 @@
 
 			$collection->_authorizePaths();
 
-			$this->authorizer->updateInteractedPatterns($pattern);
+			$this->authorizer->updateRuleStatus($pattern);
 		}
 
 		/**

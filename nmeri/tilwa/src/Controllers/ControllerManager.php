@@ -1,20 +1,19 @@
 <?php
-
 	namespace Tilwa\Controllers;
 
-	use \InvalidArgumentException;
+	use InvalidArgumentException;
 
 	use Tilwa\Hydration\Container;
 
-	use Tilwa\Contracts\{Orm, ControllerModel};
+	use Tilwa\Contracts\{Orm, ControllerModel, Requests\ValidationEvaluator};
 
 	use Tilwa\Request\ValidatorManager;
 
-	use Tilwa\Errors\CrowdedConstructor;
+	use Tilwa\Exception\Explosives\CrowdedConstructor;
 
 	use Tilwa\Routing\{PathPlaceholders, RequestDetails};
 
-	class ControllerManager {
+	class ControllerManager implements ValidationEvaluator {
 
 		private $controller, $container, $placeholderStorage,
 

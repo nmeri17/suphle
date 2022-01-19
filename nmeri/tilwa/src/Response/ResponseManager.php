@@ -15,6 +15,8 @@
 
 	use Tilwa\Request\{ValidatorManager, PayloadStorage};
 
+	use Tilwa\Exception\Explosives\ValidationFailure;
+
 	class ResponseManager implements BaseResponseManager {
 
 		private $container, $router, $renderer, $payloadStorage,
@@ -83,6 +85,13 @@
 		public function isValidRequest ():bool {
 
 			return $this->controllerManager->isValidatedRequest();
+		}
+
+		public function mayBeInvalid ():void {
+
+			if (!$this->isValidRequest())
+
+				throw new ValidationFailure($this->controllerManager);
 		}
 
 		private function validateManager():void {

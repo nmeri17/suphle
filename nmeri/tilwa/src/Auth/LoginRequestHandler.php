@@ -3,13 +3,13 @@
 
 	use Tilwa\Hydration\Container;
 
-	use Tilwa\Contracts\{Auth\LoginRenderers, App\HighLevelRequestHandler};
+	use Tilwa\Contracts\{Auth\LoginRenderers, App\HighLevelRequestHandler, Request\ValidationEvaluator};
 
 	use Tilwa\Response\Format\AbstractRenderer;
 
 	use Tilwa\Request\ValidatorManager;
 
-	class LoginRequestHandler implements HighLevelRequestHandler {
+	class LoginRequestHandler implements HighLevelRequestHandler, ValidationEvaluator {
 
 		private $rendererCollection, $container, $responseRenderer,
 

@@ -42,6 +42,9 @@
 			return $this;
 		}
 
+		/**
+		 * @throws UnauthorizedServiceAccess, Unauthenticated, ValidationFailure
+		*/
 		public function triggerRequest():string {
 
 			if ($this->isLaravelRoute())
@@ -56,11 +59,7 @@
 
 			$validationPassed = $this->responseManager
 
-			->bootControllerManager()->isValidRequest();
-
-			if (!$validationPassed)
-
-				throw new ValidationFailure;
+			->bootControllerManager()->mayBeInvalid();
 
 			return $this->container->getClass (MiddlewareQueue::class)
 
@@ -133,6 +132,9 @@
 			return $this;
 		}
 
+		/**
+		 * @throws UnauthorizedServiceAccess
+		*/
 		private function authorizeRequest ():self {
 
 			if (!$this->indicator->getAuthorizer()->passesActiveRules())

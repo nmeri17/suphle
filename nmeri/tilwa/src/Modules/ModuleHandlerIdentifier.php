@@ -3,8 +3,6 @@
 
 	use Tilwa\Flows\OuterFlowWrapper;
 
-	use Tilwa\Errors\ExceptionRenderer;
-
 	use Tilwa\Routing\RequestDetails;
 
 	use Tilwa\Contracts\{Config\Auth as AuthConfig, Auth\LoginRenderers};
@@ -15,9 +13,11 @@
 
 	use Tilwa\Events\ModuleLevelEvents;
 
+	use Tilwa\Exception\Explosives\ValidationFailure;
+
 	abstract class ModuleHandlerIdentifier {
 
-		private $requestDetails, $container, $authConfig, $identifiedHandler;
+		private $requestDetails, $container, $authConfig, $identifiedHandler, $routedModule;
 
 		public function __construct () {
 
@@ -41,9 +41,18 @@
 
 			$bootStarter->boot();
 
-			new ExceptionRenderer($this->getErrorHandlers(), $this->container);
+			try {
 
-			$content = $this->beginRequest();
+				$content = $this->beginRequest();
+			}
+			catch (Throwable $exception) {
+
+				$this->identifiedHandler = $bridge = new ModuleExceptionBridge($this->getActiveContainer());
+
+				$bridge->hydrateHandler($exception);
+
+				$content = $bridge->getResponse();
+			}
 
 			$this->transferHeaders();
 
@@ -72,13 +81,15 @@
 
 		protected function handleGenericRequest (array $modules):string {
 
-			$initializer = $this->container->getClass(ModuleToRoute::class) // pulling from a container so tests can replace properties on the singleton
+			$moduleRouter = $this->container->getClass(ModuleToRoute::class); // pulling from a container so tests can replace properties on the singleton
 
-			->findContext($modules);
+			$initializer = $moduleRouter->findContext($modules);
 
 			if ($initializer) {
 
 				$this->identifiedHandler = $initializer;
+
+				$this->routedModule = $moduleRouter->getActiveModule();
 
 				return $initializer->whenActive()->triggerRequest();
 			}
@@ -113,19 +124,6 @@
 			->getClass($wrapperName);
 		}
 
-		protected function getErrorHandlers ():array {
-
-			return [
-				NotFoundException::class => "handler",
-
-				Unauthenticated::class => "handler",
-
-				ValidationFailure::class => "handler",
-
-				IncompatibleHttpMethod::class => "handler"
-			];
-		}
-
 		private function extractFromContainer ():void {
 
 			$this->requestDetails = $this->container->getClass(RequestDetails::class);
@@ -147,11 +145,11 @@
 
 			$handler->setAuthService();
 
+			$this->identifiedHandler = $handler;
+
 			if (!$handler->isValidRequest())
 
-				throw new ValidationFailure;
-
-			$this->identifiedHandler = $handler;
+				throw new ValidationFailure($handler);
 
 			return $handler->getResponse();
 		}
@@ -185,6 +183,15 @@
 			foreach ($renderer->getHeaders() as $name => $value)
 
 				header("$name: $value");
+		}
+
+		private function getActiveContainer ():Container {
+
+			if (!is_null($this->routedModule))
+
+				return $this->routedModule->getContainer();
+
+			return $this->container;
 		}
 	}
 ?>
