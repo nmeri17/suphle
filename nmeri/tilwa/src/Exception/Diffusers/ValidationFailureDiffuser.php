@@ -7,6 +7,8 @@
 
 	use Tilwa\Response\Format\AbstractRenderer;
 
+	use Tilwa\Exception\Explosives\ValidationFailure;
+
 	class ValidationFailureDiffuser implements ExceptionHandler {
 
 		private $renderer, $requestDetails, $router, $validationEvaluator;
@@ -18,9 +20,9 @@
 			$this->router = $router;
 		}
 
-		public function setContextualData (array $payload):void {
+		public function setContextualData (ValidationFailure $origin):void {
 
-			$this->validationEvaluator = $payload["evaluator"];
+			$this->validationEvaluator = $origin->getEvaluator();
 		}
 
 		public function prepareRendererData ():void {

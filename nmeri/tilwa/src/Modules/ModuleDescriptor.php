@@ -5,7 +5,9 @@
 
 	use Tilwa\Hydration\{Container, BaseInterfaceCollection};
 
-	use Tilwa\Errors\UnexpectedModules;
+	use Tilwa\Exception\Explosives\UnexpectedModules;
+
+	use Tilwa\Request\PayloadStorage;
 
 	class ModuleDescriptor {
 
@@ -135,6 +137,8 @@
 			$this->entityBindings(...array_values($customBindings))
 
 			->validateExpatriates()->empowerExpatriates();
+
+			$this->container->getClass(PayloadStorage::class)->setPayload();
 
 			return $this;
 		}

@@ -41,7 +41,7 @@
 
 		private function mergedPayload ():array {
 
-			return $this->placeholderStorage->getAllSegmentValues() + $this->payloadStorage->fullPayload();
+			return array_merge($this->placeholderStorage->getAllSegmentValues(), $this->payloadStorage->fullPayload());
 		}
 
 		public function setActionRules (array $rules):void {

@@ -8,7 +8,7 @@
 
 		const JSON_HEADER_VALUE = "application/json";
 
-		private $requestDetails, $headers;
+		private $requestDetails, $headers, $payload;
 
 		public function __construct (RequestDetails $requestDetails) {
 
@@ -19,15 +19,25 @@
 
 		public function fullPayload ():array {
 
+			return $this->payload;
+		}
+
+		public function mergePayload (array $upserts):void {
+
+			$this->payload = array_merge($this->payload, $upserts);
+		}
+
+		public function setPayload ():void {
+
 			if ($this->requestDetails->isGetRequest())
 			
-				return array_diff_key(["tilwa_path" => 55], $_GET);
+				$this->payload = array_diff_key(["tilwa_path" => 55], $_GET);
 
 			if ($this->isJsonPayload() )
 
-				return json_decode(file_get_contents("php://input"), true);
+				$this->payload = json_decode(file_get_contents("php://input"), true);
 
-			return $_POST;
+			$this->payload = $_POST;
 		}
 
 		public function isJsonPayload ():bool {
@@ -52,12 +62,17 @@
 
 		public function hasKey (string $property):bool {
 
-			return array_key_exists($property, $this->fullPayload());
+			return array_key_exists($property, $this->payload);
+		}
+
+		public function getKey (string $property) {
+
+			return $this->payload[$property];
 		}
 
 		public function only (array $include):array {
 
-			return array_filter($this->fullPayload(), function ($key) use ($include) {
+			return array_filter($this->payload, function ($key) use ($include) {
 
 				return array_key_exists($key, $include);
 			}, ARRAY_FILTER_USE_KEY);
@@ -65,7 +80,7 @@
 
 		public function except (array $exclude):array {
 
-			return array_filter($this->fullPayload(), function ($key) use ($include) {
+			return array_filter($this->payload, function ($key) use ($include) {
 
 				return !array_key_exists($key, $include);
 			}, ARRAY_FILTER_USE_KEY);

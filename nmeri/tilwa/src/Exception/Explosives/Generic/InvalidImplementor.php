@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Errors;
+	namespace Tilwa\Exception\Generic;
 
 	use Exception;
 
@@ -12,6 +12,11 @@
 			$this->interface = $interface;
 
 			$this->concrete = $concrete;
+		}
+
+		public function getMessage ():string {
+
+			return $this->concrete ." incorrectly provided for ". $this->interface;
 		}
 	}
 ?>

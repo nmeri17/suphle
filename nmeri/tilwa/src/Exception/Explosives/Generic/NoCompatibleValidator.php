@@ -1,7 +1,7 @@
 <?php
-	namespace Tilwa\Errors;
+	namespace Tilwa\Exception\Generic;
 
-	use \Exception;
+	use Exception;
 
 	class NoCompatibleValidator extends Exception {
 

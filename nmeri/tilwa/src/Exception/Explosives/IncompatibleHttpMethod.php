@@ -1,16 +1,24 @@
 <?php
-	namespace Tilwa\Errors;
+	namespace Tilwa\Exception\Explosives;
 
-	use \Exception;
+	use Exception;
 
 	class IncompatibleHttpMethod extends Exception {
 
-		private $requestDetails, $rendererMethod;
+		private $rendererMethod;
 
-		public function __construct (RequestDetails $requestDetails, string $rendererMethod) {
-
-			$this->requestDetails = $requestDetails;
+		public function __construct (string $rendererMethod) {
 
 			$this->rendererMethod = $rendererMethod;
+		}
+
+		public function getCode ():int {
+
+			return 405;
+		}
+
+		public function getMessage ():string {
+
+			return "Expected HTTP method ". $this->rendererMethod;
 		}
 	}

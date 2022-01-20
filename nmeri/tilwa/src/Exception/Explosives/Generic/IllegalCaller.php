@@ -1,6 +1,7 @@
 <?php
+	namespace Tilwa\Exception\Generic;
 
-	namespace Tilwa\Errors;
+	use Exception;
 
 	class IllegalCaller extends Exception {
 	}

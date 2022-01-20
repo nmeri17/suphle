@@ -1,11 +1,11 @@
 <?php
 	namespace Tilwa\Exception\Explosives;
 
-	use Tilwa\Contracts\{Requests\ValidationEvaluator, Exception\ContextualException};
+	use Tilwa\Contracts\Requests\ValidationEvaluator;
 
 	use Exception;
 
-	class ValidationFailure extends Exception implements ContextualException {
+	class ValidationFailure extends Exception {
 
 		private $evaluator;
 
@@ -14,9 +14,9 @@
 			$this->evaluator = $evaluator;
 		}
 
-		public function getContext ():array {
+		public function getEvaluator ():ValidationEvaluator {
 
-			return ["evaluator" => $this->evaluator];
+			return $this->evaluator;
 		}
 	}
 ?>

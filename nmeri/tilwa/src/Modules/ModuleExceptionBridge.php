@@ -1,9 +1,7 @@
 <?php
 	namespace Tilwa\Modules;
 
-	use Tilwa\Contracts\{App\HighLevelRequestHandler, Exception\ContextualException};
-
-	use Tilwa\Contracts\Config\ExceptionInterceptor;
+	use Tilwa\Contracts\{App\HighLevelRequestHandler, Config\ExceptionInterceptor};
 
 	use Tilwa\Hydration\Container;
 
@@ -13,22 +11,30 @@
 
 	class ModuleExceptionBridge implements HighLevelRequestHandler {
 
-		private $container, $handler;
+		private $container, $handler, $config;
 
-		public function __construct( Container $container) {
+		public function __construct( Container $container, ExceptionInterceptor $config) {
 
 			$this->container = $container;
+
+			$this->config = $config;
 		}
 
 		public function hydrateHandler (Throwable $exception) {
 
-			$handlers = $this->container->getClass(ExceptionInterceptor::class);
+			$handlers = $this->config->getHandlers();
 
-			$this->handler = $this->container->getClass($handlers[get_class($exception)]);
+			$exceptionName = get_class($exception);
 
-			if ($exception instanceof ContextualException)
+			if (array_key_exists($exceptionName, $handlers))
 
-				$this->handler->setData($exception->getContext());
+				$handlerName = $handlers[$exceptionName];
+			
+			else $handlerName = $this->config->defaultHandler();
+
+			$this->handler = $this->container->getClass($handlerName);
+			
+			$this->handler->setContextualData($exception);
 		}
 
 		public function handlingRenderer ():AbstractRenderer {

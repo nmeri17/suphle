@@ -9,7 +9,7 @@
 
 	use Tilwa\Contracts\{Auth\AuthStorage, App\HighLevelRequestHandler};
 
-	use Tilwa\Errors\{UnauthorizedServiceAccess, Unauthenticated};
+	use Tilwa\Exception\Explosives\{UnauthorizedServiceAccess, Unauthenticated};
 	
 	class ModuleInitializer implements HighLevelRequestHandler {
 
@@ -122,7 +122,7 @@
 
 				if ( !$this->responseManager->requestAuthenticationStatus($authMethod))
 
-					throw new Unauthenticated;
+					throw new Unauthenticated($authMethod);
 
 				$this->container->whenTypeAny()
 

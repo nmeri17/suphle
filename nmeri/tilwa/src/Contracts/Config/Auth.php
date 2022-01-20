@@ -1,14 +1,17 @@
 <?php
-
 	namespace Tilwa\Contracts\Config;
 
 	interface Auth extends ConfigMarker {
 
-		// @return [<string> path => <LoginRenderers> renderer]
+		/**
+		 * @return [<string> path => <LoginRenderers> renderer]
 		public function getLoginPaths ():array;
+		*/
 
-		// @return [LoginRenderers] matching path in above array
-		public function getPathRenderer (string $path):?string;
+		/**
+		 * @return destination when user hits SessionToken protected route
+		*/
+		public function markupRedirect ():string;
 
 		public function getTokenSecretKey ():string;
 

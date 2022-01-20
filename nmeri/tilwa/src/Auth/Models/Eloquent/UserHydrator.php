@@ -16,7 +16,7 @@
 			$this->payloadStorage = $payloadStorage;
 		}
 
-		public function findById(string $id):User {
+		public function findById(string $id):?User {
 
 			return $this->user->find($id);
 		}
@@ -24,11 +24,11 @@
 		/**
 		 *  {@inheritdoc}
 		*/
-		public function findAtLogin():User {
+		public function findAtLogin():?User {
 
 			return $this->user
 
-			->where($this->payloadStorage->only(["email"]))
+			->where($this->payloadStorage->getKey("email"))
 
 			->first();
 		}

@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Errors;
+	namespace Tilwa\Exception\Miscellaneous;
 
 	use Exception;
 

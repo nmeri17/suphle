@@ -3,6 +3,8 @@
 
 	interface ExceptionInterceptor extends ConfigMarker {
 
-		public function errorHandlers ():array;
+		public function getHandlers ():array;
+
+		public function defaultHandler ():string;
 	}
 ?>

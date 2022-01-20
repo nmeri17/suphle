@@ -37,7 +37,7 @@
 
 			$modules = $this->getModules();
 
-			$bootStarter = new ModulesBooter($modules, new ModuleLevelEvents($modules));
+			$bootStarter = new ModulesBooter($modules, new ModuleLevelEvents($modules)); // when running async, this should be stored on an instance property
 
 			$bootStarter->boot();
 
@@ -47,11 +47,11 @@
 			}
 			catch (Throwable $exception) {
 
-				$this->identifiedHandler = $bridge = new ModuleExceptionBridge($this->getActiveContainer());
+				$this->identifiedHandler = $bridge = $this->getActiveContainer()->getClass(ModuleExceptionBridge::class);
 
 				$bridge->hydrateHandler($exception);
 
-				$content = $bridge->getResponse();
+				$content = $bridge->handlingRenderer()->render();
 			}
 
 			$this->transferHeaders();
@@ -136,7 +136,13 @@
 		*/
 		private function getLoginCollection ():?string {
 
-			return $this->authConfig->getPathRenderer($this->requestDetails->getPath());
+			$rendererList = $this->authConfig->getLoginPaths();
+
+			$path = $this->requestDetails->getPath();
+
+			if (array_key_exists($path, $rendererList))
+
+				return $rendererList[$path];
 		}
 
 		protected function handleLoginRequest (string $collectionName):string {

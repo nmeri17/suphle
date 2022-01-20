@@ -1,10 +1,22 @@
 <?php
-	namespace Tilwa\Errors;
+	namespace Tilwa\Exception\Explosives;
 
-	use \Exception;
+	use Tilwa\Contracts\Auth\AuthStorage;
+
+	use Exception;
 
 	class Unauthenticated extends Exception {
 
-		// change code to 401
+		private $storage;
+
+		public function __construct (AuthStorage $storage) {
+
+			$this->storage = $storage;
+		}
+
+		public function storageMechanism ():AuthStorage {
+
+			return $this->storage;
+		}
 	}
 ?>

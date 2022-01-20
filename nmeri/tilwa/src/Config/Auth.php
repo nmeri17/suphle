@@ -5,26 +5,15 @@
 
 	use Tilwa\Auth\Renderers\{BrowserLoginRenderer, ApiLoginRenderer};
 
-	use Tilwa\Auth\Storage\SessionStorage;
-
 	class Auth implements AuthContract {
 
 		public function getLoginPaths ():array {
 
 			return [
-				"login" => BrowserLoginRenderer::class,
+				$this->markupRedirect() => BrowserLoginRenderer::class,
 
 				"api/v1/login" => ApiLoginRenderer::class
 			];
-		}
-
-		public function getPathRenderer (string $path):?string {
-
-			$rendererList = $this->getLoginPaths();
-
-			if (array_key_exists($path, $rendererList))
-
-				return $rendererList[$path];
 		}
 
 		public function getTokenSecretKey ():string {
@@ -45,6 +34,11 @@
 		public function getModelObservers():array {
 
 			return [];
+		}
+
+		public function markupRedirect ():string {
+
+			return "login";
 		}
 	}
 ?>

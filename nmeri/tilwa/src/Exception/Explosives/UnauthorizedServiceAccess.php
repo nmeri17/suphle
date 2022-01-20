@@ -1,8 +1,8 @@
 <?php
+	namespace Tilwa\Exception\Explosives;
 
-	namespace Tilwa\Errors;
+	use Exception;
 
-	// should be caught by the response manager
 	class UnauthorizedServiceAccess extends Exception {
 	}
 ?>

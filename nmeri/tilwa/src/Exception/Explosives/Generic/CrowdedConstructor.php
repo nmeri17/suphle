@@ -1,6 +1,5 @@
 <?php
-
-	namespace Tilwa\Errors;
+	namespace Tilwa\Exception\Generic;
 
 	class CrowdedConstructor extends Exception {
 	}

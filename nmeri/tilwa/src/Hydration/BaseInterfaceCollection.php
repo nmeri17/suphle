@@ -9,7 +9,7 @@
 
 	use Tilwa\Contracts\Auth\{AuthStorage, User as UserEntity, UserHydrator as IUserHydrator};
 
-	use Tilwa\Contracts\Config\{Auth as AuthConfig, Transphporm as TransphpormConfig, Laravel as LaravelConfig};
+	use Tilwa\Contracts\Config\{Auth as AuthConfig, Transphporm as TransphpormConfig, Laravel as LaravelConfig, ExceptionInterceptor};
 
 	use Tilwa\InterfaceLoader\{OrmLoader, LaravelAppLoader};
 
@@ -23,7 +23,7 @@
 
 	use Tilwa\Request\Validators\RakitValidator;
 
-	use Tilwa\Config\{Auth, Transphporm, Laravel};
+	use Tilwa\Config\{Auth, Transphporm, Laravel, ExceptionConfig};
 
 	use Tilwa\Modules\BlankModuleApi;
 
@@ -81,7 +81,9 @@
 
 				TransphpormConfig::class => Transphporm::class,
 
-				IUserHydrator::class => EloquentUserHydrator::class
+				IUserHydrator::class => EloquentUserHydrator::class,
+
+				ExceptionInterceptor::class => ExceptionConfig::class
 			];
 		}
 	}
