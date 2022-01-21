@@ -7,9 +7,7 @@
 	
 	use Tilwa\Hydration\Templates\CircularBreaker;
 
-	use Tilwa\Bridge\Laravel\LaravelProviderManager;
-
-	use Tilwa\Errors\InvalidImplementor;
+	use Tilwa\Exception\Explosives\Generic\InvalidImplementor;
 
 	class Container {
 
@@ -47,23 +45,19 @@
 			*	2) Provisions it afresh if an interface or recursively wires in its constructor dependencies
 		*
 		*	@param {includeSub} With `needs`, you can supply sub-types in place of their parents, but with this, non-provisioned sub-types can access provisions of their superiors
-		* @return A class instance if found
+		* @return A class instance, if found
 		*/
 		public function getClass (string $fullName, bool $includeSub = false) {
 
 			$contextConcrete = $this->getClassForContext($fullName);
 
-			if (!is_null($contextConcrete)) return $contextConcrete;
+			if (!is_null($contextConcrete))
+
+				return $this->decorator->scopeInjecting($contextConcrete);
 
 			if ($includeSub && $parent = $this->hydrateChildsParent($fullName))
 
 				return $parent;
-
-			$concrete;
-
-			$outermost = $this->notRecursing();
-
-			$this->setRecursingFor($fullName);
 
 			$concrete = $this->loadLaravelLibrary($fullName);
 
@@ -71,18 +65,20 @@
 
 				$reflectedClass = new ReflectionClass($fullName);
 
+				$this->setRecursingFor($fullName);
+
 				if ($reflectedClass->isInterface())
 
 					$concrete = $this->provideInterface($fullName);
 
-				if ($reflectedClass->isInstantiable())
+				else if ($reflectedClass->isInstantiable())
 
 					$concrete = $this->instantiateConcrete($fullName);
+
+				if ($this->notRecursing()) $this->unsetRecursingFor();
 			}
 
-			if ($outermost) $this->unsetRecursingFor();
-
-			return $concrete;
+			if (!is_null($concrete)) return $concrete;
 		}
 
 		private function getClassForContext (string $fullName) {
@@ -100,6 +96,9 @@
 				return $context->getConcrete($fullName);
 		}
 
+		/**
+		 * Sets the entity's provision that dependencies should be hydrated for
+		*/
 		private function setRecursingFor (string $fullName, bool $isOutermost = false):void {
 
 			if ($isOutermost)
@@ -109,6 +108,9 @@
 			else $this->recursingFor = $fullName; // e.g if we are hydrating dependency B of class A, we want to get provisions for B, not A, the last called
 		}
 
+		/**
+		 * Does not decorate objects since we can't have access to decorate those interfaces/entities. Plus, this method is a decorator on its own
+		*/
 		private function loadLaravelLibrary( string $fullName ) {
 
 			$hydrator = $this->getLaravelHydrator();
@@ -133,7 +135,10 @@
 			$this->storeConcrete( $interface, $concrete);
 		}
 
-		private function hydrateChildsParent(string $fullName):?object {
+		/**
+		 * Not explicitly decorating objects from here since it calls [getClass]
+		*/
+		private function hydrateChildsParent (string $fullName) {
 
 			$providedParent = $this->getProvidedParent($fullName);
 
@@ -142,6 +147,14 @@
 			return $this->getClass($providedParent);
 		}
 
+		/**
+		 * A shorter version of [getClass], but neither checks in cache or contextual provisions. This means they're useful to:
+		 * 1) To hydrate classes we're sure doesn't exist in the cache
+		 * 2) In methods that won't be called more than once in the request cycle
+		 * 3) To create objects that are more or less static, or can't be overidden by an extension
+		 * 
+		 *  All objects internally derived from this trigger decorators if any are applied
+		*/
 		public function instantiateConcrete (string $fullName) {
 
 			$constructor = "__construct";
@@ -161,10 +174,10 @@
 
 			$this->storeConcrete($fullName, $concrete);
 
-			return $concrete;
+			return $this->decorator->scopeInjecting($concrete);
 		}
 
-		private function storeConcrete (string $fullName, object $concrete):void {
+		private function storeConcrete (string $fullName, $concrete):void {
 
 			$this->getRecursionContext();
 
@@ -278,7 +291,7 @@
 		*/ 
 		public function getMethodParameters ( $callable, string $anchorClass):array {
 
-			$context;
+			$context = null;
 
 			$explicitCall = $this->notRecursing();
 
@@ -295,7 +308,11 @@
 
 			if ($explicitCall) $this->unsetRecursingFor();
 
-			return $this->populateDependencies($reflectedCallable, $context);
+			return $this->decorator->scopeArguments(
+				$anchorClass,
+
+				$this->populateDependencies($reflectedCallable, $context)
+			);
 		}
 
 		private function populateDependencies (ReflectionFunctionAbstract $callable, ?ProvisionUnit $callerProvision):array {
@@ -449,7 +466,7 @@
 		/**
 		*	@return Result of evaluating {constructor}
 		*/
-		public function genericFactory (string $generic, array $types, callable $constructor):object {
+		public function genericFactory (string $generic, array $types, callable $constructor) {
 
 			$reflectedGeneric = new ReflectionClass($generic);
 
@@ -494,6 +511,13 @@
 		public function provideSelf ():void {
 
 			$this->whenTypeAny()->needsAny([get_class() => $this]);
+		}
+
+		public function interiorDecorate ():void {
+
+			$this->decorator = $this->instantiateConcrete(DecoratorHydrator::class);
+
+			$this->decorator->assignScopes();
 		}
 	}
 ?>

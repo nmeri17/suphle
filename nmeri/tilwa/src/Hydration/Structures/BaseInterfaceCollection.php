@@ -1,11 +1,9 @@
 <?php
-	namespace Tilwa\Hydration;
+	namespace Tilwa\Hydration\Structures;
 
-	use Tilwa\Contracts\Hydration\InterfaceCollection;
+	use Tilwa\Contracts\Hydration\{InterfaceCollection, DecoratorChain};
 
-	use Tilwa\Errors\InvalidModuleImport;
-
-	use Tilwa\Contracts\{HtmlParser, Database\Orm as OrmApi, Requests\RequestValidator, Queues\Adapter as QueueAdapter, Hydration\InterfaceCollection, Bridge\LaravelContainer, App\BlankModule};
+	use Tilwa\Contracts\{HtmlParser, Database\Orm as OrmApi, Requests\RequestValidator, Queues\Adapter as QueueAdapter, Bridge\LaravelContainer, App\BlankModule};
 
 	use Tilwa\Contracts\Auth\{AuthStorage, User as UserEntity, UserHydrator as IUserHydrator};
 
@@ -26,6 +24,8 @@
 	use Tilwa\Config\{Auth, Transphporm, Laravel, ExceptionConfig};
 
 	use Tilwa\Modules\BlankModuleApi;
+
+	use Tilwa\Hydration\Structures\BaseDecorators;
 
 	class BaseInterfaceCollection implements InterfaceCollection {
 
@@ -54,7 +54,9 @@
 
 				QueueAdapter::class => Resque::class,
 
-				BlankModule::class => BlankModuleApi::class
+				BlankModule::class => BlankModuleApi::class,
+
+				DecoratorChain::class => BaseDecorators::class
 			];
 		}
 

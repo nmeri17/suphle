@@ -3,7 +3,7 @@
 
 	use Tilwa\Contracts\{Hydration\InterfaceCollection, App\BlankModule};
 
-	use Tilwa\Hydration\{Container, BaseInterfaceCollection};
+	use Tilwa\Hydration\{Container, Structures\BaseInterfaceCollection};
 
 	use Tilwa\Exception\Explosives\UnexpectedModules;
 
@@ -80,6 +80,8 @@
 			$this->container->provideSelf();
 
 			$this->container->setInterfaceHydrator($this->interfaceCollection());
+
+			$this->container->interiorDecorate();
 		}
 
 		// this should be on an [ExpatriateManager], but that'll make all the loaded descriptors create new instances of that class
