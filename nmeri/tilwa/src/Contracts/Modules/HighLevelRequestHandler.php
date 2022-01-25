@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Contracts\App;
+	namespace Tilwa\Contracts\Modules;
 
 	use Tilwa\Response\Format\AbstractRenderer;
 

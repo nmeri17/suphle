@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Flows;
 
-	use Tilwa\Contracts\{Requests\BaseResponseManager, CacheManager, Auth\AuthStorage, App\HighLevelRequestHandler};
+	use Tilwa\Contracts\{Requests\BaseResponseManager, CacheManager, Auth\AuthStorage, Modules\HighLevelRequestHandler};
 
 	use Tilwa\Queues\AdapterManager;
 

@@ -3,7 +3,7 @@
 
 	use Tilwa\Contracts\Hydration\{InterfaceCollection, DecoratorChain};
 
-	use Tilwa\Contracts\{HtmlParser, Database\Orm as OrmApi, Requests\RequestValidator, Queues\Adapter as QueueAdapter, Bridge\LaravelContainer, App\BlankModule};
+	use Tilwa\Contracts\{HtmlParser, Database\Orm as OrmApi, Requests\RequestValidator, Queues\Adapter as QueueAdapter, Bridge\LaravelContainer, Modules\ControllerModule};
 
 	use Tilwa\Contracts\Auth\{AuthStorage, User as UserEntity, UserHydrator as IUserHydrator};
 
@@ -23,7 +23,7 @@
 
 	use Tilwa\Config\{Auth, Transphporm, Laravel, ExceptionConfig};
 
-	use Tilwa\Modules\BlankModuleApi;
+	use Tilwa\Modules\ControllerModuleApi;
 
 	use Tilwa\Hydration\Structures\BaseDecorators;
 
@@ -54,7 +54,7 @@
 
 				QueueAdapter::class => Resque::class,
 
-				BlankModule::class => BlankModuleApi::class,
+				ControllerModule::class => ControllerModuleApi::class,
 
 				DecoratorChain::class => BaseDecorators::class
 			];

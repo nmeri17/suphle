@@ -1,10 +1,7 @@
 <?php
-
 	namespace Tilwa\Middleware;
 
-	use Tilwa\Contracts\Middleware;
-
-	class FinalHandlerWrapper implements Middleware {
+	class FinalHandlerWrapper extends BaseMiddleware {
 
 		private $manager;
 

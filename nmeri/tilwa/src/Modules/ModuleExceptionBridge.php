@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Modules;
 
-	use Tilwa\Contracts\{App\HighLevelRequestHandler, Config\ExceptionInterceptor};
+	use Tilwa\Contracts\{Modules\HighLevelRequestHandler, Config\ExceptionInterceptor};
 
 	use Tilwa\Hydration\Container;
 

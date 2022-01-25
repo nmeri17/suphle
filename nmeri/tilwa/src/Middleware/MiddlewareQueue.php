@@ -5,7 +5,7 @@
 
 	use Tilwa\Routing\RequestDetails;
 
-	use Tilwa\Contracts\{Routing\Middleware, Config\Router as RouterConfig};
+	use Tilwa\Contracts\Config\Router as RouterConfig;
 
 	class MiddlewareQueue {
 

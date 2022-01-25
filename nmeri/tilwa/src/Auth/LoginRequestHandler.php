@@ -3,7 +3,7 @@
 
 	use Tilwa\Hydration\Container;
 
-	use Tilwa\Contracts\{Auth\LoginRenderers, App\HighLevelRequestHandler, Request\ValidationEvaluator};
+	use Tilwa\Contracts\{Auth\LoginRenderers, Modules\HighLevelRequestHandler, Request\ValidationEvaluator};
 
 	use Tilwa\Response\Format\AbstractRenderer;
 

@@ -33,30 +33,33 @@
 			});
 		}
 
-		public function scopeArguments (string $entityName, array $argumentList):array {
+		public function scopeArguments (string $entityName, array $argumentList, string $methodName):array {
 
 			$scope = $this->argumentScope;
+
+			$container = $this->container;
 
 			$relevantDecors = $this->getRelevantDecors($scope, $entityName);
 
 			if (empty($relevantDecors)) return $argumentList;
 
-			$noConstructor = $this->container->genericFactory(
-				AvoidConstructor::class, 
+			if ($methodName == "__construct") $hasConstructor = true;
 
-				["target" => $entityName ],
+			if ($hasConstructor)
 
-				function ($types) {
+				$concrete = $this->noConstructor($entityName);
 
-			    	return new AvoidConstructor;
-				}
-			);
+			else $concrete = $container->getClass($entityName);
 
 			foreach ($relevantDecors as $decorator) {
 
-				$handler = $this->container->getClass($scope[$decorator]);
+				$handler = $container->getClass($scope[$decorator]);
 
-				$argumentList = $handler->transformList ($noConstructor, $argumentList);
+				if ($hasConstructor)
+
+					$argumentList = $handler->transformConstructor ($concrete, $argumentList);
+
+				else $argumentList = $handler->transformMethods($concrete, $argumentList);
 			}
 
 			return $argumentList;
@@ -67,7 +70,21 @@
 			return array_intersect(array_keys($context), class_implements($search));
 		}
 
-		public function scopeInjecting ($concrete) {
+		private function noConstructor (string $className):AvoidConstructor {
+
+			return $this->container->genericFactory(
+				AvoidConstructor::class, 
+
+				["target" => $className ],
+
+				function ($types) {
+
+			    	return new AvoidConstructor ($types["target"]);
+				}
+			);
+		}
+
+		public function scopeInjecting ($concrete, string $caller) {
 
 			$scope = $this->injectScope;
 
@@ -79,7 +96,7 @@
 
 				$handler = $this->container->getClass($scope[$decorator]);
 
-				$concrete = $handler->upgradeInstance ($concrete);
+				$concrete = $handler->proxifyInstance ($concrete, $caller);
 			}
 
 			return $concrete;

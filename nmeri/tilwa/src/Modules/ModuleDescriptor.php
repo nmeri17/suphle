@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Modules;
 
-	use Tilwa\Contracts\{Hydration\InterfaceCollection, App\BlankModule};
+	use Tilwa\Contracts\{Hydration\InterfaceCollection, Modules\ControllerModule};
 
 	use Tilwa\Hydration\{Container, Structures\BaseInterfaceCollection};
 
@@ -51,7 +51,7 @@
 		*/
 		public function exportsImplements():string {
 
-			return BlankModule::class;
+			return ControllerModule::class;
 		}
 
 		/**

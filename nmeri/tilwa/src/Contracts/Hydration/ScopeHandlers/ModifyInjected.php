@@ -3,6 +3,9 @@
 
 	interface ModifyInjected {
 
-		public function upgradeInstance ($concrete);
+		/**
+		 * @return wrapped object for the caller
+		*/
+		public function proxifyInstance ($concrete, string $caller);
 	}
 ?>

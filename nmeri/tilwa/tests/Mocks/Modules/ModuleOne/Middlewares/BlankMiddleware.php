@@ -1,9 +1,9 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Middlewares;
 
-	use Tilwa\Contracts\Middleware;
+	use Tilwa\Middleware\BaseMiddleware;
 
-	class BlankMiddleware implements Middleware {
+	class BlankMiddleware extends BaseMiddleware {
 
 		public function process ($request, $requestHandler) {
 

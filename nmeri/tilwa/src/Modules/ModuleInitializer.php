@@ -7,7 +7,7 @@
 
 	use Tilwa\Bridge\Laravel\ModuleRouteMatcher;
 
-	use Tilwa\Contracts\{Auth\AuthStorage, App\HighLevelRequestHandler};
+	use Tilwa\Contracts\{Auth\AuthStorage, Modules\HighLevelRequestHandler};
 
 	use Tilwa\Exception\Explosives\{UnauthorizedServiceAccess, Unauthenticated};
 	

@@ -17,15 +17,17 @@
 
 		$dependencyChain = [],
 
+		$hydratingForStack = [], // String[] The last item is the one whose context/ProvisionUnit will be used in hydrating dependencies
+
 		$universalSelector = "*",
+
+		$internalMethodHydrate = false, // Used when [getMethodParameters] is called directly without going through instance methods such as [instantiateConcrete]
 
 		$laravelHydrator, $interfaceHydrator,
 
 		$provisionContext, // the active Type before calling `needs`
 
-		$provisionSpace, // same as above, but for namespaces
-
-		$recursingFor; // string of the active ProvisionUnit
+		$provisionSpace; // same as above, but for namespaces
 
 		public function __construct () {
 
@@ -44,16 +46,15 @@
 			*	1) pre-provisioned caller list
 			*	2) Provisions it afresh if an interface or recursively wires in its constructor dependencies
 		*
-		*	@param {includeSub} With `needs`, you can supply sub-types in place of their parents, but with this, non-provisioned sub-types can access provisions of their superiors
+		*	@param {includeSub} Regular provision: A wants B, but we give C sub-class of B. Sub-classes of A can't obtain B unless this parameter is used
+		* 
 		* @return A class instance, if found
 		*/
 		public function getClass (string $fullName, bool $includeSub = false) {
 
-			$contextConcrete = $this->getClassForContext($fullName);
+			$concrete = $this->decorateProvidedConcrete($fullName);
 
-			if (!is_null($contextConcrete))
-
-				return $this->decorator->scopeInjecting($contextConcrete);
+			if (!is_null($concrete)) return $concrete;
 
 			if ($includeSub && $parent = $this->hydrateChildsParent($fullName))
 
@@ -61,51 +62,57 @@
 
 			$concrete = $this->loadLaravelLibrary($fullName);
 
-			if (is_null($concrete)) {
-
-				$reflectedClass = new ReflectionClass($fullName);
-
-				$this->setRecursingFor($fullName);
-
-				if ($reflectedClass->isInterface())
-
-					$concrete = $this->provideInterface($fullName);
-
-				else if ($reflectedClass->isInstantiable())
-
-					$concrete = $this->instantiateConcrete($fullName);
-
-				if ($this->notRecursing()) $this->unsetRecursingFor();
-			}
-
 			if (!is_null($concrete)) return $concrete;
+
+			$reflectedClass = new ReflectionClass($fullName);
+
+			if ($reflectedClass->isInterface())
+
+				$concrete = $this->provideInterface($fullName);
+
+			else if ($reflectedClass->isInstantiable())
+
+				$concrete = $this->instantiateConcrete($fullName);
+
+			return $concrete;
 		}
 
-		private function getClassForContext (string $fullName) {
-
-			$outermost = $this->notRecursing();
-
-			$this->setRecursingFor($fullName, $outermost);
+		private function getProvidedConcrete (string $fullName) {
 
 			$context = $this->getRecursionContext();
-
-			if ($outermost) $this->unsetRecursingFor();
 
 			if ($context->hasConcrete($fullName))
 
 				return $context->getConcrete($fullName);
 		}
 
+		private function decorateProvidedConcrete (string $fullName) {
+
+			$this->pushHydratingFor($fullName);
+
+			$trueCaller = $this->lastHydratedFor(); // get this before it's overwritten by [getProvidedConcrete] cuz it has no provision
+
+			$concrete = $this->getProvidedConcrete($fullName);
+
+			$this->popHydratingFor();
+
+			if (!is_null($concrete))
+
+				$this->decorator->scopeInjecting($concrete, $trueCaller); // decorator runs on each fetch (rather than only once), since different callers result in different behavior
+		}
+
 		/**
-		 * Sets the entity's provision that dependencies should be hydrated for
+		 * Updates the last element in the context hydrating stack, to that whose provision dependencies should be hydrated for
+		*
+		* @param {ignoreLastCaller}:bool If we're hydrating dependency B of class A, we want to get provisions for B--not A, the last called; otherwise, we'll be looking through class A's provisions instead of class B
 		*/
-		private function setRecursingFor (string $fullName, bool $isOutermost = false):void {
+		private function pushHydratingFor (string $fullName, bool $ignoreLastCaller = false):void {
 
-			if ($isOutermost)
+			if (!$ignoreLastCaller && empty($this->hydratingForStack))
 
-				$this->recursingFor = $this->lastCaller();
+				$this->hydratingForStack[] = $this->lastCaller();
 
-			else $this->recursingFor = $fullName; // e.g if we are hydrating dependency B of class A, we want to get provisions for B, not A, the last called
+			else $this->hydratingForStack[] = $fullName;
 		}
 
 		/**
@@ -142,9 +149,9 @@
 
 			$providedParent = $this->getProvidedParent($fullName);
 
-			if (is_null($providedParent)) return null;
+			if (!is_null($providedParent))
 
-			return $this->getClass($providedParent);
+				return $this->getClass($providedParent);
 		}
 
 		/**
@@ -159,31 +166,41 @@
 
 			$constructor = "__construct";
 
-			if (method_exists($fullName, $constructor)) {
+			$hydrateFor = null;
+
+			if (!method_exists($fullName, $constructor))
+
+				$concrete = new $fullName;
+
+			else {
 
 				$this->dependencyChain[] = $fullName;
+
+				$this->pushHydratingFor($fullName);
+
+				$this->internalMethodHydrate = true;
 			
 				$dependencies = array_values($this->getMethodParameters($constructor, $fullName));
+
+				$this->internalMethodHydrate = false;
 
 				$concrete = new $fullName (...$dependencies);
 
 				$this->unchainDependency($fullName);
-			}
 
-			else $concrete = new $fullName;
+				$hydrateFor = $this->lastHydratedFor();
+
+				$this->popHydratingFor();
+			}
 
 			$this->storeConcrete($fullName, $concrete);
 
-			return $this->decorator->scopeInjecting($concrete);
+			return $this->decorator->scopeInjecting($concrete, $hydrateFor);
 		}
 
-		private function storeConcrete (string $fullName, $concrete):void {
+		private function storeConcrete (string $fullName, $concrete):ProvisionUnit {
 
-			$this->getRecursionContext();
-
-			$this->provisionedClasses[$this->recursingFor]
-
-			->addConcrete($fullName, $concrete);
+			return $this->getRecursionContext()->addConcrete($fullName, $concrete);
 		}
 
 		private function lastCaller ():string {
@@ -204,32 +221,51 @@
 		* Switches unit being provided to universal if it doesn't exist
 		* @return currently available provision unit
 		*/
-		private function getRecursionContext():ProvisionUnit {
+		private function getRecursionContext ():ProvisionUnit {
 
-			if (!array_key_exists($this->recursingFor, $this->provisionedClasses))
+			$hydrateFor = $this->lastHydratedFor();
 
-				$this->setRecursingFor($this->universalSelector);
+			if (!array_key_exists($hydrateFor, $this->provisionedClasses)) {
 
-			return $this->provisionedClasses[$this->recursingFor];
+				$this->popHydratingFor();
+
+				$this->pushHydratingFor($this->universalSelector);
+			}
+
+			return $this->provisionedClasses[$hydrateFor];
+		}
+
+		private function lastHydratedFor ():string {
+
+			return end($this->hydratingForStack);
 		}
 
 		/**
 		 * @return Concrete of the given [Interface] if it has been provided
-		 * */
-		private function provideInterface(string $interface) {
+		*/
+		private function provideInterface (string $interface) {
 
-			if ($this->isRenamedSpace()) {
+			$this->pushHydratingFor($fullName);
 
-				$newIdentity = $this->relocateSpace($interface);
+			$caller = $this->lastHydratedFor();
 
-				return $this->instantiateConcrete($newIdentity);
+			if ($this->hasRenamedSpace($caller)) {
+
+				$newIdentity = $this->relocateSpace($interface, $caller);
+
+				$concrete = $this->instantiateConcrete($newIdentity);
 			}
 
-			$concrete = $this->interfaceHydrator->deriveConcrete($interface);
+			else {
 
-			if (is_null($concrete)) return;
+				$concrete = $this->interfaceHydrator->deriveConcrete($interface);
 
-			$this->saveWhenImplements($fullName, $concrete);
+				if (!is_null($concrete))
+
+					$this->saveWhenImplements($fullName, $concrete);
+			}
+
+			$this->popHydratingFor();
 
 			return $concrete;
 		}
@@ -285,34 +321,40 @@
 
 		/**
 		*	Fetch appropriate dependencies for a callable's arguments
+		* 
 		* @param {callable}:string|Closure
 		* @param {anchorClass} the class the given method belongs to
+		* 
 		* @return {Array} associative. Contains hydrated parameters to invoke given callable with
 		*/ 
-		public function getMethodParameters ( $callable, string $anchorClass):array {
+		public function getMethodParameters ( $callable, string $anchorClass = null):array {
 
 			$context = null;
 
-			$explicitCall = $this->notRecursing();
+			if (is_null($anchorClass))
 
-			if (isset($anchorClass)) {
+				$reflectedCallable = new ReflectionFunction($callable);
+
+			else {
 
 				$reflectedCallable = new ReflectionMethod($anchorClass, $callable);
 
-				if ($explicitCall) $this->setRecursingFor($anchorClass); // Assume class A wanna get parameters for class B->foo. When set to `lastCaller`, we'll be looking through class A's provisions instead of class B
+				if (!$this->internalMethodHydrate)
+
+					$this->pushHydratingFor($anchorClass, true);
 
 				$context = $this->getRecursionContext();
 			}
 
-			else $reflectedCallable = new ReflectionFunction($callable);
+			$dependencies = $this->populateDependencies($reflectedCallable, $context);
 
-			if ($explicitCall) $this->unsetRecursingFor();
+			if (is_null($anchorClass)) return $dependencies;
 
-			return $this->decorator->scopeArguments(
-				$anchorClass,
+			elseif (!$this->internalMethodHydrate)
 
-				$this->populateDependencies($reflectedCallable, $context)
-			);
+				$this->popHydratingFor();
+
+			return $this->decorator->scopeArguments( $anchorClass, $dependencies, $callable);
 		}
 
 		private function populateDependencies (ReflectionFunctionAbstract $callable, ?ProvisionUnit $callerProvision):array {
@@ -327,11 +369,11 @@
 
 				if (!is_null($callerProvision) )
 
-					$dependencies[$parameterName] = $this->populateForProvided($callerProvision, $parameterType, $parameterName);
+					$dependencies[$parameterName] = $this->hydrateProvidedParameter($callerProvision, $parameterType, $parameterName);
 
 				elseif (is_null($parameterType)) // untyped
 
-					$dependencies[$parameterName] = $this->getParameterValue($parameterType);
+					$dependencies[$parameterName] = $this->hydrateUnprovidedParameter($parameterType);
 				
 				elseif ($parameter->isOptional() )
 
@@ -348,7 +390,7 @@
 		 * 
 		 * @return object matching type at given parameter
 		*/
-		private function populateForProvided (ProvisionUnit $callerProvision, ReflectionType $parameterType, string $parameterName) {
+		private function hydrateProvidedParameter (ProvisionUnit $callerProvision, ReflectionType $parameterType, string $parameterName) {
 
 			if ($callerProvision->hasArgument($parameterName))
 
@@ -360,10 +402,10 @@
 
 				return $callerProvision->getArgument($typeName);
 
-			return $this->getParameterValue($parameterType);
+			return $this->hydrateUnprovidedParameter($parameterType);
 		}
 
-		private function getParameterValue(ReflectionType $parameterType) {
+		private function hydrateUnprovidedParameter (ReflectionType $parameterType) {
 
 			$typeName = $parameterType->getName();
 
@@ -392,18 +434,22 @@
 			return $defaultValue;
 		}
 
-		// @return the first provided parent of the given class
-		private function getProvidedParent(string $class):?string {
+		/**
+		 * @return the first provided parent of the given class
+		*/
+		private function getProvidedParent (string $class):?string {
 
 			$allSuperiors = array_keys($this->provisionedClasses);
 
-			$classSuperiors = class_parents($class, true) +class_implements($class, true);
+			$classSuperiors = array_merge(
+				class_parents($class, true),
 
-			$providedParents = array_intersect($classSuperiors, $allSuperiors);
+				class_implements($class, true)
+			);
 
-			if (empty($providedParents)) return null;
-
-			return current($providedParents);
+			return current(
+				array_intersect($classSuperiors, $allSuperiors)
+			);
 		}
 
 		public function whenSpace(string $callerNamespace):self {
@@ -424,43 +470,37 @@
 			return $this;
 		}
 
-		private function isRenamedSpace():bool {
+		private function hasRenamedSpace (string $caller):bool {
 
-			$namespace = $this->localizeNamespace($this->recursingFor, 1);
+			$namespace = $this->localizeNamespace($caller, 1);
 			
 			return array_key_exists($namespace, $this->provisionedNamespaces);
 		}
 
-		private function relocateSpace(string $entityFormerName):string {
+		private function relocateSpace (string $dependency, string $caller):string {
 
-			$locality = $this->localizeNamespace($this->recursingFor, 1);
+			$callerSpace = $this->localizeNamespace($caller, 1);
 			
-			$context = $this->provisionedNamespaces[$locality];
+			$dependencySpace = $this->localizeNamespace($dependency, 1);
 
-			$entityParent = $this->localizeNamespace($entityFormerName, 1);
-
-			foreach ($context as $spaceUnit) {
+			foreach ($this->provisionedNamespaces[$callerSpace] as $spaceUnit)
 				
-				if ($spaceUnit->getSource() == $entityParent) {
+				if ($spaceUnit->getSource() == $dependencySpace) {
 
-					$requestedEntity = $this->getRequestedEntity();
+					$newIdentity = $spaceUnit->getNewName(
+						end(explode("\\", $dependency))
+					);
 
-					return $spaceUnit->getLocation() . "\\". $spaceUnit->getNewName($requestedEntity);
+					return $spaceUnit->getLocation() . "\\". $newIdentity;
 				}
-			}
 		}
 
 		/**
-		*	@param {backStep} Given a [fullName] Space1\Space2\TargetNamespace\Target, we want the anchor "Space1\Space2" when this is 2
+		*	@param {backStep} Given a [entityName] Space1\Space2\TargetNamespace\Target, we want the anchor "Space1\Space2" when this is 2
 		*/
-		private function localizeNamespace(string $fullName, int $backStep):string {
+		public function localizeNamespace (string $entityName, int $backStep):string {
 			
-			return implode("\\", (explode("\\", $fullName, -$backStep)));
-		}
-
-		private function getRequestedEntity(string $fullName):string {
-			
-			return end(explode("\\", $fullName));
+			return implode("\\", (explode("\\", $entityName, -$backStep)));
 		}
 
 		/**
@@ -498,14 +538,12 @@
 			return $this->laravelHydrator;
 		}
 
-		private function unsetRecursingFor ():void {
+		/**
+		 * Ahead of future invocations by other callers for provided objects
+		*/
+		private function popHydratingFor ():void {
 
-			$this->recursingFor = null; // ahead of future invocations by other callers to modular Container
-		}
-
-		private function notRecursing ():bool {
-
-			return is_null($this->recursingFor);
+			array_pop($this->hydratingForStack);
 		}
 
 		public function provideSelf ():void {

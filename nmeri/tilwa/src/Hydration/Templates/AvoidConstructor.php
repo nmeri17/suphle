@@ -3,9 +3,16 @@
 
 	class AvoidConstructor extends <target> {
 
-        public function __construct() {
+        private $target
 
-            //
+        public function __construct(string $target) {
+
+            $this->target = $target;
+        }
+
+        public function targetName ():string {
+
+            return $this->target;
         }
     }
 ?>
