@@ -7,7 +7,7 @@
 
 	class ServicePreferenceHandler implements ModifiesArguments {
 
-		public function transformConstructor (AvoidConstructor $dummyInstance, array $injectedArguments):array {
+		public function transformConstructor ($dummyInstance, array $injectedArguments):array {
 
 			$suspects = [];
 
@@ -21,7 +21,7 @@
 
 				if ($this->containsParent($dummyInstance->getRejected(), $service ))
 
-					throw new UnacceptableDependency ($dummyInstance->targetName(), get_class($service));
+					throw new UnacceptableDependency (get_class($dummyInstance), get_class($service));
 			
 			return $injectedArguments;
 		};

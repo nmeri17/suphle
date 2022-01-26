@@ -472,16 +472,14 @@
 
 		private function hasRenamedSpace (string $caller):bool {
 
-			$namespace = $this->localizeNamespace($caller, 1);
-			
-			return array_key_exists($namespace, $this->provisionedNamespaces);
+			return array_key_exists($this->getNamespace($caller), $this->provisionedNamespaces);
 		}
 
 		private function relocateSpace (string $dependency, string $caller):string {
 
-			$callerSpace = $this->localizeNamespace($caller, 1);
+			$callerSpace = $this->getNamespace($caller);
 			
-			$dependencySpace = $this->localizeNamespace($dependency, 1);
+			$dependencySpace = $this->getNamespace($dependency);
 
 			foreach ($this->provisionedNamespaces[$callerSpace] as $spaceUnit)
 				
@@ -495,12 +493,9 @@
 				}
 		}
 
-		/**
-		*	@param {backStep} Given a [entityName] Space1\Space2\TargetNamespace\Target, we want the anchor "Space1\Space2" when this is 2
-		*/
-		public function localizeNamespace (string $entityName, int $backStep):string {
+		public function getNamespace (string $entityName):string {
 			
-			return implode("\\", (explode("\\", $entityName, -$backStep)));
+			return (new ReflectionClass($entityName))->getNamespaceName();
 		}
 
 		/**

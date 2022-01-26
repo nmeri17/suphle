@@ -14,7 +14,11 @@
 			return [
 				SelectiveDependencies::class => ServicePreferenceHandler::class,
 
-				OnlyLoadedBy::class => OnlyLoadedByHandler::class
+				OnlyLoadedBy::class => OnlyLoadedByHandler::class,
+
+				//BaseQueryService::class => QueryProxy::class, // plug another one here
+
+				ServiceErrorCatcher::class => ErrorCatcherHandler::class // load from correct space
 			];
 		}
 	}

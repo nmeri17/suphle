@@ -54,8 +54,6 @@
 
 			$this->updateControllerManager();
 
-			$this->validateManager();
-
 			$this->buildManagerTarget();
 
 			return $this;
@@ -92,13 +90,6 @@
 			if (!$this->isValidRequest())
 
 				throw new ValidationFailure($this->controllerManager);
-		}
-
-		private function validateManager():void {
-
-			$globalDependencies = $this->container->getClass(ModuleDescriptor::class)->getExpatriates();
-
-			$this->controllerManager->validateController($globalDependencies);
 		}
 
 		private function buildManagerTarget():void {

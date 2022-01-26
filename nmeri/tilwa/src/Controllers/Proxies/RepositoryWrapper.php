@@ -3,7 +3,7 @@
 
 	use Tilwa\Contracts\{ Database\Orm, Services\CommandService};
 
-	class RepositoryWrapper extends ServiceWrapper {
+	class RepositoryWrapper extends ServiceWrapper { // this should only run when i want to update, not on all dataful
 
 		protected $orm;
 

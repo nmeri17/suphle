@@ -5,7 +5,7 @@
 
 	use Tilwa\Contracts\Hydration\ScopeHandlers\{ModifiesArguments, ModifyInjected};
 	
-	use Tilwa\Hydration\Templates\AvoidConstructor;
+	use ReflectionClass;
 
 	class DecoratorHydrator {
 
@@ -70,18 +70,11 @@
 			return array_intersect(array_keys($context), class_implements($search));
 		}
 
-		private function noConstructor (string $className):AvoidConstructor {
+		/**
+		 * @return given class instance, but avoids calling its constructor */
+		private function noConstructor (string $className) {
 
-			return $this->container->genericFactory(
-				AvoidConstructor::class, 
-
-				["target" => $className ],
-
-				function ($types) {
-
-			    	return new AvoidConstructor ($types["target"]);
-				}
-			);
+			return (new ReflectionClass($className))->newInstanceWithoutConstructor;
 		}
 
 		public function scopeInjecting ($concrete, string $caller) {

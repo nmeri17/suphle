@@ -37,19 +37,6 @@
 			$this->controller = $controller;
 		}
 
-		public function validateController (array $moduleDependencies):void {
-
-			$controller = $this->controller;
-			
-			if (!$controller->hasValidServices ($moduleDependencies ))
-
-				throw new InvalidArgumentException ("Incompatible Service: ". $controller->getInvalidService());
-
-			if (!$controller->hasIsolatedConstructor())
-
-				throw new CrowdedConstructor;
-		}
-
 		public function setHandlerParameters():self {
 
 			$this->handlerParameters = $this->container->getMethodParameters($this->actionMethod, get_class($this->controller));
