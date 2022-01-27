@@ -1,8 +1,11 @@
 <?php
 	namespace Tilwa\Routing;
 
-	use Tilwa\Errors\IncompatiblePatternReplacement;
+	use Tilwa\Exception\Explosives\Miscellaneous\IncompatiblePatternReplacement;
 
+	/**
+	 * Used by route finder during matching to compose and interpolate patterns read from collections and what is incoming in request
+	*/
 	class PathPlaceholders {
 
 		private $stack = [], $requestPath;

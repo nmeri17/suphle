@@ -3,9 +3,9 @@
 
 	use Tilwa\Contracts\Config\ExceptionInterceptor;
 
-	use Tilwa\Exception\Explosives\{NotFoundException, Unauthenticated, ValidationFailure, UnauthorizedServiceAccess};
+	use Tilwa\Exception\Explosives\{NotFoundException, Unauthenticated, ValidationFailure, UnauthorizedServiceAccess, EditIntegrityException};
 
-	use Tilwa\Exception\Diffusers\{GenericDiffuser, NotFoundDiffuser, ValidationFailureDiffuser, UnauthorizedDiffuser, UnauthenticatedDiffuser};
+	use Tilwa\Exception\Diffusers\{GenericDiffuser, NotFoundDiffuser, ValidationFailureDiffuser, UnauthorizedDiffuser, UnauthenticatedDiffuser, StaleEditDiffuser};
 
 	class ExceptionConfig implements ExceptionInterceptor {
 
@@ -18,7 +18,9 @@
 
 				ValidationFailure::class => ValidationFailureDiffuser::class,
 
-				UnauthorizedServiceAccess::class => UnauthorizedDiffuser::class
+				UnauthorizedServiceAccess::class => UnauthorizedDiffuser::class,
+
+				EditIntegrityException::class => StaleEditDiffuser::class
 			];
 		}
 

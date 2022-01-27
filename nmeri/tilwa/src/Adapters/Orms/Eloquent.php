@@ -36,28 +36,24 @@
 			return $this->connection;
 		}
 
-		public function setTrap(callable $callback) {
-
-			//
-		}
-
 		public function runTransaction(callable $queries):void {
 
-			//
+			// obtain lock before running
 		}
 
 		public function registerObservers(array $observers):void {
 
-			foreach ($observers as $model => $observer)
-
-				$this->container->getClass($model)::observe($observer);
-
-			if (!empty($observers))
+			if (!empty($observers)) {
 
 				$this->laravelContainer->bind(AuthStorage::class, function () {
 
 					return $this->authStorage; // guards in those observers will be relying on this value
 				});
+
+				foreach ($observers as $model => $observer)
+
+					$this->container->getClass($model)::observe($observer);
+			}
 		}
 
 		public function factoryProduce ($model, $amount):void {
@@ -86,6 +82,11 @@
 		public function findAnyMany ($model, int $amount):array {
 
 			return $model->inRandomOrder()->limit($amount)->get();
+		}
+
+		public function saveOne ($model):void {
+
+			$model->save();
 		}
 	}
 ?>

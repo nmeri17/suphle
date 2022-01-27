@@ -21,7 +21,7 @@
 					$this->yield($method, $arguments);
 				});
 
-			else $this->yield($method, $arguments);
+			else return $this->yield($method, $arguments);
 		}
 	}
 ?>

@@ -18,5 +18,7 @@
 		public function findAny ($model);
 
 		public function findAnyMany ($model, int $amount):array;
+
+		public function saveOne ($model):void;
 	}
 ?>

@@ -7,11 +7,11 @@
 
 	use Tilwa\Response\Format\AbstractRenderer;
 
-	use Tilwa\Exception\Explosives\ValidationFailure;
+	use Tilwa\Exception\Explosives\EditIntegrityException;
 
-	class ValidationFailureDiffuser implements ExceptionHandler {
+	class StaleEditDiffuser implements ExceptionHandler {
 
-		private $renderer, $requestDetails, $router, $validationEvaluator;
+		private $renderer, $requestDetails, $router;
 
 		public function __construct (RequestDetails $requestDetails, RouteManager $router) {
 
@@ -20,9 +20,9 @@
 			$this->router = $router;
 		}
 
-		public function setContextualData (ValidationFailure $origin):void {
+		public function setContextualData (EditIntegrityException $origin):void {
 
-			$this->validationEvaluator = $origin->getEvaluator();
+			//
 		}
 
 		public function prepareRendererData ():void {
@@ -35,9 +35,9 @@
 
 			$this->renderer->setRawResponse(array_merge($this->renderer->getRawResponse(), [
 
-				"errors" => $this->validationEvaluator->getValidatorErrors()
+				"errors" => [["message" => "Another user recently updated this resource"]]
 			]))
-			->setHeaders(422, []);
+			->setHeaders(400, []);
 		}
 
 		public function getRenderer ():AbstractRenderer {
