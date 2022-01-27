@@ -13,7 +13,7 @@
 
 	use Tilwa\Events\ModuleLevelEvents;
 
-	use Tilwa\Exception\Explosives\ValidationFailure;
+	use Tilwa\Exception\Explosives\{ValidationFailure, NotFoundException};
 
 	abstract class ModuleHandlerIdentifier {
 

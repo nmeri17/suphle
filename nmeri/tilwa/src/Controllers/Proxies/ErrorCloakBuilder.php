@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Controllers\Proxies;
 
-	use Tilwa\Controllers\Decorators\ServiceErrorCatcher;
+	use Tilwa\Contracts\Services\Decorators\ServiceErrorCatcher;
 
 	class ErrorCloakBuilder {
 
@@ -32,7 +32,7 @@
 
 				"Methods" => $this->wrapClassMethods(),
 
-				"CatcherType" => BaseCallProxy::class
+				"CatcherType" => UpdatelessCallProxy::class
 			];
 
 			$genericContents = file_get_contents("../Templates/ErrorTemplate.php");

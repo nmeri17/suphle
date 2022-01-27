@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\IO\Mailing;
 
-	use Tilwa\Contracts\{Services\OnlyLoadedBy, Queues\Task};
+	use Tilwa\Contracts\{Services\Decorators\OnlyLoadedBy, Queues\Task};
 
 	class MailBuilder implements OnlyLoadedBy {
 

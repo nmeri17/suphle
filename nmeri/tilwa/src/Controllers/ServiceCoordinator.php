@@ -3,7 +3,7 @@
 
 	use Tilwa\Events\EventManager;
 
-	use Tilwa\Contracts\{Modules\ControllerModule, Services\SelectiveDependencies};
+	use Tilwa\Contracts\Modules\ControllerModule;
 
 	use Tilwa\IO\Http\BaseHttpRequest;
 
@@ -11,7 +11,7 @@
 
 	use Tilwa\Controllers\Structures\{UpdatefulService, UpdatelessService};
 
-	use Tilwa\Controllers\Decorators\SecuresPostRequest;
+	use Tilwa\Contracts\Services\Decorators\{SecuresPostRequest, SelectiveDependencies};
 
 	class ServiceCoordinator implements SelectiveDependencies, SecuresPostRequest {
 

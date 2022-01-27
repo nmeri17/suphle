@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\IO\Http;
 
-	use Tilwa\Contracts\Services\OnlyLoadedBy;
+	use Tilwa\Contracts\Services\Decorators\OnlyLoadedBy;
 
 	use Tilwa\Controllers\ServiceCoordinator;
 

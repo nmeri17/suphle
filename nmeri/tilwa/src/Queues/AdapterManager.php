@@ -30,16 +30,9 @@
 
 		public function augmentArguments (string $taskClass, array $deferredDependencies):void {
 
-			$parameters = $this->container->getMethodParameters("__construct", $taskClass);
+			$parameters = $this->container->whenType($taskClass)->needsArguments($deferredDependencies)
 
-			$typedParameters = array_map("get_class", $parameters);
-
-			foreach ($deferredDependencies as $override) {
-
-				$index = array_search(get_class($override), $typedParameters);
-
-				$parameters[$index] = $override;
-			}
+			->getMethodParameters("__construct", $taskClass);
 
 			$this->addTask($taskClass, $parameters);
 		}

@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Controllers\Structures;
 
-	use Tilwa\Contracts\Services\SelectiveDependencies;
+	use Tilwa\Contracts\Services\Decorators\SelectiveDependencies;
 
 	class UpdatelessService implements SelectiveDependencies {
 

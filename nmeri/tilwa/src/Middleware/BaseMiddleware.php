@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Middleware;
 
-	use Tilwa\Contracts\{Routing\Middleware, Services\SelectiveDependencies, Auth\User};
+	use Tilwa\Contracts\{Routing\Middleware, Services\Decorators\SelectiveDependencies, Auth\User};
 
 	class BaseMiddleware implements Middleware, SelectiveDependencies {
 
