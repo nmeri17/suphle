@@ -1,6 +1,10 @@
 <?php
 	namespace Tilwa\Controllers\DecoratorHandlers;
 
+	use Tilwa\Controllers\Proxies\ErrorCloakBuilder;
+
+	use Tilwa\Contracts\{Services\Decorators\ServiceErrorCatcher, Hydration\ScopeHandlers\ModifyInjected};
+
 	class ErrorCatcherHandler implements ModifyInjected {
 
 		private $cloakBuilder;
@@ -10,7 +14,7 @@
 			$this->cloakBuilder = $cloakBuilder;
 		}
 
-		public function proxifyInstance ($concrete, string $caller) {
+		public function proxifyInstance (ServiceErrorCatcher $concrete, string $caller) {
 
 			$this->cloakBuilder->setTarget($concrete);
 

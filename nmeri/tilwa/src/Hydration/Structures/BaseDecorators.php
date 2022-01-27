@@ -3,9 +3,11 @@
 
 	use Tilwa\Contracts\Hydration\DecoratorChain;
 
-	use Tilwa\Contracts\Services\{SelectiveDependencies, OnlyLoadedBy};
+	use Tilwa\Contracts\Services\Decorators\{SelectiveDependencies, OnlyLoadedBy, SystemModelEdit, ServiceErrorCatcher};
 
 	use Tilwa\Hydration\DecoratorScopes\{ServicePreferenceHandler, OnlyLoadedByHandler};
+
+	use Tilwa\Controllers\DecoratorHandlers\{SystemModelEditHandler, ErrorCatcherHandler};
 
 	class BaseDecorators implements DecoratorChain {
 
@@ -16,9 +18,9 @@
 
 				OnlyLoadedBy::class => OnlyLoadedByHandler::class,
 
-				//BaseQueryService::class => QueryProxy::class, // plug another one here
+				SystemModelEdit::class => SystemModelEditHandler::class,
 
-				ServiceErrorCatcher::class => ErrorCatcherHandler::class // load from correct space
+				ServiceErrorCatcher::class => ErrorCatcherHandler::class
 			];
 		}
 	}
