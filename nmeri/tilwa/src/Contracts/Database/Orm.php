@@ -20,5 +20,10 @@
 		public function findAnyMany ($model, int $amount):array;
 
 		public function saveOne ($model):void;
+
+		/**
+		 * @return A builder/query object, with the filters applied
+		*/
+		public function selectFields ($builder, array $filters);
 	}
 ?>

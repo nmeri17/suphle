@@ -28,7 +28,7 @@
 
 		public function transformMethods ($concreteInstance, array $arguments):array {
 
-			//
+			return $arguments;
 		}
 
 		private function containsParent (array $parentList, $dependency):bool {

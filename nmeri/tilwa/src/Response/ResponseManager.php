@@ -50,11 +50,14 @@
 				$this->flowQueuer->insert($this->renderer, $this);
 		}
 
-		public function bootControllerManager():self {
+		public function bootControllerManager ():self {
 
-			$this->updateControllerManager();
+			$this->controllerManager->setController(
 
-			$this->buildManagerTarget();
+				$this->container->getClass($this->renderer->getController())
+			);
+
+			$this->controllerManager->bootController($this->renderer->getHandler());
 
 			return $this;
 		}
@@ -63,21 +66,15 @@
 
 			$renderer = $this->renderer;
 
-			$router = $this->router;
-
-			$manager = $this->controllerManager;
-
 			if (!$requestDetails->isApiRoute())
 
-				$router->setPreviousRenderer($renderer);
+				$this->router->setPreviousRenderer($renderer);
 
 			if ($renderer instanceof Markup && $this->payloadStorage->acceptsJson())
 
 				$renderer->setWantsJson();
 
-			$manager->hydrateModels($renderer->getRouteMethod());
-
-			return $renderer->invokeActionHandler($manager->getHandlerParameters());
+			return $renderer->invokeActionHandler($this->controllerManager->getHandlerParameters());
 		}
 
 		public function isValidRequest ():bool {
@@ -90,26 +87,6 @@
 			if (!$this->isValidRequest())
 
 				throw new ValidationFailure($this->controllerManager);
-		}
-
-		private function buildManagerTarget():void {
-
-			$this->controllerManager->bootController($this->renderer->getHandler())
-
-			->setHandlerParameters()->assignModelsInAction();
-		}
-
-		private function updateControllerManager():void {
-
-			$this->controllerManager->setController(
-
-				$this->container->getClass($this->renderer->getController())
-			);
-		}
-
-		public function getControllerManager():ControllerManager {
-			
-			return $this->controllerManager;
 		}
 
 		public function requestAuthenticationStatus (AuthStorage $storage):bool {

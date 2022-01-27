@@ -88,5 +88,10 @@
 
 			$model->save();
 		}
+
+		public function selectFields ($builder, array $filters) {
+
+			return $builder->select($filters);
+		}
 	}
 ?>

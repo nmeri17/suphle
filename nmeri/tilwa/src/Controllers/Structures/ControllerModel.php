@@ -1,25 +1,31 @@
 <?php
+	namespace Tilwa\Controllers\Structures;
 
-	namespace Tilwa\Controllers;
+	use Tilwa\Contracts\Database\Orm;
 
-	use Tilwa\Contracts\RequestValidator;
-
-	/**
-	 * Nothing can be done with this guy in the controller. Must be passed to a service
-	*/
 	abstract class ControllerModel {
 
-		private $identifier;
+		protected function onlyFields ():array {
+
+			return ["id", "name"];
+		}
 
 		/**
-		 * Use [identifier] to build the minimal state shared by all service methods for this model
 		 * @return a query builder
 		*/
-		abstract public function getBuilder();
+		abstract protected function getBaseCriteria ();
 
-		public function setIdentifier(string $parameterValue):void {
+		public function setDependencies (Orm $orm) {
 
-			$this->identifier = $parameterValue;
+			$this->orm = $orm;
+		}
+
+		/**
+		 * This is the only method dev cares about
+		*/
+		public function getBuilder () {
+
+			return $this->orm->selectFields($this->getBaseCriteria(), $this->onlyFields());
 		}
 	}
 ?>

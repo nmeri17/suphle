@@ -3,11 +3,11 @@
 
 	use Tilwa\Contracts\Hydration\DecoratorChain;
 
-	use Tilwa\Contracts\Services\Decorators\{SelectiveDependencies, OnlyLoadedBy, SystemModelEdit, ServiceErrorCatcher};
+	use Tilwa\Contracts\Services\Decorators\{SelectiveDependencies, OnlyLoadedBy, SystemModelEdit, ServiceErrorCatcher, SecuresPostRequest};
 
 	use Tilwa\Hydration\DecoratorScopes\{ServicePreferenceHandler, OnlyLoadedByHandler};
 
-	use Tilwa\Controllers\DecoratorHandlers\{SystemModelEditHandler, ErrorCatcherHandler};
+	use Tilwa\Controllers\DecoratorHandlers\{SystemModelEditHandler, ErrorCatcherHandler, SecuresPostRequestHandler};
 
 	class BaseDecorators implements DecoratorChain {
 
@@ -20,7 +20,9 @@
 
 				SystemModelEdit::class => SystemModelEditHandler::class,
 
-				ServiceErrorCatcher::class => ErrorCatcherHandler::class
+				ServiceErrorCatcher::class => ErrorCatcherHandler::class,
+
+				SecuresPostRequest::class => SecuresPostRequestHandler::class
 			];
 		}
 	}
