@@ -226,7 +226,7 @@
 
 		protected function canProcessPath():bool {
 
-			return $this->responseManager->bootControllerManager()
+			return $this->responseManager->bootCoodinatorManager()
 
 			->isValidRequest();
 		}

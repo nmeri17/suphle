@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Controllers\Proxies;
+	namespace Tilwa\Services\Proxies;
 
 	use Tilwa\Exception\DetectedExceptionManager;
 
@@ -7,7 +7,7 @@
 
 	use Throwable;
 
-	class UpdatelessCallProxy extends BaseCallProxy {
+	class ErrorCallCatchProxy extends BaseCallProxy {
 
 		private $exceptionDetector;
 
@@ -28,7 +28,9 @@
 
 				$this->exceptionDetector->detonateOrDiffuse($exception, $this->activeService);
 
-				$result = $this->failureReturnValue($method);
+				$callerResponse = $this->activeService->failureState($method);
+
+				$result = $callerResponse ?? $this->failureReturnValue($method);
 			}
 			return $result;
 		}

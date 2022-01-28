@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Controllers\Structures;
+	namespace Tilwa\Services\Structures;
 
 	class UseCase {
 

@@ -1,9 +1,9 @@
 <?php
-	namespace Tilwa\Controllers\Structures;
+	namespace Tilwa\Services\Structures;
 
 	use Tilwa\Contracts\Services\Decorators\SelectiveDependencies;
 
-	class UpdatelessService implements SelectiveDependencies {
+	class UpdatefulService implements SelectiveDependencies {
 
 		public function getPermitted ():array {
 
@@ -12,7 +12,7 @@
 
 		public function getRejected ():array {
 
-			return [UpdatefulService::class];
+			return [UpdatelessService::class];
 		}
 	}
 ?>

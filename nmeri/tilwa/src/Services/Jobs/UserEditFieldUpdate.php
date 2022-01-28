@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Controllers\Jobs;
+	namespace Tilwa\Services\Jobs;
 
 	use Tilwa\Contracts\{Database\Orm, Queues\Task, Services\Models\IntegrityModel};
 

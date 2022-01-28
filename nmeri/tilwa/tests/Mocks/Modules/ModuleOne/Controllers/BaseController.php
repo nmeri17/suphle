@@ -1,9 +1,9 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Controllers;
 
-	use Tilwa\Controllers\Executable;
+	use Tilwa\Services\ServiceCoordinator;
 
-	class BaseController extends Executable {
+	class BaseController extends ServiceCoordinator {
 
 		public function indexHandler () {
 

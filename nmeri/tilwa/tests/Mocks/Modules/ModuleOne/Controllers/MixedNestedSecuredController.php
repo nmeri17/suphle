@@ -1,9 +1,9 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Controllers;
 
-	use Tilwa\Controllers\Executable;
+	use Tilwa\Services\ServiceCoordinator;
 
-	class MixedNestedSecuredController extends Executable {
+	class MixedNestedSecuredController extends ServiceCoordinator {
 
 		public function handleUnlinked() {
 

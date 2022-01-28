@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Controllers;
+	namespace Tilwa\Services;
 
 	use Tilwa\Events\EventManager;
 
@@ -9,7 +9,7 @@
 
 	use Tilwa\Request\PayloadStorage;
 
-	use Tilwa\Controllers\Structures\{UpdatefulService, UpdatelessService};
+	use Tilwa\Services\Structures\{UpdatefulService, UpdatelessService};
 
 	use Tilwa\Contracts\Services\Decorators\{SecuresPostRequest, SelectiveDependencies};
 

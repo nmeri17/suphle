@@ -1,9 +1,18 @@
 <?php
-	namespace Tilwa\Controllers\Structures;
+	namespace Tilwa\Services\Structures;
 
 	use Tilwa\Contracts\Database\Orm;
 
-	abstract class ControllerModel {
+	use Tilwa\Request\PayloadStorage;
+
+	abstract class ModelfulPayload {
+
+		protected $payloadStorage;
+
+		public function __construct (PayloadStorage $payloadStorage) {
+
+			$this->payloadStorage = $payloadStorage;
+		}
 
 		protected function onlyFields ():array {
 
@@ -11,7 +20,7 @@
 		}
 
 		/**
-		 * @return a query builder
+		 * @return a query builder after interacting with [payloadStorage]
 		*/
 		abstract protected function getBaseCriteria ();
 

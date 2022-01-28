@@ -59,7 +59,7 @@
 
 			$validationPassed = $this->responseManager
 
-			->bootControllerManager()->mayBeInvalid();
+			->bootCoodinatorManager()->mayBeInvalid();
 
 			return $this->container->getClass (MiddlewareQueue::class)
 

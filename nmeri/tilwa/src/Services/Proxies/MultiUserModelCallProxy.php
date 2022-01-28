@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Controllers\Proxies;
+	namespace Tilwa\Services\Proxies;
 
 	use Tilwa\Contracts\Database\Orm;
 

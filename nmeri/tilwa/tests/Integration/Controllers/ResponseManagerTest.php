@@ -6,7 +6,7 @@
 	/* I think these should be unit tests sha. Call the high level methods here */
 	class ResponseManagerTest extends IsolatedComponentTest {
 
-		// the next 3 methods all trigger [bootControllerManager]
+		// the next 3 methods all trigger [bootCoodinatorManager]
 		// one of these guys has to make a POST request to confirm underlying controller request validator is called and behaves correctly. [ValidatorController] is already created
 		public function test_validateController () {
 

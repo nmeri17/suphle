@@ -1,11 +1,11 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Controllers;
 
-	use Tilwa\Controllers\Executable;
+	use Tilwa\Services\ServiceCoordinator;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Validators\ValidatorOne;
 
-	class ValidatorController extends Executable {
+	class ValidatorController extends ServiceCoordinator {
 
 		public function validatorCollection ():?string {
 

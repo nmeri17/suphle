@@ -1,19 +1,19 @@
 <?php
-	namespace Tilwa\Controllers;
+	namespace Tilwa\Services;
 
 	use Tilwa\Hydration\Container;
 
-	use Tilwa\Contracts\{Requests\ValidationEvaluator, Database\Orm, Services\Models\ActionTransform};
+	use Tilwa\Contracts\{Requests\ValidationEvaluator, Database\Orm};
 
 	use Tilwa\Request\ValidatorManager;
 
 	use Tilwa\Routing\RequestDetails;
 
-	use Tilwa\Controllers\Structures\ControllerModel;
+	use Tilwa\Services\Structures\{ModelfulPayload, ModellessPayload};
 
 	use Tilwa\Exception\Explosives\Generic\NoCompatibleValidator;
 
-	class ControllerManager implements ValidationEvaluator {
+	class CoodinatorManager implements ValidationEvaluator {
 
 		private $controller, $container,
 
@@ -21,7 +21,7 @@
 
 		$actionInjectables = [
 
-			ControllerModel::class, ActionTransform::class
+			ModelfulPayload::class, ModellessPayload::class
 		];
 
 		function __construct( Container $container, ValidatorManager $validatorManager, RequestDetails $requestDetails) {
@@ -103,7 +103,7 @@
 
 			foreach ($argumentList as $dependency) {
 
-				if (!($dependency instanceof ControllerModel))
+				if (!($dependency instanceof ModelfulPayload))
 
 					continue;
 

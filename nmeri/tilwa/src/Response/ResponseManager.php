@@ -9,7 +9,7 @@
 
 	use Tilwa\Response\Format\{Markup, AbstractRenderer};
 
-	use Tilwa\Controllers\ControllerManager;
+	use Tilwa\Services\CoodinatorManager;
 
 	use Tilwa\Contracts\BaseResponseManager;
 
@@ -23,7 +23,7 @@
 
 		$controllerManager, $flowQueuer;
 
-		function __construct (Container $container, RouteManager $router, ControllerManager $controllerManager, FlowResponseQueuer $flowQueuer, AbstractRenderer $renderer, PayloadStorage $payloadStorage) {
+		function __construct (Container $container, RouteManager $router, CoodinatorManager $controllerManager, FlowResponseQueuer $flowQueuer, AbstractRenderer $renderer, PayloadStorage $payloadStorage) {
 
 			$this->container = $container;
 
@@ -50,7 +50,7 @@
 				$this->flowQueuer->insert($this->renderer, $this);
 		}
 
-		public function bootControllerManager ():self {
+		public function bootCoodinatorManager ():self {
 
 			$this->controllerManager->setController(
 

@@ -1,7 +1,7 @@
 <?php
-	namespace Tilwa\Controllers\DecoratorHandlers;
+	namespace Tilwa\Services\DecoratorHandlers;
 
-	use Tilwa\Controllers\Proxies\SystemModelEditCloaker;
+	use Tilwa\Services\Proxies\SystemModelEditCloaker;
 
 	use Tilwa\Contracts\{Services\Decorators\SystemModelEdit, Hydration\ScopeHandlers\ModifyInjected};
 

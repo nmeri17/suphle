@@ -1,9 +1,9 @@
 <?php
-	namespace Tilwa\Controllers\Proxies;
+	namespace Tilwa\Services\Proxies;
 
 	class ErrorCloakBuilder extends BaseCloakBuilder {
 
-		public function __construct ( UpdatelessCallProxy $serviceCallProxy) {
+		public function __construct ( ErrorCallCatchProxy $serviceCallProxy) {
 
 			$this->serviceCallProxy = $serviceCallProxy;
 		}

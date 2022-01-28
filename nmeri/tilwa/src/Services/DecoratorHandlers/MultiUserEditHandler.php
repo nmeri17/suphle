@@ -1,7 +1,7 @@
 <?php
-	namespace Tilwa\Controllers\DecoratorHandlers;
+	namespace Tilwa\Services\DecoratorHandlers;
 
-	use Tilwa\Controllers\Proxies\MultiUserModelEditCloaker;
+	use Tilwa\Services\Proxies\MultiUserModelEditCloaker;
 
 	use Tilwa\Contracts\{Services\Decorators\MultiUserModelEdit, Hydration\ScopeHandlers\ModifyInjected};
 

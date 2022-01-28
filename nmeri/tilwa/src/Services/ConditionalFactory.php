@@ -1,8 +1,7 @@
 <?php
+	namespace Tilwa\Services;
 
-	namespace Tilwa\Controllers;
-
-	use Tilwa\Controllers\Structures\UseCase;
+	use Tilwa\Services\Structures\UseCase;
 
 	abstract class ConditionalFactory {
 

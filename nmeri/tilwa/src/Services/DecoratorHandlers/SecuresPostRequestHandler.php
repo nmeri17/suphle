@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Controllers\DecoratorHandlers;
+	namespace Tilwa\Services\DecoratorHandlers;
 
 	use Tilwa\Contracts\Hydration\ScopeHandlers\ModifiesArguments;
 

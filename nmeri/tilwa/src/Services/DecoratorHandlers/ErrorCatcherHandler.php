@@ -1,7 +1,7 @@
 <?php
-	namespace Tilwa\Controllers\DecoratorHandlers;
+	namespace Tilwa\Services\DecoratorHandlers;
 
-	use Tilwa\Controllers\Proxies\ErrorCloakBuilder;
+	use Tilwa\Services\Proxies\ErrorCloakBuilder;
 
 	use Tilwa\Contracts\{Services\Decorators\ServiceErrorCatcher, Hydration\ScopeHandlers\ModifyInjected};
 
