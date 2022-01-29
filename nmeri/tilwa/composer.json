@@ -19,7 +19,10 @@
         "illuminate/events": "^7.30",
         "level-2/transphporm": "^1.5.1",
         "resque/php-resque": "^1.3.6",
-        "anorgan/qutee": "dev-version-updates"
+        "anorgan/qutee": "dev-version-updates",
+        "psr/http-client": "^1.0.1",
+        "guzzlehttp/guzzle": "^7.0"/*,
+        "guzzle/psr7": "^2.1.0"*/
     },
     "require-dev": {
         "nategood/commando": "^0.4.0",

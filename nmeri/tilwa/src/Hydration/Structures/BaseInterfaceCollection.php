@@ -27,6 +27,10 @@
 
 	use Tilwa\Hydration\Structures\BaseDecorators;
 
+	use Psr\Http\{Client\ClientInterface, Message\RequestFactoryInterface };
+
+	use GuzzleHttp\{Psr7\HttpFactory as GuzzleHttpFactory, Client as GuzzleClient};
+
 	class BaseInterfaceCollection implements InterfaceCollection {
 
 		private $delegateInstances = [];
@@ -56,7 +60,11 @@
 
 				ControllerModule::class => ControllerModuleApi::class,
 
-				DecoratorChain::class => BaseDecorators::class
+				DecoratorChain::class => BaseDecorators::class,
+
+				RequestFactoryInterface::class => GuzzleHttpFactory::class,
+
+				ClientInterface::class => GuzzleClient::class
 			];
 		}
 
