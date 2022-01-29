@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Services\Structures;
+	namespace Tilwa\Services;
 
 	use Tilwa\Contracts\Services\Decorators\SelectiveDependencies;
 

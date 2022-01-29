@@ -23,7 +23,7 @@
 				$this->modelInstance->setEditIntegrity( $this->editIdentifier);
 
 				$this->orm->saveOne($this->modelInstance);
-			});
+			}, [$this->modelInstance]);
 		}
 	}
 ?>

@@ -9,8 +9,6 @@
 
 	use Tilwa\Request\PayloadStorage;
 
-	use Tilwa\Services\Structures\{UpdatefulService, UpdatelessService};
-
 	use Tilwa\Contracts\Services\Decorators\{SecuresPostRequest, SelectiveDependencies};
 
 	class ServiceCoordinator implements SelectiveDependencies, SecuresPostRequest {

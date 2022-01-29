@@ -7,7 +7,9 @@
 
 	use Tilwa\Request\PayloadStorage;
 
-	use Tilwa\Exception\Explosives\EditIntegrityException;
+	use Tilwa\Exception\{Explosives\EditIntegrityException, DetectedExceptionManager};
+
+	use Throwable;
 
 	class MultiUserModelCallProxy extends BaseCallProxy {
 
@@ -15,7 +17,9 @@
 
 		private $orm, $queueManager, $payloadStorage;
 
-		public function __construct (Orm $orm, AdapterManager $queueManager, PayloadStorage $payloadStorage) {
+		public function __construct (Orm $orm, AdapterManager $queueManager, PayloadStorage $payloadStorage, DetectedExceptionManager $exceptionDetector) {
+
+			parent::__construct($exceptionDetector);
 
 			$this->orm = $orm;
 
@@ -26,7 +30,7 @@
 
 		public function artificial__call (string $method, array $arguments) {
 
-			if ($method == "getResource") {
+			if ($method == "getResource") { // should getting editable resource fail, there's nothing to fallback on. Terminate request by bubbling up 
 
 				$result = $this->getResource();
 
@@ -38,7 +42,7 @@
 
 				return $this->handleUpdateResource($arguments);
 
-			return $this->yield($method, $arguments);
+			return $this->yield($method, $arguments); // calling other methods is allowed, but not protected
 		}
 
 		private function handleGetResource (IntegrityModel $modelInstance):void {
@@ -70,14 +74,21 @@
 
 				throw new EditIntegrityException;
 
-			$this->orm->runTransaction(function () use ($currentVersion) {
+			try {
 
-				$this->activeService->updateResource(); // user's incoming changes
+				$this->orm->runTransaction(function () use ($currentVersion) {
 
-				$currentVersion->setEditIntegrity( null);
+					$this->activeService->updateResource(); // user's incoming changes
 
-				$this->orm->saveOne($currentVersion);
-			});
+					$currentVersion->setEditIntegrity( null);
+
+					$this->orm->saveOne($currentVersion);
+				}, [$currentVersion], true);
+			}
+			catch (Throwable $exception) {
+
+				$this->attemptDiffuse($exception, "updateResource");
+			}
 		}
 	}
 ?>

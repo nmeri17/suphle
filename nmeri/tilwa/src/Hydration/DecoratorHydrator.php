@@ -74,7 +74,7 @@
 		 * @return given class instance, but avoids calling its constructor */
 		private function noConstructor (string $className) {
 
-			return (new ReflectionClass($className))->newInstanceWithoutConstructor;
+			return (new ReflectionClass($className))->newInstanceWithoutConstructor();
 		}
 
 		public function scopeInjecting ($concrete, string $caller) {

@@ -6,7 +6,7 @@
 
 		public function getConnection ();
 
-		public function runTransaction(callable $queries):void;
+		public function runTransaction(callable $queries, array $lockModels = [], bool $hardLock = false);
 
 		public function registerObservers(array $observers):void;
 
@@ -25,5 +25,9 @@
 		 * @return A builder/query object, with the filters applied
 		*/
 		public function selectFields ($builder, array $filters);
+
+		public function hardLock( $model):void;
+
+		public function softLock( $model):void;
 	}
 ?>
