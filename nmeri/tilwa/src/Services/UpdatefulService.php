@@ -5,12 +5,12 @@
 
 	class UpdatefulService implements SelectiveDependencies {
 
-		public function getPermitted ():array {
+		final public function getPermitted ():array {
 
 			return [];
 		}
 
-		public function getRejected ():array {
+		final public function getRejected ():array {
 
 			return [UpdatelessService::class];
 		}

@@ -29,5 +29,10 @@
 		public function hardLock( $model):void;
 
 		public function softLock( $model):void;
+
+		/**
+		 * @return Modified [model]
+		*/
+		public function addWhereClause( $model, array $constraints);
 	}
 ?>

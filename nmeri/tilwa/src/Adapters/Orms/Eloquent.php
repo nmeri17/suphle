@@ -136,5 +136,10 @@
 
 			return $builder->select($filters);
 		}
+
+		public function addWhereClause( $model, array $constraints) {
+
+			return $model->where($constraints);
+		}
 	}
 ?>
