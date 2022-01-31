@@ -19,6 +19,6 @@
 		 * 
 		 * @return Value to give the caller in cases were execution shouldn't terminate
 		*/
-		public function failureState (string $method):OptionalDTO;
+		public function failureState (string $method):?OptionalDTO;
 	}
 ?>

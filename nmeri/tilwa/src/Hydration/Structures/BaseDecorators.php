@@ -7,7 +7,7 @@
 
 	use Tilwa\Hydration\DecoratorScopes\{ServicePreferenceHandler, OnlyLoadedByHandler};
 
-	use Tilwa\Controllers\DecoratorHandlers\{SystemModelEditHandler, ErrorCatcherHandler, SecuresPostRequestHandler};
+	use Tilwa\Services\DecoratorHandlers\{SystemModelEditHandler, ErrorCatcherHandler, SecuresPostRequestHandler};
 
 	class BaseDecorators implements DecoratorChain {
 

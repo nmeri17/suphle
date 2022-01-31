@@ -5,7 +5,9 @@
 
 		private $originalTarget, $targetName;
 
-		protected $serviceCallProxy; // instance of BaseCallProxy to be injected via constructor
+		protected $serviceCallProxy, // instance of BaseCallProxy to be injected via constructor
+
+		$templatePath = "../Templates/CallInterceptorTemplate.php";
 
 		/**
 		 * @param {originalTarget} the concrete decorated to require this cloak
@@ -23,19 +25,9 @@
 
 			$dynamicName = $this->targetName . get_class($this); // suffix with active decorator to avoid clashes with other cloaks for decorated entity
 
-			$types = [
-				"NewName" => $dynamicName,
+			$genericContents = file_get_contents($this->templatePath);
 
-				"OldName" => $this->targetName,
-
-				"Methods" => $this->wrapClassMethods(),
-
-				"CatcherType" => get_class($this->serviceCallProxy)
-			];
-
-			$genericContents = file_get_contents("../Templates/CallInterceptorTemplate.php");
-
-		    foreach ($types as $placeholder => $type)
+		    foreach ($this->templateTypes() as $placeholder => $type)
 
 		        $genericContents = str_replace("<$placeholder>", $type, $genericContents);
 
@@ -58,6 +50,19 @@
 					}';
 
 			return $methods;
+		}
+
+		protected function templateTypes ():array {
+
+			return [
+				"NewName" => $dynamicName,
+
+				"OldName" => $this->targetName,
+
+				"Methods" => $this->wrapClassMethods(),
+
+				"CatcherType" => get_class($this->serviceCallProxy)
+			];
 		}
 	}
 ?>
