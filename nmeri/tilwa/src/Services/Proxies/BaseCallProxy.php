@@ -26,7 +26,7 @@
 			$this->activeService = $instance;
 		}
 
-		private function failureReturnValue(string $method) {
+		private function methodDefaultValue(string $method) {
 
 			$default = null;
 			
@@ -45,7 +45,7 @@
 
 			$callerResponse = $this->activeService->failureState($method);
 
-			return $callerResponse ?? $this->failureReturnValue($method);
+			return $callerResponse ?? $this->methodDefaultValue($method);
 		}
 	}
 ?>

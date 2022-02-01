@@ -41,17 +41,21 @@
 
 			$bootStarter->boot();
 
+			$exceptionBridge = $this->getActiveContainer()->getClass(ModuleExceptionBridge::class);
+
+			$exceptionBridge->epilogue();
+
 			try {
 
 				$content = $this->beginRequest();
 			}
 			catch (Throwable $exception) {
 
-				$this->identifiedHandler = $bridge = $this->getActiveContainer()->getClass(ModuleExceptionBridge::class);
+				$this->identifiedHandler = $exceptionBridge;
 
-				$bridge->hydrateHandler($exception);
+				$exceptionBridge->hydrateHandler($exception);
 
-				$content = $bridge->handlingRenderer()->render();
+				$content = $exceptionBridge->handlingRenderer()->render();
 			}
 
 			$this->transferHeaders();

@@ -5,9 +5,11 @@
 
 	abstract class RouteRule {
 
-		private $patterns, $authStorage;
+		protected $authStorage;
 
-		public function setAuthStorage (AuthStorage $authStorage) {
+		private $patterns; // we wanna update this on each iteration or on the general evaluation
+
+		public function __construct (AuthStorage $authStorage) {
 
 			$this->authStorage = $authStorage;
 		}

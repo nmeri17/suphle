@@ -7,7 +7,7 @@
 
 	use Tilwa\Response\Format\AbstractRenderer;
 
-	use Throwable;
+	use Throwable, Exception;
 
 	class ModuleExceptionBridge implements HighLevelRequestHandler {
 
@@ -42,6 +42,33 @@
 			$this->handler->prepareRendererData();
 
 			return $this->handler->getRenderer();
+		}
+
+		public function epilogue ():void {
+
+			ini_set("display_errors", false); // prevent error from flashing at user
+
+			register_shutdown_function(function () {
+
+				$lastError = error_get_last();
+
+				if (!is_null($lastError) && in_array($lastError["type"], [E_ERROR, E_CORE_ERROR, E_CORE_WARNING, E_COMPILE_ERROR, E_COMPILE_WARNING]) ) {
+
+					$this->handler = $this->container->getClass($this->config->defaultHandler());
+
+					$exception = new Exception(json_encode($lastError));
+					
+					$this->handler->setContextualData($exception);
+
+					$this->exceptionManager->queueAlertAdapter($exception, $lastError);
+
+					$renderer = $this->handlingRenderer();
+
+					http_response_code($renderer->getStatusCode());
+
+					echo $renderer->render();
+				}
+			});
 		}
 	}
 ?>

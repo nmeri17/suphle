@@ -5,9 +5,7 @@
 
 	use Tilwa\Services\{ServiceCoordinator, InterceptsExternalPayload, Structures\OptionalDTO};
 
-	use Tilwa\Queues\AdapterManager;
-
-	use Tilwa\Exception\Jobs\DeferExceptionAlert;
+	use Tilwa\Exception\DetectedExceptionManager;
 
 	use Psr\Http\Client\{ClientInterface, ClientExceptionInterface };
 
@@ -15,15 +13,15 @@
 
 	class BaseHttpRequest extends InterceptsExternalPayload implements OnlyLoadedBy {
 
-		protected $client, $requestFactory, $queueManager;
+		protected $client, $requestFactory, $exceptionManager;
 
-		public function __construct (ClientInterface $client, RequestFactoryInterface $requestFactory, AdapterManager $queueManager) {
+		public function __construct (ClientInterface $client, RequestFactoryInterface $requestFactory, DetectedExceptionManager $exceptionManager) {
 
 			$this->client = $client;
 
 			$this->requestFactory = $requestFactory;
 
-			$this->queueManager = $queueManager;
+			$this->exceptionManager = $exceptionManager;
 		}
 
 		final public function allowedConsumers ():array {
@@ -50,12 +48,7 @@
 
 			else $response = $this->makeRequest();
 
-			$this->queueManager->augmentArguments(DeferExceptionAlert::class, [
-
-				"explosive" => $exception,
-
-				"activePayload" => $response
-			]);
+			$this->exceptionManager->queueAlertAdapter($exception, $response);
 
 			return new OptionalDTO($response, false);
 		}

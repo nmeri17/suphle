@@ -30,11 +30,16 @@
 
 				throw new $rebounds[$exceptionName];
 
+			$this->triggerAlertAdapter($exception, $this->payloadStorage);
+		}
+
+		public function triggerAlertAdapter (Throwable $exception, $payload):void {
+
 			$this->queueManager->augmentArguments(DeferExceptionAlert::class, [
 
 				"explosive" => $exception,
 
-				"activePayload" => $this->payloadStorage
+				"activePayload" => $payload
 			]);
 		}
 	}

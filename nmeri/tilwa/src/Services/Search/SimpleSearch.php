@@ -24,9 +24,9 @@
 
 				if (method_exists($this, $parameter))
 
-					$baseModel = $this->$parameter($baseModel);
+					$baseModel = $this->$parameter($baseModel, $value);
 
-				else $this->orm->addWhereClause($baseModel, [$parameter => $value]);
+				else $baseModel = $this->orm->addWhereClause($baseModel, [$parameter => $value]);
 
 			return $baseModel;
 		}
