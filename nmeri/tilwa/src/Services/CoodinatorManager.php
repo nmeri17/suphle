@@ -15,7 +15,7 @@
 
 	class CoodinatorManager implements ValidationEvaluator {
 
-		private $controller, $container,
+		private $controller, $container, $actionMethod,
 
 		$handlerParameters, $validatorManager, $requestDetails,
 
@@ -33,26 +33,30 @@
 			$this->requestDetails = $requestDetails;
 		}
 
-		public function setController(ServiceCoordinator $controller):void {
+		public function setDependencies (ServiceCoordinator $controller, string $actionMethod):self {
 			
 			$this->controller = $controller;
+
+			$this->actionMethod = $actionMethod;
+
+			return $this;
 		}
 
 		/**
 		 * @throws NoCompatibleValidator
 		*/
-		public function bootController (string $actionMethod):void {
+		public function bootController ():void {
 
-			$this->updateValidatorMethod($actionMethod);
+			$this->updateValidatorMethod();
 
-			$this->setHandlerParameters($actionMethod);
+			$this->setHandlerParameters();
 		}
 
-		private function updateValidatorMethod (string $actionMethod):void {
+		public function updateValidatorMethod ():void {
 
 			$collectionName = $this->controller->validatorCollection ();
 
-			$hasNoValidator = empty($collectionName) || !method_exists($collectionName, $actionMethod);
+			$hasNoValidator = empty($collectionName) || !method_exists($collectionName, $this->actionMethod);
 
 			if ($hasNoValidator) {
 
@@ -63,13 +67,13 @@
 
 			$this->validatorManager->setActionRules(
 
-				$this->container->getClass($collectionName)->$actionMethod()
+				call_user_func([$this->container->getClass($collectionName), $this->actionMethod])
 			);
 		}
 
-		private function setHandlerParameters (string $actionMethod):void {
+		private function setHandlerParameters ():void {
 
-			$parameters = $this->container->getMethodParameters($actionMethod, get_class($this->controller));
+			$parameters = $this->container->getMethodParameters($this->actionMethod, get_class($this->controller));
 
 			$correctParameters = $this->validActionDependencies($parameters);
 
@@ -120,7 +124,7 @@
 			return $this->handlerParameters;
 		}
 
-		public function isValidatedRequest ():bool {
+		public function hasValidatorErrors ():bool {
 
 			return $this->validatorManager->isValidated();
 		}

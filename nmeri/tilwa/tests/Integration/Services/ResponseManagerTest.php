@@ -1,46 +1,31 @@
 <?php
-	namespace Tilwa\Response;
+	namespace Tilwa\Tests\Integration\Controllers;
 
-	use Tilwa\Modules\ModuleDescriptor;
+	use Tilwa\Testing\IsolatedComponentTest;
 
-	use Tilwa\Hydration\Container;
+	/* I think these should be unit tests sha. Call the high level methods here */
+	class ResponseManagerTest extends IsolatedComponentTest {
 
-	use Tilwa\Routing\{RouteManager, RequestDetails};
+		// the next 3 methods all trigger [bootCoodinatorManager]
+		// one of these guys has to make a POST request to confirm underlying controller request validator is called and behaves correctly. [ValidatorController] is already created
+		public function test_validateController () {
 
-	use Tilwa\Response\Format\{Markup, AbstractRenderer};
-
-	use Tilwa\Services\CoodinatorManager;
-
-	use Tilwa\Contracts\BaseResponseManager;
-
-	use Tilwa\Request\{ValidatorManager, PayloadStorage};
-
-	use Tilwa\Exception\Explosives\ValidationFailure;
-
-	class ResponseManager implements BaseResponseManager {
-
-		private $container, $router, $renderer, $payloadStorage,
-
-		$controllerManager, $flowQueuer;
-
-		function __construct (Container $container, RouteManager $router, CoodinatorManager $controllerManager, FlowResponseQueuer $flowQueuer, AbstractRenderer $renderer, PayloadStorage $payloadStorage) {
-
-			$this->container = $container;
-
-			$this->router = $router;
-
-			$this->controllerManager = $controllerManager;
-
-			$this->flowQueuer = $flowQueuer;
-
-			$this->renderer = $renderer;
-
-			$this->payloadStorage = $payloadStorage;
+			// confirm it throws those errors when unsatisfactory
 		}
-		
-		public function getResponse ():string {
 
-			return $this->renderer->render();
+		public function test_handleValidRequest () {
+
+			// confirm action method's contents are returned
+		}
+
+		public function test_isValidRequest () {
+
+			// confirm can find its way to its validator and returns true and false where applicable
+		}
+
+		public function test_failed_request_validation_reverts_renderer () {
+			
+			// 
 		}
 
 		public function afterRender():void {
@@ -52,12 +37,12 @@
 
 		public function bootCoodinatorManager ():self {
 
-			$this->controllerManager->setDependencies (
+			$this->controllerManager->setController(
 
-				$this->container->getClass($this->renderer->getController()),
+				$this->container->getClass($this->renderer->getController())
+			);
 
-				$this->renderer->getHandler()
-			)->bootController();
+			$this->controllerManager->bootController($this->renderer->getHandler());
 
 			return $this;
 		}

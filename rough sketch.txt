@@ -6,8 +6,6 @@ when cacheManager is integrated:
 	- refactor its usage wherever it appears in respect to accessing nested objects; tags etc
 	- is the override pattern we're using good or can it be updated while in the cache?
 
-Work needed on updateReactor
-
 We need CLI commands for:
 	- copying laravel config/migrations files from the library locations to dev land i.e. so config can lift the files (from the hard-coded "config" folder)
 	- starting app in long running process
@@ -32,8 +30,6 @@ Container
 	- should be divided into a write only version, and a full version extending that
 
 
-Ensure the given type is an instance of current/active whenType. Check if any [getClass] caller uses the second argument
-
 C:\wamp64\www\tilwa\nmeri\tilwa\vendor\bin>phpunit ../../tests/
 
 **
@@ -43,7 +39,7 @@ sqlite
 
 
 \PHPUnit\Framework\AssertionFailedError, Concerns\InteractsWithDatabase, Testing\Constraints
-	- extend and override getConnection (see portion of this doc on how to boot models)
+	- extend and override getConnection
 
 	- Illuminate\Testing\TestResponse: overwrite these, then use the new trait/class in place of the above
 		- assertSee[x] (they need the `e` method)
@@ -77,18 +73,15 @@ on the tearDown methods, you wanna:
 		- line 102
 			- doesn't this return a regex that should be escaped/normalized? if that be the case, match incoming path against that pattern and return the result to this guy
 
-	- models:
-		- are they setting each model's connection at some point? if yes, we'd have to do this for all the models of this particular orm
-		- Think there's a static setConnection method
-
-		- DB facade: class DB extends Illuminate\Database\Capsule\Manager {} in the global namespace fixed the problem
-
 	- flows:
 		- finding in cache after job runs, consider delegating path fetching to outerFlowWrapper->dataPath (although there's a chance that prefix wasn't even added in the hydrator, see line 84)
 		- [OuterFlowWrapperTest->test_empties_cache_entry_after_returning], write a sub test that checks the cache directly to confirm it was removed
 
 	- tests:
 		- mocks injected into modules => relevant test should create mock and manually trigger module booting before it runs. But first, check whether prophecy will work
+
+	- conditional factory
+		- [finally] => consider making factoryList a numeric array
 
 
 test only and except from routeCollection
@@ -100,7 +93,7 @@ rework/dismantle EnvironmentDefaults
 	- ModuleInitializerTest
 	- after controller component is complete
 		- validation
-		- controller
+		- confirm all the decorators work as expected
 	- model and path level authorization
 		- path
 			- collection where pairing happens (uses sut)
@@ -117,8 +110,7 @@ rework/dismantle EnvironmentDefaults
 		- working with multiple
 	- event layer
 		- listeners implementing repo layer will be wrapped by RepositoryWrapper and receive all its benefits, without event layer having to do that manually
-	- container
-		decorator
+		- error in dataful that throws an error rollsback calls in those services
 
 
 	- connect AlertAdapter/Bugsnag in interface loader. a test trait/class for replacing and catching this?
