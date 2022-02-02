@@ -45,5 +45,10 @@
 
 			$this->assertGuest(); // then
 		}
+
+		public function test_can_resume_auth_session () {
+
+			// login/start a new session. run ResponseManager::requestAuthenticationStatus and assert true
+		}
 	}
 ?>

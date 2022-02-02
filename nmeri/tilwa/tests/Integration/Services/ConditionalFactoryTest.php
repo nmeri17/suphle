@@ -13,6 +13,8 @@
 
 		public function setUp () {
 
+			parent::setUp();
+
 			$this->factory = $this->container->getClass(ConditionalFactoryMock::class);
 		}
 

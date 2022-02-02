@@ -51,7 +51,7 @@
 
 				return $this->laravelMatcher->getResponse();
 
-			$this->setRouteDetailsIndicator();
+			$this->indicator = $this->router->getIndicator();
 
 			$this->responseManager = $this->container->getClass(ResponseManager::class);
 
@@ -156,11 +156,6 @@
 		private function isLaravelRoute ():bool {
 
 			return !is_null($this->laravelMatcher);
-		}
-
-		private function setRouteDetailsIndicator ():void {
-
-			$this->indicator = $this->router->getIndicator();
 		}
 	}
 ?>

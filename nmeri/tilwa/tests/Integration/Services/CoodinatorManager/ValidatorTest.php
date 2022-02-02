@@ -1,29 +1,42 @@
 <?php
 	namespace Tilwa\Tests\Integration\Services\CoodinatorManager;
 
-	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
-
 	use Tilwa\Services\CoodinatorManager;
 
-	use Tilwa\Exception\Explosives\Generic\NoCompatibleValidator;
+	use Tilwa\Request\ValidatorManager;
+
+	use Tilwa\Response\{ResponseManager, Format\AbstractRenderer};
+
+	use Tilwa\Middleware\MiddlewareQueue;
+
+	use Tilwa\Modules\ModuleInitializer;
+
+	use Tilwa\Routing\RouteManager;
+
+	use Tilwa\Exception\Explosives\{Generic\NoCompatibleValidator, ValidationFailure};
+
+	use Tilwa\Exception\Diffusers\ValidationFailureDiffuser;
+
+	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
+
+	use Tilwa\Testing\Condiments\{DirectHttpTest, MockFacilitator};
+
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Controllers\ValidatorController, Validators\ValidatorOne};
 
 	class ValidatorTest extends IsolatedComponentTest {
 
-		use DirectHttpTest;
+		use DirectHttpTest, MockFacilitator;
 
-		public function setUp () {
-
-			parent::setUp();
-
-			$this->manager = $this->container->getClass(CoodinatorManager::class);
-		}
+		private $controller = ValidatorController::class;
 
 		public function test_get_needs_no_validation () {
 
 			// given
 			$this->setHttpParams("/dummy");
 
-			$error = $this->manager->setDependencies($string, $actionMethod)
+			$manager = $this->container->getClass(CoodinatorManager::class);
+
+			$error = $manager->setDependencies($this->controller, "handleGet")
 
 			->updateValidatorMethod(); // when
 
@@ -31,66 +44,114 @@
 		}
 
 		public function test_other_methods_requires_validation () {
-// NoCompatibleValidator
-			//
+
+			$this->setExpectedException(NoCompatibleValidator::class); // then
+
+			// given
+			$this->setHttpParams("/dummy", "post");
+
+			$manager = $this->container->getClass(CoodinatorManager::class);
+
+			$manager->setDependencies($this->controller, "postNoValidator")
+
+			->updateValidatorMethod(); // when
 		}
 
 		public function test_sets_validation_rules () {
 
-			//
+			$this->setHttpParams("/dummy", "post"); // given 1
+
+			$validatorManager = $this->positiveStub(ValidatorManager::class)
+
+			->expects($this->once())->method("setActionRules")
+
+			->with((new ValidatorOne)->postWithValidator()); // then
+
+			$this->container->whenTypeAny()->needsAny([
+
+				ValidatorManager::class => $validatorManager
+			]); // given 2
+
+			$manager = $this->container->getClass(CoodinatorManager::class);
+
+			$manager->setDependencies($this->controller, "postWithValidator")
+
+			->updateValidatorMethod(); // when
 		}
 
 
 		public function test_failed_validation_throws_error () {
 
-			//sut => isValidatedRequest
-		}
-		private function setHandlerParameters (string $actionMethod):void {
+			$this->setExpectedException(ValidationFailure::class); // then 1
 
-			$parameters = $this->container->getMethodParameters($actionMethod, get_class($this->controller));
+			$validatorManager = $this->positiveStub(ValidatorManager::class, [
 
-			$correctParameters = $this->validActionDependencies($parameters);
+				"validationErrors" => ["foo" => "bar"]
+			])
+			->expects($this->atLeastOnce())->method("validationErrors")
 
-			$this->prepareActionModels($correctParameters);
+			->with($this->anything()); // then 2 // actually, [nothing]
 
-			$this->handlerParameters = $correctParameters;
-		}
+			$this->container->whenTypeAny()->needsAny([
 
-		private function validActionDependencies (array $argumentList):array {
+				ValidatorManager::class => $validatorManager
+			]) // given
 
-			$newList = [];
-
-			foreach ($argumentList as $argument => $dependency) { // silently fail
-
-				foreach ($this->actionInjectables as $validType)
-
-					if ($dependency instanceof $validType) {
-
-						$newList[$argument] = $dependency;
-
-						break;
-					}
-			}
-
-			return $newList;
+			->getClass(ResponseManager::class)->mayBeInvalid(); // when
 		}
 
-		private function prepareActionModels (array $argumentList):void {
+		public function test_successful_validation_initiates_middleware () {
 
-			$orm = null;
+			$sutName = ModuleInitializer::class;
 
-			foreach ($argumentList as $dependency) {
+			// given
+			$validatorManager = $this->positiveStub(ValidatorManager::class, [
 
-				if (!($dependency instanceof ModelfulPayload))
+				"isValidated" => true
+			]);
 
-					continue;
+			$sut = $this->positiveStub($sutName, ["triggerRequest"]); // discard other method calls
 
-				if (is_null($orm))
+			$middlewareQueue = $this->negativeStub(MiddlewareQueue::class)
 
-					$orm = $this->container->getClass(Orm::class);
+			->expects($this->once())->method("runStack")
 
-				$dependency->setDependencies($orm);
-			}
+			->with($this->anything()); // then
+
+			$this->container->whenTypeAny()->needsAny([
+
+				ValidatorManager::class => $validatorManager,
+
+				MiddlewareQueue::class => $middlewareQueue,
+
+				$sutName => $sut
+			])
+
+			->getClass($sutName)->triggerRequest(); // when
+		}
+
+		public function test_failed_validation_reverts_renderer () {
+
+			$this->setHttpParams("/dummy"); // given
+
+			$router = $this->negativeStub(RouteManager::class, [
+
+				"getPreviousRenderer" => $this->negativeStub(AbstractRenderer::class) // if getPreviousRenderer is not called, our mock won't run. So, 2 tests for the price of 1
+
+					->expects($this->once())->method("setRawResponse")
+					->with($this->callback(function($subject){
+
+						return array_key_exists("errors", $subject);
+					})); // then
+			]);
+
+			$this->container->whenTypeAny()->needsAny([
+
+				RouteManager::class => $router
+			])
+			->getClass(ValidationFailureDiffuser::class)
+
+			->prepareRendererData(); // when
 		}
 	}
 ?>

@@ -16,7 +16,7 @@
 			//
 		}
 
-		public function test_hydrateModels() {
+		public function test_triggers_renderer_execution () {
 
 			//
 		}

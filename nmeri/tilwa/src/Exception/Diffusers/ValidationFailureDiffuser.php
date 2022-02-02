@@ -33,11 +33,16 @@
 
 			else $this->renderer = $this->router->getActiveRenderer();
 
-			$this->renderer->setRawResponse(array_merge($this->renderer->getRawResponse(), [
+			$this->renderer->setRawResponse(array_merge($this->renderer->getRawResponse(), [ // this means every route that can possibly fail validation should return an array
 
-				"errors" => $this->validationEvaluator->getValidatorErrors()
+				"errors" => $this->validationErrors()
 			]))
 			->setHeaders(422, []);
+		}
+
+		protected function validationErrors ():array {
+
+			return $this->validationEvaluator->getValidatorErrors();
 		}
 
 		public function getRenderer ():AbstractRenderer {

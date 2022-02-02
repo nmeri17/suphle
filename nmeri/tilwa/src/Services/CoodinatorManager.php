@@ -82,7 +82,7 @@
 			$this->handlerParameters = $correctParameters;
 		}
 
-		private function validActionDependencies (array $argumentList):array {
+		public function validActionDependencies (array $argumentList):array {
 
 			$newList = [];
 
@@ -101,7 +101,7 @@
 			return $newList;
 		}
 
-		private function prepareActionModels (array $argumentList):void {
+		public function prepareActionModels (array $argumentList):void {
 
 			$orm = null;
 

@@ -79,7 +79,7 @@
 
 		public function isValidRequest ():bool {
 
-			return $this->controllerManager->isValidatedRequest();
+			return $this->controllerManager->hasValidatorErrors();
 		}
 
 		public function mayBeInvalid ():void {

@@ -3,15 +3,11 @@
 
 	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
-	class ModuleInitializerTest extends IsolatedComponentTest { // SUT for the next 2 methods is [triggerRequest]
+	class ModuleInitializerTest extends IsolatedComponentTest {
 		
 		public function test_session_resumption() {
 
-			// user with x token/session does y thing on request to a protected route z; makes a 2nd request to route A expecting to find y again
-
-			// requires login to get token and stuff
-			
-			// we want to call [attemptAuthentication] but the routes need to be ready or something. We can either upgrade this to [ModuleAssembly] or mock out all those dependencies (the stuff done by the router to activate the auth state for that route)
+			// stub responseManager::requestAuthenticationStatus and confirm ::attemptAuthentication throws errors or doesn't
 		}
 
 		public function test_stranger_cant_get_creators_resource () {
