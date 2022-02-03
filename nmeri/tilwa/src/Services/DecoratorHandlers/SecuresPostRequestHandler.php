@@ -29,22 +29,16 @@
 
 				return $arguments;
 
-			foreach ($arguments as $dependency) {
-
-				$satisfied = false;
+			foreach ($arguments as $dependency)
 
 				foreach ($this->postDecorators as $decorator) {
 
 					if ($dependency instanceof $decorator)
 
-						$satisfied = true;
+						return $arguments;
 				}
-				if (!$satisfied)
 
-					throw new MissingPostDecorator($dummyInstance);
-			}
-
-			return $arguments;
+			throw new MissingPostDecorator($dummyInstance);
 		}
 
 		public function transformMethods ($concreteInstance, array $arguments):array {

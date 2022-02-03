@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Hydration\DecoratorScopes;
+	namespace Tilwa\Services\DecoratorHandlers;
 
 	use Tilwa\Contracts\{Hydration\ScopeHandlers\ModifyInjected, Services\OnlyLoadedBy};
 

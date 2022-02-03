@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Hydration\DecoratorScopes;
+	namespace Tilwa\Services\DecoratorHandlers;
 
 	use Tilwa\Contracts\Hydration\ScopeHandlers\ModifiesArguments;
 
@@ -9,22 +9,23 @@
 
 		public function transformConstructor ($dummyInstance, array $injectedArguments):array {
 
-			$suspects = [];
+			$permitted = $dummyInstance->getPermitted();
 
-			foreach ($injectedArguments as $service)
+			$hasFriends = !empty($permitted);
+
+			foreach ($injectedArguments as $service) {
 				
-				if ( !$this->containsParent($dummyInstance->getPermitted(), $service ))
+				$stranger = $hasFriends && !$this->containsParent($permitted, $service );
 
-					$suspects[] = $service;
+				$enemy = !$hasFriends && $this->containsParent($dummyInstance->getRejected(), $service );
 
-			foreach ($suspects as $service)
-
-				if ($this->containsParent($dummyInstance->getRejected(), $service ))
+				if ($stranger || $enemy)
 
 					throw new UnacceptableDependency (get_class($dummyInstance), get_class($service));
+			}
 			
 			return $injectedArguments;
-		};
+		}
 
 		public function transformMethods ($concreteInstance, array $arguments):array {
 

@@ -89,11 +89,16 @@ test only and except from routeCollection
 rework/dismantle EnvironmentDefaults
 
 
-4) write tests for:
-	- ModuleInitializerTest
-	- after controller component is complete
-		- validation
-		- confirm all the decorators work as expected
+4) pending tests:
+	- confirm all the decorators work as expected
+	- event layer
+		- listeners implementing repo layer will be wrapped by RepositoryWrapper and receive all its benefits, without event layer having to do that manually
+		- error in dataful that throws an error rollsback calls in those services
+	- ModuleInitializerTest, PostLoginBehaviorTest::test_can_resume_auth_session, 
+	- middleware
+		- adding and removing (tagPatterns, removeTag)
+		- working with multiple
+		- test that FinalHandlerWrapper is always called and that it calls those methods on the manager
 	- model and path level authorization
 		- path
 			- collection where pairing happens (uses sut)
@@ -103,14 +108,9 @@ rework/dismantle EnvironmentDefaults
 		- see adapter\eloquent->registerObservers
 		- test whether permissions affect when the model is fetched from a parent relationship
 			- try both securing the one we call, and securing the relationship
+	- check the unit test folder
 	- contracts\config
 		- auth, router, tss
-	- middleware
-		- adding and removing (tagPatterns, removeTag)
-		- working with multiple
-	- event layer
-		- listeners implementing repo layer will be wrapped by RepositoryWrapper and receive all its benefits, without event layer having to do that manually
-		- error in dataful that throws an error rollsback calls in those services
 
 
 	- connect AlertAdapter/Bugsnag in interface loader. a test trait/class for replacing and catching this?

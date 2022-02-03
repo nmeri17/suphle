@@ -9,6 +9,8 @@
 
 	use Tilwa\Request\PayloadStorage;
 
+	use Tilwa\Hydration\Container;
+
 	use Tilwa\Contracts\Services\Decorators\{SecuresPostRequest, SelectiveDependencies};
 
 	class ServiceCoordinator implements SelectiveDependencies, SecuresPostRequest {
@@ -25,7 +27,7 @@
 
 		final public function getRejected ():array {
 
-			return [EventManager::class,];
+			return [EventManager::class, Container::class, ServiceCoordinator::class];
 		}
 
 		public function validatorCollection ():?string {
