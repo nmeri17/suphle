@@ -9,8 +9,13 @@
 
 	use Tilwa\Exception\{Explosives\EditIntegrityException, DetectedExceptionManager};
 
+	use Tilwa\Services\Jobs\AddUserEditField;
+
 	use Throwable;
 
+	/**
+	 * The idea is that the last updater should invalidate whatever those with current copies of the page are both looking at or trying to update
+	*/
 	class MultiUserModelCallProxy extends BaseCallProxy {
 
 		const INTEGRITY_KEY = "_collision_protect"; // submitted form/payload is expected to contain this key
@@ -32,9 +37,9 @@
 
 			if ($method == "getResource") { // should getting editable resource fail, there's nothing to fallback on. Terminate request by bubbling up 
 
-				$result = $this->getResource();
+				$result = $this->activeService->getResource();
 
-				$this->handleGetResource($result);
+				$this->activeService->setLastIntegrity($this->queueIntegrity($result));
 
 				return $result;
 			}
@@ -45,18 +50,18 @@
 			return $this->yield($method, $arguments); // calling other methods is allowed, but not protected
 		}
 
-		private function handleGetResource (IntegrityModel $modelInstance):void {
+		private function queueIntegrity (IntegrityModel $modelInstance):int {
 
 			$editIdentifier = random_int(13, 24759);
 
 			$this->queueManager->augmentArguments(
 
-				UserEditFieldUpdate::class,
+				AddUserEditField::class,
 
 				compact("editIdentifier", "modelInstance")
 			);
 
-			$modelInstance->setEditIntegrity($editIdentifier);
+			return $editIdentifier;
 		}
 
 		/**
@@ -70,24 +75,25 @@
 
 			$currentVersion = $this->activeService->getResource();
 
-			if ($currentVersion->getEditIntegrity() != $this->payloadStorage->getKey(self::INTEGRITY_KEY))
+			if (!$currentVersion->includesEditIntegrity($this->payloadStorage->getKey(self::INTEGRITY_KEY)) ) // this is the main part of the entire setup
 
 				throw new EditIntegrityException;
 
 			try {
 
-				$this->orm->runTransaction(function () use ($currentVersion) {
+				return $this->orm->runTransaction(function () use ($currentVersion) {
 
-					$this->activeService->updateResource(); // user's incoming changes
+					$result = $this->activeService->updateResource(); // user's incoming changes
 
-					$currentVersion->setEditIntegrity( null);
+					$currentVersion->nullifyEditIntegrity();
 
-					$this->orm->saveOne($currentVersion);
+					return $result;
+
 				}, [$currentVersion], true);
 			}
 			catch (Throwable $exception) {
 
-				$this->attemptDiffuse($exception, "updateResource");
+				return $this->attemptDiffuse($exception, "updateResource");
 			}
 		}
 	}

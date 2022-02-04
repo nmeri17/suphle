@@ -11,13 +11,19 @@
 	interface MultiUserModelEdit extends ServiceErrorCatcher {
 
 		/**
-		 * Integrity will be set on the model returned by this method. Also, we expect this method to be idempotent i.e. yield same resource, be it called during get or post
+		 * We expect this method to be idempotent i.e. yield same resource, be it called during get or post
 		*/
 		public function getResource ():IntegrityModel;
 
+		public function setLastIntegrity (int $integrity):void;
+
+		public function getLastIntegrity ():int;
+
 		/**
 		 * @throws EditIntegrityException
+		 * 
+		 * @return mixed. Can be anything caller can work with
 		*/
-		public function updateResource ():void;
+		public function updateResource ();
 	}
 ?>

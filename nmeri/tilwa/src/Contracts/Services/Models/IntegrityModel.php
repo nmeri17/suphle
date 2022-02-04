@@ -1,16 +1,23 @@
 <?php
 	namespace Tilwa\Contracts\Services\Models;
 
-	/**
-	 * Migration should create field, like "edit_lock" for these fields to read from
-	*/
 	interface IntegrityModel {
 
-		public function getEditIntegrity ():int;
+		const COLUMN_NAME = "edit_lock"; // Migration should create this column for methods to read from
 
 		/**
-		 * @param {integrity} Will be null on the return leg, after successfully editing resource and unsetting it for other users
+		 * If [COLUMN_NAME] is null for this model, user is looking at a stale version
 		*/
-		public function setEditIntegrity (?int $integrity):void;
+		public function includesEditIntegrity ():bool;
+
+		/**
+		 * Unset all integrities for this model
+		*/
+		public function nullifyEditIntegrity ():void;
+
+		/**
+		 * Until one of them updates, they're all equals
+		*/
+		public function addEditIntegrity (int $integrity):void;
 	}
 ?>

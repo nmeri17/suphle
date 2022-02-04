@@ -1,8 +1,7 @@
 <?php
-
 	namespace Tilwa\Contracts\Database;
 
-	interface Orm {
+	interface OrmDialect {
 
 		public function getConnection ();
 

@@ -3,7 +3,7 @@
 
 	use Tilwa\Contracts\Hydration\{InterfaceCollection, DecoratorChain};
 
-	use Tilwa\Contracts\{HtmlParser, Database\Orm as OrmApi, Requests\RequestValidator, Queues\Adapter as QueueAdapter, Bridge\LaravelContainer, Modules\ControllerModule};
+	use Tilwa\Contracts\{HtmlParser, Database\OrmDialect, Requests\RequestValidator, Queues\Adapter as QueueAdapter, Bridge\LaravelContainer, Modules\ControllerModule};
 
 	use Tilwa\Contracts\Auth\{AuthStorage, User as UserEntity, UserHydrator as IUserHydrator};
 
@@ -38,7 +38,7 @@
 		public function getLoaders():array {
 
 			return [
-				OrmApi::class => OrmLoader::class,
+				OrmDialect::class => OrmLoader::class,
 
 				LaravelContainer::class => LaravelAppLoader::class,
 			];

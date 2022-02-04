@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Contracts\Auth;
 
-	interface User {
+	interface UserContract {
 
 		public function getId ();
 
@@ -9,6 +9,6 @@
 
 		public function getPassword ();
 
-		public function find ():User;
+		public function find ():UserContract;
 	}
 ?>

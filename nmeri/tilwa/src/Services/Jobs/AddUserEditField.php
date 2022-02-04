@@ -3,7 +3,7 @@
 
 	use Tilwa\Contracts\{Database\Orm, Queues\Task, Services\Models\IntegrityModel};
 
-	class UserEditFieldUpdate implements Task {
+	class AddUserEditField implements Task {
 
 		private $orm, $editIdentifier, $modelInstance;
 
@@ -20,9 +20,8 @@
 
 			$this->orm->runTransaction(function () {
 
-				$this->modelInstance->setEditIntegrity( $this->editIdentifier);
-
-				$this->orm->saveOne($this->modelInstance);
+				$this->modelInstance->addEditIntegrity( $this->editIdentifier);
+				
 			}, [$this->modelInstance]);
 		}
 	}

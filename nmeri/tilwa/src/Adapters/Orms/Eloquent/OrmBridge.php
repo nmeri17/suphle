@@ -1,13 +1,13 @@
 <?php
-	namespace Tilwa\Adapters\Orms;
+	namespace Tilwa\Adapters\Orms\Eloquent;
 
-	use Tilwa\Contracts\{Database\Orm, Config\Database, Bridge\LaravelContainer};
+	use Tilwa\Contracts\{Database\OrmDialect, Config\Database, Bridge\LaravelContainer};
 
 	use Tilwa\Hydration\Container;
 
 	use Illuminate\Database\{DatabaseManager, Capsule\Manager as CapsuleManager};
 
-	class Eloquent implements Orm {
+	class OrmBridge implements OrmDialect {
 
 		private $credentials, $connection, $laravelContainer,
 

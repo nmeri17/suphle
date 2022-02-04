@@ -1,13 +1,11 @@
 <?php
-	namespace Tilwa\Auth\Models\Eloquent;
+	namespace Tilwa\Adapters\Orms\Eloquent\Models;
 
-	use Illuminate\Database\Eloquent\{Model, Factories\Factory};
+	use Tilwa\Adapters\Orms\Eloquent\Factories\UserFactory;
 
-	use Tilwa\Auth\Models\Factories\UserFactory;
+	use Tilwa\Contracts\Auth\UserContract;
 
-	use Tilwa\Contracts\Auth\User as UserContract;
-
-	class User extends Model implements UserContract {
+	class User extends BaseModel implements UserContract {
 
 		protected $hidden = ["password"], $table = "users",
 
@@ -32,10 +30,5 @@
 
 			return $this->password;
 		}
-
-	    public static function __callStatic($method, $parameters) {
-	        
-	        return null;
-	    }
 	}
 ?>

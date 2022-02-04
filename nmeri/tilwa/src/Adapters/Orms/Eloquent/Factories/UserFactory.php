@@ -1,11 +1,11 @@
 <?php
-	namespace Tilwa\Auth\Models\Eloquent\Factories;
+	namespace Tilwa\Adapters\Orms\Eloquent\Factories;
 
 	use Illuminate\Database\Eloquent\Factories\Factory;
 
-	use Illuminate\Support\Str;
+	use Tilwa\Adapters\Orms\Eloquent\Models\User;
 
-	use Tilwa\Auth\Models\Eloquent\User;
+	use DateTime;
 
 	class UserFactory extends Factory {
 
@@ -17,7 +17,9 @@
 
 				"email" => $this->faker->unique()->safeEmail(),
 				
-				"password" => password_hash(Str::random(8), PASSWORD_DEFAULT)
+				"password" => password_hash("nmeri", PASSWORD_DEFAULT),
+
+				"email_verified_at" => new DateTime
 			];
 		}
 	}

@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Auth\Models\Eloquent;
+	namespace Tilwa\Adapters\Orms\Eloquent;
 
 	use Tilwa\Contracts\Auth\UserHydrator as HydratorContract;
 
