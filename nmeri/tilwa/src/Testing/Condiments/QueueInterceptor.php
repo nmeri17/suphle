@@ -9,14 +9,22 @@
 
 	trait QueueInterceptor {
 
-		use FrontDoorTest; // this should be the same instance used to send the request
+		use FrontDoorTest { // this should be the same instance used to send the request
+			FrontDoorTest::setUp as frontSetup;
+		};
 
-		private $adapter, $isCatching = false;
+		private $adapter;
 
-		public function catchQueuedTasks ():void {
+		public function setUp () {
 
-			if (!$this->isCatching) { // using this nonce so we can assert more than once in the same test without overwriting the instance
-				$this->isCatching = true;
+			$this->frontSetup();
+
+			$this->catchQueuedTasks();
+		}
+
+		private function catchQueuedTasks ():void {
+
+			if (is_null($this->adapter)) { // using this nonce so we can assert more than once in the same test without overwriting the instance
 
 				$this->adapter = new StubbedQueueAdapter;
 
@@ -35,16 +43,12 @@
 
 		protected function assertPushedToFlow(string $originUrl):void {
 
-			$this->catchQueuedTasks();
-
 			$this->get($originUrl);
 
 			$this->assertPushed(RouteBranches::class);
 		}
 
 		protected function assertNotPushedToFlow(string $originUrl):void {
-
-			$this->catchQueuedTasks();
 
 			$this->get($originUrl);
 

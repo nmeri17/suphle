@@ -1,15 +1,15 @@
 <?php
 	namespace Tilwa\Services\Jobs;
 
-	use Tilwa\Contracts\{Database\Orm, Queues\Task, Services\Models\IntegrityModel};
+	use Tilwa\Contracts\{Database\OrmDialect, Queues\Task, Services\Models\IntegrityModel};
 
 	class AddUserEditField implements Task {
 
-		private $orm, $editIdentifier, $modelInstance;
+		private $ormDialect, $editIdentifier, $modelInstance;
 
-		public function __construct (Orm $orm, IntegrityModel $modelInstance, int $editIdentifier) {
+		public function __construct (OrmDialect $ormDialect, IntegrityModel $modelInstance, int $editIdentifier) {
 
-			$this->orm = $orm;
+			$this->ormDialect = $ormDialect;
 
 			$this->editIdentifier = $editIdentifier;
 
@@ -18,7 +18,7 @@
 
 		public function handle () {
 
-			$this->orm->runTransaction(function () {
+			$this->ormDialect->runTransaction(function () {
 
 				$this->modelInstance->addEditIntegrity( $this->editIdentifier);
 				
