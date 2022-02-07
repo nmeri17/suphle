@@ -35,18 +35,14 @@
 			return undefinedFunction();
 		}
 
-		public function deliberateError ():OptionalDTO {
+		public function deliberateError ():string {
 
 			trigger_error("error_msg");
-
-			return new OptionalDTO (55);
 		}
 
-		public function deliberateException ():OptionalDTO {
+		public function deliberateException ():string {
 
 			throw new Exception;
-
-			return new OptionalDTO (10);
 		}
 
 		public function terminateRequest ():int {

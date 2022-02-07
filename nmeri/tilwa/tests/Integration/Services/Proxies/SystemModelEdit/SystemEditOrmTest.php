@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Tests\Integration\Services\Proxies;
+	namespace Tilwa\Tests\Integration\Services\Proxies\SystemModelEdit;
 
 	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
@@ -7,15 +7,15 @@
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Controllers\GoodPutController;
 
-	use Tilwa\Contracts\Database\Orm;
+	use Tilwa\Contracts\Database\OrmDialect;
 
-	class SystemModelEditTest extends IsolatedComponentTest {
+	class SystemEditOrmTest extends IsolatedComponentTest {
 
 		use DirectHttpTest, MockFacilitator;
 
 		private function mockOrm ($numTimes) {
 
-			return $this->negativeStub(Orm::class)->expects($numTimes)
+			return $this->negativeStub(OrmDialect::class)->expects($numTimes)
 
 			->method("runTransaction")->with($this->anything());
 		}
@@ -27,7 +27,7 @@
 
 			$this->container->whenTypeAny()->needsArguments([
 
-				Orm::class => $this->mockOrm($this->once()) // then
+				OrmDialect::class => $this->mockOrm($this->once()) // then
 			])
 
 			->getClass(GoodPutController::class)
@@ -42,7 +42,7 @@
 
 			$this->container->whenTypeAny()->needsArguments([
 
-				Orm::class => $this->mockOrm($this->never()) // then
+				OrmDialect::class => $this->mockOrm($this->never()) // then
 			])
 
 			->getClass(GoodPutController::class)

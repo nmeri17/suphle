@@ -7,7 +7,9 @@
 
 	use Tilwa\Hydration\Container;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Concretes\Services\MultiUserEditMock, Meta\ModuleOneDescriptor};
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
+
+	use Tilwa\Tests\Mocks\Interactions\ModuleOne;
 
 	class AfterModelFetchTest extends ModuleLevelTest {
 
@@ -30,9 +32,9 @@
 
 		public function test_get_resource_sets_integrity_on_service () {
 
-			$sut = $this->container->getClass(MultiUserEditMock::class); // given
+			$sut = $this->getModuleFor(ModuleOne::class)
 
-			$sut->getResource(); // when
+			->getResourceEditor(); // when
 
 			// then
 			$this->assertNotNull($sut->getLastIntegrity());

@@ -19,5 +19,9 @@
 		 * Until one of them updates, they're all equals
 		*/
 		public function addEditIntegrity (int $integrity):void;
+
+		protected function enableAudit ():bool;
+
+		protected function makeHistory ():void;
 	}
 ?>

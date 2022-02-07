@@ -11,7 +11,9 @@
 
 	class ModuleExceptionBridge implements HighLevelRequestHandler {
 
-		private $container, $handler, $config;
+		private $container, $handler, $config,
+
+		$fatalExceptions = [E_ERROR, E_CORE_ERROR, E_CORE_WARNING, E_COMPILE_ERROR, E_COMPILE_WARNING];
 
 		public function __construct( Container $container, ExceptionInterceptor $config) {
 
@@ -52,22 +54,23 @@
 
 				$lastError = error_get_last();
 
-				if (!is_null($lastError) && in_array($lastError["type"], [E_ERROR, E_CORE_ERROR, E_CORE_WARNING, E_COMPILE_ERROR, E_COMPILE_WARNING]) ) {
+				$isFatal = !is_null($lastError) && in_array($lastError["type"], $this->fatalExceptions);
 
-					$this->handler = $this->container->getClass($this->config->defaultHandler());
+				if (!$isFatal ) return;
 
-					$exception = new Exception(json_encode($lastError));
-					
-					$this->handler->setContextualData($exception);
+				$this->handler = $this->container->getClass($this->config->defaultHandler());
 
-					$this->exceptionManager->queueAlertAdapter($exception, $lastError);
+				$exception = new Exception(json_encode($lastError)); // will have no trace
+				
+				$this->handler->setContextualData($exception);
 
-					$renderer = $this->handlingRenderer();
+				$this->exceptionManager->queueAlertAdapter($exception, $lastError);
 
-					http_response_code($renderer->getStatusCode());
+				$renderer = $this->handlingRenderer();
 
-					echo $renderer->render();
-				}
+				http_response_code($renderer->getStatusCode());
+
+				echo $renderer->render();
 			});
 		}
 	}

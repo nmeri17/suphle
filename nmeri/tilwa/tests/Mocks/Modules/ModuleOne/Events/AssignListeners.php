@@ -3,7 +3,9 @@
 
 	use Tilwa\Events\EventManager;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Concretes\LocalSender as Emitter, Events\LocalReceiver};
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\{LocalSender as Emitter, UpdatefulEmitter};
+
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Events\{LocalReceiver, UpdatefulListener};
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Meta\ModuleApi;
 
@@ -14,6 +16,8 @@
 			$this->localSenderBindings();
 
 			$this->localReceiverBindings();
+
+			$this->updatefulBindings();
 		}
 
 		private function localSenderBindings ():void {
@@ -36,6 +40,13 @@
 			$this->local(LocalReceiver::class, ReboundReceiver::class)
 
 			->on(LocalReceiver::CASCADE_REBOUND_EVENT, "ricochetReactor");
+	    }
+
+	    private function updatefulBindings ():void {
+
+	    	$this->local(UpdatefulEmitter::class, UpdatefulListener::class)
+
+	    	->on(UpdatefulEmitter::UPDATE_ERROR, "terminateTransaction");
 	    }
 	}
 ?>

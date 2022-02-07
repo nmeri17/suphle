@@ -1,44 +1,21 @@
 <?php
-	namespace Tilwa\Tests\Integration\Services\Proxies;
+	namespace Tilwa\Tests\Integration\Services\Proxies\MultiUserModel;
 
-	use Tilwa\Testing\TestTypes\ModuleLevelTest;
+	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
-	use Tilwa\Testing\Condiments\{QueueInterceptor, MockFacilitator};
+	use Tilwa\Testing\Condiments\{DirectHttpTest, MockFacilitator};
 
-	use Tilwa\Services\Jobs\AddUserEditField;
+	use Tilwa\Services\{Jobs\AddUserEditField, Proxies\MultiUserModelCallProxy, Structures\OptionalDTO};
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\Services\MultiUserEditMock;
+	use Tilwa\Contracts\Services\Models\IntegrityModel;
 
-	class MultiUserModelEditTest extends ModuleLevelTest {
+	use Tilwa\Exception\Explosives\EditIntegrityException;
 
-		use MockFacilitator, QueueInterceptor {
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\Services\{MultiUserEditMock, MultiUserEditError};
 
-			QueueInterceptor::setUp as queueSetup;
-		};
+	class FetchAndEditTest extends IsolatedComponentTest {
 
-		public function setUp ():void {
-
-			parent::setUp();
-
-			$this->queueSetup();
-		}
-		
-		protected function getModules():array {
-
-			return [new ModuleOneDescriptor(new Container)];
-		}
-
-		public function test_get_resource_sets_integrity_on_service () {
-
-			$sut = $this->container->getClass(MultiUserEditMock::class); // given
-
-			$sut->getResource(); // when
-
-			// then
-			$this->assertNotNull($sut->getLastIntegrity());
-
-			$this->assertPushed(AddUserEditField::class);
-		}
+		use MockFacilitator, DirectHttpTest;
 
 		public function test_get_queue_adds_integrity () {
 
@@ -56,24 +33,50 @@
 
 			$this->setExpectedException(EditIntegrityException::class); // then
 
-			//
+			$this->setHttpParams("/dummy"); // given
+
+			$this->container->getClass(MultiUserEditMock::class)
+
+			->updateResource(); // when
 		}
 
 		public function test_last_updater_invalidates_for_all_viewers () {
 
 			$this->setExpectedException(EditIntegrityException::class); // then
 
-			// 
-		}
+			$sutName = MultiUserEditMock::class;
 
-		public function test_last_updater_successfully_updates () {
+			// given
+			$mock = $this->positiveStub($sutName, [
 
-			// ...and nullifies
+				"getResource" => $this->positiveStub(IntegrityModel::class, [
+
+					"includesEditIntegrity" => true
+				])
+			])->expects($this->exactly(2))->method("updateResource")
+
+			->with($this->anything()); // we want to ensure it ran twice before throwing the error above
+
+			$this->setHttpParams("/dummy", "put", json_encode([
+
+				MultiUserModelCallProxy::INTEGRITY_COLUMN => 6556
+			]));
+
+			$sut = $this->container->whenTypeAny()->needsAny([
+
+				$sutName => $mock
+			])->getClass($sutName);
+
+			for ($i = 0; $i < 2; $i++) $sut->updateResource();
 		}
 
 		public function test_update_can_withstand_errors () {
 
-			// sut => AddUserEditField
+			$result = $this->container->getClass(MultiUserEditError::class)
+
+			->updateResource(); // when
+
+			$this->assertInstanceOf(OptionalDTO::class, $result); // then
 		}
 	}
 ?>

@@ -5,7 +5,7 @@
 
 	use Tilwa\Contracts\{HtmlParser, Database\OrmDialect, Requests\RequestValidator, Queues\Adapter as QueueAdapter, Bridge\LaravelContainer, Modules\ControllerModule};
 
-	use Tilwa\Contracts\Auth\{AuthStorage, User as UserEntity, UserHydrator as IUserHydrator};
+	use Tilwa\Contracts\Auth\{AuthStorage, UserContract, UserHydrator as IUserHydrator};
 
 	use Tilwa\Contracts\Config\{Auth as AuthConfig, Transphporm as TransphpormConfig, Laravel as LaravelConfig, ExceptionInterceptor};
 
@@ -15,7 +15,7 @@
 
 	use Tilwa\Auth\Storage\SessionStorage;
 
-	use Tilwa\Auth\Models\Eloquent\{UserHydrator as EloquentUserHydrator, User as EloquentUser};
+	use Tilwa\Adapters\Orms\Eloquent\{UserHydrator as EloquentUserHydrator, User as EloquentUser};
 
 	use Tilwa\Adapters\Markups\Transphporm as TransphpormAdapter;
 
@@ -50,7 +50,7 @@
 
 				HtmlParser::class => TransphpormAdapter::class,
 
-				UserEntity::class => EloquentUser::class,
+				UserContract::class => EloquentUser::class,
 
 				AuthStorage::class => SessionStorage::class,
 

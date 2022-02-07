@@ -3,6 +3,8 @@
 
 	use Tilwa\Exception\DetectedExceptionManager;
 
+	use Tilwa\Services\Structures\OptionalDTO;
+
 	use ReflectionMethod;
 
 	abstract class BaseCallProxy {
@@ -39,13 +41,13 @@
 			return $default;
 		}
 
-		protected function attemptDiffuse (Throwable $exception, string $method) {
+		protected function attemptDiffuse (Throwable $exception, string $method):OptionalDTO {
 
 			$this->exceptionDetector->detonateOrDiffuse($exception, $this->activeService);
 
 			$callerResponse = $this->activeService->failureState($method);
 
-			return $callerResponse ?? $this->methodDefaultValue($method);
+			return $callerResponse ?? new OptionalDTO($this->methodDefaultValue($method), false);
 		}
 	}
 ?>

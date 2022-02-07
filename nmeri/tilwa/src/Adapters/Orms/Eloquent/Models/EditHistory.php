@@ -1,18 +1,18 @@
 <?php
 	namespace Tilwa\Adapters\Orms\Eloquent\Models;
 
-	use Tilwa\Adapters\Orms\Eloquent\Factories\MultiEditorFactory;
+	use Tilwa\Adapters\Orms\Eloquent\Factories\EditHistoryFactory;
 
 	use Illuminate\Database\Eloquent\Factories\Factory;
 
-	class ActiveEditors extends BaseModel {
+	class EditHistory extends BaseModel {
 
 		protected static function newFactory ():Factory {
 
-			return MultiEditorFactory::new();
+			return EditHistoryFactory::new();
 		}
 
-		public function editable () {
+		public function historical () {
 
 			return $this->morphTo();
 		}

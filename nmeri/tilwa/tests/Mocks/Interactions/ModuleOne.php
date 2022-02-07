@@ -1,6 +1,10 @@
 <?php
 	namespace Tilwa\Tests\Interactions;
 
+	use Tilwa\Services\Structures\OptionalDTO;
+
+	use Tilwa\Contracts\Services\Decorators\MultiUserModelEdit;
+
 	interface ModuleOne {
 
 		const DEFAULT_EVENT = "sample_event";
@@ -24,5 +28,9 @@
 		public function sendExtendedEvent (int $value):void;
 
 		public function multiModuleCascadeEvent (bool $value);
+
+		public function getResourceEditor ():MultiUserModelEdit;
+
+		public function systemUpdateErrorEvent (int $payload):?OptionalDTO;
 	}
 ?>

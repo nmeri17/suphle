@@ -3,6 +3,8 @@
 
 	use Tilwa\Contracts\Services\{Decorators\MultiUserModelEdit, Models\IntegrityModel};
 
+	use Tilwa\Services\Structures\OptionalDTO;
+
 	use Tilwa\Tests\Models\Eloquent\MultiEditProduct;
 
 	class MultiUserEditMock implements MultiUserModelEdit {
@@ -27,6 +29,16 @@
 		public function updateResource () {
 
 			//
+		}
+
+		public function rethrowAs ():array {
+
+			return [];
+		}
+
+		public function failureState (string $method):?OptionalDTO {
+
+			return;
 		}
 	}
 ?>
