@@ -5,7 +5,7 @@
 
 		protected function emitHelper (string $eventName, $payload = null):void {
 
-			$this->eventManager->emit(get_class($this), $eventName, $payload);
+			$this->eventManager->emit(get_called_class(), $eventName, $payload);
 		}
 	}
 ?>

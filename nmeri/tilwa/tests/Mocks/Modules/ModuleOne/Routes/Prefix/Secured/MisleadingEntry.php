@@ -3,6 +3,8 @@
 
 	use Tilwa\Routing\BaseCollection;
 
+	use Tilwa\Middleware\MiddlewareRegistry;
+
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\Prefix\IntermediaryToWithout;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Middlewares\BlankMiddleware;
@@ -14,9 +16,9 @@
 			return ["FIRST"];
 		}
 
-		public function _assignMiddleware ():void {
+		public function _assignMiddleware (MiddlewareRegistry $registry):void {
 
-			$this->middlewareRegistry->tagPatterns(["FIRST"], [BlankMiddleware::class]);
+			$registry->tagPatterns(["FIRST"], [BlankMiddleware::class]);
 		}
 		
 		public function FIRST () {

@@ -9,7 +9,11 @@
 
 		public function tagPatterns (array $patterns, array $middlewares):self {
 
-			foreach ($patterns as $pattern) {
+			$uniquePatterns = array_unique($patterns);
+
+			$uniqueMiddlewares = array_unique($middlewares);
+
+			foreach ($uniquePatterns as $pattern) {
 
 				if (array_key_exists($pattern, $this->registry))
 
@@ -17,7 +21,7 @@
 
 				else $context = $this->registry[$pattern] = new PatternMiddleware;
 
-				foreach ($middlewares as $instance)
+				foreach ($uniqueMiddlewares as $instance)
 
 					$context->addMiddleware($instance);
 			}

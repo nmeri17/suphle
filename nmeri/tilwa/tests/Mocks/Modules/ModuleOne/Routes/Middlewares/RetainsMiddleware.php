@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\Auth;
+	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\Middlewares;
 
 	use Tilwa\Routing\BaseCollection;
 
@@ -7,7 +7,7 @@
 
 	use Tilwa\Response\Format\Json;
 
-	class AuthorizeRoutes extends BaseCollection {
+	class RetainsMiddleware extends BaseCollection {
 
 		public function _handlingClass ():string {
 
@@ -17,11 +17,6 @@
 		public function SEGMENT () {
 
 			$this->_get(new Json("plainSegment"));
-		}
-
-		public function _authorizePaths ():void {
-
-			$this->pathAuthorizer->addRule ([ $patterns], $rule); // see Tilwa\Request\RouteRule
 		}
 	}
 ?>

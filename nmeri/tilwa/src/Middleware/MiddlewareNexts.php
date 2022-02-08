@@ -3,9 +3,11 @@
 
 	use Psr\Http\Server\RequestHandlerInterface;
 
-	use Tilwa\Routing\RequestDetails;
+	use Tilwa\Request\PayloadStorage;
 
-	// wraps the actual middleware in a way that causes it to fire its successor
+	/**
+	 * Wraps the actual middleware in a way that causes it to fire its successor
+	*/
 	class MiddlewareNexts implements RequestHandlerInterface {
 
 		private $currentMiddleware, $nextHandler; 
@@ -17,9 +19,9 @@
 			$this->currentMiddleware = $currentMiddleware
 		}
 
-		public function handle (RequestDetails $requestDetails) {
+		public function handle (PayloadStorage $payloadStorage) {
 
-			return $this->currentMiddleware->process($requestDetails, $this->nextHandler);
+			return $this->currentMiddleware->process($payloadStorage, $this->nextHandler);
 		}
 	}
 ?>

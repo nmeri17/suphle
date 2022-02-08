@@ -23,7 +23,7 @@
 
 		public function buildClass () {
 
-			$dynamicName = $this->targetName . get_class($this); // suffix with active decorator to avoid clashes with other cloaks for decorated entity
+			$dynamicName = $this->targetName . get_called_class(); // to avoid clashes with other cloaks for decorated entity
 
 			$genericContents = file_get_contents($this->templatePath);
 

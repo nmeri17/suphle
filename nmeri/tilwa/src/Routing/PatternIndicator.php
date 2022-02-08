@@ -63,14 +63,14 @@
 
 		public function includeMiddleware (RouteCollection $collection, string $segment):void {
 
-			$collection->_assignMiddleware();
+			$collection->_assignMiddleware($this->registry);
 
 			$this->registry->updateInteractedPatterns($segment);
 		}
 
 		public function updatePermissions (RouteCollection $collection, string $pattern):void {
 
-			$collection->_authorizePaths();
+			$collection->_authorizePaths($this->authorizer);
 
 			$this->authorizer->updateRuleStatus($pattern);
 		}

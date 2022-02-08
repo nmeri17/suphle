@@ -5,6 +5,10 @@
 
 	use Tilwa\Routing\Crud\BaseBuilder;
 
+	use Tilwa\Request\PathAuthorizer;
+
+	use Tilwa\Middleware\MiddlewareRegistry;
+
 	interface RouteCollection {
 
 		public function _handlingClass ():string;
@@ -17,9 +21,9 @@
 
 		public function _authenticatedPaths():array;
 
-		public function _authorizePaths():void;
+		public function _authorizePaths(PathAuthorizer $pathAuthorizer):void;
 
-		public function _assignMiddleware():void;
+		public function _assignMiddleware(MiddlewareRegistry $registry):void;
 
 		public function _getAuthenticator ():AuthStorage;
 		

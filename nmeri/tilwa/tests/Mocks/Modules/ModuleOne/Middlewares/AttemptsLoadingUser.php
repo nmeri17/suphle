@@ -14,7 +14,7 @@
 
 		public function process ($request, $requestHandler) {
 
-			return $requestHandler($request);
+			return $requestHandler->handle($request);
 		}
 	}
 ?>

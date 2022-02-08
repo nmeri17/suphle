@@ -1,6 +1,8 @@
 <?php
 	namespace Tilwa\Middleware;
 
+	use Tilwa\Request\PayloadStorage;
+
 	class FinalHandlerWrapper extends BaseMiddleware {
 
 		private $manager;
@@ -10,9 +12,9 @@
 			$this->manager = $manager;
 		}
 
-		public function process ($request, $requestHandler) { // confirm that [requestHandler]==null
+		public function process (PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler) {
 
-			$this->manager->handleValidRequest($request);
+			$this->manager->handleValidRequest($payloadStorage);
 
 			$this->manager->afterRender();
 

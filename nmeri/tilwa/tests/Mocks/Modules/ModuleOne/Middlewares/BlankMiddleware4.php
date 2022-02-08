@@ -3,7 +3,7 @@
 
 	use Tilwa\Middleware\BaseMiddleware;
 
-	class BlankMiddleware extends BaseMiddleware {
+	class BlankMiddleware4 extends BaseMiddleware {
 
 		public function process ($request, $requestHandler) {
 

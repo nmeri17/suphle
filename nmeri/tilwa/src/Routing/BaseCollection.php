@@ -15,21 +15,17 @@
 
 		protected $collectionParent = BaseCollection::class,
 
-		$crudMode = false, $pathAuthorizer,
+		$crudMode = false,
 
-		$canaryValidator, $authStorage, $middlewareRegistry;
+		$canaryValidator, $authStorage;
 
 		private $crudPrefix, $prefixClass, $lastRegistered;
 
-		public function __construct(CanaryValidator $validator, AuthStorage $authStorage, MiddlewareRegistry $middlewareRegistry, PathAuthorizer $pathAuthorizer) {
+		public function __construct(CanaryValidator $validator, AuthStorage $authStorage) {
 
 			$this->canaryValidator = $validator;
 
 			$this->authStorage = $authStorage;
-
-			$this->middlewareRegistry = $middlewareRegistry;
-
-			$this->pathAuthorizer = $pathAuthorizer;
 		}
 		
 		public function _prefixCurrent():string {
@@ -96,9 +92,9 @@
 			return [];
 		}
 
-		public function _authorizePaths():void {}
+		public function _authorizePaths(PathAuthorizer $pathAuthorizer):void {}
 
-		public function _assignMiddleware():void {}
+		public function _assignMiddleware(MiddlewareRegistry $registry):void {}
 
 		public function _getAuthenticator ():AuthStorage {
 

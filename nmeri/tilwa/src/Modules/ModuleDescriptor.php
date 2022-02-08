@@ -117,7 +117,7 @@
 
 			if (!empty($incompatible))
 
-				throw new UnexpectedModules($incompatible, get_class($this));
+				throw new UnexpectedModules($incompatible, get_called_class());
 		}
 
 		private function assignModuleShells ():void {
@@ -134,7 +134,7 @@
 
 			$this->provideSelf();
 
-			$customBindings = $this->container->getMethodParameters("entityBindings", get_class($this)); // get the bindings on the actively running sub-class
+			$customBindings = $this->container->getMethodParameters("entityBindings", get_called_class());
 
 			$this->entityBindings(...array_values($customBindings))
 

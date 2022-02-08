@@ -3,19 +3,19 @@
 
 	use Tilwa\Hydration\Container;
 
-	use Tilwa\Routing\RequestDetails;
+	use Tilwa\Request\PayloadStorage;
 
 	use Tilwa\Contracts\Config\Router as RouterConfig;
 
 	class MiddlewareQueue {
 
-		private $requestDetails, $stack, $routerConfig, $container;
+		private $payloadStorage, $stack, $routerConfig, $container;
 
-		public function __construct ( MiddlewareRegistry $registry, RequestDetails $requestDetails, RouterConfig $routerConfig, Container $container) {
+		public function __construct ( MiddlewareRegistry $registry, PayloadStorage $payloadStorage, RouterConfig $routerConfig, Container $container) {
 
 			$this->stack = $registry->getActiveStack();
 
-			$this->requestDetails = $requestDetails;
+			$this->payloadStorage = $payloadStorage;
 
 			$this->routerConfig = $routerConfig;
 
@@ -56,7 +56,7 @@
 			$outermost = array_pop($this->stack);
 
 			return $outermost->process(
-				$this->requestDetails,
+				$this->payloadStorage,
 
 				$this->getHandlerChain($this->stack)
 			);

@@ -19,11 +19,11 @@
 
 	class ResponseManager implements BaseResponseManager {
 
-		private $container, $router, $renderer, $payloadStorage,
+		private $container, $router, $renderer, $requestDetails,
 
 		$controllerManager, $flowQueuer;
 
-		function __construct (Container $container, RouteManager $router, CoodinatorManager $controllerManager, FlowResponseQueuer $flowQueuer, AbstractRenderer $renderer, PayloadStorage $payloadStorage) {
+		function __construct (Container $container, RouteManager $router, CoodinatorManager $controllerManager, FlowResponseQueuer $flowQueuer, AbstractRenderer $renderer, RequestDetails $requestDetails) {
 
 			$this->container = $container;
 
@@ -35,7 +35,7 @@
 
 			$this->renderer = $renderer;
 
-			$this->payloadStorage = $payloadStorage;
+			$this->requestDetails = $requestDetails;
 		}
 		
 		public function getResponse ():string {
@@ -62,15 +62,15 @@
 			return $this;
 		}
 
-		public function handleValidRequest(RequestDetails $requestDetails):AbstractRenderer {
+		public function handleValidRequest (PayloadStorage $payloadStorage):AbstractRenderer {
 
 			$renderer = $this->renderer;
 
-			if (!$requestDetails->isApiRoute())
+			if (!$this->requestDetails->isApiRoute())
 
 				$this->router->setPreviousRenderer($renderer);
 
-			if ($renderer instanceof Markup && $this->payloadStorage->acceptsJson())
+			if ($renderer instanceof Markup && $payloadStorage->acceptsJson())
 
 				$renderer->setWantsJson();
 
