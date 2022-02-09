@@ -1,5 +1,4 @@
 <?php
-
 	namespace Tilwa\Contracts\Auth;
 
 	// Each method is required to throw UnauthorizedServiceAccess when user is unauthorized
@@ -9,7 +8,10 @@
 
 		public function updating ($entity):bool;
 
-		public function creating ($entity):bool;
+		/**
+		 * Runs before insertion, so no entity. Work with user
+		*/
+		public function creating ():bool;
 
 		public function deleting ($entity):bool;
 	}

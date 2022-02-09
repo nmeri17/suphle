@@ -5,20 +5,13 @@
 
 	abstract class RouteRule {
 
-		protected $authStorage;
-
-		private $patterns; // we wanna update this on each iteration or on the general evaluation
+		protected $authorizedUser;
 
 		public function __construct (AuthStorage $authStorage) {
 
-			$this->authStorage = $authStorage;
+			$this->authorizedUser = $authStorage->getUser();
 		}
 
 		abstract public function permit ():bool;
-
-		public function hasPattern (string $pattern):bool {
-
-			return in_array($pattern, $this->patterns);
-		}
 	}
 ?>

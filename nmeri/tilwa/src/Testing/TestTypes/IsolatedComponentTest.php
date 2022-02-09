@@ -3,9 +3,7 @@
 
 	use Tilwa\Hydration\Container;
 
-	use Tilwa\Contracts\Config\{ Services as IServices, Laravel as ILaravel, Router as IRouter, Auth as IAuth, Transphporm as ITransphporm, ModuleFiles as IModuleFiles};
-
-	use Tilwa\Config\{ Services, Laravel, Auth, Transphporm}; // using our default config for these
+	use Tilwa\Contracts\Config\{ Router as IRouter, ModuleFiles as IModuleFiles};
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Config\{RouterMock, ModuleFilesMock};
 
@@ -22,19 +20,23 @@
 
 		protected function setUp ():void {
 
-			$this->container = new Container;
-
 			$this->entityBindings();
 		}
 
 		protected function entityBindings ():self {
 
-			$this->container->whenTypeAny()->needsAny([
+			$container = new Container;
 
-				Container::class => $this->container,
+			$container->provideSelf();
 
-				IRouter::class => new RouterMock(BrowserNoPrefix::class)
-			]);
+			foreach ($this->containerConfigs() as $contract => $className)
+
+				$container->whenTypeAny()->needsAny([
+
+					$contract => $container->getClass($className)
+				]);
+
+			$this->container = $container;
 
 			return $this;
 		}
@@ -43,15 +45,9 @@
 
 			return [
 
-				ILaravel::class => Laravel::class,
+				IModuleFiles::class => ModuleFilesMock::class,
 
-				IServices::class => Services::class,
-
-				IAuth::class => Auth::class,
-
-				ITransphporm::class => Transphporm::class,
-
-				IModuleFiles::class => ModuleFilesMock::class
+				IRouter::class => RouterMock::class
 			];
 		}
 	}

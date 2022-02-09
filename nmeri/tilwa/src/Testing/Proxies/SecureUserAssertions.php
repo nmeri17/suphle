@@ -14,7 +14,7 @@
 			return $this->getContainer()->getClass($authStorage);
 		}
 
-		protected function actingAs(User $user, string $storageName):self {
+		protected function actingAs(User $user, ?string $storageName):self {
 
 			$this->getAuthStorage($storageName)->impersonate($user->getId());
 
