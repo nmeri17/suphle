@@ -41,7 +41,7 @@
 
 		public function test_with_authentication_throws_no_error () {
 
-			$this->actingAs($this->getRandomEntity()) // given
+			$this->actingAs($this->replicator->getRandomEntity()) // given
 
 			->get("/secure-some/edit/5") // when
 

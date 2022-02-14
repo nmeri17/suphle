@@ -3,19 +3,19 @@
 
 	use Tilwa\Contracts\Hydration\{InterfaceCollection, DecoratorChain};
 
-	use Tilwa\Contracts\{HtmlParser, Database\OrmDialect, Requests\RequestValidator, Queues\Adapter as QueueAdapter, Bridge\LaravelContainer, Modules\ControllerModule};
+	use Tilwa\Contracts\{HtmlParser, Requests\RequestValidator, Queues\Adapter as QueueAdapter, Bridge\LaravelContainer, Modules\ControllerModule};
+
+	use Tilwa\Contracts\Database\{OrmDialect, OrmReplicator};
 
 	use Tilwa\Contracts\Auth\{AuthStorage, UserContract, UserHydrator as IUserHydrator};
 
 	use Tilwa\Contracts\Config\{Auth as AuthConfig, Transphporm as TransphpormConfig, Laravel as LaravelConfig, ExceptionInterceptor};
 
-	use Tilwa\InterfaceLoader\{OrmLoader, LaravelAppLoader};
-
 	use Tilwa\Queues\Adapters\Resque;
 
 	use Tilwa\Auth\Storage\SessionStorage;
 
-	use Tilwa\Adapters\Orms\Eloquent\{UserHydrator as EloquentUserHydrator, User as EloquentUser};
+	use Tilwa\Adapters\Orms\Eloquent\{UserHydrator as EloquentUserHydrator, User as EloquentUser, ModelReplicator, OrmLoader};
 
 	use Tilwa\Adapters\Markups\Transphporm as TransphpormAdapter;
 
@@ -26,6 +26,8 @@
 	use Tilwa\Modules\ControllerModuleApi;
 
 	use Tilwa\Hydration\Structures\BaseDecorators;
+
+	use Tilwa\Bridge\Laravel\LaravelAppLoader;
 
 	use Psr\Http\{Client\ClientInterface, Message\RequestFactoryInterface };
 
@@ -64,11 +66,15 @@
 
 				RequestFactoryInterface::class => GuzzleHttpFactory::class,
 
-				ClientInterface::class => GuzzleClient::class
+				ClientInterface::class => GuzzleClient::class,
+
+				OrmReplicator::class => ModelReplicator::class
 			];
 		}
 
 		/**
+		 * Interfaces given here are telling the hydrator that they have another way of materializing (aside from simply hydrating concrete like for everyone else)
+		 * 
 		 * @param {interfaces} Assoc array of interfaces and their concretes
 		*/
 		public function delegateHydrants (array $interfaces):void {

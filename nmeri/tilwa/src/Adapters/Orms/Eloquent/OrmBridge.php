@@ -94,42 +94,17 @@
 				return $this->authStorage; // guards in those observers will be relying on this value
 			});
 
-			foreach ($observers as $model => $observer)
+			foreach ($observers as $model => $observer) {
 
-				$this->container->getClass($model)::observe($observer);
-		}
+				$observerName = $model. "Authorization";
 
-		public function factoryProduce ($model, $amount):void {
+				$this->laravelContainer->bind($observerName, function () use ($observer) { // this works since this is the same container passed to the eventDispatcher for use in hydrating the listeners
 
-			$model->factory() // assumes each model points to its factory
+					return $this->container->getClass($observer);
+				});
 
-			->count($amount)->create();
-		}
-
-		public function factoryLine ($model, int $amount, array $customAttributes) {
-
-			$builder = $model->factory()->count($amount);
-
-			if (!empty($customAttributes))
-
-				return $builder->make($customAttributes);
-
-			return $builder->make();
-		}
-
-		public function findAny ($model) {
-
-			return $model->inRandomOrder()->first();
-		}
-
-		public function findAnyMany ($model, int $amount):array {
-
-			return $model->inRandomOrder()->limit($amount)->get();
-		}
-
-		public function saveOne ($model):void {
-
-			$model->save();
+				$model::observe($observerName);
+			}
 		}
 
 		public function selectFields ($builder, array $filters) {

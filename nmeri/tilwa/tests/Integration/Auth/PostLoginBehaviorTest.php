@@ -20,7 +20,7 @@
 
 		public function test_session_impersonate () {
 
-			[$user1, $user2] = $this->getRandomEntities(2);
+			[$user1, $user2] = $this->replicator->getRandomEntities(2);
 
 			$this->actingAs($user1); // given
 
@@ -35,7 +35,7 @@
 
 		public function test_logout () {
 
-			$user = $this->getRandomEntity();
+			$user = $this->replicator->getRandomEntity();
 
 			$this->actingAs($user); // given
 

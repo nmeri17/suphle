@@ -1,13 +1,11 @@
 <?php
-	namespace Tilwa\InterfaceLoaders;
+	namespace Tilwa\Bridge\Laravel;
 
 	use Tilwa\Hydration\BaseInterfaceLoader;
 
 	use Tilwa\Contracts\Config\{ModuleFiles, Laravel as LaravelConfig};
 
 	use Tilwa\Contracts\Bridge\LaravelContainer;
-
-	use Tilwa\Bridge\Laravel\{LaravelAppConcrete, ConfigLoader, ConfigFileFinder};
 
 	use Tilwa\Routing\RequestDetails;
 

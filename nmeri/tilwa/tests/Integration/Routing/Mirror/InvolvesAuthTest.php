@@ -38,7 +38,7 @@
 
 			$tokenClass = TokenStorage::class;
 
-			$this->actingAs($this->getRandomEntity(), $tokenClass); // given
+			$this->actingAs($this->replicator->getRandomEntity(), $tokenClass); // given
 
 			$this->get("/api/v1/segment") // when
 

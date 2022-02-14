@@ -15,5 +15,10 @@
 			
 			return null;
 		}
+
+		/**
+		 * Allows us group feature-related migrations across multiple models/tables together
+		*/
+		abstract public static function migrationFolders ():array;
 	}
 ?>

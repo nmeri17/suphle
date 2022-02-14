@@ -13,19 +13,7 @@
 
 	class ApiAuthRepoTest extends IsolatedComponentTest {
 
-		use PopulatesDatabaseTest, ExaminesHttpResponse {
-
-			PopulatesDatabaseTest::setUp as populateDB
-		}
-
-		private $userInserter;
-
-		public function setUp {
-
-			$this->populateDB();
-
-			$this->userInserter = new UserInserter;
-		}
+		use PopulatesDatabaseTest, ExaminesHttpResponse, UserInserter;
 
 		protected function getActiveEntity ():string {
 
@@ -34,7 +22,7 @@
 
 		public function test_successLogin () {
 
-			$this->userInserter->sendCorrectRequest(); // given
+			$this->sendCorrectRequest(); // given
 
 			$response = $this->getLoginResponse(); // when
 
@@ -45,7 +33,7 @@
 
 		public function test_failedLogin () {
 
-			$this->userInserter->sendIncorrectRequest(); // given
+			$this->sendIncorrectRequest(); // given
 
 			$response = $this->getLoginResponse(); // when
 
@@ -60,7 +48,7 @@
 
 			$identifier->getResponse();
 
-			return $this->makeExaminable($identifier->handlingRenderer());
+			return $this->makeExaminable($identifier->handlingRenderer()); // using this to streamline comparison between json response and our expected value
 		}
 
 		private function getIdentifier ():LoginRequestHandler {

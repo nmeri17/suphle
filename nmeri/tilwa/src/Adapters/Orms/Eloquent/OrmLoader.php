@@ -1,9 +1,7 @@
 <?php
-	namespace Tilwa\InterfaceLoaders;
+	namespace Tilwa\Adapters\Orms\Eloquent;
 
 	use Tilwa\Hydration\BaseInterfaceLoader;
-
-	use Tilwa\Adapters\Orms\Eloquent\OrmBridge;
 
 	use Tilwa\Contracts\Config\{ Auth as AuthConfig, Bridge\LaravelContainer};
 

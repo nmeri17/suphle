@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Tests\Integration\Middleware;
+	namespace Tilwa\Tests\Integration\Authorization;
 
 	use Tilwa\Request\PathAuthorizer;
 

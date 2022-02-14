@@ -3,6 +3,8 @@
 
 	use Tilwa\Modules\ModuleDescriptor;
 
+	use Tilwa\Contracts\Database\OrmDialect;
+
 	use Tilwa\Tests\Mocks\Interactions\ModuleOne;
 
 	class ModuleOneDescriptor extends ModuleDescriptor {
@@ -18,6 +20,11 @@
 		public function interfaceCollection ():string {
 
 			return CustomInterfaceCollection::class;
+		}
+
+		protected function entityBindings (OrmDialect $ormDialect):self {
+
+			return $this;
 		}
 	}
 ?>

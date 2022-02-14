@@ -9,6 +9,6 @@
 
 		public function getPassword ();
 
-		public function find ():UserContract;
+		public function find ():self;
 	}
 ?>
