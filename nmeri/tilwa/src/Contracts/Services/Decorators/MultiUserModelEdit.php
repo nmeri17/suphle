@@ -15,10 +15,6 @@
 		*/
 		public function getResource ():IntegrityModel;
 
-		public function setLastIntegrity (int $integrity):void;
-
-		public function getLastIntegrity ():int;
-
 		/**
 		 * @throws EditIntegrityException
 		 * 

@@ -16,16 +16,6 @@
 			return new MultiEditProduct(["id" => 55]); // irl, this comes from payloadStorage
 		}
 
-		public function setLastIntegrity (int $integrity):void {
-
-			$this->integrity = $integrity;
-		}
-
-		public function getLastIntegrity ():int {
-
-			return $this->integrity;
-		}
-
 		public function updateResource () {
 
 			//

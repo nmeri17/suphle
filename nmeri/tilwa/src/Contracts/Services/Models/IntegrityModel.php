@@ -1,6 +1,8 @@
 <?php
 	namespace Tilwa\Contracts\Services\Models;
 
+	use DateTime;
+
 	interface IntegrityModel {
 
 		const COLUMN_NAME = "edit_lock"; // Migration should create this column for methods to read from
@@ -13,12 +15,7 @@
 		/**
 		 * Unset all integrities for this model
 		*/
-		public function nullifyEditIntegrity ():void;
-
-		/**
-		 * Until one of them updates, they're all equals
-		*/
-		public function addEditIntegrity (int $integrity):void;
+		public function nullifyEditIntegrity (DateTime $integrity):void;
 
 		protected function enableAudit ():bool;
 

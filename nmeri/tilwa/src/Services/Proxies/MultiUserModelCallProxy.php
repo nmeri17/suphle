@@ -13,6 +13,8 @@
 
 	use Throwable;
 
+	use DateTime;
+
 	/**
 	 * The idea is that the last updater should invalidate whatever those with current copies of the page are both looking at or trying to update
 	*/
@@ -35,33 +37,15 @@
 
 		public function artificial__call (string $method, array $arguments) {
 
-			if ($method == "getResource") { // should getting editable resource fail, there's nothing to fallback on. Terminate request by bubbling up 
+			if ($method == "getResource") // should getting editable resource fail, there's nothing to fallback on. Terminate request by bubbling up 
 
-				$result = $this->activeService->getResource();
-
-				$this->activeService->setLastIntegrity($this->queueIntegrity($result));
-
-				return $result;
-			}
-			else if ($method == "updateResource")
+				return $this->activeService->getResource();
+			
+			if ($method == "updateResource")
 
 				return $this->handleUpdateResource($arguments);
 
 			return $this->yield($method, $arguments); // calling other methods is allowed, but not protected
-		}
-
-		private function queueIntegrity (IntegrityModel $modelInstance):int {
-
-			$editIdentifier = random_int(13, 24759);
-
-			$this->queueManager->augmentArguments(
-
-				AddUserEditField::class,
-
-				compact("editIdentifier", "modelInstance")
-			);
-
-			return $editIdentifier;
 		}
 
 		/**
@@ -85,7 +69,7 @@
 
 					$result = $this->activeService->updateResource(); // user's incoming changes
 
-					$currentVersion->nullifyEditIntegrity();
+					$currentVersion->nullifyEditIntegrity(new DateTime("y-m-d H:i:s"));
 
 					return $result;
 

@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Adapters\Orms\Eloquent\Condiments;
 
-	use Tilwa\Adapters\Orms\Eloquent\Models\{ActiveEditors, EditHistory};
+	use Tilwa\Adapters\Orms\Eloquent\Models\EditHistory;
 
 	use Illuminate\Database\Eloquent\Relations\Relation;
 
@@ -10,39 +10,41 @@
 	 * 
 	 * Using a trait instead of an abstract class since models are likely to require more than one inheritance
 	 * 
-	 * If classes using this trait want to create "viewers" each time a seed is created, they should add this field to their factory:
-	 * [active_editor_id => ActiveEditors::factory()]
+	 * If classes using this trait want to create history each time a seed is created, they should add this field to their factory:
+	 * [edit_history_id => EditHistory::factory()]
 	 * 
 	 * Otherwise, it should be added at runtime:
-	 * ActiveEditors::factory()->count(x)->for(
-	 * 	Product::factory(), "editable"
+	 * EditHistory::factory()->count(x)->for(
+	 * 	Product::factory(), "historical"
 	 * )->create();
 	*/
 	trait EditIntegrity {
 
-		const INTEGRITY_COLUMN = "edit_lock";
-
-		public function active_editors ():Relation {
-
-			return $this->morphMany(ActiveEditors::class, "editable");
-		}
+		const INTEGRITY_COLUMN = "updated_at";
 
 		public function edit_history ():Relation {
 
 			return $this->morphMany(EditHistory::class, "historical");
 		}
 
-		public function includesEditIntegrity (int $integrity):bool {
+		public function includesEditIntegrity (string $integrity):bool {
 
-			return $this->whereHas("active_editors", function ($query) use ($integrity) {
+			$primaryField = $this->getKeyName();
 
-				$query->where(self::INTEGRITY_COLUMN, $integrity);
-			})->exists();
+			return $this->where([
+				
+				$primaryField => $this->$primaryField,
+
+				self::INTEGRITY_COLUMN => $integrity
+			])->exists();
 		}
 
-		public function nullifyEditIntegrity ():void {
+		public function nullifyEditIntegrity (DateTime $integrity):void {
 
-			$this->active_editors()->delete();
+			$this->update([
+
+				self::INTEGRITY_COLUMN => $integrity
+			]);
 
 			if ($this->enableAudit()) $this->makeHistory();
 		}
@@ -61,14 +63,6 @@
 				"payload" => json_encode($this->payloadStorage->fullPayload()),
 
 				"user_id" => !is_null($user) ? $user->getId(): null
-			]);
-		}
-
-		public function addEditIntegrity (int $integrity):void {
-
-			$this->active_editors()->create([
-
-				self::INTEGRITY_COLUMN => $integrity
 			]);
 		}
 	}

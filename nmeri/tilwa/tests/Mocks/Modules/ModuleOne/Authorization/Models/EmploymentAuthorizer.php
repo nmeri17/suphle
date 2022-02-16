@@ -21,7 +21,11 @@
 
 		public function updating ($model):bool {
 
-			return $this->user->getId() == $model->employer->user_id;
+			if ($this->user->getId() == $model->employer->user_id)
+
+				return true;
+
+			throw new UnauthorizedServiceAccess;
 		}
 
 		public function creating ($model):bool {

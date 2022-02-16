@@ -22,6 +22,11 @@
 
 			$connection = $initialized->getConnection();
 
+			$this->laravelContainer->bind("db", function () use ($connection) { // bind this for any laravel class e.g. Schema facade that relies on its value
+
+				return $connection;
+			});
+
 			$connection->setEventDispatcher(new Dispatcher($this->laravelContainer));
 
 			$connection->bootEloquent(); // in addition to using the above to register observers below, this does the all important job of Model::setConnectionResolver for us
