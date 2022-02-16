@@ -15,5 +15,7 @@
 		public function usesPackages ():bool;
 
 		public function frameworkDirectory ():string;
+
+		public function interfaceConcretes ():array;
 	}
 ?>

@@ -5,13 +5,13 @@
 
 	use Tilwa\Hydration\Container;
 
-	use Illuminate\Database\{DatabaseManager, Capsule\Manager as CapsuleManager};
+	use Illuminate\Database\{DatabaseManager, Capsule\Manager as CapsuleManager, Connection};
 
 	class OrmBridge implements OrmDialect {
 
 		private $credentials, $connection, $laravelContainer,
 
-		$authStorage;
+		$authStorage, $nativeClient;
 
 		public function __construct (Database $config, Container $container, LaravelContainer $laravelContainer, AuthStorage $authStorage) {
 
@@ -29,7 +29,7 @@
 		*/
 		public function setConnection (array $drivers = []):void {
 
-			$capsule = new CapsuleManager;
+			$this->nativeClient = new CapsuleManager;
 
 			if (empty($drivers))
 
@@ -43,12 +43,12 @@
 
 			foreach ($connections as $driver)
 
-				$capsule->addConnection($driver["credentials"], @$driver["name"]);
+				$nativeClient->addConnection($driver["credentials"], @$driver["name"]);
 
-			$this->connection = $capsule;
+			$this->connection = $nativeClient->getConnection();
 		}
 
-		public function getConnection ():CapsuleManager {
+		public function getConnection ():Connection {
 
 			if (is_null($this->connection)) $this->setConnection();
 
@@ -60,7 +60,7 @@
 		*/
 		public function runTransaction(callable $queries, array $lockModels = [], bool $hardLock = false) {
 
-			return $this->connection->transaction(function () use ($lockModels, $hardLock, $queries) { // under the hood, capsule forwards the [transaction] call to [DatabaseManager], which it bases most operations on
+			return $this->connection->transaction(function () use ($lockModels, $hardLock, $queries) {
 
 				foreach ($lockModels as $model)
 
@@ -115,6 +115,11 @@
 		public function addWhereClause( $model, array $constraints) {
 
 			return $model->where($constraints);
+		}
+
+		public function getNativeClient ():object {
+
+			return $this->nativeClient->getDatabaseManager();
 		}
 	}
 ?>

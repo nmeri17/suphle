@@ -3,9 +3,11 @@
 
 	use Tilwa\Contracts\Hydration\{InterfaceCollection, DecoratorChain};
 
-	use Tilwa\Contracts\{HtmlParser, Requests\RequestValidator, Queues\Adapter as QueueAdapter, Bridge\LaravelContainer, Modules\ControllerModule};
+	use Tilwa\Contracts\{HtmlParser, Requests\RequestValidator, Queues\Adapter as QueueAdapter, Modules\ControllerModule};
 
 	use Tilwa\Contracts\Database\{OrmDialect, OrmReplicator};
+
+	use Tilwa\Contracts\Bridge\{LaravelContainer, LaravelArtisan};
 
 	use Tilwa\Contracts\Auth\{AuthStorage, UserContract, UserHydrator as IUserHydrator};
 
@@ -27,7 +29,7 @@
 
 	use Tilwa\Hydration\Structures\BaseDecorators;
 
-	use Tilwa\Bridge\Laravel\LaravelAppLoader;
+	use Tilwa\Bridge\Laravel\{LaravelAppLoader, ArtisanLoader};
 
 	use Psr\Http\{Client\ClientInterface, Message\RequestFactoryInterface };
 
@@ -43,6 +45,8 @@
 				OrmDialect::class => OrmLoader::class,
 
 				LaravelContainer::class => LaravelAppLoader::class,
+
+				LaravelArtisan::class => ArtisanLoader::class
 			];
 		}
 

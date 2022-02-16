@@ -16,11 +16,11 @@
 		*/
 		private $activeModel,
 
-		$databaseConnection, $laravelContainer;
+		$databaseClient, $laravelContainer;
 
 		public function __construct (OrmDialect $ormDialect, LaravelContainer $laravelContainer) {
 
-			$this->databaseConnection = $ormDialect->getConnection();
+			$this->databaseClient = $ormDialect->getNativeClient();
 
 			$this->laravelContainer = $laravelContainer;
 		}
@@ -60,30 +60,21 @@
 
 		public function setupSchema ():void {
 
-			$migrator = $this->laravelContainer->make(Migrator::class);
+			$this->migrator = $migrator = $this->laravelContainer->make(Migrator::class);
 
 			$migrator->getRepository()->createRepository();
 
-			foreach ($this->activeModel::migrationFolders() as $folder) {
-
-				$migrations = $migrator->getMigrationFiles($folder);
-
-				$migrator->requireFiles($migrations);
-
-				$migrator->runPending($migrations);
-			}
-
-			$this->migrator = $migrator;
+			$migrator->run($this->activeModel::migrationFolders());
 		}
 
 		public function dismantleSchema ():void {
 
-			$this->migrator->rollback();
+			$this->migrator->rollback($this->activeModel::migrationFolders());
 		}
 
 		public function listenForQueries ():void {
 
-			$this->databaseConnection->beginTransaction();
+			$this->databaseClient->beginTransaction();
 		}
 
 		public function stopQueryListen ():void {

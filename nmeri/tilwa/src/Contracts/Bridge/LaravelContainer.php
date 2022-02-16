@@ -8,6 +8,8 @@
 		public function bind($abstract, $concrete = null, $shared = false):void;
 
 		public function make($abstract, array $parameters = []);
+
+		public function instance($abstract, $instance);
 	}
 ?>
 

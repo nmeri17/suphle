@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Bridge\Laravel;
+	namespace Tilwa\Bridge\Laravel\Config;
 
 	use Tilwa\Contracts\Config\ConfigMarker;
 

@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Bridge\Laravel;
+	namespace Tilwa\Bridge\Laravel\Routing;
 
 	use Tilwa\Contracts\{Config\Laravel as LaravelConfig, Bridge\LaravelContainer};
 

@@ -3,7 +3,7 @@
 
 	interface OrmDialect {
 
-		public function getConnection ();
+		public function getConnection ():object;
 
 		public function runTransaction(callable $queries, array $lockModels = [], bool $hardLock = false);
 
@@ -22,5 +22,10 @@
 		 * @return Modified [model]
 		*/
 		public function addWhereClause( $model, array $constraints);
+
+		/**
+		 * The underlying vendor being wrapped by this adapter
+		*/
+		public function getNativeClient ():object;
 	}
 ?>

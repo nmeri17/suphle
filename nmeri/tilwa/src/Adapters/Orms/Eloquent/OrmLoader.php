@@ -3,6 +3,8 @@
 
 	use Tilwa\Hydration\BaseInterfaceLoader;
 
+	use Tilwa\Contracts\Database\OrmDialect;
+
 	use Tilwa\Contracts\Config\{ Auth as AuthConfig, Bridge\LaravelContainer};
 
 	use Illuminate\Events\Dispatcher;
@@ -18,18 +20,13 @@
 			$this->laravelContainer = $laravelContainer;
 		}
 
-		public function afterBind ($initialized):void {
+		public function afterBind (OrmDialect $initialized):void {
 
-			$connection = $initialized->getConnection();
+			$client = $initialized->getNativeClient();
 
-			$this->laravelContainer->bind("db", function () use ($connection) { // bind this for any laravel class e.g. Schema facade that relies on its value
+			$client->setEventDispatcher($this->laravelContainer->make(Dispatcher::class));
 
-				return $connection;
-			});
-
-			$connection->setEventDispatcher(new Dispatcher($this->laravelContainer));
-
-			$connection->bootEloquent(); // in addition to using the above to register observers below, this does the all important job of Model::setConnectionResolver for us
+			$client->bootEloquent(); // in addition to using the above to register observers below, this does the all important job of Model::setConnectionResolver for us
 
 			$initialized->registerObservers($this->authConfig->getModelObservers());
 		}

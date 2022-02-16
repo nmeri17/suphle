@@ -32,5 +32,6 @@
     "repositories": [{
         "type": "vcs",
         "url": "https://github.com/nmeri17/QuTee"
-    }]
+    }],
+    "bin": ["bin/suphle"]
 }
