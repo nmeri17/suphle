@@ -40,7 +40,7 @@
 			// when
 			$this->setHttpParams("/login", "post", []);
 
-			$sut->beginRequest();
+			$sut->respondFromHandler();
 		}
 
 		private function mockLoginHandler ():LoginRequestHandler {
@@ -70,7 +70,7 @@
 			// when
 			$this->setHttpParams($this->userUrl);
 
-			$sut->beginRequest();
+			$sut->respondFromHandler();
 		}
 
 		private function getIdentifier ():ModuleHandlerIdentifier {

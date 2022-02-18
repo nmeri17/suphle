@@ -33,6 +33,8 @@
 			parent::setUp(); // calls the one on the inherited class of the test this is applied to
 
 			$this->entrance = new FrontDoor($this->getModules());
+
+			$this->entrance->bootModules();
 		}
 		
 		/**
@@ -184,7 +186,7 @@
 
 			$this->setHttpParams($url, $httpMethod, $payload, $headers);
 
-			$entrance->orchestrate();
+			$entrance->diffusedRequestResponse();
 
 			$renderer = $entrance->underlyingRenderer();
 

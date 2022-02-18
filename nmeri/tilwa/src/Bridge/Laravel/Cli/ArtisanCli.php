@@ -3,14 +3,16 @@
 
 	use Tilwa\Contracts\Bridge\{LaravelContainer, LaravelArtisan};
 
-	use Symfony\Component\Console\{Command\Command, Output\OutputInterface};
+	use Tilwa\Console\BaseCliCommand;
+
+	use Symfony\Component\Console\Output\OutputInterface;
 
 	use Symfony\Component\Console\Input\{InputInterface, InputOption, InputArgument};
 
 	/**
 	 * All we want is for our ormBridge to run, hydrate and link our connection to the instance artisan works with
 	*/
-	class ArtisanCli extends Command {
+	class ArtisanCli extends BaseCliCommand {
 
 		protected static $defaultName = "bridge:laravel";
 
@@ -18,24 +20,16 @@
 
 		protected function configure ():void {
 
-			$this
+			parent::configure();
 
-			->addArgument("to_forward", InputArgument::REQUIRED, "Commands to forward to artisan")
-
-			->addOption(
-				"module", "m", InputOption::VALUE_REQUIRED, "Executable version of the module to migrate"
+			$this->addArgument(
+				"to_forward", InputArgument::REQUIRED, "Commands to forward to artisan"
 			);
 		}
 
 		protected function execute (InputInterface $input, OutputInterface $output):int {
 
-			$moduleName = $input->getOption("module");
-
-			$executableModule = new $moduleName;
-
-			$executableModule->boot();
-
-			$exitCode = $executableModule->getContainer()->getClass(LaravelArtisan::class)
+			$exitCode = $this->moduleToRun($input)->getContainer()->getClass(LaravelArtisan::class)
 
 			->call($input->getArgument("to_forward"));
 

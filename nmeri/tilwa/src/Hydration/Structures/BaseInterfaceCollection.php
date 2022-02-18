@@ -11,7 +11,7 @@
 
 	use Tilwa\Contracts\Auth\{AuthStorage, UserContract, UserHydrator as IUserHydrator};
 
-	use Tilwa\Contracts\Config\{Auth as AuthConfig, Transphporm as TransphpormConfig, Laravel as LaravelConfig, ExceptionInterceptor};
+	use Tilwa\Contracts\Config\{Auth as AuthConfig, Transphporm as TransphpormConfig, Laravel as LaravelConfig, ExceptionInterceptor, Console as ConsoleContract};
 
 	use Tilwa\Queues\Adapters\Resque;
 
@@ -23,7 +23,7 @@
 
 	use Tilwa\Request\Validators\RakitValidator;
 
-	use Tilwa\Config\{Auth, Transphporm, Laravel, ExceptionConfig};
+	use Tilwa\Config\{Auth, Transphporm, Laravel, ExceptionConfig, Console as CliConsole};
 
 	use Tilwa\Modules\ControllerModuleApi;
 
@@ -103,7 +103,9 @@
 
 				IUserHydrator::class => EloquentUserHydrator::class,
 
-				ExceptionInterceptor::class => ExceptionConfig::class
+				ExceptionInterceptor::class => ExceptionConfig::class,
+
+				ConsoleContract::class => CliConsole::class
 			];
 		}
 	}
