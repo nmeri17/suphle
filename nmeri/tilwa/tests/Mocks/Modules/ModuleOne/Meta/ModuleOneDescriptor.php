@@ -22,9 +22,9 @@
 			return CustomInterfaceCollection::class;
 		}
 
-		protected function entityBindings (OrmDialect $ormDialect):self {
+		protected function entityBindings ():callable {
 
-			return $this;
+			return function (OrmDialect $ormDialect) {};
 		}
 	}
 ?>

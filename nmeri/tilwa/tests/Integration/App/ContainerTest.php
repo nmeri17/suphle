@@ -3,11 +3,9 @@
 
 	use Tilwa\Hydration\Container;
 
-	use Tilwa\Testing\IsolatedComponentTest;
+	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Interfaces\CInterface;
-
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Config\ServicesMock;
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Interfaces\CInterface, Config\ServicesMock};
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\{NeedsSpace, CircularConstructor1, CircularConstructor2, ARequiresBCounter, BCounter, V1\RewriteSpaceImpl};
 

@@ -230,6 +230,8 @@
 				$this->popHydratingFor();
 
 				$this->pushHydratingFor($this->universalSelector);
+
+				$hydrateFor = $this->universalSelector;
 			}
 
 			return $this->provisionedClasses[$hydrateFor];
@@ -357,7 +359,7 @@
 			return $this->decorator->scopeArguments( $anchorClass, $dependencies, $callable);
 		}
 
-		private function populateDependencies (ReflectionFunctionAbstract $callable, ?ProvisionUnit $callerProvision):array {
+		private function populateDependencies (ReflectionFunctionAbstract $reflectedCallable, ?ProvisionUnit $callerProvision):array {
 
 			$dependencies = [];
 

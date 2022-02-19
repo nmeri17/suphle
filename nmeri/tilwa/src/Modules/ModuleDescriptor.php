@@ -55,11 +55,11 @@
 		}
 
 		/**
-		 * Arguments will be auto-wired
+		 * Arguments of the returned function will be auto-wired
 		*/
-		protected function entityBindings ():self {
+		protected function entityBindings ():callable {
 
-			return $this;
+			return function () {};
 		}
 
 		public function getContainer():Container {
@@ -134,11 +134,13 @@
 
 			$this->provideSelf();
 
-			$customBindings = $this->container->getMethodParameters("entityBindings", get_called_class());
+			$startupDependencies = $this->entityBindings();
 
-			$this->entityBindings(...array_values($customBindings))
+			$customBindings = $this->container->getMethodParameters($startupDependencies);
 
-			->validateExpatriates()->empowerExpatriates();
+			$startupDependencies(...array_values($customBindings));
+
+			$this->validateExpatriates()->empowerExpatriates();
 
 			$this->container->getClass(PayloadStorage::class)->setPayload();
 

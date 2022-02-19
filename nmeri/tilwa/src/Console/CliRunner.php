@@ -1,5 +1,9 @@
 <?php
-	namespace Tilwa\Modules;
+	namespace Tilwa\Console;
+
+	use Tilwa\Contracts\{ConsoleClient, Config\Console};
+
+	use Tilwa\Modules\ModuleHandlerIdentifier;
 
 	use Symfony\Component\Console\Application;
 
@@ -58,6 +62,11 @@
 		public function awaitCommands ():void {
 
 			$this->consoleClient->run();
+		}
+
+		public function findHandler (string $command):BaseCliCommand {
+
+			return $this->consoleClient->find($command);
 		}
 	}
 ?>

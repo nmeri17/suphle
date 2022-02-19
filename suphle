@@ -2,11 +2,11 @@
 <?php
 	require __DIR__.'/vendor/autoload.php';
 
-	use Tilwa\Modules\CliRunner;
+	use Tilwa\Console\CliRunner;
 
 	use Tilwa\Adapters\Console\SymfonyCli;
 
-	use public\MyApp;
+	use AppEntry\MyApp;
 
 	$runner = new CliRunner (new MyApp, new SymfonyCli("Suphle", "v2"));
 

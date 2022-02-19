@@ -3,10 +3,15 @@
 
 	use Tilwa\Contracts\ConsoleClient;
 
-	use Symfony\Console\Application;
+	use Tilwa\Console\BaseCliCommand;
+
+	use Symfony\Component\Console\Application;
 
 	class SymfonyCli extends Application implements ConsoleClient {
 
-		//
+		public function addCommand (BaseCliCommand $command) {
+
+			$this->add ($command);
+		}
 	}
 ?>

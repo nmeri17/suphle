@@ -24,22 +24,25 @@
 			$this->container = current($this->getModules())->getContainer();
 
 			$this->container->provideSelf();
-		}
-		
-		/**
-		 * Not all modules should go here. Only those expected to contain routes
-		*/
-		abstract protected function getModules():array;
-		
-		public function orchestrate():string {
 
 			$this->extractFromContainer();
+		}
+		
+		abstract protected function getModules():array;
 
-			$modules = $this->getModules();
+		public function bootModules ():void {
 
-			$bootStarter = new ModulesBooter($modules, new ModuleLevelEvents($modules)); // when running async, this should be stored on an instance property
+			(new ModulesBooter(
+				$this->getModules(), $this->getEventConnector()
+			))->boot();
+		}
 
-			$bootStarter->boot();
+		protected function getEventConnector ():ModuleLevelEvents {
+
+			return new ModuleLevelEvents($this->getModules());
+		}
+
+		public function diffusedRequestResponse ():string {
 
 			$exceptionBridge = $this->getActiveContainer()->getClass(ModuleExceptionBridge::class);
 
@@ -47,7 +50,7 @@
 
 			try {
 
-				$content = $this->beginRequest();
+				$content = $this->respondFromHandler();
 			}
 			catch (Throwable $exception) {
 
@@ -66,7 +69,7 @@
 		/**
 		 * Each of the request handlers should update this class with the underlying renderer they're pulling a response from
 		*/
-		protected function beginRequest ():string {
+		protected function respondFromHandler ():string {
 
 			$modules = $this->getModules();
 
