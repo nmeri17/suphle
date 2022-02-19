@@ -7,7 +7,7 @@
 
 		public function isAdmin ():bool {
 
-			return false;
+			return $this->is_admin;
 		}
 	}
 ?>
