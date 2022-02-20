@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Testing\TestTypes;
 
-	use Tilwa\Testing\Condiments\ModuleReplicator;
+	use Tilwa\Testing\Condiments\{ModuleReplicator, GagsException};
 
 	use Tilwa\Modules\{ModulesBooter, ModuleDescriptor};
 
@@ -14,7 +14,12 @@
 	*/
 	abstract class ModuleLevelTest extends TestCase {
 
-		use ModuleReplicator;
+		use ModuleReplicator, GagsException {
+
+			GagsException::setUp as mufflerSetup;
+		};
+
+		protected $muffleExceptionBroadcast = true;
 
 		protected function setUp ():void {
 
@@ -22,6 +27,10 @@
 
 			(new ModulesBooter($modules, new ModuleLevelEvents($modules)))
 			->boot();
+
+			if ($this->muffleExceptionBroadcast)
+
+				$this->mufflerSetup();
 		}
 		
 		/**
@@ -41,6 +50,15 @@
 
 					return $descriptor->materialize();
 				}
+		}
+
+		protected function massProvide (array $provisions):void {
+
+			foreach ($this->getModules() as $descriptor)
+
+				$descriptor->getContainer()->whenTypeAny()
+
+				->needsAny($provisions);
 		}
 	}
 ?>

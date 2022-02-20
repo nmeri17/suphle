@@ -3,6 +3,8 @@
 
 	use Tilwa\Hydration\Container;
 
+	use Tilwa\Testing\Condiments\GagsException;
+
 	use Tilwa\Contracts\Config\{ Router as IRouter, ModuleFiles as IModuleFiles};
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Config\{RouterMock, ModuleFilesMock};
@@ -14,16 +16,27 @@
 	*/
 	class IsolatedComponentTest extends TestCase {
 
-		protected $container;
+		use GagsException {
+
+			GagsException::setUp as mufflerSetup;
+		};
+
+		protected $container,
+
+		$muffleExceptionBroadcast = true;
 
 		protected function setUp ():void {
 
 			$this->entityBindings();
+
+			if ($this->muffleExceptionBroadcast)
+
+				$this->mufflerSetup();
 		}
 
 		protected function entityBindings ():self {
 
-			$container = new Container;
+			$this->container = $container = new Container;
 
 			$container->provideSelf();
 
@@ -33,8 +46,6 @@
 
 					$contract => $container->getClass($className)
 				]);
-
-			$this->container = $container;
 
 			return $this;
 		}
@@ -47,6 +58,17 @@
 
 				IRouter::class => RouterMock::class
 			];
+		}
+
+		// used for normalizing traits that are applicable to both this and module level test
+		protected function getContainer ():Container {
+
+			return $this->container;
+		}
+
+		protected function massProvide (array $provisions):void {
+
+			$this->container->whenTypeAny()->needsAny($provisions);
 		}
 	}
 ?>

@@ -11,9 +11,9 @@
 
 	class GenericDiffuser implements ExceptionHandler {
 
-		private $renderer, $requestDetails, $controllerAction = "imaginaryHandler",
+		private $renderer, $requestDetails,
 
-		$origin;
+		$origin, $controllerAction = "genericHandler";
 
 		public function __construct (RequestDetails $requestDetails) {
 

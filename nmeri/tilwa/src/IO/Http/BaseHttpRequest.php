@@ -13,7 +13,9 @@
 
 	class BaseHttpRequest extends InterceptsExternalPayload implements OnlyLoadedBy {
 
-		protected $client, $requestFactory, $exceptionManager;
+		protected $client, $requestFactory, $exceptionManager,
+
+		$requestResponse;
 
 		public function __construct (ClientInterface $client, RequestFactoryInterface $requestFactory, DetectedExceptionManager $exceptionManager) {
 
@@ -31,26 +33,18 @@
 
 		/**
 		 * $request = $this->requestFactory->createRequest(GET, $url)
-		 * return $this->client->sendRequest($request)
+		 * 
+		 * $this->requestResponse = $this->client->sendRequest($request)
 		*/
-		abstract protected function makeRequest ();
+		abstract protected function makeRequest ():void;
 
-		/**
-		 * Work with [makeRequest]
-		*/
 		abstract protected function translate ():OptionalDTO;
 
 		protected function translationFailure (Throwable $exception):OptionalDTO {
 
-			if ($exception instanceof ClientExceptionInterface) // no response. we were unable to even send request
+			$this->exceptionManager->queueAlertAdapter($exception, $this->requestResponse);
 
-				$response = null;
-
-			else $response = $this->makeRequest();
-
-			$this->exceptionManager->queueAlertAdapter($exception, $response);
-
-			return new OptionalDTO($response, false);
+			return new OptionalDTO($this->requestResponse, false);
 		}
 	}
 ?>

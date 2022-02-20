@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Integration\Auth;
 
-	use Tilwa\Testing\Condiments\{PopulatesDatabaseTest, IsolatedComponentSecurity};
+	use Tilwa\Testing\{Condiments\PopulatesDatabaseTest, Proxies\SecureUserAssertions};
 
 	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
@@ -9,9 +9,9 @@
 
 	use Tilwa\Auth\SessionStorage;
 
-	class PostLoginBehaviorTest extends IsolatedComponentTest {
+	class BrowserPostLoginTest extends IsolatedComponentTest {
 
-		use PopulatesDatabaseTest, IsolatedComponentSecurity;
+		use PopulatesDatabaseTest, SecureUserAssertions;
 
 		protected function getActiveEntity ():string {
 
@@ -46,9 +46,11 @@
 			$this->assertGuest(); // then
 		}
 
-		public function test_can_resume_auth_session () {
+		public function test_cant_resume_auth_session_when_invalid () {
 
-			// login/start a new session. run ResponseManager::requestAuthenticationStatus and assert true
+			// login/start a new session
+
+			// make a full request to auth route and assertUnauthorized
 		}
 	}
 ?>

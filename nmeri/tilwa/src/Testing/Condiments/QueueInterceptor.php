@@ -28,11 +28,7 @@
 
 				$this->adapter = new StubbedQueueAdapter;
 
-				foreach ($this->getModules() as $descriptor) // since we don't know yet what the active module is at this point this
-
-					$descriptor->getContainer()->whenTypeAny()
-
-					->needsAny([Adapter::class => $this->adapter]);
+				$this->massProvide([Adapter::class => $this->adapter]); // since we don't know yet what the active module is at this point this
 			}
 		}
 

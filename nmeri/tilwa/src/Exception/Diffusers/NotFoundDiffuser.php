@@ -11,7 +11,9 @@
 
 	class NotFoundDiffuser implements ExceptionHandler {
 
-		private $renderer, $requestDetails, $controllerAction = "imaginaryHandler";
+		private $renderer, $requestDetails,
+
+		$controllerAction = "missingHandler";
 
 		public function __construct (RequestDetails $requestDetails) {
 

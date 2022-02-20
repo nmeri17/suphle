@@ -3,7 +3,7 @@
 
 	use Tilwa\Request\PathAuthorizer;
 
-	use Tilwa\Testing\Condiments\{IsolatedComponentSecurity, MockFacilitator};
+	use Tilwa\Testing\{Proxies\SecureUserAssertions, Condiments\MockFacilitator};
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Auth\AuthorizeRoutes, Authorization\Paths\ModelEditRule};
 
@@ -11,7 +11,7 @@
 
 	class PathAuthorizerTest extends TestsRouter {
 
-		use IsolatedComponentSecurity, MockFacilitator;
+		use SecureUserAssertions, MockFacilitator;
 		
 		protected function getEntryCollection ():string {
 

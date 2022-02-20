@@ -62,15 +62,12 @@
 
 			$sutName = PatternIndicator::class;
 
-			foreach ($this->getModules() as $descriptor)
+			$this->massProvide([
+				$sutName => $this->positiveStub($sutName, [
 
-				$descriptor->getContainer()->whenTypeAny()
-
-				->needsAny([$sutName => $this->positiveStub($sutName, [
-
-						"resetIndications" => null
-					])
-				]);
+					"resetIndications" => null
+				])
+			]);
 		}
 
 		public function test_can_detach_quantities_after_each_entry_collection () {

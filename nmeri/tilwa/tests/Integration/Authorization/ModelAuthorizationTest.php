@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Integration\Authorization;
 
-	use Tilwa\Testing\Condiments\{IsolatedComponentSecurity, PopulatesDatabaseTest};
+	use Tilwa\Testing\{Proxies\SecureUserAssertions, Condiments\PopulatesDatabaseTest};
 
 	use Tilwa\Contracts\Config\Auth as AuthContract;
 
@@ -15,7 +15,7 @@
 
 	class ModelAuthorizationTest extends TestsRouter {
 
-		use PopulatesDatabaseTest, IsolatedComponentSecurity;
+		use PopulatesDatabaseTest, SecureUserAssertions;
 
 		protected function getActiveEntity ():string {
 

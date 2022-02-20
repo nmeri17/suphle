@@ -7,19 +7,25 @@
 
 	use Tilwa\Response\Format\AbstractRenderer;
 
+	use Tilwa\Request\PayloadStorage;
+
 	use Throwable, Exception;
 
 	class ModuleExceptionBridge implements HighLevelRequestHandler {
 
 		private $container, $handler, $config,
 
-		$fatalExceptions = [E_ERROR, E_CORE_ERROR, E_CORE_WARNING, E_COMPILE_ERROR, E_COMPILE_WARNING];
+		$fatalExceptions = [E_ERROR, E_CORE_ERROR, E_CORE_WARNING, E_COMPILE_ERROR, E_COMPILE_WARNING],
 
-		public function __construct( Container $container, ExceptionInterceptor $config) {
+		$payloadStorage;
+
+		public function __construct( Container $container, ExceptionInterceptor $config, PayloadStorage $payloadStorage) {
 
 			$this->container = $container;
 
 			$this->config = $config;
+
+			$this->payloadStorage = $payloadStorage;
 		}
 
 		public function hydrateHandler (Throwable $exception) {
@@ -64,7 +70,7 @@
 				
 				$this->handler->setContextualData($exception);
 
-				$this->exceptionManager->queueAlertAdapter($exception, $lastError);
+				$this->exceptionManager->queueAlertAdapter($exception, $this->payloadStorage);
 
 				$renderer = $this->handlingRenderer();
 

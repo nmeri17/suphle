@@ -132,13 +132,10 @@
 
 	    		$this->mockMiddlewareRegistry = new MiddlewareManipulator;
 
-	    		$provision = [MiddlewareRegistry::class => $this->mockMiddlewareRegistry];
-
-	    		foreach ($this->getModules() as $descriptor)
-
-	    			$descriptor->getContainer()->whenTypeAny()
-
-	    			->needsAny($provision);
+	    		$this->massProvide([
+	    			
+	    			MiddlewareRegistry::class => $this->mockMiddlewareRegistry
+	    		]);
 	    	}
 	    }
 
