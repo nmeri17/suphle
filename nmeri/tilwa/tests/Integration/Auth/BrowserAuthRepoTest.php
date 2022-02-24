@@ -1,19 +1,32 @@
 <?php
-
 	namespace Tilwa\Tests\Integration\Auth;
 
-	use Tilwa\Testing\IsolatedComponentTest;
+	use Tilwa\Auth\Renderers\BrowserAuthRepo;
 
-	class BrowserAuthRepoTest extends IsolatedComponentTest {
+	class BrowserAuthRepoTest extends LoginRepoTest {
+
+		private $loginPath = "/login";
 
 		public function test_successLogin () {
 
-			// an additional spec is confirming we are getting specific renderers back. First, try with the defaults at [BrowserLoginRenderer], then try swapping in ours
+			$this->sendCorrectRequest($this->loginPath); // given
+
+			$response = $this->getLoginResponse(); // when
+
+			$sut = $this->container->getClass(BrowserAuthRepo::class);
+
+			$response->assertSee( $sut->successLogin()["message"]); // then
 		}
 
 		public function test_failedLogin () {
 
-			//
+			$this->sendIncorrectRequest($this->loginPath); // given
+
+			$response = $this->getLoginResponse(); // when
+
+			$sut = $this->container->getClass(BrowserAuthRepo::class);
+
+			$response->assertSee( $sut->failedLogin()["message"]); // then
 		}
 
 		public function test_get_user_on_unauth_route_yields_from_default_storage () {

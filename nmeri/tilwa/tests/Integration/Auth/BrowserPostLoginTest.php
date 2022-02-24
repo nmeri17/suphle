@@ -1,9 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Integration\Auth;
 
-	use Tilwa\Testing\{Condiments\PopulatesDatabaseTest, Proxies\SecureUserAssertions};
-
-	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
+	use Tilwa\Testing\{Condiments\PopulatesDatabaseTest, Proxies\SecureUserAssertions, TestTypes\IsolatedComponentTest};
 
 	use Tilwa\Contracts\Auth\{AuthStorage, User};
 
@@ -44,13 +42,6 @@
 			$sut->logout(); // when
 
 			$this->assertGuest(); // then
-		}
-
-		public function test_cant_resume_auth_session_when_invalid () {
-
-			// login/start a new session
-
-			// make a full request to auth route and assertUnauthorized
 		}
 	}
 ?>

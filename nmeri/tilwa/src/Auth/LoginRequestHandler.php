@@ -3,13 +3,15 @@
 
 	use Tilwa\Hydration\Container;
 
-	use Tilwa\Contracts\{Auth\LoginRenderers, Modules\HighLevelRequestHandler, Request\ValidationEvaluator};
+	use Tilwa\Contracts\{ Modules\HighLevelRequestHandler, Request\ValidationEvaluator};
+
+	use Tilwa\Contracts\Auth\{LoginRenderers, ModuleLoginHandler};
 
 	use Tilwa\Response\Format\AbstractRenderer;
 
 	use Tilwa\Request\ValidatorManager;
 
-	class LoginRequestHandler implements HighLevelRequestHandler, ValidationEvaluator {
+	class LoginRequestHandler implements ModuleLoginHandler {
 
 		private $rendererCollection, $container, $responseRenderer,
 
@@ -22,11 +24,8 @@
 			$this->container = $container;
 
 			$this->validatorManager = $validatorManager;
-		}
 
-		public function setAuthService ():void {
-
-			$this->loginService = $this->rendererCollection->getLoginService();
+			$this->loginService = $collection->getLoginService();
 		}
 
 		public function isValidRequest ():bool {

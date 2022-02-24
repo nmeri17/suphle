@@ -5,15 +5,40 @@
 
 	use Tilwa\Auth\Renderers\{BrowserLoginRenderer, ApiLoginRenderer};
 
+	use Tilwa\Routing\RequestDetails;
+
 	class Auth implements AuthContract {
 
-		public function getLoginPaths ():array {
+		private $requestDetails;
+
+		public function __construct (RequestDetails $requestDetails) {
+
+			$this->requestDetails = $requestDetails;
+		}
+
+		protected function getLoginPaths ():array {
 
 			return [
 				$this->markupRedirect() => BrowserLoginRenderer::class,
 
 				"api/v1/login" => ApiLoginRenderer::class
 			];
+		}
+
+		public function getLoginCollection ():?string {
+
+			$rendererList = $this->getLoginPaths();
+
+			$path = $this->requestDetails->getPath();
+
+			if (array_key_exists($path, $rendererList))
+
+				return $rendererList[$path];
+		}
+
+		public function isLoginRequest ():bool {
+
+			return $this->requestDetails->isPostRequest() && !is_null($this->getLoginCollection());
 		}
 
 		public function getTokenSecretKey ():string {
@@ -31,7 +56,7 @@
 			return getenv("JWT_TTL");
 		}
 
-		public function getModelObservers():array {
+		public function getModelObservers ():array {
 
 			return [];
 		}

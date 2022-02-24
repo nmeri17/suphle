@@ -1,15 +1,17 @@
 <?php
 	namespace Tilwa\Contracts\Config;
 
+	use Tilwa\Contracts\Auth\LoginRenderers;
+
 	interface Auth extends ConfigMarker {
 
 		/**
-		 * @return [<string> path => <LoginRenderers> renderer]
-		public function getLoginPaths ():array;
+		 * @return LoginRenderer that should handle incoming login request
 		*/
+		public function getLoginCollection ():?string;		
 
 		/**
-		 * @return destination when user hits SessionToken protected route
+		 * @return destination when user hits SessionStorage protected route
 		*/
 		public function markupRedirect ():string;
 
@@ -20,6 +22,6 @@
 		public function getTokenTtl ():int;
 
 		// [<Model> => <ModelAuthorities>]
-		public function getModelObservers():array;
+		public function getModelObservers ():array;
 	}
 ?>

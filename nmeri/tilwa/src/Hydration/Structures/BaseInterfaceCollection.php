@@ -9,13 +9,13 @@
 
 	use Tilwa\Contracts\Bridge\{LaravelContainer, LaravelArtisan};
 
-	use Tilwa\Contracts\Auth\{AuthStorage, UserContract, UserHydrator as IUserHydrator};
+	use Tilwa\Contracts\Auth\{AuthStorage, UserContract, UserHydrator as IUserHydrator, ModuleLoginHandler};
 
 	use Tilwa\Contracts\Config\{Auth as AuthConfig, Transphporm as TransphpormConfig, Laravel as LaravelConfig, ExceptionInterceptor, Console as ConsoleContract};
 
 	use Tilwa\Queues\Adapters\Resque;
 
-	use Tilwa\Auth\Storage\SessionStorage;
+	use Tilwa\Auth\{LoginHandlerInterfaceLoader, Storage\SessionStorage};
 
 	use Tilwa\Adapters\Orms\Eloquent\{UserHydrator as EloquentUserHydrator, User as EloquentUser, ModelReplicator, OrmLoader};
 
@@ -46,7 +46,9 @@
 
 				LaravelContainer::class => LaravelAppLoader::class,
 
-				LaravelArtisan::class => ArtisanLoader::class
+				LaravelArtisan::class => ArtisanLoader::class,
+
+				ModuleLoginHandler::class => LoginHandlerInterfaceLoader::class
 			];
 		}
 

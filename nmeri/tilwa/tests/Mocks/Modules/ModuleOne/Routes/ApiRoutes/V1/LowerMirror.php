@@ -28,5 +28,15 @@
 
 			$this->_get(new Json("originalCascade"));
 		}
+
+		public function SECURE__SEGMENTh () {
+
+			$this->_get(new Json("segmentHandler"));
+		}
+
+		public function _authenticatedPaths():array {
+
+			return ["SECURE__SEGMENTh"];
+		}
 	}
 ?>

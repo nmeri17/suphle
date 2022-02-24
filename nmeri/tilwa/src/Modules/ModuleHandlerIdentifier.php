@@ -3,11 +3,7 @@
 
 	use Tilwa\Flows\OuterFlowWrapper;
 
-	use Tilwa\Routing\RequestDetails;
-
-	use Tilwa\Contracts\{Config\Auth as AuthConfig, Auth\LoginRenderers};
-
-	use Tilwa\Auth\LoginRequestHandler;
+	use Tilwa\Contracts\Auth\ModuleLoginHandler;
 
 	use Tilwa\Response\Format\AbstractRenderer;
 
@@ -17,7 +13,9 @@
 
 	abstract class ModuleHandlerIdentifier {
 
-		private $requestDetails, $container, $authConfig, $identifiedHandler, $routedModule;
+		private $container, $identifiedHandler, $routedModule,
+
+		$loginHandler;
 
 		public function __construct () {
 
@@ -44,7 +42,7 @@
 
 		public function diffusedRequestResponse ():string {
 
-			$exceptionBridge = $this->getActiveContainer()->getClass(ModuleExceptionBridge::class);
+			$exceptionBridge = $this->freshExceptionBridge();
 
 			$exceptionBridge->epilogue();
 
@@ -54,7 +52,7 @@
 			}
 			catch (Throwable $exception) {
 
-				$this->identifiedHandler = $exceptionBridge;
+				$this->identifiedHandler = $exceptionBridge = $this->freshExceptionBridge();
 
 				$exceptionBridge->hydrateHandler($exception);
 
@@ -71,11 +69,11 @@
 		*/
 		protected function respondFromHandler ():string {
 
+			if ( $this->loginHandler->isLoginRequest())
+
+				return $this->handleLoginRequest();
+
 			$modules = $this->getModules();
-
-			if ($this->requestDetails->isPostRequest() && $rendererName = $this->getLoginCollection())
-
-				return $this->handleLoginRequest($rendererName);
 
 			$wrapper = $this->getFlowWrapper($modules);
 
@@ -133,53 +131,18 @@
 
 		private function extractFromContainer ():void {
 
-			$this->requestDetails = $this->container->getClass(RequestDetails::class);
-
-			$this->authConfig = $this->container->getClass(AuthConfig::class);
+			$this->loginHandler = $this->container->getClass(ModuleLoginHandler::class);
 		}
 
-		/**
-		 * @return A Tilwa\Contracts\LoginRenderers::class when the incoming path matches one of the login paths configured
-		*/
-		private function getLoginCollection ():?string {
+		protected function handleLoginRequest ():string {
 
-			$rendererList = $this->authConfig->getLoginPaths();
+			if (!$this->loginHandler->isValidRequest())
 
-			$path = $this->requestDetails->getPath();
+				throw new ValidationFailure($this->loginHandler);
 
-			if (array_key_exists($path, $rendererList))
+			$this->identifiedHandler = $this->loginHandler;
 
-				return $rendererList[$path];
-		}
-
-		protected function handleLoginRequest (string $collectionName):string {
-
-			$handler = $this->getLoginHandler($collectionName);
-
-			$handler->setAuthService();
-
-			$this->identifiedHandler = $handler;
-
-			if (!$handler->isValidRequest())
-
-				throw new ValidationFailure($handler);
-
-			return $handler->getResponse();
-		}
-
-		protected function getLoginHandler (string $collectionName):LoginRequestHandler {
-
-			$container = $this->container;
-
-			$handlerName = LoginRequestHandler::class;
-
-			$collection = $container->getClass($collectionName);
-
-			return $container->whenType($handlerName)
-
-			->needsArguments(compact("collection"))
-
-			->getClass($handlerName);
+			return $this->loginHandler->getResponse();
 		}
 
 		public function underlyingRenderer ():AbstractRenderer {
@@ -198,13 +161,15 @@
 				header("$name: $value");
 		}
 
-		private function getActiveContainer ():Container {
+		private function freshExceptionBridge ():ModuleExceptionBridge {
 
 			if (!is_null($this->routedModule))
 
-				return $this->routedModule->getContainer();
+				$container = $this->routedModule->getContainer();
 
-			return $this->container;
+			$container = $this->container;
+
+			return $container->getClass(ModuleExceptionBridge::class);
 		}
 	}
 ?>
