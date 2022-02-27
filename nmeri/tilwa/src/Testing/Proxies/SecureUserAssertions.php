@@ -11,12 +11,21 @@
 
 		protected function getAuthStorage (string $storageName = AuthStorage::class):AuthStorage {
 
-			return $this->getContainer()->getClass($authStorage);
+			$container = $this->getContainer();
+
+			$storage = $container->getClass($authStorage);
+
+			$container->whenTypeAny()->needsAny([ // assumes we're overwriting the bound concrete
+
+				AuthStorage::class => $storage
+			]);
+
+			return $storage;
 		}
 
 		protected function actingAs(User $user, ?string $storageName):self {
 
-			$this->getAuthStorage($storageName)->impersonate($user->getId());
+			$this->getAuthStorage($storageName)->imitate($user->getId());
 
 			return $this;
 		}

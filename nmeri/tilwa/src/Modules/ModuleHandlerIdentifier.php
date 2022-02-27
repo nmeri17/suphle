@@ -22,8 +22,6 @@
 			$this->container = current($this->getModules())->getContainer();
 
 			$this->container->provideSelf();
-
-			$this->extractFromContainer();
 		}
 		
 		abstract protected function getModules():array;
@@ -129,7 +127,7 @@
 			->getClass($wrapperName);
 		}
 
-		private function extractFromContainer ():void {
+		public function extractFromContainer ():void {
 
 			$this->loginHandler = $this->container->getClass(ModuleLoginHandler::class);
 		}

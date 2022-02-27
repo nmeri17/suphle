@@ -24,7 +24,7 @@
 
 			$sut = $this->container->getClass(SessionStorage::class);
 
-			$sut->impersonate($user2->getId()); // when
+			$sut->imitate($user2->getId()); // when
 
 			$this->assertAuthenticatedAs($user2); // then
 

@@ -9,9 +9,7 @@
 
 	use Tilwa\Modules\ModuleExceptionBridge;
 
-	use Tilwa\Testing\TestTypes\ModuleLevelTest;
-
-	use Tilwa\Testing\Condiments\{GagsException, MockFacilitator};
+	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\MockFacilitator};
 
 	use Exception;
 

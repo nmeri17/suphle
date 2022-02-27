@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Tests\Unit\App;
+	namespace Tilwa\Tests\Unit\Hydration;
 
 	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 

@@ -1,9 +1,18 @@
 <?php
 	namespace Tilwa\Tests\Integration\Auth;
 
-	use Tilwa\Auth\Renderers\BrowserAuthRepo;
+	use Tilwa\Auth\{Renderers\BrowserAuthRepo, Storage\SessionStorage};
+
+	use Tilwa\Testing\Proxies\FrontDoorTest;
 
 	class BrowserAuthRepoTest extends LoginRepoTest {
+
+		use FrontDoorTest {FrontDoorTest::setUp as frontSetup};
+
+		protected function setUp () {
+
+			$this->frontSetup();
+		}
 
 		private $loginPath = "/login";
 
@@ -29,14 +38,15 @@
 			$response->assertSee( $sut->failedLogin()["message"]); // then
 		}
 
-		public function test_get_user_on_unauth_route_yields_from_default_storage () {
-
-			//
-		}
-
 		public function test_cant_access_api_auth_route_with_session () {
 
-			//
+			$user = $this->replicator->getRandomEntity();
+
+			$this->actingAs($user, SessionStorage::class); // given
+
+			$this->get("/api/v1/secure-segment") // when
+
+			->assertUnauthorized(); // then
 		}
 	}
 ?>

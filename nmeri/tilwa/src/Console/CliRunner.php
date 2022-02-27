@@ -22,6 +22,8 @@
 
 			$this->moduleHandler->bootModules();
 
+			$this->moduleHandler->extractFromContainer();
+
 			$this->extractCommands();
 
 			$this->funnelToClient();

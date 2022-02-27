@@ -13,7 +13,7 @@
 
 		protected $container;
 
-		private $expatriates;
+		private $expatriates, $hasPreparedExpatriates = false;
 
 		function __construct(Container $container) {
 			
@@ -94,11 +94,18 @@
 			return $this;
 		}
 
+		protected function expatriateHasPreparedExpatriates ():bool {
+
+			return $this->hasPreparedExpatriates;
+		}
+
 		protected function empowerExpatriates ():self {
 
 			foreach ($this->expatriates as $descriptor)
 
-				$descriptor->prepareToRun();
+				if (!$descriptor->expatriateHasPreparedExpatriates()) // prevent multiple boots
+
+					$descriptor->prepareToRun();
 
 			return $this;
 		}
@@ -139,6 +146,8 @@
 			$customBindings = $this->container->getMethodParameters($startupDependencies);
 
 			$startupDependencies(...array_values($customBindings));
+
+			$this->hasPreparedExpatriates = true;
 
 			$this->validateExpatriates()->empowerExpatriates();
 
