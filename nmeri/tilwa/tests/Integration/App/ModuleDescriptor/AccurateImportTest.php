@@ -20,14 +20,14 @@
 			
 			$moduleTwo = $this->getModuleFor(ModuleTwo::class);
 
-			$moduleOne = $this->getModuleFor(ModuleOne::class);
+			$payload = 67;
 
-			$moduleTwo->setNestedModuleValue(); // when
+			$moduleTwo->setNestedModuleValue($payload); // when
 
 			$this->assertSame(
-				$moduleTwo->newExternalValue(),
+				$payload,
 
-				$moduleOne->getBCounterValue()
+				$this->getModuleFor(ModuleOne::class)->getBCounterValue()
 			); // then
 		}
 	}

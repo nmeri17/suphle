@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Contracts;
+	namespace Tilwa\Contracts\Presentation;
 
 	interface HtmlParser {
 

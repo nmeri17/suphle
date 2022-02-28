@@ -7,11 +7,9 @@
 
 	use Tilwa\Routing\{RouteManager, RequestDetails};
 
-	use Tilwa\Response\Format\{Markup, AbstractRenderer};
-
 	use Tilwa\Services\CoodinatorManager;
 
-	use Tilwa\Contracts\BaseResponseManager;
+	use Tilwa\Contracts\{Requests\BaseResponseManager, Presentation\BaseRenderer};
 
 	use Tilwa\Request\{ValidatorManager, PayloadStorage};
 
@@ -23,7 +21,7 @@
 
 		$controllerManager, $flowQueuer;
 
-		function __construct (Container $container, RouteManager $router, CoodinatorManager $controllerManager, FlowResponseQueuer $flowQueuer, AbstractRenderer $renderer, RequestDetails $requestDetails) {
+		function __construct (Container $container, RouteManager $router, CoodinatorManager $controllerManager, FlowResponseQueuer $flowQueuer, BaseRenderer $renderer, RequestDetails $requestDetails) {
 
 			$this->container = $container;
 
@@ -62,17 +60,13 @@
 			return $this;
 		}
 
-		public function handleValidRequest (PayloadStorage $payloadStorage):AbstractRenderer {
+		public function handleValidRequest (PayloadStorage $payloadStorage):BaseRenderer {
 
 			$renderer = $this->renderer;
 
 			if (!$this->requestDetails->isApiRoute())
 
 				$this->router->setPreviousRenderer($renderer);
-
-			if ($renderer instanceof Markup && $payloadStorage->acceptsJson())
-
-				$renderer->setWantsJson();
 
 			return $renderer->invokeActionHandler($this->controllerManager->getHandlerParameters());
 		}

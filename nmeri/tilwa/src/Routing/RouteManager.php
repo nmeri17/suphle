@@ -5,9 +5,9 @@
 
 	use Generator;
 
-	use Tilwa\Contracts\{Auth\AuthStorage, Config\Router as RouterConfig, Routing\RouteCollection};
+	use Tilwa\Contracts\{Auth\AuthStorage, Config\Router as RouterConfig, Routing\RouteCollection, Presentation\BaseRenderer};
 
-	use Tilwa\Response\Format\{AbstractRenderer, Markup};
+	use Tilwa\Response\Format\Markup;
 
 	use Tilwa\Errors\{IncompatiblePatternReplacement, IncompatibleHttpMethod};
 
@@ -60,7 +60,7 @@
 			 	yield $pattern;
 		}
 
-		private function recursiveSearch(string $patternsCollection, string $routeState = "", string $invokerPrefix = ""/*, bool $fromCache = false*/):?AbstractRenderer {
+		private function recursiveSearch(string $patternsCollection, string $routeState = "", string $invokerPrefix = ""/*, bool $fromCache = false*/):?BaseRenderer {
 
 			$collection = $this->container->getClass($patternsCollection);
 
@@ -133,7 +133,7 @@
 			return $this->requestDetails->isApiRoute() && $this->config->mirrorsCollections();
 		}
 
-		private function onSearchHit (RouteCollection $collection, AbstractRenderer $renderer, string $pattern):void {
+		private function onSearchHit (RouteCollection $collection, BaseRenderer $renderer, string $pattern):void {
 
 			$this->indicatorProxy($collection, $pattern);
 
@@ -262,19 +262,19 @@
 			return preg_match("/^$escaped/i", $this->requestDetails->getPath());
 		}
 
-		public function setPreviousRenderer(AbstractRenderer $renderer):self {
+		public function setPreviousRenderer(BaseRenderer $renderer):self {
 
 			$_SESSION[self::PREV_RENDERER] = $renderer;
 
 			return $this;
 		}
 
-		public function getPreviousRenderer ():AbstractRenderer {
+		public function getPreviousRenderer ():BaseRenderer {
 
 			return $_SESSION[self::PREV_RENDERER];
 		}
 
-		public function getActiveRenderer ():?AbstractRenderer {
+		public function getActiveRenderer ():?BaseRenderer {
 
 			return $this->activeRenderer;
 		}
@@ -304,7 +304,7 @@
 			return [$entryRoute];
 		}
 
-		private function bootRenderer(AbstractRenderer $renderer, string $controllingClass):void {
+		private function bootRenderer(BaseRenderer $renderer, string $controllingClass):void {
 
 			$rendererName = get_class($renderer);
 
