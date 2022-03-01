@@ -1,5 +1,9 @@
 <?php
-	namespace Tilwa\Middleware;
+	namespace Tilwa\Middleware\Handlers;
+
+	use Tilwa\Middleware\{BaseMiddleware, MiddlewareNexts};
+
+	use Tilwa\Response\ResponseManager;
 
 	use Tilwa\Request\PayloadStorage;
 

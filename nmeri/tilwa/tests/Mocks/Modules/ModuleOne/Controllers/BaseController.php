@@ -12,7 +12,7 @@
 
 		public function plainSegment () {
 
-			//
+			return ["message" => "plain Segment"];
 		}
 
 		public function simplePair () {

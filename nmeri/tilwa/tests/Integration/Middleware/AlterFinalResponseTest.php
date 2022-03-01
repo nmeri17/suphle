@@ -9,9 +9,7 @@
 
 	use Tilwa\Testing\Proxies\{WriteOnlyContainer, FrontDoorTest};
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock};
-
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Middlewares\AlterFinalResponse;
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock, Middlewares\AlterFinalResponse};
 
 	class AlterFinalResponseTest extends ModuleLevelTest {
 

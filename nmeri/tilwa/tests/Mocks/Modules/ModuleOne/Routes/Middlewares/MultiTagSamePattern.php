@@ -3,7 +3,7 @@
 
 	use Tilwa\Routing\BaseCollection;
 
-	use Tilwa\Middleware\MiddlewareRegistry;
+	use Tilwa\Middleware\{MiddlewareRegistry, Handlers\JsonNegotiator};
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Controllers\BaseController;
 
@@ -43,6 +43,11 @@
 			$this->_prefixFor(RetainsMiddleware::class);
 		}
 
+		public function NEGOTIATE () {
+
+			$this->_get(new Json("plainSegment"));
+		}
+
 		public function _assignMiddleware (MiddlewareRegistry $registry):void {
 
 			$registry->tagPatterns(
@@ -64,7 +69,8 @@
 				["FOURTH__SINGLEh"],
 
 				[ BlankMiddleware2::class, BlankMiddleware4::class, BlankMiddleware3::class]
-			);
+			)
+			->tagPatterns(["NEGOTIATE"], JsonNegotiator::class);
 		}
 	}
 ?>
