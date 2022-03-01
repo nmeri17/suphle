@@ -3,7 +3,7 @@
 
 	use Tilwa\Routing\RouteManager;
 
-	class Reload extends AbstractRenderer {
+	class Reload extends GenericRenderer {
 
 		protected $router;
 
@@ -14,11 +14,20 @@
 			$this->setHeaders(200, ["Content-Type" => "text/html"]); // or 205 Reset Content
 		}
 
-		public function setDependencies( Container $container, string $controllerClass, RouteManager $router):self {
+		public function getDependencies ():array {
 
-			$this->router = $router;
+			return array_merge(parent::getDependencies(), [
 
-			return parent::setDependencies($container, $controllerClass);
+				"router" => RouteManager::class
+			]);
+		}
+
+		public function setDependencies (array $classes):void {
+
+			parent::setDependencies($classes);
+
+			$this->router = $classes["router"];
+
 		}
 
 		public function render() {

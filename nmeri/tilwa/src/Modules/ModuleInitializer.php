@@ -1,13 +1,13 @@
 <?php
 	namespace Tilwa\Modules;
 
-	use Tilwa\Response\{ResponseManager, Format\AbstractRenderer};
+	use Tilwa\Response\ResponseManager;
 
 	use Tilwa\Routing\RouteManager;
 
 	use Tilwa\Bridge\Laravel\ModuleRouteMatcher;
 
-	use Tilwa\Contracts\{Auth\AuthStorage, Modules\HighLevelRequestHandler};
+	use Tilwa\Contracts\{Auth\AuthStorage, Modules\HighLevelRequestHandler, Presentation\BaseRenderer};
 
 	use Tilwa\Exception\Explosives\{UnauthorizedServiceAccess, Unauthenticated};
 	
@@ -91,7 +91,7 @@
 
 				ModuleDescriptor::class => $this->descriptor,
 
-				AbstractRenderer::class => $this->handlingRenderer()
+				BaseRenderer::class => $this->handlingRenderer()
 			]);
 		}
 
@@ -144,7 +144,7 @@
 			return $this;
 		}
 
-		public function handlingRenderer ():AbstractRenderer { /* ?AbstractRenderer */
+		public function handlingRenderer ():BaseRenderer { /* ?BaseRenderer */
 
 			// if (!$this->isLaravelRoute())
 

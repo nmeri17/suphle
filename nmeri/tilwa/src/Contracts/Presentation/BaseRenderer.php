@@ -13,70 +13,34 @@
 
 		public function getHandler ():string;
 
-		public function matchesHandler (string $name):bool {
+		public function setControllingClass (string $class):void;
 
-			return $this->handler == $name;
-		}
+		public function setDependencies (array $classes):void;
 
-		public function setHeaders (int $statusCode, array $headers):void {
+		public function getDependencies ():array;
 
-			$this->statusCode = $statusCode;
+		public function matchesHandler (string $name):bool; // suspect this should be a mock
 
-			$this->headers = array_merge($this->headers, $headers);
-		}
+		public function setHeaders (int $statusCode, array $headers):void;
 
-		public function setRawResponse($response):self {
-			
-			$this->rawResponse = $response;
+		public function setRawResponse($response):self;
 
-			return $this;
-		}
+		public function setFlow (ControllerFlows $flow):self;
 
-		public function setFlow(ControllerFlows $flow):self {
-			
-			$this->flows = $flow;
+		public function getFlow ():ControllerFlows;
 
-			return $this;
-		}
+		public function getRawResponse();
 
-		public function getFlow():ControllerFlows {
-			
-			return $this->flows;
-		}
+		public function getPath():string;
 
-		public function getRawResponse() {
-			
-			return $this->rawResponse;
-		}
+		public function setPath (string $path):void;
 
-		public function getPath():string {
-			
-			return $this->path;
-		}
+		public function getRouteMethod ():string;
 
-		public function setPath(string $path):void {
-			
-			$this->path = $path;
-		}
+		public function setRouteMethod (string $httpMethod):void;
 
-		public function getRouteMethod():string {
-			
-			return $this->routeMethod;
-		}
+		public function getStatusCode ():int;
 
-		public function setRouteMethod(string $httpMethod):void {
-			
-			$this->routeMethod = $httpMethod;
-		}
-
-		public function getStatusCode ():int {
-
-			return $this->statusCode;
-		}
-
-		public function getHeaders ():array {
-
-			return $this->headers;
-		}
+		public function getHeaders ():array;
 	}
 ?>

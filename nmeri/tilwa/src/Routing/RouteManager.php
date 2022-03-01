@@ -306,22 +306,14 @@
 
 		private function bootRenderer(BaseRenderer $renderer, string $controllingClass):void {
 
-			$rendererName = get_class($renderer);
+			$renderer->setControllingClass($controllingClass);
 
-			$parameters = $this->provideRendererDependencies($rendererName, $controllingClass)
-			
-			->getMethodParameters("setDependencies", $rendererName);
+			$parameters = array_map(function (string $type) {
 
-			$renderer->setDependencies(...array_values($parameters));
-		}
+				return $this->container->getClass($type);
+			}, $renderer->getDependencies());
 
-		private function provideRendererDependencies(string $renderer, string $controller):Container {
-
-			return $this->container->whenType($renderer)
-
-			->needsArguments([
-				"controllerClass" => $controller
-			]);
+			$renderer->setDependencies($parameters);
 		}
 
 		public function getIndicator ():PatternIndicator {

@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Response\Format;
 
-	class Json extends AbstractRenderer {
+	class Json extends GenericRenderer {
 
 		function __construct(string $handler) {
 

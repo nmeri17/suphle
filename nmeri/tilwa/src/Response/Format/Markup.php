@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Response\Format;
 
-	class Markup extends AbstractRenderer {
+	class Markup extends GenericRenderer {
 
 		protected $viewName;
 
