@@ -3,7 +3,7 @@
 
 	use Tilwa\Hydration\Container;
 
-	use Tilwa\Contracts\{Requests\ValidationEvaluator, Database\Orm};
+	use Tilwa\Contracts\{Requests\ValidationEvaluator, Database\OrmDialect};
 
 	use Tilwa\Request\ValidatorManager;
 
@@ -113,7 +113,7 @@
 
 				if (is_null($orm))
 
-					$orm = $this->container->getClass(Orm::class);
+					$orm = $this->container->getClass(OrmDialect::class);
 
 				$dependency->setDependencies($orm);
 			}

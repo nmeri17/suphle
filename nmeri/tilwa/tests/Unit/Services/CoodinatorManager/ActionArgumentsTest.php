@@ -1,22 +1,59 @@
 <?php
 	namespace Tilwa\Tests\Unit\Services\CoodinatorManager;
 
-	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
+	use Tilwa\Services\Structures\{ModelfulPayload, ModellessPayload};
+
+	use Tilwa\Services\CoodinatorManager;
+
+	use Tilwa\Testing\{TestTypes\IsolatedComponentTest, Condiments\MockFacilitator};
 
 	class ActionArgumentsTest extends IsolatedComponentTest {
 
+		use MockFacilitator;
+
 		public function test_rejects_unwanted_dependencies () {
 
-			// check that returned list matches without an expected number
+			// given
+			$correctParameters = [
 
-			// sut => validActionDependencies
+				$this->negativeStub(ModelfulPayload::class, []),
+
+				$this->negativeStub(ModellessPayload::class, [])
+			];
+
+			$incorrectParameters = [new stdClass];
+
+			$sut = $this->container->getClass(CoodinatorManager::class);
+
+			$newList = $sut->validActionDependencies(array_merge($correctParameters, $incorrectParameters)); // when
+
+			$this->assertSame($newList, $correctParameters); // then
 		}
 
 		public function test_injects_dependencies () {
 
-			// should be called x times matching given modelfuls
+			// given, then
+			$parameters = [
 
-			// sut => prepareActionModels
+				$this->mockModelful(),
+
+				$this->negativeStub(ModellessPayload::class, []),
+
+				$this->mockModelful()
+			];
+
+			$sut = $this->container->getClass(CoodinatorManager::class);
+
+			$newList = $sut->prepareActionModels($parameters); // when
+		}
+
+		private function mockModelful ():ModelfulPayload {
+
+			return $this->negativeStub(ModelfulPayload::class, [])
+
+			->expects($this->once())->method("setDependencies")
+
+			->with($this->negativeStub(OrmDialect::class, []));
 		}
 	}
 ?>
