@@ -16,14 +16,9 @@
 			$this->controller = $controllerClass;
 		}
 
-		public function getDependencies ():array {
+		protected function getDependencies ():array {
 
 			return [ "htmlParser" => HtmlParser::class];
-		}
-
-		public function setDependencies (array $classes):void {
-
-			$this->htmlParser = $classes["htmlParser"];
 		}
 
 		public function invokeActionHandler (array $handlerParameters):self {
@@ -125,6 +120,18 @@
 		public function getHeaders ():array {
 
 			return $this->headers;
+		}
+
+		public function hydrateDependencies( Container $container):void {
+
+			$classes = array_map(function (string $type) use ($container) {
+
+				return $container->getClass($type);
+			}, $this->getDependencies());
+
+			foreach ($classes as $property => $concrete)
+
+				$this->$property = $concrete;
 		}
 	}
 ?>

@@ -5,9 +5,7 @@
 
 	use Tilwa\Middleware\FinalHandlerWrapper;
 
-	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\MockFacilitator};
-
-	use Tilwa\Testing\Proxies\{WriteOnlyContainer, FrontDoorTest};
+	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\MockFacilitator, Proxies\WriteOnlyContainer};
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock};
 
@@ -17,9 +15,9 @@
 
 	class InterjectsRequestTest extends ModuleLevelTest {
 
-		use FrontDoorTest, MockFacilitator;
+		use MockFacilitator;
 		
-		protected function getModules():array {
+		protected function getModules ():array {
 
 			return [
 				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {

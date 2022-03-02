@@ -1,11 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Integration\Routing\Nested;
 
-	use Tilwa\Testing\TestTypes\ModuleLevelTest;
-
-	use Tilwa\Testing\Proxies\{FrontDoorTest, WriteOnlyContainer};
-
-	use Tilwa\Testing\Condiments\MockFacilitator;
+	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\MockFacilitator, Proxies\WriteOnlyContainer};
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{ Meta\ModuleOneDescriptor, Config\RouterMock, Middlewares\BlankMiddleware};
 
@@ -15,10 +11,7 @@
 
 	class MultiCollectionsTest extends ModuleLevelTest {
 
-		use FrontDoorTest, MockFacilitator {
-
-			FrontDoorTest::setUp as frontSetup;
-		};
+		use MockFacilitator;
 
 		private $threeTierUrl = "/first/middle/third";
 

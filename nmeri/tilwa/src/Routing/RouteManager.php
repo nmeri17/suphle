@@ -140,8 +140,10 @@
 			if ($this->isMirroring() && $renderer instanceof Markup)
 
 				$renderer->setWantsJson();
+
+			$renderer->setControllingClass($collection->_handlingClass());
 			
-			$this->bootRenderer($renderer, $collection->_handlingClass());
+			$renderer->hydrateDependencies($this->container);
 		}
 
 		private function indicatorProxy (RouteCollection $collection, string $pattern):void {
@@ -302,18 +304,6 @@
 			}
 
 			return [$entryRoute];
-		}
-
-		private function bootRenderer(BaseRenderer $renderer, string $controllingClass):void {
-
-			$renderer->setControllingClass($controllingClass);
-
-			$parameters = array_map(function (string $type) {
-
-				return $this->container->getClass($type);
-			}, $renderer->getDependencies());
-
-			$renderer->setDependencies($parameters);
 		}
 
 		public function getIndicator ():PatternIndicator {

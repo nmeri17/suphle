@@ -1,6 +1,8 @@
 <?php
 	namespace Tilwa\Contracts\Presentation;
 
+	use Tilwa\Hydration\Container;
+
 	interface BaseRenderer {
 
 		public function render ():string;
@@ -15,11 +17,11 @@
 
 		public function setControllingClass (string $class):void;
 
-		public function setDependencies (array $classes):void;
+		public function hydrateDependencies( Container $container):void;
 
-		public function getDependencies ():array;
+		protected function getDependencies ():array;
 
-		public function matchesHandler (string $name):bool; // suspect this should be a mock
+		public function matchesHandler (string $name):bool;
 
 		public function setHeaders (int $statusCode, array $headers):void;
 

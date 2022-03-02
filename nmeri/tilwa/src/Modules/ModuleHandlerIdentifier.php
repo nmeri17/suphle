@@ -71,22 +71,20 @@
 
 				return $this->handleLoginRequest();
 
-			$modules = $this->getModules();
-
-			$wrapper = $this->getFlowWrapper($modules);
+			$wrapper = $this->container->getClass(OuterFlowWrapper::class);
 
 			if ($wrapper->canHandle())
 
 				return $this->flowRequestHandler($wrapper);
 
-			return $this->handleGenericRequest($modules);
+			return $this->handleGenericRequest();
 		}
 
-		protected function handleGenericRequest (array $modules):string {
+		protected function handleGenericRequest ():string {
 
 			$moduleRouter = $this->container->getClass(ModuleToRoute::class); // pulling from a container so tests can replace properties on the singleton
 
-			$initializer = $moduleRouter->findContext($modules);
+			$initializer = $moduleRouter->findContext($this->getModules());
 
 			if ($initializer) {
 
@@ -104,6 +102,8 @@
 
 			$this->identifiedHandler = $wrapper;
 
+			$wrapper->setModules($this->getModules());
+
 			$response = $wrapper->getResponse();
 			
 			$wrapper->afterRender($response);
@@ -113,26 +113,12 @@
 			return $response;
 		}
 
-		private function getFlowWrapper (array $modules):OuterFlowWrapper {
-
-			$wrapperName = OuterFlowWrapper::class;
-
-			return $this->container->whenType($wrapperName)
-
-			->needsArguments([
-
-				"modules" => $modules
-			])
-
-			->getClass($wrapperName);
-		}
-
 		public function extractFromContainer ():void {
 
 			$this->loginHandler = $this->container->getClass(ModuleLoginHandler::class);
 		}
 
-		protected function handleLoginRequest ():string {
+		public function handleLoginRequest ():string {
 
 			if (!$this->loginHandler->isValidRequest())
 

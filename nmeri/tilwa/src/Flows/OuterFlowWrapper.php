@@ -25,19 +25,22 @@
 
 		$activeUser, $eventManager;
 
-		public function __construct(RequestDetails $requestDetails, AdapterManager $queueManager, array $modules, CacheManager $cacheManager, AuthStorage $authStorage, EventManager $eventManager) {
+		public function __construct(RequestDetails $requestDetails, AdapterManager $queueManager, CacheManager $cacheManager, AuthStorage $authStorage, EventManager $eventManager) {
 			
 			$this->requestDetails = $requestDetails;
 
 			$this->queueManager = $queueManager;
-
-			$this->modules = $modules;
 
 			$this->cacheManager = $cacheManager;
 
 			$this->authStorage = $authStorage;
 
 			$this->eventManager = $eventManager;
+		}
+
+		public function setModules (array $modules):void {
+
+			$this->modules = $modules;
 		}
 
 		private function getUserId():string { 

@@ -7,7 +7,7 @@
 
 		const HTML_HEADER_VALUE = "application/x-www-form-urlencoded";
 
-		private $contentTypeKey = "Content-Type";
+		const CONTENT_TYPE_KEY = "Content-Type";
 
 		/**
 		 * Writes to the superglobals RequestDetails can read from but doesn't actually send any request. Use when we're invoking router/request handler directly
@@ -24,14 +24,14 @@
 
 			$_SERVER = array_merge($_SERVER, $headers);
 
-			if (!empty($payload) && array_key_exists($this->contentTypeKey, $headers))
+			if (!empty($payload) && array_key_exists(self::CONTENT_TYPE_KEY, $headers))
 
-				$this->writePayload($payload, $headers[$this->contentTypeKey]);
+				$this->writePayload($payload, $headers[self::CONTENT_TYPE_KEY]);
 		}
 
 		protected function setJsonParams (string $requestPath, array $payload, string $httpMethod = "post"):bool {
 
-			$headers = [$this->contentTypeKey => self::JSON_HEADER_VALUE];
+			$headers = [self::CONTENT_TYPE_KEY => self::JSON_HEADER_VALUE];
 
 			if ($this->isValidPayloadType($httpMethod)) {
 
@@ -45,7 +45,7 @@
 
 		protected function setHtmlForm (string $requestPath, array $payload, string $httpMethod = "post"):bool {
 
-			$headers = [$this->contentTypeKey => self::HTML_HEADER_VALUE];
+			$headers = [self::CONTENT_TYPE_KEY => self::HTML_HEADER_VALUE];
 
 			if ($this->isValidPayloadType($httpMethod)) {
 

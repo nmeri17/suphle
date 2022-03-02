@@ -3,11 +3,9 @@
 
 	use Tilwa\Hydration\Container;
 
-	use Tilwa\Contracts\{ Modules\HighLevelRequestHandler, Request\ValidationEvaluator};
+	use Tilwa\Contracts\{ Modules\HighLevelRequestHandler, Request\ValidationEvaluator, Presentation\BaseRenderer};
 
 	use Tilwa\Contracts\Auth\{LoginRenderers, ModuleLoginHandler};
-
-	use Tilwa\Response\Format\AbstractRenderer;
 
 	use Tilwa\Request\ValidatorManager;
 
@@ -30,7 +28,7 @@
 
 		public function isValidRequest ():bool {
 
-			$this->validatorManager->setActionRules($this->getLoginRules());
+			$this->validatorManager->setActionRules($this->loginService->successRules());
 	
 			return $this->validatorManager->isValidated();
 		}
@@ -40,20 +38,19 @@
 			return $this->validatorManager->validationErrors();
 		}
 
-		private function getLoginRules ():array {
-
-			$validatorName = $this->loginService->validatorCollection();
-
-			return $this->container->getClass($validatorName)->successRules();
-		}
-
 		public function getResponse ():string {
 
 			$this->setResponseRenderer();
 
-			$this->bootRenderer()->executeRenderer();
+			$renderer = $this->responseRenderer;
 
-			return $this->responseRenderer->render();
+			$renderer->setControllingClass($this->rendererCollection->getLoginService());
+			
+			$renderer->hydrateDependencies($this->container);
+
+			$this->executeRenderer();
+
+			return $renderer->render();
 		}
 
 		private function setResponseRenderer ():void {
@@ -63,19 +60,6 @@
 				$this->responseRenderer = $this->rendererCollection->successRenderer();
 
 			else $this->responseRenderer = $this->rendererCollection->failedRenderer();
-		}
-
-		private function bootRenderer ():self {
-
-			$renderer = $this->responseRenderer;
-
-			$dependencies = $this->container->getMethodParameters("setDependencies", $renderer);
-
-			$dependencies["controllerClass"] = $renderer->getController();
-
-			$renderer->setDependencies(...array_values($dependencies));
-
-			return $this;
 		}
 
 		private function executeRenderer ():void {
@@ -91,7 +75,7 @@
 			$renderer->invokeActionHandler($dependencies);
 		}
 
-		public function handlingRenderer ():AbstractRenderer {
+		public function handlingRenderer ():BaseRenderer {
 
 			return $this->responseRenderer;
 		}

@@ -1,9 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Integration\Routing\Nested;
 
-	use Tilwa\Testing\TestTypes\ModuleLevelTest;
-
-	use Tilwa\Testing\Proxies\{FrontDoorTest, WriteOnlyContainer};
+	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Prefix\Secure\UpperCollection, Meta\ModuleOneDescriptor, Config\RouterMock};
 
@@ -11,17 +9,7 @@
 
 	class PatternIndicatorTest extends ModuleLevelTest {
 
-		use FrontDoorTest {
-
-			FrontDoorTest::setUp as frontSetup;
-		};
-
-		public function setUp () {
-
-			$this->frontSetup();
-		}
-
-		protected function getModules():array {
+		protected function getModules ():array {
 
 			return [
 

@@ -5,9 +5,7 @@
 
 	use Tilwa\Routing\RequestDetails;
 
-	use Tilwa\Testing\TestTypes\ModuleLevelTest;
-
-	use Tilwa\Testing\Proxies\{WriteOnlyContainer, FrontDoorTest};
+	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Routes\Middlewares\MultiTagSamePattern, Config\RouterMock};
 
@@ -18,8 +16,6 @@
 	use Prophecy\Argument;
 
 	class TagBehaviorTest extends ModuleLevelTest {
-
-		use FrontDoorTest;
 
 		private $prophet;
 

@@ -3,30 +3,36 @@
 
 	use Tilwa\Testing\Condiments\{ModuleReplicator, GagsException};
 
-	use Tilwa\Modules\{ModulesBooter, ModuleDescriptor};
+	use Tilwa\Testing\Proxies\Extensions\{FrontDoor, MiddlewareManipulator};
 
-	use Tilwa\Events\ModuleLevelEvents;
+	use Tilwa\Testing\Proxies\ModuleHttpTest;
+
+	use Tilwa\Modules\{ ModuleDescriptor, ModuleToRoute};
+
+	use Tilwa\Hydration\Container; 
+
+	use Tilwa\Middleware\MiddlewareRegistry;
 
 	use PHPUnit\Framework\TestCase;
 
-	/**
-	 * Used for testing components on a modular scale but that don't necessarily require interaction with the HTTP passage
-	*/
+	use Illuminate\Testing\TestResponse;
+
 	abstract class ModuleLevelTest extends TestCase {
 
-		use ModuleReplicator, GagsException {
+		use ModuleReplicator, GagsException, ModuleHttpTest {
 
 			GagsException::setUp as mufflerSetup;
 		};
 
-		protected $muffleExceptionBroadcast = true;
+		protected $muffleExceptionBroadcast = true, $entrance;
 
 		protected function setUp ():void {
 
-			$modules = $this->getModules();
+			$entrance = $this->entrance = new FrontDoor($this->getModules());
 
-			(new ModulesBooter($modules, new ModuleLevelEvents($modules)))
-			->boot();
+			$entrance->bootModules();
+
+			$entrance->extractFromContainer();
 
 			if ($this->muffleExceptionBroadcast)
 
@@ -59,6 +65,11 @@
 				$descriptor->getContainer()->whenTypeAny()
 
 				->needsAny($provisions);
+		}
+
+		protected function getContainer ():Container {
+
+			return $this->activeModuleContainer();
 		}
 	}
 ?>

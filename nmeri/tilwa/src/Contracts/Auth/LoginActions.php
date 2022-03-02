@@ -1,5 +1,4 @@
 <?php
-
 	namespace Tilwa\Contracts\Auth;
 
 	interface LoginActions {
@@ -11,5 +10,5 @@
 
 		public function failedLogin ();
 
-		public function validatorCollection ():string;
+		public function successRules ():array;
 	}

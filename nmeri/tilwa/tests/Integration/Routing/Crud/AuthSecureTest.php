@@ -1,9 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Integration\Routing\Crud;
 
-	use Tilwa\Testing\{Condiments\PopulatesDatabaseTest, TestTypes\ModuleLevelTest};
-
-	use Tilwa\Testing\Proxies\{FrontDoorTest, WriteOnlyContainer};
+	use Tilwa\Testing\{Condiments\PopulatesDatabaseTest, TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{ModuleOneDescriptor, Routes\Crud\AuthenticateCrudCollection, Config\RouterMock};
 
@@ -11,7 +9,7 @@
 
 	class AuthSecureTest extends ModuleLevelTest {
 
-		use FrontDoorTest, PopulatesDatabaseTest;
+		use PopulatesDatabaseTest;
 
 		protected function getModules():array {
 

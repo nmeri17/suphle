@@ -3,38 +3,42 @@
 
 	use Tilwa\Modules\ModuleHandlerIdentifier;
 
+	use Tilwa\Hydration\Container;
+
 	use Tilwa\Exception\Explosives\ValidationFailure;
 
 	use Tilwa\Contracts\Auth\ModuleLoginHandler;
 
-	use Tilwa\Testing\{TestTypes\IsolatedComponentTest, Condiments\MockFacilitator};
+	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\MockFacilitator};
 
-	class ModuleHandlerIdentifierTest extends IsolatedComponentTest {
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
+
+	class ModuleHandlerIdentifierTest extends ModuleLevelTest {
 
 		use MockFacilitator;
+
+		protected function getModules ():array {
+
+			return [new ModuleOneDescriptor (new Container)];
+		}
 		
 		public function test_validation_failure_on_login_will_terminate () {
 
 			$this->setExpectedException(ValidationFailure::class); // then
 
-			$moduleHandler = new class extends ModuleHandlerIdentifier {
+			$sutName = ModuleLoginHandler::class;
 
-				public function extractFromContainer ($loginHandler = null) { // for it to be compatible with parent
+			$this->massProvide([
 
-					$this->loginHandler = $loginHandler;
-				}
-			};
+				$sutName => $this->negativeStub($sutName, [
 
-			$loginHandlerDouble = $this->negativeStub(ModuleLoginHandler::class, [
-
-				"isValidRequest" => false
+					"isValidRequest" => false // given
+				])
 			]);
 
-			$sut = new $moduleHandler;
+			$this->entrance->extractFromContainer(); // refresh for above [given]
 
-			$sut->extractFromContainer($loginHandlerDouble); // given
-
-			$sut->handleLoginRequest(); // when
+			$this->entrance->handleLoginRequest(); // when
 		}
 	}
 ?>

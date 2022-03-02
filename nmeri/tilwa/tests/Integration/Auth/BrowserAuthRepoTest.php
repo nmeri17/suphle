@@ -3,22 +3,13 @@
 
 	use Tilwa\Auth\{Renderers\BrowserAuthRepo, Storage\SessionStorage};
 
-	use Tilwa\Testing\Proxies\FrontDoorTest;
-
 	class BrowserAuthRepoTest extends LoginRepoTest {
 
-		use FrontDoorTest {FrontDoorTest::setUp as frontSetup};
-
-		protected function setUp () {
-
-			$this->frontSetup();
-		}
-
-		private $loginPath = "/login";
+		const LOGIN_PATH = "/login";
 
 		public function test_successLogin () {
 
-			$this->sendCorrectRequest($this->loginPath); // given
+			$this->sendCorrectRequest(self::LOGIN_PATH); // given
 
 			$response = $this->getLoginResponse(); // when
 
@@ -29,7 +20,7 @@
 
 		public function test_failedLogin () {
 
-			$this->sendIncorrectRequest($this->loginPath); // given
+			$this->sendIncorrectRequest(self::LOGIN_PATH); // given
 
 			$response = $this->getLoginResponse(); // when
 

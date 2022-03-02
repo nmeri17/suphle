@@ -5,9 +5,7 @@
 
 	use Tilwa\Middleware\FinalHandlerWrapper;
 
-	use Tilwa\Testing\TestTypes\ModuleLevelTest;
-
-	use Tilwa\Testing\Proxies\{WriteOnlyContainer, FrontDoorTest};
+	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock};
 
@@ -15,8 +13,6 @@
 
 	class PrematureTerminateTest extends ModuleLevelTest {
 
-		use FrontDoorTest;
-		
 		protected function getModules():array {
 
 			return [

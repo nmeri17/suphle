@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Testing\Condiments;
 
-	use Tilwa\Testing\Proxies\{FrontDoorTest, StubbedQueueAdapter};
+	use Tilwa\Testing\Proxies\StubbedQueueAdapter;
 
 	use Tilwa\Flows\{Jobs\RouteBranches, OuterFlowWrapper};
 
@@ -9,15 +9,11 @@
 
 	trait QueueInterceptor {
 
-		use FrontDoorTest { // this should be the same instance used to send the request
-			FrontDoorTest::setUp as frontSetup;
-		};
-
 		private $adapter;
 
 		public function setUp () {
 
-			$this->frontSetup();
+			parent::setUp();
 
 			$this->catchQueuedTasks();
 		}

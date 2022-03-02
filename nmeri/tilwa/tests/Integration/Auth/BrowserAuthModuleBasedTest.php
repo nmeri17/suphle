@@ -1,9 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Integration\Auth;
 
-	use Tilwa\Testing\Proxies\{FrontDoorTest, SecureUserAssertions, WriteOnlyContainer};
-
-	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\PopulatesDatabaseTest};
+	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\PopulatesDatabaseTest, Proxies\WriteOnlyContainer};
 
 	use Tilwa\Contracts\Auth\{AuthStorage, User};
 
@@ -13,15 +11,7 @@
 
 	class BrowserAuthModuleBasedTest extends ModuleLevelTest {
 
-		use PopulatesDatabaseTest, SecureUserAssertions, FrontDoorTest {
-
-			FrontDoorTest::setUp as frontSetup;
-		};
-
-		protected function setUp () {
-
-			$this->frontSetup();
-		}
+		use PopulatesDatabaseTest;
 
 		protected function getModules ():array {
 
