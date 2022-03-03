@@ -5,13 +5,13 @@
 
 	use Tilwa\Contracts\Modules\ControllerModule;
 
-	use Tilwa\IO\Http\BaseHttpRequest;
+	use Tilwa\Contracts\Services\Decorators\{SecuresPostRequest, SelectiveDependencies};
+
+	use Tilwa\IO\{Http\BaseHttpRequest, Image\ImageOptimizer};
 
 	use Tilwa\Request\PayloadStorage;
 
 	use Tilwa\Hydration\Container;
-
-	use Tilwa\Contracts\Services\Decorators\{SecuresPostRequest, SelectiveDependencies};
 
 	class ServiceCoordinator implements SelectiveDependencies, SecuresPostRequest {
 
@@ -21,7 +21,7 @@
 				ConditionalFactory::class, // We're treating it as a type of service in itself
 				ControllerModule::class, // These are a service already. There's no need accessing them through another local proxy
 
-				BaseHttpRequest::class, UpdatefulService::class, PayloadStorage::class, UpdatelessService::class
+				BaseHttpRequest::class, UpdatefulService::class, PayloadStorage::class, UpdatelessService::class, ImageOptimizer::class
 			];
 		}
 

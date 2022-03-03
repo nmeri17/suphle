@@ -20,5 +20,10 @@
 
 			return $this->activeModulePath() . DIRECTORY_SEPARATOR . 'Markup';
 		}
+
+		public function getImagePath ():string {
+
+			return "images" . DIRECTORY_SEPARATOR;
+		}
 	}
 ?>

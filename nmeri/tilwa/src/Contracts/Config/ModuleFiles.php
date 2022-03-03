@@ -1,5 +1,4 @@
 <?php
-
 	namespace Tilwa\Contracts\Config;
 
 	interface ModuleFiles extends ConfigMarker {
@@ -10,5 +9,7 @@
 
 		// this->activeModulePath(). DIRECTORY_SEPARATOR) . 'views'
 		public function getViewPath():string;
+
+		public function getImagePath ():string;
 	}
 ?>

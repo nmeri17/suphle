@@ -13,8 +13,6 @@
 
 	class CsrfMiddleware extends BaseMiddleware {
 
-		const TOKEN_FIELD = "_csrf_token";
-
 		private $generator;
 
 		public function __construct (CsrfGenerator $generator, RequestDetails $requestDetails) {
@@ -31,9 +29,9 @@
 				return $requestHandler->handle($payloadStorage);
 
 			if (
-				!$payloadStorage->hasKey(self::TOKEN_FIELD) ||
+				!$payloadStorage->hasKey(CsrfGenerator::TOKEN_FIELD) ||
 
-				!$this->generator->isVerifiedToken($payloadStorage->getKey(self::TOKEN_FIELD))
+				!$this->generator->isVerifiedToken($payloadStorage->getKey(CsrfGenerator::TOKEN_FIELD))
 			)
 
 				throw new CsrfException;

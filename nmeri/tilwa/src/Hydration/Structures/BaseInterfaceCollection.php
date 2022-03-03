@@ -31,9 +31,13 @@
 
 	use Tilwa\Bridge\Laravel\{LaravelAppLoader, ArtisanLoader};
 
-	use Psr\Http\{Client\ClientInterface, Message\RequestFactoryInterface };
+	use Psr\Http\Client\ClientInterface;
+
+	use Psr\Http\Message\{ServerRequestFactoryInterface, RequestFactoryInterface};
 
 	use GuzzleHttp\{Psr7\HttpFactory as GuzzleHttpFactory, Client as GuzzleClient};
+
+	use Laminas\Diactoros\ServerRequestFactory;
 
 	class BaseInterfaceCollection implements InterfaceCollection {
 
@@ -71,6 +75,8 @@
 				DecoratorChain::class => BaseDecorators::class,
 
 				RequestFactoryInterface::class => GuzzleHttpFactory::class,
+
+				ServerRequestFactoryInterface::class => ServerRequestFactory::class,
 
 				ClientInterface::class => GuzzleClient::class,
 

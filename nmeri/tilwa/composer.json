@@ -21,7 +21,9 @@
         "resque/php-resque": "^1.3.6",
         "anorgan/qutee": "dev-version-updates",
         "psr/http-client": "^1.0",
-        "guzzlehttp/guzzle": "^7.4"
+        "psr/http-message": "^1.0.1",
+        "guzzlehttp/guzzle": "^7.4",
+        "laminas/laminas-diactoros": "^2.8.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^8.5",
