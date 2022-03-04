@@ -55,11 +55,11 @@
 		}
 
 		/**
-		 * Arguments of the returned function will be auto-wired
+		 * Simply bind things into `$this->container`
 		*/
-		protected function entityBindings ():callable {
+		protected function entityBindings ():void {
 
-			return function () {};
+			//
 		}
 
 		public function getContainer():Container {
@@ -141,11 +141,7 @@
 
 			$this->provideSelf();
 
-			$startupDependencies = $this->entityBindings();
-
-			$customBindings = $this->container->getMethodParameters($startupDependencies);
-
-			$startupDependencies(...array_values($customBindings));
+			$this->entityBindings();
 
 			$this->hasPreparedExpatriates = true;
 

@@ -5,7 +5,7 @@
 
 	use Tilwa\IO\Image\Jobs\AsyncImageProcessor;
 
-	use Tilwa\Contracts\{Services\Decorators\OnlyLoadedBy, IO\ImageSaver};
+	use Tilwa\Contracts\Services\Decorators\OnlyLoadedBy;
 
 	use Tilwa\Services\ServiceCoordinator;
 
@@ -17,15 +17,13 @@
 
 		private $operations = [], $queueManager,
 
-		$imageSaver, $originalImages, $thumbnailImage,
+		$originalImages, $thumbnailImage,
 
 		$inferiorImage, $imageResourceName;
 
-		public function __construct (AdapterManager $queueManager, ImageSaver $imageSaver, ThumbnailImage $thumbnailImage, InferiorImage $inferiorImage) {
+		public function __construct (AdapterManager $queueManager, ThumbnailImage $thumbnailImage, InferiorImage $inferiorImage) {
 
 			$this->queueManager = $queueManager;
-
-			$this->imageSaver = $imageSaver;
 
 			$this->inferiorImage = $inferiorImage;
 
@@ -46,50 +44,33 @@
 
 				throw new UnmodifiedImageException;
 
-			$this->prepareOperations();
-
-			if (!$this->imageSaver->savesAsync()) {
-
-				$savedTransform = [];
-
-				foreach ($this->operations as $name => $operation)
-
-					$savedTransform[$name] = $this->imageSaver->transportImages($operation->getTransformed(), $name, $this->imageResourceName);
-
-				return $savedTransform;
-			}
-
-			$newNames = $this->computeImageNames();
-
-			$this->queueManager->augmentArguments(AsyncImageProcessor::class, [
-
-				"operations" => $this->operations,
-
-				"imageNames" => $newNames
-			]);
-
-			return $newNames;
-		}
-
-		private function computeImageNames ():array {
-
-			$earlyNames = [];
+			$newImageNames = [];
 
 			foreach ($this->operations as $operationName => $operation) {
 
-				foreach ($this->originalImages as $image)
-
-					$earlyNames[$operationName] = $this->imageSaver->resolveName($image, $operationName, $this->imageResourceName);
-			}
-
-			return $earlyNames;
-		}
-
-		private function prepareOperations ():void {
-
-			foreach ($this->operations as $operation)
-
 				$operation->setFiles($this->originalImages);
+
+				$operation->setResourceName ($this->imageResourceName);
+
+				$operation->setName($operationName);
+
+				if (!$operation->savesAsync())
+
+					$newImageNames[$operationName] = $operation->getTransformed();
+
+				else {
+
+					$newImageNames[$operationName] = $operation->getAsyncNames();
+
+					$this->queueManager->augmentArguments(
+						AsyncImageProcessor::class,
+
+						compact("operation")
+					);
+				}
+
+				return $newImageNames;
+			}
 		}
 
 		/**
@@ -106,14 +87,18 @@
 
 		public function inferior (int $maxSize):self {
 
-			$this->operations[__FUNCTION__] = $this->inferiorImage->setMaxSize($maxSize);
+			$this->inferiorImage->setMaxSize($maxSize);
+
+			$this->operations[__FUNCTION__] = $this->inferiorImage;
 
 			return $this;
 		}
 
 		public function thumbnail (int $width, int $height):self {
 
-			$this->operations[__FUNCTION__] = $this->thumbnailImage->setDimensions($width, $height);
+			$this->thumbnailImage->setDimensions($width, $height);
+
+			$this->operations[__FUNCTION__] = $this->thumbnailImage;
 
 			return $this;
 		}

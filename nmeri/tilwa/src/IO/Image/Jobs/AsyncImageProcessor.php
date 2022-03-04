@@ -1,44 +1,31 @@
 <?php
 	namespace Tilwa\IO\Image\Jobs;
 
-	use Tilwa\Contracts\{Queues\Task, IO\ImageSaver, Exception\AlertAdapter};
+	use Tilwa\Contracts\{Queues\Task, IO\ImageOptimiseOperation, Exception\AlertAdapter};
 
 	use Throwable;
 
 	class AsyncImageProcessor implements Task {
 
-		private $imageSaver, $operations, $imageNames, $alerter;
+		private $operation, $alerter;
 
-		public function __construct (ImageSaver $imageSaver, AlertAdapter $alerter, , array $operations, array $imageNames) {
+		public function __construct ( AlertAdapter $alerter, ImageOptimiseOperation $operation) {
 
-			$this->imageSaver = $imageSaver;
-
-			$this->operations = $operations;
-
-			$this->imageNames = $imageNames;
+			$this->operation = $operation;
 
 			$this->alerter = $alerter;
 		}
 
 		public function handle ():void {
 
-			foreach ($this->operations as $operationName => $operation)
+			try {
 
-				try {
+				$this->operation->getTransformed();
+			}
+			catch (Throwable $exception) {
 
-					$filesAndNames = array_combine(
-
-						$this->imageNames[$operationName],
-
-						$operation->getTransformed()
-					);
-
-					$this->imageSaver->transportImagesAsync($filesAndNames);
-				}
-				catch (Throwable $exception) {
-
-					$this->alerter->broadcastException($exception, $operation);
-				}
+				$this->alerter->broadcastException($exception, $operation);
+			}
 		}
 	}
 ?>

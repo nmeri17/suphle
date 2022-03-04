@@ -1,13 +1,15 @@
 <?php
 	namespace Tilwa\IO\Image\SaveClients;
 
-	use Tilwa\Contracts\{IO\ImageSaver, Config\ModuleFiles};
+	use Tilwa\Contracts\{IO\ImageLocator, Config\ModuleFiles};
 
 	use Psr\Http\Message\UploadedFileInterface;
 
-	class LocalSaver implements ImageSaver {
+	class LocalSaver implements ImageLocator {
 
 		private $storagePath;
+
+		protected $dummyFolder = "dummies";
 
 		public function __construct (ModuleFiles $fileConfig) {
 
@@ -20,29 +22,18 @@
 
 			$withExtension = $imageName. "." . $file->getClientMediaType();
 
-			return $resourceName . DIRECTORY_SEPARATOR . $operationName . DIRECTORY_SEPARATOR . $withExtension;
+			return $this->storagePath . DIRECTORY_SEPARATOR . $resourceName . DIRECTORY_SEPARATOR . $operationName . DIRECTORY_SEPARATOR . $withExtension;
 		}
 
-		public function transportImages (array $images, string $operationName, string $resourceName):array {
+		public function temporarilyRelocate (UploadedFileInterface $image):string {
 
-			foreach ($images as $image) {
+			$dummyPath = $this->storagePath . DIRECTORY_SEPARATOR . $this->dummyFolder . DIRECTORY_SEPARATOR . $image->getClientFilename();
 
-				$newPath = $this->resolveName($image, $operationName, $resourceName);
+			$image->moveTo($dummyPath);
 
-				$image->moveTo($this->storagePath . DIRECTORY_SEPARATOR .$newPath);
-			}
+			return $dummyPath;
 		}
 
-		public function transportImagesAsync (array $images):void {
-
-			foreach ($images as $newPath => $image)
-
-				$image->moveTo($this->storagePath . DIRECTORY_SEPARATOR .$newPath);
-		}
-
-		public function savesAsync ():bool {
-
-			return true;
-		}
+		
 	}
 ?>

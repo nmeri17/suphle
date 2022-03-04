@@ -1,30 +1,42 @@
 <?php
 	namespace Tilwa\IO\Image\Operations;
 
-	use Tilwa\Contracts\IO\ImageOptimiseOperation;
+	use Tilwa\Contracts\IO\{ InferiorImageContract, ImageLocator};
 
-	class InferiorImage implements ImageOptimiseOperation {
+	class InferiorImage extends BaseOptimizeOperation {
 
-		private $files, $client, $maxSize;
+		private $maxSize;
 
-		public function __construct (InferiorImageClient $client) {
+		public function __construct (InferiorImageContract $client, ImageLocator $imageLocator) {
 
 			$this->client = $client;
+
+			$this->imageLocator = $imageLocator;
 		}
 
-		public function setMaxSize (int $size) {
+		public function setMaxSize (int $size):void {
 
 			$this->maxSize = $size;
 		}
 
 		public function getTransformed ():array {
 
-			//
-		}
+			$savedNames = [];
 
-		public function setFiles (array $images):void {
+			foreach ($this->files as $image) {
 
-			$this->files = $images;
+				if ($image->getSize() >= $this->maxSize)
+
+					$this->client->downgrade($this->imageLocator->temporarilyRelocate($image)); // using a dummy path since we have no way to determine and provide a path to this client. E.g. url => images/dummies/cat.png
+
+				$savedNames[] = $this->client->moveDowngraded(
+					$image,
+
+					$this->imageLocator->resolveName($image, $this->operationName, $this->resourceName)
+				);
+			}
+
+			return $savedNames;
 		}
 	}
 ?>
