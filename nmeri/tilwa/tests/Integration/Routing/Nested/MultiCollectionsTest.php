@@ -15,7 +15,7 @@
 
 		private $threeTierUrl = "/first/middle/third";
 
-		public function setUp () {
+		public function setUp ():void {
 
 			$this->frontSetup();
 		}

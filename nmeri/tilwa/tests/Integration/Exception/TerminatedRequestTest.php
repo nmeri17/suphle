@@ -21,7 +21,7 @@
 
 		private $firstContainer, $sut = ModuleExceptionBridge::class;
 
-		public function setUp () {
+		public function setUp ():void {
 
 			$this->firstContainer = new Container;
 

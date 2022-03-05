@@ -5,7 +5,7 @@
 
 	use Tilwa\Contracts\Config\Router;
 
-	use Tilwa\Testing\Proxies\{WriteOnlyContainer, Extensions\MockModuleEvents};
+	use Tilwa\Testing\{Proxies\WriteOnlyContainer, Condiments\EmittedEventsCatcher};
 
 	use Tilwa\Tests\Integration\Flows\Jobs\RouteBranches\JobFactory;
 
@@ -13,12 +13,12 @@
 
 	class OuterFlowWrapperTest extends JobFactory {
 
-		use MockModuleEvents {
+		use EmittedEventsCatcher {
 
-			MockModuleEvents::setUp as eventsSetup;
-		};
+			EmittedEventsCatcher::setUp as eventsSetup;
+		}
 
-		public function setUp () {
+		public function setUp ():void {
 
 			$this->eventsSetup();
 		}

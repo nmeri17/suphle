@@ -3,9 +3,11 @@
 
 	use Tilwa\Contracts\Config\Router;
 
-	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\QueueInterceptor, Proxies\WriteOnlyContainer};
+	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
-	use Tilwa\Flows\{OuterFlowWrapper, Jobs\UpdateCountDelete, Structures\AccessContext};
+	use Tilwa\Testing\Condiments\{QueueInterceptor, MockFacilitator};
+
+	use Tilwa\Flows\{OuterFlowWrapper, Jobs\UpdateCountDelete};
 
 	use Tilwa\Flows\Structures\{AccessContext, RouteUserNode};
 
@@ -21,7 +23,14 @@
 
 		private $resourceUrl = "/posts/5",
 
-		$aMinuteBehind = (new DateTime)->sub(new DateInterval("PT1M"));
+		$aMinuteBehind;
+
+		public function setUp ():void {
+
+			parent::setUp();
+
+			$this->aMinuteBehind = (new DateTime)->sub(new DateInterval("PT1M"));
+		}
 
 		protected function getModules():array {
 

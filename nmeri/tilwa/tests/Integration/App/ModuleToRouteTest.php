@@ -13,7 +13,7 @@
 
 		use DirectHttpTest;
 
-		private function getModules ():array {
+		protected function getModules ():array {
 
 			return [
 				new ModuleOneDescriptor(new Container),

@@ -22,7 +22,7 @@
 		use ModuleReplicator, GagsException, ModuleHttpTest {
 
 			GagsException::setUp as mufflerSetup;
-		};
+		}
 
 		protected $muffleExceptionBroadcast = true, $entrance;
 

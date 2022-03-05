@@ -19,7 +19,7 @@
 
 		private $prophet;
 
-		protected function setUp () {
+		protected function setUp ():void {
 
 			parent::setUp();
 

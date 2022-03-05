@@ -19,7 +19,7 @@
 		use GagsException {
 
 			GagsException::setUp as mufflerSetup;
-		};
+		}
 
 		protected $container,
 
@@ -34,7 +34,7 @@
 				$this->mufflerSetup();
 		}
 
-		protected function entityBindings ():self {
+		protected function entityBindings ():void {
 
 			$this->container = $container = new Container;
 
@@ -46,8 +46,6 @@
 
 					$contract => $container->getClass($className)
 				]);
-
-			return $this;
 		}
 
 		protected function containerConfigs ():array {

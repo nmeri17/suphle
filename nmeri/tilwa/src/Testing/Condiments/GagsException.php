@@ -15,7 +15,7 @@
 
 		$alerterMethod = "queueAlertAdapter",
 
-		$managerName = DetectedExceptionManager::class;;
+		$managerName = DetectedExceptionManager::class;
 
 		protected function setUp () {
 

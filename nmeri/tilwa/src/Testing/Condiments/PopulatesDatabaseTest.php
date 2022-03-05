@@ -38,7 +38,7 @@
 			$this->replicator->listenForQueries();
 		}
 
-		protected function tearDown () {
+		protected function tearDown ():void {
 
 			$this->replicator->stopQueryListen();
 

@@ -9,6 +9,8 @@
 
 	use Tilwa\Exception\Explosives\UnauthorizedServiceAccess;
 
+	use Tilwa\Tests\Integration\Routing\TestsRouter;
+
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Authorization\Models\EmploymentsAuthorizer;
 
 	use Tilwa\Tests\Mocks\Models\Eloquent\{Employment, Employer};

@@ -11,7 +11,7 @@
 
 		private $adapter;
 
-		public function setUp () {
+		public function setUp ():void {
 
 			parent::setUp();
 

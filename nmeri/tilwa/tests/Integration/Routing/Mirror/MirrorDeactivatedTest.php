@@ -9,7 +9,7 @@
 
 	class MirrorDeactivatedTest extends TestsRouter {
 
-		protected function entityBindings ():self {
+		protected function entityBindings ():void {
 
 			parent::entityBindings();
 
@@ -25,8 +25,6 @@
 					]
 				)
 			]);
-
-			return $this;
 		}
 
 		public function test_disable_mirror_blocks_those_routes () {

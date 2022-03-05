@@ -13,6 +13,12 @@
 
 	use Tilwa\Contracts\Config\{Auth as AuthConfig, Transphporm as TransphpormConfig, Laravel as LaravelConfig, ExceptionInterceptor, Console as ConsoleContract};
 
+	use Tilwa\Contracts\IO\{ImageThumbnailContract, InferiorImageContract, ImageLocator};
+
+	use Tilwa\IO\Image\InterfaceLoaders\{InferiorImageLoader, ImageThumbnailLoader};
+
+	use Tilwa\IO\Image\SaveClients\LocalSaver;
+
 	use Tilwa\Queues\Adapters\Resque;
 
 	use Tilwa\Auth\{LoginHandlerInterfaceLoader, Storage\SessionStorage};
@@ -52,7 +58,11 @@
 
 				LaravelArtisan::class => ArtisanLoader::class,
 
-				ModuleLoginHandler::class => LoginHandlerInterfaceLoader::class
+				ModuleLoginHandler::class => LoginHandlerInterfaceLoader::class,
+
+				InferiorImageContract::class => InferiorImageLoader::class,
+
+				ImageThumbnailContract::class => ImageThumbnailLoader::class
 			];
 		}
 
@@ -80,7 +90,9 @@
 
 				ClientInterface::class => GuzzleClient::class,
 
-				OrmReplicator::class => ModelReplicator::class
+				OrmReplicator::class => ModelReplicator::class,
+
+				ImageLocator::class => LocalSaver::class
 			];
 		}
 

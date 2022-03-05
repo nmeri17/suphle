@@ -139,10 +139,11 @@
 				"getPreviousRenderer" => $this->negativeStub(AbstractRenderer::class) // if getPreviousRenderer is not called, our mock won't run. So, 2 tests for the price of 1
 
 					->expects($this->once())->method("setRawResponse")
+					
 					->with($this->callback(function($subject){
 
 						return array_key_exists("errors", $subject);
-					})); // then
+					})) // then
 			]);
 
 			$this->container->whenTypeAny()->needsAny([

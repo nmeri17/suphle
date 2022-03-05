@@ -5,6 +5,8 @@
 
 	use Tilwa\Testing\{Proxies\SecureUserAssertions, Condiments\MockFacilitator};
 
+	use Tilwa\Tests\Integration\Routing\TestsRouter;
+
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Auth\AuthorizeRoutes, Authorization\Paths\ModelEditRule};
 
 	use Tilwa\Tests\Mocks\Models\Eloquent\AdminableUser;

@@ -15,7 +15,7 @@
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Controllers\FlowController;
 
-	class JobFactory extends ModuleLevelTest {
+	abstract class JobFactory extends ModuleLevelTest {
 
 		use QueueInterceptor, MockFacilitator;
 
@@ -27,7 +27,7 @@
 
 		$rendererController = FlowController::class;
 
-		public function setUp () {
+		public function setUp ():void {
 
 			parent::setUp();
 

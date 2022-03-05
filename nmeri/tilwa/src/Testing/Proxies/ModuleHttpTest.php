@@ -7,9 +7,9 @@
 
 		use DirectHttpTest, ExaminesHttpResponse;
 
-		const JSON_HEADER_VALUE = "application/json";
+		private $JSON_HEADER_VALUE = "application/json";
 
-		const CONTENT_TYPE_KEY = "Content-Type";
+		private $CONTENT_TYPE_KEY = "Content-Type";
 
 		private $mockMiddlewareRegistry, $staticHeaders = [];
 
@@ -199,9 +199,9 @@
 			$newHeaders = array_merge([
 				"Content-Length" => mb_strlen($converted, "8bit"),
 
-				self::CONTENT_TYPE_KEY => self::JSON_HEADER_VALUE,
+				$this->CONTENT_TYPE_KEY => $this->JSON_HEADER_VALUE,
 
-				"Accept" => self::JSON_HEADER_VALUE
+				"Accept" => $this->JSON_HEADER_VALUE
 			], $headers);
 
 			return $this->gatewayResponse($url, $httpMethod, $converted, $newHeaders);
@@ -212,7 +212,7 @@
 			if (
 				array_key_exists(self::CONTENT_TYPE_KEY, $headers) &&
 
-				$headers[self::CONTENT_TYPE_KEY] == self::JSON_HEADER_VALUE
+				$headers[$this->CONTENT_TYPE_KEY] == $this->JSON_HEADER_VALUE
 			)
 
 				return json_encode($payload);

@@ -12,13 +12,13 @@
 		use EmittedEventsCatcher {
 
 			EmittedEventsCatcher::setUp as eventsSetup;
-		};
+		}
 
 		protected $payload = 5, $mockEventReceiver,
 
 		$eventReceiverName;
 
-		public function setUp () {
+		public function setUp ():void {
 
 			if (!is_null($this->eventReceiverName))
 

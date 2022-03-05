@@ -9,7 +9,7 @@
 
 	class VersioningTest extends TestsRouter {
 
-		protected function entityBindings ():self {
+		protected function entityBindings ():void {
 
 			parent::entityBindings();
 
@@ -29,8 +29,6 @@
 					]
 				)
 			]);
-
-			return $this;
 		}
 
 		public function test_can_get_content_at_specific_version () {

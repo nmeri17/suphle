@@ -25,7 +25,7 @@
 			return BrowserNoPrefix::class;
 		}
 
-		protected function entityBindings ():self {
+		protected function entityBindings ():void {
 
 			parent::entityBindings();
 
@@ -38,8 +38,6 @@
 					]
 				)
 			]);
-
-			return $this;
 		}
 
 		/**
