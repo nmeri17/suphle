@@ -23,7 +23,7 @@
 
 			parent::setUp();
 
-			$this->mockFlowHydrator = $this->getProphet()->prophesize(FlowHydrator::class);
+			$this->mockFlowHydrator = $this->prophesize(FlowHydrator::class);
 		}
 
 		protected function getModules():array {

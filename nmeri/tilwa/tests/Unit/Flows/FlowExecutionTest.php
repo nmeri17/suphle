@@ -27,7 +27,7 @@
 			// given
 			$hydrator = $this->getHydratorForExecuteRequest(true);
 
-			$responseManager = $this->getProphet()->prophesize($this->responseManager);
+			$responseManager = $this->prophesize($this->responseManager);
 
 			$responseManager->handleValidRequest()->shouldBeCalled();
  
@@ -47,7 +47,7 @@
 			// given
 			$hydrator = $this->getHydratorForExecuteRequest(false);
 
-			$responseManager = $this->getProphet()->prophesize($this->responseManager);
+			$responseManager = $this->prophesize($this->responseManager);
 
 			$responseManager->handleValidRequest()->shouldNotBeCalled();
  

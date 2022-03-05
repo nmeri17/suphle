@@ -17,13 +17,9 @@
 
 	class TagBehaviorTest extends ModuleLevelTest {
 
-		private $prophet;
-
 		protected function setUp ():void {
 
 			parent::setUp();
-
-			$this->prophet = $this->getProphet();
 		}
 		
 		protected function getModules():array {
@@ -41,11 +37,11 @@
  
 		public function test_multi_patterns_to_single_tag_should_work () {
 
-			$blank1 = $this->prophet->prophesize(BlankMiddleware::class)
+			$blank1 = $this->prophesize(BlankMiddleware::class)
 
 			->process()->shouldBeCalled();
 
-			$blank2 = $this->prophet->prophesize(BlankMiddleware2::class)
+			$blank2 = $this->prophesize(BlankMiddleware2::class)
 
 			->process()->shouldNotBeCalled();
 
@@ -65,11 +61,11 @@
  
 		public function test_single_pattern_multi_tags_should_work () {
 
-			$blank1 = $this->prophet->prophesize(BlankMiddleware::class)
+			$blank1 = $this->prophesize(BlankMiddleware::class)
 
 			->process()->shouldBeCalled();
 
-			$blank2 = $this->prophet->prophesize(BlankMiddleware2::class)
+			$blank2 = $this->prophesize(BlankMiddleware2::class)
 
 			->process()->shouldBeCalled();
 
@@ -89,15 +85,15 @@
  
 		public function test_single_pattern_multi_middleware_should_work () {
 
-			$blank1 = $this->prophet->prophesize(BlankMiddleware::class)
+			$blank1 = $this->prophesize(BlankMiddleware::class)
 
 			->process()->shouldNotBeCalled();
 
-			$blank3 = $this->prophet->prophesize(BlankMiddleware3::class)
+			$blank3 = $this->prophesize(BlankMiddleware3::class)
 
 			->process()->shouldBeCalled();
 
-			$blank4 = $this->prophet->prophesize(BlankMiddleware4::class)
+			$blank4 = $this->prophesize(BlankMiddleware4::class)
 
 			->process()->shouldBeCalled();
 
@@ -119,11 +115,11 @@
 
 		public function test_parent_tag_affects_child () {
 
-			$blank1 = $this->prophet->prophesize(BlankMiddleware::class)
+			$blank1 = $this->prophesize(BlankMiddleware::class)
 
 			->process()->shouldBeCalled();
 
-			$blank2 = $this->prophet->prophesize(BlankMiddleware2::class)
+			$blank2 = $this->prophesize(BlankMiddleware2::class)
 
 			->process()->shouldNotBeCalled();
 
@@ -143,11 +139,11 @@
 
 		public function test_can_untag_multiple_patterns () {
 
-			$blank2 = $this->prophet->prophesize(BlankMiddleware2::class)
+			$blank2 = $this->prophesize(BlankMiddleware2::class)
 
 			->process()->shouldBeCalled();
 
-			$blank4 = $this->prophet->prophesize(BlankMiddleware4::class)
+			$blank4 = $this->prophesize(BlankMiddleware4::class)
 
 			->process()->shouldNotBeCalled();
 
@@ -167,15 +163,15 @@
 
 		public function test_can_untag_multiple_middlewares () {
 
-			$blank2 = $this->prophet->prophesize(BlankMiddleware2::class)
+			$blank2 = $this->prophesize(BlankMiddleware2::class)
 
 			->process()->shouldNotBeCalled();
 
-			$blank3 = $this->prophet->prophesize(BlankMiddleware3::class)
+			$blank3 = $this->prophesize(BlankMiddleware3::class)
 
 			->process()->shouldNotBeCalled();
 
-			$blank4 = $this->prophet->prophesize(BlankMiddleware4::class)
+			$blank4 = $this->prophesize(BlankMiddleware4::class)
 
 			->process()->shouldBeCalled();
 
@@ -205,7 +201,7 @@
 
 			$lastMiddleware = end($middlewareList);
 			
-			$mockMiddleware = $this->prophet->prophesize($lastMiddleware)
+			$mockMiddleware = $this->prophesize($lastMiddleware)
 
 			->process(Argument::type(RequestDetails::class), Argument::exact(null)); // then
 

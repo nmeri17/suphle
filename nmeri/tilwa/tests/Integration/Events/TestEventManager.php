@@ -22,7 +22,7 @@
 
 			if (!is_null($this->eventReceiverName))
 
-				$this->mockEventReceiver = $this->getProphet()->prophesize($this->eventReceiverName);
+				$this->mockEventReceiver = $this->prophesize($this->eventReceiverName);
 
 			$this->setModuleOne();
 

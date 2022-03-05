@@ -17,9 +17,7 @@
 
 			$sutName = ResponseManager::class;
 
-			$prophet = $this->getProphet();
-
-			$mockManager = $prophet->prophesize($sutName);
+			$mockManager = $this->prophesize($sutName);
 
 			// then
 			$mockManager->handleValidRequest(Argument::type(PayloadStorage::class))->shouldBeCalled();
@@ -36,7 +34,7 @@
 			$this->container->getClass(FinalHandlerWrapper::class)
 
 			->process(
-				$prophet->prophesize(PayloadStorage::class)->reveal(),
+				$this->prophesize(PayloadStorage::class)->reveal(),
 				null
 			); // when
 		}

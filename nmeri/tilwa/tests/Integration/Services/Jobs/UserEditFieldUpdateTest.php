@@ -12,7 +12,7 @@
 		public function test_sets_identifier_inside_transaction () {
 
 			// given
-			$orm = $this->getProphet()->prophesize(Orm::class);
+			$orm = $this->prophesize(Orm::class);
 
 			$modelInstance = $this->positiveStub(IntegrityModel::class);
 

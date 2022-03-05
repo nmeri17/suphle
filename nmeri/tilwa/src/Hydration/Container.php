@@ -86,29 +86,40 @@
 				return $context->getConcrete($fullName);
 		}
 
-		private function decorateProvidedConcrete (string $fullName) {
+		public function decorateProvidedConcrete (string $fullName) {
 
-			$this->pushHydratingFor($fullName);
+			["trueCaller" => $trueCaller, "concrete" => $concrete] =
 
-			$trueCaller = $this->lastHydratedFor(); // get this before it's overwritten by [getProvidedConcrete] cuz it has no provision
+			$this->hydratingForAction($fullName, function ($className) {
 
-			$concrete = $this->getProvidedConcrete($fullName);
+				return [
+					"trueCaller" => $this->lastHydratedFor(), // get this before it's overwritten by [getProvidedConcrete] cuz it has no provision
 
-			$this->popHydratingFor();
+					"concrete" => $this->getProvidedConcrete($className)
+				];
+			});
 
 			if (!is_null($concrete))
 
-				$this->decorator->scopeInjecting($concrete, $trueCaller); // decorator runs on each fetch (rather than only once), since different callers result in different behavior
+				return $this->decorator->scopeInjecting($concrete, $trueCaller); // decorator runs on each fetch (rather than only once), since different callers result in different behavior
 		}
 
 		/**
 		 * Updates the last element in the context hydrating stack, to that whose provision dependencies should be hydrated for
-		*
-		* @param {ignoreLastCaller}:bool If we're hydrating dependency B of class A, we want to get provisions for B--not A, the last called; otherwise, we'll be looking through class A's provisions instead of class B
 		*/
-		private function pushHydratingFor (string $fullName, bool $ignoreLastCaller = false):void {
+		protected function pushHydratingFor (string $fullName):void {
 
-			if (!$ignoreLastCaller && empty($this->hydratingForStack))
+			$this->hydratingForStack[] = $fullName;
+		}
+
+		/**
+		 * If we're hydrating dependency B of class A, we want to get provisions for B--not A, the last called; otherwise, we'll be looking through class A's provisions instead of class B
+		*/
+		protected function initializeHydratingFor (string $fullName):void {
+
+			$isFirstCall = empty($this->hydratingForStack);
+
+			if ($isFirstCall)
 
 				$this->hydratingForStack[] = $this->lastCaller();
 
@@ -176,26 +187,50 @@
 
 				$this->dependencyChain[] = $fullName;
 
-				$this->pushHydratingFor($fullName);
+				["concrete" => $concrete, "hydrateFor" => $hydrateFor] =
 
-				$this->internalMethodHydrate = true;
-			
-				$dependencies = array_values($this->getMethodParameters($constructor, $fullName));
+				$this->hydratingForAction($fullName, function ($className) use ($constructor) {
 
-				$this->internalMethodHydrate = false;
+					$dependencies = $this->internalMethodGetParameters(function () use ($className, $constructor) {
 
-				$concrete = new $fullName (...$dependencies);
+						return array_values($this->getMethodParameters($constructor, $className));
+					});
 
-				$this->unchainDependency($fullName);
+					$concrete = new $className (...$dependencies);
 
-				$hydrateFor = $this->lastHydratedFor();
+					$this->unchainDependency($className);
 
-				$this->popHydratingFor();
+					$hydrateFor = $this->lastHydratedFor();
+
+					return compact("concrete", "hydrateFor");
+				});
 			}
 
 			$this->storeConcrete($fullName, $concrete);
 
 			return $this->decorator->scopeInjecting($concrete, $hydrateFor);
+		}
+
+		private function internalMethodGetParameters (callable $action) {
+
+			$this->internalMethodHydrate = true;
+
+			$result = $action();
+
+			$this->internalMethodHydrate = false;
+
+			return $result;
+		}
+
+		private function hydratingForAction (string $className, callable $action) {
+
+			$this->pushHydratingFor($className);
+
+			$result = $action($className);
+
+			$this->popHydratingFor();
+
+			return $result;
 		}
 
 		private function storeConcrete (string $fullName, $concrete):ProvisionUnit {
@@ -237,8 +272,12 @@
 			return $this->provisionedClasses[$hydrateFor];
 		}
 
-		private function lastHydratedFor ():string {
+		public function lastHydratedFor ():?string {
 
+			if(empty($this->hydratingForStack) )
+
+				return null;
+			
 			return end($this->hydratingForStack);
 		}
 
@@ -247,29 +286,28 @@
 		*/
 		private function provideInterface (string $interface) {
 
-			$this->pushHydratingFor($fullName);
+			return $this->hydratingForAction($fullName, function ($className) use ($interface) {
 
-			$caller = $this->lastHydratedFor();
+				$caller = $this->lastHydratedFor();
 
-			if ($this->hasRenamedSpace($caller)) {
+				if ($this->hasRenamedSpace($caller)) {
 
-				$newIdentity = $this->relocateSpace($interface, $caller);
+					$newIdentity = $this->relocateSpace($interface, $caller);
 
-				$concrete = $this->instantiateConcrete($newIdentity);
-			}
+					$concrete = $this->instantiateConcrete($newIdentity);
+				}
 
-			else {
+				else {
 
-				$concrete = $this->interfaceHydrator->deriveConcrete($interface);
+					$concrete = $this->interfaceHydrator->deriveConcrete($interface);
 
-				if (!is_null($concrete))
+					if (!is_null($concrete))
 
-					$this->saveWhenImplements($fullName, $concrete);
-			}
+						$this->saveWhenImplements($fullName, $concrete);
+				}
 
-			$this->popHydratingFor();
-
-			return $concrete;
+				return $concrete;
+			});
 		}
 
 		public function whenType (string $toProvision):self {
@@ -343,7 +381,7 @@
 
 				if (!$this->internalMethodHydrate)
 
-					$this->pushHydratingFor($anchorClass, true);
+					$this->initializeHydratingFor($anchorClass);
 
 				$context = $this->getRecursionContext();
 			}
