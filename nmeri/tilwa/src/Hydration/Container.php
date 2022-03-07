@@ -11,9 +11,7 @@
 
 	class Container {
 
-		private $provisionedClasses = [], // ProvisionUnit[]
-
-		$provisionedNamespaces = [], // NamespaceUnit[]
+		private $provisionedNamespaces = [], // NamespaceUnit[]
 
 		$dependencyChain = [],
 
@@ -23,13 +21,22 @@
 
 		$internalMethodHydrate = false, // Used when [getMethodParameters] is called directly without going through instance methods such as [instantiateConcrete]
 
+		$constructor = "__construct",
+
 		$laravelHydrator, $interfaceHydrator,
 
 		$provisionContext, // the active Type before calling `needs`
 
 		$provisionSpace; // same as above, but for namespaces
 
+		protected $provisionedClasses = []; // ProvisionUnit[]
+
 		public function __construct () {
+
+			$this->initializeUniversalProvision();
+		}
+
+		public function initializeUniversalProvision ():void {
 
 			$this->provisionedClasses[$this->universalSelector] = new ProvisionUnit;
 		}
@@ -77,7 +84,7 @@
 			return $concrete;
 		}
 
-		private function getProvidedConcrete (string $fullName) {
+		public function getProvidedConcrete (string $fullName) {
 
 			$context = $this->getRecursionContext();
 
@@ -129,7 +136,7 @@
 		/**
 		 * Does not decorate objects since we can't have access to decorate those interfaces/entities. Plus, this method is a decorator on its own
 		*/
-		private function loadLaravelLibrary( string $fullName ) {
+		protected function loadLaravelLibrary( string $fullName ) {
 
 			$hydrator = $this->getLaravelHydrator();
 
@@ -175,11 +182,9 @@
 		*/
 		public function instantiateConcrete (string $fullName) {
 
-			$constructor = "__construct";
+			$caller = null;
 
-			$hydrateFor = null;
-
-			if (!method_exists($fullName, $constructor))
+			if (!method_exists($fullName, $this->constructor))
 
 				$concrete = new $fullName;
 
@@ -187,28 +192,34 @@
 
 				$this->dependencyChain[] = $fullName;
 
-				["concrete" => $concrete, "hydrateFor" => $hydrateFor] =
+				extract($this->hydratingForAction(
+					
+					$fullName, function ($className) {
 
-				$this->hydratingForAction($fullName, function ($className) use ($constructor) {
-
-					$dependencies = $this->internalMethodGetParameters(function () use ($className, $constructor) {
-
-						return array_values($this->getMethodParameters($constructor, $className));
-					});
-
-					$concrete = new $className (...$dependencies);
-
-					$this->unchainDependency($className);
-
-					$hydrateFor = $this->lastHydratedFor();
-
-					return compact("concrete", "hydrateFor");
-				});
+						return $this->hydrateConcreteForCaller($className);
+					}
+				));
 			}
 
 			$this->storeConcrete($fullName, $concrete);
 
-			return $this->decorator->scopeInjecting($concrete, $hydrateFor);
+			return $this->decorator->scopeInjecting($concrete, $caller);
+		}
+
+		public function hydrateConcreteForCaller (string $className):array {
+
+			$dependencies = $this->internalMethodGetParameters(function () use ($className) {
+
+				return array_values($this->getMethodParameters($this->constructor, $className));
+			});
+
+			$concrete = new $className (...$dependencies);
+
+			$this->unchainDependency($className);
+
+			$caller = $this->lastHydratedFor();
+
+			return compact("concrete", "caller");
 		}
 
 		private function internalMethodGetParameters (callable $action) {
@@ -222,7 +233,7 @@
 			return $result;
 		}
 
-		private function hydratingForAction (string $className, callable $action) {
+		public function hydratingForAction (string $className, callable $action) {
 
 			$this->pushHydratingFor($className);
 
@@ -286,7 +297,7 @@
 		*/
 		private function provideInterface (string $interface) {
 
-			return $this->hydratingForAction($fullName, function ($className) use ($interface) {
+			return $this->hydratingForAction($interface, function ($className) use ($interface) {
 
 				$caller = $this->lastHydratedFor();
 

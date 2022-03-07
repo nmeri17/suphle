@@ -22,12 +22,12 @@
 
 		public function assignScopes ():void {
 
-			$this->argumentScope = array_filter($this->chain, function ($decorator)) {
+			$this->argumentScope = array_filter($this->chain, function ($decorator) {
 
 				return $decorator instanceof ModifiesArguments;
 			});
 
-			$this->injectScope = array_filter($this->chain, function ($decorator)) {
+			$this->injectScope = array_filter($this->chain, function ($decorator) {
 
 				return $decorator instanceof ModifyInjected;
 			});

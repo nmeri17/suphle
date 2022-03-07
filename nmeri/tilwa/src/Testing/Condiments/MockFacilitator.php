@@ -7,18 +7,26 @@
 
 	trait MockFacilitator {
 
-		protected function positiveStub (string $target, array $overrides, array $constructorArguments = []):MockBuilder {
+		protected function positiveStub (string $target, array $overrides, array $constructorArguments = [], array $mockMethods = [])/*:MockBuilder*/ {
 
-			$builder = $this->getBuilder($target, $constructorArguments, $overrides);
+			$builder = $this->getBuilder(
+				$target, $constructorArguments,
+
+				$this->computeMethodsToRetain($overrides, $mockMethods)
+			);
 
 			$this->stubSingle($overrides, $builder);
 
 			return $builder;
 		}
 
-		protected function positiveStubMany (string $target, array $overrides, array $constructorArguments = []):MockBuilder {
+		protected function positiveStubMany (string $target, array $overrides, array $constructorArguments = [], array $mockMethods = [])/*:MockBuilder*/ {
 
-			$builder = $this->getBuilder($target, $constructorArguments, $overrides);
+			$builder = $this->getBuilder(
+				$target, $constructorArguments,
+
+				$this->computeMethodsToRetain($overrides, $mockMethods)
+			);
 
 			$this->stubMany($overrides, $builder);
 
@@ -28,25 +36,22 @@
 		/**
 		 * Use when the other methods contain actions we don't wanna trigger
 		*/
-		protected function negativeStub (string $target, array $overrides, array $constructorArguments = []):MockBuilder {
+		protected function negativeStub (string $target, array $overrides, array $constructorArguments = [], array $mockMethods = [])/*:MockBuilder*/ {
 
-			$builder = $this->getBuilder($target, $constructorArguments, []);
+			$builder = $this->getBuilder(
+				$target, $constructorArguments,
+
+				$this->computeMethodsToRetain($overrides, $mockMethods),
+
+				false
+			);
 
 			$this->stubSingle($overrides, $builder);
 
 			return $builder;
 		}
 
-		protected function negativeStubMany (string $target, array $overrides, array $constructorArguments = []):MockBuilder {
-
-			$builder = $this->getBuilder($target, $constructorArguments, []);
-
-			$this->stubMany($overrides, $builder);
-
-			return $builder;
-		}
-
-		private function stubSingle (array $overrides, MockBuilder $builder):void {
+		private function stubSingle (array $overrides, /*MockBuilder*/ $builder):void {
 
             foreach ($overrides as $method => $newValue)
 
@@ -58,7 +63,7 @@
 		/**
 		 * Allows for stubbing multiple calls to SUT and receiving different results each time
 		*/
-		private function stubMany (array $overrides, MockBuilder $builder):void {
+		private function stubMany (array $overrides, /*MockBuilder*/ $builder):void {
 
             foreach ($overrides as $method => $newValue) {
 
@@ -74,7 +79,7 @@
             }
 		}
 
-		private function getBuilder (string $target, array $constructorArguments, array $methodsToRetain):MockBuilder {
+		private function getBuilder (string $target, array $constructorArguments, array $methodsToRetain, bool $callOriginal = true)/*:MockBuilder*/ {
 
 			$builder = $this->getMockBuilder($target);
 
@@ -82,14 +87,24 @@
 
 				$builder->setConstructorArgs($constructorArguments);
 
+			else $builder->disableOriginalConstructor();
+
 			if (!empty($methodsToRetain))
 
-				$builder->setMethods(array_keys($methodsToRetain));
+				$builder->onlyMethods($methodsToRetain);
+
+			if (!$callOriginal)
+
+				$builder->disableProxyingToOriginalMethods()
+
+				/*->disableAutoReturnValueGeneration()*/;
+
+			$builder->disableArgumentCloning();
 
 			return $builder->getMock();
 		}
 
-		protected function replaceConstructorArguments (string $target, array $constructorOverrides, array $methodOverrides):MockBuilder {
+		protected function replaceConstructorArguments (string $target, array $constructorOverrides, array $methodOverrides)/*:MockBuilder*/ {
 
 			$reflectedConstructor = new ReflectionMethod($target, "__construct");
 
@@ -110,6 +125,11 @@
 
 				return $this->positiveStub($parameter->getType()->getName(), []);
 			}, $parameters);
+		}
+
+		private function computeMethodsToRetain (array $stubMethods, array $mockMethods):array {
+
+			return array_merge(array_keys($stubMethods), $mockMethods);
 		}
 	}
 ?>
