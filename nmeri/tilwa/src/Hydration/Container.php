@@ -3,7 +3,7 @@
 
 	use ReflectionMethod, ReflectionClass, ReflectionFunction, ReflectionType, ReflectionFunctionAbstract, Exception;
 	
-	use Tilwa\Hydration\Structures\{ProvisionUnit, NamespaceUnit};
+	use Tilwa\Hydration\Structures\{ProvisionUnit, NamespaceUnit, HydratedConcrete};
 	
 	use Tilwa\Hydration\Templates\CircularBreaker;
 
@@ -11,13 +11,13 @@
 
 	class Container {
 
+		const UNIVERSAL_SELECTOR = "*";
+
 		private $provisionedNamespaces = [], // NamespaceUnit[]
 
 		$dependencyChain = [],
 
 		$hydratingForStack = [], // String[] The last item is the one whose context/ProvisionUnit will be used in hydrating dependencies
-
-		$universalSelector = "*",
 
 		$internalMethodHydrate = false, // Used when [getMethodParameters] is called directly without going through instance methods such as [instantiateConcrete]
 
@@ -38,7 +38,7 @@
 
 		public function initializeUniversalProvision ():void {
 
-			$this->provisionedClasses[$this->universalSelector] = new ProvisionUnit;
+			$this->provisionedClasses[self::UNIVERSAL_SELECTOR] = new ProvisionUnit;
 		}
 
 		public function setInterfaceHydrator (string $collection):void {
@@ -95,20 +95,19 @@
 
 		public function decorateProvidedConcrete (string $fullName) {
 
-			["trueCaller" => $trueCaller, "concrete" => $concrete] =
+			$freshlyCreated = $this->hydratingForAction($fullName, function ($className) {
 
-			$this->hydratingForAction($fullName, function ($className) {
-
-				return [
-					"trueCaller" => $this->lastHydratedFor(), // get this before it's overwritten by [getProvidedConcrete] cuz it has no provision
-
-					"concrete" => $this->getProvidedConcrete($className)
-				];
+				$trueCaller = $this->lastHydratedFor(); // get this before it's overwritten by [getProvidedConcrete] cuz it has no provision
+				return new HydratedConcrete($this->getProvidedConcrete($className), $trueCaller);
 			});
 
-			if (!is_null($concrete))
+			if (!is_null($freshlyCreated->getConcrete()))
 
-				return $this->decorator->scopeInjecting($concrete, $trueCaller); // decorator runs on each fetch (rather than only once), since different callers result in different behavior
+				return $this->getDecorator()->scopeInjecting(
+					$freshlyCreated->getConcrete(),
+
+					$freshlyCreated->getCreatedFor()
+				); // decorator runs on each fetch (rather than only once), since different callers result in different behavior
 		}
 
 		/**
@@ -182,47 +181,46 @@
 		*/
 		public function instantiateConcrete (string $fullName) {
 
-			$caller = null;
-
 			if (!method_exists($fullName, $this->constructor))
 
-				$concrete = new $fullName;
+				$freshlyCreated = new HydratedConcrete(new $fullName, $this->lastHydratedFor());
 
-			else {
-
-				$this->dependencyChain[] = $fullName;
-
-				extract($this->hydratingForAction(
+			else $freshlyCreated = $this->hydratingForAction(
 					
-					$fullName, function ($className) {
+				$fullName, function ($className) {
 
-						return $this->hydrateConcreteForCaller($className);
-					}
-				));
-			}
+					return $this->hydrateConcreteForCaller($className);
+				}
+			);
 
-			$this->storeConcrete($fullName, $concrete);
+			$this->storeConcrete($fullName, $freshlyCreated->getConcrete());
 
-			return $this->decorator->scopeInjecting($concrete, $caller);
+			return $this->getDecorator()->scopeInjecting(
+				$freshlyCreated->getConcrete(),
+
+				$freshlyCreated->getCreatedFor()
+			);
 		}
 
-		public function hydrateConcreteForCaller (string $className):array {
+		public function hydrateConcreteForCaller (string $className):HydratedConcrete {
+
+			$this->dependencyChain[] = $className;
 
 			$dependencies = $this->internalMethodGetParameters(function () use ($className) {
 
 				return array_values($this->getMethodParameters($this->constructor, $className));
 			});
 
-			$concrete = new $className (...$dependencies);
-
 			$this->unchainDependency($className);
 
-			$caller = $this->lastHydratedFor();
+			return new HydratedConcrete(
+				new $className (...$dependencies),
 
-			return compact("concrete", "caller");
+				$this->lastHydratedFor()
+			);
 		}
 
-		private function internalMethodGetParameters (callable $action) {
+		public function internalMethodGetParameters (callable $action) {
 
 			$this->internalMethodHydrate = true;
 
@@ -267,7 +265,7 @@
 		* Switches unit being provided to universal if it doesn't exist
 		* @return currently available provision unit
 		*/
-		private function getRecursionContext ():ProvisionUnit {
+		public function getRecursionContext ():ProvisionUnit {
 
 			$hydrateFor = $this->lastHydratedFor();
 
@@ -275,14 +273,17 @@
 
 				$this->popHydratingFor();
 
-				$this->pushHydratingFor($this->universalSelector);
+				$this->pushHydratingFor(self::UNIVERSAL_SELECTOR);
 
-				$hydrateFor = $this->universalSelector;
+				$hydrateFor = self::UNIVERSAL_SELECTOR;
 			}
 
 			return $this->provisionedClasses[$hydrateFor];
 		}
 
+		/**
+		 * This tells us the class we just hydrated arguments for
+		*/
 		public function lastHydratedFor ():?string {
 
 			if(empty($this->hydratingForStack) )
@@ -293,6 +294,8 @@
 		}
 
 		/**
+		 * @throws Exception
+		 * 
 		 * @return Concrete of the given [Interface] if it has been provided
 		*/
 		private function provideInterface (string $interface) {
@@ -317,6 +320,10 @@
 						$this->saveWhenImplements($fullName, $concrete);
 				}
 
+				if (is_null($concrete))
+
+					throw new Exception("No matching concrete found for interface " . $interface);
+
 				return $concrete;
 			});
 		}
@@ -334,7 +341,7 @@
 
 		public function whenTypeAny ():self {
 
-			return $this->whenType($this->universalSelector);
+			return $this->whenType(self::UNIVERSAL_SELECTOR);
 		}
 
 		public function needs (array $dependencyList):self {
@@ -405,10 +412,10 @@
 
 				$this->popHydratingFor();
 
-			return $this->decorator->scopeArguments( $anchorClass, $dependencies, $callable);
+			return $this->getDecorator()->scopeArguments( $anchorClass, $dependencies, $callable);
 		}
 
-		private function populateDependencies (ReflectionFunctionAbstract $reflectedCallable, ?ProvisionUnit $callerProvision):array {
+		public function populateDependencies (ReflectionFunctionAbstract $reflectedCallable, ?ProvisionUnit $callerProvision):array {
 
 			$dependencies = [];
 
@@ -602,6 +609,11 @@
 			$this->decorator = $this->instantiateConcrete(DecoratorHydrator::class);
 
 			$this->decorator->assignScopes();
+		}
+
+		protected function getDecorator ():DecoratorHydrator {
+
+			return $this->decorator;
 		}
 	}
 ?>

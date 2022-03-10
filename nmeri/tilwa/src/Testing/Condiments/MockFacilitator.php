@@ -3,10 +3,13 @@
 
 	use ReflectionMethod;
 
-	use PHPUnit\Framework\MockObject\MockBuilder;
+	use PHPUnit\Framework\MockObject\{MockBuilder, Stub\Stub, Rule\InvocationOrder, Builder\InvocationMocker};
 
 	trait MockFacilitator {
 
+		/**
+		 * @param {mockMethods} = [string method => [int|InvocationOrder numTimes, [arguments]]]
+		*/
 		protected function positiveStub (string $target, array $overrides, array $constructorArguments = [], array $mockMethods = [])/*:MockBuilder*/ {
 
 			$builder = $this->getBuilder(
@@ -16,6 +19,8 @@
 			);
 
 			$this->stubSingle($overrides, $builder);
+
+			$this->mockCalls($mockMethods, $builder);
 
 			return $builder;
 		}
@@ -30,7 +35,29 @@
 
 			$this->stubMany($overrides, $builder);
 
+			$this->mockCalls($mockMethods, $builder);
+
 			return $builder;
+		}
+
+		private function mockCalls (array $calls, $builder):void {
+
+			foreach ($calls as $method => $behavior) {
+
+				$this->getCallCount($builder, $behavior[0])
+
+				->method($method)->with(...$behavior[1]);
+			}
+		}
+
+		/**
+		 * @param {count} int|InvocationOrder
+		 * 
+		 * @return InvocationMocker
+		*/
+		private function getCallCount ($builder, $count) {
+
+			return $builder->expects(is_int($count) ? $this->exactly($count): $count);
 		}
 
 		/**
@@ -43,21 +70,23 @@
 
 				$this->computeMethodsToRetain($overrides, $mockMethods),
 
-				false
+				true
 			);
 
 			$this->stubSingle($overrides, $builder);
+
+			$this->mockCalls($mockMethods, $builder);
 
 			return $builder;
 		}
 
 		private function stubSingle (array $overrides, /*MockBuilder*/ $builder):void {
 
-            foreach ($overrides as $method => $newValue)
+			foreach ($overrides as $method => $newValue)
 
-            	$builder->expects($this->any())
+				$builder->expects($this->any())
 
-            	->method($method)->will($this->returnValue($newValue));
+				->method($method)->will($this->wrapStubBehavior($newValue));
 		}
 
 		/**
@@ -65,21 +94,26 @@
 		*/
 		private function stubMany (array $overrides, /*MockBuilder*/ $builder):void {
 
-            foreach ($overrides as $method => $newValue) {
+			foreach ($overrides as $method => $newValue) {
 
-            	$expectation = $builder->expects($this->any())
+				$expectation = $builder->expects($this->any())
 
-            	->method($method);
+				->method($method);
 
-            	if (is_array($newValue))
+				if (is_array($newValue))
 
-            		$expectation->will($this->onConsecutiveCalls(...$newValue));
+					$expectation->will($this->onConsecutiveCalls(...$newValue));
 
-            	else $expectation->will($this->returnValue($newValue));
-            }
+				else $expectation->will($this->wrapStubBehavior($newValue));
+			}
 		}
 
-		private function getBuilder (string $target, array $constructorArguments, array $methodsToRetain, bool $callOriginal = true)/*:MockBuilder*/ {
+		private function wrapStubBehavior ($value):Stub {
+
+			return $value instanceof Stub ? $value: $this->returnValue($value);
+		}
+
+		private function getBuilder (string $target, array $constructorArguments, array $methodsToRetain, bool $isNegative = false)/*:MockBuilder*/ {
 
 			$builder = $this->getMockBuilder($target);
 
@@ -89,15 +123,15 @@
 
 			else $builder->disableOriginalConstructor();
 
-			if (!empty($methodsToRetain))
+			if (!$isNegative)
 
 				$builder->onlyMethods($methodsToRetain);
 
-			if (!$callOriginal)
+			else $builder->setMethodsExcept($methodsToRetain);
 
-				$builder->disableProxyingToOriginalMethods()
+			/*$builder->disableProxyingToOriginalMethods()
 
-				/*->disableAutoReturnValueGeneration()*/;
+			->disableAutoReturnValueGeneration()*/;
 
 			$builder->disableArgumentCloning();
 
@@ -129,7 +163,7 @@
 
 		private function computeMethodsToRetain (array $stubMethods, array $mockMethods):array {
 
-			return array_merge(array_keys($stubMethods), $mockMethods);
+			return array_merge(array_keys($stubMethods), array_keys($mockMethods));
 		}
 	}
 ?>
