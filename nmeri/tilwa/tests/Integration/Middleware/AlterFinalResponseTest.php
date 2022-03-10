@@ -37,7 +37,7 @@
 			$finalName = FinalHandlerWrapper::class;
 
 			// given
-			$finalMiddleware = $this->negativeStub($finalName, [
+			$finalMiddleware = $this->negativeDouble($finalName, [
 			
 				"process" => ["foo" => "bar"]
 			]);

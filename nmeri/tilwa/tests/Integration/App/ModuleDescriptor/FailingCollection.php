@@ -9,7 +9,7 @@
 
 		public function test_will_throw_errors () {
 
-			$this->setExpectedException(UnexpectedModules::class); // then
+			$this->expectException(UnexpectedModules::class); // then
 
 			$this->getModuleFor(ModuleTwo::class); // when
 		}

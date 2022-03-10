@@ -45,7 +45,7 @@
 
 			$authContract = AuthContract::class;
 
-			$mockAuth = $this->positiveStub($authContract, [
+			$mockAuth = $this->positiveDouble($authContract, [
 
 				"getModelObservers" => [
 
@@ -69,7 +69,7 @@
 
 		public function test_unauthorized_user_cant_perform_operation () {
 
-			$this->setExpectedException(UnauthorizedServiceAccess::class); // then
+			$this->expectException(UnauthorizedServiceAccess::class); // then
 
 			// given
 			$user1 = User::factory()->make();

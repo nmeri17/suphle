@@ -56,7 +56,7 @@
 			$sutName = PatternIndicator::class;
 
 			$this->massProvide([
-				$sutName => $this->positiveStub($sutName, [
+				$sutName => $this->positiveDouble($sutName, [
 
 					"resetIndications" => null
 				])

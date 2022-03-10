@@ -43,13 +43,14 @@
 			$sutName = HierarchialMiddleware2::class;
 
 			// then
-			$hierarchial2 = $this->positiveStub($sutName)->expects($this->once())
+			$hierarchial2 = $this->positiveDouble($sutName, [], [
 
-			->method("process")->with(function($subject) {
+				"process" => [1, [$this->callback(function($subject) {
 
-				return $subject->hasKey("foo");
+					return $subject->hasKey("foo");
 
-			}, $this->anything());
+				}), $this->anything()]]
+			]);
 
 			$this->getModuleFor(ModuleOne::class)->getContainer()
 

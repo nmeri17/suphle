@@ -60,7 +60,7 @@
 
 		public function test_can_rethrow_exceptions () {
 
-			$this->setExpectedException(NotFoundException::class); // then
+			$this->expectException(NotFoundException::class); // then
 
 			$this->container->getClass($this->serviceName)->terminateRequest(); // when
 		}

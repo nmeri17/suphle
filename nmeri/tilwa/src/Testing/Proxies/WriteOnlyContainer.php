@@ -25,9 +25,9 @@
 
 				$interface => $retainOtherMethods ?
 
-					$this->positiveStub($concrete, $overrides):
+					$this->positiveDouble($concrete, $overrides):
 
-					$this->negativeStub($concrete, $overrides)
+					$this->negativeDouble($concrete, $overrides)
 			]);
 
 			return $this;

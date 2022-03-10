@@ -61,7 +61,7 @@
 
 		public function test_override_non_existent_throws_error () {
 
-			$this->setExpectedException("PHPUnit_Framework_Error"); // then
+			$this->expectException("PHPUnit_Framework_Error"); // then
 
 			$this->fakeRequest("/non-existent/save"); // when
 		}

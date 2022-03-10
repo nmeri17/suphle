@@ -16,7 +16,9 @@
 
 		public function isVerifiedToken (string $incomingToken):bool {
 
-			return $_SESSION[self::TOKEN_FIELD] == $incomingToken;
+			$savedToken = $_SESSION[self::TOKEN_FIELD];
+
+			return !empty($savedToken) && $savedToken == $incomingToken;
 		}
 	}
 ?>

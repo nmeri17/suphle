@@ -25,7 +25,7 @@
 
 		public function test_will_complain_when_missing_dependencies () {
 
-			$this->setExpectedException(UnexpectedModules::class); // then
+			$this->expectException(UnexpectedModules::class); // then
 
 			// given @see module creation
 

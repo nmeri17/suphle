@@ -58,7 +58,7 @@
 		public function test_wont_empty_cache_entry () {
 
 			$this->makeJob($this->makeAccessContext(
-				$this->positiveStub(
+				$this->positiveDouble(
 
 					RouteUserNode::class, ["getMaxHits" => 2]
 				) // default [getExpiresAt] + this should retain the node
@@ -95,7 +95,7 @@
 
 			return [
 				[
-					$this->positiveStub(RouteUserNode::class, [
+					$this->positiveDouble(RouteUserNode::class, [
 
 						"getMaxHits" => 200,
 
@@ -103,7 +103,7 @@
 					])
 				],
 				[
-					$this->positiveStub(RouteUserNode::class, [
+					$this->positiveDouble(RouteUserNode::class, [
 
 						"getExpiresAt" => $this->aMinuteBehind
 					])
@@ -137,7 +137,7 @@
 
 			$this->makeJob($this->makeAccessContext(
 				
-				$this->positiveStub( RouteUserNode::class, [] )
+				$this->positiveDouble( RouteUserNode::class, [] )
 			))->handle();
 		}
 	}

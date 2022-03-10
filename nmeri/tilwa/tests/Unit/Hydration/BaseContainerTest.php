@@ -11,7 +11,7 @@
 
 	use PHPUnit\Framework\TestCase;
 
-	use Prophecy\Argument;
+	use Tilwa\Contracts\Auth\UserContract;
 
 	use ReflectionMethod, stdClass;
 
@@ -33,7 +33,7 @@
 
 		public function test_decorateProvidedConcrete_doesnt_overflow_memory () {
 
-			$sut = $this->positiveStub(Container::class, [], [], [
+			$sut = $this->positiveDouble(Container::class, [], [
 
 				"getProvidedConcrete" => [1, [$this->anything()]]
 			]); // then
@@ -59,7 +59,7 @@
 
 			$stub = new stdClass;
 
-			$sut = $this->positiveStub(Container::class, [
+			$sut = $this->positiveDouble(Container::class, [
 
 				"decorateProvidedConcrete" => $stub // given
 			]);
@@ -79,10 +79,10 @@
 		public function test_getClass_tries_to_instantiate_concrete () {
 
 			// given
-			$sut = $this->positiveStub(Container::class, [
+			$sut = $this->positiveDouble(Container::class, [
 
 				"loadLaravelLibrary" => null,
-			], [], [
+			], [
 				"instantiateConcrete" => [ // then
 					$this->atLeastOnce(), [
 						$this->equalTo($this->aRequires)
@@ -97,7 +97,7 @@
 
 		private function stubDecorator () {
 
-			return $this->positiveStub(DecoratorHydrator::class, [
+			return $this->positiveDouble(DecoratorHydrator::class, [
 
 				"scopeArguments" => $this->returnArgument(1),
 
@@ -124,7 +124,7 @@
 
 		private function withArgumentsForARequires (array $otherOverrides = []) {
 
-			return $this->positiveStub(Container::class, array_merge([
+			return $this->positiveDouble(Container::class, array_merge([
 
 				"getMethodParameters" => array_merge($this->manuallyStubify([BCounter::class, Container::class]), [""])
 			], $otherOverrides));
@@ -151,7 +151,7 @@
 
 		public function test_can_hydrate_method_parameters_without_interface () {
 
-			$sut = $this->positiveStub(Container::class, [
+			$sut = $this->positiveDouble(Container::class, [
 
 				"lastHydratedFor" => $this->aRequires,
 
@@ -180,10 +180,10 @@
 		public function test_internal_get_parameters_calls_populateDependencies () {
 
 			// given
-			$sut = $this->positiveStub(Container::class, [
+			$sut = $this->positiveDouble(Container::class, [
 
 				"getDecorator" => $this->stubDecorator()
-			], [], [
+			], [
 				
 				"populateDependencies" => [1, [
 
@@ -203,13 +203,20 @@
 
 			return array_map(function ($type) {
 
-				return $this->positiveStub($type, []);
+				return $this->positiveDouble($type, []);
 			}, $types);
 		}
 
 		private function bootContainer ($container):void {
 
 			$container->initializeUniversalProvision();
+		}
+
+		public function test_hydrating_interface_without_bind_will_terminate () {
+
+			$this->expectException(Exception::class); // then
+
+			$this->container->getClass(UserContract::class); // when
 		}
 	}
 ?>

@@ -13,7 +13,7 @@
 
 		public function test_missing_types_throws_errors () {
 
-			$this->setExpectedException(MissingPostDecorator::class); // then
+			$this->expectException(MissingPostDecorator::class); // then
 
 			$this->setHttpParams("/dummy", "put"); // given
 

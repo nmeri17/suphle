@@ -13,14 +13,14 @@
 
 		public function test_rejected_type_throws_errors () {
 
-			$this->setExpectedException(UnacceptableDependency::class); // then
+			$this->expectException(UnacceptableDependency::class); // then
 
 			$this->container->getClass(AttemptsLoadingUser::class); // when
 		}
 
 		public function test_unknown_type_throws_errors () {
 
-			$this->setExpectedException(UnacceptableDependency::class); // then
+			$this->expectException(UnacceptableDependency::class); // then
 
 			$this->container->getClass(RandomConcreteController::class); // when
 		}

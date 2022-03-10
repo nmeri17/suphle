@@ -11,7 +11,7 @@
 
 		public function test_unwanted_dependency_throws_errors () {
 
-			$this->setExpectedException(UnacceptableDependency::class); // then
+			$this->expectException(UnacceptableDependency::class); // then
 
 			$this->container->getClass(LoadablesForsaken::class); // when
 		}

@@ -43,7 +43,7 @@
 
 			for ($i=0; $i < 10; $i++) $models[] = ["id" => $i]; // the list the flow is gonna iterate over
 
-			return $this->positiveStub (Json::class, [
+			return $this->positiveDouble (Json::class, [
 
 				"getRawResponse" => [
 

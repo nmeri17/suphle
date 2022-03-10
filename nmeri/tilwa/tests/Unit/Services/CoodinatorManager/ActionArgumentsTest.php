@@ -1,6 +1,8 @@
 <?php
 	namespace Tilwa\Tests\Unit\Services\CoodinatorManager;
 
+	use Tilwa\Contracts\Database\OrmDialect;
+
 	use Tilwa\Services\Structures\{ModelfulPayload, ModellessPayload};
 
 	use Tilwa\Services\CoodinatorManager;
@@ -16,9 +18,9 @@
 			// given
 			$correctParameters = [
 
-				$this->negativeStub(ModelfulPayload::class, []),
+				$this->negativeDouble(ModelfulPayload::class, []),
 
-				$this->negativeStub(ModellessPayload::class, [])
+				$this->negativeDouble(ModellessPayload::class, [])
 			];
 
 			$incorrectParameters = [new stdClass];
@@ -37,7 +39,7 @@
 
 				$this->mockModelful(),
 
-				$this->negativeStub(ModellessPayload::class, []),
+				$this->negativeDouble(ModellessPayload::class, []),
 
 				$this->mockModelful()
 			];
@@ -49,11 +51,15 @@
 
 		private function mockModelful ():ModelfulPayload {
 
-			return $this->negativeStub(ModelfulPayload::class, [])
+			return $this->negativeDouble(ModelfulPayload::class, [], [
 
-			->expects($this->once())->method("setDependencies")
+				"setDependencies" => [1, [
+					$this->callback(function($subject) {
 
-			->with($this->negativeStub(OrmDialect::class, []));
+						return $subject instanceof OrmDialect;
+					})
+				]]
+			]);
 		}
 	}
 ?>

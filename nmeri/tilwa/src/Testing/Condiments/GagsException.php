@@ -19,41 +19,44 @@
 
 		protected function setUp () {
 
-			$this->exceptionManager = $this->negativeStub($this->managerName, []);
+			$this->exceptionManager = $this->negativeDouble($this->managerName, []);
 		}
 
 		protected function assertCaughtPayload ($payload) {
 
-			$this->exceptionManager->expects($this->once())
+			$sut = $this->mockCalls([
 
-			->method($this->alerterMethod)
-			
-			->with( $this->callback(function ($subject) {
+				$this->alerterMethod => [1, [
 
-				return $subject instanceof Throwable;
-			}), $this->equalTo($payload) );
+					$this->callback(function ($subject) {
+
+						return $subject instanceof Throwable;
+					}),
+					$this->equalTo($payload)
+				]]
+			], $this->exceptionManager);
 
 			$this->massProvide([
 
-				$this->managerName => $this->exceptionManager
+				$this->managerName => $sut
 			]);
 		}
 
 		protected function assertCaughtException (string $exception) {
 
-			$this->exceptionManager->expects($this->once())
+			$sut = $this->mockCalls([
 
-			->method($this->alerterMethod)
-			
-			->with( $this->callback(function ($subject) use ($exception) {
+				$this->alerterMethod => [1, [
 
-				return $subject instanceof $exception;
-			}), $this->anything() );
+					$this->callback(function ($subject) use ($exception) {
 
-			$this->massProvide([
+						return $subject instanceof $exception;
+					}),
+					$this->anything()
+				]]
+			], $this->exceptionManager);
 
-				$this->managerName => $this->exceptionManager
-			]);
+			$this->massProvide([ $this->managerName => $sut ]);
 		}
 
 		abstract protected function massProvide ():void;

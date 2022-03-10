@@ -22,7 +22,7 @@
 
 		private function getUser67 (bool $makeAdmin = false) {
 
-			return $this->positiveStub(AdminableUser::class, [
+			return $this->positiveDouble(AdminableUser::class, [
 
 				"isAdmin" => $makeAdmin,
 

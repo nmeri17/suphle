@@ -51,10 +51,10 @@
 
 			$container->getClass(LaravelContainer::class)
 			
-			->instance($migrator,
-				$this->negativeStub($migrator, [])
+			->instance($migrator, $this->negativeDouble($migrator, [], [
 
-				->expects($this->once())->method("create")
+					"create" => [1, []]
+				])
 			);
 
 			return $container;

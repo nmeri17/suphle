@@ -26,7 +26,7 @@
 
 		public function test_invalid_payload_terminates_request () {
 
-			$this->setExpectedException(ValidationFailure::class); // then
+			$this->expectException(ValidationFailure::class); // then
 
 			$this->setJsonParams("/login", [
 
@@ -49,9 +49,10 @@
 
 			$this->massProvide([
 
-				$sutName => $this->positiveStub($sutName)->expects($this->once())
+				$sutName => $this->positiveDouble($sutName, [], [
 
-					->method("getResponse")->with($this->anything()) // then
+					"getResponse" => [1, [$this->anything()]]
+				]) // then
 			]);
 
 			$this->entrance->extractFromContainer();

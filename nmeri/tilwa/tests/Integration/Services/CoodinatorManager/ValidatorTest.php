@@ -45,7 +45,7 @@
 
 		public function test_other_methods_requires_validation () {
 
-			$this->setExpectedException(NoCompatibleValidator::class); // then
+			$this->expectException(NoCompatibleValidator::class); // then
 
 			// given
 			$this->setHttpParams("/dummy", "post");
@@ -61,11 +61,13 @@
 
 			$this->setHttpParams("/dummy", "post"); // given 1
 
-			$validatorManager = $this->positiveStub(ValidatorManager::class)
+			$validatorManager = $this->positiveDouble(ValidatorManager::class, [], [
 
-			->expects($this->once())->method("setActionRules")
+				"setActionRules" => [1, [
 
-			->with((new ValidatorOne)->postWithValidator()); // then
+					(new ValidatorOne)->postWithValidator()]]
+				]
+			); // then
 
 			$this->container->whenTypeAny()->needsAny([
 
@@ -82,15 +84,12 @@
 
 		public function test_failed_validation_throws_error () {
 
-			$this->setExpectedException(ValidationFailure::class); // then 1
+			$this->expectException(ValidationFailure::class); // then
 
-			$validatorManager = $this->positiveStub(ValidatorManager::class, [
+			$validatorManager = $this->positiveDouble(ValidatorManager::class, [
 
 				"validationErrors" => ["foo" => "bar"]
-			])
-			->expects($this->atLeastOnce())->method("validationErrors")
-
-			->with($this->anything()); // then 2 // actually, [nothing]
+			]);
 
 			$this->container->whenTypeAny()->needsAny([
 
@@ -105,18 +104,17 @@
 			$sutName = ModuleInitializer::class;
 
 			// given
-			$validatorManager = $this->positiveStub(ValidatorManager::class, [
+			$validatorManager = $this->positiveDouble(ValidatorManager::class, [
 
 				"isValidated" => true
 			]);
 
-			$sut = $this->positiveStub($sutName, ["triggerRequest"]); // discard other method calls
+			$sut = $this->negativeDouble($sutName, ["triggerRequest"]); // huh??
 
-			$middlewareQueue = $this->negativeStub(MiddlewareQueue::class)
+			$middlewareQueue = $this->negativeDouble(MiddlewareQueue::class, [], [
 
-			->expects($this->once())->method("runStack")
-
-			->with($this->anything()); // then
+				"runStack" => [1, [$this->anything()]]
+			]); // then
 
 			$this->container->whenTypeAny()->needsAny([
 
@@ -134,17 +132,19 @@
 
 			$this->setHttpParams("/dummy"); // given
 
-			$router = $this->negativeStub(RouteManager::class, [
+			$router = $this->negativeDouble(RouteManager::class, [
 
-				"getPreviousRenderer" => $this->negativeStub(AbstractRenderer::class) // if getPreviousRenderer is not called, our mock won't run. So, 2 tests for the price of 1
+				"getPreviousRenderer" => $this->negativeDouble(AbstractRenderer::class, [], [
 
-					->expects($this->once())->method("setRawResponse")
-					
-					->with($this->callback(function($subject){
+					"setRawResponse" => [
 
-						return array_key_exists("errors", $subject);
-					})) // then
-			]);
+						1, [$this->callback(function($subject) {
+
+							return array_key_exists("errors", $subject); // if getPreviousRenderer is not called, our mock won't run. So, 2 tests for the price of 1
+						})] // then
+					]
+				]
+			)]);
 
 			$this->container->whenTypeAny()->needsAny([
 

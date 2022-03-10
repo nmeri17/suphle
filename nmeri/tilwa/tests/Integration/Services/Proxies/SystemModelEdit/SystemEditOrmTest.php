@@ -15,9 +15,10 @@
 
 		private function mockOrm ($numTimes) {
 
-			return $this->negativeStub(OrmDialect::class)->expects($numTimes)
+			return $this->negativeDouble(OrmDialect::class, [], [
 
-			->method("runTransaction")->with($this->anything());
+				"runTransaction" => [$numTimes, [$this->anything()]]
+			]);
 		}
 
 		public function test_update_method_runs_in_transaction () {

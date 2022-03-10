@@ -1,13 +1,13 @@
 <?php
 	namespace Tilwa\Services\Structures;
 
-	use Tilwa\Contracts\Database\Orm;
+	use Tilwa\Contracts\Database\OrmDialect;
 
 	use Tilwa\Request\PayloadStorage;
 
 	abstract class ModelfulPayload {
 
-		protected $payloadStorage;
+		protected $payloadStorage, $ormDialect;
 
 		public function __construct (PayloadStorage $payloadStorage) {
 
@@ -24,9 +24,9 @@
 		*/
 		abstract protected function getBaseCriteria ();
 
-		public function setDependencies (Orm $orm) {
+		public function setDependencies (OrmDialect $ormDialect) {
 
-			$this->orm = $orm;
+			$this->ormDialect = $ormDialect;
 		}
 
 		/**

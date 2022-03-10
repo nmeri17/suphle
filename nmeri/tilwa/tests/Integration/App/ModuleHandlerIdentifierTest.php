@@ -45,25 +45,29 @@
 
 		private function mockLoginHandler ():LoginRequestHandler {
 
-			$handler = $this->negativeStub(LoginRequestHandler::class, ["isValidRequest" => true]);
+			$handler = $this->negativeDouble(LoginRequestHandler::class, ["isValidRequest" => true], [
 
-			$handler->expects($this->atLeastOnce())->method("getResponse")
-			
-			->with( $this->anything() );
+				"getResponse" => [
+
+					$this->atLeastOnce(), [$this->anything()]
+				]
+			]);
 
 			return $handler;
 		}
 
 		public function test_saved_flow_triggers_flow_handler () {
 
-			$sut = $this->getIdentifier();
+			$sut = $this->mockCalls([
 
-			$sut->expects($this->atLeastOnce())->method("flowRequestHandler")
-			
-			->with( $this->callback(function($argument) {
+				"flowRequestHandler" => [$this->atLeastOnce(), [
 
-				return is_a($argument, OuterFlowWrapper::class);
-			})); // then
+					$this->callback(function($argument) {
+
+						return is_a($argument, OuterFlowWrapper::class);
+					})
+				]]
+			], $this->getIdentifier()); // then
 
 			$this->makeJob($this->makeBranchesContext(null))->handle(); // given
 
@@ -75,7 +79,7 @@
 
 		private function getIdentifier ():ModuleHandlerIdentifier {
 
-			return $this->positiveStub(ModuleHandlerIdentifier::class, [
+			return $this->positiveDouble(ModuleHandlerIdentifier::class, [
 
 				"getModules" => $this->getModules()
 			]);

@@ -33,7 +33,7 @@
 		*/
 		private function exceptionStubModuleHandler ( $exception):ModuleHandlerIdentifier {
 
-			return $this->positiveStub(ModuleHandlerIdentifier::class, [
+			return $this->positiveDouble(ModuleHandlerIdentifier::class, [
 				"getModules" => $this->getModules(),
 
 				"respondFromHandler" => $exception
@@ -42,12 +42,12 @@
 
 		private function errorStubModuleHandler (callback $exception):ModuleHandlerIdentifier {
 
-			return $this->positiveStub(ModuleHandlerIdentifier::class, [
-				"getModules" => $this->getModules()
-			])
-			->expects($this->once())->method("respondFromHandler")
+			return $this->positiveDouble(ModuleHandlerIdentifier::class, [
+				
+				"getModules" => $this->getModules(),
 
-			->willReturnCallback($exception);
+				"respondFromHandler" => $this->returnCallback($callback)
+			]);
 		}
 
 		protected function getModules ():array {
@@ -78,7 +78,7 @@
 			$response = "boo!";
 
 			// given
-			$mockSut = $this->positiveStub($this->sut, [
+			$mockSut = $this->positiveDouble($this->sut, [
 				
 				"handlingRenderer" => (new Json)->setRawResponse($response)
 			]);

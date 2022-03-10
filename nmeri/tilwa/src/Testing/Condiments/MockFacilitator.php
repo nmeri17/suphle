@@ -10,37 +10,37 @@
 		/**
 		 * @param {mockMethods} = [string method => [int|InvocationOrder numTimes, [arguments]]]
 		*/
-		protected function positiveStub (string $target, array $overrides, array $constructorArguments = [], array $mockMethods = [])/*:MockBuilder*/ {
+		protected function positiveDouble (string $target, array $stubs, array $mockMethods = [], array $constructorArguments = [])/*:MockBuilder*/ {
 
 			$builder = $this->getBuilder(
 				$target, $constructorArguments,
 
-				$this->computeMethodsToRetain($overrides, $mockMethods)
+				$this->computeMethodsToRetain($stubs, $mockMethods)
 			);
 
-			$this->stubSingle($overrides, $builder);
+			$this->stubSingle($stubs, $builder);
 
 			$this->mockCalls($mockMethods, $builder);
 
 			return $builder;
 		}
 
-		protected function positiveStubMany (string $target, array $overrides, array $constructorArguments = [], array $mockMethods = [])/*:MockBuilder*/ {
+		protected function positiveDoubleMany (string $target, array $stubs, array $mockMethods = [], array $constructorArguments = [])/*:MockBuilder*/ {
 
 			$builder = $this->getBuilder(
 				$target, $constructorArguments,
 
-				$this->computeMethodsToRetain($overrides, $mockMethods)
+				$this->computeMethodsToRetain($stubs, $mockMethods)
 			);
 
-			$this->stubMany($overrides, $builder);
+			$this->stubMany($stubs, $builder);
 
 			$this->mockCalls($mockMethods, $builder);
 
 			return $builder;
 		}
 
-		private function mockCalls (array $calls, $builder):void {
+		protected function mockCalls (array $calls, $builder):void {
 
 			foreach ($calls as $method => $behavior) {
 
@@ -63,26 +63,26 @@
 		/**
 		 * Use when the other methods contain actions we don't wanna trigger
 		*/
-		protected function negativeStub (string $target, array $overrides, array $constructorArguments = [], array $mockMethods = [])/*:MockBuilder*/ {
+		protected function negativeDouble (string $target, array $stubs, array $mockMethods = [], array $constructorArguments = [])/*:MockBuilder*/ {
 
 			$builder = $this->getBuilder(
 				$target, $constructorArguments,
 
-				$this->computeMethodsToRetain($overrides, $mockMethods),
+				$this->computeMethodsToRetain($stubs, $mockMethods),
 
 				true
 			);
 
-			$this->stubSingle($overrides, $builder);
+			$this->stubSingle($stubs, $builder);
 
 			$this->mockCalls($mockMethods, $builder);
 
 			return $builder;
 		}
 
-		private function stubSingle (array $overrides, /*MockBuilder*/ $builder):void {
+		private function stubSingle (array $stubs, /*MockBuilder*/ $builder):void {
 
-			foreach ($overrides as $method => $newValue)
+			foreach ($stubs as $method => $newValue)
 
 				$builder->expects($this->any())
 
@@ -92,9 +92,9 @@
 		/**
 		 * Allows for stubbing multiple calls to SUT and receiving different results each time
 		*/
-		private function stubMany (array $overrides, /*MockBuilder*/ $builder):void {
+		private function stubMany (array $stubs, /*MockBuilder*/ $builder):void {
 
-			foreach ($overrides as $method => $newValue) {
+			foreach ($stubs as $method => $newValue) {
 
 				$expectation = $builder->expects($this->any())
 
@@ -138,13 +138,13 @@
 			return $builder->getMock();
 		}
 
-		protected function replaceConstructorArguments (string $target, array $constructorOverrides, array $methodOverrides)/*:MockBuilder*/ {
+		protected function replaceConstructorArguments (string $target, array $constructorstubs, array $methodstubs)/*:MockBuilder*/ {
 
 			$reflectedConstructor = new ReflectionMethod($target, "__construct");
 
-			$arguments = $this->mockDummyUnion($reflectedConstructor->getParameters(), $constructorOverrides);
+			$arguments = $this->mockDummyUnion($reflectedConstructor->getParameters(), $constructorstubs);
 
-			return $this->positiveStub($target, $methodOverrides, $arguments);
+			return $this->positiveDouble($target, $methodstubs, $arguments);
 		}
 
 		private function mockDummyUnion (array $parameters, array $replacements):array {
@@ -157,7 +157,7 @@
 
 					return $replacements[$parameterName];
 
-				return $this->positiveStub($parameter->getType()->getName(), []);
+				return $this->positiveDouble($parameter->getType()->getName(), []);
 			}, $parameters);
 		}
 

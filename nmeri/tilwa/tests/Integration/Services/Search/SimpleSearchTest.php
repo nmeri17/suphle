@@ -5,7 +5,7 @@
 
 	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
-	use Tilwa\Contracts\Database\Orm;
+	use Tilwa\Contracts\Database\OrmDialect;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\Services\Search\SimpleSearchService;
 
@@ -15,20 +15,22 @@
 
 		use DirectHttpTest, MockFacilitator;
 
-		private $orm, $searchService, $baseUrl = "/search/?q=jobs&";
+		private $ormDialect, $searchService, $baseUrl = "/search/?q=jobs&";
 
 		public function setUp ():void {
 
 			parent::setUp();
 
-			$this->orm = $this->negativeStub(Orm::class);
+			$this->ormDialect = $this->negativeDouble(OrmDialect::class);
+
+			$this->searchService = $this->positiveDouble(SimpleSearchService::class);
 
 			$this->container->whenTypeAny()->needsAny([
 
-				Orm::class => $this->orm
-			]);
+				OrmDialect::class => $this->ormDialect,
 
-			$this->searchService = $this->container->getClass(SimpleSearchService::class);
+				SimpleSearchService::class => $this->searchService
+			]);
 		}
 
 		public function test_calls_class_methods_matching_queries () {
@@ -36,13 +38,18 @@
 			$model = new stdClass;
 			
 			// then
-			$this->orm->expects($this->never())
+			$this->mockCalls([
 
-			->method("addWhereClause")->with($this->anything());
+				"addWhereClause" => [$this->never(), [$this->anything()]]
+			], $this->ormDialect);
 
-			$this->searchService->expects($this->once())
+			$this->mockCalls([
 
-			->method("custom_filter")->with($this->equalTo($model), 5);
+				"custom_filter" => [1, [
+
+					$this->equalTo($model), 5
+				]]
+			], $this->searchService);
 
 			$this->setHttpParams($this->baseUrl . "custom_filter=5"); // given
 
@@ -53,20 +60,25 @@
 			
 			$model = new stdClass;
 
-			$this->searchService->expects($this->never())
+			$this->mockCalls([
 
-			->method("custom_filter")->with($this->equalTo($model), 5); // then
+				"custom_filter" => [$this->never(), [
+
+					$this->equalTo($model), 5
+				]]
+			], $this->searchService); // then
 
 			$this->setHttpParams($this->baseUrl . "database_column=foo"); // given
 
 			$this->searchService->convertToQuery($model, "q"); // when
 		}
 
-		public function test_calls_orm_when_sees_custom_method () {
+		public function test_calls_ormDialect_when_sees_custom_method () {
 			
-			$this->orm->expects($this->atLeastOnce())
+			$this->mockCalls([
 
-			->method("addWhereClause")->with($this->anything()); // then
+				"addWhereClause" => [$this->atLeastOnce(), [$this->anything()]]
+			], $this->ormDialect); // then
 
 			$this->setHttpParams($this->baseUrl . "database_column=foo"); // given
 

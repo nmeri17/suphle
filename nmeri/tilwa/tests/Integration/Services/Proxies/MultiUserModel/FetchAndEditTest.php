@@ -19,11 +19,12 @@
 
 		public function test_get_queue_adds_integrity () {
 
-			$sut = $this->positiveStub(AddUserEditField::class, [], [ // using a stub to avoid injecting a live ormDialect
+			$sut = $this->positiveDouble(AddUserEditField::class, [], [ // using a stub to avoid injecting a live ormDialect
 
-				"modelInstance" => $this->positiveStub(IntegrityModel::class)->expects($this->once())
+				"modelInstance" => $this->positiveDouble(IntegrityModel::class, [], [
 
-					->method("addEditIntegrity")->with($this->greaterThan(20)) // then
+					"addEditIntegrity" => [1, [$this->greaterThan(20)]]
+				]) // then
 			]); // given
 
 			$sut->handle(); // when
@@ -31,7 +32,7 @@
 
 		public function test_missing_key_on_update_throws_error () {
 
-			$this->setExpectedException(EditIntegrityException::class); // then
+			$this->expectException(EditIntegrityException::class); // then
 
 			$this->setHttpParams("/dummy"); // given
 
@@ -42,20 +43,21 @@
 
 		public function test_last_updater_invalidates_for_all_viewers () {
 
-			$this->setExpectedException(EditIntegrityException::class); // then
+			$this->expectException(EditIntegrityException::class); // then
 
 			$sutName = MultiUserEditMock::class;
 
 			// given
-			$mock = $this->positiveStub($sutName, [
+			$mock = $this->positiveDouble($sutName, [
 
-				"getResource" => $this->positiveStub(IntegrityModel::class, [
+				"getResource" => $this->positiveDouble(IntegrityModel::class, [
 
 					"includesEditIntegrity" => true
 				])
-			])->expects($this->exactly(2))->method("updateResource")
+			], [
 
-			->with($this->anything()); // we want to ensure it ran twice before throwing the error above
+				"updateResource" => [2, [$this->anything()]]
+			]); // we want to ensure it ran twice before throwing the error above
 
 			$this->setHttpParams("/dummy", "put", json_encode([
 

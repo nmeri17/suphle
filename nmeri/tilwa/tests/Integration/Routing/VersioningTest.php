@@ -15,7 +15,7 @@
 
 			$this->container->whenTypeAny()->needsAny([
 
-				IRouter::class => $this->positiveStub(
+				IRouter::class => $this->positiveDouble(
 					RouterMock::class, [
 
 						"apiStack" => [

@@ -24,13 +24,13 @@
 		
 		public function test_validation_failure_on_login_will_terminate () {
 
-			$this->setExpectedException(ValidationFailure::class); // then
+			$this->expectException(ValidationFailure::class); // then
 
 			$sutName = ModuleLoginHandler::class;
 
 			$this->massProvide([
 
-				$sutName => $this->negativeStub($sutName, [
+				$sutName => $this->negativeDouble($sutName, [
 
 					"isValidRequest" => false // given
 				])

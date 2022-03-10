@@ -27,7 +27,7 @@
 
 		public function test_will_reject_surplus_dependencies () {
 
-			$this->setExpectedException(UnexpectedModules::class); // then
+			$this->expectException(UnexpectedModules::class); // then
 
 			// given @see module creation
 
