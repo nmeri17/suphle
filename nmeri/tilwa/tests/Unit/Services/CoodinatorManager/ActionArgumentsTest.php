@@ -54,7 +54,7 @@
 			return $this->negativeDouble(ModelfulPayload::class, [], [
 
 				"setDependencies" => [1, [
-					$this->callback(function($subject) {
+					$this->returnCallback(function($subject) {
 
 						return $subject instanceof OrmDialect;
 					})

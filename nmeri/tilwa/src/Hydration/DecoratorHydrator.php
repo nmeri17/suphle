@@ -83,8 +83,6 @@
 
 			$relevantDecors = $this->getRelevantDecors($scope, get_class($concrete));
 
-			if (empty($relevantDecors)) return $concrete;
-
 			foreach ($relevantDecors as $decorator) {
 
 				$handler = $this->container->getClass($scope[$decorator]);

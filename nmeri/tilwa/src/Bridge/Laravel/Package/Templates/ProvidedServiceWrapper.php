@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Hydration\Templates;
+	namespace Tilwa\Bridge\Laravel\Package\Templates;
 
     use Tilwa\Hydration\LaravelProviderManager;
 

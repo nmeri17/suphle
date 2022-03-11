@@ -79,7 +79,7 @@
 				"config" => $this->configLoader,
 
 				"request" => $this->provideRequest()
-			]
+			];
 		}
 
 		protected function provideRequest ():Request {

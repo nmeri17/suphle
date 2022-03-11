@@ -1,11 +1,13 @@
 <?php
 	namespace Tilwa\Hydration;
 
-	use ReflectionMethod, ReflectionClass, ReflectionFunction, ReflectionType, ReflectionFunctionAbstract, Exception;
+	use ReflectionMethod, ReflectionClass, ReflectionFunction, ReflectionType, ReflectionFunctionAbstract, ReflectionException, Exception;
 	
 	use Tilwa\Hydration\Structures\{ProvisionUnit, NamespaceUnit, HydratedConcrete};
 	
 	use Tilwa\Hydration\Templates\CircularBreaker;
+
+	use Tilwa\Bridge\Laravel\Package\ManagerHydrator;
 
 	use Tilwa\Exception\Explosives\Generic\InvalidImplementor;
 
@@ -23,7 +25,7 @@
 
 		$constructor = "__construct",
 
-		$laravelHydrator, $interfaceHydrator,
+		$externalHydrator, $interfaceHydrator,
 
 		$provisionContext, // the active Type before calling `needs`
 
@@ -34,6 +36,8 @@
 		public function __construct () {
 
 			$this->initializeUniversalProvision();
+
+			$this->setExternalHydrator();
 		}
 
 		public function initializeUniversalProvision ():void {
@@ -41,11 +45,26 @@
 			$this->provisionedClasses[self::UNIVERSAL_SELECTOR] = new ProvisionUnit;
 		}
 
+		public function setExternalHydrator ():void {
+
+			$this->externalHydrator = new ManagerHydrator($this);
+		}
+
+		public function getExternalHydrator ():ManagerHydrator {
+
+			return $this->externalHydrator;
+		}
+
 		public function setInterfaceHydrator (string $collection):void {
 
 			$concrete = $this->instantiateConcrete($collection);
 
 			$this->interfaceHydrator = new InterfaceHydrator($concrete, $this);
+		}
+
+		public function getInterfaceHydrator ():InterfaceHydrator {
+
+			return $this->interfaceHydrator;
 		}
 
 		/**
@@ -67,11 +86,16 @@
 
 				return $parent;
 
-			$concrete = $this->loadLaravelLibrary($fullName);
+			$concrete = $this->getExternalHydrator()->loadPackage($fullName);
 
-			if (!is_null($concrete)) return $concrete;
+			if (!is_null($concrete)) {
 
-			$reflectedClass = new ReflectionClass($fullName);
+				$this->saveWhenImplements($fullName, $concrete);
+
+				return $concrete;
+			}
+
+			$reflectedClass = $this->getReflectedClass($fullName);
 
 			if ($reflectedClass->isInterface())
 
@@ -97,8 +121,11 @@
 
 			$freshlyCreated = $this->hydratingForAction($fullName, function ($className) {
 
-				$trueCaller = $this->lastHydratedFor(); // get this before it's overwritten by [getProvidedConcrete] cuz it has no provision
-				return new HydratedConcrete($this->getProvidedConcrete($className), $trueCaller);
+				return new HydratedConcrete(
+					$this->getProvidedConcrete($className),
+
+					$this->lastHydratedFor()
+				);
 			});
 
 			if (!is_null($freshlyCreated->getConcrete()))
@@ -111,43 +138,15 @@
 		}
 
 		/**
-		 * Updates the last element in the context hydrating stack, to that whose provision dependencies should be hydrated for
-		*/
-		protected function pushHydratingFor (string $fullName):void {
-
-			$this->hydratingForStack[] = $fullName;
-		}
-
-		/**
 		 * If we're hydrating dependency B of class A, we want to get provisions for B--not A, the last called; otherwise, we'll be looking through class A's provisions instead of class B
 		*/
 		protected function initializeHydratingFor (string $fullName):void {
 
-			$isFirstCall = empty($this->hydratingForStack);
+			$isFirstCall = is_null($this->lastHydratedFor());
 
-			if ($isFirstCall)
+			$hydrateFor = $isFirstCall ? $this->lastCaller(): $fullName;
 
-				$this->hydratingForStack[] = $this->lastCaller();
-
-			else $this->hydratingForStack[] = $fullName;
-		}
-
-		/**
-		 * Does not decorate objects since we can't have access to decorate those interfaces/entities. Plus, this method is a decorator on its own
-		*/
-		protected function loadLaravelLibrary( string $fullName ) {
-
-			$hydrator = $this->getLaravelHydrator();
-
-			if (!$hydrator->canProvide($fullName))
-
-				return null;
-
-			$concrete = $hydrator->manageService($fullName);
-
-			$this->saveWhenImplements($fullName, $concrete);
-
-			return $concrete;
+			$this->pushHydratingFor($hydrateFor);
 		}
 
 		private function saveWhenImplements (string $interface, $concrete):void {
@@ -183,7 +182,7 @@
 
 			if (!method_exists($fullName, $this->constructor))
 
-				$freshlyCreated = new HydratedConcrete(new $fullName, $this->lastHydratedFor());
+				$freshlyCreated = new HydratedConcrete(new $fullName, $this->lastHydratedFor() ?? "hi");
 
 			else $freshlyCreated = $this->hydratingForAction(
 					
@@ -269,14 +268,9 @@
 
 			$hydrateFor = $this->lastHydratedFor();
 
-			if (!array_key_exists($hydrateFor, $this->provisionedClasses)) {
-
-				$this->popHydratingFor();
-
-				$this->pushHydratingFor(self::UNIVERSAL_SELECTOR);
+			if (!array_key_exists($hydrateFor, $this->provisionedClasses))
 
 				$hydrateFor = self::UNIVERSAL_SELECTOR;
-			}
 
 			return $this->provisionedClasses[$hydrateFor];
 		}
@@ -296,10 +290,10 @@
 		/**
 		 * @throws Exception
 		 * 
-		 * @return Concrete of the given [Interface] if it has been provided
+		 * @return Concrete of the given [Interface] if it was bound
 		*/
-		private function provideInterface (string $interface) {
-
+		protected function provideInterface (string $interface) {
+var_dump($interface, "providing interface");
 			return $this->hydratingForAction($interface, function ($className) use ($interface) {
 
 				$caller = $this->lastHydratedFor();
@@ -313,11 +307,11 @@
 
 				else {
 
-					$concrete = $this->interfaceHydrator->deriveConcrete($interface);
+					$concrete = $this->getInterfaceHydrator()->deriveConcrete($interface);
 
 					if (!is_null($concrete))
 
-						$this->saveWhenImplements($fullName, $concrete);
+						$this->saveWhenImplements($interface, $concrete);
 				}
 
 				if (is_null($concrete))
@@ -429,7 +423,7 @@
 
 					$dependencies[$parameterName] = $this->hydrateProvidedParameter($callerProvision, $parameterType, $parameterName);
 
-				elseif (is_null($parameterType)) // untyped
+				elseif (!is_null($parameterType))
 
 					$dependencies[$parameterName] = $this->hydrateUnprovidedParameter($parameterType);
 				
@@ -465,31 +459,31 @@
 
 		private function hydrateUnprovidedParameter (ReflectionType $parameterType) {
 
-			$typeName = $parameterType->getName();
+			if ( $parameterType->isBuiltin()) {
 
-			if ( !$parameterType->isBuiltin()) {
+				$defaultValue = null;
 
-				if (!in_array($typeName, $this->dependencyChain))
+				settype($defaultValue, $typeName);
 
-					return $this->getClass($typeName);
-
-				return $this->genericFactory(
-					CircularBreaker::class, 
-
-					["target" => $typeName ],
-
-					function ($types) {
-
-				    	return new CircularBreaker($types["target"], $this);
-					}
-				); // A requests B and vice versa. If A makes the first call, we're returning a proxied/fake A to the B instance we pass to the real A
+				return $defaultValue;
 			}
 
-			$defaultValue = null;
+			$typeName = $parameterType->getName();
 
-			settype($defaultValue, $typeName);
+			if (!in_array($typeName, $this->dependencyChain))
 
-			return $defaultValue;
+				return $this->getClass($typeName);
+
+			return $this->genericFactory(
+				CircularBreaker::class, 
+
+				["target" => $typeName ],
+
+				function ($types) {
+
+			    	return new CircularBreaker($types["target"], $this);
+				}
+			); // A requests B and vice versa. If A makes the first call, we're returning a proxied/fake A to the B instance we pass to the real A
 		}
 
 		/**
@@ -582,21 +576,22 @@
 			});
 		}
 
-		private function getLaravelHydrator ():LaravelProviderManager {
-
-			if (is_null($this->laravelHydrator))
-
-				$this->laravelHydrator = $this->instantiateConcrete(LaravelProviderManager::class);
-
-			return $this->laravelHydrator;
+		/**
+		 * Updates the last element in the context hydrating stack, to that whose provision dependencies should be hydrated for
+		*/
+		protected function pushHydratingFor (string $fullName):void {
+var_dump($fullName, $this->hydratingForStack, "pushing");
+			$this->hydratingForStack[] = $fullName;
 		}
 
 		/**
 		 * Ahead of future invocations by other callers for provided objects
 		*/
 		private function popHydratingFor ():void {
-
+var_dump($this->lastHydratedFor(), "before_popping");
 			array_pop($this->hydratingForStack);
+
+			var_dump($this->hydratingForStack, "after_popping"); // is push ever called without pop?
 		}
 
 		public function provideSelf ():void {
@@ -614,6 +609,22 @@
 		protected function getDecorator ():DecoratorHydrator {
 
 			return $this->decorator;
+		}
+
+		private function getReflectedClass (string $className):ReflectionClass {
+
+			try {
+
+				return new ReflectionClass($className);
+			}
+			catch (ReflectionException $re) {
+
+				$message = "Unable to hydrate ". end($this->dependencyChain) . ": ". $re->getMessage();
+
+				$hint = "Hint: Cross-check its dependencies";
+
+				throw new Exception("$message. $hint");
+			}
 		}
 	}
 ?>

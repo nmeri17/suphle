@@ -35,7 +35,7 @@
 
 	use Tilwa\Hydration\Structures\BaseDecorators;
 
-	use Tilwa\Bridge\Laravel\{LaravelAppLoader, ArtisanLoader};
+	use Tilwa\Bridge\Laravel\InterfaceLoaders\{LaravelAppLoader, ArtisanLoader};
 
 	use Psr\Http\Client\ClientInterface;
 

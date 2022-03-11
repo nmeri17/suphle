@@ -1,9 +1,11 @@
 <?php
-	namespace Tilwa\Hydration;
+	namespace Tilwa\Bridge\Laravel\Package;
 
-	use Tilwa\Hydration\Templates\ProvidedServiceWrapper;
+	use Tilwa\Hydration\Container;
 
-	use Tilwa\Contracts\{LaravelApp, Config\Laravel as LaravelConfig};
+	use Tilwa\Bridge\Laravel\Package\Templates\ProvidedServiceWrapper;
+
+	use Tilwa\Contracts\{Bridge\LaravelContainer, Config\Laravel as LaravelConfig};
 
 	use ReflectionClass;
 
@@ -15,7 +17,7 @@
 
 		$config, $tilwaContainer, $helperFilePath;
 
-		public function __construct ( LaravelApp $laravelContainer, LaravelConfig $config, Container $tilwaContainer) {
+		public function __construct ( LaravelContainer $laravelContainer, LaravelConfig $config, Container $tilwaContainer) {
 
 			$this->laravelContainer = $laravelContainer;
 

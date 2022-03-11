@@ -1,23 +1,21 @@
 <?php
 	namespace Tilwa\Tests\Unit\Hydration;
 
-	use Tilwa\Hydration\{Container, DecoratorHydrator};
-
-	use Tilwa\Testing\Condiments\MockFacilitator;
+	use Tilwa\Hydration\Container;
 
 	use Tilwa\Tests\Unit\Hydration\Extensions\CheckProvisionedClasses;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\{ ARequiresBCounter, BCounter};
-
-	use PHPUnit\Framework\TestCase;
-
 	use Tilwa\Contracts\Auth\UserContract;
 
-	use ReflectionMethod, stdClass;
+	use Tilwa\Bridge\Laravel\Package\ManagerHydrator;
 
-	class BaseContainerTest extends TestCase {
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\{ ARequiresBCounter, BCounter};
 
-		use MockFacilitator;
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Interfaces\CInterface;
+
+	use ReflectionMethod, Exception, stdClass;
+
+	class BaseContainerTest extends TestVirginContainer {
 
 		private $container, $aRequires = ARequiresBCounter::class;
 
@@ -93,16 +91,6 @@
 			$this->bootContainer($sut);
 
 			$sut->getClass($this->aRequires); // when
-		}
-
-		private function stubDecorator () {
-
-			return $this->positiveDouble(DecoratorHydrator::class, [
-
-				"scopeArguments" => $this->returnArgument(1),
-
-				"scopeInjecting" => $this->returnArgument(0)
-			]);
 		}
 
 		public function test_can_directly_instantiate_concrete_without_interface () {
@@ -207,16 +195,41 @@
 			}, $types);
 		}
 
-		private function bootContainer ($container):void {
+		public function test_request_for_interface_skip_bridge_calls_provideInterface () {
 
-			$container->initializeUniversalProvision();
+			$interfaceName = UserContract::class;
+
+			$sut = $this->positiveDouble(Container::class, [
+
+				"getDecorator" => $this->stubDecorator(),
+
+				"getExternalHydrator" => $this->negativeDouble(ManagerHydrator::class, [])
+			], [
+
+				"provideInterface" => [1, [$interfaceName]], // then
+			]);
+
+			$this->bootContainer($sut);
+
+			$sut->getClass($interfaceName);
 		}
 
 		public function test_hydrating_interface_without_bind_will_terminate () {
 
 			$this->expectException(Exception::class); // then
 
-			$this->container->getClass(UserContract::class); // when
+			$sut = $this->positiveDouble(Container::class, [
+
+				"getDecorator" => $this->stubDecorator()
+			]);
+
+			$this->bootContainer($sut);
+
+			$this->withDefaultInterfaceCollection($sut);
+
+			$this->registerCoreBindings($sut);
+
+			$sut->getClass(CInterface::class); // when
 		}
 	}
 ?>

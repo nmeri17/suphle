@@ -9,7 +9,7 @@
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Middlewares\{BlankMiddleware, BlankMiddleware2, BlankMiddleware3, BlankMiddleware4};
 
-	use Tilwa\Response\Format\Json;
+	use Tilwa\Response\Format\{Json, Markup};
 
 	class MultiTagSamePattern extends BaseCollection {
 
@@ -45,7 +45,7 @@
 
 		public function NEGOTIATE () {
 
-			$this->_get(new Json("plainSegment"));
+			$this->_get(new Markup("plainSegment", "generic/negotiated-content"));
 		}
 
 		public function _assignMiddleware (MiddlewareRegistry $registry):void {

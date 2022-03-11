@@ -80,7 +80,7 @@
 			return $builder;
 		}
 
-		private function stubSingle (array $stubs, /*MockBuilder*/ $builder):void {
+		protected function stubSingle (array $stubs, /*MockBuilder*/ $builder):void {
 
 			foreach ($stubs as $method => $newValue)
 

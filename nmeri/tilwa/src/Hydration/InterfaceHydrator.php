@@ -37,7 +37,7 @@
 
 			$loaders = $collection->getLoaders();
 
-			if (!array_key_exists($interface, $loaders)) {
+			if (array_key_exists($interface, $loaders)) {
 
 				$loader = $container->instantiateConcrete($loaders[$interface]);
 
@@ -46,7 +46,7 @@
 
 			$modules = $collection->getDelegatedInstances();
 
-			if (!array_key_exists($interface, $modules))
+			if (array_key_exists($interface, $modules))
 
 				return $this->moduleDependencyConnector($interface, $modules[$interface]);
 		}

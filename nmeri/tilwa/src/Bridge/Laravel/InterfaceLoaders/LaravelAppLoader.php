@@ -24,11 +24,11 @@
 
 			return [
 
-				"basePath" => $this->fileConfig->activeModulePath() . DIRECTORY_SEPARATOR . $this->laravelConfig->frameworkDirectory();
+				"basePath" => $this->fileConfig->activeModulePath() . DIRECTORY_SEPARATOR . $this->laravelConfig->frameworkDirectory()
 			];
 		}
 
-		public function afterBind(LaravelContainer $initialized):void {
+		public function afterBind ($initialized):void {
 
 			foreach ($this->laravelConfig->interfaceConcretes() as $alias => $concrete)
 

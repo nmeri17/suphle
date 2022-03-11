@@ -28,7 +28,7 @@
 
 				$this->alerterMethod => [1, [
 
-					$this->callback(function ($subject) {
+					$this->returnCallback(function ($subject) {
 
 						return $subject instanceof Throwable;
 					}),
@@ -48,7 +48,7 @@
 
 				$this->alerterMethod => [1, [
 
-					$this->callback(function ($subject) use ($exception) {
+					$this->returnCallback(function ($subject) use ($exception) {
 
 						return $subject instanceof $exception;
 					}),

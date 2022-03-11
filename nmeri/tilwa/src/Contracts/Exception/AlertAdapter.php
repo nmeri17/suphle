@@ -5,6 +5,7 @@
 
 	interface AlertAdapter {
 
+		// note: exception has a `getTrace()`
 		public function broadcastException (Throwable $exception, $activePayload);
 	}
 ?>

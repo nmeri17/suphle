@@ -45,7 +45,7 @@
 			// then
 			$hierarchial2 = $this->positiveDouble($sutName, [], [
 
-				"process" => [1, [$this->callback(function($subject) {
+				"process" => [1, [$this->returnCallback(function($subject) {
 
 					return $subject->hasKey("foo");
 

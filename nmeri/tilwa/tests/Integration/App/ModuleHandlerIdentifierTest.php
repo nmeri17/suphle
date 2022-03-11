@@ -31,11 +31,10 @@
 
 			$sut = $this->getIdentifier();
 
-			$sut->expects($this->atLeastOnce())->method("getLoginHandler")
-			
-			->will(
-				$this->returnValue($this->mockLoginHandler()) // then
-			); // given
+			$this->stubSingle([
+
+				"getLoginHandler" => $this->mockLoginHandler() // then
+			]); // given
 
 			// when
 			$this->setHttpParams("/login", "post", []);
@@ -62,7 +61,7 @@
 
 				"flowRequestHandler" => [$this->atLeastOnce(), [
 
-					$this->callback(function($argument) {
+					$this->returnCallback(function($argument) {
 
 						return is_a($argument, OuterFlowWrapper::class);
 					})

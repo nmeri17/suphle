@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Exception\Miscellaneous;
+	namespace Tilwa\Exception\Explosives\Miscellaneous;
 
 	use Exception;
 

@@ -5,20 +5,11 @@
 
 	class IncompatibleHttpMethod extends Exception {
 
-		private $rendererMethod;
+		protected $code = 405;
 
 		public function __construct (string $rendererMethod) {
 
-			$this->rendererMethod = $rendererMethod;
-		}
-
-		public function getCode ():int {
-
-			return 405;
-		}
-
-		public function getMessage ():string {
-
-			return "Expected HTTP method ". $this->rendererMethod;
+			$this->message = "Expected HTTP method ". $rendererMethod;
 		}
 	}
+?>

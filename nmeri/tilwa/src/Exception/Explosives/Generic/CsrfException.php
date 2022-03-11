@@ -1,13 +1,13 @@
 <?php
-	namespace Tilwa\Exception\Generic;
+	namespace Tilwa\Exception\Explosives\Generic;
 
 	use Exception;
 
 	class CsrfException extends Exception {
 
-		public function getMessage ():string {
+		public function __construct () {
 
-			return "Non-GET request missing CSRF token. Consider adding hidden token field";
+			$this->message = "Non-GET request missing CSRF token. Consider adding hidden token field";
 		}
 	}
 ?>

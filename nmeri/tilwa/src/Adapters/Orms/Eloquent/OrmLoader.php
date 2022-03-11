@@ -20,7 +20,7 @@
 			$this->laravelContainer = $laravelContainer;
 		}
 
-		public function afterBind (OrmDialect $initialized):void {
+		public function afterBind ($initialized):void {
 
 			$client = $initialized->getNativeClient();
 
