@@ -23,9 +23,13 @@
 
 		$internalMethodHydrate = false, // Used when [getMethodParameters] is called directly without going through instance methods such as [instantiateConcrete]
 
+		$hydratingArguments = false,
+
 		$constructor = "__construct",
 
-		$externalHydrator, $interfaceHydrator,
+		$requiresExternalHydrator = false, $externalHydrator,
+
+		$interfaceHydrator,
 
 		$provisionContext, // the active Type before calling `needs`
 
@@ -36,8 +40,6 @@
 		public function __construct () {
 
 			$this->initializeUniversalProvision();
-
-			$this->setExternalHydrator();
 		}
 
 		public function initializeUniversalProvision ():void {
@@ -86,14 +88,9 @@
 
 				return $parent;
 
-			$concrete = $this->getExternalHydrator()->loadPackage($fullName);
-
-			if (!is_null($concrete)) {
-
-				$this->saveWhenImplements($fullName, $concrete);
+			if ($this->requiresExternalHydrator && $concrete = $this->getFromExternalContainer($fullName))
 
 				return $concrete;
-			}
 
 			$reflectedClass = $this->getReflectedClass($fullName);
 
@@ -119,7 +116,7 @@
 
 		public function decorateProvidedConcrete (string $fullName) {
 
-			$freshlyCreated = $this->hydratingForAction($fullName, function ($className) {
+			$freshlyCreated = $this->initializeHydratingForAction($fullName, function ($className) {
 
 				return new HydratedConcrete(
 					$this->getProvidedConcrete($className),
@@ -137,8 +134,19 @@
 				); // decorator runs on each fetch (rather than only once), since different callers result in different behavior
 		}
 
+		protected function initializeHydratingForAction (string $fullName, callable $action) {
+
+			$this->initializeHydratingFor($fullName);
+
+			$result = $action($className);
+
+			$this->popHydratingFor();
+
+			return $result;
+		}
+
 		/**
-		 * If we're hydrating dependency B of class A, we want to get provisions for B--not A, the last called; otherwise, we'll be looking through class A's provisions instead of class B
+		 * Tells us who to hydrate arguments for
 		*/
 		protected function initializeHydratingFor (string $fullName):void {
 
@@ -182,9 +190,12 @@
 
 			if (!method_exists($fullName, $this->constructor))
 
-				$freshlyCreated = new HydratedConcrete(new $fullName, $this->lastHydratedFor() ?? "hi");
+				$freshlyCreated = $this->initializeHydratingForAction ($fullName, function ($className) {
 
-			else $freshlyCreated = $this->hydratingForAction(
+					return new HydratedConcrete(new $fullName, $this->lastHydratedFor() );
+				});
+
+			else $freshlyCreated = $this->initializeHydratingForAction(
 					
 				$fullName, function ($className) {
 
@@ -276,15 +287,19 @@
 		}
 
 		/**
-		 * This tells us the class we just hydrated arguments for
+		 * This tells us the class we are hydrating arguments for
 		*/
 		public function lastHydratedFor ():?string {
 
-			if(empty($this->hydratingForStack) )
+			$stack = $this->hydratingForStack;
 
-				return null;
+			if(empty($stack) ) return null;
+
+			$index = $this->hydratingArguments ? 2: 1; // If we're hydrating class A -> B -> C, we want to get provisions for B (who, at this point, is indexed -2 while C is -1). otherwise, we'll be looking through C's provisions instead of B
+
+			$length = count($stack);
 			
-			return end($this->hydratingForStack);
+			return $stack[$length - $index];
 		}
 
 		/**
@@ -293,33 +308,30 @@
 		 * @return Concrete of the given [Interface] if it was bound
 		*/
 		protected function provideInterface (string $interface) {
-var_dump($interface, "providing interface");
-			return $this->hydratingForAction($interface, function ($className) use ($interface) {
 
-				$caller = $this->lastHydratedFor();
+			$caller = $this->lastHydratedFor();
 
-				if ($this->hasRenamedSpace($caller)) {
+			if ($this->hasRenamedSpace($caller)) {
 
-					$newIdentity = $this->relocateSpace($interface, $caller);
+				$newIdentity = $this->relocateSpace($interface, $caller);
 
-					$concrete = $this->instantiateConcrete($newIdentity);
-				}
+				$concrete = $this->instantiateConcrete($newIdentity);
+			}
 
-				else {
+			else {
 
-					$concrete = $this->getInterfaceHydrator()->deriveConcrete($interface);
+				$concrete = $this->getInterfaceHydrator()->deriveConcrete($interface);
 
-					if (!is_null($concrete))
+				if (!is_null($concrete))
 
-						$this->saveWhenImplements($interface, $concrete);
-				}
+					$this->saveWhenImplements($interface, $concrete);
+			}
 
-				if (is_null($concrete))
+			if (is_null($concrete))
 
-					throw new Exception("No matching concrete found for interface " . $interface);
+				throw new Exception("No matching concrete found for interface " . $interface);
 
-				return $concrete;
-			});
+			return $concrete;
 		}
 
 		public function whenType (string $toProvision):self {
@@ -470,9 +482,16 @@ var_dump($interface, "providing interface");
 
 			$typeName = $parameterType->getName();
 
-			if (!in_array($typeName, $this->dependencyChain))
+			if (!in_array($typeName, $this->dependencyChain)) {
 
-				return $this->getClass($typeName);
+				$this->hydratingArguments = true;
+
+				$concrete = $this->getClass($typeName);
+
+				$this->hydratingArguments = false;
+
+				return $concrete;
+			}
 
 			return $this->genericFactory(
 				CircularBreaker::class, 
@@ -524,14 +543,14 @@ var_dump($interface, "providing interface");
 
 		private function hasRenamedSpace (string $caller):bool {
 
-			return array_key_exists($this->getNamespace($caller), $this->provisionedNamespaces);
+			return array_key_exists($this->classNamespace($caller), $this->provisionedNamespaces);
 		}
 
 		private function relocateSpace (string $dependency, string $caller):string {
 
-			$callerSpace = $this->getNamespace($caller);
+			$callerSpace = $this->classNamespace($caller);
 			
-			$dependencySpace = $this->getNamespace($dependency);
+			$dependencySpace = $this->classNamespace($dependency);
 
 			foreach ($this->provisionedNamespaces[$callerSpace] as $spaceUnit)
 				
@@ -545,7 +564,7 @@ var_dump($interface, "providing interface");
 				}
 		}
 
-		public function getNamespace (string $entityName):string {
+		public function classNamespace (string $entityName):string {
 			
 			return (new ReflectionClass($entityName))->getNamespaceName();
 		}
@@ -624,6 +643,23 @@ var_dump($this->lastHydratedFor(), "before_popping");
 				$hint = "Hint: Cross-check its dependencies";
 
 				throw new Exception("$message. $hint");
+			}
+		}
+
+		public function usesExternalHydration ():void {
+
+			$this->requiresExternalHydrator = true;
+		}
+
+		private function getFromExternalContainer (string $className) {
+
+			$concrete = $this->getExternalHydrator()->loadPackage($className);
+
+			if (!is_null($concrete)) {
+
+				$this->saveWhenImplements($className, $concrete);
+
+				return $concrete;
 			}
 		}
 	}
