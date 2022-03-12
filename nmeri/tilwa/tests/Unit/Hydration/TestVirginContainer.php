@@ -20,8 +20,6 @@
 			$container->initializeUniversalProvision();
 
 			$container->provideSelf();
-
-			$container->setExternalHydrator();
 		}
 
 		protected function stubDecorator () {
@@ -48,14 +46,6 @@
 					return $this->positiveDouble($subject, []);
 				})
 			]);
-		}
-
-		protected function registerCoreBindings ($container, array $bindings = []) {
-
-			$container->whenTypeAny()->needsAny(array_merge([
-
-				ModuleFiles::class => ModuleFilesMock::class
-			], $bindings));
 		}
 	}
 ?>

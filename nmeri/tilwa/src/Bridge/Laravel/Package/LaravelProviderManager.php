@@ -5,13 +5,13 @@
 
 	use Tilwa\Bridge\Laravel\Package\Templates\ProvidedServiceWrapper;
 
-	use Tilwa\Contracts\{Bridge\LaravelContainer, Config\Laravel as LaravelConfig};
+	use Tilwa\Contracts\{Bridge\LaravelContainer, Config\Laravel as LaravelConfig, Hydration\ExternalPackageManager};
 
 	use ReflectionClass;
 
 	use Illuminate\{Support\ServiceProvider, Foundation\Application};
 
-	class LaravelProviderManager {
+	class LaravelProviderManager implements ExternalPackageManager {
 
 		private $provider, $concrete, $laravelContainer,
 
@@ -43,7 +43,10 @@
 			return $config->usesPackages() && array_key_exists( $fullName, $config->getProviders() );
 		}
 
-		public function manageService (string $fullName):ProvidedServiceWrapper {
+		/**
+		 * @return ProvidedServiceWrapper
+		*/
+		public function manageService (string $fullName) {
 
 			$providerName = $this->config->getProviders()[$fullName];
 

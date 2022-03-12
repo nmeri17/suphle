@@ -1,37 +1,47 @@
 <?php
 	namespace Tilwa\Tests\Unit\Hydration;
 
-	use Tilwa\Hydration\Container;
+	use Tilwa\Hydration\{Container, ExternalPackageManagerHydrator};
 
-	use Tilwa\Contracts\Auth\UserContract;
-
-	use Tilwa\Bridge\Laravel\Package\{ManagerHydrator, LaravelProviderManager};
+	use Tilwa\Bridge\Laravel\Package\LaravelProviderManager;
 
 	class ManagerHydratorTest extends TestVirginContainer {
 
-		public function test_can_hydrate_bridge_package_manager () {
-
-			$managerName = LaravelProviderManager::class;
+		public function test_can_set_bridge_package_manager () {
 
 			$container = $this->positiveDouble(Container::class, [
 
-				"lastHydratedFor" => $managerName,
-
-				"getDecorator" => $this->stubDecorator(),
-
-				"getInterfaceHydrator" => $this->stubbedInterfaceCollection()
+				"getDecorator" => $this->stubDecorator()
 			]);
+
+			$sut = $this->positiveDouble(ExternalPackageManagerHydrator::class, [], [], compact("container") );
+
+			$this->stubSingle([
+
+				"getExternalContainerManager" => $sut
+			], $container);
 
 			$this->bootContainer($container);
 
 			$this->withDefaultInterfaceCollection($container);
 
-			$sut = new ManagerHydrator($container);
+			$container->setExternalHydrators([
 
-			$this->assertInstanceOf(
+				LaravelProviderManager::class
+			]); // when
 
-				$managerName, $sut->getManager() // when
+			$this->assertClassHasAttribute(
+
+				"managers", get_class($sut)
 			); // then
+		}
+
+		protected function registerCoreBindings ($container, array $bindings = []) {
+
+			$container->whenTypeAny()->needsAny(array_merge([
+
+				ModuleFiles::class => ModuleFilesMock::class
+			], $bindings));
 		}
 	}
 ?>

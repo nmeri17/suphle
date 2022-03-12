@@ -7,11 +7,14 @@
 
 	class OnlyLoadedByHandler implements ModifyInjected {
 
-		public function proxifyInstance (OnlyLoadedBy $concrete, string $caller) {
+		/**
+		 * @param {concrete} OnlyLoadedBy
+		*/
+		public function proxifyInstance ( $concrete, string $caller) {
 
 			foreach ($concrete->allowedConsumers() as $consumer)
 
-				if ($concrete instanceof $consumer)
+				if ($caller instanceof $consumer)
 
 					return $concrete;
 

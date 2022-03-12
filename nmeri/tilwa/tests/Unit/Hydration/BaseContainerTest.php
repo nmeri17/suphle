@@ -7,8 +7,6 @@
 
 	use Tilwa\Contracts\Auth\UserContract;
 
-	use Tilwa\Bridge\Laravel\Package\ManagerHydrator;
-
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\{ ARequiresBCounter, BCounter};
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Interfaces\CInterface;
@@ -77,10 +75,8 @@
 		public function test_getClass_tries_to_instantiate_concrete () {
 
 			// given
-			$sut = $this->positiveDouble(Container::class, [
+			$sut = $this->positiveDouble(Container::class, [], [
 
-				"loadLaravelLibrary" => null,
-			], [
 				"instantiateConcrete" => [ // then
 					$this->atLeastOnce(), [
 						$this->equalTo($this->aRequires)
@@ -123,7 +119,7 @@
 			// given
 			$sut = $this->withArgumentsForARequires();
 
-			$freshlyCreated = $sut->hydratingForAction(
+			$freshlyCreated = $sut->initializeHydratingForAction(
 				$this->aRequires,
 
 				function ($name) use ($sut) {
@@ -134,7 +130,7 @@
 			// then
 			$this->assertInstanceOf($this->aRequires, $freshlyCreated->getConcrete());
 
-			$this->assertSame($freshlyCreated->getCreatedFor(), $this->aRequires);
+			$this->assertSame($freshlyCreated->getCreatedFor(), get_class());
 		}
 
 		public function test_can_hydrate_method_parameters_without_interface () {
@@ -142,8 +138,6 @@
 			$sut = $this->positiveDouble(Container::class, [
 
 				"lastHydratedFor" => $this->aRequires,
-
-				"loadLaravelLibrary" => null,
 
 				"getDecorator" => $this->stubDecorator()
 			]);
@@ -201,9 +195,7 @@
 
 			$sut = $this->positiveDouble(Container::class, [
 
-				"getDecorator" => $this->stubDecorator(),
-
-				"getExternalHydrator" => $this->negativeDouble(ManagerHydrator::class, [])
+				"getDecorator" => $this->stubDecorator()
 			], [
 
 				"provideInterface" => [1, [$interfaceName]], // then
@@ -226,8 +218,6 @@
 			$this->bootContainer($sut);
 
 			$this->withDefaultInterfaceCollection($sut);
-
-			$this->registerCoreBindings($sut);
 
 			$sut->getClass(CInterface::class); // when
 		}
