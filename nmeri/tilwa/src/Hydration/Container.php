@@ -48,14 +48,19 @@
 		*/
 		public function setExternalHydrators (array $externalHydrators):void {
 
-			$this->externalContainerManager = $this->getExternalContainerManager();
+			$this->setExternalContainerManager();
 
-			$this->externalContainerManager->setManagers($externalHydrators);
+			$this->getExternalContainerManager()->setManagers($externalHydrators);
 		}
 
-		protected function getExternalContainerManager ():ExternalPackageManagerHydrator {
+		protected function setExternalContainerManager ():void {
 
-			return new ExternalPackageManagerHydrator($this);
+			$this->externalContainerManager = new ExternalPackageManagerHydrator($this);
+		}
+
+		public function getExternalContainerManager ():?ExternalPackageManagerHydrator {
+
+			return $this->externalContainerManager;
 		}
 
 		public function setInterfaceHydrator (string $collection):void {
@@ -89,10 +94,12 @@
 
 				return $parent;
 
-			if (
-				!is_null($this->externalContainerManager) &&
+			$externalManager = $this->getExternalContainerManager();
 
-				$concrete = $this->externalContainerManager->findInManagers($fullName)
+			if (
+				!is_null($externalManager) &&
+
+				$concrete = $externalManager->findInManagers($fullName)
 			) {
 
 				$this->saveWhenImplements($fullName, $concrete);
@@ -100,20 +107,16 @@
 				return $concrete;
 			}
 
-			$reflectedClass = $this->getReflectedClass($fullName);
+			return $this->initializeHydratingForAction($fullName, function ($className) {
 
-			if ($reflectedClass->isInterface())
+				$this->dependencyChain[] = $className;
 
-				$concrete = $this->initializeHydratingForAction($fullName, function ($className) {
+				if ($this->getReflectedClass($className)->isInterface())
 
 					return $this->provideInterface($className);
-				});
 
-			else if ($reflectedClass->isInstantiable())
-
-				$concrete = $this->instantiateConcrete($fullName);
-
-			return $concrete;
+				return $this->instantiateConcrete($className);
+			});
 		}
 
 		public function decorateProvidedConcrete (string $fullName) {
@@ -172,7 +175,7 @@
 			$index = $this->hydratingArguments ? 2: 1; // If we're hydrating class A -> B -> C, we want to get provisions for B (who, at this point, is indexed -2 while C is -1). otherwise, we'll be looking through C's provisions instead of B
 
 			$length = count($stack);
-			
+			var_dump($stack, $index, $length, $this->hydratingArguments, "lastHydratedFor");
 			return $stack[$length - $index];
 		}
 
@@ -228,7 +231,7 @@
 			}
 			catch (ReflectionException $re) {
 
-				$message = "Unable to hydrate ". end($this->dependencyChain) . ": ". $re->getMessage();
+				$message = "Unable to hydrate ". end($this->lastHydratedFor()) . ": ". $re->getMessage();
 
 				$hint = "Hint: Cross-check its dependencies";
 
@@ -253,7 +256,7 @@
 		protected function initializeHydratingFor (string $fullName):void {
 
 			$isFirstCall = is_null($this->lastHydratedFor());
-
+var_dump($isFirstCall, $this->hydratingForStack, $fullName, "initializeHydratingFor");
 			$hydrateFor = $isFirstCall ? $this->lastCaller(): $fullName;
 
 			$this->pushHydratingFor($hydrateFor);
@@ -378,8 +381,6 @@
 		}
 
 		public function hydrateConcreteForCaller (string $className):HydratedConcrete {
-
-			$this->dependencyChain[] = $className;
 
 			$dependencies = $this->internalMethodGetParameters(function () use ($className) {
 
@@ -515,7 +516,7 @@
 
 			if (!in_array($typeName, $this->dependencyChain)) {
 
-				$this->hydratingArguments = true;
+				$this->hydratingArguments = $typeName;
 
 				$concrete = $this->getClass($typeName);
 
@@ -524,14 +525,26 @@
 				return $concrete;
 			}
 
+			$classNameArray = range("a", "z");
+
+			shuffle($classNameArray);
+
+			$newClassName = substr(implode("", $classNameArray), 3, 20);
+
 			return $this->genericFactory(
-				CircularBreaker::class, 
+				__DIR__ . DIRECTORY_SEPARATOR . "Templates" . DIRECTORY_SEPARATOR . "CircularBreaker.php", 
 
-				["target" => $typeName ],
+				[
+					"className" => $newClassName,
 
-				function ($types) {
+					"extends" => $this->getReflectedClass($typeName)->isInterface() ? "implements": "extends" ,
 
-			    	return new CircularBreaker($types["target"], $this);
+					"target" => $typeName
+				],
+
+				function ($types) use ($newClassName) {
+
+			    	return new $newClassName($types["target"], $this);
 				}
 			); // A requests B and vice versa. If A makes the first call, we're returning a proxied/fake A to the B instance we pass to the real A
 		}
@@ -606,16 +619,14 @@
 		/**
 		*	@return Result of evaluating {constructor}
 		*/
-		public function genericFactory (string $generic, array $types, callable $constructor) {
+		public function genericFactory (string $classPath, array $types, callable $constructor) {
 
-			$reflectedGeneric = new ReflectionClass($generic);
-
-			$genericContents = file_get_contents($reflectedGeneric->getFileName());
+			$genericContents = file_get_contents($classPath);
 
 		    foreach ($types as $placeholder => $type)
 
 		        $genericContents = str_replace("<$placeholder>", $type, $genericContents);
-
+var_dump($genericContents);
 		    eval($genericContents);
 
 		    return $constructor($types);

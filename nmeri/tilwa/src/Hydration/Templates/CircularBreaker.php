@@ -1,7 +1,6 @@
-<?php
-	namespace Tilwa\Hydration\Templates;
 
-	class CircularBreaker extends <target> {
+
+	class <className> <extends> <target> {
 
         protected $pointer; // the [target]
 
@@ -36,4 +35,3 @@
         		$this->concrete = $this->container->getClass($this->pointer);
         }
     }
-?>

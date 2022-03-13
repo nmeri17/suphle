@@ -115,7 +115,7 @@
 			return $this->tilwaContainer
 
 			->genericFactory(
-				ProvidedServiceWrapper::class,
+				__DIR__ . DIRECTORY_SEPARATOR . "Templates" . DIRECTORY_SEPARATOR . "ProvidedServiceWrapper.php",
 
 				["target" => get_class($this->concrete)],
 

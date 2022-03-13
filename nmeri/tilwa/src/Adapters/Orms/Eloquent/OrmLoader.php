@@ -3,9 +3,7 @@
 
 	use Tilwa\Hydration\BaseInterfaceLoader;
 
-	use Tilwa\Contracts\Database\OrmDialect;
-
-	use Tilwa\Contracts\Config\{ Auth as AuthConfig, Bridge\LaravelContainer};
+	use Tilwa\Contracts\{ Config\Auth as AuthConfig, Bridge\LaravelContainer, Database\OrmDialect};
 
 	use Illuminate\Events\Dispatcher;
 

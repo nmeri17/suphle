@@ -46,10 +46,15 @@
 
 			$this->managers = array_map(function ($managerName) {
 
-				return $this->container->instantiateConcrete($managerName);
+				return $this->container->getClass($managerName);
 			}, $managerNames);
 
 			$this->isInitializing = false;
+		}
+
+		public function hasManagers ():bool {
+
+			return !empty($this->managers);
 		}
 	}
 ?>

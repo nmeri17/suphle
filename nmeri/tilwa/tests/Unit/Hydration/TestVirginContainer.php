@@ -7,8 +7,6 @@
 
 	use Tilwa\Testing\Condiments\MockFacilitator;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Config\ModuleFilesMock;
-
 	use PHPUnit\Framework\TestCase;
 
 	class TestVirginContainer extends TestCase {
