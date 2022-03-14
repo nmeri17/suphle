@@ -8,12 +8,12 @@
 
 		public function getRootPath ():string {
 
-			return dirname(__DIR__, 3) . DIRECTORY_SEPARATOR;
+			return dirname(__DIR__, 2) . DIRECTORY_SEPARATOR;
 		}
 
 		public function activeModulePath ():string {
 
-			return dirname(__DIR__, 2) . DIRECTORY_SEPARATOR;
+			return dirname(__DIR__, 1) . DIRECTORY_SEPARATOR;
 		}
 
 		public function getViewPath():string {

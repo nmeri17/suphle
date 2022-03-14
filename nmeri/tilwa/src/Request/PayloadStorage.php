@@ -1,6 +1,8 @@
 <?php
 	namespace Tilwa\Request;
 
+	use Tilwa\Routing\RequestDetails;
+
 	/**
 	 * Our closest adaptation of PSR\MessageInterface
 	*/
@@ -8,7 +10,9 @@
 
 		const JSON_HEADER_VALUE = "application/json";
 
-		private $requestDetails, $headers, $payload;
+		private $requestDetails, $headers, $payload = [],
+
+		$hasSetPayload = false;
 
 		public function __construct (RequestDetails $requestDetails) {
 
@@ -18,6 +22,10 @@
 		}
 
 		public function fullPayload ():array {
+
+			if (!$this->hasSetPayload)
+
+				$this->setPayload();
 
 			return $this->payload;
 		}
@@ -33,16 +41,24 @@
 			
 				$this->payload = array_diff_key(["tilwa_path" => 55], $_GET);
 
-			if ($this->isJsonPayload() )
+			else if ($this->isJsonPayload() )
 
 				$this->payload = json_decode(file_get_contents("php://input"), true);
 
-			$this->payload = $_POST;
+			else $this->payload = $_POST;
+
+			$this->hasSetPayload = true;
 		}
 
 		public function isJsonPayload ():bool {
 
-			return strtolower($this->headers["Content-Type"]) == self::JSON_HEADER_VALUE;
+			$headers = $this->headers;
+
+			$contentType = "Content-Type";
+
+			return isset($headers[$contentType]) &&
+
+			strtolower($headers[$contentType]) == self::JSON_HEADER_VALUE;
 		}
 
 		public function acceptsJson():bool {

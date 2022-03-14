@@ -38,7 +38,9 @@
 			$container->setExternalHydrators([
 
 				LaravelProviderManager::class
-			]); // when // IMPORTANT: this is meant to run after the above; which implies it should be deferred until module is ready for use
+			]); // when // IMPORTANT: this is meant to run after the above
+
+			$container->setExternalContainerManager();
 
 			$sut = $container->getExternalContainerManager();
 

@@ -1,13 +1,11 @@
 <?php
 	namespace Tilwa\Hydration;
 
-	use ReflectionMethod, ReflectionClass, ReflectionFunction, ReflectionType, ReflectionFunctionAbstract, ReflectionException, Exception;
+	use ReflectionMethod, ReflectionClass, ReflectionFunction, ReflectionType, ReflectionFunctionAbstract, ReflectionException;
 	
 	use Tilwa\Hydration\Structures\{ProvisionUnit, NamespaceUnit, HydratedConcrete};
-	
-	use Tilwa\Hydration\Templates\CircularBreaker;
 
-	use Tilwa\Exception\Explosives\Generic\InvalidImplementor;
+	use Tilwa\Exception\Explosives\Generic\{InvalidImplementor, HydrationException};
 
 	class Container {
 
@@ -15,9 +13,7 @@
 
 		private $provisionedNamespaces = [], // NamespaceUnit[]
 
-		$dependencyChain = [],
-
-		$hydratingForStack = [], // String[] @see [lastHydratedFor] for usage
+		$hydratingForStack = [], // String[]. Doubles as a dependency chain. @see [lastHydratedFor] for main usage
 
 		$internalMethodHydrate = false, // Used when [getMethodParameters] is called directly without going through instance methods such as [instantiateConcrete]
 
@@ -25,7 +21,9 @@
 
 		$constructor = "__construct",
 
-		$externalContainerManager, $interfaceHydrator,
+		$externalHydrators = [], $externalContainerManager,
+
+		$interfaceHydrator,
 
 		$provisionContext, // the active Type before calling `needs`
 
@@ -48,14 +46,17 @@
 		*/
 		public function setExternalHydrators (array $externalHydrators):void {
 
-			$this->setExternalContainerManager();
-
-			$this->getExternalContainerManager()->setManagers($externalHydrators);
+			$this->externalHydrators = $externalHydrators;
 		}
 
-		protected function setExternalContainerManager ():void {
+		public function setExternalContainerManager ():void { // call from booter
 
-			$this->externalContainerManager = new ExternalPackageManagerHydrator($this);
+			if (!empty($this->externalHydrators)) {
+
+				$this->externalContainerManager = new ExternalPackageManagerHydrator($this);
+
+				$this->externalContainerManager->setManagers($this->externalHydrators);
+			}
 		}
 
 		public function getExternalContainerManager ():?ExternalPackageManagerHydrator {
@@ -94,7 +95,7 @@
 
 				return $parent;
 
-			$externalManager = $this->getExternalContainerManager();
+			$externalManager = $this->externalContainerManager;
 
 			if (
 				!is_null($externalManager) &&
@@ -108,8 +109,6 @@
 			}
 
 			return $this->initializeHydratingForAction($fullName, function ($className) {
-
-				$this->dependencyChain[] = $className;
 
 				if ($this->getReflectedClass($className)->isInterface())
 
@@ -175,7 +174,7 @@
 			$index = $this->hydratingArguments ? 2: 1; // If we're hydrating class A -> B -> C, we want to get provisions for B (who, at this point, is indexed -2 while C is -1). otherwise, we'll be looking through C's provisions instead of B
 
 			$length = count($stack);
-			var_dump($stack, $index, $length, $this->hydratingArguments, "lastHydratedFor");
+			//var_dump($stack, $index, $length, $this->hydratingArguments, "lastHydratedFor");
 			return $stack[$length - $index];
 		}
 
@@ -231,21 +230,24 @@
 			}
 			catch (ReflectionException $re) {
 
-				$message = "Unable to hydrate ". end($this->lastHydratedFor()) . ": ". $re->getMessage();
+				$message = "Unable to hydrate ". $this->lastHydratedFor() . ": ". $re->getMessage();
 
 				$hint = "Hint: Cross-check its dependencies";
 
-				throw new Exception("$message. $hint");
+				throw new HydrationException("$message. $hint");
 			}
 		}
 
+		/**
+		 * Wrap any call that internally attempts to read from [lastHydratedFor] in this i.e. calls that do some hydration and need to know what context/provision they're being hydrated for
+		*/
 		public function initializeHydratingForAction (string $fullName, callable $action) {
 
 			$this->initializeHydratingFor($fullName);
 
 			$result = $action($fullName);
 
-			$this->popHydratingFor();
+			$this->popHydratingFor($fullName);
 
 			return $result;
 		}
@@ -256,7 +258,7 @@
 		protected function initializeHydratingFor (string $fullName):void {
 
 			$isFirstCall = is_null($this->lastHydratedFor());
-var_dump($isFirstCall, $this->hydratingForStack, $fullName, "initializeHydratingFor");
+
 			$hydrateFor = $isFirstCall ? $this->lastCaller(): $fullName;
 
 			$this->pushHydratingFor($hydrateFor);
@@ -287,13 +289,17 @@ var_dump($isFirstCall, $this->hydratingForStack, $fullName, "initializeHydrating
 		/**
 		 * Ahead of future invocations by other callers for provided objects
 		*/
-		private function popHydratingFor ():void {
+		private function popHydratingFor (string $completedHydration):void {
 
-			array_pop($this->hydratingForStack);
+			$stack = $this->hydratingForStack;
+
+			if (end($stack) == $completedHydration)
+
+				var_dump(333, array_pop($this->hydratingForStack), $this->hydratingForStack, $completedHydration, $this->hydratingArguments);
 		}
 
 		/**
-		 * @throws Exception
+		 * @throws InvalidImplementor
 		 * 
 		 * @return Concrete of the given [Interface] if it was bound
 		*/
@@ -319,7 +325,7 @@ var_dump($isFirstCall, $this->hydratingForStack, $fullName, "initializeHydrating
 
 			if (is_null($concrete))
 
-				throw new Exception("No matching concrete found for interface " . $interface);
+				throw new InvalidImplementor($interface, "No matching concrete" );
 
 			return $concrete;
 		}
@@ -387,8 +393,6 @@ var_dump($isFirstCall, $this->hydratingForStack, $fullName, "initializeHydrating
 				return array_values($this->getMethodParameters($this->constructor, $className));
 			});
 
-			$this->unchainDependency($className);
-
 			return new HydratedConcrete(
 				new $className (...$dependencies),
 
@@ -405,14 +409,6 @@ var_dump($isFirstCall, $this->hydratingForStack, $fullName, "initializeHydrating
 			$this->internalMethodHydrate = false;
 
 			return $result;
-		}
-
-		private function unchainDependency(string $fullName):void {
-			
-			$this->dependencyChain = array_filter($this->dependencyChain, function ($dependency) use ($fullName) {
-
-				return $dependency != $fullName;
-			});
 		}
 
 		/**
@@ -448,7 +444,7 @@ var_dump($isFirstCall, $this->hydratingForStack, $fullName, "initializeHydrating
 
 			elseif (!$this->internalMethodHydrate)
 
-				$this->popHydratingFor();
+				$this->popHydratingFor($anchorClass);
 
 			return $this->getDecorator()->scopeArguments( $anchorClass, $dependencies, $callable);
 		}
@@ -514,9 +510,9 @@ var_dump($isFirstCall, $this->hydratingForStack, $fullName, "initializeHydrating
 				return $defaultValue;
 			}
 
-			if (!in_array($typeName, $this->dependencyChain)) {
+			if (!in_array($typeName, $this->hydratingForStack)) {
 
-				$this->hydratingArguments = $typeName;
+				$this->hydratingArguments = true; // true
 
 				$concrete = $this->getClass($typeName);
 
@@ -525,21 +521,27 @@ var_dump($isFirstCall, $this->hydratingForStack, $fullName, "initializeHydrating
 				return $concrete;
 			}
 
+			if ($this->getReflectedClass($typeName)->isInterface())
+
+				throw new HydrationException ("$typeName's concrete cannot depend on its dependency's concrete");
+
 			$classNameArray = range("a", "z");
 
 			shuffle($classNameArray);
 
 			$newClassName = substr(implode("", $classNameArray), 3, 20);
 
-			return $this->genericFactory(
+			trigger_error("Circular dependency detected while hydrating $typeName", E_USER_WARNING);
+
+			return $this->genericFactory( // set a property before returning that tells us not to store this guy, so that the proxy's getClass will rehydrate
 				__DIR__ . DIRECTORY_SEPARATOR . "Templates" . DIRECTORY_SEPARATOR . "CircularBreaker.php", 
 
 				[
 					"className" => $newClassName,
 
-					"extends" => $this->getReflectedClass($typeName)->isInterface() ? "implements": "extends" ,
+					"target" => $typeName,
 
-					"target" => $typeName
+					"extends" => /*$isInterface ? "implements":*/ "extends"
 				],
 
 				function ($types) use ($newClassName) {
@@ -569,7 +571,7 @@ var_dump($isFirstCall, $this->hydratingForStack, $fullName, "initializeHydrating
 
 			if (is_null ($this->provisionContext))
 
-				throw new Exception("Undefined provisionContext");
+				throw new HydrationException("Undefined provisionContext");
 
 			$this->provisionedClasses[$this->provisionContext]->updateConcretes($dependencyList);
 			
@@ -591,7 +593,7 @@ var_dump($isFirstCall, $this->hydratingForStack, $fullName, "initializeHydrating
 
 			if (is_null ($this->provisionContext))
 
-				throw new Exception("Undefined provisionContext");
+				throw new HydrationException("Undefined provisionContext");
 
 			$this->provisionedClasses[$this->provisionContext]->updateArguments($argumentList);
 			
@@ -626,7 +628,7 @@ var_dump($isFirstCall, $this->hydratingForStack, $fullName, "initializeHydrating
 		    foreach ($types as $placeholder => $type)
 
 		        $genericContents = str_replace("<$placeholder>", $type, $genericContents);
-var_dump($genericContents);
+
 		    eval($genericContents);
 
 		    return $constructor($types);

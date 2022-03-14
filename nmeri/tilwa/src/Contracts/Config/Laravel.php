@@ -14,8 +14,7 @@
 
 		public function usesPackages ():bool;
 
+		// relative path from module folder
 		public function frameworkDirectory ():string;
-
-		public function interfaceConcretes ():array;
 	}
 ?>

@@ -141,6 +141,8 @@
 
 			$this->provideSelf();
 
+			$this->container->setExternalContainerManager();
+
 			$this->entityBindings();
 
 			$this->hasPreparedExpatriates = true;

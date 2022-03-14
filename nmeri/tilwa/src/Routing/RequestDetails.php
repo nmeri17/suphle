@@ -1,5 +1,4 @@
 <?php
-
 	namespace Tilwa\Routing; // relocate this to Request namespace
 
 	use Tilwa\Contracts\Config\Router;
@@ -41,7 +40,7 @@
 
 			return strtolower(
 
-				$_POST["_method"] ?? $_SERVER['REQUEST_METHOD']
+				$_POST["_method"] ?? @$_SERVER["REQUEST_METHOD"]
 			);
 		}
 

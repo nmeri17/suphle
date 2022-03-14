@@ -22,6 +22,8 @@
 
 			$client = $initialized->getNativeClient();
 
+			$this->laravelContainer->injectBindings($this->databaseBindings());
+
 			$client->setEventDispatcher($this->laravelContainer->make(Dispatcher::class));
 
 			$client->bootEloquent(); // in addition to using the above to register observers below, this does the all important job of Model::setConnectionResolver for us
@@ -32,6 +34,16 @@
 		public function concrete ():string {
 
 			return OrmBridge::class;
+		}
+
+		protected function databaseBindings ($initialized):array {
+
+			return [
+
+				"db.connection" => $initialized->getConnection(),
+
+				"db" => $initialized->getNativeClient()
+			];
 		}
 	}
 ?>

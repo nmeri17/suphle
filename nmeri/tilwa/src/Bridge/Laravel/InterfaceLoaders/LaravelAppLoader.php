@@ -3,9 +3,11 @@
 
 	use Tilwa\Hydration\BaseInterfaceLoader;
 
-	use Tilwa\Contracts\Config\{ModuleFiles, Laravel as LaravelConfig};
+	use Tilwa\Bridge\Laravel\LaravelAppConcrete;
 
-	use Tilwa\Contracts\Bridge\LaravelContainer;
+	use Tilwa\Bridge\Laravel\Config\{ConfigLoader, ConfigFileFinder};
+
+	use Tilwa\Contracts\Config\{ModuleFiles, Laravel as LaravelConfig};
 
 	class LaravelAppLoader extends BaseInterfaceLoader {
 
@@ -20,19 +22,11 @@
 			$this->configLoader = $configLoader;
 		}
 
-		public function bindArguments():array {
-
-			return [
-
-				"basePath" => $this->fileConfig->activeModulePath() . DIRECTORY_SEPARATOR . $this->laravelConfig->frameworkDirectory()
-			];
-		}
-
 		public function afterBind ($initialized):void {
 
-			foreach ($this->laravelConfig->interfaceConcretes() as $alias => $concrete)
+			$initialized->setBasePath($this->getBasePath());
 
-				$initialized->instance($alias, $concrete);
+			$initialized->injectBindings($initialized->defaultBindings());
 
 			(new ConfigFileFinder)
 
@@ -42,6 +36,11 @@
 		public function concrete():string {
 
 			return LaravelAppConcrete::class;
+		}
+
+		protected function getBasePath ():string {
+
+			return $this->fileConfig->activeModulePath() . $this->laravelConfig->frameworkDirectory();
 		}
 	}
 ?>

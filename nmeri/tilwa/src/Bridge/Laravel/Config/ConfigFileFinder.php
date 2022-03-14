@@ -9,7 +9,7 @@
 
 		public function loadConfigurationFiles(Application $app, RepositoryContract $repository) {
 
-			parent::loadConfigurationFiles();
+			parent::loadConfigurationFiles($app, $repository);
 		}
 	}
 ?>

@@ -89,19 +89,13 @@
 
 			if (empty($observers)) return;
 
-			$this->laravelContainer->bind(AuthStorage::class, function () {
-
-				return $this->authStorage; // guards in those observers will be relying on this value
-			});
+			$this->laravelContainer->instance(AuthStorage::class, $this->authStorage);// guards in those observers will be relying on this value
 
 			foreach ($observers as $model => $observer) {
 
 				$observerName = $model. "Authorization";
 
-				$this->laravelContainer->bind($observerName, function () use ($observer) { // this works since this is the same container passed to the eventDispatcher for use in hydrating the listeners
-
-					return $this->container->getClass($observer);
-				});
+				$this->laravelContainer->instance($observerName, $this->container->getClass($observer)); // this works since this is the same container passed to the eventDispatcher for use in hydrating the listeners
 
 				$model::observe($observerName);
 			}

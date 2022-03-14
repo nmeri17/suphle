@@ -84,7 +84,7 @@
 	    /**
 	     *  @todo override [getMany]
 	    */
-	    public function getMany ():array {
+	    public function getMany ($keys):array {
 
 	    	return [];
 	    }
