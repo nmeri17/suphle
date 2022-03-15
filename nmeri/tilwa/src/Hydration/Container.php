@@ -88,7 +88,7 @@
 		public function getClass (string $fullName, bool $includeSub = false) {
 
 			$concrete = $this->decorateProvidedConcrete($fullName);
-
+{if ($fullName == \Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\BCounter::class)var_dump(92,$fullName, $concrete); }
 			if (!is_null($concrete)) return $concrete;
 
 			if ($includeSub && $parent = $this->hydrateChildsParent($fullName))
@@ -142,9 +142,19 @@
 
 			$context = $this->getRecursionContext();
 
+			$hydrateFor = $this->lastHydratedFor();
+if (array_key_exists($hydrateFor, $this->provisionedClasses))
+
+	{$context2 = $this->provisionedClasses[$hydrateFor]; var_dump(146, $fullName, $hydrateFor, $context2, $context2->hasConcrete($fullName), $this->hydratingForStack, $context->hasConcrete($fullName));}
 			if ($context->hasConcrete($fullName))
 
 				return $context->getConcrete($fullName);
+
+			$globalContext = $this->provisionedClasses[self::UNIVERSAL_SELECTOR];
+
+			if ($globalContext->hasConcrete($fullName)) // current provision doesn't include this class. check in global
+
+				return $globalContext->getConcrete($fullName);
 		}
 
 		/**
@@ -174,7 +184,7 @@
 			$index = $this->hydratingArguments ? 2: 1; // If we're hydrating class A -> B -> C, we want to get provisions for B (who, at this point, is indexed -2 while C is -1). otherwise, we'll be looking through C's provisions instead of B
 
 			$length = count($stack);
-			//var_dump($stack, $index, $length, $this->hydratingArguments, "lastHydratedFor");
+			
 			return $stack[$length - $index];
 		}
 
@@ -287,15 +297,13 @@
 		}
 
 		/**
-		 * Ahead of future invocations by other callers for provided objects
+		 * @param {completedHydration} To guarantee push-pop consistency. When the name of what is expected to be removed doesn't match the last item in stack, it indicates we're currently hydrating an interface (where its name differs from concretes involved). When this happens, we simply ignore popping our list since those concretes were not the ones that originally got pushed
 		*/
 		private function popHydratingFor (string $completedHydration):void {
 
-			$stack = $this->hydratingForStack;
+			if (end($this->hydratingForStack) == $completedHydration)
 
-			if (end($stack) == $completedHydration)
-
-				var_dump(333, array_pop($this->hydratingForStack), $this->hydratingForStack, $completedHydration, $this->hydratingArguments);
+				array_pop($this->hydratingForStack);
 		}
 
 		/**
@@ -346,7 +354,7 @@
 				if ($spaceUnit->getSource() == $dependencySpace) {
 
 					$newIdentity = $spaceUnit->getNewName(
-						end(explode("\\", $dependency))
+						@end(explode("\\", $dependency))
 					);
 
 					return $spaceUnit->getLocation() . "\\". $newIdentity;
@@ -461,11 +469,11 @@
 
 				if (!is_null($callerProvision) )
 
-					$dependencies[$parameterName] = $this->hydrateProvidedParameter($callerProvision, $parameterType, $parameterName);
+					{var_dump($parameterType->getName(),468); $dependencies[$parameterName] = $this->hydrateProvidedParameter($callerProvision, $parameterType, $parameterName);}
 
 				elseif (!is_null($parameterType))
 
-					$dependencies[$parameterName] = $this->hydrateUnprovidedParameter($parameterType);
+					{var_dump($parameterType->getName(),472); $dependencies[$parameterName] = $this->hydrateUnprovidedParameter($parameterType);}
 				
 				elseif ($parameter->isOptional() )
 
@@ -512,8 +520,8 @@
 
 			if (!in_array($typeName, $this->hydratingForStack)) {
 
-				$this->hydratingArguments = true; // true
-
+				$this->hydratingArguments = true;
+var_dump($typeName, 520);
 				$concrete = $this->getClass($typeName);
 
 				$this->hydratingArguments = false;
@@ -533,7 +541,7 @@
 
 			trigger_error("Circular dependency detected while hydrating $typeName", E_USER_WARNING);
 
-			return $this->genericFactory( // set a property before returning that tells us not to store this guy, so that the proxy's getClass will rehydrate
+			return $this->genericFactory(
 				__DIR__ . DIRECTORY_SEPARATOR . "Templates" . DIRECTORY_SEPARATOR . "CircularBreaker.php", 
 
 				[

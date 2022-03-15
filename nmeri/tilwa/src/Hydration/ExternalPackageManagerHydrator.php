@@ -6,7 +6,7 @@
 	 */
 	class ExternalPackageManagerHydrator {
 
-		private $container, $isInitializing = false, $managers = [];
+		private $container, $managers = [];
 
 		public function __construct (Container $container) {
 
@@ -40,16 +40,10 @@
 		*/
 		public function setManagers (array $managerNames):void {
 
-			if ($this->isInitializing) return; // prevent recursive loop on the container
-
-			$this->isInitializing = true;
-
 			$this->managers = array_map(function ($managerName) {
 
 				return $this->container->getClass($managerName);
 			}, $managerNames);
-
-			$this->isInitializing = false;
 		}
 
 		public function hasManagers ():bool {

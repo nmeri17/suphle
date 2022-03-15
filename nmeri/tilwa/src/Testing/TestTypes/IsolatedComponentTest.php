@@ -5,16 +5,10 @@
 
 	use Tilwa\Testing\Condiments\GagsException;
 
-	use Tilwa\Contracts\Config\{ Router as IRouter, ModuleFiles as IModuleFiles};
-
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Config\{RouterMock, ModuleFilesMock};
-
-	use PHPUnit\Framework\TestCase;
-
 	/**
 	 * Used for tests that require a container. Boots and provides this container to them
 	*/
-	class IsolatedComponentTest extends TestCase {
+	class IsolatedComponentTest extends TestVirginContainer {
 
 		use GagsException {
 
@@ -27,6 +21,15 @@
 
 		protected function setUp ():void {
 
+			$this->container = $container = $this->positiveDouble(Container::class, [
+
+				"getDecorator" => $this->stubDecorator()
+			]);
+
+			$this->bootContainer($container);
+
+			$this->withDefaultInterfaceCollection($container);
+
 			$this->entityBindings();
 
 			if ($this->muffleExceptionBroadcast)
@@ -36,26 +39,17 @@
 
 		protected function entityBindings ():void {
 
-			$this->container = $container = new Container;
+			foreach ($this->simpleBinds() as $contract => $className)
 
-			$container->provideSelf();
+				$this->container->whenTypeAny()->needsAny([
 
-			foreach ($this->containerConfigs() as $contract => $className)
-
-				$container->whenTypeAny()->needsAny([
-
-					$contract => $container->getClass($className)
+					$contract => $this->container->getClass($className)
 				]);
 		}
 
-		protected function containerConfigs ():array {
+		protected function simpleBinds ():array {
 
-			return [
-
-				IModuleFiles::class => ModuleFilesMock::class,
-
-				IRouter::class => RouterMock::class
-			];
+			return [];
 		}
 
 		// used for normalizing traits that are applicable to both this and module level test

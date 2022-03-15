@@ -7,6 +7,8 @@
 
 	use Tilwa\Contracts\Config\{Router, ModuleFiles};
 
+	use Tilwa\Testing\TestTypes\TestVirginContainer;
+
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Config\{ModuleFilesMock, RouterMock};
 
 	class ManagerHydratorTest extends TestVirginContainer {

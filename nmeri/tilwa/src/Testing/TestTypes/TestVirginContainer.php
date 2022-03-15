@@ -1,9 +1,7 @@
 <?php
-	namespace Tilwa\Tests\Unit\Hydration;
+	namespace Tilwa\Testing\TestTypes;
 
 	use Tilwa\Hydration\{Structures\BaseInterfaceCollection, DecoratorHydrator, InterfaceHydrator};
-
-	use Tilwa\Contracts\Config\ModuleFiles;
 
 	use Tilwa\Testing\Condiments\MockFacilitator;
 

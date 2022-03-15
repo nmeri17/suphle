@@ -7,7 +7,7 @@
         private $container, $concrete;
 
 		// override extended constructor for this to be instanciated
-        function __construct(string $pointer, Container $container) {
+        function __construct(string $pointer, $container) {
 
             $this->pointer = $pointer;
 

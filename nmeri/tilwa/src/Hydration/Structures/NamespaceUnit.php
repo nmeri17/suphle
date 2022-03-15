@@ -25,7 +25,7 @@
 
 		public function getNewName(string $incomingEntity):string {
 			
-			return $this->nameResolver($incomingEntity);
+			return call_user_func($this->nameResolver, $incomingEntity);
 		}
 
 		public function getLocation():string {

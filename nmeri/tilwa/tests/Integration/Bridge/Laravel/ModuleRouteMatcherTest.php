@@ -15,7 +15,7 @@
 		
 		public function test_getResponse_from_provided_route () {
 
-			// given ==> [containerConfigs]
+			// given ==> [simpleBinds]
 
 		    // when
 		    $this->setHttpParams("/laravel/entry"); // calling this before sut is created since LaravelContainer needs the information
@@ -25,9 +25,9 @@
 		   $this->assertTrue($sut->canHandleRequest()); // then
 		}
 
-		protected function containerConfigs ():array {
+		protected function simpleBinds ():array {
 
-			return array_merge(parent::containerConfigs(), [
+			return array_merge(parent::simpleBinds(), [
 
 				ILaravel::class => LaravelMock::class
 			]);
