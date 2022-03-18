@@ -45,9 +45,21 @@
 
 					$contract => $this->container->getClass($className)
 				]);
+
+			foreach ($this->concreteBinds() as $name => $concrete)
+
+				$this->container->whenTypeAny()->needsAny([
+
+					$name => $concrete
+				]);
 		}
 
 		protected function simpleBinds ():array {
+
+			return [];
+		}
+
+		protected function concreteBinds ():array {
 
 			return [];
 		}

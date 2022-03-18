@@ -10,7 +10,7 @@
 			$this->dependency = $dependency;
 		}
 
-		public function getDependencyValue ():string {
+		public function getDependencyValue ():int {
 
 			return $this->dependency->getCount();
 		}

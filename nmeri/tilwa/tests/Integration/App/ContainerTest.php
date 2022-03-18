@@ -13,7 +13,7 @@
 
 		private $aRequires = ARequiresBCounter::class;
 
-		public function test_provided_caller_can_get () {
+		public function test_providing_caller_gets_injected () {
 
 			$container = $this->container;
 
@@ -25,10 +25,8 @@
 			]);
 
 			$aConcrete = $container->getClass($this->aRequires);
-// var_dump($ourB, $aConcrete->getInternalB());
-			$this->assertSame($aConcrete->getConstructorB(), $ourB);
 
-			$this->assertSame($aConcrete->getInternalB(), $ourB);
+			$this->assertSame($aConcrete->getConstructorB(), $ourB);
 		}
 
 		public function test_any_caller_can_get_universal () {
@@ -46,7 +44,7 @@
 
 			$this->assertSame($aConcrete->getConstructorB(), $ourB);
 
-			$this->assertSame($aConcrete->getInternalB(), $ourB);
+			$this->assertSame($aConcrete->getInternalB($container), $ourB);
 		}
 
 		public function test_provided_caller_needs_constructor () {
@@ -61,11 +59,15 @@
 			->needs([
 
 				BCounter::class => $ourB,
-			]); // later test that string here won't work
+			]);
 
 			$aConcrete = $container->getClass($this->aRequires);
 
-			$this->assertGreaterThan($aConcrete->getConstructorB()->getCount(), $aConcrete->getInternalB()->getCount());
+			$this->assertGreaterThan(
+				$aConcrete->getInternalB($container)->getCount(),
+
+				$aConcrete->getConstructorB()->getCount()
+			);
 		}
 
 		public function test_provided_method_gets_argument () {
@@ -92,9 +94,9 @@
 			$this->assertEquals($aConcrete->getConstructorB(), $ourB);
 		}
 
-		public function test_hydrate_interface_from_bound_service () {
+		public function test_will_not_hydrate_interface_from_bound_concrete () {
 
-			// given @see [simpleBinds]
+			// given @see [simpleBinds] and [concreteBinds]
 
 			$container = $this->container;
 
@@ -104,12 +106,17 @@
 
 			$aConcrete->receiveProvidedInterface(...array_values($parameters));
 
-			$this->assertEquals($aConcrete->getCInterface()->getValue(), 10); // then
+			$this->assertNotEquals($aConcrete->getCInterface()->getValue(), 10); // then
 		}
 
 		protected function simpleBinds ():array {
 
 			return [CInterface::class => CConcrete::class];
+		}
+
+		protected function concreteBinds ():array {
+
+			return [CConcrete::class => new CConcrete(10)];
 		}
 
 		public function test_whenSpace() {

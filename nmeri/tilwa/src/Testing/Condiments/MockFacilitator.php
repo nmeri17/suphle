@@ -163,7 +163,9 @@
 
 		private function computeMethodsToRetain (array $stubMethods, array $mockMethods):array {
 
-			return array_merge(array_keys($stubMethods), array_keys($mockMethods));
+			$mergedMethods = array_merge(array_keys($stubMethods), array_keys($mockMethods));
+
+			return array_unique($mergedMethods);
 		}
 	}
 ?>

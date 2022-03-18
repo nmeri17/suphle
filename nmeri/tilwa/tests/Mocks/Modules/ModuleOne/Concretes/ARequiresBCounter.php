@@ -7,13 +7,11 @@
 
 	class ARequiresBCounter {
 
-		private $b1, $container, $primitive, $cInterface;
+		private $b1, $primitive, $cInterface;
 
-		public function __construct (BCounter $b1, Container $container, string $primitive) {
+		public function __construct (BCounter $b1, string $primitive) {
 
 			$this->b1 = $b1;
-
-			$this->container = $container;
 
 			$this->primitive = $primitive;
 		}
@@ -23,9 +21,9 @@
 			return $this->b1;
 		}
 
-		public function getInternalB ():BCounter {
+		public function getInternalB ( Container $container):BCounter {
 
-			return $this->container->getClass(BCounter::class);
+			return $container->getClass(BCounter::class);
 		}
 
 		public function getPrimitive ():string {

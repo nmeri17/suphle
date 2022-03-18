@@ -112,7 +112,7 @@
 
 			return $this->positiveDouble(Container::class, array_merge([
 
-				"getMethodParameters" => array_merge($this->manuallyStubify([BCounter::class, Container::class]), [""])
+				"getMethodParameters" => array_merge($this->manuallyStubify([BCounter::class]), [""])
 			], $otherOverrides));
 		}
 
@@ -157,8 +157,6 @@
 			$this->assertTrue (is_string( $parameters["primitive"]));
 
 			$this->assertInstanceOf (BCounter::class, $parameters["b1"]);
-
-			$this->assertInstanceOf (Container::class, $parameters["container"]);
 		}
 
 		public function test_internal_get_parameters_calls_populateDependencies () {

@@ -48,8 +48,11 @@
 
 			$this->externalHydrators = $externalHydrators;
 		}
-
-		public function setExternalContainerManager ():void { // call from booter
+	
+		/**
+		 * Should be called when preparing container for use i.e. before the very first user facing getClass
+		*/
+		public function setExternalContainerManager ():void {
 
 			if (!empty($this->externalHydrators)) {
 
@@ -88,7 +91,7 @@
 		public function getClass (string $fullName, bool $includeSub = false) {
 
 			$concrete = $this->decorateProvidedConcrete($fullName);
-{if ($fullName == \Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\BCounter::class)var_dump(92,$fullName, $concrete); }
+
 			if (!is_null($concrete)) return $concrete;
 
 			if ($includeSub && $parent = $this->hydrateChildsParent($fullName))
@@ -142,10 +145,6 @@
 
 			$context = $this->getRecursionContext();
 
-			$hydrateFor = $this->lastHydratedFor();
-if (array_key_exists($hydrateFor, $this->provisionedClasses))
-
-	{$context2 = $this->provisionedClasses[$hydrateFor]; var_dump(146, $fullName, $hydrateFor, $context2, $context2->hasConcrete($fullName), $this->hydratingForStack, $context->hasConcrete($fullName));}
 			if ($context->hasConcrete($fullName))
 
 				return $context->getConcrete($fullName);
@@ -469,11 +468,11 @@ if (array_key_exists($hydrateFor, $this->provisionedClasses))
 
 				if (!is_null($callerProvision) )
 
-					{var_dump($parameterType->getName(),468); $dependencies[$parameterName] = $this->hydrateProvidedParameter($callerProvision, $parameterType, $parameterName);}
+					$dependencies[$parameterName] = $this->hydrateProvidedParameter($callerProvision, $parameterType, $parameterName);
 
 				elseif (!is_null($parameterType))
 
-					{var_dump($parameterType->getName(),472); $dependencies[$parameterName] = $this->hydrateUnprovidedParameter($parameterType);}
+					$dependencies[$parameterName] = $this->hydrateUnprovidedParameter($parameterType);
 				
 				elseif ($parameter->isOptional() )
 
@@ -521,7 +520,7 @@ if (array_key_exists($hydrateFor, $this->provisionedClasses))
 			if (!in_array($typeName, $this->hydratingForStack)) {
 
 				$this->hydratingArguments = true;
-var_dump($typeName, 520);
+
 				$concrete = $this->getClass($typeName);
 
 				$this->hydratingArguments = false;
