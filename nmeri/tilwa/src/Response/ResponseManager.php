@@ -41,7 +41,7 @@
 			return $this->renderer->render();
 		}
 
-		public function afterRender():void {
+		public function afterRender ($data):void {
 
 			if ($this->renderer->hasBranches())// the very first request won't be caught in a flow. so, delegate queueing branches
 

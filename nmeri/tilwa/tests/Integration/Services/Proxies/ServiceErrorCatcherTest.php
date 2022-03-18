@@ -5,7 +5,7 @@
 
 	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\DatalessErrorThrower;
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\Services\DatalessErrorThrower;
 
 	use Tilwa\Exception\Explosives\NotFoundException;
 

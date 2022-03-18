@@ -1,11 +1,11 @@
 <?php
 	namespace Tilwa\Middleware;
 
-	use Tilwa\Contracts\{Routing\Middleware, Services\Decorators\SelectiveDependencies, Auth\User};
+	use Tilwa\Contracts\{Routing\Middleware, Services\Decorators\SelectiveDependencies, Auth\UserContract};
 
 	use Tilwa\Routing\RequestDetails;
 
-	class BaseMiddleware implements Middleware, SelectiveDependencies {
+	abstract class BaseMiddleware implements Middleware, SelectiveDependencies {
 
 		protected $requestDetails;
 
@@ -21,7 +21,7 @@
 
 		public function getRejected ():array {
 
-			return [User::class];
+			return [UserContract::class];
 		}
 	}
 ?>

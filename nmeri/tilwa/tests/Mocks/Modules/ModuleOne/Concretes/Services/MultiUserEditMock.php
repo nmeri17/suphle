@@ -28,7 +28,7 @@
 
 		public function failureState (string $method):?OptionalDTO {
 
-			return;
+			return null;
 		}
 	}
 ?>

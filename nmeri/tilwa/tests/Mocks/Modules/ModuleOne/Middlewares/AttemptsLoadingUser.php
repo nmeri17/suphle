@@ -3,11 +3,13 @@
 
 	use Tilwa\Middleware\BaseMiddleware;
 
+	use Tilwa\Contracts\Auth\UserContract;
+
 	class AttemptsLoadingUser extends BaseMiddleware {
 
 		private $user;
 
-		public function __construct (User $user) {
+		public function __construct (UserContract $user) {
 
 			$this->user = $user;
 		}

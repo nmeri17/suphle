@@ -50,7 +50,7 @@
 			// given
 			$mock = $this->positiveDouble($sutName, [
 
-				"getResource" => $this->positiveDouble(IntegrityModel::class, [
+				"getResource" => $this->createPartialMock(IntegrityModel::class, [
 
 					"includesEditIntegrity" => true
 				])

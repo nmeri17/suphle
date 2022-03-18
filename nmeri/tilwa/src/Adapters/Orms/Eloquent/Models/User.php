@@ -5,6 +5,8 @@
 
 	use Tilwa\Contracts\Auth\UserContract;
 
+	use Illuminate\Database\Eloquent\Factories\Factory;
+
 	class User extends BaseModel implements UserContract {
 
 		protected $hidden = ["password"], $table = "users",
@@ -29,6 +31,16 @@
 		public function getPassword () {
 
 			return $this->password;
+		}
+
+		public function find ($id, $columns = ['*']) {
+
+			return $this->find($id, $columns);
+		}
+
+		public static function migrationFolders ():array {
+
+			return [dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . "Migrations"];
 		}
 	}
 ?>

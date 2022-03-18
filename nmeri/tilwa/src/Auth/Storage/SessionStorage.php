@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Auth\Storage;
 
-	use Tilwa\Contracts\Auth\UserHydrator;
+	use Tilwa\Contracts\{Auth\UserHydrator, IO\Session};
 
 	use Tilwa\Contracts\Config\Auth as AuthContract;
 
@@ -11,13 +11,15 @@
 
 		$previousUserKey = "previous_user",
 
-		$isImpersonating;
+		$isImpersonating, $sessionClient;
 
-		public function __construct (UserHydrator $userHydrator, AuthContract $authConfig) {
+		public function __construct (UserHydrator $userHydrator, AuthContract $authConfig, Session $sessionClient) {
 
 			$this->userHydrator = $userHydrator;
 
 			$this->authConfig = $authConfig;
+
+			$this->sessionClient = $sessionClient;
 		}
 
 		public function startSession (string $value):string {
@@ -26,15 +28,15 @@
 
 				$this->logout();
 
-				session_start();
+				$this->sessionClient->startNew();
 			}
 
-			return $_SESSION[$this->identifierKey] = $value;
+			return $this->sessionClient->setValue($this->identifierKey, $value);
 		}
 
 		public function resumeSession ():void {
 
-			$this->identifier = $_SESSION[$this->identifierKey];
+			$this->identifier = $this->sessionClient->getValue($this->identifierKey);
 		}
 
 		public function imitate (string $value):string {
@@ -50,26 +52,24 @@
 
 			if (!$this->hasActiveAdministrator())
 
-				$_SESSION[$this->previousUserKey] = $this->identifier;
+				$this->sessionClient->setValue($this->previousUserKey, $this->identifier);
 		}
 
 		public function getPreviousUser ():string {
 
-			return $_SESSION[$this->previousUserKey];
+			return $this->sessionClient->getValue($this->previousUserKey);
 		}
 
 		public function hasActiveAdministrator ():bool {
 
-			return array_key_exists($this->previousUserKey, $_SESSION);
+			return $this->sessionClient->hasKey($this->previousUserKey);
 		}
 
 		public function logout ():void {
 
 			parent::logout();
 
-			$_SESSION = [];
-
-			session_destroy();
+			$this->sessionClient->reset();
 		}
 	}
 ?>

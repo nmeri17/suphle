@@ -5,7 +5,7 @@
 
 	use Generator;
 
-	use Tilwa\Contracts\{Auth\AuthStorage, Config\Router as RouterConfig, Routing\RouteCollection, Presentation\BaseRenderer};
+	use Tilwa\Contracts\{Auth\AuthStorage, Config\Router as RouterConfig, Routing\RouteCollection, Presentation\BaseRenderer, IO\Session};
 
 	use Tilwa\Response\Format\Markup;
 
@@ -19,9 +19,11 @@
 
 		$requestDetails, $fullTriedPath, $container,
 
-		$activePlaceholders, $patternIndicator;
+		$activePlaceholders, $patternIndicator,
 
-		function __construct(RouterConfig $config, Container $container, RequestDetails $requestDetails, PathPlaceholders $placeholderStorage, PatternIndicator $patternIndicator) {
+		$sessionClient;
+
+		function __construct(RouterConfig $config, Container $container, RequestDetails $requestDetails, PathPlaceholders $placeholderStorage, PatternIndicator $patternIndicator, Session $sessionClient) {
 
 			$this->config = $config;
 
@@ -32,6 +34,8 @@
 			$this->activePlaceholders = $placeholderStorage;
 
 			$this->patternIndicator = $patternIndicator;
+
+			$this->sessionClient = $sessionClient;
 		}
 
 		public function findRenderer ():void {
@@ -264,16 +268,14 @@
 			return preg_match("/^$escaped/i", $this->requestDetails->getPath());
 		}
 
-		public function setPreviousRenderer(BaseRenderer $renderer):self {
+		public function setPreviousRenderer(BaseRenderer $renderer):void {
 
-			$_SESSION[self::PREV_RENDERER] = $renderer;
-
-			return $this;
+			$this->sessionClient->setValue(self::PREV_RENDERER, $renderer);
 		}
 
 		public function getPreviousRenderer ():BaseRenderer {
 
-			return $_SESSION[self::PREV_RENDERER];
+			return $this->sessionClient->getValue(self::PREV_RENDERER);
 		}
 
 		public function getActiveRenderer ():?BaseRenderer {

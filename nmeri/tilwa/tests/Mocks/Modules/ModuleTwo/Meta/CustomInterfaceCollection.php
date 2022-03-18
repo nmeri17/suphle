@@ -3,9 +3,9 @@
 
 	use Tilwa\Hydration\BaseInterfaceCollection;
 
-	use Tilwa\Contracts\Config\{ModuleFiles, Router, Events};
+	use Tilwa\Contracts\Config\{Router, Events};
 
-	use Tilwa\Tests\Mocks\Modules\ModuleTwo\Config\{ModuleFilesMock, RouterMock, EventsMock};
+	use Tilwa\Tests\Mocks\Modules\ModuleTwo\Config\{RouterMock, EventsMock};
 
 	use Tilwa\Tests\Mocks\Interactions\ModuleTwo;
 
@@ -14,8 +14,6 @@
 		public function getConfigs ():array {
 			
 			return array_merge(parent::getConfigs(), [
-
-				ModuleFiles::class => ModuleFilesMock::class,
 
 				Router::class => RouterMock::class,
 

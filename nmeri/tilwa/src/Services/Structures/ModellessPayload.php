@@ -8,7 +8,7 @@
 	/**
 	 * Aside handling requests that don't map to models/entities, this is useful for things like callback endpoints where a user is waiting for feedback on our end, but obviously not on the automated, calling service's end. In such cases, mere validation errors won't cut it. We need to respond to the waiting services with something to complete user flow
 	*/
-	class ModellessPayload extends InterceptsExternalPayload {
+	abstract class ModellessPayload extends InterceptsExternalPayload {
 
 		protected $payloadStorage;
 

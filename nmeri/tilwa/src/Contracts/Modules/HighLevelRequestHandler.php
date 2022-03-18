@@ -1,10 +1,10 @@
 <?php
 	namespace Tilwa\Contracts\Modules;
 
-	use Tilwa\Response\Format\AbstractRenderer;
+	use Tilwa\Contracts\Presentation\BaseRenderer;
 
 	interface HighLevelRequestHandler {
 
-		public function handlingRenderer ():AbstractRenderer;
+		public function handlingRenderer ():BaseRenderer;
 	}
 ?>

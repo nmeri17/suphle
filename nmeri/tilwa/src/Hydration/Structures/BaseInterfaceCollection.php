@@ -3,7 +3,7 @@
 
 	use Tilwa\Contracts\Hydration\{InterfaceCollection, DecoratorChain};
 
-	use Tilwa\Contracts\{HtmlParser, Requests\RequestValidator, Queues\Adapter as QueueAdapter, Modules\ControllerModule};
+	use Tilwa\Contracts\{HtmlParser, Requests\RequestValidator, Queues\Adapter as QueueAdapter, Modules\ControllerModule, IO\Session};
 
 	use Tilwa\Contracts\Database\{OrmDialect, OrmReplicator};
 
@@ -11,13 +11,15 @@
 
 	use Tilwa\Contracts\Auth\{AuthStorage, UserContract, UserHydrator as IUserHydrator, ModuleLoginHandler};
 
-	use Tilwa\Contracts\Config\{Auth as AuthConfig, Transphporm as TransphpormConfig, Laravel as LaravelConfig, ExceptionInterceptor, Console as ConsoleContract};
+	use Tilwa\Contracts\Config\{Auth as AuthConfig, Transphporm as TransphpormConfig, Laravel as LaravelConfig, ExceptionInterceptor, Console as ConsoleContract, Database};
 
-	use Tilwa\Contracts\IO\{ImageThumbnailContract, InferiorImageContract, ImageLocator};
+	use Tilwa\Contracts\IO\Image\{ImageThumbnailContract, InferiorImageContract, ImageLocator};
 
 	use Tilwa\IO\Image\InterfaceLoaders\{InferiorImageLoader, ImageThumbnailLoader};
 
 	use Tilwa\IO\Image\SaveClients\LocalSaver;
+
+	use Tilwa\IO\Session\NativeSession;
 
 	use Tilwa\Queues\Adapters\Resque;
 
@@ -29,7 +31,7 @@
 
 	use Tilwa\Request\Validators\RakitValidator;
 
-	use Tilwa\Config\{Auth, Transphporm, Laravel, ExceptionConfig, Console as CliConsole};
+	use Tilwa\Config\{Auth, Transphporm, Laravel, ExceptionConfig, Console as CliConsole, EnvDatabase};
 
 	use Tilwa\Modules\ControllerModuleApi;
 
@@ -92,7 +94,9 @@
 
 				OrmReplicator::class => ModelReplicator::class,
 
-				ImageLocator::class => LocalSaver::class
+				ImageLocator::class => LocalSaver::class,
+
+				Session::class => NativeSession::class
 			];
 		}
 
@@ -125,7 +129,9 @@
 
 				ExceptionInterceptor::class => ExceptionConfig::class,
 
-				ConsoleContract::class => CliConsole::class
+				ConsoleContract::class => CliConsole::class,
+
+				Database::class => EnvDatabase::class
 			];
 		}
 	}

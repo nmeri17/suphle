@@ -1,9 +1,9 @@
 <?php
 	namespace Tilwa\Config;
 
-	use Tilwa\Contracts\Config\Orm as OrmConfig;
+	use Tilwa\Contracts\Config\Database as DatabaseContract;
 
-	class Orm implements OrmConfig {
+	class EnvDatabase implements DatabaseContract {
 
 		public function getCredentials ():array {
 

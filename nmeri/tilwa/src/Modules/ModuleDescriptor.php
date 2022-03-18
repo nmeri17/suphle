@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Modules;
 
-	use Tilwa\Contracts\{Hydration\InterfaceCollection, Modules\ControllerModule};
+	use Tilwa\Contracts\{Hydration\InterfaceCollection, Modules\ControllerModule, Config\ModuleFiles};
 
 	use Tilwa\Hydration\{Container, Structures\BaseInterfaceCollection};
 
@@ -9,7 +9,7 @@
 
 	use Tilwa\Request\PayloadStorage;
 
-	class ModuleDescriptor {
+	abstract class ModuleDescriptor {
 
 		protected $container;
 
@@ -23,7 +23,7 @@
 		/**
 		 * @param {dependencies} [Interactions\Interface => new ModuleDescriptor]
 		*/
-		public function sendExpatriates(array $dependencies):self {
+		public function sendExpatriates(array $dependencies):void {
 
 			$this->expatriates = $dependencies;
 		}
@@ -74,6 +74,8 @@
 
 			return BaseInterfaceCollection::class;
 		}
+
+		abstract public function fileConfig ():ModuleFiles;
 
 		public function warmUp ():void {
 

@@ -19,7 +19,7 @@
 
 		public function hydrateDependencies( Container $container):void;
 
-		protected function getDependencies ():array;
+		public function getDependencies ():array;
 
 		public function matchesHandler (string $name):bool;
 

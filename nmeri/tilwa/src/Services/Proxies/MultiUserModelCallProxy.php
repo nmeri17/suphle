@@ -51,7 +51,7 @@
 		/**
 		 * @throws EditIntegrityException
 		*/
-		private function handleUpdateResource (array $arguments):void {
+		private function handleUpdateResource (array $arguments) {
 
 			if (!$this->payloadStorage->hasKey(self::INTEGRITY_KEY))
 

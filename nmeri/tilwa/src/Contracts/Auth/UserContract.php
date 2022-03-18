@@ -9,6 +9,11 @@
 
 		public function getPassword ();
 
-		public function find ():self;
+		/**
+		 * Find a model by its primary key.
+		 * 
+		 * @return Preferably, self
+		*/
+		public function find($id, $columns = ['*']);
 	}
 ?>

@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Contracts\IO;
+	namespace Tilwa\Contracts\IO\Image;
 
 	use Psr\Http\Message\UploadedFileInterface;
 

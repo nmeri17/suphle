@@ -3,9 +3,9 @@
 
 	use Tilwa\Hydration\BaseInterfaceCollection;
 
-	use Tilwa\Contracts\Config\{ModuleFiles, Router, Events, Laravel};
+	use Tilwa\Contracts\Config\{ Router, Events, Laravel};
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Config\{ModuleFilesMock, RouterMock, EventsMock, LaravelMock};
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Config\{RouterMock, EventsMock, LaravelMock};
 
 	use Tilwa\Tests\Mocks\Interactions\ModuleOne;
 
@@ -14,8 +14,6 @@
 		public function getConfigs ():array {
 			
 			return array_merge(parent::getConfigs(), [
-
-				ModuleFiles::class => ModuleFilesMock::class,
 
 				Events::class => EventsMock::class,
 

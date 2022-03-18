@@ -1,22 +1,31 @@
 <?php
 	namespace Tilwa\Security\CSRF;
 
+	use Tilwa\Contracts\IO\Session;
+
 	class CsrfGenerator {
 
 		const TOKEN_FIELD = "_csrf_token";
+
+		private $sessionClient;
+
+		public function __construct (Session $sessionClient) {
+
+			$this->sessionClient = $sessionClient;
+		}
 
 		public function newToken ():string {
 
 			$token = bin2hex(random_bytes(35));
 
-			$_SESSION[self::TOKEN_FIELD] = $token;
+			$this->sessionClient->setValue(self::TOKEN_FIELD, $token);
 
 			return $token;
 		}
 
 		public function isVerifiedToken (string $incomingToken):bool {
 
-			$savedToken = $_SESSION[self::TOKEN_FIELD];
+			$savedToken = $this->sessionClient->getValue(self::TOKEN_FIELD);
 
 			return !empty($savedToken) && $savedToken == $incomingToken;
 		}

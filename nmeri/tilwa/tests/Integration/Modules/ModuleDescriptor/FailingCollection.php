@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Tests\Integration\App\ModuleDescriptor;
+	namespace Tilwa\Tests\Integration\Modules\ModuleDescriptor;
 
 	use Tilwa\Errors\UnexpectedModules;
 

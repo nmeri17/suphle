@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Tests\Integration\App;
+	namespace Tilwa\Tests\Integration\Modules;
 
 	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\DirectHttpTest};
 

@@ -1,11 +1,10 @@
 <?php
-
-	namespace Tilwa\Response\Requests;
+	namespace Tilwa\Contracts\Requests;
 
 	interface BaseResponseManager {
 		
 		public function getResponse ();
 
-		public function afterRender($data):void;
+		public function afterRender ($data):void;
 	}
 ?>

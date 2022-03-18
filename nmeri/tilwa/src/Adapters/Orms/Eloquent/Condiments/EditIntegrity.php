@@ -1,6 +1,8 @@
 <?php
 	namespace Tilwa\Adapters\Orms\Eloquent\Condiments;
 
+	use Tilwa\Contracts\Services\Models\IntegrityModel;
+
 	use Tilwa\Adapters\Orms\Eloquent\Models\EditHistory;
 
 	use Illuminate\Database\Eloquent\Relations\Relation;
@@ -20,8 +22,6 @@
 	*/
 	trait EditIntegrity {
 
-		const INTEGRITY_COLUMN = "updated_at";
-
 		public function edit_history ():Relation {
 
 			return $this->morphMany(EditHistory::class, "historical");
@@ -35,7 +35,7 @@
 				
 				$primaryField => $this->$primaryField,
 
-				self::INTEGRITY_COLUMN => $integrity
+				IntegrityModel::INTEGRITY_COLUMN => $integrity
 			])->exists();
 		}
 
@@ -43,18 +43,18 @@
 
 			$this->update([
 
-				self::INTEGRITY_COLUMN => $integrity
+				IntegrityModel::INTEGRITY_COLUMN => $integrity
 			]);
 
 			if ($this->enableAudit()) $this->makeHistory();
 		}
 
-		protected function enableAudit ():bool {
+		public function enableAudit ():bool {
 
 			return true;
 		}
 
-		protected function makeHistory ():void {
+		public function makeHistory ():void {
 
 			$user = $this->authStorage->getUser();
 

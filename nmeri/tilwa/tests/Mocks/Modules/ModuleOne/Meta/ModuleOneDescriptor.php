@@ -3,7 +3,9 @@
 
 	use Tilwa\Modules\ModuleDescriptor;
 
-	use Tilwa\Contracts\Database\OrmDialect;
+	use Tilwa\Contracts\{Database\OrmDialect, Config\ModuleFiles};
+
+	use Tilwa\Config\AscendingHierarchy;
 
 	use Tilwa\Tests\Mocks\Interactions\ModuleOne;
 
@@ -25,6 +27,11 @@
 		protected function entityBindings ():void {
 
 			$this->container->getClass(OrmDialect::class);
+		}
+
+		public function fileConfig ():ModuleFiles {
+
+			return new AscendingHierarchy (__DIR__);
 		}
 	}
 ?>
