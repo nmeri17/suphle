@@ -19,7 +19,7 @@
 
 		public static function migrationFolders ():array {
 
-			return [__DIR__ . "../Migrations"];
+			return [dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . "Migrations"];
 		}
 	}
 ?>

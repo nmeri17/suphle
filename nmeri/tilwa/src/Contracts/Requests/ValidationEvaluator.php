@@ -3,6 +3,6 @@
 
 	interface ValidationEvaluator {
 
-		protected function getValidatorErrors ():array;
+		public function getValidatorErrors ():array;
 	}
 ?>

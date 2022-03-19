@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Routing; // relocate this to Request namespace
+	namespace Tilwa\Request;
 
 	use Tilwa\Contracts\Config\Router;
 

@@ -3,11 +3,9 @@
 
 	use Tilwa\Contracts\{Database\OrmDialect, Services\Models\IntegrityModel};
 
-	use Tilwa\Testing\{TestTypes\IsolatedComponentTest, Condiments\MockFacilitator};
+	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
 	class UserEditFieldUpdateTest extends IsolatedComponentTest {
-
-		use MockFacilitator;
 
 		public function test_sets_identifier_inside_transaction () {
 

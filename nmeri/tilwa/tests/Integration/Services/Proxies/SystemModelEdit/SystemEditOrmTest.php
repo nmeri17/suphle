@@ -3,7 +3,7 @@
 
 	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
-	use Tilwa\Testing\Condiments\{DirectHttpTest, MockFacilitator};
+	use Tilwa\Testing\Condiments\DirectHttpTest;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Controllers\GoodPutController;
 
@@ -11,14 +11,18 @@
 
 	class SystemEditOrmTest extends IsolatedComponentTest {
 
-		use DirectHttpTest, MockFacilitator;
+		use DirectHttpTest;
 
 		private function mockOrm ($numTimes) {
 
-			return $this->negativeDouble(OrmDialect::class, [], [
+			$ormDialect = $this->createPartialMock(OrmDialect::class);
 
+			$this->mockCalls([
+				
 				"runTransaction" => [$numTimes, [$this->anything()]]
 			]);
+
+			return $ormDialect;
 		}
 
 		public function test_update_method_runs_in_transaction () {

@@ -3,7 +3,7 @@
 
 	use Tilwa\Contracts\Exception\ExceptionHandler;
 
-	use Tilwa\Routing\RequestDetails;
+	use Tilwa\Request\RequestDetails;
 
 	use Tilwa\Response\Format\{AbstractRenderer, Markup, Json};
 

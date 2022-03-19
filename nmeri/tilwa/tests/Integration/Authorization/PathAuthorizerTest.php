@@ -3,7 +3,7 @@
 
 	use Tilwa\Request\PathAuthorizer;
 
-	use Tilwa\Testing\{Proxies\SecureUserAssertions, Condiments\MockFacilitator};
+	use Tilwa\Testing\Proxies\SecureUserAssertions;
 
 	use Tilwa\Tests\Integration\Routing\TestsRouter;
 
@@ -13,7 +13,7 @@
 
 	class PathAuthorizerTest extends TestsRouter {
 
-		use SecureUserAssertions, MockFacilitator;
+		use SecureUserAssertions;
 		
 		protected function getEntryCollection ():string {
 

@@ -1,17 +1,17 @@
 <?php
 	namespace Tilwa\Tests\Unit\Flows;
 
-	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
+	use Tilwa\Flows\{FlowHydrator, Previous\SingleNode};
 
-	use Tilwa\Testing\Condiments\MockFacilitator;
-
-	use Tilwa\Flows\{FlowHydrator, Structures\RouteUserNode, Previous\SingleNode};
+	use Tilwa\Flows\Structures\{RouteUserNode, ServiceContext};
 
 	use Tilwa\Response\ResponseManager;
 
+	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
+
 	class FlowExecutionTest extends IsolatedComponentTest {
 
-	 	use MockFacilitator, FlowData;
+	 	use FlowData;
 
 	 	private $responseManager = ResponseManager::class;
 

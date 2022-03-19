@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Services\Proxies;
 
-	use Tilwa\Contracts\Database\Orm;
+	use Tilwa\Contracts\Database\OrmDialect;
 
 	use Tilwa\Queues\AdapterManager;
 
@@ -9,11 +9,7 @@
 
 	use Tilwa\Exception\{Explosives\EditIntegrityException, DetectedExceptionManager};
 
-	use Tilwa\Services\Jobs\AddUserEditField;
-
-	use Throwable;
-
-	use DateTime;
+	use Throwable, DateTime;
 
 	/**
 	 * The idea is that the last updater should invalidate whatever those with current copies of the page are both looking at or trying to update
@@ -22,13 +18,13 @@
 
 		const INTEGRITY_KEY = "_collision_protect"; // submitted form/payload is expected to contain this key
 
-		private $orm, $queueManager, $payloadStorage;
+		private $ormDialect, $queueManager, $payloadStorage;
 
-		public function __construct (Orm $orm, AdapterManager $queueManager, PayloadStorage $payloadStorage, DetectedExceptionManager $exceptionDetector) {
+		public function __construct (OrmDialect $ormDialect, AdapterManager $queueManager, PayloadStorage $payloadStorage, DetectedExceptionManager $exceptionDetector) {
 
 			parent::__construct($exceptionDetector);
 
-			$this->orm = $orm;
+			$this->ormDialect = $ormDialect;
 
 			$this->queueManager = $queueManager;
 
@@ -65,7 +61,7 @@
 
 			try {
 
-				return $this->orm->runTransaction(function () use ($currentVersion) {
+				return $this->ormDialect->runTransaction(function () use ($currentVersion) {
 
 					$result = $this->activeService->updateResource(); // user's incoming changes
 

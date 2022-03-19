@@ -3,15 +3,11 @@
 
 	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
-	use Tilwa\Testing\Condiments\MockFacilitator;
-
 	use Tilwa\Flows\{FlowHydrator, Structures\RouteUserNode, Previous\SingleNode};
 
 	use DateTime;
 
 	class FlowConfigTest extends IsolatedComponentTest {
-
-	 	use MockFacilitator;
 
 	 	private $hydrator, $unitNode;
 

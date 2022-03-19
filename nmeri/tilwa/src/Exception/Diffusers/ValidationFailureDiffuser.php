@@ -9,6 +9,8 @@
 
 	use Tilwa\Exception\Explosives\ValidationFailure;
 
+	use Throwable;
+
 	class ValidationFailureDiffuser implements ExceptionHandler {
 
 		private $renderer, $requestDetails, $router, $validationEvaluator;
@@ -20,7 +22,10 @@
 			$this->router = $router;
 		}
 
-		public function setContextualData (ValidationFailure $origin):void {
+		/**
+		 * @param {origin} ValidationFailure
+		*/
+		public function setContextualData (Throwable $origin):void {
 
 			$this->validationEvaluator = $origin->getEvaluator();
 		}

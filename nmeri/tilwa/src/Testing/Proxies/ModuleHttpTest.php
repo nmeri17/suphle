@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Testing\Proxies;
 
-	use Tilwa\Testing\{Condiments\DirectHttpTest, Proxies\ExaminesHttpResponse};
+	use Tilwa\Testing\Condiments\DirectHttpTest;
 
 	trait ModuleHttpTest {
 

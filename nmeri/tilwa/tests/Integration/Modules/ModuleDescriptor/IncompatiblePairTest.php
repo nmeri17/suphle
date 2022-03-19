@@ -7,7 +7,7 @@
 
 	use Tilwa\Tests\Mocks\Modules\ModuleTwo\Meta\ModuleTwoDescriptor;
 
-	class IncompatiblePairTest extends DescriptorCollection {
+	class IncompatiblePairTest extends FailingCollection {
 
 		protected function setModuleTwo ():void {
 

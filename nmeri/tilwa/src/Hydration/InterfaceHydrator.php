@@ -25,9 +25,14 @@
 
 			$container = $this->container;
 
-			if ($this->isConfig($interface))
+			if ($this->isConfig($interface)) {
 
-				return $container->instantiateConcrete($collection->getConfigs()[$interface]); // we can't have custom config
+				$configs = $collection->getConfigs();
+
+				if (!array_key_exists($interface, $configs)) return;
+
+				return $container->instantiateConcrete($configs[$interface]); // not using `getClass` since we can't have custom config
+			}
 
 			$simpleBinds = $collection->simpleBinds();
 

@@ -70,7 +70,7 @@
 		*/
 		public function contextParameters ():array {
 
-			$responseManager = $this->negativeDouble(ResponseManager::class); // stubbing since the information this naturally expects to carry is too contextual to be pulled from just a container
+			$responseManager = $this->negativeDouble(ResponseManager::class, []); // stubbing since the information this naturally expects to carry is too contextual to be pulled from just a container
 
 			$user = $this->makeUser(5);
 

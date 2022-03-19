@@ -7,20 +7,20 @@
 
 	use Tilwa\Services\CoodinatorManager;
 
-	use Tilwa\Testing\{TestTypes\IsolatedComponentTest, Condiments\MockFacilitator};
+	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
+
+	use stdClass;
 
 	class ActionArgumentsTest extends IsolatedComponentTest {
-
-		use MockFacilitator;
 
 		public function test_rejects_unwanted_dependencies () {
 
 			// given
 			$correctParameters = [
 
-				$this->negativeDouble(ModelfulPayload::class, []),
+				$this->getMockForAbstractClass(ModelfulPayload::class),
 
-				$this->negativeDouble(ModellessPayload::class, [])
+				$this->getMockForAbstractClass(ModellessPayload::class)
 			];
 
 			$incorrectParameters = [new stdClass];
@@ -39,7 +39,7 @@
 
 				$this->mockModelful(),
 
-				$this->negativeDouble(ModellessPayload::class, []),
+				$this->getMockForAbstractClass(ModellessPayload::class),
 
 				$this->mockModelful()
 			];
@@ -51,7 +51,9 @@
 
 		private function mockModelful ():ModelfulPayload {
 
-			return $this->negativeDouble(ModelfulPayload::class, [], [
+			$modelful = $this->getMockForAbstractClass(ModelfulPayload::class);
+
+			$this->mockCalls([
 
 				"setDependencies" => [1, [
 					$this->returnCallback(function($subject) {
@@ -59,7 +61,9 @@
 						return $subject instanceof OrmDialect;
 					})
 				]]
-			]);
+			], $modelful);
+
+			return $modelful;
 		}
 	}
 ?>

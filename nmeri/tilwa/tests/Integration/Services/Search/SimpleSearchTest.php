@@ -1,9 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Integration\Services;
 
-	use Tilwa\Testing\Condiments\{DirectHttpTest, MockFacilitator};
-
-	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
+	use Tilwa\Testing\{TestTypes\IsolatedComponentTest, Condiments\DirectHttpTest};
 
 	use Tilwa\Contracts\Database\OrmDialect;
 
@@ -13,7 +11,7 @@
 
 	class SimpleSearchTest extends IsolatedComponentTest {
 
-		use DirectHttpTest, MockFacilitator;
+		use DirectHttpTest;
 
 		private $ormDialect, $searchService, $baseUrl = "/search/?q=jobs&";
 

@@ -1,11 +1,13 @@
 <?php
 	namespace Tilwa\Tests\Unit\Routing;
 
-	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
-
 	use Tilwa\Routing\PathPlaceholders;
 
+	use Tilwa\Testing\{TestTypes\IsolatedComponentTest, Condiments\DirectHttpTest};
+
 	class PathPlaceholdersTest extends IsolatedComponentTest {
+
+		use DirectHttpTest;
 
 		/**
 	     * @dataProvider pathsAndPatterns

@@ -3,7 +3,7 @@
 
 	use Tilwa\Contracts\{Routing\Middleware, Services\Decorators\SelectiveDependencies, Auth\UserContract};
 
-	use Tilwa\Routing\RequestDetails;
+	use Tilwa\Request\RequestDetails;
 
 	abstract class BaseMiddleware implements Middleware, SelectiveDependencies {
 

@@ -127,7 +127,7 @@
 
 				$builder->onlyMethods($methodsToRetain);
 
-			else $builder->setMethodsExcept($methodsToRetain);
+			else $builder->onlyMethods(get_class_methods($target));
 
 			/*$builder->disableProxyingToOriginalMethods()
 

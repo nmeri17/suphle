@@ -1,6 +1,8 @@
 <?php
 	namespace Tilwa\Tests\Unit\Flows;
 
+	use Tilwa\Flows\Previous\CollectionNode;
+
 	trait FlowData {
 
 		protected $payloadKey = "data", $columnName = "id",

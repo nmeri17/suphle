@@ -1,10 +1,9 @@
 <?php
-
 	namespace Tilwa\Request\Validators;
 
 	use Rakit\Validation\{Validator, ErrorBag};
 
-	use Tilwa\Contracts\RequestValidator;
+	use Tilwa\Contracts\Requests\RequestValidator;
 
 	class RakitValidator implements RequestValidator {
 

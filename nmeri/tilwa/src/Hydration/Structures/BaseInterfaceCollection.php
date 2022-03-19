@@ -25,7 +25,7 @@
 
 	use Tilwa\Auth\{LoginHandlerInterfaceLoader, Storage\SessionStorage};
 
-	use Tilwa\Adapters\Orms\Eloquent\{UserHydrator as EloquentUserHydrator, User as EloquentUser, ModelReplicator, OrmLoader};
+	use Tilwa\Adapters\Orms\Eloquent\{UserHydrator as EloquentUserHydrator, Models\User as EloquentUser, ModelReplicator, OrmLoader};
 
 	use Tilwa\Adapters\Markups\Transphporm as TransphpormAdapter;
 

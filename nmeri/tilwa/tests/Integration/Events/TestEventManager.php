@@ -5,7 +5,7 @@
 
 	use Tilwa\Testing\{Proxies\WriteOnlyContainer, Condiments\EmittedEventsCatcher};
 
-	use Tilwa\Tests\Integration\App\ModuleDescriptor\DescriptorCollection;
+	use Tilwa\Tests\Integration\Modules\ModuleDescriptor\DescriptorCollection;
 
 	class TestEventManager extends DescriptorCollection {
 

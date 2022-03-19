@@ -5,7 +5,9 @@
 
 	use Tilwa\Request\ValidatorManager;
 
-	use Tilwa\Response\{ResponseManager, Format\AbstractRenderer};
+	use Tilwa\Response\ResponseManager;
+
+	use Tilwa\Contracts\Presentation\BaseRenderer;
 
 	use Tilwa\Middleware\MiddlewareQueue;
 
@@ -17,15 +19,13 @@
 
 	use Tilwa\Exception\Diffusers\ValidationFailureDiffuser;
 
-	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
-
-	use Tilwa\Testing\Condiments\{DirectHttpTest, MockFacilitator};
+	use Tilwa\Testing\{TestTypes\IsolatedComponentTest, Condiments\DirectHttpTest};
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Controllers\ValidatorController, Validators\ValidatorOne};
 
 	class ValidatorTest extends IsolatedComponentTest {
 
-		use DirectHttpTest, MockFacilitator;
+		use DirectHttpTest;
 
 		private $controller = ValidatorController::class;
 
@@ -134,7 +134,7 @@
 
 			$router = $this->negativeDouble(RouteManager::class, [
 
-				"getPreviousRenderer" => $this->negativeDouble(AbstractRenderer::class, [], [
+				"getPreviousRenderer" => $this->negativeDouble(BaseRenderer::class, [], [
 
 					"setRawResponse" => [
 

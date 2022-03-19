@@ -3,17 +3,15 @@
 
 	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
-	use Tilwa\Testing\Condiments\MockFacilitator;
-
-	use Prophecy\Argument\Token\InArrayToken;
+	use Tilwa\Flows\{FlowHydrator, Structures\RangeContext, Previous\CollectionNode};
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\FlowService;
 
-	use Tilwa\Flows\{FlowHydrator, Structures\RangeContext, Previous\CollectionNode};
+	use Prophecy\Argument\Token\InArrayToken;
 
 	class HandlersTest extends IsolatedComponentTest {
 
-	 	use MockFacilitator, FlowData;
+	 	use FlowData;
 
 		private $flowService = FlowService::class;
 
@@ -203,7 +201,7 @@
 			$sut->reveal()->handleRange($indexes, $range);
 		}
 
-		protected function getRegularRanges ():array {
+		public function getRegularRanges ():array {
 
 			return [
 				[new RangeContext],

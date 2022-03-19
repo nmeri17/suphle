@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Request;
 
-	use Tilwa\Routing\RequestDetails;
+	use Tilwa\Request\RequestDetails;
 
 	/**
 	 * Our closest adaptation of PSR\MessageInterface

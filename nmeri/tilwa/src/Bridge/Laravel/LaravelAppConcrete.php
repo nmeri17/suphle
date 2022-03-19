@@ -5,7 +5,7 @@
 
 	use Tilwa\Bridge\Laravel\Config\ConfigLoader;
 
-	use Tilwa\Routing\RequestDetails;
+	use Tilwa\Request\RequestDetails;
 
 	use Tilwa\Request\PayloadStorage;
 

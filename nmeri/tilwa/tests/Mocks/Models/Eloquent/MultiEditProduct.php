@@ -15,5 +15,10 @@
 
 			return MultiEditProductFactory::new();
 		}
+
+		public static function migrationFolders ():array {
+
+			return [dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . "Migrations"];
+		}
 	}
 ?>

@@ -1,19 +1,17 @@
 <?php
 	namespace Tilwa\Tests\Integration\Routing;
 
-	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
-
-	use Tilwa\Testing\Condiments\{DirectHttpTest, MockFacilitator};
-
 	use Tilwa\Routing\RouteManager;
-
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\BrowserNoPrefix, Config\RouterMock};
 
 	use Tilwa\Contracts\Config\Router as IRouter;
 
+	use Tilwa\Testing\{TestTypes\IsolatedComponentTest, Condiments\DirectHttpTest};
+
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\BrowserNoPrefix, Config\RouterMock};
+
 	class TestsRouter extends IsolatedComponentTest {
 
-		use DirectHttpTest, MockFacilitator;
+		use DirectHttpTest;
 
 		public function getRouter ():RouteManager {
 
@@ -25,11 +23,9 @@
 			return BrowserNoPrefix::class;
 		}
 
-		protected function entityBindings ():void {
+		protected function concreteBinds ():array {
 
-			parent::entityBindings();
-
-			$this->container->whenTypeAny()->needsAny([
+			return [
 
 				IRouter::class => $this->positiveDouble(
 					RouterMock::class, [
@@ -37,7 +33,7 @@
 						"browserEntryRoute" => $this->getEntryCollection()
 					]
 				)
-			]);
+			];
 		}
 
 		/**

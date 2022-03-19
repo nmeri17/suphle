@@ -11,7 +11,7 @@
 
 	use Tilwa\Events\EventManager;
 
-	use Tilwa\Routing\RequestDetails;
+	use Tilwa\Request\RequestDetails;
 
 	class OuterFlowWrapper implements BaseResponseManager, HighLevelRequestHandler {
 

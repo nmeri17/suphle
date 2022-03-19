@@ -1,6 +1,8 @@
 <?php
 	namespace Tilwa\Routing;
 
+	use Tilwa\Request\RequestDetails;
+
 	use Tilwa\Exception\Explosives\Miscellaneous\IncompatiblePatternReplacement;
 
 	/**
