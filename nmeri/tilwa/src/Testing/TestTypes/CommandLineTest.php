@@ -11,7 +11,7 @@
 
 	use PHPUnit\Framework\TestCase;
 
-	abstract class CommandLineTest extends TestCase {
+	abstract class CommandLineTest extends TestVirginContainer {
 
 		use ModuleReplicator;
 

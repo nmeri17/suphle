@@ -3,7 +3,9 @@
 
 	use Tilwa\Contracts\Hydration\{InterfaceCollection, DecoratorChain};
 
-	use Tilwa\Contracts\{HtmlParser, Requests\RequestValidator, Queues\Adapter as QueueAdapter, Modules\ControllerModule, IO\Session};
+	use Tilwa\Contracts\{Presentation\HtmlParser, Requests\RequestValidator, Queues\Adapter as QueueAdapter, Modules\ControllerModule };
+
+	use Tilwa\Contracts\IO\{Session, EnvAccessor};
 
 	use Tilwa\Contracts\Database\{OrmDialect, OrmReplicator};
 
@@ -19,7 +21,7 @@
 
 	use Tilwa\IO\Image\SaveClients\LocalSaver;
 
-	use Tilwa\IO\Session\NativeSession;
+	use Tilwa\IO\{Session\NativeSession, Env\EnvAccessorLoader};
 
 	use Tilwa\Queues\Adapters\Resque;
 
@@ -31,7 +33,7 @@
 
 	use Tilwa\Request\Validators\RakitValidator;
 
-	use Tilwa\Config\{Auth, Transphporm, Laravel, ExceptionConfig, Console as CliConsole, EnvDatabase};
+	use Tilwa\Config\{Auth, Transphporm, Laravel, ExceptionConfig, Console as CliConsole, PDOMysqlKeys};
 
 	use Tilwa\Modules\ControllerModuleApi;
 
@@ -64,7 +66,9 @@
 
 				InferiorImageContract::class => InferiorImageLoader::class,
 
-				ImageThumbnailContract::class => ImageThumbnailLoader::class
+				ImageThumbnailContract::class => ImageThumbnailLoader::class,
+
+				EnvAccessor::class => EnvAccessorLoader::class
 			];
 		}
 
@@ -96,7 +100,9 @@
 
 				ImageLocator::class => LocalSaver::class,
 
-				Session::class => NativeSession::class
+				Session::class => NativeSession::class,
+
+				IUserHydrator::class => EloquentUserHydrator::class
 			];
 		}
 
@@ -125,13 +131,11 @@
 
 				TransphpormConfig::class => Transphporm::class,
 
-				IUserHydrator::class => EloquentUserHydrator::class,
-
 				ExceptionInterceptor::class => ExceptionConfig::class,
 
 				ConsoleContract::class => CliConsole::class,
 
-				Database::class => EnvDatabase::class
+				Database::class => PDOMysqlKeys::class
 			];
 		}
 	}

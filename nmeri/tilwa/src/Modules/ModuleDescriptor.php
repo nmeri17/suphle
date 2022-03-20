@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Modules;
 
-	use Tilwa\Contracts\{Hydration\InterfaceCollection, Modules\ControllerModule, Config\ModuleFiles};
+	use Tilwa\Contracts\{Hydration\InterfaceCollection, Modules\ControllerModule};
 
 	use Tilwa\Hydration\{Container, Structures\BaseInterfaceCollection};
 
@@ -74,8 +74,6 @@
 
 			return BaseInterfaceCollection::class;
 		}
-
-		abstract public function fileConfig ():ModuleFiles;
 
 		public function warmUp ():void {
 

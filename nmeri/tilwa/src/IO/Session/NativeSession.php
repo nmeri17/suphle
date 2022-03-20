@@ -7,12 +7,12 @@
 
 		function __construct() {
 
-			if ($this->noActiveSession()) $this->startNew();
+			if ($this->safeToStart()) $this->startNew();
 		}
 
-		protected function noActiveSession ():bool {
+		protected function safeToStart ():bool {
 
-			return session_status() == PHP_SESSION_NONE /*&& !headers_sent()*/;
+			return session_status() == PHP_SESSION_NONE && !headers_sent();
 		}
 
 		public function setValue (string $key, $value):void {

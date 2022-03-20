@@ -3,6 +3,8 @@
 
 	use Tilwa\Hydration\Container;
 
+	use Tilwa\Flows\ControllerFlows;
+
 	interface BaseRenderer {
 
 		public function render ():string;

@@ -1,7 +1,9 @@
 <?php
 	namespace Tilwa\Adapters\Orms\Eloquent;
 
-	use Tilwa\Contracts\Auth\UserHydrator as HydratorContract;
+	use Tilwa\Adapters\Orms\Eloquent\Models\User;
+
+	use Tilwa\Contracts\Auth\{UserContract, UserHydrator as HydratorContract};
 
 	use Tilwa\Request\PayloadStorage;
 
@@ -16,7 +18,7 @@
 			$this->payloadStorage = $payloadStorage;
 		}
 
-		public function findById(string $id):?User {
+		public function findById (string $id):?UserContract {
 
 			return $this->user->find($id);
 		}
@@ -24,7 +26,7 @@
 		/**
 		 *  {@inheritdoc}
 		*/
-		public function findAtLogin():?User {
+		public function findAtLogin ():?UserContract {
 
 			return $this->user
 

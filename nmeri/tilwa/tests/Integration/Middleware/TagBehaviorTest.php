@@ -3,7 +3,7 @@
 
 	use Tilwa\Contracts\Config\Router;
 
-	use Tilwa\Routing\RequestDetails;
+	use Tilwa\Request\RequestDetails;
 
 	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 

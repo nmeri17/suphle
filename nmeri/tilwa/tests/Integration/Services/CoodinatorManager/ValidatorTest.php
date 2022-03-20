@@ -19,11 +19,13 @@
 
 	use Tilwa\Exception\Diffusers\ValidationFailureDiffuser;
 
-	use Tilwa\Testing\{TestTypes\IsolatedComponentTest, Condiments\DirectHttpTest};
+	use Tilwa\Testing\Condiments\DirectHttpTest;
+
+	use Tilwa\Tests\Integration\Routing\TestsRouter;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Controllers\ValidatorController, Validators\ValidatorOne};
 
-	class ValidatorTest extends IsolatedComponentTest {
+	class ValidatorTest extends TestsRouter {
 
 		use DirectHttpTest;
 

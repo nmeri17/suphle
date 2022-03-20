@@ -3,13 +3,15 @@
 
 	use Tilwa\Hydration\Container;
 
-	use Generator;
-
 	use Tilwa\Contracts\{Auth\AuthStorage, Config\Router as RouterConfig, Routing\RouteCollection, Presentation\BaseRenderer, IO\Session};
 
 	use Tilwa\Response\Format\Markup;
 
-	use Tilwa\Errors\{IncompatiblePatternReplacement, IncompatibleHttpMethod};
+	use Tilwa\Request\RequestDetails;
+
+	use Tilwa\Exception\Explosives\{Miscellaneous\IncompatiblePatternReplacement, IncompatibleHttpMethod};
+
+	use Generator;
 
 	class RouteManager {
 
@@ -69,7 +71,7 @@
 			$collection = $this->container->getClass($patternsCollection);
 
 			$patternPrefix = $invokerPrefix ?? $collection->_prefixCurrent();
-			
+
 			foreach ($this->loadPatterns($collection) as $pattern) {
 
 				$computedPattern = $this->patternToUrlSegment($pattern, $patternPrefix);
@@ -116,6 +118,8 @@
 					}
 				}
 			}
+
+			return null;
 		}
 
 		/**

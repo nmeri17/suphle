@@ -26,12 +26,12 @@
 
 		protected function entityBindings ():void {
 
-			$this->container->getClass(OrmDialect::class);
-		}
+			$this->container->whenTypeAny()->needsAny([
 
-		public function fileConfig ():ModuleFiles {
+				ModuleFiles::class => new AscendingHierarchy(__DIR__)
+			])
 
-			return new AscendingHierarchy (__DIR__);
+			->getClass(OrmDialect::class);
 		}
 	}
 ?>

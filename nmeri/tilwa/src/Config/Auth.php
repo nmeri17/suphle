@@ -1,19 +1,21 @@
 <?php
 	namespace Tilwa\Config;
 
-	use Tilwa\Contracts\Config\Auth as AuthContract;
+	use Tilwa\Contracts\{Config\Auth as AuthContract, IO\EnvAccessor};
 
 	use Tilwa\Auth\Renderers\{BrowserLoginRenderer, ApiLoginRenderer};
 
-	use Tilwa\Routing\RequestDetails;
+	use Tilwa\Request\RequestDetails;
 
 	class Auth implements AuthContract {
 
-		private $requestDetails;
+		private $requestDetails, $envAccessor;
 
-		public function __construct (RequestDetails $requestDetails) {
+		public function __construct (RequestDetails $requestDetails, EnvAccessor $envAccessor) {
 
 			$this->requestDetails = $requestDetails;
+
+			$this->envAccessor = $envAccessor;
 		}
 
 		protected function getLoginPaths ():array {
@@ -43,17 +45,17 @@
 
 		public function getTokenSecretKey ():string {
 
-			return getenv("APP_SECRET_KEY");
+			return $this->envAccessor->getField("APP_SECRET_KEY");
 		}
 
 		public function getTokenIssuer ():string {
 
-			return getenv("SITE_HOST");
+			return $this->envAccessor->getField("SITE_HOST");
 		}
 
 		public function getTokenTtl ():int {
 
-			return getenv("JWT_TTL");
+			return $this->envAccessor->getField("JWT_TTL");
 		}
 
 		public function getModelObservers ():array {

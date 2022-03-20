@@ -3,20 +3,35 @@
 
 	use Tilwa\Modules\ModuleDescriptor;
 
+	use Tilwa\Hydration\Container;
+
 	use Tilwa\Testing\Proxies\WriteOnlyContainer;
 
 	trait ModuleReplicator {
 
 		/**
-		 * A blank container is given to the new module, with the assumption that we possibly wanna overwrite even the default objects (aside from only injecting absent configs)
+		 * Is only usable on test types extending TestVirginContainer
 		*/
-		protected function replicateModule(string $descriptor, callable $customizer):ModuleDescriptor {
+		protected function replicateModule(string $descriptor, callable $customizer, bool $stubsDecorator = true):ModuleDescriptor {
 
-			$writer = new WriteOnlyContainer; // using unique instances rather than a fixed one so test can make multiple calls to clone modules
+			if ($stubsDecorator)
+
+				$container = $this->positiveDouble(Container::class, [
+
+					"getDecorator" => $this->stubDecorator()
+				]);
+
+			else $container = new Container;
+
+			$this->bootContainer($container);
+
+			$this->withDefaultInterfaceCollection($container);
+
+			$writer = new WriteOnlyContainer($container); // using unique instances rather than a fixed one so test can make multiple calls to clone modules
 
 			$customizer($writer);
 
-			return new $descriptor($writer->getContainer());
+			return new $descriptor($container);
 		}
 	}
 ?>

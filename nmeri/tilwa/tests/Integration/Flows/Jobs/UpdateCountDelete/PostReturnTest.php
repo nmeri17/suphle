@@ -91,7 +91,7 @@
 			$this->assertHandledByFlow("/posts/6");
 		}
 
-		protected function expiredContexts ():array {
+		public function expiredContexts ():array {
 
 			return [
 				[

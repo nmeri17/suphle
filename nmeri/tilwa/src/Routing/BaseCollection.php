@@ -9,7 +9,7 @@
 
 	use Tilwa\Middleware\MiddlewareRegistry;
 
-	use Tilwa\Contracts\{Routing\RouteCollection, Auth\AuthStorage};
+	use Tilwa\Contracts\{Routing\RouteCollection, Auth\AuthStorage, Presentation\BaseRenderer};
 
 	abstract class BaseCollection implements RouteCollection {
 
@@ -41,7 +41,7 @@
 		/**
 		 * `save` must be called in the invoking method
 		*/
-		protected function _crud (string $viewPath, string $viewModelPath = null):BaseBuilder {
+		public function _crud (string $viewPath, string $viewModelPath = null):BaseBuilder {
 
 			$this->crudMode = true;
 
@@ -57,7 +57,7 @@
 				return $this->_register($renderer, $method);
 		}
 
-		protected function _register(AbstractRenderer $renderer, string $method):self {
+		protected function _register(BaseRenderer $renderer, string $method):self {
 
 			$renderer->setRouteMethod(ltrim($method, "_"));
 

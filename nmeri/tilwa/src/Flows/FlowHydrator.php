@@ -224,7 +224,7 @@
 			}
 		}
 
-		protected function canProcessPath():bool {
+		public function canProcessPath():bool {
 
 			return $this->responseManager->bootCoodinatorManager()
 

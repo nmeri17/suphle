@@ -17,7 +17,7 @@
 			return $this->fileConfig->activeModulePath() . "tss";
 		}
 
-		protected function inferFromViewName ():bool {
+		public function inferFromViewName ():bool {
 
 			return true;
 		}

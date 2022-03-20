@@ -5,18 +5,17 @@
 
 	use Tilwa\Testing\Condiments\MockFacilitator;
 
-	/**
-	 * Using a wrapper rather than an extension cuz we don't want Container's methods polluting the callback where this will be used
-	*/
-	class WriteOnlyContainer {
+	use PHPUnit\Framework\TestCase;
+
+	class WriteOnlyContainer extends TestCase { // so we can have access to the doubling methods
 
 		use MockFacilitator;
 
 		private $container;
 
-		public function __construct () {
+		public function __construct (Container $container) {
 
-			$this->container = new Container;
+			$this->container = $container;
 		}
 
 		public function replaceWithMock (string $interface, string $concrete, array $overrides, bool $retainOtherMethods = true):self {
@@ -41,11 +40,6 @@
 			]);
 
 			return $this;
-		}
-
-		public function getContainer ():Container {
-
-			return $this->container;
 		}
 	}
 ?>

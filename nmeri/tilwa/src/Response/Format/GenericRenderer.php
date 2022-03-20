@@ -3,25 +3,27 @@
 
 	use Tilwa\Contracts\Presentation\{HtmlParser, BaseRenderer};
 
+	use Tilwa\Hydration\Container;
+
 	use Tilwa\Flows\ControllerFlows;
 
-	class GenericRenderer implements BaseRenderer {
+	abstract class GenericRenderer implements BaseRenderer {
 
 		private $controller, $rawResponse, $path, $flows, $routeMethod;
 
 		protected $handler, $statusCode, $headers = [];
 
-		public function setControllingClass (string $class):void {
+		public function setControllingClass (string $controllerName):void {
 			
-			$this->controller = $controllerClass;
+			$this->controller = $controllerName;
 		}
 
-		protected function getDependencies ():array {
+		public function getDependencies ():array {
 
 			return [ "htmlParser" => HtmlParser::class];
 		}
 
-		public function invokeActionHandler (array $handlerParameters):self {
+		public function invokeActionHandler (array $handlerParameters):BaseRenderer {
 
 			$this->rawResponse = call_user_func_array([
 
@@ -51,14 +53,14 @@
 			return !is_null($this->flows);
 		}
 
-		public function setRawResponse($response):self {
+		public function setRawResponse($response):BaseRenderer {
 			
 			$this->rawResponse = $response;
 
 			return $this;
 		}
 
-		public function setFlow(ControllerFlows $flow):self {
+		public function setFlow(ControllerFlows $flow):BaseRenderer {
 			
 			$this->flows = $flow;
 

@@ -33,10 +33,10 @@
 
 		public function _expectsCrud ():bool;
 
-		protected function _crud (string $viewPath, string $viewModelPath = null):BaseBuilder;
+		public function _crud (string $viewPath, string $viewModelPath = null):BaseBuilder;
 
 		public function _getLastRegistered ():array;
 
-		public function _setLastRegistered (array $renderers):void
+		public function _setLastRegistered (array $renderers):void;
 	}
 ?>

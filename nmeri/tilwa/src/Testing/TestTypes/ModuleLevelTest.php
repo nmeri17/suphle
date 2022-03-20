@@ -3,21 +3,13 @@
 
 	use Tilwa\Testing\Condiments\{ModuleReplicator, GagsException};
 
-	use Tilwa\Testing\Proxies\Extensions\{FrontDoor, MiddlewareManipulator};
+	use Tilwa\Testing\Proxies\{ModuleHttpTest, Extensions\FrontDoor};
 
-	use Tilwa\Testing\Proxies\ModuleHttpTest;
+	use Tilwa\Modules\ModuleDescriptor;
 
-	use Tilwa\Modules\{ ModuleDescriptor, ModuleToRoute};
+	use Tilwa\Hydration\Container;
 
-	use Tilwa\Hydration\Container; 
-
-	use Tilwa\Middleware\MiddlewareRegistry;
-
-	use PHPUnit\Framework\TestCase;
-
-	use Illuminate\Testing\TestResponse;
-
-	abstract class ModuleLevelTest extends TestCase {
+	abstract class ModuleLevelTest extends TestVirginContainer {
 
 		use ModuleReplicator, GagsException, ModuleHttpTest {
 

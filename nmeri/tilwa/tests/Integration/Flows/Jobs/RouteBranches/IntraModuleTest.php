@@ -5,13 +5,13 @@
 
 	use Tilwa\Flows\{FlowHydrator, OuterFlowWrapper, Structures\BranchesContext};
 
-	use Tilwa\Contracts\{CacheManager, Auth\User, Config\Router};
+	use Tilwa\Contracts\{CacheManager, Auth\User, Config\Router, Presentation\BaseRenderer};
 
-	use Tilwa\Response\Format\{Json, AbstractRenderer};
+	use Tilwa\Response\Format\Json;
 
 	use Tilwa\Response\ResponseManager;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\OriginCollection, ModuleOneDescriptor, Config\RouterMock};
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\OriginCollection, Meta\ModuleOneDescriptor, Config\RouterMock};
 
 	class IntraModuleTest extends JobFactory {
 
@@ -21,11 +21,11 @@
 
 		protected function getModules():array {
 
-			$hydrator = FlowHydrator::class;
-
 			return [
 
 				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+
+					$hydrator = FlowHydrator::class;
 
 					$container->replaceWithMock(Router::class, RouterMock::class, [
 
@@ -85,7 +85,7 @@
 			];
 		}
 
-		private function flowGeneratedRenderer ():AbstractRenderer {
+		private function flowGeneratedRenderer ():BaseRenderer {
 
 			return new Json("generatedRenderer");
 		}
