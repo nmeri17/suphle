@@ -15,7 +15,7 @@
 
 	 	private $hydrator, $unitNode;
 
-		public function setUp () {
+		public function setUp ():void {
 
 			parent::setUp();
 
@@ -35,7 +35,7 @@
 			$this->unitNode->setMaxHits($callback);
 
 			// then
-			$sut = $this->getProphet()->prophesize(RouteUserNode::class);
+			$sut = $this->prophesize(RouteUserNode::class);
 
 			$sut->setMaxHitsHydrator($callback)->shouldBeCalled();
 
@@ -53,7 +53,7 @@
 			$this->unitNode->setTTL($callback);
 
 			// then
-			$sut = $this->getProphet()->prophesize(RouteUserNode::class);
+			$sut = $this->prophesize(RouteUserNode::class);
 
 			$sut->setExpiresAtHydrator($callback)->shouldBeCalled();
 

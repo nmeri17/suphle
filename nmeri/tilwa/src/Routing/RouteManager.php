@@ -1,13 +1,13 @@
 <?php
 	namespace Tilwa\Routing;
 
-	use Tilwa\App\Container;
+	use Tilwa\Hydration\Container;
 
 	use Generator;
 
-	use Tilwa\Contracts\{Auth\AuthStorage, Config\Router as RouterConfig, Routing\RouteCollection};
+	use Tilwa\Contracts\{Auth\AuthStorage, Config\Router as RouterConfig, Routing\RouteCollection, Presentation\BaseRenderer, IO\Session};
 
-	use Tilwa\Response\Format\{AbstractRenderer, Markup};
+	use Tilwa\Response\Format\Markup;
 
 	use Tilwa\Errors\{IncompatiblePatternReplacement, IncompatibleHttpMethod};
 
@@ -19,9 +19,11 @@
 
 		$requestDetails, $fullTriedPath, $container,
 
-		$activePlaceholders, $patternIndicator;
+		$activePlaceholders, $patternIndicator,
 
-		function __construct(RouterConfig $config, Container $container, RequestDetails $requestDetails, PathPlaceholders $placeholderStorage, PatternIndicator $patternIndicator) {
+		$sessionClient;
+
+		function __construct(RouterConfig $config, Container $container, RequestDetails $requestDetails, PathPlaceholders $placeholderStorage, PatternIndicator $patternIndicator, Session $sessionClient) {
 
 			$this->config = $config;
 
@@ -32,6 +34,8 @@
 			$this->activePlaceholders = $placeholderStorage;
 
 			$this->patternIndicator = $patternIndicator;
+
+			$this->sessionClient = $sessionClient;
 		}
 
 		public function findRenderer ():void {
@@ -48,6 +52,8 @@
 
 					return;
 				}
+
+				$this->patternIndicator->resetIndications();
 			}
 		}
 
@@ -58,7 +64,7 @@
 			 	yield $pattern;
 		}
 
-		private function recursiveSearch(string $patternsCollection, string $routeState = "", string $invokerPrefix = ""/*, bool $fromCache = false*/):?AbstractRenderer {
+		private function recursiveSearch(string $patternsCollection, string $routeState = "", string $invokerPrefix = ""/*, bool $fromCache = false*/):?BaseRenderer {
 
 			$collection = $this->container->getClass($patternsCollection);
 
@@ -131,15 +137,17 @@
 			return $this->requestDetails->isApiRoute() && $this->config->mirrorsCollections();
 		}
 
-		private function onSearchHit (RouteCollection $collection, AbstractRenderer $renderer, string $pattern):void {
+		private function onSearchHit (RouteCollection $collection, BaseRenderer $renderer, string $pattern):void {
 
 			$this->indicatorProxy($collection, $pattern);
 
 			if ($this->isMirroring() && $renderer instanceof Markup)
 
 				$renderer->setWantsJson();
+
+			$renderer->setControllingClass($collection->_handlingClass());
 			
-			$this->bootRenderer($renderer, $collection->_handlingClass());
+			$renderer->hydrateDependencies($this->container);
 		}
 
 		private function indicatorProxy (RouteCollection $collection, string $pattern):void {
@@ -260,19 +268,17 @@
 			return preg_match("/^$escaped/i", $this->requestDetails->getPath());
 		}
 
-		public function setPreviousRenderer(AbstractRenderer $renderer):self {
+		public function setPreviousRenderer(BaseRenderer $renderer):void {
 
-			$_SESSION[self::PREV_RENDERER] = $renderer;
-
-			return $this;
+			$this->sessionClient->setValue(self::PREV_RENDERER, $renderer);
 		}
 
-		public function getPreviousRenderer ():AbstractRenderer {
+		public function getPreviousRenderer ():BaseRenderer {
 
-			return $_SESSION[self::PREV_RENDERER];
+			return $this->sessionClient->getValue(self::PREV_RENDERER);
 		}
 
-		public function getActiveRenderer ():?AbstractRenderer {
+		public function getActiveRenderer ():?BaseRenderer {
 
 			return $this->activeRenderer;
 		}
@@ -300,26 +306,6 @@
 			}
 
 			return [$entryRoute];
-		}
-
-		private function bootRenderer(AbstractRenderer $renderer, string $controllingClass):void {
-
-			$rendererName = get_class($renderer);
-
-			$parameters = $this->provideRendererDependencies($rendererName, $controllingClass)
-			
-			->getMethodParameters("setDependencies", $rendererName);
-
-			$renderer->setDependencies(...array_values($parameters));
-		}
-
-		private function provideRendererDependencies(string $renderer, string $controller):Container {
-
-			return $this->container->whenType($renderer)
-
-			->needsArguments([
-				"controllerClass" => $controller
-			]);
 		}
 
 		public function getIndicator ():PatternIndicator {

@@ -3,78 +3,117 @@
 
 	use ReflectionMethod;
 
-	use PHPUnit\Framework\MockObject\MockBuilder;
+	use PHPUnit\Framework\MockObject\{MockBuilder, Stub\Stub, Rule\InvocationOrder, Builder\InvocationMocker};
 
 	trait MockFacilitator {
 
-		protected function positiveStub (string $target, array $overrides, array $constructorArguments = []):MockBuilder {
+		/**
+		 * @param {mockMethods} = [string method => [int|InvocationOrder numTimes, [arguments]]]
+		*/
+		protected function positiveDouble (string $target, array $stubs, array $mockMethods = [], array $constructorArguments = [])/*:MockBuilder*/ {
 
-			$builder = $this->getBuilder($target, $constructorArguments, $overrides);
+			$builder = $this->getBuilder(
+				$target, $constructorArguments,
 
-			$this->stubSingle($overrides, $builder);
+				$this->computeMethodsToRetain($stubs, $mockMethods)
+			);
+
+			$this->stubSingle($stubs, $builder);
+
+			$this->mockCalls($mockMethods, $builder);
 
 			return $builder;
 		}
 
-		protected function positiveStubMany (string $target, array $overrides, array $constructorArguments = []):MockBuilder {
+		protected function positiveDoubleMany (string $target, array $stubs, array $mockMethods = [], array $constructorArguments = [])/*:MockBuilder*/ {
 
-			$builder = $this->getBuilder($target, $constructorArguments, $overrides);
+			$builder = $this->getBuilder(
+				$target, $constructorArguments,
 
-			$this->stubMany($overrides, $builder);
+				$this->computeMethodsToRetain($stubs, $mockMethods)
+			);
+
+			$this->stubMany($stubs, $builder);
+
+			$this->mockCalls($mockMethods, $builder);
 
 			return $builder;
+		}
+
+		protected function mockCalls (array $calls, $builder):void {
+
+			foreach ($calls as $method => $behavior) {
+
+				$this->getCallCount($builder, $behavior[0])
+
+				->method($method)->with(...$behavior[1]);
+			}
+		}
+
+		/**
+		 * @param {count} int|InvocationOrder
+		 * 
+		 * @return InvocationMocker
+		*/
+		private function getCallCount ($builder, $count) {
+
+			return $builder->expects(is_int($count) ? $this->exactly($count): $count);
 		}
 
 		/**
 		 * Use when the other methods contain actions we don't wanna trigger
 		*/
-		protected function negativeStub (string $target, array $overrides, array $constructorArguments = []):MockBuilder {
+		protected function negativeDouble (string $target, array $stubs, array $mockMethods = [], array $constructorArguments = [])/*:MockBuilder*/ {
 
-			$builder = $this->getBuilder($target, $constructorArguments, []);
+			$builder = $this->getBuilder(
+				$target, $constructorArguments,
 
-			$this->stubSingle($overrides, $builder);
+				$this->computeMethodsToRetain($stubs, $mockMethods),
+
+				true
+			);
+
+			$this->stubSingle($stubs, $builder);
+
+			$this->mockCalls($mockMethods, $builder);
 
 			return $builder;
 		}
 
-		protected function negativeStubMany (string $target, array $overrides, array $constructorArguments = []):MockBuilder {
+		protected function stubSingle (array $stubs, /*MockBuilder*/ $builder):void {
 
-			$builder = $this->getBuilder($target, $constructorArguments, []);
+			foreach ($stubs as $method => $newValue)
 
-			$this->stubMany($overrides, $builder);
+				$builder->expects($this->any())
 
-			return $builder;
-		}
-
-		private function stubSingle (array $overrides, MockBuilder $builder):void {
-
-            foreach ($overrides as $method => $newValue)
-
-            	$builder->expects($this->any())
-
-            	->method($method)->will($this->returnValue($newValue));
+				->method($method)->will($this->wrapStubBehavior($newValue));
 		}
 
 		/**
 		 * Allows for stubbing multiple calls to SUT and receiving different results each time
 		*/
-		private function stubMany (array $overrides, MockBuilder $builder):void {
+		private function stubMany (array $stubs, /*MockBuilder*/ $builder):void {
 
-            foreach ($overrides as $method => $newValue) {
+			foreach ($stubs as $method => $newValue) {
 
-            	$expectation = $builder->expects($this->any())
+				$expectation = $builder->expects($this->any())
 
-            	->method($method);
+				->method($method);
 
-            	if (is_array($newValue))
+				if (is_array($newValue))
 
-            		$expectation->will($this->onConsecutiveCalls(...$newValue));
+					$expectation->will($this->onConsecutiveCalls(...$newValue));
 
-            	else $expectation->will($this->returnValue($newValue));
-            }
+				else $expectation->will($this->wrapStubBehavior($newValue));
+			}
 		}
 
-		private function getBuilder (string $target, array $constructorArguments, array $methodsToRetain):MockBuilder {
+		private function wrapStubBehavior ($value):Stub {
+
+			return $value instanceof Stub ? $value: $this->returnValue($value);
+		}
+
+		private function getBuilder (string $target, array $constructorArguments, array $methodsToRetain, bool $isNegative = false)/*:MockBuilder*/ {
 
 			$builder = $this->getMockBuilder($target);
 
@@ -82,20 +121,30 @@
 
 				$builder->setConstructorArgs($constructorArguments);
 
-			if (!empty($methodsToRetain))
+			else $builder->disableOriginalConstructor();
 
-				$builder->setMethods(array_keys($methodsToRetain));
+			if (!$isNegative)
+
+				$builder->onlyMethods($methodsToRetain);
+
+			else $builder->setMethodsExcept($methodsToRetain);
+
+			/*$builder->disableProxyingToOriginalMethods()
+
+			->disableAutoReturnValueGeneration()*/;
+
+			$builder->disableArgumentCloning();
 
 			return $builder->getMock();
 		}
 
-		protected function replaceConstructorArguments (string $target, array $constructorOverrides, array $methodOverrides):MockBuilder {
+		protected function replaceConstructorArguments (string $target, array $constructorstubs, array $methodstubs)/*:MockBuilder*/ {
 
 			$reflectedConstructor = new ReflectionMethod($target, "__construct");
 
-			$arguments = $this->mockDummyUnion($reflectedConstructor->getParameters(), $constructorOverrides);
+			$arguments = $this->mockDummyUnion($reflectedConstructor->getParameters(), $constructorstubs);
 
-			return $this->positiveStub($target, $methodOverrides, $arguments);
+			return $this->positiveDouble($target, $methodstubs, $arguments);
 		}
 
 		private function mockDummyUnion (array $parameters, array $replacements):array {
@@ -108,8 +157,15 @@
 
 					return $replacements[$parameterName];
 
-				return $this->positiveStub($parameter->getType()->getName(), []);
+				return $this->positiveDouble($parameter->getType()->getName(), []);
 			}, $parameters);
+		}
+
+		private function computeMethodsToRetain (array $stubMethods, array $mockMethods):array {
+
+			$mergedMethods = array_merge(array_keys($stubMethods), array_keys($mockMethods));
+
+			return array_unique($mergedMethods);
 		}
 	}
 ?>

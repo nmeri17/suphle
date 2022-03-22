@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Flows\Jobs;
 
-	use Tilwa\App\ModuleToRoute;
+	use Tilwa\Modules\ModuleToRoute;
 
 	use Tilwa\Flows\Structures\{BranchesContext, RouteUserNode};
 
@@ -9,8 +9,10 @@
 
 	use Tilwa\Response\ResponseManager;
 
+	use Tilwa\Contracts\Queues\Task;
+
 	// for queueing the cached endpoint on hit and queuing sub-flows
-	class RouteBranches {
+	class RouteBranches implements Task {
 
 		private $context, $moduleFinder, $hydrator;
 

@@ -1,65 +1,78 @@
 <?php
 	namespace Tilwa\Testing\TestTypes;
 
-	use Tilwa\App\Container;
+	use Tilwa\Hydration\Container;
 
-	use Tilwa\Contracts\Config\{ Services as IServices, Laravel as ILaravel, Router as IRouter, Auth as IAuth, Transphporm as ITransphporm, ModuleFiles as IModuleFiles};
-
-	use Tilwa\Config\{ Services, Laravel, Auth, Transphporm}; // using our default config for these
-
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Config\{RouterMock, ModuleFilesMock};
-
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\BrowserNoPrefix;
-
-	use PHPUnit\Framework\TestCase;
+	use Tilwa\Testing\Condiments\GagsException;
 
 	/**
 	 * Used for tests that require a container. Boots and provides this container to them
 	*/
-	class IsolatedComponentTest extends TestCase {
+	class IsolatedComponentTest extends TestVirginContainer {
 
-		protected $container;
+		use GagsException {
+
+			GagsException::setUp as mufflerSetup;
+		}
+
+		protected $container,
+
+		$muffleExceptionBroadcast = true;
 
 		protected function setUp ():void {
 
-			$this->container = new Container;
+			$this->container = $container = $this->positiveDouble(Container::class, [
 
-			$this->bootContainer()->entityBindings();
-		}
-
-		protected function bootContainer ():self {
-
-			$this->container->setConfigs($this->containerConfigs());
-
-			return $this;
-		}
-
-		protected function entityBindings ():self {
-
-			$this->container->whenTypeAny()->needsAny([
-
-				Container::class => $this->container,
-
-				IRouter::class => new RouterMock(BrowserNoPrefix::class)
+				"getDecorator" => $this->stubDecorator()
 			]);
 
-			return $this;
+			$this->bootContainer($container);
+
+			$this->withDefaultInterfaceCollection($container);
+
+			$this->entityBindings();
+
+			if ($this->muffleExceptionBroadcast)
+
+				$this->mufflerSetup();
 		}
 
-		protected function containerConfigs ():array {
+		protected function entityBindings ():void {
 
-			return [
+			foreach ($this->simpleBinds() as $contract => $className)
 
-				ILaravel::class => Laravel::class,
+				$this->container->whenTypeAny()->needsAny([
 
-				IServices::class => Services::class,
+					$contract => $this->container->getClass($className)
+				]);
 
-				IAuth::class => Auth::class,
+			foreach ($this->concreteBinds() as $name => $concrete)
 
-				ITransphporm::class => Transphporm::class,
+				$this->container->whenTypeAny()->needsAny([
 
-				IModuleFiles::class => ModuleFilesMock::class
-			];
+					$name => $concrete
+				]);
+		}
+
+		protected function simpleBinds ():array {
+
+			return [];
+		}
+
+		protected function concreteBinds ():array {
+
+			return [];
+		}
+
+		// used for normalizing traits that are applicable to both this and module level test
+		protected function getContainer ():Container {
+
+			return $this->container;
+		}
+
+		protected function massProvide (array $provisions):void {
+
+			$this->container->whenTypeAny()->needsAny($provisions);
 		}
 	}
 ?>

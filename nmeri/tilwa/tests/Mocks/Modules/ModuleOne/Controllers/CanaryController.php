@@ -1,9 +1,9 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Controllers;
 
-	use Tilwa\Controllers\Executable;
+	use Tilwa\Services\ServiceCoordinator;
 
-	class CanaryController extends Executable {
+	class CanaryController extends ServiceCoordinator {
 
 		public function user5Handler () {
 

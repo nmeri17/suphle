@@ -1,13 +1,21 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Events;
 
+	use Tilwa\Events\{EmitProxy, EventManager};
+
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Meta\ModuleApi;
+
 	class LocalReceiver {
 
-		private $payload;
+		use EmitProxy;
 
-		public function getPayload () {
+		const CASCADE_REBOUND_EVENT = "rebounding";
 
-			return $this->payload;
+		private $eventManager;
+
+		public function __construct (EventManager $eventManager) {
+
+			$this->eventManager = $eventManager;
 		}
 
 		public function updatePayload ($payload):void {
@@ -15,9 +23,24 @@
 			$this->payload = $payload;
 		}
 
-		public function setDefaultPayload ():void {
+		public function doNothing ():void {
 
-			$this->payload = 10;
+			//
+		}
+
+		public function reboundsNewEvent ($payload):void {
+
+			$this->emitHelper( self::CASCADE_REBOUND_EVENT, $payload);
+		}
+
+		public function unionHandler ($payload = null):void {
+
+			$this->payload = $payload;
+		}
+
+		public function reboundExternalEvent ($payload):void {
+
+			$this->emitHelper( ModuleApi::OUTSIDERS_REBOUND_EVENT, $payload);
 		}
 	}
 ?>

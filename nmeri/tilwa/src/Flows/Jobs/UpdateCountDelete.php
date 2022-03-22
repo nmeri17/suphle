@@ -3,12 +3,12 @@
 
 	use Tilwa\Flows\Structures\AccessContext;
 
-	use Tilwa\Contracts\CacheManager;
+	use Tilwa\Contracts\{CacheManager, Queues\Task};
 
 	/**
 	 * This job runs after one of the possible renderers stored for a path has been accessed
 	*/
-	class UpdateCountDelete {
+	class UpdateCountDelete implements Task {
 
 		private $accessedContext, $cacheManager;
 

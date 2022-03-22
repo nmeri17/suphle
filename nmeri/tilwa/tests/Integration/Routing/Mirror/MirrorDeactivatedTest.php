@@ -5,17 +5,17 @@
 
 	use Tilwa\Contracts\Config\Router as IRouter;
 
-	use Tilwa\Tests\Integration\Routing\BaseRouterTest;
+	use Tilwa\Tests\Integration\Routing\TestsRouter;
 
-	class MirrorDeactivatedTest extends BaseRouterTest {
+	class MirrorDeactivatedTest extends TestsRouter {
 
-		protected function entityBindings ():self {
+		protected function entityBindings ():void {
 
 			parent::entityBindings();
 
 			$this->container->whenTypeAny()->needsAny([
 
-				IRouter::class => $this->positiveStub(
+				IRouter::class => $this->positiveDouble(
 					RouterMock::class,
 
 					[
@@ -25,8 +25,6 @@
 					]
 				)
 			]);
-
-			return $this;
 		}
 
 		public function test_disable_mirror_blocks_those_routes () {

@@ -3,9 +3,13 @@
 
 	use Tilwa\Response\Format\AbstractRenderer;
 
-	use Tilwa\Contracts\{Routing\RouteCollection, Auth\AuthStorage};
+	use Tilwa\Request\PathAuthorizer;
 
 	use Tilwa\Routing\Crud\{BaseBuilder, BrowserBuilder};
+
+	use Tilwa\Middleware\MiddlewareRegistry;
+
+	use Tilwa\Contracts\{Routing\RouteCollection, Auth\AuthStorage};
 
 	abstract class BaseCollection implements RouteCollection {
 
@@ -13,17 +17,15 @@
 
 		$crudMode = false,
 
-		$canaryValidator, $authStorage, $middlewareRegistry;
+		$canaryValidator, $authStorage;
 
 		private $crudPrefix, $prefixClass, $lastRegistered;
 
-		public function __construct(CanaryValidator $validator, SessionStorage $authStorage, MiddlewareRegistry $middlewareRegistry) {
+		public function __construct(CanaryValidator $validator, AuthStorage $authStorage) {
 
 			$this->canaryValidator = $validator;
 
 			$this->authStorage = $authStorage;
-
-			$this->middlewareRegistry = $middlewareRegistry;
 		}
 		
 		public function _prefixCurrent():string {
@@ -82,7 +84,7 @@
 		# filter off methods that belong to this base
 		public function _getPatterns():array {
 
-			return array_diff(get_class_methods($this), $this->collectionParent);
+			return array_diff(get_class_methods($this), get_class_methods($this->collectionParent));
 		}
 
 		public function _authenticatedPaths():array {
@@ -90,9 +92,9 @@
 			return [];
 		}
 
-		public function _authorizePaths():void {}
+		public function _authorizePaths(PathAuthorizer $pathAuthorizer):void {}
 
-		public function _assignMiddleware():void {}
+		public function _assignMiddleware(MiddlewareRegistry $registry):void {}
 
 		public function _getAuthenticator ():AuthStorage {
 

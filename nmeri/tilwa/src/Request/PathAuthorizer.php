@@ -1,68 +1,74 @@
 <?php
 	namespace Tilwa\Request;
 
-	use Tilwa\Contracts\Auth\AuthStorage;
+	use Tilwa\Hydration\Container;
 
 	class PathAuthorizer {
 
-		private $authStorage, $allRules = [],
+		private $container, $allRules = [],
 
-		$activeRules = [], $excludeRules = [];
+		$interactedPatterns = [], $excludeRules = [];
 
-		public function __construct (AuthStorage $authStorage) {
+		public function __construct (Container $container) {
 
-			$this->authStorage = $authStorage;
+			$this->container = $container;
 		}
 
-		public function addRule (RouteRule $rule):self {
+		public function addRule (array $patterns, string $rule):self {
 
-			$this->allRules[] = $rule;
+			$this->createAndInclude($this->allRules, $rule, $patterns);
 
 			return $this;
 		}
 
-		/*[1 => A], [1b => unset 1]*/
+		private function createAndInclude (array &$context, array $patterns, string $rule):void {
+
+			if (!array_key_exists($rule, $context))
+
+				$context[$rule] = [];
+
+			$context[$rule] = array_merge($context[$rule], $patterns);
+		}
+
+		/**
+		 * [1 => A], later, calling this on [1/b => unset 1]
+		*/
 		public function forgetRule (array $patterns, string $rule):self {
 
-			if (!array_key_exists($rule, $this->excludeRules))
-
-				$this->excludeRules[$rule] = [];
-
-			$this->excludeRules[$rule] = array_merge($this->excludeRules[$rule], $patterns);
+			$this->createAndInclude($this->excludeRules, $rule, $patterns);
 
 			return $this;
+		}
+
+		public function forgetAllRules ():void {
+
+			$this->excludeRules = [];
+
+			$this->allRules = [];
 		}
 
 		public function updateRuleStatus (string $pattern):void {
 
-			$this->setActiveRules($pattern);
-
-			$this->detachUnwanted();
+			$this->interactedPatterns[] = $pattern;
 		}
 
-		private function setActiveRules (string $pattern):void {
+		public function passesActiveRules ():bool {
 
-			$matches = array_filter($this->allRules, function (RouteRule $rule) use ($pattern) {
+			$activeRules = array_filter($this->allRules, function ($patterns) {
 
-				$rule->setAuthStorage($this->authStorage);
+				return !empty(array_intersect($this->interactedPatterns, $patterns)) &&
 
-				return $rule->hasPattern($pattern);
+				empty(array_intersect($this->excludeRules, $patterns));
 			});
 
-			$this->activeRules = array_merge($this->activeRules, $matches);
-		}
+			foreach ($activeRules as $rule => $patterns) {
 
-		private function detachUnwanted ():void {
+				if (!$this->container->getClass($rule)->permit())
 
-			$this->activeRules = array_filter($this->activeRules, function (RouteRule $rule) {
+					return false;
+			}
 
-				return !array_key_exists(get_class($rule), $this->excludeRules);
-			});
-		}
-
-		public function getActiveRules ():array {
-
-			return $this->activeRules;
+			return true;
 		}
 	}
 ?>

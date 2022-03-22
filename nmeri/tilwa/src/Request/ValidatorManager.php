@@ -22,26 +22,20 @@
 
 		public function validationErrors ():array {
 
-			$valid = $this->validator
+			$mergedPayload = array_merge(
+				$this->placeholderStorage->getAllSegmentValues(),
 
-			->validate($this->mergedPayload(), $this->actionRules);
+				$this->payloadStorage->fullPayload()
+			);
 
-			return $valid->getErrors();
+			$this->validator->validate($mergedPayload, $this->actionRules);
+
+			return $this->validator->getErrors();
 		}
 
 		public function isValidated (): bool {
 
 			return empty($this->validationErrors());
-		}
-
-		public function setValidationErrors(array $errors) {
-			
-			$this->validator->setErrors($errors);
-		}
-
-		private function mergedPayload ():array {
-
-			return $this->placeholderStorage->getAllSegmentValues() + $this->payloadStorage->fullPayload();
 		}
 
 		public function setActionRules (array $rules):void {

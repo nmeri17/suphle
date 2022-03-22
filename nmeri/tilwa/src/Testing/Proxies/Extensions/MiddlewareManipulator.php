@@ -5,22 +5,20 @@
 
 	class MiddlewareManipulator extends MiddlewareRegistry {
 
-		private $stackAlwaysEmpty = false, $excludeMiddleware = [];
+		private $stackAlwaysEmpty = false, $preExclude = [],
+
+		$preInclude = [];
 
 		/**
 		 * Whenever router decides on the active pattern, it'll ultimately include middlewares applied here
+		 * 
+		 * We're using this instead of updating the default middleware list, since the eventual module may have custom config we are unwilling to override with whatever mock we'll set as default
 		 * 
 		 * @param {middlewares} Middleware class names
 		*/
 		public function addToActiveStack (array $middlewares):void {
 
-			$stackHolder = new PatternMiddleware; // we don't care whether another holder already contains any of these middleware since they'll eventually get filtered
-
-			foreach ($middlewares as $instance)
-
-				$stackHolder->addMiddleware($instance);
-
-			$this->activeStack[] = $stackHolder;
+			$this->preInclude = $middlewares;
 		}
 
 		public function disableAll ():void {
@@ -29,11 +27,11 @@
 		}
 
 		/** 
-		 * @param {middlewares} Middleware[], not class names
+		 * @param {middlewares} Middleware::class[]
 		*/
 		public function disable (array $middlewares):void {
 
-			$this->excludeMiddleware = $middlewares;
+			$this->preExclude = $middlewares;
 		}
 
 		/**
@@ -45,21 +43,24 @@
 
 			$realStack = parent::activeStack();
 
-			$this->extractFromHolders($realStack);
+			if (!empty($this->preInclude))
+
+				$realStack[] = $this->includeCollection();
+
+			foreach ($realStack as $holder)
+
+				$this->extractFromHolders($holder, $this->preExclude);
 
 			return $realStack;
 		}
 
-		/**
-		 * @param {holders} PatternMiddleware[]
-		*/
-		private function extractFromHolders (array $holders):void {
+		private function includeCollection ():PatternMiddleware {
 
-			foreach ($this->excludeMiddleware as $middleware)
+			$collection = new PatternMiddleware;
 
-				foreach ($holders as $holder)
+			$collection->setList($this->preInclude);
 
-					$holder->omitWherePresent($middleware);
+			return $collection;
 		}
 	}
 ?>

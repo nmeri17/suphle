@@ -3,6 +3,8 @@
 
 	interface ModuleThree {
 
-		public function getDValue ():int;
+		public function getLocalValue ():int;
+
+		public function changeExternalValueProxy (int $newCount):void;
 	}
 ?>

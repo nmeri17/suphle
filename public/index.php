@@ -1,36 +1,13 @@
 <?php
+	require_once ("../vendor/autoload.php");
 
-	require '../autoload.php';
+	use AppEntry\MyApp;
 
-	use Tilwa\App\ModuleHandlerIdentifier;
+	$awesomeApp = new MyApp;
 
-	use Modules\{Main, Cart, Category, Product, Auth, Sellers, Errors}; // correct this import
+	$awesomeApp->bootModules();
 
-	use Interactions\{CategoryExports, ProductExports};
+	$awesomeApp->extractFromContainer();
 
-	class MyApp extends ModuleHandlerIdentifier {
-		
-		function getModules():array {
-
-			$Category = new Category;
-
-			$Product = new Product;
-
-			$Sellers = (new Sellers)->setDependsOn([
-				CategoryExports::class => $Category, // note: this doesn't match Category itself, but its `exports`
-				
-				ProductExports::class => $Product
-			]);
-
-			$Cart = (new Cart)->setDependsOn([
-				ProductExports::class => $Product
-			]);
-
-			return [
-				new Main, $Cart, $Category, $Product, new Auth, $Sellers
-			];
-		}
-	}
-
-	echo (new MyApp)->orchestrate();
+	echo $awesomeApp->diffusedRequestResponse(); // this should be wrapped in the loop thingy
 ?>

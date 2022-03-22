@@ -19,14 +19,14 @@
 
 		public function compare ():bool {
 
-			$payload = $this->payloadStorage->fullPayload();
+			$password = $this->payloadStorage->getKey("password");
 
 			$user = $this->userHydrator->findAtLogin();
 
 			if (
 				is_null($user) ||
 
-				!password_verify($payload["password"], $user->getPassword())
+				!password_verify($password, $user->getPassword())
 			)
 
 				return false;

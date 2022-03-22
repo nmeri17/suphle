@@ -100,6 +100,7 @@
 
 		/**
 		 * @dataProvider getOriginUrls
+		 * @coverss ResponseManager::afterRender Fudging, since this is said to be unrecommended
 		*/
 		public function test_visiting_origin_path_pushes_caching_job (string $url) {
 

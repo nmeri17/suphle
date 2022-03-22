@@ -15,7 +15,7 @@
 
 	 	private $responseManager = ResponseManager::class;
 
-	 	public function setUp () {
+	 	public function setUp ():void {
 
 			parent::setUp();
 
@@ -27,7 +27,7 @@
 			// given
 			$hydrator = $this->getHydratorForExecuteRequest(true);
 
-			$responseManager = $this->getProphet()->prophesize($this->responseManager);
+			$responseManager = $this->prophesize($this->responseManager);
 
 			$responseManager->handleValidRequest()->shouldBeCalled();
  
@@ -39,7 +39,7 @@
 
 		private function getHydratorForExecuteRequest (bool $canProcessPath):FlowHydrator {
 
-			return $this->negativeStub(FlowHydrator::class, compact("canProcessPath"));
+			return $this->negativeDouble(FlowHydrator::class, compact("canProcessPath"));
 		}
 		
 		public function test_invalid_request_doesnt_trigger_controller () {
@@ -47,7 +47,7 @@
 			// given
 			$hydrator = $this->getHydratorForExecuteRequest(false);
 
-			$responseManager = $this->getProphet()->prophesize($this->responseManager);
+			$responseManager = $this->prophesize($this->responseManager);
 
 			$responseManager->handleValidRequest()->shouldNotBeCalled();
  
@@ -66,7 +66,7 @@
 			$unitNode = new SingleNode($this->payloadKey);
 
 			// given
-			$responseManager = $this->negativeStub($this->responseManager);
+			$responseManager = $this->negativeDouble($this->responseManager);
 			
 			$hydrator->setDependencies($responseManager, [
 
@@ -112,18 +112,17 @@
 			// given
 			$payload = $this->payloadFromPrevious();
 
-			$hydrator = $this->positiveStub(FlowHydrator::class, [
+			$parameter = !is_null($value) ? $this->equalTo($value): $this->anything();
+
+			$hydrator = $this->positiveDouble(FlowHydrator::class, [
 
 				"getNodeFromPrevious" => $payload,
 
 				$handler => null
-			]);
+			], [
 
-			$parameter = !is_null($value) ? $this->equalTo($value): $this->anything();
-
-			$hydrator->expects($this->once())->method($handler)
-			
-			->with( $this->equalTo($payload), $parameter ); // then
+				$handler => [1, [$this->equalTo($payload), $parameter]]
+			]); // then
 
 			return $hydrator;
 		}

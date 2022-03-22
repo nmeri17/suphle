@@ -3,8 +3,6 @@
 
 	use Tilwa\Contracts\Auth\LoginActions;
 
-	use Tilwa\Auth\Validators\EmailPasswordValidator;
-
 	abstract class BaseAuthRepo implements LoginActions {
 
 		protected $comparer;
@@ -19,9 +17,13 @@
 			return ["message" => "Incorrect credentials"];
 		}
 
-		public function validatorCollection ():string {
+		public function successRules ():array {
 
-			return EmailPasswordValidator::class;
+			return [
+				"email" => "required|email",
+
+				"password" => "required|alphanumeric|min:5"
+			];
 		}
 	}
 ?>

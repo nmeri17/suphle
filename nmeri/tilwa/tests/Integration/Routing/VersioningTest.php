@@ -7,15 +7,15 @@
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\ApiRoutes\{V1\LowerMirror, V2\ApiUpdate2Entry, V3\ApiUpdate3Entry};
 
-	class VersioningTest extends BaseRouterTest {
+	class VersioningTest extends TestsRouter {
 
-		protected function entityBindings ():self {
+		protected function entityBindings ():void {
 
 			parent::entityBindings();
 
 			$this->container->whenTypeAny()->needsAny([
 
-				IRouter::class => $this->positiveStub(
+				IRouter::class => $this->positiveDouble(
 					RouterMock::class, [
 
 						"apiStack" => [
@@ -29,8 +29,6 @@
 					]
 				)
 			]);
-
-			return $this;
 		}
 
 		public function test_can_get_content_at_specific_version () {

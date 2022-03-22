@@ -1,15 +1,15 @@
 <?php
 	namespace Tilwa\Auth;
 
-	use Tilwa\App\Container;
+	use Tilwa\Hydration\Container;
 
-	use Tilwa\Contracts\{Auth\LoginRenderers, App\HighLevelRequestHandler};
+	use Tilwa\Contracts\{ Modules\HighLevelRequestHandler, Request\ValidationEvaluator, Presentation\BaseRenderer};
 
-	use Tilwa\Response\Format\AbstractRenderer;
+	use Tilwa\Contracts\Auth\{LoginRenderers, ModuleLoginHandler};
 
 	use Tilwa\Request\ValidatorManager;
 
-	class LoginRequestHandler implements HighLevelRequestHandler {
+	class LoginRequestHandler implements ModuleLoginHandler {
 
 		private $rendererCollection, $container, $responseRenderer,
 
@@ -22,16 +22,13 @@
 			$this->container = $container;
 
 			$this->validatorManager = $validatorManager;
-		}
 
-		public function setAuthService ():void {
-
-			$this->loginService = $this->rendererCollection->getLoginService();
+			$this->loginService = $collection->getLoginService();
 		}
 
 		public function isValidRequest ():bool {
 
-			$this->validatorManager->setActionRules($this->getLoginRules());
+			$this->validatorManager->setActionRules($this->loginService->successRules());
 	
 			return $this->validatorManager->isValidated();
 		}
@@ -41,20 +38,19 @@
 			return $this->validatorManager->validationErrors();
 		}
 
-		private function getLoginRules ():array {
-
-			$validatorName = $this->loginService->validatorCollection();
-
-			return $this->container->getClass($validatorName)->successRules();
-		}
-
 		public function getResponse ():string {
 
 			$this->setResponseRenderer();
 
-			$this->bootRenderer()->executeRenderer();
+			$renderer = $this->responseRenderer;
 
-			return $this->responseRenderer->render();
+			$renderer->setControllingClass($this->rendererCollection->getLoginService());
+			
+			$renderer->hydrateDependencies($this->container);
+
+			$this->executeRenderer();
+
+			return $renderer->render();
 		}
 
 		private function setResponseRenderer ():void {
@@ -64,19 +60,6 @@
 				$this->responseRenderer = $this->rendererCollection->successRenderer();
 
 			else $this->responseRenderer = $this->rendererCollection->failedRenderer();
-		}
-
-		private function bootRenderer ():self {
-
-			$renderer = $this->responseRenderer;
-
-			$dependencies = $this->container->getMethodParameters("setDependencies", $renderer);
-
-			$dependencies["controllerClass"] = $renderer->getController();
-
-			$renderer->setDependencies(...array_values($dependencies));
-
-			return $this;
 		}
 
 		private function executeRenderer ():void {
@@ -92,7 +75,7 @@
 			$renderer->invokeActionHandler($dependencies);
 		}
 
-		public function handlingRenderer ():AbstractRenderer {
+		public function handlingRenderer ():BaseRenderer {
 
 			return $this->responseRenderer;
 		}

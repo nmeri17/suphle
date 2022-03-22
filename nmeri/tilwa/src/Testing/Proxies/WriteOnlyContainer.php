@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Testing\Proxies;
 
-	use Tilwa\App\Container;
+	use Tilwa\Hydration\Container;
 
 	use Tilwa\Testing\Condiments\MockFacilitator;
 
@@ -25,9 +25,9 @@
 
 				$interface => $retainOtherMethods ?
 
-					$this->positiveStub($concrete, $overrides):
+					$this->positiveDouble($concrete, $overrides):
 
-					$this->negativeStub($concrete, $overrides)
+					$this->negativeDouble($concrete, $overrides)
 			]);
 
 			return $this;

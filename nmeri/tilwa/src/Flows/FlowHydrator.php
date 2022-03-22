@@ -1,19 +1,19 @@
 <?php
 	namespace Tilwa\Flows;
 
-	use Tilwa\Contracts\CacheManager;
-
 	use Tilwa\Flows\Structures\{RouteUserNode, RouteUmbrella, RangeContext, ServiceContext};
 
 	use Tilwa\Flows\Previous\{ SingleNode, CollectionNode, UnitNode};
 
+	use Tilwa\Contracts\{CacheManager, Presentation\BaseRenderer};
+
 	use Tilwa\Response\ResponseManager;
 
-	use Tilwa\App\Container;
-
-	use Illuminate\Support\{Collection as LaravelCollection, Arr};
+	use Tilwa\Hydration\Container;
 
 	use Tilwa\Routing\{PathPlaceholders, RequestDetails};
+
+	use Illuminate\Support\{Collection as LaravelCollection, Arr};
 
 	class FlowHydrator {
 
@@ -131,7 +131,7 @@
 			}
 		}
 
-		private function getContentType(AbstractRenderer $renderer):string {
+		private function getContentType(BaseRenderer $renderer):string {
 
 			$contentTypes = [
 				
@@ -147,7 +147,7 @@
 				return call_user_func([$payload, $contentTypes[$payloadType]]);
 		}
 
-		// @return AbstractRenderer[]
+		// @return BaseRenderer[]
 		private function handleSingleNodes(SingleNode $rawNode):array {
 
 			$carryRenderer = null;
@@ -169,7 +169,7 @@
 		}
 
 		/**
-		*	@return AbstractRenderer[]
+		*	@return BaseRenderer[]
 		*/
 		private function handleCollectionNodes(CollectionNode $rawNode):array {
 
@@ -208,7 +208,7 @@
 			return Arr::get($this->previousResponse, $rawNode->getNodeName());
 		}
 
-		public function handleQuerySegmentAlter(array $nodeContent, string $newQueryHolder):?AbstractRenderer {
+		public function handleQuerySegmentAlter(array $nodeContent, string $newQueryHolder):?BaseRenderer {
 
 			$valuePath = $nodeContent[$newQueryHolder];
 
@@ -226,7 +226,7 @@
 
 		protected function canProcessPath():bool {
 
-			return $this->responseManager->bootControllerManager()
+			return $this->responseManager->bootCoodinatorManager()
 
 			->isValidRequest();
 		}
@@ -242,7 +242,7 @@
 		 * This runs the validation sequence for each single item in this stream just in case any of the ids in the list is invalid
 		 * @param {indexes} Array of ids
 		 * 
-		 * @return AbstractRenderer[]
+		 * @return BaseRenderer[]
 		*/
 		public function handlePipe(array $indexes, int $dummyValue, CollectionNode $rawNode):array {
 
@@ -257,14 +257,14 @@
 		}
 
 		// @return executes underlying renderer and returns it
-		protected function executeRequest():?AbstractRenderer {
+		protected function executeRequest():?BaseRenderer {
 
 			if ($this->canProcessPath())
 
 				return $this->responseManager->handleValidRequest($this->requestDetails);
 		}
 
-		public function handleOneOf(array $indexes, string $requestProperty):AbstractRenderer {
+		public function handleOneOf(array $indexes, string $requestProperty):BaseRenderer {
 
 			return $this->updateRequest([
 
@@ -273,7 +273,7 @@
 			->executeRequest();
 		}
 
-		public function handleRange(iterable $indexes, RangeContext $context):AbstractRenderer {
+		public function handleRange(iterable $indexes, RangeContext $context):BaseRenderer {
 
 			return $this->updateRequest([
 
@@ -284,7 +284,7 @@
 			->executeRequest();
 		}
 
-		public function handleDateRange(array $indexes, RangeContext $context):AbstractRenderer {
+		public function handleDateRange(array $indexes, RangeContext $context):BaseRenderer {
 
 			usort($indexes, function($a, $b) {
 

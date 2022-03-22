@@ -1,42 +1,48 @@
 <?php
 	namespace Tilwa\Testing\Condiments;
 
-	use Tilwa\Contracts\Database\Orm;
+	use Tilwa\Contracts\Database\OrmReplicator;
 
 	trait PopulatesDatabaseTest {
 
-		private $orm, $entityInstance;
-
-		protected $container, $initialCount = 20;
+		protected $replicator, $initialCount = 20;
 
 		abstract protected function getActiveEntity ():string;
 
+		public static function setUpBeforeClass ():void {
+
+			parent::setUpBeforeClass();
+
+			$replicator = $this->container->getClass(OrmReplicator::class);
+
+			$replicator->setActiveModelType($this->getActiveEntity());
+
+			$replicator->setupSchema();
+
+			$this->replicator = $replicator;
+		}
+
+		public static function tearDownAfterClass ():void {
+
+			$this->replicator->dismantleSchema();
+
+			parent::tearDownAfterClass();
+		}
+
 		protected function setUp ():void {
 
-			parent::setUp(); // calls the one on the inherited class of the test this is applied to
+			parent::setUp();
 
-			$this->entityInstance = $this->container->getClass($this->getActiveEntity()); // may need further customization since these are special kind of objects
+			$this->replicator->seedDatabase( $this->initialCount);
 
-			$this->orm = $this->container->getClass(Orm::class); // check what arguments are on the eloquent's constructor and inject those into our container
-
-			$this->orm->factoryProduce($this->entityInstance, $this->initialCount);
+			$this->replicator->listenForQueries();
 		}
 
-		protected function getBeforeInsertion (int $amount = 1, array $overrides = []) {
+		protected function tearDown ():void {
 
-			return $this->orm->factoryLine($this->entityInstance, $amount, $overrides);
+			$this->replicator->stopQueryListen();
+
+			parent::tearDown();
 		}
-
-		protected function getRandomEntity () {
-
-			return $this->orm->findAny($this->entityInstance);
-		}
-
-		protected function getRandomEntities (int $amount):array {
-
-			return $this->orm->findAnyMany($this->entityInstance, $amount);
-		}
-
-		// todo: truncate table in the tearDown
 	}
 ?>

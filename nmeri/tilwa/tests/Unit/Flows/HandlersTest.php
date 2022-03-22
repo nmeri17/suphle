@@ -17,7 +17,7 @@
 
 		private $flowService = FlowService::class;
 
-		public function setUp () {
+		public function setUp ():void {
 
 			parent::setUp();
 
@@ -48,7 +48,7 @@
 		// Note: Always returns a new instance. Store in a variable if behavior is unwanted
 		private function mockFlowHydrator () {
 
-			$hydrator = $this->getProphet()->prophesize(FlowHydrator::class);
+			$hydrator = $this->prophesize(FlowHydrator::class);
 
 			$hydrator->executeRequest()->shouldBeCalled();
 
@@ -113,7 +113,7 @@
 
 		public function test_fromService_doesnt_edit_request_or_trigger_controller() {
 
-			$sut = $this->getProphet()->prophesize(FlowHydrator::class);
+			$sut = $this->prophesize(FlowHydrator::class);
 
 			// then
 			$sut->updateRequest()->shouldNotBeCalled();
@@ -130,7 +130,7 @@
 
 			$sut = $this->getHydratorForService();
 
-			$mockService = $this->getProphet()->prophesize($this->flowService);
+			$mockService = $this->prophesize($this->flowService);
 
 			// then
 			$mockService

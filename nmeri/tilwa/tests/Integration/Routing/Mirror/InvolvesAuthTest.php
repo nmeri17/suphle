@@ -1,9 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Integration\Routing\Mirror;
 
-	use Tilwa\Testing\{Condiments\PopulatesDatabaseTest, TestTypes\ModuleLevelTest};
-
-	use Tilwa\Testing\Proxies\{FrontDoorTest, WriteOnlyContainer};
+	use Tilwa\Testing\{Condiments\PopulatesDatabaseTest, TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
 	use Tilwa\Contracts\{Auth\User, Config\Router};
 
@@ -13,7 +11,7 @@
 
 	class InvolvesAuthTest extends ModuleLevelTest {
 
-		use FrontDoorTest, PopulatesDatabaseTest;
+		use PopulatesDatabaseTest;
 
 		protected function getModules():array {
 
@@ -38,7 +36,7 @@
 
 			$tokenClass = TokenStorage::class;
 
-			$this->actingAs($this->getRandomEntity(), $tokenClass); // given
+			$this->actingAs($this->replicator->getRandomEntity(), $tokenClass); // given
 
 			$this->get("/api/v1/segment") // when
 

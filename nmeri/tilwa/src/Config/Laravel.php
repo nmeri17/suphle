@@ -1,24 +1,45 @@
 <?php
-
 	namespace Tilwa\Config;
 
-	use Tilwa\Contracts\Config\Laravel as LaravelConfig;
+	use Tilwa\Contracts\Config\Laravel as LaravelConfigContract;
 
-	class Laravel implements LaravelConfig {
+	class Laravel implements LaravelConfigContract {
 
+		/**
+		 * {@inheritdoc}
+		*/
 		public function configBridge ():array {
 
 			return [];
 		}
 
+		/**
+		 * {@inheritdoc}
+		*/
 		public function getProviders ():array {
 
 			return [];
 		}
 
-		public function hasRoutes():bool {
+		/**
+		 * {@inheritdoc}
+		*/
+		public function registersRoutes ():array {
 
-			return true;
+			return [];
+		} 
+
+		/**
+		 * {@inheritdoc}
+		*/
+		public function usesPackages ():bool {
+
+			return false;
+		}
+
+		public function frameworkDirectory ():string {
+
+			return  "Bridge/Laravel";
 		}
 	}
 ?>

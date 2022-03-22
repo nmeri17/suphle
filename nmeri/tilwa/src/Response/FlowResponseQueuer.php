@@ -23,7 +23,7 @@
 		public function insert (AbstractRenderer $renderer, ResponseManager $responseManager):void {
 
 			$this->queueManager->augmentArguments(RouteBranches::class, [
-				new BranchesContext(
+				"context" => new BranchesContext(
 					$renderer,
 
 					$this->authStorage->getUser(),

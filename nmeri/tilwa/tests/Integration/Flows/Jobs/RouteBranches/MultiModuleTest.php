@@ -19,11 +19,11 @@
 
 		private $mockFlowHydrator;
 
-		protected function setUp () {
+		public function setUp ():void {
 
 			parent::setUp();
 
-			$this->mockFlowHydrator = $this->getProphet()->prophesize(FlowHydrator::class);
+			$this->mockFlowHydrator = $this->prophesize(FlowHydrator::class);
 		}
 
 		protected function getModules():array {

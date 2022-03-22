@@ -3,9 +3,9 @@
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\Prefix\OuterCollection;
 
-	use Tilwa\Tests\Integration\Routing\BaseRouterTest;
+	use Tilwa\Tests\Integration\Routing\TestsRouter;
 
-	class PlainPrefixTest extends BaseRouterTest {
+	class PlainPrefixTest extends TestsRouter {
 
 		protected function getEntryCollection ():string {
 

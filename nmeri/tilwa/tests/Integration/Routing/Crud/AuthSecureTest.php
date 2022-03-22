@@ -1,11 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Integration\Routing\Crud;
 
-	use Tilwa\Tests\Integration\Routing\BaseRouterTest;
-
-	use Tilwa\Testing\{Condiments\PopulatesDatabaseTest, TestTypes\ModuleLevelTest};
-
-	use Tilwa\Testing\Proxies\{FrontDoorTest, WriteOnlyContainer};
+	use Tilwa\Testing\{Condiments\PopulatesDatabaseTest, TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{ModuleOneDescriptor, Routes\Crud\AuthenticateCrudCollection, Config\RouterMock};
 
@@ -13,7 +9,7 @@
 
 	class AuthSecureTest extends ModuleLevelTest {
 
-		use FrontDoorTest, PopulatesDatabaseTest;
+		use PopulatesDatabaseTest;
 
 		protected function getModules():array {
 
@@ -43,7 +39,7 @@
 
 		public function test_with_authentication_throws_no_error () {
 
-			$this->actingAs($this->getRandomEntity()) // given
+			$this->actingAs($this->replicator->getRandomEntity()) // given
 
 			->get("/secure-some/edit/5") // when
 

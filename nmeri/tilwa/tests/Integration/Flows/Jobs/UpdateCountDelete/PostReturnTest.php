@@ -3,9 +3,11 @@
 
 	use Tilwa\Contracts\Config\Router;
 
-	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\QueueInterceptor, Proxies\WriteOnlyContainer};
+	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
-	use Tilwa\Flows\{OuterFlowWrapper, Jobs\UpdateCountDelete, Structures\AccessContext};
+	use Tilwa\Testing\Condiments\{QueueInterceptor, MockFacilitator};
+
+	use Tilwa\Flows\{OuterFlowWrapper, Jobs\UpdateCountDelete};
 
 	use Tilwa\Flows\Structures\{AccessContext, RouteUserNode};
 
@@ -21,7 +23,14 @@
 
 		private $resourceUrl = "/posts/5",
 
-		$aMinuteBehind = (new DateTime)->sub(new DateInterval("PT1M"));
+		$aMinuteBehind;
+
+		public function setUp ():void {
+
+			parent::setUp();
+
+			$this->aMinuteBehind = (new DateTime)->sub(new DateInterval("PT1M"));
+		}
 
 		protected function getModules():array {
 
@@ -49,7 +58,7 @@
 		public function test_wont_empty_cache_entry () {
 
 			$this->makeJob($this->makeAccessContext(
-				$this->positiveStub(
+				$this->positiveDouble(
 
 					RouteUserNode::class, ["getMaxHits" => 2]
 				) // default [getExpiresAt] + this should retain the node
@@ -86,7 +95,7 @@
 
 			return [
 				[
-					$this->positiveStub(RouteUserNode::class, [
+					$this->positiveDouble(RouteUserNode::class, [
 
 						"getMaxHits" => 200,
 
@@ -94,7 +103,7 @@
 					])
 				],
 				[
-					$this->positiveStub(RouteUserNode::class, [
+					$this->positiveDouble(RouteUserNode::class, [
 
 						"getExpiresAt" => $this->aMinuteBehind
 					])
@@ -128,7 +137,7 @@
 
 			$this->makeJob($this->makeAccessContext(
 				
-				$this->positiveStub( RouteUserNode::class, [] )
+				$this->positiveDouble( RouteUserNode::class, [] )
 			))->handle();
 		}
 	}

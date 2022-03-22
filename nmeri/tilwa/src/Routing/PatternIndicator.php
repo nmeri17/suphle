@@ -63,16 +63,28 @@
 
 		public function includeMiddleware (RouteCollection $collection, string $segment):void {
 
-			$collection->_assignMiddleware();
+			$collection->_assignMiddleware($this->registry);
 
-			$this->registry->updateStack($segment);
+			$this->registry->updateInteractedPatterns($segment);
 		}
 
 		public function updatePermissions (RouteCollection $collection, string $pattern):void {
 
-			$collection->_authorizePaths();
+			$collection->_authorizePaths($this->authorizer);
 
 			$this->authorizer->updateRuleStatus($pattern);
+		}
+
+		/**
+		 * Useful in settings where a module has more than one route collection. The preceding one could have updated lists that would undesirably affect the oncoming collection
+		*/
+		public function resetIndications ():void {
+
+			$this->patternAuthentication = null;
+
+			$this->registry->emptyAllStacks();
+
+			$this->authorizer->forgetAllRules();
 		}
 	}
 ?>

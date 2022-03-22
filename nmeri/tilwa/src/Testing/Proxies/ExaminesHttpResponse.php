@@ -1,13 +1,13 @@
 <?php
 	namespace Tilwa\Testing\Proxies;
 
-	use Illuminate\{Testing\TestResponse, Http\Response};
+	use Tilwa\Contracts\Presentation\BaseRenderer;
 
-	use Tilwa\Response\Format\AbstractRenderer;
+	use Illuminate\{Testing\TestResponse, Http\Response};
 
 	trait ExaminesHttpResponse {
 
-		protected function makeExaminable (AbstractRenderer $renderer):TestResponse {
+		protected function makeExaminable (BaseRenderer $renderer):TestResponse {
 
 			return TestResponse::fromBaseResponse(new Response(
 				$renderer->getRawResponse(),

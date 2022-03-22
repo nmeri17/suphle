@@ -1,15 +1,39 @@
 <?php
-	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Routes;
+	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\Auth;
 
-	class AuthorizeRoutes extends BrowserNoPrefix {
+	use Tilwa\Routing\BaseCollection;
 
-		// add method for authentication
+	use Tilwa\Request\PathAuthorizer;
 
-		public function _assignMiddleware():void {
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Controllers\BaseController;
 
-			$this->middlewareRegistry->tagPatterns(["pattern", "pattern2"], [Middleware::class]);
-			
-			$this->middlewareRegistry->tagPatterns(["pattern2"], [ Middleware2::class]);
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Authorization\Paths\AdminRule;
+
+	use Tilwa\Response\Format\Json;
+
+	class AuthorizeRoutes extends BaseCollection {
+
+		public function _handlingClass ():string {
+
+			return BaseController::class;
+		}
+
+		public function ADMIN__ENTRYh () {
+
+			$this->_get(new Json("plainSegment"));
+		}
+
+		public function ADMIN () {
+
+			$this->_prefixFor(UnlocksAuthorization1::class);
+		}
+
+		public function _authorizePaths (PathAuthorizer $pathAuthorizer):void {
+
+			$pathAuthorizer->addRule (
+
+				[ "ADMIN__ENTRYh", "ADMIN"], AdminRule::class
+			);
 		}
 	}
 ?>

@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Testing\Condiments;
 
-	use Tilwa\Testing\Proxies\{FrontDoorTest, StubbedQueueAdapter};
+	use Tilwa\Testing\Proxies\StubbedQueueAdapter;
 
 	use Tilwa\Flows\{Jobs\RouteBranches, OuterFlowWrapper};
 
@@ -9,22 +9,22 @@
 
 	trait QueueInterceptor {
 
-		use FrontDoorTest; // this should be the same instance used to send the request
+		private $adapter;
 
-		private $adapter, $isCatching = false;
+		public function setUp ():void {
 
-		public function catchQueuedTasks ():void {
+			parent::setUp();
 
-			if (!$this->isCatching) { // using this nonce so we can assert more than once in the same test without overwriting the instance
-				$this->isCatching = true;
+			$this->catchQueuedTasks();
+		}
+
+		private function catchQueuedTasks ():void {
+
+			if (is_null($this->adapter)) { // using this nonce so we can assert more than once in the same test without overwriting the instance
 
 				$this->adapter = new StubbedQueueAdapter;
 
-				foreach ($this->getModules() as $descriptor) // since we don't know yet what the active module is at this point this
-
-					$descriptor->getContainer()->whenTypeAny()
-
-					->needsAny([Adapter::class => $this->adapter]);
+				$this->massProvide([Adapter::class => $this->adapter]); // since we don't know yet what the active module is at this point this
 			}
 		}
 
@@ -35,16 +35,12 @@
 
 		protected function assertPushedToFlow(string $originUrl):void {
 
-			$this->catchQueuedTasks();
-
 			$this->get($originUrl);
 
 			$this->assertPushed(RouteBranches::class);
 		}
 
 		protected function assertNotPushedToFlow(string $originUrl):void {
-
-			$this->catchQueuedTasks();
 
 			$this->get($originUrl);
 

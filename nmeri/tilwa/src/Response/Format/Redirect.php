@@ -3,7 +3,7 @@
 
 	use SuperClosure\Serializer;
 
-	class Redirect extends AbstractRenderer {
+	class Redirect extends GenericRenderer {
 
 		private $destination;
 

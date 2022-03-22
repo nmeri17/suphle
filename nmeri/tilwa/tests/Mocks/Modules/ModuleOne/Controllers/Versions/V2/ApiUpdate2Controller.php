@@ -1,9 +1,9 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Controllers\Versions\V2;
 
-	use Tilwa\Controllers\Executable;
+	use Tilwa\Services\ServiceCoordinator;
 
-	class ApiUpdate2Controller extends Executable {
+	class ApiUpdate2Controller extends ServiceCoordinator {
 
 		public function secondCascade () {
 

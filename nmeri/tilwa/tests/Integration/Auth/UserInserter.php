@@ -1,40 +1,36 @@
 <?php
 	namespace Tilwa\Tests\Integration\Auth;
 
-	use Tilwa\Testing\{PopulatesDatabaseTest, DirectHttpTest};
+	use Tilwa\Testing\Condiments\DirectHttpTest;
 
-	use Tilwa\Contracts\Auth\User;
+	use Tilwa\Contracts\Auth\UserContract;
 
 	/**
-	 * Helper class for adding a fresh user, then using his details for login
+	 * Helper trait for adding a fresh user, then using his details for login
 	*/
-	class UserInserter {
+	trait UserInserter {
 
-		use PopulatesDatabaseTest, DirectHttpTest;
+		use DirectHttpTest;
 
 		private $correctPassword = "correct",
 
-		$incorrectPassword = "incorrect",
+		$incorrectPassword = "incorrect";
 
-		$loginPath = "api/v1/login";
-
-		public function getInsertedUser (string $password):User {
+		public function getInsertedUser (string $password):UserContract {
 			
-			$user = $this->getBeforeInsertion(1, [ // inserting a new row rather than pulling a random one so we can access the "password" field during login request
+			$user = $this->replicator->getBeforeInsertion(1, [ // inserting a new row rather than pulling a random one so we can access the "password" field during login request
 
 				"password" => password_hash($password, PASSWORD_DEFAULT)
-			]);
-
-			$user->save();
+			]); // no need to save?
 
 			return $user;
 		}
 
-		public function sendCorrectRequest ():void {
+		public function sendCorrectRequest (string $loginPath):void {
 
 			$user = $this->getInsertedUser($this->correctPassword);
 
-			$this->setJsonParams($this->loginPath, [
+			$this->setJsonParams($loginPath, [
 
 				"email" => $user->email,
 
@@ -42,11 +38,11 @@
 			]);
 		}
 
-		public function sendIncorrectRequest ():void {
+		public function sendIncorrectRequest (string $loginPath):void {
 
 			$user = $this->getInsertedUser($this->correctPassword);
 
-			$this->setJsonParams($this->loginPath, [
+			$this->setJsonParams($loginPath, [
 
 				"email" => $user->email,
 

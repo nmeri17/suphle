@@ -1,26 +1,42 @@
 <?php
 	namespace Tilwa\Testing\TestTypes;
 
-	use Tilwa\App\{ModulesBooter, ModuleDescriptor, Container};
+	use Tilwa\Testing\Condiments\{ModuleReplicator, GagsException};
 
-	use Tilwa\Events\ExecutionUnit;
+	use Tilwa\Testing\Proxies\Extensions\{FrontDoor, MiddlewareManipulator};
 
-	use PHPUnit\Framework\{TestCase, AssertionFailedError};
+	use Tilwa\Testing\Proxies\ModuleHttpTest;
 
-	/**
-	 * Used for testing components on a modular scale but that don't necessarily require interaction with the HTTP passage
-	*/
+	use Tilwa\Modules\{ ModuleDescriptor, ModuleToRoute};
+
+	use Tilwa\Hydration\Container; 
+
+	use Tilwa\Middleware\MiddlewareRegistry;
+
+	use PHPUnit\Framework\TestCase;
+
+	use Illuminate\Testing\TestResponse;
+
 	abstract class ModuleLevelTest extends TestCase {
 
-		private $eventManager;
+		use ModuleReplicator, GagsException, ModuleHttpTest {
+
+			GagsException::setUp as mufflerSetup;
+		}
+
+		protected $muffleExceptionBroadcast = true, $entrance;
 
 		protected function setUp ():void {
 
-			$booter = new ModulesBooter($this->getModules());
+			$entrance = $this->entrance = new FrontDoor($this->getModules());
 
-			$this->eventManager = $booter->getEventManager();
+			$entrance->bootModules();
 
-			$booter->boot();
+			$entrance->extractFromContainer();
+
+			if ($this->muffleExceptionBroadcast)
+
+				$this->mufflerSetup();
 		}
 		
 		/**
@@ -28,51 +44,32 @@
 		 */
 		abstract protected function getModules():array;
 
-		protected function getModuleFor (string $interface):object {
+		protected function getModuleFor (string $interface) {
 
 			foreach ($this->getModules() as $descriptor)
 
-				if ($interface == $descriptor->exportsImplements())
+				if ($interface == $descriptor->exportsImplements()) {
 
-					return $descriptor->exports();
+					$descriptor->warmUp();
+
+					$descriptor->prepareToRun();
+
+					return $descriptor->materialize();
+				}
 		}
 
-		// spies may equally be good here but this has the advantage of not running the listener, I think
-		protected function assertFiredEvent ($emitter, string $eventName):void {
+		protected function massProvide (array $provisions):void {
 
-			$subscription = $this->findInBlanks($emitter);
+			foreach ($this->getModules() as $descriptor)
 
-			if (is_null($subscription))
+				$descriptor->getContainer()->whenTypeAny()
 
-				throw new AssertionFailedError("Event not fired");
-			
-			$this->assertNotEmpty($subscription->getMatchingUnits($eventName));
+				->needsAny($provisions);
 		}
 
-		private function findInBlanks ($sender):?EventSubscription {
+		protected function getContainer ():Container {
 
-			foreach ($this->eventManager->getBlanks() as $subscription)
-
-				if ($subscription->matchesHandler($sender))
-
-					return $subscription;
-		}
-
-		public function catchEmittingEvents ():void {
-
-			$this->eventManager->makeFireSoft();
-		}
-
-		/**
-		 * A blank container is given to the new module, with the assumption that we possibly wanna overwrite even the default objects (aside from only injecting absent configs)
-		*/
-		protected function replicateModule(string $descriptor, callable $customizer):ModuleDescriptor {
-
-			$writer = new WriteOnlyContainer; // using unique instances rather than a fixed one so test can make multiple calls to clone modules
-
-			$customizer($writer);
-
-			return new $descriptor($writer->getContainer());
+			return $this->activeModuleContainer();
 		}
 	}
 ?>

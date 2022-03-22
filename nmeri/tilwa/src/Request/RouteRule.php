@@ -5,18 +5,13 @@
 
 	abstract class RouteRule {
 
-		private $patterns, $authStorage;
+		protected $authorizedUser;
 
-		public function setAuthStorage (AuthStorage $authStorage) {
+		public function __construct (AuthStorage $authStorage) {
 
-			$this->authStorage = $authStorage;
+			$this->authorizedUser = $authStorage->getUser();
 		}
 
 		abstract public function permit ():bool;
-
-		public function hasPattern (string $pattern):bool {
-
-			return in_array($pattern, $this->patterns);
-		}
 	}
 ?>

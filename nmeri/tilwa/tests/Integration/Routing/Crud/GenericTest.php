@@ -1,11 +1,11 @@
 <?php
 	namespace Tilwa\Tests\Integration\Routing\Crud;
 
-	use Tilwa\Tests\Integration\Routing\BaseRouterTest;
+	use Tilwa\Tests\Integration\Routing\TestsRouter;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\Crud\BasicRoutes;
 
-	class GenericTest extends BaseRouterTest {
+	class GenericTest extends TestsRouter {
 
 		protected function getEntryCollection ():string {
 
@@ -61,7 +61,7 @@
 
 		public function test_override_non_existent_throws_error () {
 
-			$this->setExpectedException("PHPUnit_Framework_Error"); // then
+			$this->expectException("PHPUnit_Framework_Error"); // then
 
 			$this->fakeRequest("/non-existent/save"); // when
 		}

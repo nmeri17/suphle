@@ -3,13 +3,15 @@
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\CanaryRoutes;
 
-	use Tilwa\Testing\Condiments\{PopulatesDatabaseTest, IsolatedComponentSecurity};
+	use Tilwa\Tests\Integration\Routing\TestsRouter;
+
+	use Tilwa\Testing\{Condiments\PopulatesDatabaseTest, Proxies\SecureUserAssertions};
 
 	use Tilwa\Contracts\Auth\User;
 
-	class CanaryUserTest extends BaseRouterTest {
+	class CanaryUserTest extends TestsRouter {
 
-		use PopulatesDatabaseTest, IsolatedComponentSecurity;
+		use PopulatesDatabaseTest, SecureUserAssertions;
 
 		protected function getEntryCollection ():string {
 

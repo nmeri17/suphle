@@ -1,18 +1,37 @@
 <?php
 	namespace Tilwa\Tests\Integration\Bridge\Laravel;
 
-	use Tilwa\Testing\IsolatedComponentTest;
+	/**
+	 * @see [ProvidedServiceWrapper]
+	*/
+	class LaravelProviderManagerTest extends TestsConfig {
 
-	class LaravelProviderManagerTest extends IsolatedComponentTest {
+		public function test_can_invoke_helpers_only_in_wrapped () {
 
-		public function test_get_provided_returns_wrapped () {
+			$sut = $this->container->getClass(ConfigConstructor::class); // when
 
-			// @see [ProvidedServiceWrapper]. Note the class is bound to the laravel container, not ours
+			$realSecondLevel = $this->getUnderlyingConfig()->get("nested.first_level.second_level");
+
+			$this->assertSame($sut->getSecondLevel(), $realSecondLevel); // then
 		}
 
-		public function test_can_invoke_helpers () {
+		public function test_can_create_provider_with_helper () {
 
-			//
+			$sut = $this->container->getClass(ConfigInternal::class); // when
+
+			$realSecondLevel = $this->getUnderlyingConfig()->get("nested.first_level.second_level");
+
+			// then
+			$this->assertSame($sut->getSecondLevel(), $realSecondLevel); 
+
+			$this->assertFalse(function_exists("config")); // didn't leak out
+		}
+
+		public function test_can_call_magic_method_on_target () {
+
+			$sut = $this->container->getClass(ConfigInternal::class); // when
+
+			$this->assertSame($sut->internalMagic(), $sut->magicValue()); // then
 		}
 	}
 ?>

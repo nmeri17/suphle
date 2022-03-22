@@ -3,7 +3,7 @@
 
 	use Tilwa\Contracts\Config\Router as RouterConfig;
 
-	use Tilwa\Middleware\FinalHandlerWrapper;
+	use Tilwa\Middleware\Handlers\{FinalHandlerWrapper, CsrfMiddleware};
 
 	use Tilwa\Auth\Storage\TokenStorage;
 
@@ -26,6 +26,8 @@
 		public function defaultMiddleware():array {
 
 			return [
+				CsrfMiddleware::class,
+				
 				FinalHandlerWrapper::class
 			];
 		}

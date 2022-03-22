@@ -3,6 +3,8 @@
 
 	interface ModuleTwo {
 
-		public function getDValueFromModuleThree ():int;
+		public function getShallowValue ():int;
+
+		public function setNestedModuleValue (int $newCount):void;
 	}
 ?>

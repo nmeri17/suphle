@@ -1,26 +1,27 @@
 <?php
-
 	namespace Tilwa\Response;
 
-	use Tilwa\App\{Container, ModuleDescriptor};
+	use Tilwa\Modules\ModuleDescriptor;
+
+	use Tilwa\Hydration\Container;
 
 	use Tilwa\Routing\{RouteManager, RequestDetails};
 
-	use Tilwa\Response\Format\{Markup, AbstractRenderer};
+	use Tilwa\Services\CoodinatorManager;
 
-	use Tilwa\Controllers\ControllerManager;
-
-	use Tilwa\Contracts\BaseResponseManager;
+	use Tilwa\Contracts\{Requests\BaseResponseManager, Presentation\BaseRenderer};
 
 	use Tilwa\Request\{ValidatorManager, PayloadStorage};
 
+	use Tilwa\Exception\Explosives\ValidationFailure;
+
 	class ResponseManager implements BaseResponseManager {
 
-		private $container, $router, $renderer, $payloadStorage,
+		private $container, $router, $renderer, $requestDetails,
 
 		$controllerManager, $flowQueuer;
 
-		function __construct (Container $container, RouteManager $router, ControllerManager $controllerManager, FlowResponseQueuer $flowQueuer, AbstractRenderer $renderer, PayloadStorage $payloadStorage) {
+		function __construct (Container $container, RouteManager $router, CoodinatorManager $controllerManager, FlowResponseQueuer $flowQueuer, BaseRenderer $renderer, RequestDetails $requestDetails) {
 
 			$this->container = $container;
 
@@ -32,7 +33,7 @@
 
 			$this->renderer = $renderer;
 
-			$this->payloadStorage = $payloadStorage;
+			$this->requestDetails = $requestDetails;
 		}
 		
 		public function getResponse ():string {
@@ -40,75 +41,46 @@
 			return $this->renderer->render();
 		}
 
-		public function afterRender():void {
+		public function afterRender ($data):void {
 
 			if ($this->renderer->hasBranches())// the very first request won't be caught in a flow. so, delegate queueing branches
 
 				$this->flowQueuer->insert($this->renderer, $this);
 		}
 
-		public function bootControllerManager():self {
+		public function bootCoodinatorManager ():self {
 
-			$this->updateControllerManager();
+			$this->controllerManager->setDependencies (
 
-			$this->validateManager();
+				$this->container->getClass($this->renderer->getController()),
 
-			$this->buildManagerTarget();
+				$this->renderer->getHandler()
+			)->bootController();
 
 			return $this;
 		}
 
-		public function handleValidRequest(RequestDetails $requestDetails):AbstractRenderer {
+		public function handleValidRequest (PayloadStorage $payloadStorage):BaseRenderer {
 
 			$renderer = $this->renderer;
 
-			$router = $this->router;
+			if (!$this->requestDetails->isApiRoute())
 
-			$manager = $this->controllerManager;
+				$this->router->setPreviousRenderer($renderer);
 
-			if (!$requestDetails->isApiRoute())
-
-				$router->setPreviousRenderer($renderer);
-
-			if ($renderer instanceof Markup && $this->payloadStorage->acceptsJson())
-
-				$renderer->setWantsJson();
-
-			$manager->hydrateModels($renderer->getRouteMethod());
-
-			return $renderer->invokeActionHandler($manager->getHandlerParameters());
+			return $renderer->invokeActionHandler($this->controllerManager->getHandlerParameters());
 		}
 
 		public function isValidRequest ():bool {
 
-			return $this->controllerManager->isValidatedRequest();
+			return $this->controllerManager->hasValidatorErrors();
 		}
 
-		private function validateManager():void {
+		public function mayBeInvalid ():void {
 
-			$globalDependencies = $this->container->getClass(ModuleDescriptor::class)->getExpatriates();
+			if (!$this->isValidRequest())
 
-			$this->controllerManager->validateController($globalDependencies);
-		}
-
-		private function buildManagerTarget():void {
-
-			$this->controllerManager->bootController($this->renderer->getHandler())
-
-			->setHandlerParameters()->assignModelsInAction();
-		}
-
-		private function updateControllerManager():void {
-
-			$this->controllerManager->setController(
-
-				$this->container->getClass($this->renderer->getController())
-			);
-		}
-
-		public function getControllerManager():ControllerManager {
-			
-			return $this->controllerManager;
+				throw new ValidationFailure($this->controllerManager);
 		}
 
 		public function requestAuthenticationStatus (AuthStorage $storage):bool {
