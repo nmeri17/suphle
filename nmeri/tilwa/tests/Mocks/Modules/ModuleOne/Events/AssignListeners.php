@@ -3,7 +3,7 @@
 
 	use Tilwa\Events\EventManager;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\{LocalSender as Emitter, UpdatefulEmitter};
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\{LocalSender as Emitter, Services\UpdatefulEmitter};
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Events\{LocalReceiver, UpdatefulListener};
 

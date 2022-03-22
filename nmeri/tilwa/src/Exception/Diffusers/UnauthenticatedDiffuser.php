@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Exception\Diffusers;
 
-	use Tilwa\Contracts\{Exception\ExceptionHandler, Config\Auth as AuthConfig, Presentation\BaseRenderer};
+	use Tilwa\Contracts\{Exception\ExceptionHandler, Config\AuthContract, Presentation\BaseRenderer};
 
 	use Tilwa\Request\RequestDetails;
 
@@ -53,9 +53,9 @@
 
 		protected function getSessionRenderer ():BaseRenderer {
 
-			return new Redirect($this->controllerAction, function (RequestDetails $requestDetails, AuthConfig $authConfig, PayloadStorage $payloadStorage) {
+			return new Redirect($this->controllerAction, function (RequestDetails $requestDetails, AuthContract $authContract, PayloadStorage $payloadStorage) {
 
-				return $authConfig->markupRedirect() . "?". http_build_query([
+				return $authContract->markupRedirect() . "?". http_build_query([
 
 					"path" => $requestDetails->getPath(),
 

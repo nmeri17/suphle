@@ -5,7 +5,7 @@
 
 	use Tilwa\Contracts\Services\Decorators\SystemModelEdit;
 
-	class SystemModelEditMock1 extends UpdatelessService implements SystemModelEdit {
+	abstract class SystemModelEditMock1 extends UpdatelessService implements SystemModelEdit {
 
 		public function updateModels () {
 
@@ -23,5 +23,10 @@
 		}
 
 		public function unrelatedToUpdate () {}
+
+		public function rethrowAs ():array {
+
+			return [];
+		}
 	}
 ?>

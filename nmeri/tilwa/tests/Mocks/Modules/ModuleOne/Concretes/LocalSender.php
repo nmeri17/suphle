@@ -9,11 +9,13 @@
 
 		use EmitProxy;
 
-		const CASCADE_BEGIN_EVENT = "cascading";
+		const CASCADE_BEGIN_EVENT = "cascading",
 
-		const CONCAT_EVENT = "concating";
+		CONCAT_EVENT = "concating",
 
-		const CASCADE_EXTERNAL_BEGIN_EVENT = "begin_external_cascade";
+		CASCADE_EXTERNAL_BEGIN_EVENT = "begin_external_cascade",
+
+		EMPTY_PAYLOAD_EVENT = "no_payload";
 
 		private $eventManager;
 

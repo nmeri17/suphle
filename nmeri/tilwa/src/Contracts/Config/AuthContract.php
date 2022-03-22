@@ -3,7 +3,7 @@
 
 	use Tilwa\Contracts\Auth\LoginRenderers;
 
-	interface Auth extends ConfigMarker {
+	interface AuthContract extends ConfigMarker {
 
 		/**
 		 * @return LoginRenderer that should handle incoming login request
@@ -23,5 +23,7 @@
 
 		// [<Model> => <ModelAuthorities>]
 		public function getModelObservers ():array;
+
+		public function isLoginRequest ():bool;
 	}
 ?>

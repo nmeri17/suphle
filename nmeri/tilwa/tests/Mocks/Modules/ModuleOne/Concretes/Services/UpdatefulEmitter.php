@@ -3,6 +3,8 @@
 
 	use Tilwa\Events\{EmitProxy, EventManager};
 
+	use Tilwa\Services\Structures\OptionalDTO;
+
 	class UpdatefulEmitter extends SystemModelEditMock1 {
 
 		use EmitProxy;
@@ -16,7 +18,10 @@
 			$this->eventManager = $eventManager;
 		}
 
-		public function initializeUpdateModels (int $payload):void {
+		/**
+		 * @param {payload}:int
+		*/
+		public function initializeUpdateModels ( $payload):void {
 
 			$this->payload = $payload;
 		}

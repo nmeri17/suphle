@@ -3,6 +3,8 @@
 
 	use Tilwa\Events\ModuleLevelEvents;
 
+	use Tilwa\Contracts\Modules\DescriptorInterface;
+
 	class ModulesBooter {
 
 		private $modules, $eventManager;
@@ -16,9 +18,15 @@
 		
 		public function boot ():void {
 
-			foreach ($this->modules as $descriptor)
+			foreach ($this->modules as $descriptor) {
 
-				$descriptor->warmUp(); // We're setting these to be able to attach events soon after
+				$descriptor->warmModuleContainer(); // We're setting these to be able to attach events soon after
+
+				$descriptor->getContainer()->whenTypeAny()->needsAny([
+
+					DescriptorInterface::class => $descriptor
+				]);
+			}
 
 			$this->eventManager->bootReactiveLogger();
 		}

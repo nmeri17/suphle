@@ -3,7 +3,9 @@
 
 	use Tilwa\Flows\OuterFlowWrapper;
 
-	use Tilwa\Contracts\Auth\ModuleLoginHandler;
+	use Tilwa\Contracts\Auth\{ModuleLoginHandler, Config\AuthContract};
+
+	use Tilwa\Contracts\Modules\DescriptorInterface;
 
 	use Tilwa\Response\Format\AbstractRenderer;
 
@@ -15,13 +17,18 @@
 
 		private $container, $identifiedHandler, $routedModule,
 
-		$loginHandler;
+		$authConfig;
 
 		public function __construct () {
 
-			$this->container = current($this->getModules())->getContainer();
+			$this->container = $this->firstModule()->getContainer();
 
 			$this->container->provideSelf();
+		}
+
+		protected function firstModule ():DescriptorInterface {
+
+			return current($this->getModules());
 		}
 		
 		abstract protected function getModules():array;
@@ -67,7 +74,7 @@
 		*/
 		protected function respondFromHandler ():string {
 
-			if ( $this->loginHandler->isLoginRequest())
+			if ( $this->authConfig->isLoginRequest())
 
 				return $this->handleLoginRequest();
 
@@ -115,18 +122,20 @@
 
 		public function extractFromContainer ():void {
 
-			$this->loginHandler = $this->container->getClass(ModuleLoginHandler::class);
+			$this->authConfig = $this->container->getClass(AuthContract::class);
 		}
 
 		public function handleLoginRequest ():string {
 
-			if (!$this->loginHandler->isValidRequest())
+			$loginHandler = $this->container->getClass(ModuleLoginHandler::class);
 
-				throw new ValidationFailure($this->loginHandler);
+			if (!$loginHandler->isValidRequest())
 
-			$this->identifiedHandler = $this->loginHandler;
+				throw new ValidationFailure($loginHandler);
 
-			return $this->loginHandler->getResponse();
+			$this->identifiedHandler = $loginHandler;
+
+			return $loginHandler->getResponse();
 		}
 
 		public function underlyingRenderer ():AbstractRenderer {

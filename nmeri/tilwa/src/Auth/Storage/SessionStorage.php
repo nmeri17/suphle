@@ -3,7 +3,7 @@
 
 	use Tilwa\Contracts\{Auth\UserHydrator, IO\Session};
 
-	use Tilwa\Contracts\Config\Auth as AuthContract;
+	use Tilwa\Contracts\Config\AuthContract;
 
 	class SessionStorage extends BaseAuthStorage {
 

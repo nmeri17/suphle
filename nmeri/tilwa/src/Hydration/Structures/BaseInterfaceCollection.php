@@ -5,7 +5,7 @@
 
 	use Tilwa\Contracts\{Presentation\HtmlParser, Requests\RequestValidator, Queues\Adapter as QueueAdapter, Modules\ControllerModule };
 
-	use Tilwa\Contracts\IO\{Session, EnvAccessor};
+	use Tilwa\Contracts\IO\Session;
 
 	use Tilwa\Contracts\Database\{OrmDialect, OrmReplicator};
 
@@ -13,7 +13,7 @@
 
 	use Tilwa\Contracts\Auth\{AuthStorage, UserContract, UserHydrator as IUserHydrator, ModuleLoginHandler};
 
-	use Tilwa\Contracts\Config\{Auth as AuthConfig, Transphporm as TransphpormConfig, Laravel as LaravelConfig, ExceptionInterceptor, Console as ConsoleContract, Database};
+	use Tilwa\Contracts\Config\{AuthContract, Transphporm as TransphpormConfig, Laravel as LaravelConfig, ExceptionInterceptor, Console as ConsoleContract, Database};
 
 	use Tilwa\Contracts\IO\Image\{ImageThumbnailContract, InferiorImageContract, ImageLocator};
 
@@ -21,7 +21,7 @@
 
 	use Tilwa\IO\Image\SaveClients\LocalSaver;
 
-	use Tilwa\IO\{Session\NativeSession, Env\EnvAccessorLoader};
+	use Tilwa\IO\Session\NativeSession;
 
 	use Tilwa\Queues\Adapters\Resque;
 
@@ -66,9 +66,7 @@
 
 				InferiorImageContract::class => InferiorImageLoader::class,
 
-				ImageThumbnailContract::class => ImageThumbnailLoader::class,
-
-				EnvAccessor::class => EnvAccessorLoader::class
+				ImageThumbnailContract::class => ImageThumbnailLoader::class
 			];
 		}
 
@@ -127,7 +125,7 @@
 
 				LaravelConfig::class => Laravel::class,
 
-				AuthConfig::class => Auth::class,
+				AuthContract::class => Auth::class,
 
 				TransphpormConfig::class => Transphporm::class,
 

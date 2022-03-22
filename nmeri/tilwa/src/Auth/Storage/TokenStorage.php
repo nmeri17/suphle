@@ -3,7 +3,7 @@
 
 	use Firebase\JWT\JWT;
 
-	use Tilwa\Contracts\{UserHydrator, Config\Auth as AuthContract};
+	use Tilwa\Contracts\{UserHydrator, Config\AuthContract};
 
 	use Throwable;
 

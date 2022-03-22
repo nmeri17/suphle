@@ -42,7 +42,7 @@
 
 				if ($interface == $descriptor->exportsImplements()) {
 
-					$descriptor->warmUp();
+					$descriptor->warmModuleContainer();
 
 					$descriptor->prepareToRun();
 

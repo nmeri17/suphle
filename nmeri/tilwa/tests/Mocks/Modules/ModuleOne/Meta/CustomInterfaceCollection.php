@@ -1,9 +1,11 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Meta;
 
-	use Tilwa\Hydration\BaseInterfaceCollection;
+	use Tilwa\Hydration\Structures\BaseInterfaceCollection;
 
 	use Tilwa\Contracts\Config\{ Router, Events, Laravel};
+
+	use Tilwa\Contracts\IO\EnvAccessor;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Config\{RouterMock, EventsMock, LaravelMock};
 
@@ -23,11 +25,13 @@
 			]);
 		}
 
-		protected function simpleBinds ():string {
+		public function simpleBinds ():array {
 
 			return array_merge(parent::simpleBinds(), [
 
-				ModuleOne::class => ModuleApi::class
+				ModuleOne::class => ModuleApi::class,
+
+				EnvAccessor::class => EnvRequiredSub::class
 			]);
 		}
 	}

@@ -3,7 +3,7 @@
 
 	use Tilwa\Testing\{Proxies\SecureUserAssertions, Condiments\PopulatesDatabaseTest};
 
-	use Tilwa\Contracts\Config\Auth as AuthContract;
+	use Tilwa\Contracts\Config\AuthContract;
 
 	use Tilwa\Adapters\Orms\Eloquent\Models\User;
 

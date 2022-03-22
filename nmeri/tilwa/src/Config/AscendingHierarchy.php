@@ -3,6 +3,9 @@
 
 	use Tilwa\Contracts\Config\ModuleFiles;
 
+	/**
+	 * Note: Returned paths have trailing slashes
+	*/
 	class AscendingHierarchy implements ModuleFiles {
 
 		private $descriptorPath;
@@ -24,7 +27,7 @@
 
 		public function getViewPath ():string {
 
-			return $this->activeModulePath() . DIRECTORY_SEPARATOR . 'Markup';
+			return $this->activeModulePath() . DIRECTORY_SEPARATOR . "Markup" . DIRECTORY_SEPARATOR;
 		}
 
 		public function getImagePath ():string {

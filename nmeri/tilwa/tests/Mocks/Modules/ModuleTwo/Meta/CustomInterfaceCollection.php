@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Modules\ModuleTwo\Meta;
 
-	use Tilwa\Hydration\BaseInterfaceCollection;
+	use Tilwa\Hydration\Structures\BaseInterfaceCollection;
 
 	use Tilwa\Contracts\Config\{Router, Events};
 
@@ -21,7 +21,7 @@
 			]);
 		}
 
-		protected function simpleBinds ():string {
+		protected function simpleBinds ():array {
 
 			return array_merge(parent::simpleBinds(), [
 

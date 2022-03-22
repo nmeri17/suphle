@@ -29,7 +29,7 @@
 
 			// given @see module creation
 
-			$this->moduleTwo->warmUp(); 
+			$this->moduleTwo->warmModuleContainer(); 
 
 			$this->moduleTwo->prepareToRun(); // when
 		}

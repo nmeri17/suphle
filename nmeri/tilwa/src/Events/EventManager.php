@@ -5,6 +5,8 @@
 
 	use Tilwa\Events\Structures\HandlerPath;
 
+	use Tilwa\Contracts\Modules\DescriptorInterface;
+
 	use InvalidArgumentException;
 
 	abstract class EventManager {
@@ -13,7 +15,7 @@
 
 		private $activeHandlerPath, $module, $parentManager;
 
-		function __construct(ModuleDescriptor $module, ModuleLevelEvents $parentManager) {
+		function __construct(DescriptorInterface $module, ModuleLevelEvents $parentManager) {
 
 			$this->module = $module;
 
@@ -79,6 +81,8 @@
 				
 				->addUnit( trim($eventName), $handlingMethod);
 			}
+
+			return $this;
 		}
 
 		/**

@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Config;
 
-	use Tilwa\Contracts\{Config\Auth as AuthContract, IO\EnvAccessor};
+	use Tilwa\Contracts\{Config\AuthContract, IO\EnvAccessor};
 
 	use Tilwa\Auth\Renderers\{BrowserLoginRenderer, ApiLoginRenderer};
 
@@ -36,6 +36,8 @@
 			if (array_key_exists($path, $rendererList))
 
 				return $rendererList[$path];
+
+			return null;
 		}
 
 		public function isLoginRequest ():bool {
