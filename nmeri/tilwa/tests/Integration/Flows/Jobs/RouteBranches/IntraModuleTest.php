@@ -19,6 +19,11 @@
 
 		$flowUrl = "categories/id";
 
+		public function setUp ():void {
+
+			parent::setUp();
+		}
+
 		protected function getModules():array {
 
 			return [

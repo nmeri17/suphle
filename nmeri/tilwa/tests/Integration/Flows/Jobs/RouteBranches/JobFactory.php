@@ -31,7 +31,7 @@
 
 			parent::setUp();
 
-			$this->container = $this->firstModuleContainer();var_dump($this->container, "JobFactory", 34); die();
+			$this->container = $this->firstModuleContainer();
 		}
 
 		/**

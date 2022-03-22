@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Adapters\Orms\Eloquent;
 
-	use Tilwa\Contracts\{Database\OrmDialect, Config\Database, Bridge\LaravelContainer};
+	use Tilwa\Contracts\{Database\OrmDialect, Config\Database, Bridge\LaravelContainer, Auth\AuthStorage};
 
 	use Tilwa\Hydration\Container;
 
@@ -25,30 +25,27 @@
 		}
 
 		/**
-		 * @param {drivers} Assoc array with structure [credentials => [], name => ?string]
+		 * @param {drivers} Assoc array with shape [name => [username, password, driver, database]]
 		*/
 		public function setConnection (array $drivers = []):void {
 
-			$this->nativeClient = new CapsuleManager;
+			$nativeClient = $this->nativeClient = new CapsuleManager;
 
-			if (empty($drivers))
-
-				$connections = [
-					"credentials" => $this->credentials,
-
-					"name" => "mysql"
-				];
+			if (empty($drivers)) $connections = $this->credentials;
 
 			else $connections = $drivers;
 
-			foreach ($connections as $driver)
+			foreach ($connections as $name => $credentials)
 
-				$nativeClient->addConnection($driver["credentials"], @$driver["name"]);
+				$nativeClient->addConnection($credentials, $name);
 
 			$this->connection = $nativeClient->getConnection();
 		}
 
-		public function getConnection ():Connection {
+		/**
+		 * @return Connection
+		*/
+		public function getConnection ():object {
 
 			if (is_null($this->connection)) $this->setConnection();
 
@@ -113,7 +110,7 @@
 
 		public function getNativeClient ():object {
 
-			return $this->nativeClient->getDatabaseManager();
+			return $this->nativeClient/*->getDatabaseManager()*/;
 		}
 	}
 ?>

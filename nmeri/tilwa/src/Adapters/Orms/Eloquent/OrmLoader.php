@@ -20,9 +20,9 @@
 
 		public function afterBind ($initialized):void {
 
-			$client = $initialized->getNativeClient();
+			$this->laravelContainer->injectBindings($this->databaseBindings($initialized)); // implicitly sets connection
 
-			$this->laravelContainer->injectBindings($this->databaseBindings());
+			$client = $initialized->getNativeClient();
 
 			$client->setEventDispatcher($this->laravelContainer->make(Dispatcher::class));
 

@@ -7,7 +7,7 @@
 
 		protected function validateFields ():void {
 
-			$this->client->required(["DB_NAME", "DB_USERNAME", "DB_PASS"]);
+			$this->client->required(["DATABASE_NAME", "DATABASE_USER", "DATABASE_PASS"]);
 		}
 	}
 ?>

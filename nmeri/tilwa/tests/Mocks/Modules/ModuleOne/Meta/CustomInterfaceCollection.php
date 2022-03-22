@@ -7,7 +7,7 @@
 
 	use Tilwa\Contracts\IO\EnvAccessor;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Config\{RouterMock, EventsMock, LaravelMock};
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Config\{RouterMock, EventsMock, LaravelMock, EnvRequiredSub};
 
 	use Tilwa\Tests\Mocks\Interactions\ModuleOne;
 

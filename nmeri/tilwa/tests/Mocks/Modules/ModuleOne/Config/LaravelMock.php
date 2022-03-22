@@ -9,7 +9,7 @@
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Bridge\Laravel\ServiceProviders\Exports\{ConfigInternal, ConfigConstructor};
 
-	class Laravel extends ParentConfig {
+	class LaravelMock extends ParentConfig {
 
 		/**
 		 * {@inheritdoc}

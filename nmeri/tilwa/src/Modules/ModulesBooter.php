@@ -15,8 +15,8 @@
 
 			$this->eventManager = $eventManager;
 		}
-		
-		public function boot ():void {
+
+		public function bootAll ():self {
 
 			foreach ($this->modules as $descriptor) {
 
@@ -29,6 +29,16 @@
 			}
 
 			$this->eventManager->bootReactiveLogger();
+
+			return $this;
+		}
+
+		/**
+		 * Without this, trying to extract things like Auth/ModuleFile won't be possible since they rely on user-land bound concretes
+		*/
+		public function prepareFirstModule ():void {
+
+			current($this->modules)->prepareToRun();
 		}
 	}
 ?>

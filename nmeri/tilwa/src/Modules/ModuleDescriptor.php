@@ -13,9 +13,9 @@
 
 	abstract class ModuleDescriptor implements DescriptorInterface {
 
-		protected $container;
+		protected $container, $expatriates = [],
 
-		private $expatriates, $hasPreparedExpatriates = false;
+		$hasPreparedExpatriates = false;
 
 		function __construct(Container $container) {
 			

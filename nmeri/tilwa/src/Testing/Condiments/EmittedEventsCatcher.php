@@ -24,7 +24,7 @@
 
 			(new ModulesBooter($modules, $this->eventManager))
 
-			->boot();
+			->bootAll()->prepareFirstModule();
 		}
 
 		abstract protected function getModules ():array;

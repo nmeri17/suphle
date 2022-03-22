@@ -3,9 +3,7 @@
 
 	use Tilwa\Flows\OuterFlowWrapper;
 
-	use Tilwa\Contracts\Auth\{ModuleLoginHandler, Config\AuthContract};
-
-	use Tilwa\Contracts\Modules\DescriptorInterface;
+	use Tilwa\Contracts\{Modules\DescriptorInterface, Config\AuthContract, Auth\ModuleLoginHandler};
 
 	use Tilwa\Response\Format\AbstractRenderer;
 
@@ -15,9 +13,9 @@
 
 	abstract class ModuleHandlerIdentifier {
 
-		private $container, $identifiedHandler, $routedModule,
+		private $identifiedHandler, $routedModule, $authConfig;
 
-		$authConfig;
+		protected $container;
 
 		public function __construct () {
 
@@ -37,7 +35,8 @@
 
 			(new ModulesBooter(
 				$this->getModules(), $this->getEventConnector()
-			))->boot();
+			))
+			->bootAll()->prepareFirstModule();
 		}
 
 		protected function getEventConnector ():ModuleLevelEvents {

@@ -24,14 +24,14 @@
 
 		public function getField (string $name) {
 
-			return $_ENV($name);
+			return $_ENV[$name];
 		}
 
 		abstract protected function validateFields ():void;
 
 		protected function setClient ():void {
 
-			$path = $this->fileConfig->activeModulePath() . ".env";
+			$path = $this->fileConfig->activeModulePath();
 
 			$this->client = Dotenv::createImmutable($path );
 		}

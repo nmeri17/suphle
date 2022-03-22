@@ -15,13 +15,16 @@
 		public function getCredentials ():array {
 
 			return [
-				"dbname" => $this->envAccessor->getField("DB_NAME"),
+				"default" => [
 
-			    "user" => $this->envAccessor->getField("DB_USERNAME"),
+					"database" => $this->envAccessor->getField("DATABASE_NAME"),
 
-			    "password" => $this->envAccessor->getField("DB_PASS"),
+				    "username" => $this->envAccessor->getField("DATABASE_USER"),
 
-			    "driver" => "pdo_mysql",
+				    "password" => $this->envAccessor->getField("DATABASE_PASS"),
+
+				    "driver" => "mysql"
+				]
 			];
 		}
 	}

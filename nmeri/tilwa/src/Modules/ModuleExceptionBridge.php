@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Modules;
 
-	use Tilwa\Contracts\{Modules\HighLevelRequestHandler, Config\ExceptionInterceptor};
+	use Tilwa\Contracts\{Modules\HighLevelRequestHandler, Config\ExceptionInterceptor, Presentation\BaseRenderer};
 
 	use Tilwa\Hydration\Container;
 
@@ -45,7 +45,7 @@
 			$this->handler->setContextualData($exception);
 		}
 
-		public function handlingRenderer ():AbstractRenderer {
+		public function handlingRenderer ():BaseRenderer {
 
 			$this->handler->prepareRendererData();
 

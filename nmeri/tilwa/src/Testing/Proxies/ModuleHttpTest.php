@@ -3,6 +3,8 @@
 
 	use Tilwa\Testing\Condiments\DirectHttpTest;
 
+	use Tilwa\Hydration\Container;
+
 	trait ModuleHttpTest {
 
 		use DirectHttpTest, ExaminesHttpResponse;
@@ -147,7 +149,7 @@
 
 			$entrance = $this->entrance;
 
-			$this->setHttpParams($url, $httpMethod, $payload, $headers);
+			$this->setHttpParams($requestPath, $httpMethod, $payload, $headers);
 
 			$entrance->diffusedRequestResponse();
 
