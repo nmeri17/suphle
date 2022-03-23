@@ -18,9 +18,9 @@
 			// given
 			$correctParameters = [
 
-				$this->getMockForAbstractClass(ModelfulPayload::class),
+				$this->positiveAbstractClass(ModelfulPayload::class),
 
-				$this->getMockForAbstractClass(ModellessPayload::class)
+				$this->positiveAbstractClass(ModellessPayload::class)
 			];
 
 			$incorrectParameters = [new stdClass];
@@ -39,7 +39,7 @@
 
 				$this->mockModelful(),
 
-				$this->getMockForAbstractClass(ModellessPayload::class),
+				$this->positiveAbstractClass(ModellessPayload::class),
 
 				$this->mockModelful()
 			];
@@ -51,9 +51,7 @@
 
 		private function mockModelful ():ModelfulPayload {
 
-			$modelful = $this->getMockForAbstractClass(ModelfulPayload::class);
-
-			$this->mockCalls([
+			return $this->positiveAbstractClass(ModelfulPayload::class, [
 
 				"setDependencies" => [1, [
 					$this->returnCallback(function($subject) {
@@ -61,9 +59,7 @@
 						return $subject instanceof OrmDialect;
 					})
 				]]
-			], $modelful);
-
-			return $modelful;
+			]);
 		}
 	}
 ?>

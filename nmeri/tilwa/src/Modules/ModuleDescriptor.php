@@ -7,7 +7,7 @@
 
 	use Tilwa\Hydration\{Container, Structures\BaseInterfaceCollection};
 
-	use Tilwa\Exception\Explosives\UnexpectedModules;
+	use Tilwa\Exception\Explosives\Generic\UnexpectedModules;
 
 	use Tilwa\Request\PayloadStorage;
 
@@ -17,7 +17,7 @@
 
 		$hasPreparedExpatriates = false;
 
-		function __construct(Container $container) {
+		function __construct (Container $container) {
 			
 			$this->container = $container;
 		}
@@ -25,9 +25,11 @@
 		/**
 		 * @param {dependencies} [Interactions\Interface => new ModuleDescriptor]
 		*/
-		public function sendExpatriates(array $dependencies):void {
+		public function sendExpatriates(array $dependencies):DescriptorInterface {
 
 			$this->expatriates = $dependencies;
+
+			return $this;
 		}
 
 		public function getExpatriates ():array {

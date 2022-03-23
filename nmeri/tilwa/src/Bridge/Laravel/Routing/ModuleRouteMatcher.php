@@ -3,7 +3,7 @@
 
 	use Tilwa\Contracts\{Config\Laravel as LaravelConfig, Bridge\LaravelContainer};
 
-	use Tilwa\Hydration\LaravelProviderManager;
+	use Tilwa\Bridge\Laravel\Package\LaravelProviderManager;
 
 	use Illuminate\Routing\Router;
 

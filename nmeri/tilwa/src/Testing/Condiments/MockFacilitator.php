@@ -167,5 +167,30 @@
 
 			return array_unique($mergedMethods);
 		}
+
+		protected function positiveAbstractClass (string $target, array $mockMethods = [], array $constructorArguments = []) {
+
+			return $this->doubleAbstractClass($target, $mockMethods, $constructorArguments );
+		}
+
+		protected function negativeAbstractClass (string $target, array $mockMethods = [], array $constructorArguments = []) {
+
+			return $this->doubleAbstractClass($target, $mockMethods, $constructorArguments, true);
+		}
+
+		private function doubleAbstractClass (string $target, array $mockMethods = [], array $constructorArguments = [], bool $isNegative = false) {
+
+			return $this->getMockForAbstractClass(
+				
+				$target, $constructorArguments, "",
+
+				/*callOriginalConstructor*/!empty($constructorArguments),
+				/*callOriginalClone*/ !$isNegative,
+
+				/*callAutoload*/ true,
+
+				$mockMethods
+			);
+		}
 	}
 ?>

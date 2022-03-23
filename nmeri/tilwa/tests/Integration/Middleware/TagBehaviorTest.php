@@ -17,22 +17,29 @@
 
 	class TagBehaviorTest extends ModuleLevelTest {
 
+		private $moduleOne;
+
 		protected function setUp ():void {
 
+			$this->setModuleOne();
+
 			parent::setUp();
+		}
+
+		private function setModuleOne ():void {
+
+			$this->moduleOne = $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+
+				$container->replaceWithMock(Router::class, RouterMock::class, [
+
+					"browserEntryRoute" => MultiTagSamePattern::class
+				]);
+			});
 		}
 		
 		protected function getModules():array {
 
-			return [
-				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
-
-					$container->replaceWithMock(Router::class, RouterMock::class, [
-
-						"browserEntryRoute" => MultiTagSamePattern::class
-					]);
-				})
-			];
+			return [$this->moduleOne];
 		}
  
 		public function test_multi_patterns_to_single_tag_should_work () {
@@ -47,7 +54,7 @@
 
 			// given => @see [getModules]
 			// then 
-			$this->getModuleFor(ModuleOne::class)->getContainer()
+			$this->moduleOne->getContainer()
 
 			->whenTypeAny()->needsAny([
 
@@ -71,7 +78,7 @@
 
 			// given => @see [getModules]
 			// then 
-			$this->getModuleFor(ModuleOne::class)->getContainer()
+			$this->moduleOne->getContainer()
 
 			->whenTypeAny()->needsAny([
 
@@ -99,7 +106,7 @@
 
 			// given => @see [getModules]
 			// then 
-			$this->getModuleFor(ModuleOne::class)->getContainer()
+			$this->moduleOne->getContainer()
 
 			->whenTypeAny()->needsAny([
 
@@ -125,7 +132,7 @@
 
 			// given => @see [getModules]
 			// then 
-			$this->getModuleFor(ModuleOne::class)->getContainer()
+			$this->moduleOne->getContainer()
 
 			->whenTypeAny()->needsAny([
 
@@ -149,7 +156,7 @@
 
 			// given => @see [getModules]
 			// then 
-			$this->getModuleFor(ModuleOne::class)->getContainer()
+			$this->moduleOne->getContainer()
 
 			->whenTypeAny()->needsAny([
 
@@ -177,7 +184,7 @@
 
 			// given => @see [getModules]
 			// then 
-			$this->getModuleFor(ModuleOne::class)->getContainer()
+			$this->moduleOne->getContainer()
 
 			->whenTypeAny()->needsAny([
 
@@ -193,7 +200,7 @@
 
 		public function test_final_middleware_has_no_request_handler () {
 
-			$middlewareList = $this->getModuleFor(ModuleOne::class)
+			$middlewareList = $this->moduleOne
 
 			->getContainer()->getClass(Router::class)
 
@@ -205,7 +212,7 @@
 
 			->process(Argument::type(RequestDetails::class), Argument::exact(null)); // then
 
-			$this->getModuleFor(ModuleOne::class)->getContainer()
+			$this->moduleOne->getContainer()
 
 			->whenTypeAny()->needsAny([
 

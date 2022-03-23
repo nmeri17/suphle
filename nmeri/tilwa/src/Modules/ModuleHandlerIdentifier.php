@@ -3,9 +3,7 @@
 
 	use Tilwa\Flows\OuterFlowWrapper;
 
-	use Tilwa\Contracts\{Modules\DescriptorInterface, Config\AuthContract, Auth\ModuleLoginHandler};
-
-	use Tilwa\Response\Format\AbstractRenderer;
+	use Tilwa\Contracts\{Modules\DescriptorInterface, Config\AuthContract, Auth\ModuleLoginHandler, Presentation\BaseRenderer};
 
 	use Tilwa\Events\ModuleLevelEvents;
 
@@ -137,7 +135,7 @@
 			return $loginHandler->getResponse();
 		}
 
-		public function underlyingRenderer ():AbstractRenderer {
+		public function underlyingRenderer ():BaseRenderer {
 
 			return $this->identifiedHandler->handlingRenderer();
 		}

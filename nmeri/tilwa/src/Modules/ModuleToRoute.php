@@ -8,9 +8,9 @@
 
 		private $activeDescriptor;
 		
-		public function findContext(array $descriptors):ModuleInitializer {
+		public function findContext (array $descriptors):?ModuleInitializer {
 			
-			foreach($descriptors as $descriptor) {
+			foreach ($descriptors as $descriptor) {
 
 				$routeMatcher = (new ModuleInitializer($descriptor))
 
@@ -23,6 +23,8 @@
 					return $routeMatcher;
 				}
 			}
+
+			return null;
 		}
 		
 		public function getActiveModule ():ModuleDescriptor {

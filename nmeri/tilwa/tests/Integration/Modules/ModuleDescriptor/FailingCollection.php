@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Integration\Modules\ModuleDescriptor;
 
-	use Tilwa\Errors\UnexpectedModules;
+	use Tilwa\Exception\Explosives\Generic\UnexpectedModules;
 
 	use Tilwa\Tests\Mocks\Interactions\ModuleTwo;
 

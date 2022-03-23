@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Flows;
 
-	use Tilwa\Contracts\{Requests\BaseResponseManager, CacheManager, Auth\AuthStorage, Modules\HighLevelRequestHandler};
+	use Tilwa\Contracts\{Requests\BaseResponseManager, CacheManager, Auth\AuthStorage, Modules\HighLevelRequestHandler, Presentation\BaseRenderer};
 
 	use Tilwa\Queues\AdapterManager;
 
@@ -127,7 +127,7 @@
 			]);
 		}
 
-		public function handlingRenderer ():AbstractRenderer {
+		public function handlingRenderer ():?BaseRenderer {
 
 			return $this->context->getRenderer();
 		}

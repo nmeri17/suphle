@@ -34,8 +34,11 @@
 		/**
 		 * @return ModuleDescriptor[]
 		 */
-		abstract protected function getModules():array;
+		abstract protected function getModules ():array;
 
+		/**
+		 * Doesn't return the descriptor but rather the concrete associated with inteface exported by given module
+		*/
 		protected function getModuleFor (string $interface) {
 
 			foreach ($this->getModules() as $descriptor)

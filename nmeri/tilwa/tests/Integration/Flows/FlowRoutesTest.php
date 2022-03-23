@@ -15,6 +15,11 @@
 
 		use QueueInterceptor;
 
+		public function setUp ():void {
+
+			parent::setUp();
+		}
+
 		protected function getModules():array { // using this since we intend to make front door requests
 
 			return [

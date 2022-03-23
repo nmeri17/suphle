@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Tests\Integration\Modules;
+	namespace Tilwa\Tests\Integration\Hydration;
 
 	use Tilwa\Hydration\{Container, Structures\NamespaceUnit};
 

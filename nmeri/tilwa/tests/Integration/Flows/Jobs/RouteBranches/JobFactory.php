@@ -3,7 +3,7 @@
 
 	use Tilwa\Flows\{ ControllerFlows, Jobs\RouteBranches, Structures\BranchesContext};
 
-	use Tilwa\Contracts\{Auth\User, Presentation\BaseRenderer};
+	use Tilwa\Contracts\{Auth\User, Presentation\BaseRenderer, CacheManager};
 
 	use Tilwa\Response\Format\Json;
 
@@ -32,6 +32,11 @@
 			parent::setUp();
 
 			$this->container = $this->firstModuleContainer();
+
+			$this->container->whenTypeAny()->needsAny([
+
+				CacheManager::class => $this->negativeDouble(CacheManager::class, [])
+			]); // temporary until this is integrated
 		}
 
 		/**

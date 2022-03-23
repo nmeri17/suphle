@@ -23,7 +23,7 @@
 
 		$externalHydrators = [], $externalContainerManager,
 
-		$interfaceHydrator,
+		$interfaceHydrator, $decorator,
 
 		$provisionContext, // the active Type before calling `needs`
 
@@ -132,13 +132,17 @@
 				);
 			});
 
-			if (!is_null($freshlyCreated->getConcrete()))
+			$concrete = $freshlyCreated->getConcrete();
 
-				return $this->getDecorator()->scopeInjecting(
-					$freshlyCreated->getConcrete(),
+			if (!is_null($concrete)) {
 
-					$freshlyCreated->getCreatedFor()
-				); // decorator runs on each fetch (rather than only once), since different callers result in different behavior
+				$decorator = $this->getDecorator();
+
+				return $decorator ? $decorator->scopeInjecting( // decorator runs on each fetch (rather than only once), since different callers result in different behavior
+					
+					$concrete, $freshlyCreated->getCreatedFor()
+				): $concrete;
+			}
 		}
 
 		public function getProvidedConcrete (string $fullName) {
@@ -386,11 +390,14 @@
 
 			$this->storeConcrete($fullName, $freshlyCreated->getConcrete());
 
-			return $this->getDecorator()->scopeInjecting(
-				$freshlyCreated->getConcrete(),
+			$concrete = $freshlyCreated->getConcrete();
 
-				$freshlyCreated->getCreatedFor()
-			);
+			$decorator = $this->getDecorator();
+
+			return $decorator ? $decorator->scopeInjecting(
+				
+				$concrete, $freshlyCreated->getCreatedFor()
+			): $concrete;
 		}
 
 		public function hydrateConcreteForCaller (string $className):HydratedConcrete {
@@ -453,7 +460,9 @@
 
 				$this->popHydratingFor($anchorClass);
 
-			return $this->getDecorator()->scopeArguments( $anchorClass, $dependencies, $callable);
+			$decorator = $this->getDecorator();
+
+			return $decorator ? $decorator->scopeArguments( $anchorClass, $dependencies, $callable): $dependencies;
 		}
 
 		public function populateDependencies (ReflectionFunctionAbstract $reflectedCallable, ?ProvisionUnit $callerProvision):array {
@@ -653,7 +662,12 @@
 			$this->decorator->assignScopes();
 		}
 
-		protected function getDecorator ():DecoratorHydrator {
+		/**
+		 * Since this isn't injected, we're using this as inlet to stub out decorator when desired
+		 * 
+		 * @return null when we're either hydrating interfaceCollection or the decorator itself
+		*/
+		protected function getDecorator ():?DecoratorHydrator {
 
 			return $this->decorator;
 		}

@@ -21,7 +21,7 @@
 			]);
 		}
 
-		protected function simpleBinds ():array {
+		public function simpleBinds ():array {
 
 			return array_merge(parent::simpleBinds(), [
 

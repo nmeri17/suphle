@@ -5,7 +5,7 @@
 
 	use Tilwa\Routing\RouteManager;
 
-	use Tilwa\Bridge\Laravel\ModuleRouteMatcher;
+	use Tilwa\Bridge\Laravel\Routing\ModuleRouteMatcher;
 
 	use Tilwa\Contracts\{Auth\AuthStorage, Modules\HighLevelRequestHandler, Presentation\BaseRenderer};
 
@@ -144,7 +144,7 @@
 			return $this;
 		}
 
-		public function handlingRenderer ():BaseRenderer { /* ?BaseRenderer */
+		public function handlingRenderer ():?BaseRenderer {
 
 			// if (!$this->isLaravelRoute())
 

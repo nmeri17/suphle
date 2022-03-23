@@ -75,7 +75,7 @@
 			$renderer->invokeActionHandler($dependencies);
 		}
 
-		public function handlingRenderer ():BaseRenderer {
+		public function handlingRenderer ():?BaseRenderer {
 
 			return $this->responseRenderer;
 		}

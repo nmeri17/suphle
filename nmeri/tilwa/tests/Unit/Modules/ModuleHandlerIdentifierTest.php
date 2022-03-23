@@ -7,7 +7,9 @@
 
 	use Tilwa\Exception\Explosives\ValidationFailure;
 
-	use Tilwa\Contracts\Auth\ModuleLoginHandler;
+	use Tilwa\Contracts\Auth\{ModuleLoginHandler, LoginRenderers};
+
+	use Tilwa\Contracts\Config\AuthContract;
 
 	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\MockFacilitator};
 
@@ -33,6 +35,11 @@
 				$sutName => $this->negativeDouble($sutName, [
 
 					"isValidRequest" => false // given
+				]),
+
+				AuthContract::class => $this->positiveDouble(AuthContract::class, [
+
+					"getLoginCollection" => $this->negativeDouble(LoginRenderers::class, [])
 				])
 			]);
 

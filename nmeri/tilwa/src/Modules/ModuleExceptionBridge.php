@@ -45,7 +45,7 @@
 			$this->handler->setContextualData($exception);
 		}
 
-		public function handlingRenderer ():BaseRenderer {
+		public function handlingRenderer ():?BaseRenderer {
 
 			$this->handler->prepareRendererData();
 

@@ -5,9 +5,7 @@
 
 	use Tilwa\Contracts\{Requests\ValidationEvaluator, Database\OrmDialect};
 
-	use Tilwa\Request\ValidatorManager;
-
-	use Tilwa\Routing\RequestDetails;
+	use Tilwa\Request\{ValidatorManager, RequestDetails};
 
 	use Tilwa\Services\Structures\{ModelfulPayload, ModellessPayload, ImagePicker};
 
