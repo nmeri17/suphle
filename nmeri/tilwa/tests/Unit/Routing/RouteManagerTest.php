@@ -1,14 +1,19 @@
 <?php
-
 	namespace Tilwa\Tests\Unit\Routing;
-
-	use Tilwa\Testing\{TestTypes\IsolatedComponentTest, Condiments\DirectHttpTest};
 
 	use Tilwa\Routing\RouteManager;
 
+	use Tilwa\Contracts\Config\Router;
+
+	use Tilwa\Testing\{TestTypes\IsolatedComponentTest, Condiments\DirectHttpTest};
+
+	use Tilwa\Tests\Integration\Generic\CommonBinds;
+
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Config\RouterMock;
+
 	class RouteManagerTest extends IsolatedComponentTest {
 
-		use DirectHttpTest;
+		use DirectHttpTest, CommonBinds;
 
 		public function test_route_compare_hyphen () {
 

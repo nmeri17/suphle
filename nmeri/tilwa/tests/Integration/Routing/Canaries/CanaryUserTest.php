@@ -5,13 +5,13 @@
 
 	use Tilwa\Tests\Integration\Routing\TestsRouter;
 
-	use Tilwa\Testing\{Condiments\PopulatesDatabaseTest, Proxies\SecureUserAssertions};
+	use Tilwa\Testing\{Condiments\BaseDatabasePopulator, Proxies\SecureUserAssertions};
 
 	use Tilwa\Contracts\Auth\User;
 
 	class CanaryUserTest extends TestsRouter {
 
-		use PopulatesDatabaseTest, SecureUserAssertions;
+		use BaseDatabasePopulator, SecureUserAssertions;
 
 		protected function getEntryCollection ():string {
 

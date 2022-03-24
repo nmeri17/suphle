@@ -39,15 +39,18 @@
 			return $this->firstModuleContainer()->getClass(ModuleToRoute::class);
 		}
 
-		/**
-		 * Assumes [gatewayResponse] has already been called
-		*/
 		protected function activeModuleContainer ():Container {
 
-			return $this->getInitializerWrapper()->getActiveModule()->getContainer();
+			$activeModule = $this->getInitializerWrapper()->getActiveModule();
+
+			if (!is_null($activeModule)) // if [gatewayResponse] has not been called
+
+				return $activeModule->getContainer();
+
+			return $this->firstModuleContainer();
 		}
 
-		public function from(string $url):self {
+		public function from (string $url):self {
 
 			$this->setHttpParams($url);
 

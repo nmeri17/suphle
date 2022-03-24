@@ -27,7 +27,7 @@
 			return null;
 		}
 		
-		public function getActiveModule ():ModuleDescriptor {
+		public function getActiveModule ():?ModuleDescriptor {
 
 			return $this->activeDescriptor;
 		}

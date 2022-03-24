@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Integration\Auth;
 
-	use Tilwa\Testing\{Condiments\PopulatesDatabaseTest, Proxies\SecureUserAssertions, TestTypes\IsolatedComponentTest};
+	use Tilwa\Testing\{Condiments\BaseDatabasePopulator, Proxies\SecureUserAssertions, TestTypes\IsolatedComponentTest};
 
 	use Tilwa\Contracts\Auth\{AuthStorage, User};
 
@@ -9,7 +9,7 @@
 
 	class BrowserPostLoginTest extends IsolatedComponentTest {
 
-		use PopulatesDatabaseTest, SecureUserAssertions;
+		use BaseDatabasePopulator, SecureUserAssertions;
 
 		protected function getActiveEntity ():string {
 

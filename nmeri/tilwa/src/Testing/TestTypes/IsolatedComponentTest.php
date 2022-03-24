@@ -39,18 +39,18 @@
 
 		protected function entityBindings ():void {
 
+			foreach ($this->concreteBinds() as $name => $concrete) // this goes first so if any of the simpleBinds below requires a concrete, it'll be available to it
+
+				$this->container->whenTypeAny()->needsAny([
+
+					$name => $concrete
+				]);
+
 			foreach ($this->simpleBinds() as $contract => $className)
 
 				$this->container->whenTypeAny()->needsAny([
 
 					$contract => $this->container->getClass($className)
-				]);
-
-			foreach ($this->concreteBinds() as $name => $concrete)
-
-				$this->container->whenTypeAny()->needsAny([
-
-					$name => $concrete
 				]);
 		}
 

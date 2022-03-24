@@ -3,15 +3,25 @@
 
 	use Tilwa\Adapters\Orms\Eloquent\Models\User;
 
-	use Tilwa\Testing\{Condiments\PopulatesDatabaseTest, TestTypes\IsolatedComponentTest, Proxies\ExaminesHttpResponse};
-
 	use Tilwa\Contracts\Auth\ModuleLoginHandler;
+
+	use Tilwa\Testing\{Condiments\BaseDatabasePopulator, TestTypes\IsolatedComponentTest, Proxies\ExaminesHttpResponse};
+
+	use Tilwa\Tests\Integration\Generic\CommonBinds;
 
 	use Illuminate\Testing\TestResponse;
 
 	class LoginRepoTest extends IsolatedComponentTest {
 
-		use PopulatesDatabaseTest, ExaminesHttpResponse, UserInserter;
+		use BaseDatabasePopulator, ExaminesHttpResponse, UserInserter, CommonBinds {
+
+			BaseDatabasePopulator::setUp as databasePopulatorSetup;
+		}
+
+		protected function setUp ():void {
+
+			$this->databasePopulatorSetup();
+		}
 
 		protected function getActiveEntity ():string {
 

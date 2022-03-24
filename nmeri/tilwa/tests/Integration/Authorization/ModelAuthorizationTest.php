@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Integration\Authorization;
 
-	use Tilwa\Testing\{Proxies\SecureUserAssertions, Condiments\PopulatesDatabaseTest};
+	use Tilwa\Testing\{Proxies\SecureUserAssertions, Condiments\BaseDatabasePopulator};
 
 	use Tilwa\Contracts\Config\AuthContract;
 
@@ -17,7 +17,7 @@
 
 	class ModelAuthorizationTest extends TestsRouter {
 
-		use PopulatesDatabaseTest, SecureUserAssertions;
+		use BaseDatabasePopulator, SecureUserAssertions;
 
 		protected function getActiveEntity ():string {
 

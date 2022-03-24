@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Testing\Condiments;
 
-	use ReflectionMethod;
+	use ReflectionMethod, ReflectionClass;
 
 	use PHPUnit\Framework\MockObject\{MockBuilder, Stub\Stub, Rule\InvocationOrder, Builder\InvocationMocker};
 
@@ -135,6 +135,10 @@
 
 			$builder->disableArgumentCloning();
 
+			if ((new ReflectionClass($target))->isAbstract())
+
+				return $builder->getMockForAbstractClass();
+
 			return $builder->getMock();
 		}
 
@@ -166,31 +170,6 @@
 			$mergedMethods = array_merge(array_keys($stubMethods), array_keys($mockMethods));
 
 			return array_unique($mergedMethods);
-		}
-
-		protected function positiveAbstractClass (string $target, array $mockMethods = [], array $constructorArguments = []) {
-
-			return $this->doubleAbstractClass($target, $mockMethods, $constructorArguments );
-		}
-
-		protected function negativeAbstractClass (string $target, array $mockMethods = [], array $constructorArguments = []) {
-
-			return $this->doubleAbstractClass($target, $mockMethods, $constructorArguments, true);
-		}
-
-		private function doubleAbstractClass (string $target, array $mockMethods = [], array $constructorArguments = [], bool $isNegative = false) {
-
-			return $this->getMockForAbstractClass(
-				
-				$target, $constructorArguments, "",
-
-				/*callOriginalConstructor*/!empty($constructorArguments),
-				/*callOriginalClone*/ !$isNegative,
-
-				/*callAutoload*/ true,
-
-				$mockMethods
-			);
 		}
 	}
 ?>

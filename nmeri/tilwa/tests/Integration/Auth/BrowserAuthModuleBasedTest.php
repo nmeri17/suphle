@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Integration\Auth;
 
-	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\PopulatesDatabaseTest, Proxies\WriteOnlyContainer};
+	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\BaseDatabasePopulator, Proxies\WriteOnlyContainer};
 
 	use Tilwa\Contracts\Auth\{AuthStorage, User};
 
@@ -11,7 +11,7 @@
 
 	class BrowserAuthModuleBasedTest extends ModuleLevelTest {
 
-		use PopulatesDatabaseTest;
+		use BaseDatabasePopulator;
 
 		protected function getModules ():array {
 

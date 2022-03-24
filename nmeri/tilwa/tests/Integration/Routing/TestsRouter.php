@@ -3,19 +3,20 @@
 
 	use Tilwa\Routing\RouteManager;
 
-	use Tilwa\Config\AscendingHierarchy;
-
-	use Tilwa\Contracts\Config\{Router as RouterContract, ModuleFiles};
-
-	use Tilwa\Contracts\Presentation\BaseRenderer;
+	use Tilwa\Contracts\{Config\Router as RouterContract, Presentation\BaseRenderer};
 
 	use Tilwa\Testing\{TestTypes\IsolatedComponentTest, Condiments\DirectHttpTest};
+
+	use Tilwa\Tests\Integration\Generic\CommonBinds;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\BrowserNoPrefix, Config\RouterMock};
 
 	class TestsRouter extends IsolatedComponentTest {
 
-		use DirectHttpTest;
+		use DirectHttpTest, CommonBinds {
+
+			CommonBinds::concreteBinds as commonConcretes;
+		}
 
 		public function getRouter ():RouteManager {
 
@@ -29,17 +30,15 @@
 
 		protected function concreteBinds ():array {
 
-			return [
+			return array_merge($this->commonConcretes(), [
 
 				RouterContract::class => $this->positiveDouble(
 					RouterMock::class, [
 
 						"browserEntryRoute" => $this->getEntryCollection()
 					]
-				),
-
-				ModuleFiles::class => new AscendingHierarchy ("Tilwa\Tests\Mocks\Modules\ModuleOne\Routes")
-			];
+				)
+			]);
 		}
 
 		/**

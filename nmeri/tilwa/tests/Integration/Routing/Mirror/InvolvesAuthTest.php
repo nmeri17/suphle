@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Integration\Routing\Mirror;
 
-	use Tilwa\Testing\{Condiments\PopulatesDatabaseTest, TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
+	use Tilwa\Testing\{Condiments\BaseDatabasePopulator, TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
 	use Tilwa\Contracts\{Auth\User, Config\Router};
 
@@ -11,7 +11,7 @@
 
 	class InvolvesAuthTest extends ModuleLevelTest {
 
-		use PopulatesDatabaseTest;
+		use BaseDatabasePopulator;
 
 		protected function getModules():array {
 
