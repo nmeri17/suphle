@@ -42,7 +42,7 @@
 
 				"db.connection" => $initialized->getConnection(),
 
-				"db" => $initialized->getNativeClient()
+				"db" => $initialized->getNativeClient()->getDatabaseManager()
 			];
 		}
 	}

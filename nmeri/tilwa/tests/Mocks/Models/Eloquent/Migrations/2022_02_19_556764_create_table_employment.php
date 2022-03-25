@@ -7,7 +7,7 @@
 
 	use Illuminate\Support\Facades\Schema;
 
-	class CreateTableEmployment extends Migration {
+	return new class extends Migration {
 
 		public function up ():void {
 
@@ -27,5 +27,5 @@
 
 			Schema::drop("employment");
 		}
-	}
+	};
 ?>

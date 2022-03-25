@@ -48,6 +48,8 @@
 	        if (array_key_exists($name, $bridge))
 
 	        	return $bridge[$name];
+
+	        return null;
 	    }
 
 	    /**

@@ -20,6 +20,8 @@
 		public function defaultBindings ():array;
 
 		public function injectBindings (array $bindings):void;
+
+		public function runContainerBootstrappers ():void;
 	}
 ?>
 

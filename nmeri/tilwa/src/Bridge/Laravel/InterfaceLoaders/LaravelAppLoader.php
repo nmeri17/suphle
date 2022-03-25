@@ -22,15 +22,23 @@
 			$this->configLoader = $configLoader;
 		}
 
+		public function bindArguments():array {
+
+			return [
+
+				"basePath" => $this->getBasePath()
+			];
+		}
+
 		public function afterBind ($initialized):void {
 
-			$initialized->setBasePath($this->getBasePath());
-
-			$initialized->injectBindings($initialized->defaultBindings());
+			$initialized->injectBindings($initialized->defaultBindings()); // required for below call
 
 			(new ConfigFileFinder)
 
 			->loadConfigurationFiles($initialized, $this->configLoader);
+
+			$initialized->runContainerBootstrappers();
 		}
 
 		public function concrete():string {

@@ -110,7 +110,7 @@
 
 		public function getNativeClient ():object {
 
-			return $this->nativeClient/*->getDatabaseManager()*/;
+			return $this->nativeClient;
 		}
 	}
 ?>

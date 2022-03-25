@@ -7,7 +7,7 @@
 
 	use Illuminate\Support\Facades\Schema;
 
-	class CreateTableEditHistory extends Migration {
+	return new class extends Migration {
 
 		public function up ():void {
 
@@ -29,5 +29,5 @@
 
 			Schema::drop("edit_history");
 		}
-	}
+	};
 ?>

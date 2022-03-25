@@ -17,13 +17,15 @@
 			return [
 				"default" => [
 
+					"host" => $this->envAccessor->getField("DATABASE_HOST"),
+
 					"database" => $this->envAccessor->getField("DATABASE_NAME"),
 
-				    "username" => $this->envAccessor->getField("DATABASE_USER"),
+					"username" => $this->envAccessor->getField("DATABASE_USER"),
 
-				    "password" => $this->envAccessor->getField("DATABASE_PASS"),
+					"password" => $this->envAccessor->getField("DATABASE_PASS"),
 
-				    "driver" => "mysql"
+					"driver" => "mysql"
 				]
 			];
 		}
