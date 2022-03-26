@@ -3,7 +3,7 @@
 
 	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
-	use Tilwa\Contracts\Bridge\LaravelApp;
+	use Tilwa\Contracts\Bridge\LaravelContainer;
 
 	use Illuminate\Contracts\Config\Repository as RepositoryContract;
 
@@ -11,7 +11,7 @@
 
 	    protected function getUnderlyingConfig ():RepositoryContract {
 
-			return $this->container->getClass(LaravelApp::class) // trigger config lifting
+			return $this->container->getClass(LaravelContainer::class) // trigger config lifting
 
 			->make("config");
 	    }

@@ -3,7 +3,7 @@
 
 	use Tilwa\Testing\{Condiments\BaseDatabasePopulator, TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\{ModuleOneDescriptor, Routes\Crud\AuthenticateCrudCollection, Config\RouterMock};
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Routes\Crud\AuthenticateCrudCollection, Config\RouterMock};
 
 	use Tilwa\Contracts\{Auth\User, Config\Router};
 

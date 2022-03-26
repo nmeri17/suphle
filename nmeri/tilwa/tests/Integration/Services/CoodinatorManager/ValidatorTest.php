@@ -29,7 +29,14 @@
 
 		use DirectHttpTest;
 
-		private $controller = ValidatorController::class;
+		private $controller;
+
+		protected function setUp ():void {
+
+			parent::setUp();
+
+			$this->controller = $this->container->getClass(ValidatorController::class);
+		}
 
 		public function test_get_needs_no_validation () {
 
@@ -95,7 +102,9 @@
 
 			$this->container->whenTypeAny()->needsAny([
 
-				ValidatorManager::class => $validatorManager
+				ValidatorManager::class => $validatorManager,
+
+				BaseRenderer::class => $this->negativeDouble(BaseRenderer::class, [])
 			]) // given
 
 			->getClass(ResponseManager::class)->mayBeInvalid(); // when
@@ -111,7 +120,14 @@
 				"isValidated" => true
 			]);
 
-			$sut = $this->negativeDouble($sutName, ["triggerRequest"]); // huh??
+			$sut = $this->positiveDouble($sutName, [
+
+				"isLaravelRoute" => false,
+
+				"attemptAuthentication" => $this->returnSelf(),
+
+				"authorizeRequest" => $this->returnSelf()
+			]);
 
 			$middlewareQueue = $this->negativeDouble(MiddlewareQueue::class, [], [
 

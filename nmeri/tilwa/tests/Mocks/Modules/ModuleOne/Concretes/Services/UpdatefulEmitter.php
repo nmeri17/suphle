@@ -30,12 +30,12 @@
 
 			$this->emitHelper (self::UPDATE_ERROR, $this->payload); // one of the handlers here is expected to rollback updates before it and prevent ours below from running
 
-			return new OptionalDTO($this->payload * 3); // stand in for database update
+			return new OptionalDTO($this->payload * 3); // since event listener doesn't implement ServiceErrorCatcher, this method should terminate and return value of [failureState]
 		}
 
 		public function failureState (string $method):?OptionalDTO {
 
-			return 1;
+			return new OptionalDTO($this->payload);
 		}
 	}
 ?>

@@ -114,7 +114,7 @@
 		 * 
 		 * @throws Unauthenticated
 		*/
-		private function attemptAuthentication ():self {
+		protected function attemptAuthentication ():self {
 
 			$authMethod = $this->indicator->activeAuthStorage();
 
@@ -135,7 +135,7 @@
 		/**
 		 * @throws UnauthorizedServiceAccess
 		*/
-		private function authorizeRequest ():self {
+		protected function authorizeRequest ():self {
 
 			if (!$this->indicator->getAuthorizer()->passesActiveRules())
 

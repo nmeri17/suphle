@@ -14,7 +14,7 @@
 
 		public function build ():bool {
 
-			return call_user_func($this->condition);
+			return call_user_func_array($this->condition, $this->arguments);
 		}
 
 		public function getArguments ():array {

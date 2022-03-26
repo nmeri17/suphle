@@ -11,7 +11,7 @@
 
 	use Illuminate\Testing\TestResponse;
 
-	class LoginRepoTest extends IsolatedComponentTest {
+	class TestLoginRepo extends IsolatedComponentTest {
 
 		use BaseDatabasePopulator, ExaminesHttpResponse, UserInserter, CommonBinds {
 

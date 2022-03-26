@@ -1,26 +1,31 @@
 <?php
 	namespace Tilwa\Testing\TestTypes;
 
-	use Tilwa\Testing\Condiments\{ModuleReplicator, GagsException};
-
-	use Tilwa\Testing\Proxies\{ModuleHttpTest, Extensions\FrontDoor};
+	use Tilwa\Hydration\Container;
 
 	use Tilwa\Modules\ModuleDescriptor;
 
-	use Tilwa\Hydration\Container;
+	use Tilwa\Testing\Condiments\{ModuleReplicator, GagsException, MockFacilitator};
+
+	use Tilwa\Testing\Proxies\{ModuleHttpTest, Extensions\FrontDoor};
 
 	abstract class ModuleLevelTest extends TestVirginContainer {
 
-		use ModuleReplicator, GagsException, ModuleHttpTest {
+		use ModuleReplicator, GagsException, ModuleHttpTest, MockFacilitator {
 
 			GagsException::setUp as mufflerSetup;
 		}
+
+		private $modules;
 
 		protected $muffleExceptionBroadcast = true, $entrance;
 
 		protected function setUp ():void {
 
-			$entrance = $this->entrance = new FrontDoor($this->getModules());
+			$entrance = $this->entrance = new FrontDoor(
+				
+				$this->modules = $this->getModules() // storing in an instance variable instead of reading directly from method so mutative methods can iterate and modify
+			);
 
 			$entrance->bootModules();
 
@@ -29,6 +34,13 @@
 			if ($this->muffleExceptionBroadcast)
 
 				$this->mufflerSetup();
+
+			$cacheManager = \Tilwa\Contracts\CacheManager::class;
+
+			$this->massProvide([
+
+				$cacheManager => $this->negativeDouble($cacheManager, [])
+			]);
 		}
 		
 		/**
@@ -55,7 +67,7 @@
 
 		protected function massProvide (array $provisions):void {
 
-			foreach ($this->getModules() as $descriptor)
+			foreach ($this->modules as $descriptor)
 
 				$descriptor->getContainer()->whenTypeAny()
 

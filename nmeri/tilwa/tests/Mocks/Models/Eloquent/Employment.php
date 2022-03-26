@@ -1,9 +1,11 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Models\Eloquent;
 
-	use Tilwa\Adapters\Orms\Eloquent\Factories\EmploymentFactory;
-
 	use Tilwa\Adapters\Orms\Eloquent\Models\BaseModel;
+
+	use Tilwa\Tests\Mocks\Models\Eloquent\Factories\EmploymentFactory;
+
+	use Illuminate\Database\Eloquent\Factories\Factory;
 
 	class Employment extends BaseModel {
 

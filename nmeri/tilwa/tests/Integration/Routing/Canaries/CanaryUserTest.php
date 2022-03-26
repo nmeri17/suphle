@@ -36,7 +36,7 @@
 			$this->assertTrue($matchingRenderer->matchesHandler($handlerName) ); // then
 		}
 
-		protected function getUserAndResult ():array {
+		public function getUserAndResult ():array {
 
 			return [
 

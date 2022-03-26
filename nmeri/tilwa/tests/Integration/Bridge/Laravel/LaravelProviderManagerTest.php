@@ -1,6 +1,8 @@
 <?php
 	namespace Tilwa\Tests\Integration\Bridge\Laravel;
 
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Bridge\Laravel\ServiceProviders\Exports\{ConfigConstructor, ConfigInternal};
+
 	/**
 	 * @see [ProvidedServiceWrapper]
 	*/

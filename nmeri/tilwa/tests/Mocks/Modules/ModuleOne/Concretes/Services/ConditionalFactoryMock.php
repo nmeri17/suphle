@@ -9,11 +9,16 @@
 
 	class ConditionalFactoryMock extends ConditionalFactory {
 
-		protected function manufacture (int $fieldA, int $fieldB, int $fieldC):void {
+		protected function manufacturerMethod ():string {
 
-			$this->whenCase($this->caseACondition, FieldAGreater::class, $fieldA, $fieldC)
+			return "greatestFields";
+		}
 
-			->whenCase($this->caseBCondition, FieldBGreater::class, $fieldB, $fieldA)
+		protected function greatestFields (int $fieldA, int $fieldB, int $fieldC):void {
+
+			$this->whenCase([$this, "caseACondition"], FieldAGreater::class, $fieldA, $fieldC)
+
+			->whenCase([$this, "caseBCondition"], FieldBGreater::class, $fieldB, $fieldA)
 
 			->finally( LastLast::class, $fieldC);
 		}
@@ -23,12 +28,12 @@
 			return GreaterFields::class;
 		}
 
-		private function caseACondition (int $fieldA, int $fieldB):bool {
+		public function caseACondition (int $fieldA, int $fieldB):bool {
 
 			return $fieldA > $fieldB;
 		}
 
-		private function caseBCondition (int $fieldB, int $fieldA):bool {
+		public function caseBCondition (int $fieldB, int $fieldA):bool {
 
 			return $fieldB > $fieldA;
 		}

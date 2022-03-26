@@ -12,6 +12,8 @@
 
 			$matchingRenderer = $this->fakeRequest("/api/v1/api-segment"); // when
 
+			$this->assertNotNull($matchingRenderer);
+
 			$this->assertTrue($matchingRenderer->matchesHandler("segmentHandler")); // then
 		}
 

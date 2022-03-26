@@ -7,7 +7,7 @@
 
 	use Tilwa\Contracts\Config\Router;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\{ModuleOneDescriptor, Routes\Auth\SecureBrowserCollection, Config\RouterMock};
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Routes\Auth\SecureBrowserCollection, Config\RouterMock};
 
 	class BrowserAuthModuleBasedTest extends ModuleLevelTest {
 

@@ -23,9 +23,9 @@
 
 			$moduleOne = $this->moduleOne = new ModuleOneDescriptor(new Container);
 
-			$this->sut = $moduleOne->getContainer()->getClass(CoodinatorManager::class);
-
 			parent::setUp();
+
+			$this->sut = $moduleOne->getContainer()->getClass(CoodinatorManager::class);
 		}
 
 		protected function getModules ():array {

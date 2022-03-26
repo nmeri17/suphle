@@ -1,11 +1,11 @@
 <?php
 	namespace Tilwa\Exception\Diffusers;
 
-	use Tilwa\Contracts\Exception\ExceptionHandler;
+	use Tilwa\Contracts\{Exception\ExceptionHandler, Presentation\BaseRenderer};
 
-	use Tilwa\Routing\{RouteManager, RequestDetails};
+	use Tilwa\Routing\RouteManager;
 
-	use Tilwa\Response\Format\AbstractRenderer;
+	use Tilwa\Request\RequestDetails;
 
 	use Tilwa\Exception\Explosives\ValidationFailure;
 
@@ -50,7 +50,7 @@
 			return $this->validationEvaluator->getValidatorErrors();
 		}
 
-		public function getRenderer ():AbstractRenderer {
+		public function getRenderer ():BaseRenderer {
 
 			return $this->renderer;
 		}

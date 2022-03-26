@@ -10,9 +10,9 @@
 		private $factoryList = [];
 
 		/**
-		 * This features the [whenCase] stack that runs against that argument
+		 * There's a user-defined method with custom type-hinting. That's where dev gets to define their [whenCase] stack that will run arguments that will be eventually injected at consumption point
 		*/
-		abstract protected function manufacture (...$arguments):void;
+		abstract protected function manufacturerMethod ():string;
 
 		/**
 		 * Interface implemented by all the use-cases
@@ -21,11 +21,13 @@
 
 		protected function whenCase(callable $condition, string $handlingClass, ...$classArguments):self {
 
-			if ($handlingClass instanceof $this->getInterface())
+			$interfaceName = $this->getInterface();
 
-				$this->factoryList[$handlingClass] = new UseCase($condition, $classArguments);
+			if (!is_a($handlingClass, $interfaceName, true))
 
-			else throw new InvalidImplementor ($this->getInterface(), $handlingClass);
+				throw new InvalidImplementor ($interfaceName, $handlingClass);
+
+			$this->factoryList[$handlingClass] = new UseCase($condition, $classArguments);
 
 			return $this;
 		}
@@ -43,7 +45,7 @@
 		*/
 		public function retrieveConcrete(...$arguments) {
 
-			$this->manufacture(...$arguments);
+			call_user_func_array([$this, $this->manufacturerMethod()], $arguments);
 			
 			foreach ($this->factoryList as $handler => $case)
 

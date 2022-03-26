@@ -127,7 +127,10 @@
 
 				$builder->onlyMethods($methodsToRetain);
 
-			else $builder->onlyMethods(get_class_methods($target));
+			else $builder->onlyMethods(array_diff(
+				
+				get_class_methods($target), $methodsToRetain
+			));
 
 			/*$builder->disableProxyingToOriginalMethods()
 

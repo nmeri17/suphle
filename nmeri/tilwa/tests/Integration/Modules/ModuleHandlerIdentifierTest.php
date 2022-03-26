@@ -13,7 +13,7 @@
 
 	use Tilwa\Flows\OuterFlowWrapper;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\ModuleOneDescriptor;
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
 	class ModuleHandlerIdentifierTest extends JobFactory {
 

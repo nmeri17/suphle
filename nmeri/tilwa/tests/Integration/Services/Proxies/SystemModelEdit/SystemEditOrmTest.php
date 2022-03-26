@@ -13,16 +13,14 @@
 
 		use DirectHttpTest;
 
+		private $ormDialect = OrmDialect::class;
+
 		private function mockOrm ($numTimes) {
 
-			$ormDialect = $this->createPartialMock(OrmDialect::class);
-
-			$this->mockCalls([
+			return $this->positiveDouble($this->ormDialect, [], [
 				
 				"runTransaction" => [$numTimes, [$this->anything()]]
 			]);
-
-			return $ormDialect;
 		}
 
 		public function test_update_method_runs_in_transaction () {
@@ -32,7 +30,7 @@
 
 			$this->container->whenTypeAny()->needsArguments([
 
-				OrmDialect::class => $this->mockOrm($this->once()) // then
+				$this->ormDialect => $this->mockOrm($this->once()) // then
 			])
 
 			->getClass(GoodPutController::class)
@@ -47,9 +45,8 @@
 
 			$this->container->whenTypeAny()->needsArguments([
 
-				OrmDialect::class => $this->mockOrm($this->never()) // then
+				$this->ormDialect => $this->mockOrm($this->never()) // then
 			])
-
 			->getClass(GoodPutController::class)
 
 			->putOtherServiceMethod(); // when

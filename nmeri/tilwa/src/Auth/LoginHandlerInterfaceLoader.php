@@ -25,7 +25,7 @@
 
 			return [
 
-				"collection" => $this->container->getClass($this->authContract->getLoginCollection()) // passing collection as argument so the handler can have receive a type-safe object
+				"collection" => $this->container->getClass($this->authContract->getLoginCollection()) // passing collection as argument so the handler can receive a type-safe object
 			];
 		}
 	}

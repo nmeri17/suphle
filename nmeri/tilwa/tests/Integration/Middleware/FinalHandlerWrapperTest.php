@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Integration\Middleware;
 
-	use Tilwa\Middleware\FinalHandlerWrapper;
+	use Tilwa\Middleware\Handlers\FinalHandlerWrapper;
 
 	use Tilwa\Request\PayloadStorage;
 

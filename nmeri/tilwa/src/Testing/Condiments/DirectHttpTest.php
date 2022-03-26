@@ -18,7 +18,7 @@
 
 			$_GET["tilwa_path"] = $components["path"];
 
-			$_GET = array_merge($_GET, $components["query"] ?? []);
+			$_GET = array_merge($_GET, [$components["query"] ?? ""]);
 
 			$_SERVER["REQUEST_METHOD"] = $httpMethod;
 

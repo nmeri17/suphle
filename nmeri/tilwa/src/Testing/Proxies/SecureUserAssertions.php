@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Testing\Proxies;
 
-	use Tilwa\Contracts\Auth\{User, AuthStorage};
+	use Tilwa\Contracts\Auth\{UserContract, AuthStorage};
 
 	use Tilwa\Hydration\Container;
 
@@ -23,14 +23,14 @@
 			return $storage;
 		}
 
-		protected function actingAs(User $user, ?string $storageName):self {
+		protected function actingAs(UserContract $user, ?string $storageName):self {
 
 			$this->getAuthStorage($storageName)->imitate($user->getId());
 
 			return $this;
 		}
 
-		protected function assertAuthenticatedAs(User $user, string $storageName):self {
+		protected function assertAuthenticatedAs(UserContract $user, string $storageName):self {
 
 			$this->assertSame($user, $this->getAuthStorage($storageName)->getUser());
 

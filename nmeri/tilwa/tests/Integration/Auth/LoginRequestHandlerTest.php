@@ -21,7 +21,10 @@
 
 		public function getModules ():array {
 
-			return new ModuleOneDescriptor(new Container);
+			return [
+				
+				new ModuleOneDescriptor(new Container)
+			];
 		}
 
 		public function test_invalid_payload_terminates_request () {

@@ -5,11 +5,15 @@
 
 	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\Services\DatalessErrorThrower;
-
 	use Tilwa\Exception\Explosives\NotFoundException;
 
+	use Tilwa\Tests\Integration\Generic\CommonBinds;
+
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\Services\DatalessErrorThrower;
+
 	class ServiceErrorCatcherTest extends IsolatedComponentTest {
+
+		use CommonBinds;
 
 		private $serviceName = DatalessErrorThrower::class;
 

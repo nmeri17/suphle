@@ -25,7 +25,7 @@
 
 		public function down ():void {
 
-			Schema::drop("user");
+			Schema::drop("users");
 		}
 	};
 ?>

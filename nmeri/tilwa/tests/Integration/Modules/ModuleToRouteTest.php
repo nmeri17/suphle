@@ -7,7 +7,7 @@
 
 	use Tilwa\Hydration\Container;
 
-	use Tilwa\Tests\Mocks\Modules\{ModuleTwo\ModuleTwoDescriptor, ModuleOne\ModuleOneDescriptor};
+	use Tilwa\Tests\Mocks\Modules\{ModuleTwo\Meta\ModuleTwoDescriptor, ModuleOne\Meta\ModuleOneDescriptor};
 
 	class ModuleToRouteTest extends ModuleLevelTest {
 

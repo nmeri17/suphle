@@ -7,9 +7,11 @@
 
 	use Tilwa\Auth\SessionStorage;
 
+	use Tilwa\Tests\Integration\Generic\CommonBinds;
+
 	class BrowserPostLoginTest extends IsolatedComponentTest {
 
-		use BaseDatabasePopulator, SecureUserAssertions;
+		use BaseDatabasePopulator, SecureUserAssertions, CommonBinds;
 
 		protected function getActiveEntity ():string {
 

@@ -3,7 +3,7 @@
 
 	use Tilwa\Auth\Renderers\ApiAuthRepo;
 
-	class ApiAuthRepoTest extends LoginRepoTest {
+	class ApiAuthRepoTest extends TestLoginRepo {
 
 		private $loginPath = "/api/v1/login";
 

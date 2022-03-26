@@ -11,11 +11,9 @@
 
 	use Tilwa\Flows\Structures\{AccessContext, RouteUserNode};
 
-	use DateTime;
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\FlowRoutes, Meta\ModuleOneDescriptor, Config\RouterMock};
 
-	use DateInterval;
-
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\FlowRoutes, ModuleOneDescriptor, Config\RouterMock};
+	use DateTime, DateInterval;
 
 	class PostReturnTest extends ModuleLevelTest {
 

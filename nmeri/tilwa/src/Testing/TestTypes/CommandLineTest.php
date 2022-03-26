@@ -19,11 +19,16 @@
 
 		protected function setUp ():void {
 
-			$this->consoleClient = new SymfonyCli("SuphleTest", "v2");
+			$this->consoleRunner = new CliRunner (
 
-			$this->consoleRunner = new CliRunner (new FrontDoor($this->getModules()), $this->consoleClient);
+				new FrontDoor($this->getModules()),
+
+				$this->consoleClient = new SymfonyCli("SuphleTest", "v2")
+			);
 
 			$this->consoleRunner->loadCommands();
+
+			// is there any need to muffle exceptions?
 		}
 		
 		/**

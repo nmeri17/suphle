@@ -12,7 +12,7 @@
 			// given
 			$ormDialect = $this->prophesize(OrmDialect::class);
 
-			$modelInstance = $this->positiveDouble(IntegrityModel::class);
+			$modelInstance = $this->positiveDouble(IntegrityModel::class, []);
 
 			$identifier = 55;
 

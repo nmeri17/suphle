@@ -3,7 +3,7 @@
 
 	use Tilwa\Auth\{Renderers\BrowserAuthRepo, Storage\SessionStorage};
 
-	class BrowserAuthRepoTest extends LoginRepoTest {
+	class BrowserAuthRepoTest extends TestLoginRepo {
 
 		const LOGIN_PATH = "/login";
 

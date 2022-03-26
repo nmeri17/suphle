@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Integration\Bridge\Laravel;
 
-	use Tilwa\Bridge\Laravel\ModuleRouteMatcher;
+	use Tilwa\Bridge\Laravel\Routing\ModuleRouteMatcher;
 
 	use Tilwa\Testing\{TestTypes\IsolatedComponentTest, Condiments\DirectHttpTest};
 
