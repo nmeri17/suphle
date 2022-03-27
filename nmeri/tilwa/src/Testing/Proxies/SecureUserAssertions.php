@@ -9,11 +9,11 @@
 
 		abstract protected function getContainer ():Container;
 
-		protected function getAuthStorage (string $storageName = AuthStorage::class):AuthStorage {
+		protected function getAuthStorage (string $storageName):AuthStorage {
 
 			$container = $this->getContainer();
 
-			$storage = $container->getClass($authStorage);
+			$storage = $container->getClass($storageName);
 
 			$container->whenTypeAny()->needsAny([ // assumes we're overwriting the bound concrete
 
@@ -23,7 +23,7 @@
 			return $storage;
 		}
 
-		protected function actingAs(UserContract $user, ?string $storageName):self {
+		protected function actingAs(UserContract $user, string $storageName = AuthStorage::class):self {
 
 			$this->getAuthStorage($storageName)->imitate($user->getId());
 

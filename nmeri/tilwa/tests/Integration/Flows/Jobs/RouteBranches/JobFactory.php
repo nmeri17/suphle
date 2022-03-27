@@ -3,7 +3,7 @@
 
 	use Tilwa\Flows\{ ControllerFlows, Jobs\RouteBranches, Structures\BranchesContext};
 
-	use Tilwa\Contracts\{Auth\User, Presentation\BaseRenderer, CacheManager};
+	use Tilwa\Contracts\{Auth\UserContract, Presentation\BaseRenderer};
 
 	use Tilwa\Response\Format\Json;
 
@@ -27,16 +27,11 @@
 
 		$rendererController = FlowController::class;
 
-		public function setUp ():void {
+		protected function setUp ():void {
 
 			parent::setUp();
 
 			$this->container = $this->firstModuleContainer();
-
-			$this->container->whenTypeAny()->needsAny([
-
-				CacheManager::class => $this->negativeDouble(CacheManager::class, [])
-			]); // temporary until this is integrated
 		}
 
 		/**
@@ -59,7 +54,7 @@
 
 				"getController" => $this->rendererController
 
-			], ["preloaded"]);
+			], [], ["preloaded"]);
 		}
 
 		protected function constructFlow ():ControllerFlows {
@@ -83,16 +78,16 @@
 			->getClass($jobName);
 		}
 
-		protected function makeUser (int $id):User {
+		protected function makeUser (int $id):UserContract {
 
-			$entity = $this->container->getClass(User::class);
+			$entity = $this->container->getClass(UserContract::class);
 
 			$entity->setId($id);
 
 			return $entity;
 		}
 
-		protected function makeBranchesContext (?User $user):BranchesContext {
+		protected function makeBranchesContext (?UserContract $user):BranchesContext {
 
 			return new BranchesContext(
 

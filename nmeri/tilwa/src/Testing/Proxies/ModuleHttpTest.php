@@ -1,9 +1,11 @@
 <?php
 	namespace Tilwa\Testing\Proxies;
 
-	use Tilwa\Testing\Condiments\DirectHttpTest;
-
 	use Tilwa\Hydration\Container;
+
+	use Tilwa\Modules\ModuleToRoute;
+
+	use Tilwa\Testing\Condiments\DirectHttpTest;
 
 	trait ModuleHttpTest {
 

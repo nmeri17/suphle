@@ -1,15 +1,13 @@
 <?php
 	namespace Tilwa\Tests\Integration\Flows\Jobs\RouteBranches;
 
-	use Tilwa\Testing\Proxies\WriteOnlyContainer;
-
 	use Tilwa\Flows\{FlowHydrator, OuterFlowWrapper, Structures\BranchesContext};
 
 	use Tilwa\Contracts\{CacheManager, Auth\User, Config\Router, Presentation\BaseRenderer};
 
-	use Tilwa\Response\Format\Json;
+	use Tilwa\Response\{Format\Json, ResponseManager};
 
-	use Tilwa\Response\ResponseManager;
+	use Tilwa\Testing\Proxies\WriteOnlyContainer;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\OriginCollection, Meta\ModuleOneDescriptor, Config\RouterMock};
 
@@ -44,25 +42,28 @@
 			];
 		}
 
-		/**
-		 * @dataProvider contextParameters
-		*/
-		public function test_stores_correct_data_in_cache (BranchesContext $context) {
+		public function test_stores_correct_data_in_cache () {
 
-			// given => see setup
-			$this->makeJob($context)->handle(); // When
+			$this->dataProvider([
 
-			$umbrella = $this->container->getClass(CacheManager::class)
+				[$this, "contextParameters"]
+			], function (BranchesContext $context) {
 
-			->get("categories/5");
+				// given => see setup
+				$this->makeJob($context)->handle(); // When
 
-			$this->assertNotNull($umbrella);
+				$umbrella = $this->container->getClass(CacheManager::class)
 
-			$this->assertSame( // then
-				$umbrella->getUserPayload("*")->getRenderer(),
+				->get("categories/5");
 
-				$this->flowGeneratedRenderer()
-			);
+				$this->assertNotNull($umbrella);
+
+				$this->assertSame( // then
+					$umbrella->getUserPayload("*")->getRenderer(),
+
+					$this->flowGeneratedRenderer()
+				);
+			});
 		}
 
 		/**
@@ -95,20 +96,23 @@
 			return new Json("generatedRenderer");
 		}
 
-		/**
-		 * @dataProvider contextParameters
-		*/
-		public function test_will_be_handled_by_flow (BranchesContext $context) {
+		public function test_will_be_handled_by_flow () {
 
-			// given => see dataProvider
-			$this->makeJob($context)->handle(); // When
-			
-			// then
-			$this->assertHandledByFlow("/categories/5"); // Note: we can get away with not even creating an endpoint for this since if the above call behaves correctly, request won't even go there
-			
-			$wrapper = $this->container->getClass(OuterFlowWrapper::class);
+			$this->dataProvider([
 
-			$this->assertSame($wrapper->handlingRenderer(), $this->flowGeneratedRenderer());
+				[$this, "contextParameters"]
+			], function (BranchesContext $context) {
+
+				// given => see dataProvider
+				$this->makeJob($context)->handle(); // When
+				
+				// then
+				$this->assertHandledByFlow("/categories/5"); // Note: we can get away with not even creating an endpoint for this since if the above call behaves correctly, request won't even go there
+				
+				$wrapper = $this->container->getClass(OuterFlowWrapper::class);
+
+				$this->assertSame($wrapper->handlingRenderer(), $this->flowGeneratedRenderer());
+			});
 		}
 
 		public function test_no_flow_does_nothing () {

@@ -1,24 +1,21 @@
 <?php
 	namespace Tilwa\Tests\Integration\Flows;
 
-	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\QueueInterceptor, Proxies\WriteOnlyContainer};
+	use Tilwa\Contracts\{Auth\UserContract, Config\Router};
 
-	use Tilwa\Contracts\{Auth\User, Config\Router};
-
-	use Tilwa\Flows\BranchesContext;
+	use Tilwa\Flows\Structures\BranchesContext;
 
 	use Tilwa\Tests\Integration\Flows\Jobs\RouteBranches\JobFactory;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\OriginCollection, ModuleOneDescriptor, Config\RouterMock};
+	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\QueueInterceptor};
+
+	use Tilwa\Testing\Proxies\{WriteOnlyContainer, SecureUserAssertions};
+
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\OriginCollection, Meta\ModuleOneDescriptor, Config\RouterMock};
 
 	class FlowRoutesTest extends JobFactory {
 
-		use QueueInterceptor;
-
-		public function setUp ():void {
-
-			parent::setUp();
-		}
+		use QueueInterceptor, SecureUserAssertions;
 
 		protected function getModules():array { // using this since we intend to make front door requests
 
@@ -34,16 +31,19 @@
 			];
 		}
 		
-		/**
-		 * @dataProvider specializedUser
-		*/
-		public function test_specialized_user_can_access_his_content (BranchesContext $context, User $visitor) {
+		public function test_specialized_user_can_access_his_content () {
 
-			$this->actingAs($visitor); // given
+			$this->dataProvider([
 
-			$this->makeJob($context)->handle(); // when
+				[$this, "specializedUser"]
+			], function (BranchesContext $context, ?UserContract $visitor) {
 
-			$this->assertHandledByFlow($this->userUrl); // then
+				$this->actingAs($visitor); // given
+
+				$this->makeJob($context)->handle(); // when
+
+				$this->assertHandledByFlow($this->userUrl); // then
+			});
 		}
 
 		public function specializedUser ():array {
@@ -58,18 +58,21 @@
 			];
 		}
 		
-		/**
-		 * @dataProvider strangeUsers
-		*/
-		public function test_other_users_cant_access_specialized_user_content (BranchesContext $context, ?User $visitor) {
+		public function test_other_users_cant_access_specialized_user_content () {
 
-			if (!is_null($visitor))
+			$this->dataProvider([
 
-				$this->actingAs($visitor); // given
+				[$this, "strangeUsers"]
+			], function (BranchesContext $context, ?UserContract $visitor) {
 
-			$this->makeJob($context)->handle(); // when
+				if (!is_null($visitor))
 
-			$this->assertNotHandledByFlow($this->userUrl); // then
+					$this->actingAs($visitor); // given
+
+				$this->makeJob($context)->handle(); // when
+
+				$this->assertNotHandledByFlow($this->userUrl); // then
+			});
 		}
 
 		public function strangeUsers ():array {
@@ -84,23 +87,25 @@
 			];
 		}
 		
-		/**
-		 * @dataProvider specializedUser
-		 * @dataProvider strangeUsers
-		*/
-		public function test_all_can_access_generalized_content (BranchesContext $dummyContext, ?User $visitor) {
+		public function test_all_can_access_generalized_content () {
 
-			if (!is_null($visitor))
+			$this->dataProvider([
+				[$this, "specializedUser"],
+				[$this, "strangeUsers"]
+			], function (BranchesContext $dummyContext, ?UserContract $visitor) {
 
-				$this->actingAs($visitor);
+				if (!is_null($visitor))
 
-			$this->makeJob($this->makeBranchesContext(null)) // given
-			->handle(); // when
+					$this->actingAs($visitor);
 
-			// then
-			$this->assertHandledByFlow($this->userUrl);
+				$this->makeJob($this->makeBranchesContext(null)) // given
+				->handle(); // when
 
-			$this->assertHandledByFlow("/user-content/3");
+				// then
+				$this->assertHandledByFlow($this->userUrl);
+
+				$this->assertHandledByFlow("/user-content/3");
+			});
 		}
 
 		/**

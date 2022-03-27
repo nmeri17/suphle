@@ -67,14 +67,17 @@
 			$this->assertHandledByFlow($this->resourceUrl); // then
 		}
 		
-		/**
-		 * @dataProvider expiredContexts
-		*/
-		public function test_expired_node_wont_be_handled_by_flow (AccessContext $context) {
+		public function test_expired_node_wont_be_handled_by_flow () {
 
-			$this->makeJob($context)->handle(); // given
+			$this->dataProvider([
 
-			$this->assertNotHandledByFlow($this->resourceUrl); // then
+				[$this, "expiredContexts"]
+			], function (AccessContext $context) {
+
+				$this->makeJob($context)->handle(); // given
+
+				$this->assertNotHandledByFlow($this->resourceUrl); // then
+			});
 		}
 		
 		public function test_clears_only_accessed_but_retains_others () {

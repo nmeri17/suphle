@@ -1,9 +1,9 @@
 <?php
 	namespace Tilwa\Flows\Structures;
 
-	use Tilwa\Response\{Format\AbstractRenderer, ResponseManager};
+	use Tilwa\Response\ResponseManager;
 
-	use Tilwa\Contracts\Auth\User;
+	use Tilwa\Contracts\{Auth\UserContract, Presentation\BaseRenderer};
 
 	class BranchesContext {
 
@@ -16,7 +16,7 @@
 		* 
 		* @param {modules} set during flow-to-flow requests i.e. current request is a flow rebound by an earlier handled flow, and an earlier organic before it. This means we can't have both this parameter and [responseManager] set at the same time
 		*/
-		function __construct(AbstractRenderer $renderer, ?User $user, ?array $modules, ResponseManager $responseManager = null) {
+		function __construct(BaseRenderer $renderer, ?UserContract $user, ?array $modules, ResponseManager $responseManager = null) {
 
 			$this->modules = $modules;
 
@@ -32,7 +32,7 @@
 			return $this->modules;
 		}
 
-		public function getRenderer():AbstractRenderer {
+		public function getRenderer():BaseRenderer {
 			
 			return $this->renderer;
 		}
