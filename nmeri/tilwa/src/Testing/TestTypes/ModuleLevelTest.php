@@ -27,6 +27,8 @@
 				$this->modules = $this->getModules() // storing in an instance variable instead of reading directly from method so mutative methods can iterate and modify
 			);
 
+			$this->massProvideSession(); // this needs to happen before module boots, so hydration of a session-using object doesn't override our provision
+
 			$entrance->bootModules();
 
 			$entrance->extractFromContainer();

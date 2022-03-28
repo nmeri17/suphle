@@ -17,7 +17,10 @@
 
 	abstract class JobFactory extends ModuleLevelTest {
 
-		use QueueInterceptor, MockFacilitator;
+		use QueueInterceptor, MockFacilitator {
+
+			QueueInterceptor::setUp as queueSetup;
+		}
 
 		private $container;
 
@@ -29,7 +32,7 @@
 
 		protected function setUp ():void {
 
-			parent::setUp();
+			$this->queueSetup();
 
 			$this->container = $this->firstModuleContainer();
 		}

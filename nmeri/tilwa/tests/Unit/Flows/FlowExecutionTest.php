@@ -1,7 +1,9 @@
 <?php
 	namespace Tilwa\Tests\Unit\Flows;
 
-	use Tilwa\Flows\{FlowHydrator, Previous\SingleNode};
+	use Tilwa\Flows\FlowHydrator;
+
+	use Tilwa\Flows\Previous\{CollectionNode, SingleNode};
 
 	use Tilwa\Flows\Structures\{RouteUserNode, ServiceContext};
 
@@ -32,7 +34,7 @@
 			$responseManager->handleValidRequest()->shouldBeCalled();
  
  			// when
-			$hydrator->setDependencies($responseManager, [])
+			$hydrator->setDependencies($responseManager->reveal(), [])
 
 			->executeRequest();
 		}

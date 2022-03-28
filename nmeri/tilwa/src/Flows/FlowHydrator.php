@@ -11,7 +11,9 @@
 
 	use Tilwa\Hydration\Container;
 
-	use Tilwa\Routing\{PathPlaceholders, RequestDetails};
+	use Tilwa\Request\RequestDetails;
+
+	use Tilwa\Routing\PathPlaceholders;
 
 	use Illuminate\Support\{Collection as LaravelCollection, Arr};
 
@@ -212,16 +214,13 @@
 
 			$valuePath = $nodeContent[$newQueryHolder];
 
-			if (!is_null($valuePath)) {
+			if (is_null($valuePath)) return null;
 
-				$queryPart = parse_url($valuePath, PHP_URL_QUERY);
+			$queryPart = parse_url($valuePath, PHP_URL_QUERY);
 
-				parse_str($queryPart, $queryArray); // we don't bother passing the path part since it is expected that that is the flow anchor url
+			parse_str($queryPart, $queryArray); // we don't bother passing the path part since it is expected that that is the flow anchor url
 
-				return $this->updateRequest($queryArray)
-				
-				->executeRequest();
-			}
+			return $this->updateRequest($queryArray)->executeRequest();
 		}
 
 		public function canProcessPath():bool {
@@ -284,7 +283,7 @@
 			->executeRequest();
 		}
 
-		public function handleDateRange(array $indexes, RangeContext $context):BaseRenderer {
+		public function handleDateRange (array $indexes, RangeContext $context):?BaseRenderer {
 
 			usort($indexes, function($a, $b) {
 

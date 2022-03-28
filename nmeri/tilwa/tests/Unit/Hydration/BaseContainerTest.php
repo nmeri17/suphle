@@ -3,11 +3,9 @@
 
 	use Tilwa\Hydration\Container;
 
-	use Tilwa\Testing\TestTypes\TestVirginContainer;
-
-	use Tilwa\Tests\Unit\Hydration\Extensions\CheckProvisionedClasses;
-
 	use Tilwa\Contracts\Auth\UserContract;
+
+	use Tilwa\Testing\{TestTypes\TestVirginContainer, Proxies\Extensions\CheckProvisionedClasses};
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\{ ARequiresBCounter, BCounter};
 

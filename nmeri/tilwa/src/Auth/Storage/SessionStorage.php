@@ -31,7 +31,9 @@
 				$this->sessionClient->startNew();
 			}
 
-			return $this->sessionClient->setValue($this->identifierKey, $value);
+			$this->sessionClient->setValue($this->identifierKey, $value);
+
+			return $value;
 		}
 
 		public function resumeSession ():void {

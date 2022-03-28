@@ -5,11 +5,11 @@
 
 	use Tilwa\Contracts\Auth\ModuleLoginHandler;
 
-	use Tilwa\Testing\{Condiments\BaseDatabasePopulator, TestTypes\IsolatedComponentTest, Proxies\ExaminesHttpResponse};
+	use Tilwa\Testing\{Condiments\BaseDatabasePopulator, TestTypes\IsolatedComponentTest };
+
+	use Tilwa\Testing\Proxies\{ExaminesHttpResponse, Extensions\TestResponseBridge};
 
 	use Tilwa\Tests\Integration\Generic\CommonBinds;
-
-	use Illuminate\Testing\TestResponse;
 
 	class TestLoginRepo extends IsolatedComponentTest {
 
@@ -21,6 +21,8 @@
 		protected function setUp ():void {
 
 			$this->databasePopulatorSetup();
+
+			$this->massProvideSession();
 		}
 
 		protected function getActiveEntity ():string {
@@ -28,7 +30,7 @@
 			return User::class;
 		}
 
-		protected function getLoginResponse ():TestResponse {
+		protected function getLoginResponse ():TestResponseBridge {
 
 			$identifier = $this->container->getClass(ModuleLoginHandler::class);
 

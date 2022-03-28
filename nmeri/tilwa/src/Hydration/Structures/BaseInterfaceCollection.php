@@ -7,7 +7,7 @@
 
 	use Tilwa\Contracts\IO\Session;
 
-	use Tilwa\Contracts\Database\{OrmDialect, OrmReplicator};
+	use Tilwa\Contracts\Database\{OrmDialect, OrmReplicator, OrmTester};
 
 	use Tilwa\Contracts\Bridge\{LaravelContainer, LaravelArtisan};
 
@@ -27,7 +27,7 @@
 
 	use Tilwa\Auth\{LoginHandlerInterfaceLoader, Storage\SessionStorage};
 
-	use Tilwa\Adapters\Orms\Eloquent\{UserHydrator as EloquentUserHydrator, Models\User as EloquentUser, ModelReplicator, OrmLoader};
+	use Tilwa\Adapters\Orms\Eloquent\{UserHydrator as EloquentUserHydrator, Models\User as EloquentUser, ModelReplicator, OrmLoader, DatabaseTester as EloquentTester};
 
 	use Tilwa\Adapters\Markups\Transphporm as TransphpormAdapter;
 
@@ -95,6 +95,8 @@
 				ClientInterface::class => GuzzleClient::class,
 
 				OrmReplicator::class => ModelReplicator::class,
+
+				OrmTester::class => EloquentTester::class,
 
 				ImageLocator::class => LocalSaver::class,
 

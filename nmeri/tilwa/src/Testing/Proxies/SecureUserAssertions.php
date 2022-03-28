@@ -13,11 +13,9 @@
 
 			$container = $this->getContainer();
 
-			$storage = $container->getClass($storageName);
-
 			$container->whenTypeAny()->needsAny([ // assumes we're overwriting the bound concrete
 
-				AuthStorage::class => $storage
+				AuthStorage::class => $storage = $container->getClass($storageName)
 			]);
 
 			return $storage;

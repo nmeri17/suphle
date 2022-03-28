@@ -3,6 +3,8 @@
 
 	use Tilwa\Modules\ModuleToRoute;
 
+	use Tilwa\Flows\FlowHydrator;
+
 	use Tilwa\Flows\Structures\{BranchesContext, RouteUserNode};
 
 	use Tilwa\Flows\Previous\UnitNode;

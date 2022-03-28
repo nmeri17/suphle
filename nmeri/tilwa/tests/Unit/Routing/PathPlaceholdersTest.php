@@ -5,9 +5,11 @@
 
 	use Tilwa\Testing\{TestTypes\IsolatedComponentTest, Condiments\DirectHttpTest};
 
+	use Tilwa\Tests\Integration\Generic\CommonBinds;
+
 	class PathPlaceholdersTest extends IsolatedComponentTest {
 
-		use DirectHttpTest;
+		use DirectHttpTest, CommonBinds;
 
 		/**
 	     * @dataProvider pathsAndPatterns

@@ -3,9 +3,7 @@
 
 	use Tilwa\Hydration\Container;
 
-	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
-
-	use Tilwa\Tests\Unit\Hydration\Extensions\CheckProvisionedClasses;
+	use Tilwa\Testing\{TestTypes\IsolatedComponentTest, Proxies\Extensions\CheckProvisionedClasses};
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\{ ARequiresBCounter, BCounter};
 

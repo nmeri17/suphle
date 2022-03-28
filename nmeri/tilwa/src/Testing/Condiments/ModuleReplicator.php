@@ -3,9 +3,7 @@
 
 	use Tilwa\Modules\ModuleDescriptor;
 
-	use Tilwa\Hydration\Container;
-
-	use Tilwa\Testing\Proxies\WriteOnlyContainer;
+	use Tilwa\Testing\Proxies\{WriteOnlyContainer, Extensions\CheckProvisionedClasses};
 
 	trait ModuleReplicator {
 
@@ -16,12 +14,12 @@
 
 			if ($stubsDecorator)
 
-				$container = $this->positiveDouble(Container::class, [
+				$container = $this->positiveDouble(CheckProvisionedClasses::class, [
 
 					"getDecorator" => $this->stubDecorator()
 				]);
 
-			else $container = new Container;
+			else $container = new CheckProvisionedClasses;
 
 			$this->bootContainer($container);
 

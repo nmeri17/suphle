@@ -35,6 +35,13 @@
 			if ($this->muffleExceptionBroadcast)
 
 				$this->mufflerSetup();
+
+			$cacheManager = \Tilwa\Contracts\CacheManager::class;
+
+			$this->massProvide([
+
+				$cacheManager => $this->negativeDouble($cacheManager, [])
+			]);
 		}
 
 		protected function entityBindings ():void {

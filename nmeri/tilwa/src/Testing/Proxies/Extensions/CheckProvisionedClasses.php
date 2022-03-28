@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Tests\Unit\Hydration\Extensions;
+	namespace Tilwa\Testing\Proxies\Extensions;
 
 	use Tilwa\Hydration\Container;
 

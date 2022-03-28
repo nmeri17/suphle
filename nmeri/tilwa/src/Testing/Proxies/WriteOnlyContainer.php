@@ -1,9 +1,7 @@
 <?php
 	namespace Tilwa\Testing\Proxies;
 
-	use Tilwa\Hydration\Container;
-
-	use Tilwa\Testing\Condiments\MockFacilitator;
+	use Tilwa\Testing\{Condiments\MockFacilitator, Proxies\Extensions\CheckProvisionedClasses};
 
 	use PHPUnit\Framework\TestCase;
 
@@ -13,7 +11,7 @@
 
 		private $container;
 
-		public function __construct (Container $container) {
+		public function __construct (CheckProvisionedClasses $container) {
 
 			$this->container = $container;
 		}
