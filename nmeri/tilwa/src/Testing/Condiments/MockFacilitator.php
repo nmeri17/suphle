@@ -10,7 +10,7 @@
 		/**
 		 * @param {mockMethods} = [string method => [int|InvocationOrder numTimes, [arguments]]]
 		*/
-		protected function positiveDouble (string $target, array $stubs, array $mockMethods = [], array $constructorArguments = [])/*:MockBuilder*/ {
+		protected function positiveDouble (string $target, array $stubs = [], array $mockMethods = [], array $constructorArguments = [])/*:MockBuilder*/ {
 
 			$builder = $this->getBuilder(
 				$target, $constructorArguments,
@@ -25,7 +25,7 @@
 			return $builder;
 		}
 
-		protected function positiveDoubleMany (string $target, array $stubs, array $mockMethods = [], array $constructorArguments = [])/*:MockBuilder*/ {
+		protected function positiveDoubleMany (string $target, array $stubs = [], array $mockMethods = [], array $constructorArguments = [])/*:MockBuilder*/ {
 
 			$builder = $this->getBuilder(
 				$target, $constructorArguments,
@@ -63,15 +63,11 @@
 		/**
 		 * Use when the other methods contain actions we don't wanna trigger
 		*/
-		protected function negativeDouble (string $target, array $stubs, array $mockMethods = [], array $constructorArguments = [])/*:MockBuilder*/ {
+		protected function negativeDouble (string $target, array $stubs = [], array $mockMethods = [], array $constructorArguments = [])/*:MockBuilder*/ {
 
-			$builder = $this->getBuilder(
-				$target, $constructorArguments,
+			$allMethods = get_class_methods($target);
 
-				$this->computeMethodsToRetain($stubs, $mockMethods),
-
-				true
-			);
+			$builder = $this->getBuilder( $target, $constructorArguments, $allMethods);
 
 			$this->stubSingle($stubs, $builder);
 
@@ -113,7 +109,7 @@
 			return $value instanceof Stub ? $value: $this->returnValue($value);
 		}
 
-		private function getBuilder (string $target, array $constructorArguments, array $methodsToRetain, bool $isNegative = false)/*:MockBuilder*/ {
+		private function getBuilder (string $target, array $constructorArguments, array $methodsToRetain)/*:MockBuilder*/ {
 
 			$builder = $this->getMockBuilder($target);
 
@@ -123,14 +119,7 @@
 
 			else $builder->disableOriginalConstructor();
 
-			if (!$isNegative)
-
-				$builder->onlyMethods($methodsToRetain);
-
-			else $builder->onlyMethods(array_diff(
-				
-				get_class_methods($target), $methodsToRetain
-			));
+			$builder->onlyMethods($methodsToRetain);
 
 			/*$builder->disableProxyingToOriginalMethods()
 
@@ -145,13 +134,17 @@
 			return $builder->getMock();
 		}
 
-		protected function replaceConstructorArguments (string $target, array $constructorstubs, array $methodstubs)/*:MockBuilder*/ {
+		protected function replaceConstructorArguments (string $target, array $constructorStubs, array $methodStubs, array $mockMethods = [], bool $isPositive = true)/*:MockBuilder*/ {
 
 			$reflectedConstructor = new ReflectionMethod($target, "__construct");
 
-			$arguments = $this->mockDummyUnion($reflectedConstructor->getParameters(), $constructorstubs);
+			$arguments = $this->mockDummyUnion($reflectedConstructor->getParameters(), $constructorStubs);
 
-			return $this->positiveDouble($target, $methodstubs, $arguments);
+			if ($isPositive)
+
+				return $this->positiveDouble($target, $methodStubs, $mockMethods, $arguments);
+
+			return $this->negativeDouble($target, $methodStubs, $mockMethods, $arguments);
 		}
 
 		private function mockDummyUnion (array $parameters, array $replacements):array {

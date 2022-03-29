@@ -104,7 +104,7 @@
 
 				ValidatorManager::class => $validatorManager,
 
-				BaseRenderer::class => $this->negativeDouble(BaseRenderer::class, [])
+				BaseRenderer::class => $this->negativeDouble(BaseRenderer::class)
 			]) // given
 
 			->getClass(ResponseManager::class)->mayBeInvalid(); // when

@@ -56,7 +56,7 @@
 		protected function provideRequest ():Request {
 
 			return Request::create(
-				$this->requestDetails->getPath(),
+				$this->requestDetails->getPath()?? "", // workable alternative: add Request to list of deferred actions to be taken when url is eventually available
 
 				$this->requestDetails->httpMethod(),
 

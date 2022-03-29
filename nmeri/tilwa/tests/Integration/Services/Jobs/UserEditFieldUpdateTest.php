@@ -9,18 +9,19 @@
 
 		public function test_sets_identifier_inside_transaction () {
 
+			$ormDialect = $this->positiveDouble(OrmDialect::class, [], [
+
+				"runTransaction" => [1, []]
+			]);
+
+			$modelInstance = $this->positiveDouble(IntegrityModel::class);
+
 			// given
-			$ormDialect = $this->prophesize(OrmDialect::class);
-
-			$modelInstance = $this->positiveDouble(IntegrityModel::class, []);
-
 			$identifier = 55;
-
-			$orm->runTransaction()->shouldBeCalled(); // then 1
 
 			(new UserEditFieldUpdate(
 
-				$ormDialect->reveal(), $modelInstance, $identifier
+				$ormDialect, $modelInstance, $identifier
 			))->handle(); // when
 
 			$this->assertSame($modelInstance->getEditIntegrity(), $identifier); // then 2

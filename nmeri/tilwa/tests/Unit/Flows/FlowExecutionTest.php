@@ -9,6 +9,8 @@
 
 	use Tilwa\Response\ResponseManager;
 
+	use Tilwa\Contracts\Presentation\BaseRenderer;
+
 	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
 	class FlowExecutionTest extends IsolatedComponentTest {
@@ -116,17 +118,18 @@
 
 			$parameter = !is_null($value) ? $this->equalTo($value): $this->anything();
 
-			$hydrator = $this->positiveDouble(FlowHydrator::class, [
+			return $this->replaceConstructorArguments(FlowHydrator::class, [], [
 
 				"getNodeFromPrevious" => $payload,
 
-				$handler => null
+				$handler => $this->negativeDouble(BaseRenderer::class, [
+
+					"getRawResponse" => ["foo"]
+				])
 			], [
 
 				$handler => [1, [$this->equalTo($payload), $parameter]]
 			]); // then
-
-			return $hydrator;
 		}
 
 		public function test_single_triggers_underlying_format () {

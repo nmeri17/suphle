@@ -57,7 +57,7 @@
 						Container::class // since we'll provide it later
 					])) return;
 
-					return $this->positiveDouble($subject, []);
+					return $this->positiveDouble($subject);
 				})
 			], [
 

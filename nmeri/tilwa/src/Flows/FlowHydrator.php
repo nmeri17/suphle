@@ -5,7 +5,7 @@
 
 	use Tilwa\Flows\Previous\{ SingleNode, CollectionNode, UnitNode};
 
-	use Tilwa\Contracts\{CacheManager, Presentation\BaseRenderer};
+	use Tilwa\Contracts\{CacheManager, Presentation\BaseRenderer, Config\Flows};
 
 	use Tilwa\Response\ResponseManager;
 
@@ -15,13 +15,17 @@
 
 	use Tilwa\Routing\PathPlaceholders;
 
-	use Illuminate\Support\{Collection as LaravelCollection, Arr};
+	use Illuminate\Support\Arr;
+
+	use Exception;
 
 	class FlowHydrator {
 
 		private $previousResponse, $cacheManager, $requestDetails,
 
 		$responseManager, $container, $placeholderStorage,
+
+		$flowConfig,
 
 		$parentHandlers = [
 			SingleNode::class => "handleSingleNodes",
@@ -54,7 +58,7 @@
 			UnitNode::MAX_HITS => "setMaxHitsHydrator"
 		];
 
-		function __construct(CacheManager $cacheManager, Container $randomContainer, PathPlaceholders $placeholderStorage, RequestDetails $requestDetails) {
+		function __construct(CacheManager $cacheManager, Container $randomContainer, PathPlaceholders $placeholderStorage, RequestDetails $requestDetails, Flows $flowConfig) {
 
 			$this->cacheManager = $cacheManager;
 
@@ -63,10 +67,12 @@
 			$this->placeholderStorage = $placeholderStorage;
 
 			$this->requestDetails = $requestDetails;
+
+			$this->flowConfig = $flowConfig;
 		}
 
 		# @param {contentType} model type, where present
-		private function storeContext(string $urlPattern, RouteUserNode $nodeContent, string $userId, string $contentType):void {
+		private function storeContext(string $urlPattern, RouteUserNode $nodeContent, string $userId, ?string $contentType):void {
 
 			$manager = $this->cacheManager;
 			
@@ -133,38 +139,40 @@
 			}
 		}
 
-		private function getContentType(BaseRenderer $renderer):string {
+		private function getContentType(BaseRenderer $renderer):?string {
 
-			$contentTypes = [
-				
-				LaravelCollection::class => "getQueueableClass"
-			];
+			$contentTypes = $this->flowConfig->contentTypeIdentifier();
 
 			$payload = $renderer->getRawResponse();
 
-			$payloadType = get_class($payload);
+			$payloadType = gettype($payload);
 
 			if (array_key_exists($payloadType, $contentTypes))
 
 				return call_user_func([$payload, $contentTypes[$payloadType]]);
+
+			return null;
 		}
 
 		// @return BaseRenderer[]
-		private function handleSingleNodes(SingleNode $rawNode):array {
+		private function handleSingleNodes(SingleNode $builtNode):array {
 
 			$carryRenderer = null;
-
-			foreach($rawNode->getActions() as $attribute => $value) {
+			
+			foreach ($this->builtNodeActions($builtNode) as $attribute => $value) {
 
 				$handler = $this->singleSubHandlers[$attribute];
 
-				$previousContent = $this->getNodeFromPrevious($rawNode);
+				$previousContent = $this->getNodeFromPrevious($builtNode);
 
 				$carryRenderer = call_user_func_array(
 					[$this, $handler],
 
 					[$previousContent, $value/*, $carryRenderer*/]
 				);
+
+				$this->handledValidAction($carryRenderer);
+					
 			}
 
 			return [$carryRenderer];
@@ -173,26 +181,46 @@
 		/**
 		*	@return BaseRenderer[]
 		*/
-		private function handleCollectionNodes(CollectionNode $rawNode):array {
+		private function handleCollectionNodes(CollectionNode $builtNode):array {
 
-			if ($rawNode->deferExtraction())
+			if ($builtNode->deferExtraction())
 
 				$carryRenderer = null;
 
-			else $carryRenderer = $this->extractCollectionData($rawNode);
+			else $carryRenderer = $this->extractCollectionData($builtNode);
 
-			foreach ($rawNode->getActions() as $attribute => $value) {
+			foreach ($this->builtNodeActions($builtNode) as $attribute => $value) {
 
 				$handler = $this->collectionSubHandlers[$attribute];
 
 				$carryRenderer = call_user_func_array(
 					[$this, $handler],
 					
-					[$carryRenderer, $value, $rawNode]
+					[$carryRenderer, $value, $builtNode]
 				);
+
+				$this->handledValidAction($carryRenderer);
 			}
 
 			return $carryRenderer;
+		}
+
+		private function handledValidAction ($carryRenderer):void {
+
+			if (is_null($carryRenderer))
+
+				throw new Exception("Overwriting operation result with invalid values");
+		}
+
+		private function builtNodeActions (UnitNode $builtNode):array {
+
+			$nodeActions = $builtNode->getActions();
+
+			if (empty($nodeActions))
+
+				throw new Exception("No action specified for given node");
+
+			return $nodeActions;
 		}
 
 		private function extractCollectionData(CollectionNode $rawNode):array {

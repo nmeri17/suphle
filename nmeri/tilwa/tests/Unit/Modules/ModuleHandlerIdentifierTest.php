@@ -39,7 +39,7 @@
 
 				AuthContract::class => $this->positiveDouble(AuthContract::class, [
 
-					"getLoginCollection" => $this->negativeDouble(LoginRenderers::class, [])
+					"getLoginCollection" => $this->negativeDouble(LoginRenderers::class)
 				])
 			]);
 

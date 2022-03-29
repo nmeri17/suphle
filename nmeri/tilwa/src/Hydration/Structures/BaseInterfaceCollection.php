@@ -3,7 +3,9 @@
 
 	use Tilwa\Contracts\Hydration\{InterfaceCollection, DecoratorChain};
 
-	use Tilwa\Contracts\{Presentation\HtmlParser, Requests\RequestValidator, Queues\Adapter as QueueAdapter, Modules\ControllerModule };
+	use Tilwa\Contracts\{Presentation\HtmlParser, Queues\Adapter as QueueAdapter, Modules\ControllerModule };
+
+	use Tilwa\Contracts\Requests\{RequestValidator, StdInputReader};
 
 	use Tilwa\Contracts\IO\Session;
 
@@ -13,7 +15,7 @@
 
 	use Tilwa\Contracts\Auth\{AuthStorage, UserContract, UserHydrator as IUserHydrator, ModuleLoginHandler};
 
-	use Tilwa\Contracts\Config\{AuthContract, Transphporm as TransphpormConfig, Laravel as LaravelConfig, ExceptionInterceptor, Console as ConsoleContract, Database};
+	use Tilwa\Contracts\Config\{AuthContract, Transphporm as TransphpormConfig, Laravel as LaravelConfig, ExceptionInterceptor, Console as ConsoleContract, Database, Flows as FlowConfig};
 
 	use Tilwa\Contracts\IO\Image\{ImageThumbnailContract, InferiorImageContract, ImageLocator};
 
@@ -31,9 +33,9 @@
 
 	use Tilwa\Adapters\Markups\Transphporm as TransphpormAdapter;
 
-	use Tilwa\Request\Validators\RakitValidator;
+	use Tilwa\Request\{Validators\RakitValidator, NativeInputReader};
 
-	use Tilwa\Config\{Auth, Transphporm, Laravel, ExceptionConfig, Console as CliConsole, PDOMysqlKeys};
+	use Tilwa\Config\{Auth, Transphporm, Laravel, ExceptionConfig, Console as CliConsole, PDOMysqlKeys, DefaultFlowConfig};
 
 	use Tilwa\Modules\ControllerModuleApi;
 
@@ -102,7 +104,9 @@
 
 				Session::class => NativeSession::class,
 
-				IUserHydrator::class => EloquentUserHydrator::class
+				IUserHydrator::class => EloquentUserHydrator::class,
+
+				StdInputReader::class => NativeInputReader::class
 			];
 		}
 
@@ -135,7 +139,9 @@
 
 				ConsoleContract::class => CliConsole::class,
 
-				Database::class => PDOMysqlKeys::class
+				Database::class => PDOMysqlKeys::class,
+
+				FlowConfig::class => DefaultFlowConfig::class
 			];
 		}
 	}

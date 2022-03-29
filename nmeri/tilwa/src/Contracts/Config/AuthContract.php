@@ -8,7 +8,7 @@
 		/**
 		 * @return LoginRenderer that should handle incoming login request
 		*/
-		public function getLoginCollection ():?string;		
+		public function getLoginCollection ():?string;
 
 		/**
 		 * @return destination when user hits SessionStorage protected route

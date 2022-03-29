@@ -17,21 +17,13 @@
 			$this->config = $config;
 		}
 
-		public function getPath ():string {
+		public function getPath ():?string {
 
 			$pathKey = "tilwa_path";
 
-			if (is_null($this->path)) {
+			if (array_key_exists($pathKey, $_GET)) // leave it open to be set multiple since framework can be run in contexts where url isn't the first thing to happen e.g. some tests where database is setup before receiving url
 
-				if (array_key_exists($pathKey, $_GET)) {
-
-					$this->path = $_GET[$pathKey];
-
-					unset($_GET[$pathKey]);
-				}
-
-				else $this->path = "";
-			}
+				$this->path = $_GET[$pathKey];
 
 			return $this->path;
 		}
@@ -106,9 +98,16 @@
 			return array_combine($versionKeys, $versionHandlers);
 		}
 
-		public function matchesMethod (string $name):bool {
+		public function matchesMethod (string $method):bool {
 
-			return $this->httpMethod() == $name;
+			return $this->httpMethod() == $method;
+		}
+
+		public function matchingPath (string $path):string {
+
+			$sanitizedPath = preg_quote(trim($path, "/"), "/");
+// var_dump($sanitizedPath, preg_match("/\/?" . $sanitizedPath . "\/?/i", $this->path), $this->path);
+			return preg_match("/\/?" . $sanitizedPath . "\/?/i", $this->path);
 		}
 	}
 ?>

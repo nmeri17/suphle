@@ -31,11 +31,13 @@
 
 			$rendererList = $this->getLoginPaths();
 
-			$path = $this->requestDetails->getPath();
+			$requestDetails = $this->requestDetails;
 
-			if (array_key_exists($path, $rendererList))
+			foreach ($rendererList as $key => $renderer)
 
-				return $rendererList[$path];
+				if ($requestDetails->matchesPath($key))
+
+					return $rendererList[$requestDetails->getPath()];
 
 			return null;
 		}

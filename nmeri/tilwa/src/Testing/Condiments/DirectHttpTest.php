@@ -1,13 +1,19 @@
 <?php
 	namespace Tilwa\Testing\Condiments;
 
+	use Tilwa\Contracts\Requests\StdInputReader;
+
+	use Tilwa\Request\RequestDetails;
+
+	use Tilwa\Testing\Proxies\StubbableRequestInputReader;
+
 	trait DirectHttpTest {
 
-		private $JSON_HEADER_VALUE = "application/json";
+		private $JSON_HEADER_VALUE = "application/json",
 
-		private $HTML_HEADER_VALUE = "application/x-www-form-urlencoded";
+		$HTML_HEADER_VALUE = "application/x-www-form-urlencoded",
 
-		private $CONTENT_TYPE_KEY = "Content-Type";
+		$CONTENT_TYPE_KEY = "Content-Type";
 
 		/**
 		 * Writes to the superglobals RequestDetails can read from but doesn't actually send any request. Use when we're invoking router/request handler directly
@@ -19,6 +25,8 @@
 			$_GET["tilwa_path"] = $components["path"];
 
 			$_GET = array_merge($_GET, [$components["query"] ?? ""]);
+
+			$this->getContainer()->getClass(RequestDetails::class)->getPath(); // force path refresh
 
 			$_SERVER["REQUEST_METHOD"] = $httpMethod;
 
@@ -68,7 +76,10 @@
 
 				$_POST = $payload;
 
-			else file_put_contents("php://output", $payload);
+			else $this->massProvide([
+
+				StdInputReader::class => new StubbableRequestInputReader( json_decode($payload, true))
+			]);
 		}
 	}
 ?>

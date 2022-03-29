@@ -3,6 +3,8 @@
 
 	use Tilwa\Request\RequestDetails;
 
+	use Tilwa\Contracts\Requests\StdInputReader;
+
 	/**
 	 * Our closest adaptation of PSR\MessageInterface
 	*/
@@ -14,9 +16,11 @@
 
 		$hasSetPayload = false;
 
-		public function __construct (RequestDetails $requestDetails) {
+		public function __construct (RequestDetails $requestDetails, StdInputReader $stdInputReader) {
 
 			$this->requestDetails = $requestDetails;
+
+			$this->stdInputReader = $stdInputReader;
 
 			$this->headers = getallheaders();
 		}
@@ -43,7 +47,7 @@
 
 			else if ($this->isJsonPayload() )
 
-				$this->payload = json_decode(file_get_contents("php://input"), true);
+				$this->payload = $this->stdInputReader->getAll();
 
 			else $this->payload = $_POST;
 

@@ -183,7 +183,7 @@
 
 			return array_map(function ($type) {
 
-				return $this->positiveDouble($type, []);
+				return $this->positiveDouble($type);
 			}, $types);
 		}
 

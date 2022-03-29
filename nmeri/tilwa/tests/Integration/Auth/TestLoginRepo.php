@@ -7,13 +7,13 @@
 
 	use Tilwa\Testing\{Condiments\BaseDatabasePopulator, TestTypes\IsolatedComponentTest };
 
-	use Tilwa\Testing\Proxies\{ExaminesHttpResponse, Extensions\TestResponseBridge};
+	use Tilwa\Testing\Proxies\{ExaminesHttpResponse, SecureUserAssertions, Extensions\TestResponseBridge};
 
 	use Tilwa\Tests\Integration\Generic\CommonBinds;
 
 	class TestLoginRepo extends IsolatedComponentTest {
 
-		use BaseDatabasePopulator, ExaminesHttpResponse, UserInserter, CommonBinds {
+		use BaseDatabasePopulator, ExaminesHttpResponse, UserInserter, CommonBinds, SecureUserAssertions {
 
 			BaseDatabasePopulator::setUp as databasePopulatorSetup;
 		}

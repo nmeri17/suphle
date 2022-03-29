@@ -38,9 +38,9 @@
 			// given
 			$correctParameters = [
 
-				$this->positiveDouble(ModelfulPayload::class, []),
+				$this->positiveDouble(ModelfulPayload::class),
 
-				$this->positiveDouble(ModellessPayload::class, [])
+				$this->positiveDouble(ModellessPayload::class)
 			];
 
 			$incorrectParameters = [new stdClass];
@@ -57,7 +57,7 @@
 
 				$this->mockModelful(),
 
-				$this->positiveDouble(ModellessPayload::class, []),
+				$this->positiveDouble(ModellessPayload::class),
 
 				$this->mockModelful()
 			];

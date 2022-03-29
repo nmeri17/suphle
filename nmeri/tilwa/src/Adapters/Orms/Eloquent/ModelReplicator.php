@@ -16,11 +16,11 @@
 		*/
 		private $activeModel,
 
-		$databaseManager, $laravelContainer;
+		$databaseConnection, $laravelContainer;
 
 		public function __construct (OrmDialect $ormDialect, LaravelContainer $laravelContainer) {
 
-			$this->databaseManager = $ormDialect->getNativeClient()->getDatabaseManager();
+			$this->databaseConnection = $ormDialect->getConnection();
 
 			$this->laravelContainer = $laravelContainer;
 		}
@@ -68,7 +68,7 @@
 
 				$repository->createRepository();
 
-			$migrator->run($this->activeModel::migrationFolders());
+			// var_dump($migrator->run($this->activeModel::migrationFolders()), $this->activeModel::migrationFolders());
 		}
 
 		public function dismantleSchema ():void {
@@ -78,12 +78,12 @@
 
 		public function listenForQueries ():void {
 
-			$this->databaseManager->beginTransaction();
+			$this->databaseConnection->beginTransaction();
 		}
 
 		public function stopQueryListen ():void {
 
-			// Nothing to do here, since none of the queries were committed. But may be needed by another vendor
+			$this->databaseConnection->rollBack(); // Nothing to do here, since none of the queries were committed. But may be needed by another vendor
 		}
 	}
 ?>

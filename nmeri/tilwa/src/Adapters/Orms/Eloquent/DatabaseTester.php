@@ -14,7 +14,10 @@
 	*/
 	class DatabaseTester extends TestCase implements OrmTester {
 
-		use InteractsWithDatabase;
+		use InteractsWithDatabase {
+
+			getConnection as traitConnectionMethod;
+		}
 
 		protected $app;
 
@@ -29,6 +32,11 @@
 		public function __call (string $methodName, array $arguments) {
 
 			return $this->$methodName(...$arguments); // instead of manually changing accessibility on underlying client
+		}
+
+		public function getConnection ($connection = null) {
+
+			return $this->traitConnectionMethod($connection);
 		}
 	}
 ?>

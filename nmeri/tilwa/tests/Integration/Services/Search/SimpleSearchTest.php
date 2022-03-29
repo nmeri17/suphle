@@ -19,9 +19,9 @@
 
 			parent::setUp();
 
-			$this->ormDialect = $this->negativeDouble(OrmDialect::class, []);
+			$this->ormDialect = $this->negativeDouble(OrmDialect::class);
 
-			$this->searchService = $this->positiveDouble(SimpleSearchService::class, []);
+			$this->searchService = $this->positiveDouble(SimpleSearchService::class);
 
 			$this->container->whenTypeAny()->needsAny([
 

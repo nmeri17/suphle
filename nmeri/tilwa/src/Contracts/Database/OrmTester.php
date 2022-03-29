@@ -3,6 +3,6 @@
 
 	interface OrmTester {
 
-		protected function getConnection ($connection = null);
+		public function getConnection ($connection = null);
 	}
 ?>
