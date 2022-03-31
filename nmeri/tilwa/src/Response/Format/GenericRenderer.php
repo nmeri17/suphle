@@ -9,13 +9,15 @@
 
 	abstract class GenericRenderer implements BaseRenderer {
 
-		private $controller, $rawResponse, $path, $flows, $routeMethod;
+		private $controller, $path, $flows, $routeMethod;
 
-		protected $handler, $statusCode, $headers = [];
+		protected $handler, $statusCode,
 
-		public function setControllingClass (string $controllerName):void {
+		$rawResponse = [], $headers = [];
+
+		public function setControllingClass (object $controller):void {
 			
-			$this->controller = $controllerName;
+			$this->controller = $controller;
 		}
 
 		public function getDependencies ():array {
@@ -33,7 +35,7 @@
 			return $this;
 		}
 
-		public function getController():string {
+		public function getController ():object {
 			
 			return $this->controller;
 		}

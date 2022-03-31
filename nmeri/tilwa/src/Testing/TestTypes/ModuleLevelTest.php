@@ -69,11 +69,16 @@
 
 		protected function massProvide (array $provisions):void {
 
-			foreach ($this->modules as $descriptor)
+			foreach ($this->modules as $descriptor) {
 
-				$descriptor->getContainer()->whenTypeAny()
+				$container = $descriptor->getContainer();
 
-				->needsAny($provisions);
+				foreach ($provisions as $parentType => $concrete)
+
+					$container->refreshClass($parentType);
+
+				$container->whenTypeAny()->needsAny($provisions);
+			}
 		}
 
 		protected function getContainer ():Container {

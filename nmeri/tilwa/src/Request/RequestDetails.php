@@ -103,11 +103,11 @@
 			return $this->httpMethod() == $method;
 		}
 
-		public function matchingPath (string $path):string {
+		public function matchesPath (string $path):bool {
 
 			$sanitizedPath = preg_quote(trim($path, "/"), "/");
-// var_dump($sanitizedPath, preg_match("/\/?" . $sanitizedPath . "\/?/i", $this->path), $this->path);
-			return preg_match("/\/?" . $sanitizedPath . "\/?/i", $this->path);
+
+			return preg_match("/\/?" . $sanitizedPath . "\/?/i", $this->getPath());
 		}
 	}
 ?>

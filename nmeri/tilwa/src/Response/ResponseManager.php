@@ -52,7 +52,7 @@
 
 			$this->controllerManager->setDependencies (
 
-				$this->container->getClass($this->renderer->getController()),
+				$this->renderer->getController(),
 
 				$this->renderer->getHandler()
 			)->bootController();

@@ -151,7 +151,7 @@
 
 			$this->validateExpatriates()->empowerExpatriates();
 
-			$this->container->getClass(PayloadStorage::class)->setPayload();
+			$this->container->getClass(PayloadStorage::class);
 
 			return $this;
 		}

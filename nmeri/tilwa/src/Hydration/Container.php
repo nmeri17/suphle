@@ -23,6 +23,8 @@
 
 		$externalHydrators = [], $externalContainerManager,
 
+		$hydratedClassConsumers = [],
+
 		$interfaceHydrator, $decorator,
 
 		$provisionContext, // the active Type before calling `needs`
@@ -149,15 +151,16 @@
 
 			$context = $this->getRecursionContext();
 
-			if ($context->hasConcrete($fullName))
+			if (!$context->hasConcrete($fullName)) // current provision doesn't include this class. check in global
+
+				$context = $this->provisionedClasses[self::UNIVERSAL_SELECTOR];
+
+			if ($context->hasConcrete($fullName)) {
+
+				$this->setConsumer($fullName);
 
 				return $context->getConcrete($fullName);
-
-			$globalContext = $this->provisionedClasses[self::UNIVERSAL_SELECTOR];
-
-			if ($globalContext->hasConcrete($fullName)) // current provision doesn't include this class. check in global
-
-				return $globalContext->getConcrete($fullName);
+			}
 		}
 
 		/**
@@ -189,6 +192,19 @@
 			$length = count($stack);
 			
 			return $stack[$length - $index];
+		}
+
+		private function setConsumer (string $fullName):void {
+
+			if (!array_key_exists($fullName, $this->hydratedClassConsumers))
+
+				$this->hydratedClassConsumers[$fullName] = [];
+
+			$concreteHydratedFor = $this->lastHydratedFor();
+
+			if ($concreteHydratedFor != $fullName)
+
+				$this->hydratedClassConsumers[$fullName][] = $concreteHydratedFor;
 		}
 
 		/**
@@ -228,6 +244,8 @@
 				throw new InvalidImplementor($interface, get_class($concrete));
 
 			$this->storeConcrete( $interface, $concrete);
+
+			$this->setConsumer($interface);
 		}
 
 		private function storeConcrete (string $fullName, $concrete):ProvisionUnit {
@@ -670,6 +688,35 @@
 		protected function getDecorator ():?DecoratorHydrator {
 
 			return $this->decorator;
+		}
+
+		/**
+		 * Note: Doesn't purge consumers that are interfaces (since we can't catch them), only their concretes
+		*/
+		public function refreshClass (string $className):void {
+
+			foreach ($this->provisionedClasses as $provisionContext) {
+
+				if ( $provisionContext->hasConcrete($className) || $provisionContext->hasArgument($className)) {
+
+					$consumers = $this->hydratedClassConsumers;
+
+					if (array_key_exists($className, $consumers))
+
+						foreach ($consumers[$className] as $consumer)
+
+							$this->refreshClass($consumer);
+
+					$provisionContext->purgeAll($className);
+				}
+			}
+		}
+
+		public function refreshMany (array $classes):void {
+
+			foreach ($classes as $className)
+
+				$this->refreshClass($className);
 		}
 	}
 ?>

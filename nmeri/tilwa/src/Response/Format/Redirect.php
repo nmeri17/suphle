@@ -16,7 +16,7 @@
 			$this->statusCode = 302;
 		}
 
-		public function render() {
+		public function render ():string {
 			
 			$callable = (new Serializer)->unserialize($this->destination)->bindTo($this, $this); // so dev can have access to `rawResponse`
 

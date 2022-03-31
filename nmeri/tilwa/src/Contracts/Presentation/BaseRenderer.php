@@ -11,13 +11,13 @@
 
 		public function invokeActionHandler (array $handlerParameters):self;
 
-		public function getController():string;
-
 		public function hasBranches():bool;
 
 		public function getHandler ():string;
 
-		public function setControllingClass (string $class):void;
+		public function setControllingClass (object $class):void;
+
+		public function getController ():object;
 
 		public function hydrateDependencies( Container $container):void;
 

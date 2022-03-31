@@ -8,7 +8,5 @@
 		public function isValidRequest ():bool;
 		
 		public function getResponse ();
-
-		public function setAuthService ():void;
 	}
 ?>

@@ -3,6 +3,8 @@
 
 	interface StdInputReader {
 
-		public function getAll ():array;
+		public function getPayload ():array;
+
+		public function getHeaders ():array;
 	}
 ?>

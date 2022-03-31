@@ -7,7 +7,7 @@
 
 	class BrowserAuthRepo extends BaseAuthRepo {
 
-		private $comparer, $authStorage;
+		private $authStorage;
 
 		public function __construct (EmailPasswordComparer $comparer, SessionStorage $authStorage) { 
 			

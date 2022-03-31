@@ -14,7 +14,7 @@
 			$this->setHeaders(200, ["Content-Type" => "text/html"]); // or 205 Reset Content
 		}
 
-		protected function getDependencies ():array {
+		public function getDependencies ():array {
 
 			return array_merge(parent::getDependencies(), [
 
@@ -22,7 +22,7 @@
 			]);
 		}
 
-		public function render() {
+		public function render ():string {
 
 			$renderer = $this->router->getPreviousRenderer();
 

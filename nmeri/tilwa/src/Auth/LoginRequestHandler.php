@@ -44,7 +44,7 @@
 
 			$renderer = $this->responseRenderer;
 
-			$renderer->setControllingClass($this->rendererCollection->getLoginService());
+			$renderer->setControllingClass($this->loginService);
 			
 			$renderer->hydrateDependencies($this->container);
 
@@ -69,7 +69,7 @@
 			$dependencies = $this->container->getMethodParameters(
 				$renderer->getHandler(),
 
-				$renderer->getController()
+				get_class($renderer->getController())
 			);
 
 			$renderer->invokeActionHandler($dependencies);

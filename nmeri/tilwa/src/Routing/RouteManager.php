@@ -149,9 +149,14 @@
 
 				$renderer->setWantsJson();
 
-			$renderer->setControllingClass($collection->_handlingClass());
+			$container = $this->container;
+
+			$renderer->setControllingClass(
+
+				$container->getClass($collection->_handlingClass())
+			);
 			
-			$renderer->hydrateDependencies($this->container);
+			$renderer->hydrateDependencies($container);
 		}
 
 		private function indicatorProxy (RouteCollection $collection, string $pattern):void {

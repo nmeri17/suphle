@@ -20,7 +20,7 @@
 
 		public function findById (string $id):?UserContract {
 
-			return $this->user->find($id);
+			return $this->blankModel->find($id);
 		}
 
 		/**
@@ -28,11 +28,14 @@
 		*/
 		public function findAtLogin ():?UserContract {
 
-			return $this->user
+			$column = "email";
 
-			->where($this->payloadStorage->getKey("email"))
+			return $this->blankModel
 
-			->first();
+			->where([
+
+				$column => $this->payloadStorage->getKey($column)
+			])->first();
 		}
 	}
 ?>

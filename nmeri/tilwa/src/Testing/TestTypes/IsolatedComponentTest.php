@@ -3,7 +3,7 @@
 
 	use Tilwa\Hydration\Container;
 
-	use Tilwa\Testing\Condiments\GagsException;
+	use Tilwa\Testing\{Condiments\GagsException, Proxies\Extensions\CheckProvisionedClasses};
 
 	/**
 	 * Used for tests that require a container. Boots and provides this container to them
@@ -21,7 +21,7 @@
 
 		protected function setUp ():void {
 
-			$this->container = $container = $this->positiveDouble(Container::class, [
+			$this->container = $container = $this->positiveDouble(CheckProvisionedClasses::class, [
 
 				"getDecorator" => $this->stubDecorator()
 			]);
@@ -79,7 +79,13 @@
 
 		protected function massProvide (array $provisions):void {
 
-			$this->container->whenTypeAny()->needsAny($provisions);
+			$container = $this->container;
+
+			foreach ($provisions as $parentType => $concrete)
+
+				$container->refreshClass($parentType);
+
+			$container->whenTypeAny()->needsAny($provisions);
 		}
 	}
 ?>

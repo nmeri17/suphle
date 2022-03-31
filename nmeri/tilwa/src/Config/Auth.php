@@ -37,7 +37,7 @@
 
 				if ($requestDetails->matchesPath($key))
 
-					return $rendererList[$requestDetails->getPath()];
+					return $rendererList[$key];
 
 			return null;
 		}

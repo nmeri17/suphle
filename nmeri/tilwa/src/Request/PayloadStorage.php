@@ -10,11 +10,11 @@
 	*/
 	class PayloadStorage {
 
-		const JSON_HEADER_VALUE = "application/json";
+		const JSON_HEADER_VALUE = "application/json",
 
-		private $requestDetails, $headers, $payload = [],
+		CONTENT_TYPE_KEY = "Content-Type";
 
-		$hasSetPayload = false;
+		private $requestDetails, $stdInputReader, $headers, $payload = [];
 
 		public function __construct (RequestDetails $requestDetails, StdInputReader $stdInputReader) {
 
@@ -22,14 +22,12 @@
 
 			$this->stdInputReader = $stdInputReader;
 
-			$this->headers = getallheaders();
+			$this->headers = $stdInputReader->getHeaders();
+
+			$this->setPayload();
 		}
 
 		public function fullPayload ():array {
-
-			if (!$this->hasSetPayload)
-
-				$this->setPayload();
 
 			return $this->payload;
 		}
@@ -42,32 +40,28 @@
 		public function setPayload ():void {
 
 			if ($this->requestDetails->isGetRequest())
-			
+
 				$this->payload = array_diff_key(["tilwa_path" => 55], $_GET);
 
 			else if ($this->isJsonPayload() )
 
-				$this->payload = $this->stdInputReader->getAll();
+				$this->payload = $this->stdInputReader->getPayload();
 
 			else $this->payload = $_POST;
-
-			$this->hasSetPayload = true;
 		}
 
 		public function isJsonPayload ():bool {
 
-			$headers = $this->headers;
+			return $this->hasHeader(self::CONTENT_TYPE_KEY) &&
 
-			$contentType = "Content-Type";
-
-			return isset($headers[$contentType]) &&
-
-			strtolower($headers[$contentType]) == self::JSON_HEADER_VALUE;
+			$this->getHeader(self::CONTENT_TYPE_KEY) == self::JSON_HEADER_VALUE;
 		}
 
-		public function acceptsJson():bool {
+		public function acceptsJson ():bool {
 
-			return strtolower($this->headers["Accept"]) == self::JSON_HEADER_VALUE;
+			$acceptsHeader = "Accept";
+
+			return $this->hasHeader($acceptsHeader) && $this->getHeader($acceptsHeader) == self::JSON_HEADER_VALUE;
 		}
 
 		public function hasHeader (string $name):bool {
@@ -77,7 +71,7 @@
 
 		public function getHeader (string $name):string {
 
-			return $this->headers[$name];
+			return strtolower($this->headers[$name]);
 		}
 
 		public function hasKey (string $property):bool {

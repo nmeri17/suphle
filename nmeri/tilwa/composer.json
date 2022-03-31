@@ -9,6 +9,7 @@
         }
     },
     "require": {
+        "php": "^7.4",
         "vlucas/phpdotenv": "*",
         "opis/closure": "^3.6",
         "firebase/php-jwt": "^5.2",

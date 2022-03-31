@@ -3,7 +3,9 @@
 
 	use Tilwa\Contracts\Auth\{LoginRenderers, LoginActions};
 
-	use Tilwa\Response\Format\{AbstractRenderer, Redirect, Reload};
+	use Tilwa\Contracts\Presentation\BaseRenderer;
+
+	use Tilwa\Response\Format\{ Redirect, Reload};
 
 	use Tilwa\Auth\Repositories\BrowserAuthRepo;
 
@@ -20,19 +22,19 @@
 			$this->authService = $authService;
 		}
 
-		public function successRenderer ():AbstractRenderer {
+		public function successRenderer ():BaseRenderer {
 
 			return new Redirect( "successLogin", function (PayloadStorage $payloadStorage) {
 
 				if ($payloadStorage->hasKey("path")) {
 
-					$path = $payloadStorage->getKey("path")
+					$path = $payloadStorage->getKey("path");
 
 					$queryPart = $payloadStorage->getKey("query");
 
 					if (!empty($queryPart))
 
-						$path .= "?" . $queryPart
+						$path .= "?" . $queryPart;
 
 					return $path;
 				}
@@ -41,7 +43,7 @@
 			});
 		}
 
-		public function failedRenderer ():AbstractRenderer {
+		public function failedRenderer ():BaseRenderer {
 
 			return new Reload( "failedLogin");
 		}

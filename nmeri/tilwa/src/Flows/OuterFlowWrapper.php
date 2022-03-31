@@ -108,9 +108,11 @@
 		// it is safest for listeners to listen "external" on the target controller
 		private function emitEvents($cachedResponse):void {
 
+			$controller = $this->handlingRenderer()->getController();
+
 			$this->eventManager->emit(
 
-				$this->handlingRenderer()->getController(), self::HIT_EVENT, $cachedResponse
+				get_class($controller), self::HIT_EVENT, $cachedResponse
 			); // should probably include incoming request parameters?
 		}
  
