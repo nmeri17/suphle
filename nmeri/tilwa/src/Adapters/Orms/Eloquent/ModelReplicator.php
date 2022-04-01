@@ -68,7 +68,7 @@
 
 				$repository->createRepository();
 
-			// var_dump($migrator->run($this->activeModel::migrationFolders()), $this->activeModel::migrationFolders());
+			$migrator->run($this->activeModel::migrationFolders());
 		}
 
 		public function dismantleSchema ():void {

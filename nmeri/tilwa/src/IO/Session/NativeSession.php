@@ -1,11 +1,15 @@
 <?php
 	namespace Tilwa\IO\Session;
 
-	use Tilwa\Contracts\IO\Session as SessionContract;
+	use Tilwa\Contracts\IO\{Session as SessionContract, EnvAccessor};
 
 	class NativeSession implements SessionContract {
 
-		function __construct() {
+		private $envAccessor;
+
+		public function __construct (EnvAccessor $envAccessor) {
+
+			$this->envAccessor = $envAccessor;
 
 			if ($this->safeToStart()) $this->startNew();
 		}
@@ -40,6 +44,12 @@
 		public function startNew ():void {
 
 			session_start();
+
+			setcookie(
+				session_name(), session_id(),
+
+				time() + $this->envAccessor->getField("SESSION_DURATION")
+			);
 		}
 	}
 ?>

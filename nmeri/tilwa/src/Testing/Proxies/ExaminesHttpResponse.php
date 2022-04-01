@@ -20,18 +20,10 @@
 				$renderer->getHeaders()
 			);
 
-			return new TestResponseBridge($response, $this->sessionClient);
-		}
+			return new TestResponseBridge(
 
-		/**
-		 * This should be called before request execution i.e. before [makeExaminable] i.e. on setUp
-		*/
-		protected function massProvideSession ():void {
-
-			$this->massProvide([
-
-				Session::class => $this->sessionClient = new InMemorySession
-			]);
+				$response, $this->getContainer()->getClass(Session::class)
+			);
 		}
 	}
 ?>

@@ -42,7 +42,16 @@
 
 			$sut->logout(); // when
 
-			$this->get("/segment")
+			$this->get("/segment")->assertUnauthorized(); // then
+		}
+
+		public function test_cant_access_api_auth_route_with_session () {
+
+			$user = $this->replicator->getRandomEntity();
+
+			$this->actingAs($user, SessionStorage::class); // given
+
+			$this->get("/api/v1/secure-segment") // when
 
 			->assertUnauthorized(); // then
 		}

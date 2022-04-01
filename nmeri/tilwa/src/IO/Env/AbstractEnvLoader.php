@@ -27,6 +27,9 @@
 			return $_ENV[$name];
 		}
 
+		/**
+		 * Make use of [client]
+		*/
 		abstract protected function validateFields ():void;
 
 		protected function setClient ():void {

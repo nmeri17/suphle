@@ -5,6 +5,10 @@
 
 	use Tilwa\Modules\ModuleDescriptor;
 
+	use Tilwa\Contracts\IO\Session;
+
+	use Tilwa\IO\Session\InMemorySession;
+
 	use Tilwa\Testing\Condiments\{ModuleReplicator, GagsException, MockFacilitator};
 
 	use Tilwa\Testing\Proxies\{ModuleHttpTest, Extensions\FrontDoor};
@@ -27,7 +31,7 @@
 				$this->modules = $this->getModules() // storing in an instance variable instead of reading directly from method so mutative methods can iterate and modify
 			);
 
-			$this->massProvideSession(); // this needs to happen before module boots, so hydration of a session-using object doesn't override our provision
+			$this->provideCriticalObjects();
 
 			$entrance->bootModules();
 
@@ -36,13 +40,6 @@
 			if ($this->muffleExceptionBroadcast)
 
 				$this->mufflerSetup();
-
-			$cacheManager = \Tilwa\Contracts\CacheManager::class;
-
-			$this->massProvide([
-
-				$cacheManager => $this->negativeDouble($cacheManager, [])
-			]);
 		}
 		
 		/**
@@ -65,6 +62,18 @@
 
 					return $descriptor->materialize();
 				}
+		}
+
+		protected function provideCriticalObjects ():void {
+
+			$cacheManager = \Tilwa\Contracts\CacheManager::class;
+
+			$this->massProvide([
+
+				$cacheManager => $this->negativeDouble($cacheManager, []),
+				
+				Session::class => new InMemorySession
+			]);
 		}
 
 		protected function massProvide (array $provisions):void {

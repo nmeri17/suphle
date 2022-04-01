@@ -5,7 +5,7 @@
 
 	trait BaseDatabasePopulator {
 
-		protected $replicator, $initialCount = 20,
+		protected $replicator, $initialCount = 15,
 
 		$databaseApi;
 
@@ -24,9 +24,11 @@
 				static::$isFirstTest = true;
 			}
 
-			$this->replicator->seedDatabase( $this->initialCount); // maybe class is recreated for each test
+			else $this->replicator = static::$staticReplicator;
 
-			$this->replicator->listenForQueries();
+			$this->replicator->listenForQueries(); // note: since we have no control/wrapper around actual running test, if it throws \Error, the seeding below won't be rolled back
+
+			$this->replicator->seedDatabase( $this->initialCount);
 
 			$this->databaseApi = $this->getContainer()->getClass(OrmTester::class);
 		}

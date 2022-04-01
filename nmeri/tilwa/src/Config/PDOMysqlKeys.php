@@ -25,7 +25,9 @@
 
 					"password" => $this->envAccessor->getField("DATABASE_PASS"),
 
-					"driver" => "mysql"
+					"driver" => "mysql",
+
+					"engine" => "InnoDB"
 				]
 			];
 		}

@@ -3,6 +3,10 @@
 
 	use Tilwa\Hydration\Container;
 
+	use Tilwa\Contracts\IO\Session;
+
+	use Tilwa\IO\Session\InMemorySession;
+
 	use Tilwa\Testing\{Condiments\GagsException, Proxies\Extensions\CheckProvisionedClasses};
 
 	/**
@@ -35,13 +39,6 @@
 			if ($this->muffleExceptionBroadcast)
 
 				$this->mufflerSetup();
-
-			$cacheManager = \Tilwa\Contracts\CacheManager::class;
-
-			$this->massProvide([
-
-				$cacheManager => $this->negativeDouble($cacheManager, [])
-			]);
 		}
 
 		protected function entityBindings ():void {
@@ -63,12 +60,20 @@
 
 		protected function simpleBinds ():array {
 
-			return [];
+			return [
+
+				Session::class => InMemorySession::class
+			];
 		}
 
 		protected function concreteBinds ():array {
 
-			return [];
+			$cacheManager = \Tilwa\Contracts\CacheManager::class;
+
+			return [
+
+				$cacheManager => $this->negativeDouble($cacheManager, [])
+			];
 		}
 
 		// used for normalizing traits that are applicable to both this and module level test
