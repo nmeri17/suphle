@@ -43,5 +43,14 @@
 				})
 			]);
 		}
+
+		protected function dataProvider (array $callables, callable $testBody):void {
+
+			foreach ($callables as $provider)
+
+				foreach ($provider() as $dataFixture)
+
+					$testBody(...$dataFixture);
+		}
 	}
 ?>

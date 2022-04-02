@@ -5,15 +5,13 @@
 
 	use Tilwa\Routing\PatternIndicator;
 
-	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\MockFacilitator, Proxies\WriteOnlyContainer};
+	use Tilwa\Testing\{ TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer };
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{ Meta\ModuleOneDescriptor, Config\RouterMock, Middlewares\BlankMiddleware};
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\Prefix\{ActualEntry, MisleadingEntry};
 
 	class MultiCollectionsTest extends ModuleLevelTest {
-
-		use MockFacilitator;
 
 		private $threeTierUrl = "/first/middle/third";
 

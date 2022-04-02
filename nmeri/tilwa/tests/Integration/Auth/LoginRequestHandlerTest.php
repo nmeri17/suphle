@@ -7,15 +7,13 @@
 
 	use Tilwa\Exception\Explosives\ValidationFailure;
 
-	use Tilwa\Testing\TestTypes\ModuleLevelTest;
-
-	use Tilwa\Testing\Condiments\{DirectHttpTest, MockFacilitator};
+	use Tilwa\Testing\{Condiments\DirectHttpTest, TestTypes\ModuleLevelTest};
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
 	class LoginRequestHandlerTest extends ModuleLevelTest {
 
-		use DirectHttpTest, MockFacilitator;
+		use DirectHttpTest;
 
 		private $email = "foo@nmeri.com";
 

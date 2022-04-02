@@ -9,15 +9,13 @@
 
 	use Tilwa\Modules\ModuleExceptionBridge;
 
-	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\MockFacilitator};
+	use Tilwa\Testing\TestTypes\ModuleLevelTest;
 
 	use Exception;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
 	class TerminatedRequestTest extends ModuleLevelTest {
-
-		use MockFacilitator;
 
 		private $firstContainer, $sut = ModuleExceptionBridge::class;
 

@@ -3,21 +3,19 @@
 
 	use Tilwa\Contracts\Config\Router;
 
-	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
-
-	use Tilwa\Testing\Condiments\{QueueInterceptor, MockFacilitator};
-
 	use Tilwa\Flows\{OuterFlowWrapper, Jobs\UpdateCountDelete};
 
 	use Tilwa\Flows\Structures\{AccessContext, RouteUserNode};
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\FlowRoutes, Meta\ModuleOneDescriptor, Config\RouterMock};
+	use Tilwa\Testing\{ TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer, Condiments\QueueInterceptor };
+
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{ Routes\Flows\FlowRoutes, Meta\ModuleOneDescriptor, Config\RouterMock };
 
 	use DateTime, DateInterval;
 
 	class PostReturnTest extends ModuleLevelTest {
 
-		use QueueInterceptor, MockFacilitator;
+		use QueueInterceptor;
 
 		private $resourceUrl = "/posts/5",
 

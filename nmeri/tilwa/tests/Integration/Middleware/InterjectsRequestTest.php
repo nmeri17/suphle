@@ -5,7 +5,7 @@
 
 	use Tilwa\Middleware\FinalHandlerWrapper;
 
-	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\MockFacilitator, Proxies\WriteOnlyContainer};
+	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock};
 
@@ -14,8 +14,6 @@
 	use Tilwa\Tests\Mocks\Interactions\ModuleOne;
 
 	class InterjectsRequestTest extends ModuleLevelTest {
-
-		use MockFacilitator;
 		
 		protected function getModules ():array {
 

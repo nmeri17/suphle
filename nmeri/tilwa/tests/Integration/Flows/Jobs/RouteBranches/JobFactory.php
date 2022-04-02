@@ -9,7 +9,7 @@
 
 	use Tilwa\Testing\TestTypes\ModuleLevelTest;
 
-	use Tilwa\Testing\Condiments\{QueueInterceptor, MockFacilitator};
+	use Tilwa\Testing\Condiments\QueueInterceptor;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Controllers\FlowController;
 
@@ -17,7 +17,7 @@
 
 	abstract class JobFactory extends ModuleLevelTest {
 
-		use QueueInterceptor, MockFacilitator {
+		use QueueInterceptor {
 
 			QueueInterceptor::setUp as queueSetup;
 		}

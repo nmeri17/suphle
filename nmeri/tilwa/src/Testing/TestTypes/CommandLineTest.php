@@ -7,23 +7,25 @@
 
 	use Tilwa\Testing\Proxies\Extensions\FrontDoor;
 
-	use Tilwa\Testing\Condiments\ModuleReplicator;
+	use Tilwa\Testing\Condiments\{ModuleReplicator, BaseModuleInteractor};
 
 	use PHPUnit\Framework\TestCase;
 
 	abstract class CommandLineTest extends TestVirginContainer {
 
-		use ModuleReplicator;
+		use ModuleReplicator, BaseModuleInteractor;
 
-		protected $consoleClient, $consoleRunner;
+		private $modules; // trait will access this
+
+		protected $consoleRunner;
 
 		protected function setUp ():void {
 
 			$this->consoleRunner = new CliRunner (
 
-				new FrontDoor($this->getModules()),
+				new FrontDoor($this->modules = $this->getModules()),
 
-				$this->consoleClient = new SymfonyCli("SuphleTest", "v2")
+				new SymfonyCli("SuphleTest", "v2")
 			);
 
 			$this->consoleRunner->loadCommands();
@@ -32,8 +34,8 @@
 		}
 		
 		/**
-		 * @return ModuleDescriptor[]
+		 * @return DescriptorInterface[]
 		 */
-		abstract protected function getModules():array;
+		abstract protected function getModules ():array;
 	}
 ?>

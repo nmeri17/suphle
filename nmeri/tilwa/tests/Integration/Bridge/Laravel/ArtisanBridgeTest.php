@@ -17,10 +17,25 @@
 
 	class ArtisanBridgeTest extends CommandLineTest {
 
-		protected function getModules():array {
+		protected function getModules ():array {
 
 			return [
-				new ModuleOneDescriptor ($this->providedContainer())
+				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+
+					$laravelContainer = LaravelContainer::class;
+
+					$laravelDouble = $this->positiveDouble($laravelContainer);
+
+					$migrator = Migrator::class;
+
+					$laravelDouble->instance($migrator, $this->negativeDouble($migrator, [], [
+
+							"create" => [1, []]
+						])
+					);
+
+					$container->replaceWithConcrete($laravelContainer, $laravelDouble);
+				})
 			];
 		}
 
@@ -40,24 +55,7 @@
 			// then 1
 			$commandTester->assertCommandIsSuccessful(); // $commandTester::getDisplay can be used to extract console output as a string
 
-			// then 2 => see [providedContainer]
+			// then 2 => see module build
 		}
-
-		private function providedContainer ():Container {
-
-			$container = new Container;
-
-			$migrator = Migrator::class;
-
-			$container->getClass(LaravelContainer::class)
-			
-			->instance($migrator, $this->negativeDouble($migrator, [], [
-
-					"create" => [1, []]
-				])
-			);
-
-			return $container;
-		} 
 	}
 ?>

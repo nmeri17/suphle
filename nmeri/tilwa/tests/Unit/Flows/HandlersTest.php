@@ -1,17 +1,17 @@
 <?php
 	namespace Tilwa\Tests\Unit\Flows;
 
-	use Tilwa\Testing\{TestTypes\IsolatedComponentTest, Condiments\MockFacilitator};
-
 	use Tilwa\Flows\{FlowHydrator, Previous\CollectionNode};
 
 	use Tilwa\Flows\Structures\{RangeContext, ServiceContext};
+
+	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\FlowService;
 
 	class HandlersTest extends IsolatedComponentTest {
 
-	 	use FlowData, MockFacilitator;
+	 	use FlowData;
 
 		private $flowService = FlowService::class;
 

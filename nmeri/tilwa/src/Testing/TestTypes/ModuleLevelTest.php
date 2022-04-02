@@ -1,21 +1,19 @@
 <?php
 	namespace Tilwa\Testing\TestTypes;
 
-	use Tilwa\Hydration\Container;
-
 	use Tilwa\Modules\ModuleDescriptor;
 
 	use Tilwa\Contracts\IO\Session;
 
 	use Tilwa\IO\Session\InMemorySession;
 
-	use Tilwa\Testing\Condiments\{ModuleReplicator, GagsException, MockFacilitator};
+	use Tilwa\Testing\Condiments\{ModuleReplicator, GagsException, BaseModuleInteractor};
 
 	use Tilwa\Testing\Proxies\{ModuleHttpTest, Extensions\FrontDoor};
 
 	abstract class ModuleLevelTest extends TestVirginContainer {
 
-		use ModuleReplicator, GagsException, ModuleHttpTest, MockFacilitator {
+		use ModuleReplicator, GagsException, ModuleHttpTest, BaseModuleInteractor {
 
 			GagsException::setUp as mufflerSetup;
 		}
@@ -74,34 +72,6 @@
 				
 				Session::class => new InMemorySession
 			]);
-		}
-
-		protected function massProvide (array $provisions):void {
-
-			foreach ($this->modules as $descriptor) {
-
-				$container = $descriptor->getContainer();
-
-				foreach ($provisions as $parentType => $concrete)
-
-					$container->refreshClass($parentType);
-
-				$container->whenTypeAny()->needsAny($provisions);
-			}
-		}
-
-		protected function getContainer ():Container {
-
-			return $this->activeModuleContainer();
-		}
-
-		protected function dataProvider (array $callables, callable $testBody):void {
-
-			foreach ($callables as $provider)
-
-				foreach ($provider() as $dataFixture)
-
-					$testBody(...$dataFixture);
 		}
 	}
 ?>

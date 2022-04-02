@@ -11,13 +11,11 @@
 
 	use Tilwa\Contracts\Config\AuthContract;
 
-	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\MockFacilitator};
+	use Tilwa\Testing\TestTypes\ModuleLevelTest;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
 	class ModuleHandlerIdentifierTest extends ModuleLevelTest {
-
-		use MockFacilitator;
 
 		protected function getModules ():array {
 

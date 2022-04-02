@@ -5,15 +5,11 @@
 
 	use Tilwa\Middleware\FinalHandlerWrapper;
 
-	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\MockFacilitator};
-
-	use Tilwa\Testing\Proxies\WriteOnlyContainer;
+	use Tilwa\Testing\{ TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer };
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock, Middlewares\AlterFinalResponse};
 
 	class AlterFinalResponseTest extends ModuleLevelTest {
-
-		use MockFacilitator;
 		
 		protected function getModules():array {
 
