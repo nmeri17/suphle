@@ -9,11 +9,11 @@
 
 	use Tilwa\Hydration\Container;
 
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
+
 	use Illuminate\Database\Migrations\Migrator;
 
 	use Symfony\Component\Console\Tester\CommandTester;
-
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
 	class ArtisanBridgeTest extends CommandLineTest {
 
