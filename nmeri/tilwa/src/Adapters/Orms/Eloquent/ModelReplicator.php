@@ -83,7 +83,7 @@
 
 		public function stopQueryListen ():void {
 
-			$this->databaseConnection->rollBack(); // Nothing to do here, since none of the queries were committed. But may be needed by another vendor
+			$this->databaseConnection->rollBack();
 		}
 	}
 ?>

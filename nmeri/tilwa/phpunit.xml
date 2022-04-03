@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<phpunit>
+<phpunit
+	convertErrorsToExceptions = "false" 
+	convertNoticesToExceptions = "false"
+	convertWarningsToExceptions = "false"
+><!-- for the error catchers -->
 	<testsuites>
 		<testsuite name="all_tests">
 			<directory>./tests</directory>

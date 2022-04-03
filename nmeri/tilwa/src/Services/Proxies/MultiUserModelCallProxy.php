@@ -39,7 +39,7 @@
 			
 			if ($method == "updateResource")
 
-				return $this->handleUpdateResource($arguments);
+				return $this->handleUpdateResource();
 
 			return $this->yield($method, $arguments); // calling other methods is allowed, but not protected
 		}
@@ -47,7 +47,7 @@
 		/**
 		 * @throws EditIntegrityException
 		*/
-		private function handleUpdateResource (array $arguments) {
+		private function handleUpdateResource () {
 
 			if (!$this->payloadStorage->hasKey(self::INTEGRITY_KEY))
 
@@ -65,7 +65,7 @@
 
 					$result = $this->activeService->updateResource(); // user's incoming changes
 
-					$currentVersion->nullifyEditIntegrity(new DateTime("y-m-d H:i:s"));
+					$currentVersion->nullifyEditIntegrity(new DateTime("Y-m-d H:i:s"));
 
 					return $result;
 

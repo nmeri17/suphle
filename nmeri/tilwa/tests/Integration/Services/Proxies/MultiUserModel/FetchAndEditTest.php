@@ -1,44 +1,40 @@
 <?php
 	namespace Tilwa\Tests\Integration\Services\Proxies\MultiUserModel;
 
-	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
-
-	use Tilwa\Testing\Condiments\{DirectHttpTest, MockFacilitator};
-
-	use Tilwa\Services\{Jobs\AddUserEditField, Proxies\MultiUserModelCallProxy, Structures\OptionalDTO};
+	use Tilwa\Services\{ Proxies\MultiUserModelCallProxy, Structures\OptionalDTO};
 
 	use Tilwa\Contracts\Services\Models\IntegrityModel;
 
 	use Tilwa\Exception\Explosives\EditIntegrityException;
 
+	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
+
+	use Tilwa\Testing\Condiments\{DirectHttpTest, BaseDatabasePopulator};
+
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\Services\{MultiUserEditMock, MultiUserEditError};
+
+	use DateTime, DateInterval;
 
 	class FetchAndEditTest extends IsolatedComponentTest {
 
-		use MockFacilitator, DirectHttpTest;
+		use DirectHttpTest, BaseDatabasePopulator;
 
-		public function test_get_queue_adds_integrity () {
-
-			$sut = $this->positiveDouble(AddUserEditField::class, [], [ // using a stub to avoid injecting a live ormDialect
-
-				"modelInstance" => $this->positiveDouble(IntegrityModel::class, [], [
-
-					"addEditIntegrity" => [1, [$this->greaterThan(20)]]
-				]) // then
-			]); // given
-
-			$sut->handle(); // when
-		}
+		private $modelName = MultiEditProduct::class;
 
 		public function test_missing_key_on_update_throws_error () {
 
 			$this->expectException(EditIntegrityException::class); // then
 
-			$this->setHttpParams("/dummy"); // given
+			$this->setHttpParams("/dummy", "put"); // given
 
 			$this->container->getClass(MultiUserEditMock::class)
 
 			->updateResource(); // when
+		}
+
+		protected function getActiveEntity ():string {
+
+			return $this->modelName;
 		}
 
 		public function test_last_updater_invalidates_for_all_viewers () {
@@ -47,22 +43,29 @@
 
 			$sutName = MultiUserEditMock::class;
 
+			$threeMinutesAgo = (new DateTime)->sub(new DateInterval("PT3M"));
+
+			$datedModel = $this->replicator->getBeforeInsertion(1, [
+
+				IntegrityModel::INTEGRITY_COLUMN => $threeMinutesAgo
+			])->first();
+
 			// given
-			$mock = $this->positiveDouble($sutName, [
+			$mock = $this->positiveDouble($sutName,
 
-				"getResource" => $this->createPartialMock(IntegrityModel::class, [
+				["getResource" => $datedModel],
+				[
 
-					"includesEditIntegrity" => true
-				])
-			], [
+					"updateResource" => [2, []]
+				]
+			);
 
-				"updateResource" => [2, [$this->anything()]]
-			]); // we want to ensure it ran twice before throwing the error above
+			$this->setJsonParams("/dummy", [
 
-			$this->setHttpParams("/dummy", "put", json_encode([
+				MultiUserModelCallProxy::INTEGRITY_COLUMN => $threeMinutesAgo,
 
-				MultiUserModelCallProxy::INTEGRITY_COLUMN => 6556
-			]));
+				"name" => "nmeri"
+			], "put");
 
 			$sut = $this->container->whenTypeAny()->needsAny([
 
