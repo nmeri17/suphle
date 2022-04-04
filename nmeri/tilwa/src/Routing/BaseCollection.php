@@ -32,11 +32,6 @@
 			
 			return "";
 		}
-		
-		public function _setCrudPrefix(string $prefix):void {
-			
-			$this->crudPrefix = $prefix;
-		}
 
 		/**
 		 * `save` must be called in the invoking method
@@ -84,7 +79,31 @@
 		# filter off methods that belong to this base
 		public function _getPatterns():array {
 
-			return array_diff(get_class_methods($this), get_class_methods($this->collectionParent));
+			$methods = array_diff(get_class_methods($this), get_class_methods($this->collectionParent));
+
+			$prefixed = array_map(function($name) {
+
+				$prefix = $this->_prefixCurrent();
+
+				if (!empty($prefix))
+
+					return strtoupper($prefix) . "_$name";
+
+				return $name;
+			}, $methods);
+
+			/*usort($prefixed, function ($a, $b) { // move longer patterns up so shorter don't misleadingly swallow other patterns
+
+				$aLength = strlen($a);
+
+				$bLength = strlen($b);
+
+				if ($aLength == $bLength) return 0;
+
+				return ($aLength < $bLength) ? 1: -1; // descending
+			});*/
+
+			return $prefixed;
 		}
 
 		public function _authenticatedPaths():array {
@@ -133,11 +152,6 @@
 		public function _expectsCrud ():bool {
 
 			return $this->crudMode;
-		}
-
-		public function _getCrudPrefix ():string {
-
-			return $this->crudPrefix;
 		}
 	}
 ?>

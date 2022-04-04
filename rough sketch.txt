@@ -58,13 +58,5 @@ test only and except from routeCollection
 
 
 next=> base route test. but first, refactor routeManager with above
-Alternate route finder implementation
-	- we loop over the incoming path instead of the collection. progress is determined by the path matching
-	- matching will have to take into account that segment could be placeholder
-		- we send user/5 and user/settings
-		- patterns settings and id exist
-		- matcher looks for 5 (literal) OR lower-case character/placeholder
-		- remember several path segments can be represented under one pattern. which means the above would have to be pushed into an array
-			- USE__METHODh_id, after the breakup, map into normalised segments
-			- route Segment incrementally in_array
-	- matcher uses in_array instead of comparing with each collection entry. No more need for prefixCurrent and co
+
+refactor to just receive placeholders PathPlaceholders->replaceInPattern

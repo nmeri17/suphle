@@ -26,10 +26,6 @@
 		public function _assignMiddleware(MiddlewareRegistry $registry):void;
 
 		public function _getAuthenticator ():AuthStorage;
-		
-		public function _setCrudPrefix(string $prefix):void;
-
-		public function _getCrudPrefix ():string;
 
 		public function _expectsCrud ():bool;
 

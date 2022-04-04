@@ -30,13 +30,11 @@
 		*/
 		protected function saveNew():array {
 
-			$collection = $this->collection;
-
 			$handler = __FUNCTION__;
 
-			return $this->callParentWith($handler, new Redirect($handler, function () use ($collection) {
+			return $this->callParentWith($handler, new Redirect($handler, function () {
 
-				return $collection->_getCrudPrefix() . "/" . $this->rawResponse["resource"]->id; // assumes the controller returns an array containing this key
+				return $this->collection->_prefixCurrent() . "/" . $this->rawResponse["resource"]->id; // assumes the controller returns an array containing this key
 			}));
 		}
 
@@ -59,13 +57,11 @@
 
 		protected function deleteOne():array {
 
-			$collection = $this->collection;
-
 			$handler = __FUNCTION__;
 
-			return $this->callParentWith($handler, new Redirect($handler, function () use ($collection) {
+			return $this->callParentWith($handler, new Redirect($handler, function () {
 				
-				return $collection->_getCrudPrefix() . "/";
+				return $this->collection->_prefixCurrent() . "/";
 			}));
 		}
 
