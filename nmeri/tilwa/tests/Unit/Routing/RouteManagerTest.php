@@ -11,13 +11,16 @@
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\BrowserNoPrefix;
 
+	/**
+	 * Note: all urls passed to methods apart from [recursiveSearch] should have no surrounding slashes in order to match parsed patterns
+	*/
 	class RouteManagerTest extends IsolatedComponentTest {
 
 		use DirectHttpTest, CommonBinds;
 
 		private $sut, $collection, $sutName = RouteManager::class,
 
-		$placeholderCharacter = "[\w-]";
+		$placeholderCharacter = "[\w-]+";
 
 		protected function setUp ():void {
 
@@ -28,54 +31,44 @@
 			$this->collection = $this->container->getClass(BrowserNoPrefix::class);
 		}
 
-		public function test_route_compare_hyphen () {
-
-			$this->setHttpParams("/segment-segment/5");
-
-			$this->assertFalse($this->sut->routeCompare("/SEGMENT/id/", "get"));
-
-			$this->assertTrue($this->sut->routeCompare("/SEGMENT-SEGMENT/id/", "get"));
-		}
-
 		/**
-	     * @dataProvider compareOptionalData
+	     * @dataProvider compareOptionalUrl
 	     */
 		public function test_route_compare_optional (string $path) {
 
-			$this->setHttpParams($path);
+			$result = $this->sut->findMatchingMethod($path, $this->collection->_getPatterns());
 
-			$placeholder = $this->placeholderCharacter;
-
-			$this->assertTrue($this->sut->routeCompare("SEGMENT/id/SEGMENT/($placeholder/)?", "get"));
+			$this->assertSame("SEGMENT_id_SEGMENT_idO", $result->getMethodName());
 		}
 
-		public function compareOptionalData ():array {
+		public function compareOptionalUrl ():array {
 
 			return [
-				[ "/segment/5/segment/5/"], // without slash should be made to work too
-				[ "/segment/5/segment"]
+				[ "segment/5/segment/5"],
+
+				[ "segment/5/segment"]
 			];
 		}
 
 		/**
 	     * @dataProvider regexFormData
 	     */
-		public function test_regex_form (string $rawForm, string $regexVersion) {
+		public function test_regex_form (string $methodName, string $regexVersion) {
 
-			$this->assertSame($this->sut->regexForm($rawForm), $regexVersion);
+			$this->assertSame($regexVersion, $this->sut->regexForm($methodName));
 		}
 
 		public function regexFormData ():array {
 
-			$placeholder = "[\w-]";
+			$placeholder = "[\w-]+";
 
 			return [
 				[
 					"SEGMENT_id_SEGMENT_idO",
-					"SEGMENT/$placeholder/SEGMENT/($placeholder/)?"
+					"SEGMENT/$placeholder/SEGMENT/?($placeholder/?)?"
 				],
 				[
-					"SEGMENT_id", "SEGMENT/$placeholder/"
+					"SEGMENT_id", "SEGMENT/$placeholder/?"
 				]
 			];
 		}
@@ -92,21 +85,21 @@
 
 			$this->assertEqualsCanonicalizing([
 
-				"SEGMENT/$placeholder/",
+				"SEGMENT/$placeholder/?",
 
-				"SEGMENT-SEGMENT/$placeholder/",
+				"SEGMENT-SEGMENT/$placeholder/?",
 
-				"SEGMENT_SEGMENT/$placeholder/",
+				"SEGMENT_SEGMENT/$placeholder/?",
 
-				"SEGMENT/$placeholder/SEGMENT/($placeholder/)?",
+				"SEGMENT/$placeholder/SEGMENT/?($placeholder/?)?",
 
 				""
 			], array_values($result)); // then
 		}
 
 		public function test_method_can_partly_match_path () {
-var_dump($this->collection->_getPatterns());
-			$result = $this->sut->classMethodToPattern(
+
+			$result = $this->sut->methodPartiallyMatchPattern(
 				"segment-segment/5/segment", // given
 
 				$this->collection->_getPatterns()
@@ -119,12 +112,69 @@ var_dump($this->collection->_getPatterns());
 
 		public function test_findMatchingMethod_stops_at_literal_match () {
 
-			//
+			$sut = $this->positiveDouble($this->sutName, [], [
+
+				"methodPartiallyMatchPattern" => [0, []] // SEGMENT is the only literal pattern in collection
+			]); // then
+
+			$result = $sut->findMatchingMethod( // when 
+
+				"segment", $this->collection->_getPatterns() // given
+			);
+
+			$this->assertSame("SEGMENT", $result->getMethodName());
 		}
 
 		public function test_findMatchingMethod_skips_when_not_literal () {
 
-			//
+			$patterns = $this->collection->_getPatterns();
+
+			$sut = $this->positiveDouble($this->sutName, [], [
+
+				"methodPartiallyMatchPattern" => [count($patterns)-1, []] // omit SEGMENT, the only literal pattern in collection
+			]); // then
+
+			foreach ($patterns as $method)
+
+				$sut->findMatchingMethod( // when 
+
+					$method, $patterns // given
+				);
+		}
+
+		/**
+		 * @dataProvider pathToCollectionMethod
+		*/
+		public function test_findMatchingMethod_finds_correct_method (string $url, string $expectedMethod) {
+
+			$patterns = $this->collection->_getPatterns();
+
+			$result = $this->sut->findMatchingMethod( // when 
+
+				$url, $patterns // given
+			);
+
+			$this->assertNotNull($result);
+
+			$this->assertSame($expectedMethod, $result->getMethodName()); // then
+		}
+
+		public function pathToCollectionMethod ():array {
+
+			return [
+				[ "", "_index"],
+
+				[ "segment", "SEGMENT"],
+
+				[ "segment/5", "SEGMENT_id"],
+
+				[ "segment-segment/5", "SEGMENT__SEGMENTh_id"],
+
+				[ "segment_segment/5", "SEGMENT__SEGMENTu_id"],
+
+				[ "segment/5/segment/5", "SEGMENT_id_SEGMENT_idO"],
+				[ "segment/5/segment", "SEGMENT_id_SEGMENT_idO"]
+			];
 		}
 	}
 ?>

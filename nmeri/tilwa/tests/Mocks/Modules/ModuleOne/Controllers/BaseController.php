@@ -30,7 +30,7 @@
 			//
 		}
 
-		public function optionalPlaceholder {
+		public function optionalPlaceholder () {
 
 			//
 		}

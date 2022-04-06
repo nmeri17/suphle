@@ -17,7 +17,9 @@
 
 		const PREV_RENDERER = 'prv_rdr';
 
-		private $config, $activeRenderer, $payload,
+		private $indexMethod = "_index",
+
+		$config, $activeRenderer, $payload,
 
 		$requestDetails, $fullTriedPath, $container,
 
@@ -74,8 +76,8 @@
 			$methodName = $matchingCheck->getMethodName();
 
 			$collection->$methodName();
-if (empty($matchingCheck->getRouteState())) var_dump($matchingCheck, $incomingPath, $collection->_getPatterns());
-			$remainder = $this->matchRemainder($matchingCheck->getRouteState(), $incomingPath);
+
+			$remainder = $this->matchRemainder($matchingCheck, $incomingPath);
 
 			$expectsCrud = $collection->_expectsCrud();
 
@@ -95,27 +97,47 @@ if (empty($matchingCheck->getRouteState())) var_dump($matchingCheck, $incomingPa
 
 		public function findMatchingMethod ( string $fullRouteState, array $patterns):?PlaceholderCheck {
 
-			if ( in_array(strtoupper($fullRouteState), $patterns)) // literal match
+			$literalMatch = strtoupper($fullRouteState);
 
-				return new PlaceholderCheck($fullRouteState, $fullRouteState);
+			if ( in_array($literalMatch, $patterns))
 
-			return $this->classMethodToPattern($fullRouteState, $patterns);
+				return new PlaceholderCheck($fullRouteState, $literalMatch);
+
+			if ($fullRouteState == "" )
+
+				return $this->indexMethodToPattern( $patterns);
+
+			unset($patterns[array_search($this->indexMethod, $patterns)]); // since we're sure it's not the one, no need to confuse the other guys, who will always "partially" match an empty string
+
+			return $this->methodPartiallyMatchPattern($fullRouteState, $patterns);
 		}
 
-		public function classMethodToPattern (string $currentRouteState, array $patterns):?PlaceholderCheck {
+		public function methodPartiallyMatchPattern (string $currentRouteState, array $patterns):?PlaceholderCheck {
 
 			$methodRegexes = $this->getPlaceholderMethods($patterns);
-var_dump($methodRegexes, 108);
-			foreach ($methodRegexes as $method => $regexForm) { // not using in_array or ^$ since method is not guaranteed to match entire string
+
+			foreach ($methodRegexes as $methodPattern => $regexForm) { // not using in_array or ^$ since method is not guaranteed to match entire string
 
 				$safeRegex = str_replace("/", "\/", $regexForm);
 
 				preg_match("/^$safeRegex/i", $currentRouteState, $matches); // avoid matches that just appear in the middle of the method instead of being the method
-var_dump($matches, $currentRouteState, 113);
-				if (!empty($matches))
 
-					return new PlaceholderCheck($matches[0], $method );
+				if (!empty($matches)) {preg_match_all("/^$safeRegex/i", $currentRouteState, $matches2);
+var_dump($matches, $safeRegex, $matches2); // we should catch and log placeholders and their real values here
+					$matchedSegment = $matches[0];
+
+					return new PlaceholderCheck($matchedSegment, $methodPattern );
+				}
 			}
+
+			return null;
+		}
+
+		private function indexMethodToPattern ( array $patterns):?PlaceholderCheck {
+
+			if ( in_array($this->indexMethod, $patterns))
+
+				return new PlaceholderCheck("", $this->indexMethod );
 
 			return null;
 		}
@@ -136,13 +158,13 @@ var_dump($matches, $currentRouteState, 113);
 		}
 
 		/* given hypothetical path: PATH_id_EDIT_id2_EDIT__SAME__OKJh_optionalO_TOMP, clean and return a path similar to a real life path; but still in a regex format so optional segments can be indicated as such
-		PATH/[\w-]/EDIT/[\w-]/EDIT-SAME-OKJ/([\w-]/)?TOMP
+		PATH/[\w-]+/EDIT/[\w-]+/EDIT-SAME-OKJ/?([\w-]+/)?TOMP
 		*/
 		public function regexForm (string $routeState):string {
 
 			$segmentDelimiters = ["h" => "-", "u" => "_"];
 
-			$placeholderCharacter = "[\w-]";
+			$placeholderCharacter = "[\w-]+";
 
 			$pattern = "(
 				(_)?#literal to literal i.e. no placeholder in between
@@ -169,7 +191,7 @@ var_dump($matches, $currentRouteState, 113);
 				_?# possible trailing slash before next literal
 			)?";
 
-			return preg_replace_callback("/$pattern/x", function ($matches) use ( $segmentDelimiters, $placeholderCharacter) {
+			$regexified = preg_replace_callback("/$pattern/x", function ($matches) use ( $segmentDelimiters, $placeholderCharacter) {
 
 				$builder = "";
 
@@ -194,7 +216,9 @@ var_dump($matches, $currentRouteState, 113);
 
 						$hasPlaceholder = rtrim($hasPlaceholder, "O");
 
-						$builder .= "($placeholderCharacter$slash)?";
+						$builder .= "?" . // weaken trailing slash of preceding pattern
+
+						"($placeholderCharacter$slash?)?";
 
 						$this->activePlaceholders->pushSegment($hasPlaceholder); // not entirely correct. we should intercept them during the pregmatch
 					}
@@ -213,6 +237,12 @@ var_dump($matches, $currentRouteState, 113);
 
 				return $builder;
 			}, $routeState);
+
+			if (str_ends_with($regexified, "/"))
+
+				$regexified = trim($regexified, "/") . "/?"; // make trailing slash optional
+			
+			return $regexified;
 		}
 
 		private function extractRenderer (RouteCollection $collection, string $remainder, string $methodName, bool $expectsCrud):?BaseRenderer {
@@ -238,24 +268,24 @@ var_dump($matches, $currentRouteState, 113);
 
 		private function findActiveCrud (array $routePatterns, string $remainderPath):?string {
 
-			$matchingCheck = $this->classMethodToPattern($remainderPath, $routePatterns);
+			$matchingCheck = $this->methodPartiallyMatchPattern($remainderPath, $routePatterns);
 
 			if (
 				!is_null($matchingCheck) &&
 
-				$remainderPath == $this->matchRemainder($matchingCheck->getRouteState() ) // no leftover
+				$remainderPath == $this->matchRemainder($matchingCheck, $remainderPath ) // no leftover
 			)
 
 				return $matchingCheck->getMethodName();
 		}
 
-		private function matchRemainder (string $methodName, string $fullRouteState):string {
+		private function matchRemainder (PlaceholderCheck $check, string $fullRouteState):string {
 
-			if (empty($fullRouteState)) // index
+			if (empty($fullRouteState) && $check->getMethodName() == $this->indexMethod)
 
 				return $fullRouteState;
-var_dump($methodName, $fullRouteState);
-			return explode($methodName, $fullRouteState, 2)[1];
+
+			return explode($check->getRouteState(), $fullRouteState, 2)[1];
 		}
 
 		public function confirmRouteMethod (BaseRenderer $renderer):bool {

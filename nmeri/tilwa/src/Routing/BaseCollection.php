@@ -92,7 +92,7 @@
 				return $name;
 			}, $methods);
 
-			/*usort($prefixed, function ($a, $b) { // move longer patterns up so shorter don't misleadingly swallow other patterns
+			usort($prefixed, function ($a, $b) { // move longer patterns up so shorter ones don't misleadingly swallow partly matching segments
 
 				$aLength = strlen($a);
 
@@ -100,8 +100,8 @@
 
 				if ($aLength == $bLength) return 0;
 
-				return ($aLength < $bLength) ? 1: -1; // descending
-			});*/
+				return ($bLength > $aLength) ? 1: -1; // push greater right upwards ie descending
+			});
 
 			return $prefixed;
 		}
