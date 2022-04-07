@@ -3,76 +3,74 @@
 
 	use Tilwa\Request\RequestDetails;
 
-	use Tilwa\Exception\Explosives\Miscellaneous\IncompatiblePatternReplacement;
-
 	/**
 	 * Used by route finder during matching to compose and interpolate patterns read from collections and what is incoming in request
 	*/
 	class PathPlaceholders {
 
-		private $stack = [], $requestPath;
+		private $stack = [], $hasExtractedToken = false,
 
-		function __construct( RequestDetails $requestDetails) {
+		$methodSegments = [], $urlReplacer, $requestPath;
+
+		public function __construct(RequestDetails $requestDetails, CollectionMethodToUrl $urlReplacer) {
 
 			$this->requestPath = $requestDetails->getPath();
+
+			$this->urlReplacer = $urlReplacer;
 		}
 
-		public function pushSegment (string $name):void {
+		private function setMethodSegments (array $methods):void {
 
-			$this->stack[$name] = null;
+			$this->methodSegments = $methods;
 		}
 
 		/**
 		 * Given computed path such as FOO/id, and incoming request with path foo/5, it synchronizes in-app storage of placeholders, recording id as 5
 		*
-		* @throws IncompatiblePatternReplacement
-		* @return the synchronized path
 		*/
-		public function replaceInPattern (string $computed):string {
+		private function extractTokenValue ():void {
 
-			$newPattern = [];
+			if ($this->hasExtractedToken) return;
 
-			$realSegments = explode("/", rtrim($this->requestPath, "/"));
+			if (empty($this->stack)) {
 
-			$computedSegments = explode("/", rtrim($computed, "/"));
+				$this->hasExtractedToken = true;
 
-			if (count($realSegments) != count($computedSegments))
-
-				throw new IncompatiblePatternReplacement;
-				;
-//var_dump($computedSegments, $realSegments);
-			foreach ($computedSegments as $index => $value) {
-
-				if (!empty($value)) {
-
-					$segmentValue = $realSegments[$index];
-
-					$segmentIsPlaceholder = strtolower($value) === $value;
-
-					$differentSegments = !preg_match("/^" . $segmentValue . "$/i", $value);
-
-					if ($differentSegments) {
-
-						if ($segmentIsPlaceholder)
-
-							$newPattern[] = $this->stack[$value] = $segmentValue;
-
-						else throw new IncompatiblePatternReplacement;
-					}
-
-					else $newPattern[] = $value;
-				}
+				return;
 			}
 
-			return "/" . implode("/", $newPattern);
+			$realSegments = explode("/", trim($this->requestPath, "/"));
+
+			foreach ($this->getTokenizedSegments() as $index => $segment) {
+
+				if (array_key_exists($segment, $this->stack))
+
+					$this->stack[$segment] = $realSegments[$index];
+			}
+
+			$this->hasExtractedToken = true;
+		}
+
+		private function getTokenizedSegments ():array {
+
+			$result = $this->urlReplacer->replacePlaceholders(implode("", $this->methodSegments), "$1");
+
+			return array_map(
+
+				"strtolower", explode("/", $result->regexifiedUrl())
+			);
 		}
 
 		public function getSegmentValue (string $name) {
+
+			$this->extractTokenValue();
 
 			return $this->stack[$name];
 		}
 
 		public function getAllSegmentValues ():array {
+
+			$this->extractTokenValue();
 
 			return $this->stack;
 		}
@@ -84,6 +82,18 @@
 				if (array_key_exists($index, $this->stack))
 
 					$this->stack[$index] = $value;
+		}
+
+		public function clearAllSegments ():void {
+
+			$this->stack = [];
+		}
+
+		public function foundSegments (array $placeholders):void {
+
+			foreach ($placeholders as $key)
+
+				$this->stack[$key] = null;
 		}
 	}
 ?>

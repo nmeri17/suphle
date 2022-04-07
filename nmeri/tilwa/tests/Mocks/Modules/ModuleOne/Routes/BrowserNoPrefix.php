@@ -34,7 +34,7 @@
 			$this->_get(new Json("underscoredSegments"));
 		}
 
-		public function SEGMENT_id_SEGMENT_idO() {
+		public function SEGMENT_id_SEGMENT_id2O() {
 
 			$this->_get(new Json("optionalPlaceholder"));
 		}

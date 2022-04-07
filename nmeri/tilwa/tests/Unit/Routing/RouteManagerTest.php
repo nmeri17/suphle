@@ -38,7 +38,7 @@
 
 			$result = $this->sut->findMatchingMethod($path, $this->collection->_getPatterns());
 
-			$this->assertSame("SEGMENT_id_SEGMENT_idO", $result->getMethodName());
+			$this->assertSame("SEGMENT_id_SEGMENT_id2O", $result->getMethodName());
 		}
 
 		public function compareOptionalUrl ():array {
@@ -64,7 +64,7 @@
 
 			return [
 				[
-					"SEGMENT_id_SEGMENT_idO",
+					"SEGMENT_id_SEGMENT_id2O",
 					"SEGMENT/$placeholder/SEGMENT/?($placeholder/?)?"
 				],
 				[
@@ -172,8 +172,8 @@
 
 				[ "segment_segment/5", "SEGMENT__SEGMENTu_id"],
 
-				[ "segment/5/segment/5", "SEGMENT_id_SEGMENT_idO"],
-				[ "segment/5/segment", "SEGMENT_id_SEGMENT_idO"]
+				[ "segment/5/segment/5", "SEGMENT_id_SEGMENT_id2O"],
+				[ "segment/5/segment", "SEGMENT_id_SEGMENT_id2O"]
 			];
 		}
 	}
