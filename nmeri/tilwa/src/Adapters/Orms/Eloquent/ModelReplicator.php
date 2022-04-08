@@ -16,13 +16,15 @@
 		*/
 		private $activeModel,
 
-		$databaseConnection, $laravelContainer;
+		$databaseConnection, $laravelContainer, $migrator;
 
 		public function __construct (OrmDialect $ormDialect, LaravelContainer $laravelContainer) {
 
 			$this->databaseConnection = $ormDialect->getConnection();
 
 			$this->laravelContainer = $laravelContainer;
+
+			$this->migrator = $laravelContainer->make("migrator"); // bound to Migrator
 		}
 
 		public function seedDatabase ( int $amount):void {
@@ -60,15 +62,13 @@
 
 		public function setupSchema ():void {
 
-			$this->migrator = $migrator = $this->laravelContainer->make("migrator"); // bound to Migrator
-
-			$repository = $migrator->getRepository();
+			$repository = $this->migrator->getRepository();
 
 			if (!$repository->repositoryExists())
 
 				$repository->createRepository();
 
-			$migrator->run($this->activeModel::migrationFolders());
+			$this->migrator->run($this->activeModel::migrationFolders());
 		}
 
 		public function dismantleSchema ():void {

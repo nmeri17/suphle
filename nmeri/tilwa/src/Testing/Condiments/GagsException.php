@@ -59,6 +59,6 @@
 			$this->massProvide([ $this->managerName => $sut ]);
 		}
 
-		abstract protected function massProvide ():void;
+		abstract protected function massProvide (array $provisions):void;
 	}
 ?>

@@ -273,7 +273,7 @@
 		*/
 		public function handlePipe(array $indexes, int $dummyValue, CollectionNode $rawNode):array {
 
-			return array_map (function($value) {
+			return array_map (function($value) use ($rawNode) {
 
 				return $this->updateRequest([
 
@@ -284,7 +284,7 @@
 		}
 
 		// @return executes underlying renderer and returns it
-		protected function executeRequest():?BaseRenderer {
+		public function executeRequest():?BaseRenderer {
 
 			if ($this->canProcessPath())
 

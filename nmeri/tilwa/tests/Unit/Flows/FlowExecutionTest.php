@@ -13,9 +13,11 @@
 
 	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
+	use Tilwa\Tests\Integration\Generic\CommonBinds;
+
 	class FlowExecutionTest extends IsolatedComponentTest {
 
-	 	use FlowData;
+	 	use FlowData, CommonBinds;
 
 	 	private $responseManager = ResponseManager::class;
 

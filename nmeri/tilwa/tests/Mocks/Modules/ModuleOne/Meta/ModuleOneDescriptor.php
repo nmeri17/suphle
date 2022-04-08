@@ -26,6 +26,8 @@
 
 		protected function entityBindings ():void {
 
+			parent::entityBindings();
+
 			$this->container->whenTypeAny()->needsAny([
 
 				ModuleFiles::class => new AscendingHierarchy(__DIR__)

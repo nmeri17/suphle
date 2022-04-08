@@ -3,7 +3,7 @@
 
 	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\BaseDatabasePopulator, Proxies\WriteOnlyContainer};
 
-	use Tilwa\Contracts\Auth\{AuthStorage, User};
+	use Tilwa\Contracts\Auth\{AuthStorage, UserContract};
 
 	use Tilwa\Contracts\Config\Router;
 
@@ -29,7 +29,7 @@
 
 		protected function getActiveEntity ():string {
 
-			return User::class;
+			return UserContract::class;
 		}
 
 		public function test_cant_resume_auth_session_after_logout () {

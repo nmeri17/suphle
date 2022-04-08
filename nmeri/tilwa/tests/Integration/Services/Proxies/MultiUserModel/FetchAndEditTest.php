@@ -11,13 +11,15 @@
 
 	use Tilwa\Testing\Condiments\{DirectHttpTest, BaseDatabasePopulator};
 
+	use Tilwa\Tests\Integration\Generic\CommonBinds;
+
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\Services\{MultiUserEditMock, MultiUserEditError};
 
 	use DateTime, DateInterval;
 
 	class FetchAndEditTest extends IsolatedComponentTest {
 
-		use DirectHttpTest, BaseDatabasePopulator;
+		use DirectHttpTest, BaseDatabasePopulator, CommonBinds;
 
 		private $modelName = MultiEditProduct::class;
 

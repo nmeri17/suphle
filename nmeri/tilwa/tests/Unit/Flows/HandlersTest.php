@@ -31,10 +31,13 @@
 			// then
 			$sut = $this->mockFlowHydrator([
 				
-				"updateRequest" => [$indexesCount, [$this->callback($subject) use ($indexes) {
+				"updateRequest" => [$indexesCount, [
 
-					return in_array($subject, $indexes);
-				}]],
+					$this->callback(function($subject) use ($indexes) {
+
+						return in_array($subject, $indexes);
+					})
+				]],
 
 				"executeRequest" => [$indexesCount, []]
 			]);
@@ -47,7 +50,14 @@
 
 			$mocks = array_merge(["executeRequest" => [1, []]], $mocks);
 
-			return $this->positiveDouble(FlowHydrator::class, $mocks);
+			return $this->replaceConstructorArguments(
+
+				FlowHydrator::class,
+				[
+
+					"container" => $this->container
+				], [], $mocks
+			);
 		}
 
 		/**
@@ -61,7 +71,7 @@
 			$leafName = "next_page_url";
 
 			$payload = [
-				$this->payloadKey => $this->indexes,
+				$this->payloadKey => $this->indexesToModels(),
 
 				$leafName => "/posts/?" . http_build_query($queryUpdate) // suppose next page is 2 according to current outgoing request, flow runs and stores for 2
 			];

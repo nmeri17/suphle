@@ -3,7 +3,7 @@
 
 	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Prefix\Secure\UpperCollection, Meta\ModuleOneDescriptor, Config\RouterMock};
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Prefix\Secured\UpperCollection, Meta\ModuleOneDescriptor, Config\RouterMock};
 
 	use Tilwa\Contracts\Config\Router;
 

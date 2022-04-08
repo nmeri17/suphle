@@ -13,7 +13,9 @@
 
 		use DirectHttpTest;
 
-		private $ormDialect, $searchService, $baseUrl = "/search/?q=jobs&";
+		private $ormDialect, $searchService, $model,
+
+		$baseUrl = "/search/?q=jobs&";
 
 		public function setUp ():void {
 
@@ -22,6 +24,8 @@
 			$this->ormDialect = $this->negativeDouble(OrmDialect::class);
 
 			$this->searchService = $this->positiveDouble(SimpleSearchService::class);
+			
+			$this->model = new stdClass;
 
 			$this->container->whenTypeAny()->needsAny([
 
@@ -33,8 +37,6 @@
 
 		public function test_calls_class_methods_matching_queries () {
 			
-			$model = new stdClass;
-			
 			// then
 			$this->mockCalls([
 
@@ -45,30 +47,28 @@
 
 				"custom_filter" => [1, [
 
-					$this->equalTo($model), 5
+					$this->equalTo($this->model), 5
 				]]
 			], $this->searchService);
 
 			$this->setHttpParams($this->baseUrl . "custom_filter=5"); // given
 
-			$this->searchService->convertToQuery($model, "q"); // when
+			$this->searchService->convertToQuery($this->model, "q"); // when
 		}
 
 		public function test_skips_class_methods_not_matching_queries () {
-			
-			$model = new stdClass;
 
 			$this->mockCalls([
 
 				"custom_filter" => [$this->never(), [
 
-					$this->equalTo($model), 5
+					$this->equalTo($this->model), 5
 				]]
 			], $this->searchService); // then
 
 			$this->setHttpParams($this->baseUrl . "database_column=foo"); // given
 
-			$this->searchService->convertToQuery($model, "q"); // when
+			$this->searchService->convertToQuery($this->model, "q"); // when
 		}
 
 		public function test_calls_ormDialect_when_sees_custom_method () {
@@ -80,7 +80,7 @@
 
 			$this->setHttpParams($this->baseUrl . "database_column=foo"); // given
 
-			$this->searchService->convertToQuery($model, "q"); // when
+			$this->searchService->convertToQuery($this->model, "q"); // when
 		}
 	}
 ?>

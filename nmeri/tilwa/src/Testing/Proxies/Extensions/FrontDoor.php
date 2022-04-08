@@ -14,7 +14,7 @@
 			parent::__construct();
 		}
 		
-		protected function getModules():array {
+		public function getModules ():array {
 
 			return $this->descriptors;
 		}

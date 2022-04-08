@@ -7,15 +7,9 @@
 
 		private $leafName;
 
-		const PIPE_TO = 2;
+		const PIPE_TO = 12, IN_RANGE = 13, DATE_RANGE = 14, ONE_OF = 15,
 
-		const IN_RANGE = 3;
-
-		const DATE_RANGE = 4;
-
-		const ONE_OF = 5;
-
-		const FROM_SERVICE = 6;
+		FROM_SERVICE = 16;
 
 		public function __construct(string $nodeName, string $leafName) {
 
@@ -79,7 +73,7 @@
 		*/
 		public function deferExtraction ():bool {
 
-			return in_array(self::FROM_SERVICE, $this->actions);
+			return array_key_exists(self::FROM_SERVICE, $this->actions);
 		}
 	}
 ?>

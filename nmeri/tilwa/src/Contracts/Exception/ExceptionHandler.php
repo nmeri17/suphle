@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Contracts\Exception;
 
-	use Tilwa\Response\Format\AbstractRenderer;
+	use Tilwa\Contracts\Presentation\BaseRenderer;
 
 	use Throwable;
 
@@ -14,6 +14,6 @@
 		*/
 		public function prepareRendererData ():void;
 
-		public function getRenderer ():AbstractRenderer;
+		public function getRenderer ():BaseRenderer;
 	}
 ?>

@@ -5,7 +5,7 @@
 
 	use Tilwa\Flows\{OuterFlowWrapper, Jobs\UpdateCountDelete};
 
-	use Tilwa\Flows\Structures\{AccessContext, RouteUserNode};
+	use Tilwa\Flows\Structures\{AccessContext, RouteUserNode, RouteUmbrella};
 
 	use Tilwa\Testing\{ TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer, Condiments\QueueInterceptor };
 
@@ -70,7 +70,7 @@
 			$this->dataProvider([
 
 				[$this, "expiredContexts"]
-			], function (AccessContext $context) {
+			], function (RouteUserNode $context) {
 
 				$this->makeJob($context)->handle(); // given
 

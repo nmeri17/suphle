@@ -1,9 +1,9 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes;
 
-	use Tilwa\Events\{EmitProxy, EventManager};
+	use Tilwa\Events\EmitProxy;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Meta\ModuleApi;
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleApi, Events\AssignListeners};
 
 	class LocalSender {
 
@@ -19,7 +19,7 @@
 
 		private $eventManager;
 
-		public function __construct (EventManager $eventManager) {
+		public function __construct (AssignListeners $eventManager) {
 
 			$this->eventManager = $eventManager;
 		}

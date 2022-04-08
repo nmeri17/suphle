@@ -1,9 +1,11 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\Services;
 
-	use Tilwa\Events\{EmitProxy, EventManager};
+	use Tilwa\Events\EmitProxy;
 
 	use Tilwa\Services\Structures\OptionalDTO;
+
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Events\AssignListeners;
 
 	class UpdatefulEmitter extends SystemModelEditMock1 {
 
@@ -13,7 +15,7 @@
 
 		private $eventManager;
 
-		public function __construct (EventManager $eventManager) {
+		public function __construct (AssignListeners $eventManager) {
 
 			$this->eventManager = $eventManager;
 		}

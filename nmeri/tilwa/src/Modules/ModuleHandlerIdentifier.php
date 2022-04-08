@@ -102,7 +102,7 @@
 			throw new NotFoundException;
 		}
 
-		protected function flowRequestHandler(OuterFlowWrapper $wrapper):string {
+		public function flowRequestHandler(OuterFlowWrapper $wrapper):string {
 
 			$this->identifiedHandler = $wrapper;
 

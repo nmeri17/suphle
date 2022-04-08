@@ -22,9 +22,9 @@
 			QueueInterceptor::setUp as queueSetup;
 		}
 
-		private $container;
+		protected $container,
 
-		protected $userUrl = "/user-content/5", // corresponds to the content generated after using [flowUrl] to create a context
+		$userUrl = "/user-content/5", // corresponds to the content generated after using [flowUrl] to create a context
 
 		$originDataName = "all_users", $flowUrl = "user-content/id",
 

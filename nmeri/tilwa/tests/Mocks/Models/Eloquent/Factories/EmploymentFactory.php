@@ -3,7 +3,7 @@
 
 	use Tilwa\Tests\Mocks\Models\Eloquent\{Employment, Employer};
 
-	use Illuminate\Database\Eloquent\Factory;
+	use Illuminate\Database\Eloquent\Factories\Factory;
 
 	class EmploymentFactory extends Factory {
 

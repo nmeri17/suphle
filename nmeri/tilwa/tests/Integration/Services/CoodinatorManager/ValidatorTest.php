@@ -164,13 +164,15 @@
 				]
 			)]);
 
-			$this->container->whenTypeAny()->needsAny([
+			$diffuser = $this->container->whenTypeAny()->needsAny([
 
 				RouteManager::class => $router
 			])
-			->getClass(ValidationFailureDiffuser::class)
+			->getClass(ValidationFailureDiffuser::class);
 
-			->prepareRendererData(); // when
+			$diffuser->setContextualData($this->positiveDouble(ValidationFailure::class));
+
+			$diffuser->prepareRendererData(); // when
 		}
 	}
 ?>

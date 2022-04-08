@@ -3,7 +3,7 @@
 
 	use Tilwa\Testing\{Condiments\BaseDatabasePopulator, Proxies\SecureUserAssertions, TestTypes\IsolatedComponentTest};
 
-	use Tilwa\Contracts\Auth\{AuthStorage, User};
+	use Tilwa\Contracts\Auth\{AuthStorage, UserContract};
 
 	use Tilwa\Auth\SessionStorage;
 
@@ -15,7 +15,7 @@
 
 		protected function getActiveEntity ():string {
 
-			return User::class;
+			return UserContract::class;
 		}
 
 		public function test_session_impersonate () {

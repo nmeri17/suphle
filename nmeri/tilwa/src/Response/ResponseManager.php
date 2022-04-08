@@ -5,13 +5,13 @@
 
 	use Tilwa\Hydration\Container;
 
-	use Tilwa\Routing\{RouteManager, RequestDetails};
+	use Tilwa\Routing\RouteManager;
 
 	use Tilwa\Services\CoodinatorManager;
 
 	use Tilwa\Contracts\{Requests\BaseResponseManager, Presentation\BaseRenderer};
 
-	use Tilwa\Request\{ValidatorManager, PayloadStorage};
+	use Tilwa\Request\{ValidatorManager, PayloadStorage, RequestDetails};
 
 	use Tilwa\Exception\Explosives\ValidationFailure;
 

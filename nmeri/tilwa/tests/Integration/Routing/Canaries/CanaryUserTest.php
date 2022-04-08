@@ -7,7 +7,7 @@
 
 	use Tilwa\Testing\{Condiments\BaseDatabasePopulator, Proxies\SecureUserAssertions};
 
-	use Tilwa\Contracts\Auth\User;
+	use Tilwa\Contracts\Auth\UserContract;
 
 	class CanaryUserTest extends TestsRouter {
 
@@ -20,20 +20,25 @@
 
 		protected function getActiveEntity ():string {
 
-			return User::class;
+			return UserContract::class;
 		}
 
 		/**
 		 * This should be true since canary is evaluated before collection storage method is derived (which is done after all segments match)
-	     * @dataProvider getUserAndResult
 	     */
 		public function test_injecting_authStorage_uses_its_default_not_collection_auth (User $user, string $handlerName) {
 
-			$this->actingAs($user); // given
+			$this->dataProvider([
 
-			$matchingRenderer = $this->fakeRequest("/special-foo/same-url"); // when
+				[$this, "getUserAndResult"]
+			], function () {
 
-			$this->assertTrue($matchingRenderer->matchesHandler($handlerName) ); // then
+				$this->actingAs($user); // given
+
+				$matchingRenderer = $this->fakeRequest("/special-foo/same-url"); // when
+
+				$this->assertTrue($matchingRenderer->matchesHandler($handlerName) ); // then
+			});
 		}
 
 		public function getUserAndResult ():array {

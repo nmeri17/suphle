@@ -3,15 +3,17 @@
 
 	use Tilwa\Bridge\Laravel\Routing\ModuleRouteMatcher;
 
+	use Tilwa\Contracts\Config\Laravel as ILaravel;
+
 	use Tilwa\Testing\{TestTypes\IsolatedComponentTest, Condiments\DirectHttpTest};
 
-	use Tilwa\Contracts\Config\Laravel as ILaravel;
+	use Tilwa\Tests\Integration\Generic\CommonBinds;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Config\LaravelMock;
 
 	class ModuleRouteMatcherTest extends IsolatedComponentTest {
 
-		use DirectHttpTest;
+		use DirectHttpTest, CommonBinds;
 		
 		public function test_getResponse_from_provided_route () {
 

@@ -9,6 +9,8 @@
 
 	use Tilwa\Modules\ModuleExceptionBridge;
 
+	use Tilwa\Response\Format\Json;
+
 	use Tilwa\Testing\TestTypes\ModuleLevelTest;
 
 	use Exception;
@@ -55,7 +57,7 @@
 
 		public function test_exceptions_uses_assigned_handler () {
 
-			$entrance = $this->exceptionStubModuleHandler($this->willThrowException(new NotFoundException)); // given
+			$entrance = $this->exceptionStubModuleHandler($this->throwException(new NotFoundException)); // given
 
 			$entrance->diffusedRequestResponse(); // when
 
@@ -64,7 +66,7 @@
 
 		public function test_exceptions_without_assigned_handler_uses_default () {
 
-			$entrance = $this->exceptionStubModuleHandler($this->willThrowException(new Exception)); // given
+			$entrance = $this->exceptionStubModuleHandler($this->throwException(new Exception)); // given
 
 			$entrance->diffusedRequestResponse(); // when
 

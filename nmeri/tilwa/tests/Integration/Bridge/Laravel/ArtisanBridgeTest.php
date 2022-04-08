@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Integration\Bridge\Laravel;
 
-	use Tilwa\Testing\TestTypes\CommandLineTest;
+	use Tilwa\Testing\{TestTypes\CommandLineTest, Proxies\WriteOnlyContainer};
 
 	use Tilwa\Bridge\Laravel\Cli\ArtisanCli;
 

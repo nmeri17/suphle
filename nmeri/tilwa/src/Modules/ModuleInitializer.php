@@ -7,7 +7,9 @@
 
 	use Tilwa\Bridge\Laravel\Routing\ModuleRouteMatcher;
 
-	use Tilwa\Contracts\{Auth\AuthStorage, Modules\HighLevelRequestHandler, Presentation\BaseRenderer};
+	use Tilwa\Contracts\{Auth\AuthStorage, Presentation\BaseRenderer};
+
+	use Tilwa\Contracts\Modules\{HighLevelRequestHandler, DescriptorInterface};
 
 	use Tilwa\Exception\Explosives\{UnauthorizedServiceAccess, Unauthenticated};
 	
@@ -19,7 +21,7 @@
 
 		private $foundRoute = false;
 
-		function __construct(ModuleDescriptor $descriptor) {
+		function __construct(DescriptorInterface $descriptor) {
 
 			$this->descriptor = $descriptor;
 
@@ -85,11 +87,7 @@
 
 		private function bindContextualGlobals ():void {
 
-			$this->container->whenTypeAny()
-
-			->needsAny([
-
-				ModuleDescriptor::class => $this->descriptor,
+			$this->container->whenTypeAny()->needsAny([
 
 				BaseRenderer::class => $this->handlingRenderer()
 			]);
@@ -101,6 +99,8 @@
 		}
 
 		public function whenActive ():self {
+
+			$this->bindContextualGlobals();
 
 			if ($this->isLaravelRoute()) return $this;
 
@@ -153,7 +153,7 @@
 			// else createFrom(their response object)
 		}
 
-		private function isLaravelRoute ():bool {
+		public function isLaravelRoute ():bool {
 
 			return !is_null($this->laravelMatcher);
 		}

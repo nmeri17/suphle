@@ -11,9 +11,9 @@
 
 	abstract class EventManager {
 
-		private $emitters = ["local" => [], "external" => []];
+		private $activeHandlerPath, $module, $parentManager,
 
-		private $activeHandlerPath, $module, $parentManager;
+		$emitters = ["local" => [], "external" => []];
 
 		function __construct(DescriptorInterface $module, ModuleLevelEvents $parentManager) {
 
@@ -89,20 +89,22 @@
 		 * For each module, [parentManager] will request handlers matching currently evaluated module from this guy
 		 *
 		 **/
-		public function getExternalHandlers(string $evaluatedModule):EventSubscription {
+		public function getExternalHandlers(string $evaluatedModule):?EventSubscription {
 
 			foreach ($this->emitters["external"] as $emitable => $context)
 
 				if ($emitable == $evaluatedModule)
 
 					return $context;
+
+			return null;
 		}
 
 		/**
 		 * we want to decouple the emitter from the interface consumers are subscribed to
 		 *
 		 **/
-		public function getLocalHandler(string $emitter):EventSubscription {
+		public function getLocalHandler(string $emitter):?EventSubscription {
 			
 			foreach ($this->emitters["local"] as $emitable => $details) {
 
@@ -112,6 +114,7 @@
 
 					return $details;
 			}
+			return null;
 		}
 
 		abstract public function registerListeners():void;

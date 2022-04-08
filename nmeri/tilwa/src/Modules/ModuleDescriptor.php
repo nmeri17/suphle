@@ -63,7 +63,10 @@
 		*/
 		protected function entityBindings ():void {
 
-			//
+			$this->container->whenTypeAny()->needsAny([
+
+				DescriptorInterface::class => $this
+			]);
 		}
 
 		public function getContainer():Container {

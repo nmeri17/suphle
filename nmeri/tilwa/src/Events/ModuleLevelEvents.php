@@ -62,7 +62,11 @@
 			$this->subscriberLog = []; // ahead of next invocation
 		}
 
-		public function triggerHandlers(EventSubscription $scope, string $eventName, $payload):self {
+		public function triggerHandlers(?EventSubscription $scope, string $eventName, $payload):self {
+
+			if (is_null($scope))
+
+				return $this; // no local event handlers attached
 			
 			$hydratedHandler = $scope->getHandlingClass();
 

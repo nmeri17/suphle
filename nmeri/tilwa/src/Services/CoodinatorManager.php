@@ -62,7 +62,10 @@
 
 				if ($this->requestDetails->isGetRequest()) return;
 
-				throw new NoCompatibleValidator;
+				throw new NoCompatibleValidator(
+
+					get_class($this->controller), $this->actionMethod
+				);
 			}
 
 			$this->validatorManager->setActionRules(

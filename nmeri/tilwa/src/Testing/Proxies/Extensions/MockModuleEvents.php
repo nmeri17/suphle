@@ -11,7 +11,7 @@
 
 		private $blanks = [];
 
-		public function triggerHandlers(EventSubscription $scope, string $eventName, $payload):ModuleLevelEvents {
+		public function triggerHandlers(?EventSubscription $scope, string $eventName, $payload):ModuleLevelEvents {
 
 			$this->blanks[] = $scope;
 
