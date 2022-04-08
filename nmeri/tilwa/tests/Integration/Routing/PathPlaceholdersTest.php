@@ -1,7 +1,9 @@
 <?php
 	namespace Tilwa\Tests\Integration\Routing;
 
-	use Tilwa\Routing\{PathPlaceholders, RouteManager};
+	use Tilwa\Routing\{PathPlaceholders, RouteManager, PatternIndicator, CollectionMethodToUrl};
+
+	use Tilwa\Request\RequestDetails;
 
 	use Tilwa\Testing\{TestTypes\IsolatedComponentTest, Condiments\DirectHttpTest};
 
@@ -20,22 +22,30 @@
 
 			$this->setHttpParams($activePath);
 
-			$sut = $this->container->getClass(PathPlaceholders::class);
+			$container = $this->container;
+
+			$sut = $container->getClass(PathPlaceholders::class);
 
 			// given
-			$router = $this->replaceConstructorArguments (RouteManager::class, [
+			$router = $this->replaceConstructorArguments (RouteManager::class, [ // pulling some dependencies from container so their constructors can run
 
-				"placeholderStorage" => $sut
+				"placeholderStorage" => $sut,
+
+				"container" => $container,
+
+				"requestDetails" => $container->getClass(RequestDetails::class),
+
+				"patternIndicator" => $this->negativeDouble(PatternIndicator::class),
+
+				"urlReplacer" => $container->getClass(CollectionMethodToUrl::class)
 			], [
-
-				"finishCollectionHousekeeping" => null,
 
 				"entryRouteMap" => [BrowserNoPrefix::class]
 			]);
 
 			$router->findRenderer(); // when
 
-			$this->assertEqualsCanonicalizing(
+			$this->assertSame(
 
 				$expectedPlaceholders, $sut->getAllSegmentValues()
 			); // then
@@ -46,10 +56,19 @@
 			return [
 				["/segment", []],
 
-				["/segment-segment/5", ["id" => 5]],
+				["/segment-segment/5", ["id" => "5"]],
 
-				["segment/5/segment/10", ["id" => 5, "id2" => 10]]
+				["segment/5/segment/10", ["id" => "5", "id2" => "10"]]
 			];
+		}
+
+		public function test_can_extract_all_method_segments () {
+
+			$sut = $this->container->getClass(CollectionMethodToUrl::class);
+
+			$segments = $sut->splitIntoSegments("SEGMENT/id/SEGMENT2/?(id2/?)?"); // when
+
+			$this->assertSame(["SEGMENT", "id", "SEGMENT2", "id2"], $segments); // then
 		}
 	}
 ?>

@@ -3,7 +3,7 @@
 
 	use Tilwa\Contracts\Routing\RouteCollection;
 
-	use Tilwa\Routing\{RouteManager, BaseCollection, Structures\PlaceholderCheck};
+	use Tilwa\Routing\{RouteManager, Structures\PlaceholderCheck, CollectionMethodToUrl, PathPlaceholders};
 
 	use Tilwa\Testing\{TestTypes\IsolatedComponentTest, Condiments\DirectHttpTest};
 
@@ -18,9 +18,7 @@
 
 		use DirectHttpTest, CommonBinds;
 
-		private $sut, $collection, $sutName = RouteManager::class,
-
-		$placeholderCharacter = "[\w-]+";
+		private $sut, $collection, $sutName = RouteManager::class;
 
 		protected function setUp ():void {
 
@@ -37,6 +35,8 @@
 		public function test_route_compare_optional (string $path) {
 
 			$result = $this->sut->findMatchingMethod($path, $this->collection->_getPatterns());
+
+			$this->assertNotNull($result);
 
 			$this->assertSame("SEGMENT_id_SEGMENT_id2O", $result->getMethodName());
 		}
@@ -55,12 +55,16 @@
 	     */
 		public function test_regex_form (string $methodName, string $regexVersion) {
 
-			$this->assertSame($regexVersion, $this->sut->regexForm($methodName));
+			$sut = $this->container->getClass(CollectionMethodToUrl::class);
+
+			$result = $sut->replacePlaceholders($methodName, RouteManager::PLACEHOLDER_REPLACEMENT);
+
+			$this->assertSame($regexVersion, $result->regexifiedUrl());
 		}
 
 		public function regexFormData ():array {
 
-			$placeholder = "[\w-]+";
+			$placeholder = RouteManager::PLACEHOLDER_REPLACEMENT;
 
 			return [
 				[
@@ -73,7 +77,6 @@
 			];
 		}
 
-		// some tests above have to go or be modified
 		public function test_getPlaceholderMethods_returns_correctly_transformed () {
 
 			$result = $this->sut->getPlaceholderMethods(
@@ -81,7 +84,7 @@
 				$this->collection->_getPatterns() // given 
 			); // when
 
-			$placeholder = $this->placeholderCharacter;
+			$placeholder = RouteManager::PLACEHOLDER_REPLACEMENT;
 
 			$this->assertEqualsCanonicalizing([
 
@@ -94,7 +97,7 @@
 				"SEGMENT/$placeholder/SEGMENT/?($placeholder/?)?",
 
 				""
-			], array_values($result)); // then
+			], array_column($result, "url")); // then
 		}
 
 		public function test_method_can_partly_match_path () {
@@ -174,6 +177,40 @@
 
 				[ "segment/5/segment/5", "SEGMENT_id_SEGMENT_id2O"],
 				[ "segment/5/segment", "SEGMENT_id_SEGMENT_id2O"]
+			];
+		}
+
+		/**
+		 * @dataProvider placeholderMethods
+		*/
+		public function test_injects_correct_placeholders_for_storage (string $urlPattern, string $methodPattern, array $expectedPlaceholders) {
+
+			$placeholderStorage = $this->positiveDouble(PathPlaceholders::class, [], [
+
+				"foundSegments" => [1, [$expectedPlaceholders]] // then
+			]);
+
+			$router = $this->replaceConstructorArguments ($this->sutName, [
+
+				"placeholderStorage" => $placeholderStorage,
+
+				"container" => $this->container,
+
+				"urlReplacer" => $this->container->getClass(CollectionMethodToUrl::class)
+			]);
+
+			$router->methodPartiallyMatchPattern(
+
+				$urlPattern, [$methodPattern] // given
+			); // when
+		}
+
+		public function placeholderMethods ():array {
+
+			return [
+				["segment-segment/5", "SEGMENT__SEGMENTh_id", ["id"]],
+
+				["segment/5/segment/5", "SEGMENT_id_SEGMENT_id2O", ["id", "id2"]]
 			];
 		}
 	}

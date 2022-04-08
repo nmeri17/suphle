@@ -134,22 +134,29 @@
 			return $builder->getMock();
 		}
 
-		protected function replaceConstructorArguments (string $target, array $constructorStubs, array $methodStubs, array $mockMethods = [], bool $isPositive = true)/*:MockBuilder*/ {
+		protected function replaceConstructorArguments (
+
+			string $target, array $constructorStubs,
+
+			array $methodStubs = [], array $mockMethods = [],
+
+			bool $positiveDouble = true, bool $positiveConstructor = true
+		)/*:MockBuilder*/ {
 
 			$reflectedConstructor = new ReflectionMethod($target, "__construct");
 
-			$arguments = $this->mockDummyUnion($reflectedConstructor->getParameters(), $constructorStubs);
+			$arguments = $this->mockDummyUnion($reflectedConstructor->getParameters(), $constructorStubs, $positiveConstructor);
 
-			if ($isPositive)
+			return $positiveDouble?
+			
+				$this->positiveDouble($target, $methodStubs, $mockMethods, $arguments):
 
-				return $this->positiveDouble($target, $methodStubs, $mockMethods, $arguments);
-
-			return $this->negativeDouble($target, $methodStubs, $mockMethods, $arguments);
+				$this->negativeDouble($target, $methodStubs, $mockMethods, $arguments);
 		}
 
-		private function mockDummyUnion (array $parameters, array $replacements):array {
+		private function mockDummyUnion (array $parameters, array $replacements, bool $isPositive):array {
 
-			return array_map(function ($parameter) use ($replacements) {
+			return array_map(function ($parameter) use ($replacements, $isPositive) {
 
 				$parameterName = $parameter->getName();
 
@@ -157,7 +164,12 @@
 
 					return $replacements[$parameterName];
 
-				return $this->positiveDouble($parameter->getType()->getName(), []);
+				$argumentType = $parameter->getType()->getName();
+
+				return $isPositive?
+					$this->positiveDouble($argumentType):
+
+					$this->negativeDouble($argumentType);
 			}, $parameters);
 		}
 

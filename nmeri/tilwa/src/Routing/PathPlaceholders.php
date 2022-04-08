@@ -19,7 +19,7 @@
 			$this->urlReplacer = $urlReplacer;
 		}
 
-		private function setMethodSegments (array $methods):void {
+		public function setMethodSegments (array $methods):void {
 
 			$this->methodSegments = $methods;
 		}
@@ -41,7 +41,7 @@
 
 			$realSegments = explode("/", trim($this->requestPath, "/"));
 
-			foreach ($this->getTokenizedSegments() as $index => $segment) {
+			foreach ($this->splitMethodSegments() as $index => $segment) {
 
 				if (array_key_exists($segment, $this->stack))
 
@@ -51,14 +51,17 @@
 			$this->hasExtractedToken = true;
 		}
 
-		private function getTokenizedSegments ():array {
+		private function splitMethodSegments ():array {
 
-			$result = $this->urlReplacer->replacePlaceholders(implode("", $this->methodSegments), "$1");
+			$tokenizedUrl = $this->urlReplacer->replacePlaceholders(
 
-			return array_map(
+				implode("", $this->methodSegments),
 
-				"strtolower", explode("/", $result->regexifiedUrl())
-			);
+				CollectionMethodToUrl::REPLACEMENT_TYPE_PLACEHOLDER
+			)
+			->regexifiedUrl();
+
+			return $this->urlReplacer->splitIntoSegments($tokenizedUrl);
 		}
 
 		public function getSegmentValue (string $name) {

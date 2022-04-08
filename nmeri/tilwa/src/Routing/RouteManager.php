@@ -15,7 +15,9 @@
 
 	class RouteManager {
 
-		const PREV_RENDERER = "prv_rdr";
+		const PREV_RENDERER = "prv_rdr",
+
+		PLACEHOLDER_REPLACEMENT = "[\w-]+";
 
 		private $indexMethod = "_index",
 
@@ -67,7 +69,7 @@
 
 		private function recursiveSearch (string $collectionName, string $incomingPath ):?BaseRenderer {
 
-			$collection = $this->container->getClass($collectionName);
+			$collection = $this->container->instantiateConcrete($collectionName);
 
 			$matchingCheck = $this->findMatchingMethod( $incomingPath, $collection->_getPatterns() );
 
@@ -118,15 +120,17 @@
 
 			$methodRegexes = $this->getPlaceholderMethods($patterns);
 
-			foreach ($methodRegexes as $methodPattern => $replacePlaceholders) { // not using in_array or ^$ since method is not guaranteed to match entire string
+			foreach ($methodRegexes as $methodPattern => $methodDetails) { // not using in_array or ^$ since method is not guaranteed to match entire string
 
-				$safeRegex = str_replace("/", "\/", $replacePlaceholders);
+				$safeRegex = str_replace("/", "\/", $methodDetails["url"]);
 
 				preg_match("/^$safeRegex/i", $currentRouteState, $matches); // ^ == avoid matches that just appear in the middle of the method instead of being the method
 
 				if (!empty($matches)) {
 
 					$matchedSegment = $matches[0];
+				
+					$this->placeholderStorage->foundSegments($methodDetails["placeholders"]);
 
 					return new PlaceholderCheck($matchedSegment, $methodPattern );
 				}
@@ -148,16 +152,19 @@
 
 			$methods = array_filter($patterns, function ($pattern) {
 
-				return preg_match("/[a-z]/", $pattern);
+				return preg_match("/". CollectionMethodToUrl::PLACEHOLDER_IDENTIFIER ."/", $pattern);
 			});
 
 			$values = array_map(function ($pattern) {
 
-				$result = $this->urlReplacer->replacePlaceholders($pattern, "[\w-]+");
+				$result = $this->urlReplacer->replacePlaceholders($pattern, self::PLACEHOLDER_REPLACEMENT);
 
-				$this->placeholderStorage->foundSegments($result->getPlaceholders());
 
-				return $result->regexifiedUrl();
+				return [
+					"url" => $result->regexifiedUrl(),
+
+					"placeholders" => $result->getPlaceholders()
+				];
 			}, $methods);
 
 			return array_combine($methods, $values);
@@ -277,7 +284,7 @@
 		}
 
 		// @return Strings<RouteCollection>[]
-		protected function entryRouteMap():array {
+		public function entryRouteMap():array {
 
 			$requestDetails = $this->requestDetails;
 
@@ -306,7 +313,7 @@
 			return $this->patternIndicator;
 		}
 
-		protected function finishCollectionHousekeeping ():void {
+		public function finishCollectionHousekeeping ():void {
 
 			$this->patternIndicator->resetIndications();
 
