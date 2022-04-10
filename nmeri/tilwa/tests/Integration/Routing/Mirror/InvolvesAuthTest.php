@@ -3,7 +3,7 @@
 
 	use Tilwa\Testing\{Condiments\BaseDatabasePopulator, TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
-	use Tilwa\Contracts\{Auth\User, Config\Router};
+	use Tilwa\Contracts\{Auth\UserContract, Config\Router};
 
 	use Tilwa\Auth\Storage\TokenStorage;
 
@@ -29,7 +29,7 @@
 
 		protected function getActiveEntity ():string {
 
-			return User::class;
+			return UserContract::class;
 		}
 
 		public function test_auth_storage_changes () {

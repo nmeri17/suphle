@@ -13,7 +13,7 @@
 
 	class MultiCollectionsTest extends ModuleLevelTest {
 
-		private $threeTierUrl = "/first/middle/third";
+		private $threeTierUrl = "/api/v2/first/middle/third";
 
 		protected function getModules():array {
 
@@ -34,7 +34,7 @@
 			];
 		}
 
-		public function test_needs_recovery_from_misleading_trail () {
+		public function test_needs_recovery_from_misleading_trail () { // it incorrectly fails after running first entrance. check what array is received by $this->entryRouteMap()
 
 			$this->stubIndicator(); // given
 

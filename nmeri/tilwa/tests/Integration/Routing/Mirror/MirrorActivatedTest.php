@@ -21,12 +21,16 @@
 
 			$matchingRenderer = $this->fakeRequest("/api/v1/segment"); // when
 
+			$this->assertNotNull($matchingRenderer);
+
 			$this->assertTrue($matchingRenderer->matchesHandler("plainSegment")); // then
 		}
 
 		public function test_can_override_browser_route () {
 
 			$matchingRenderer = $this->fakeRequest("/api/v1/segment/5"); // when
+
+			$this->assertNotNull($matchingRenderer);
 
 			$this->assertTrue($matchingRenderer->matchesHandler("simplePairOverride")); // then
 		}

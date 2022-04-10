@@ -13,5 +13,9 @@
 		}
 
 		public function preloaded () {}
+
+		public function parentFlow () {}
+
+		public function handleChildFlow () {}
 	}
 ?>

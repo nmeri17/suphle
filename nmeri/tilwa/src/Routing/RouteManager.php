@@ -106,12 +106,17 @@
 			if ( in_array($literalMatch, $patterns))
 
 				return new PlaceholderCheck($fullRouteState, $literalMatch);
+			
+			$indexMethodIndex = array_search($this->indexMethod, $patterns);
 
-			if ($fullRouteState == "" )
+			if ($indexMethodIndex !== false) {
 
-				return $this->indexMethodToPattern( $patterns);
+				if ($fullRouteState == "" )
 
-			unset($patterns[array_search($this->indexMethod, $patterns)]); // since we're sure it's not the one, no need to confuse the other guys, who will always "partially" match an empty string
+					return new PlaceholderCheck("", $this->indexMethod );
+
+				unset($patterns[$indexMethodIndex]); // since we're sure it's not the one, no need to confuse the other guys, who will always "partially" match an empty string
+			}
 
 			return $this->methodPartiallyMatchPattern($fullRouteState, $patterns);
 		}
@@ -135,15 +140,6 @@
 					return new PlaceholderCheck($matchedSegment, $methodPattern );
 				}
 			}
-
-			return null;
-		}
-
-		private function indexMethodToPattern ( array $patterns):?PlaceholderCheck {
-
-			if ( in_array($this->indexMethod, $patterns))
-
-				return new PlaceholderCheck("", $this->indexMethod );
 
 			return null;
 		}

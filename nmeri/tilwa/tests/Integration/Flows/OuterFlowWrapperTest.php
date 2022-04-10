@@ -13,15 +13,7 @@
 
 	class OuterFlowWrapperTest extends JobFactory {
 
-		use EmittedEventsCatcher {
-
-			EmittedEventsCatcher::setUp as eventsSetup;
-		}
-
-		public function setUp ():void {
-
-			$this->eventsSetup();
-		}
+		use EmittedEventsCatcher;
 
 		protected function getModules():array {
 
@@ -39,7 +31,7 @@
 
 		public function test_will_emitEvents_after_returning_flow_request() {
 
-			$this->handleFlowJob();
+			$this->handleFlowJob(); // running this ought to generate content for url below. It's not meant to hit the router. start debugging from whether job runs and how it runs
 
 			$this->get($this->userUrl); // when
 

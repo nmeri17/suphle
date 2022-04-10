@@ -33,7 +33,9 @@
 
 			$this->stubSingle([
 
-				"getLoginHandler" => $this->mockLoginHandler() // then
+				"getLoginHandler" => $this->mockLoginHandler(), // then
+
+				$sut
 			]); // given
 
 			// when

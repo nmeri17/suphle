@@ -23,8 +23,6 @@
 
 			$this->bootContainer($container);
 
-			$this->withDefaultInterfaceCollection($container);
-
 			$writer = new WriteOnlyContainer($container); // using unique instances rather than a fixed one so test can make multiple calls to clone modules
 
 			$customizer($writer);

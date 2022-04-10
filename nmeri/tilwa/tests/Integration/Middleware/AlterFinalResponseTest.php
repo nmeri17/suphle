@@ -3,7 +3,7 @@
 
 	use Tilwa\Contracts\Config\Router;
 
-	use Tilwa\Middleware\FinalHandlerWrapper;
+	use Tilwa\Middleware\Handlers\FinalHandlerWrapper;
 
 	use Tilwa\Testing\{ TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer };
 
@@ -38,9 +38,9 @@
 				"process" => ["foo" => "bar"]
 			]);
 
-			$this->getModuleFor(ModuleOne::class)->getContainer()
+			$this->getModules()[0]->getContainer()->whenTypeAny() // safe to happen here since modules are booted for each test, as compared to doing this on app entry
 
-			->whenTypeAny()->needsAny([
+			->needsAny([
 
 				$finalName => $finalMiddleware
 			]);

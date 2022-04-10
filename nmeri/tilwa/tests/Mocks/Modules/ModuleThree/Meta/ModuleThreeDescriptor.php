@@ -3,7 +3,7 @@
 
 	use Tilwa\Modules\ModuleDescriptor;
 
-	use Tilwa\Tests\Mocks\Interactions\{ModuleThree/*, ModuleThree*/};
+	use Tilwa\Tests\Mocks\Interactions\{ModuleThree, ModuleOne};
 
 	class ModuleThreeDescriptor extends ModuleDescriptor {
 

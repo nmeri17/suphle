@@ -9,32 +9,33 @@
 
 	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
-	use Prophecy\Argument;
-
 	class FinalHandlerWrapperTest extends IsolatedComponentTest {
 
 		public function test_extracts_from_response_manager () {
 
 			$sutName = ResponseManager::class;
 
-			$mockManager = $this->prophesize($sutName);
+			$mockManager = $this->positiveDouble($sutName, [], [ // then
 
-			// then
-			$mockManager->handleValidRequest(Argument::type(PayloadStorage::class))->shouldBeCalled();
+				"handleValidRequest" => [1, [$this->callback(function($subject) {
 
-			$mockManager->afterRender()->shouldBeCalled();
+					return $subject instanceof PayloadStorage;
+				})]],
 
-			$mockManager->getResponse()->shouldBeCalled();
+				"afterRender" => [1, []],
+
+				"getResponse" => [1, []]
+			]);
 
 			$this->container->whenTypeAny()->needsAny([
 
-				$sutName => $mockManager->reveal()
+				$sutName => $mockManager
 			]); // given
 
 			$this->container->getClass(FinalHandlerWrapper::class)
 
 			->process(
-				$this->prophesize(PayloadStorage::class)->reveal(),
+				$this->positiveDouble(PayloadStorage::class),
 				null
 			); // when
 		}

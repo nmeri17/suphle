@@ -9,10 +9,7 @@
 
 	class TestEventManager extends DescriptorCollection {
 
-		use EmittedEventsCatcher {
-
-			EmittedEventsCatcher::setUp as eventsSetup;
-		}
+		use EmittedEventsCatcher;
 
 		protected $payload = 5, $mockEventReceiver,
 
@@ -29,8 +26,6 @@
 			$this->setModuleThree();
 
 			$this->setModuleTwo();
-
-			$this->eventsSetup();
 		}
 		
 		protected function getModules ():array {

@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Config;
+	namespace Tilwa\Tests\Mocks\Modules\ModuleThree\Config;
 
 	use Tilwa\Config\Router;
 

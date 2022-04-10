@@ -17,7 +17,7 @@
 
 		$hasPreparedExpatriates = false;
 
-		function __construct (Container $container) {
+		public function __construct (Container $container) {
 			
 			$this->container = $container;
 		}
@@ -153,8 +153,6 @@
 			$this->hasPreparedExpatriates = true;
 
 			$this->validateExpatriates()->empowerExpatriates();
-
-			$this->container->getClass(PayloadStorage::class);
 
 			return $this;
 		}

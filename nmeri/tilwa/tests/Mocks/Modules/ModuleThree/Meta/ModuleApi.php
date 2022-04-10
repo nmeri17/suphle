@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Tests\Mocks\Modules\ModuleThree;
+	namespace Tilwa\Tests\Mocks\Modules\ModuleThree\Meta;
 
 	use Tilwa\Tests\Mocks\Interactions\{ModuleThree, ModuleOne};
 
@@ -19,7 +19,7 @@
 
 		public function changeExternalValueProxy (int $newCount):void {
 
-			return $this->moduleOne->setBCounterValue($newCount);
+			$this->moduleOne->setBCounterValue($newCount);
 		}
 	}
 ?>

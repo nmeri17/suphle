@@ -17,14 +17,9 @@
 
 		public function __construct () {
 
-			$this->container = $this->firstModule()->getContainer();
+			$this->container = current($this->getModules())->getContainer();
 
 			$this->container->provideSelf();
-		}
-
-		protected function firstModule ():DescriptorInterface {
-
-			return current($this->getModules());
 		}
 		
 		abstract protected function getModules():array;

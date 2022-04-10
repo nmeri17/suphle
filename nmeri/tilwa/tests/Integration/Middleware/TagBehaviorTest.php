@@ -13,8 +13,6 @@
 
 	use Tilwa\Tests\Mocks\Interactions\ModuleOne;
 
-	use Prophecy\Argument;
-
 	class TagBehaviorTest extends ModuleLevelTest {
 
 		private $moduleOne;
@@ -41,16 +39,16 @@
 
 			return [$this->moduleOne];
 		}
+
+		private function mockMiddleware (string $className, ?int $numTimes, array $additionalMocks = []) {
+
+			return $this->positiveDouble($className, [], array_merge([
+
+				"process" => [$numTimes, []]
+			], $additionalMocks));
+		}
  
 		public function test_multi_patterns_to_single_tag_should_work () {
-
-			$blank1 = $this->prophesize(BlankMiddleware::class)
-
-			->process()->shouldBeCalled();
-
-			$blank2 = $this->prophesize(BlankMiddleware2::class)
-
-			->process()->shouldNotBeCalled();
 
 			// given => @see [getModules]
 			// then 
@@ -58,9 +56,9 @@
 
 			->whenTypeAny()->needsAny([
 
-				BlankMiddleware::class => $blank1->reveal(),
+				BlankMiddleware::class => $this->mockMiddleware(BlankMiddleware::class, 1),
 
-				BlankMiddleware2::class => $blank2->reveal()
+				BlankMiddleware2::class => $this->mockMiddleware(BlankMiddleware2::class, 0)
 			]);
 
 			$this->get("/first-single"); // when
@@ -68,23 +66,15 @@
  
 		public function test_single_pattern_multi_tags_should_work () {
 
-			$blank1 = $this->prophesize(BlankMiddleware::class)
-
-			->process()->shouldBeCalled();
-
-			$blank2 = $this->prophesize(BlankMiddleware2::class)
-
-			->process()->shouldBeCalled();
-
 			// given => @see [getModules]
 			// then 
 			$this->moduleOne->getContainer()
 
 			->whenTypeAny()->needsAny([
 
-				BlankMiddleware::class => $blank1->reveal(),
+				BlankMiddleware::class => $this->mockMiddleware(BlankMiddleware::class, 1),
 
-				BlankMiddleware2::class => $blank2->reveal()
+				BlankMiddleware2::class => $this->mockMiddleware(BlankMiddleware2::class, 1)
 			]);
 
 			$this->get("/second-single"); // when
@@ -92,29 +82,17 @@
  
 		public function test_single_pattern_multi_middleware_should_work () {
 
-			$blank1 = $this->prophesize(BlankMiddleware::class)
-
-			->process()->shouldNotBeCalled();
-
-			$blank3 = $this->prophesize(BlankMiddleware3::class)
-
-			->process()->shouldBeCalled();
-
-			$blank4 = $this->prophesize(BlankMiddleware4::class)
-
-			->process()->shouldBeCalled();
-
 			// given => @see [getModules]
 			// then 
 			$this->moduleOne->getContainer()
 
 			->whenTypeAny()->needsAny([
 
-				BlankMiddleware::class => $blank1->reveal(),
+				BlankMiddleware::class => $this->mockMiddleware(BlankMiddleware::class, 0),
 
-				BlankMiddleware3::class => $blank3->reveal(),
+				BlankMiddleware3::class => $this->mockMiddleware(BlankMiddleware3::class, 1),
 
-				BlankMiddleware4::class => $blank4->reveal()
+				BlankMiddleware4::class => $this->mockMiddleware(BlankMiddleware4::class, 1)
 			]);
 
 			$this->get("/third-single"); // when
@@ -122,23 +100,15 @@
 
 		public function test_parent_tag_affects_child () {
 
-			$blank1 = $this->prophesize(BlankMiddleware::class)
-
-			->process()->shouldBeCalled();
-
-			$blank2 = $this->prophesize(BlankMiddleware2::class)
-
-			->process()->shouldNotBeCalled();
-
 			// given => @see [getModules]
 			// then 
 			$this->moduleOne->getContainer()
 
 			->whenTypeAny()->needsAny([
 
-				BlankMiddleware::class => $blank1->reveal(),
+				BlankMiddleware::class => $this->mockMiddleware(BlankMiddleware::class, 1),
 
-				BlankMiddleware2::class => $blank2->reveal()
+				BlankMiddleware2::class => $this->mockMiddleware(BlankMiddleware2::class, 0)
 			]);
 
 			$this->get("/fifth-single/segment"); // when
@@ -146,23 +116,15 @@
 
 		public function test_can_untag_multiple_patterns () {
 
-			$blank2 = $this->prophesize(BlankMiddleware2::class)
-
-			->process()->shouldBeCalled();
-
-			$blank4 = $this->prophesize(BlankMiddleware4::class)
-
-			->process()->shouldNotBeCalled();
-
 			// given => @see [getModules]
 			// then 
 			$this->moduleOne->getContainer()
 
 			->whenTypeAny()->needsAny([
 
-				BlankMiddleware2::class => $blank2->reveal(),
+				BlankMiddleware2::class => $this->mockMiddleware(BlankMiddleware2::class, 1),
 
-				BlankMiddleware4::class => $blank4->reveal()
+				BlankMiddleware4::class => $this->mockMiddleware(BlankMiddleware4::class, 0)
 			]);
 
 			$this->get("/fourth-single/second-untag"); // when
@@ -170,29 +132,17 @@
 
 		public function test_can_untag_multiple_middlewares () {
 
-			$blank2 = $this->prophesize(BlankMiddleware2::class)
-
-			->process()->shouldNotBeCalled();
-
-			$blank3 = $this->prophesize(BlankMiddleware3::class)
-
-			->process()->shouldNotBeCalled();
-
-			$blank4 = $this->prophesize(BlankMiddleware4::class)
-
-			->process()->shouldBeCalled();
-
 			// given => @see [getModules]
 			// then 
 			$this->moduleOne->getContainer()
 
 			->whenTypeAny()->needsAny([
 
-				BlankMiddleware2::class => $blank2->reveal(),
+				BlankMiddleware2::class => $this->mockMiddleware(BlankMiddleware2::class, 0),
 
-				BlankMiddleware3::class => $blank3->reveal(),
+				BlankMiddleware3::class => $this->mockMiddleware(BlankMiddleware3::class, 0),
 
-				BlankMiddleware4::class => $blank4->reveal()
+				BlankMiddleware4::class => $this->mockMiddleware(BlankMiddleware4::class, 1)
 			]);
 
 			$this->get("/fourth-single/third-untag"); // when
@@ -200,23 +150,26 @@
 
 		public function test_final_middleware_has_no_request_handler () {
 
-			$middlewareList = $this->moduleOne
+			$middlewareList = $this->moduleOne->getContainer()
 
-			->getContainer()->getClass(Router::class)
-
-			->defaultMiddleware();
+			->getClass(Router::class)->defaultMiddleware();
 
 			$lastMiddleware = end($middlewareList);
-			
-			$mockMiddleware = $this->prophesize($lastMiddleware)
 
-			->process(Argument::type(RequestDetails::class), Argument::exact(null)); // then
+			$this->moduleOne->getContainer()->whenTypeAny()->needsAny([
 
-			$this->moduleOne->getContainer()
+				$lastMiddleware => $this->mockMiddleware($lastMiddleware, null, [
 
-			->whenTypeAny()->needsAny([
+					"process" => [1, [
 
-				$lastMiddleware => $mockMiddleware->reveal()
+						$this->callback(function ($subject) {
+
+							return $subject instanceof RequestDetails;
+						}),
+
+						$this->equalTo(null)
+					]]
+				]) // then
 			]);
 
 			$this->get("/first-single"); // when

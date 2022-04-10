@@ -50,9 +50,9 @@
 				}), $this->anything()]]
 			]);
 
-			$this->getModuleFor(ModuleOne::class)->getContainer()
+			$this->getModules()[0]->getContainer()->whenTypeAny()
 
-			->whenTypeAny()->needsAny([
+			->needsAny([
 
 				$sutName => $hierarchial2
 			]);

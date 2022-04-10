@@ -24,20 +24,28 @@
 		
 		public function test_findContext() {
 
-			$$sut = new ModuleToRoute($this->getModules()); // given
+			$sut = new ModuleToRoute();
 
 			$this->setHttpParams("/module-two/5"); // when
 
-			$this->assertNotNull($sut->findContext()); // then
+			$this->assertNotNull($sut->findContext(
+
+				$this->getModules() // given
+
+			)); // then
 		}
 		
 		public function test_none_will_be_found() {
 
-			$sut = new ModuleToRoute($this->getModules()); // given
+			$sut = new ModuleToRoute();
 
 			$this->setHttpParams("/non-existent/32"); // when
 
-			$this->assertNull($sut->findContext());
+			$this->assertNull($sut->findContext(
+
+				$this->getModules() // given
+
+			)); // then
 		}
 	}
 ?>

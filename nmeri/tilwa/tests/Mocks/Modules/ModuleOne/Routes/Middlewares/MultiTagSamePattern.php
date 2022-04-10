@@ -70,7 +70,7 @@
 
 				[ BlankMiddleware2::class, BlankMiddleware4::class, BlankMiddleware3::class]
 			)
-			->tagPatterns(["NEGOTIATE"], JsonNegotiator::class);
+			->tagPatterns(["NEGOTIATE"], [JsonNegotiator::class]);
 		}
 	}
 ?>

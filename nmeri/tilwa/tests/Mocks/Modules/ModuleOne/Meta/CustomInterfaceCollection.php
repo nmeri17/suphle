@@ -14,7 +14,7 @@
 	class CustomInterfaceCollection extends BaseInterfaceCollection {
 
 		public function getConfigs ():array {
-			
+
 			return array_merge(parent::getConfigs(), [
 
 				Events::class => EventsMock::class,

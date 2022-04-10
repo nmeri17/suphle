@@ -5,29 +5,18 @@
 
 	use Tilwa\Modules\ModulesBooter;
 
-	use Tilwa\Events\EventSubscription;
+	use Tilwa\Events\{EventSubscription, ModuleLevelEvents};
 
 	trait EmittedEventsCatcher {
 
 		private $eventManager;
 
-		/**
-		 * We avoid calling parent::setUp here, to circumvent the actual listeners getting bound, which would result in both stubed and real event managers running
-		 * 
-		 * Tests making use of this trait are expected to only call its [setUp], and not that of [parent]
-		*/
-		protected function setUp ():void {
-
-			$modules = $this->getModules();
-
-			$this->eventManager = new MockModuleEvents($modules);
-
-			(new ModulesBooter($modules, $this->eventManager))
-
-			->bootAll()->prepareFirstModule();
-		}
-
 		abstract protected function getModules ():array;
+
+		protected function getEventParent ():?ModuleLevelEvents {
+
+			return $this->eventManager = new MockModuleEvents($this->modules);
+		}
 
 		protected function assertFiredEvent (string $emitter, string $eventName):void {
 

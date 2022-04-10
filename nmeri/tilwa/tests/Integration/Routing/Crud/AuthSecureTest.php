@@ -5,7 +5,7 @@
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Routes\Crud\AuthenticateCrudCollection, Config\RouterMock};
 
-	use Tilwa\Contracts\{Auth\User, Config\Router};
+	use Tilwa\Contracts\{Auth\UserContract, Config\Router};
 
 	class AuthSecureTest extends ModuleLevelTest {
 
@@ -27,7 +27,7 @@
 
 		protected function getActiveEntity ():string {
 
-			return User::class;
+			return UserContract::class;
 		}
 
 		public function test_no_authenticated_user_throws_error () {
