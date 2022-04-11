@@ -3,7 +3,7 @@
 
 	use Tilwa\Auth\TokenStorage;
 
-	use Tilwa\Routing\Crud\{BaseBuilder, ApiBuilder};
+	use Tilwa\Routing\Crud\ApiBuilder;
 
 	use Tilwa\Request\PathAuthorizer;
 
@@ -16,7 +16,7 @@
 			parent::__construct($validator, $authStorage, $middlewareRegistry, $pathAuthorizer);
 		}
 
-		protected function _crudJson ():BaseBuilder {
+		protected function _crudJson ():CrudBuilder {
 
 			$this->crudMode = true;
 

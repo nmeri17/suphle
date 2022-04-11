@@ -23,6 +23,7 @@
     19 => 'Illuminate\\Translation\\TranslationServiceProvider',
     20 => 'Illuminate\\Validation\\ValidationServiceProvider',
     21 => 'Illuminate\\View\\ViewServiceProvider',
+    22 => 'Tilwa\\Tests\\Mocks\\Modules\\ModuleOne\\Bridge\\Laravel\\ServiceProviders\\RegistersRouteProvider',
   ),
   'eager' => 
   array (
@@ -36,6 +37,7 @@
     7 => 'Illuminate\\Pagination\\PaginationServiceProvider',
     8 => 'Illuminate\\Session\\SessionServiceProvider',
     9 => 'Illuminate\\View\\ViewServiceProvider',
+    10 => 'Tilwa\\Tests\\Mocks\\Modules\\ModuleOne\\Bridge\\Laravel\\ServiceProviders\\RegistersRouteProvider',
   ),
   'deferred' => 
   array (

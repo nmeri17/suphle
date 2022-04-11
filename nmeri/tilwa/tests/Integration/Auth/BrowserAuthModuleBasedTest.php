@@ -1,11 +1,11 @@
 <?php
 	namespace Tilwa\Tests\Integration\Auth;
 
+	use Tilwa\Contracts\{Auth\AuthStorage, Config\Router};
+
+	use Tilwa\Adapters\Orms\Eloquent\Models\User as EloquentUser;
+
 	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\BaseDatabasePopulator, Proxies\WriteOnlyContainer};
-
-	use Tilwa\Contracts\Auth\{AuthStorage, UserContract};
-
-	use Tilwa\Contracts\Config\Router;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Routes\Auth\SecureBrowserCollection, Config\RouterMock};
 
@@ -29,7 +29,7 @@
 
 		protected function getActiveEntity ():string {
 
-			return UserContract::class;
+			return EloquentUser::class;
 		}
 
 		public function test_cant_resume_auth_session_after_logout () {

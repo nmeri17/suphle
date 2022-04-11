@@ -3,8 +3,6 @@
 
 	use Tilwa\Contracts\Auth\AuthStorage;
 
-	use Tilwa\Routing\Crud\BaseBuilder;
-
 	use Tilwa\Request\PathAuthorizer;
 
 	use Tilwa\Middleware\MiddlewareRegistry;
@@ -29,7 +27,7 @@
 
 		public function _expectsCrud ():bool;
 
-		public function _crud (string $viewPath, string $viewModelPath = null):BaseBuilder;
+		public function _crud (string $viewPath, string $viewModelPath = null):CrudBuilder;
 
 		public function _getLastRegistered ():array;
 

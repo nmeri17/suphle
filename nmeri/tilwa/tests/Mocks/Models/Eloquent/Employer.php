@@ -5,6 +5,8 @@
 
 	use Tilwa\Adapters\Orms\Eloquent\Models\BaseModel;
 
+	use Illuminate\Database\Eloquent\Factories\Factory;
+
 	class Employer extends BaseModel {
 
 		public function employments () {

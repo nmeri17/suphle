@@ -3,9 +3,14 @@
 
 	use Tilwa\Routing\BaseCollection;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\Prefix\UnchainParentSecurity;
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Prefix\UnchainParentSecurity, Controllers\BaseController};
 
 	class UpperCollection extends BaseCollection {
+
+		public function _handlingClass ():string {
+
+			BaseController::class;
+		}
 
 		public function _authenticatedPaths():array {
 

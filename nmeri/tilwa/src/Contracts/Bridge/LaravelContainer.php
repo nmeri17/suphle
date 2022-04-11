@@ -22,6 +22,8 @@
 		public function injectBindings (array $bindings):void;
 
 		public function runContainerBootstrappers ():void;
+
+		public function createSandbox (callable $explosive);
 	}
 ?>
 

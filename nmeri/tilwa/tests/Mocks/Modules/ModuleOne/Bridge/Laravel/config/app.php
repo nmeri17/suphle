@@ -1,5 +1,7 @@
 <?php
 
+    use Tilwa\Tests\Mocks\Modules\ModuleOne\Bridge\Laravel\ServiceProviders\RegistersRouteProvider;
+
 return [
 
     /*
@@ -169,13 +171,13 @@ return [
         /*
          * Application Service Providers...
 
-         commenting these out since they don't exist and are not expected to exist. We don't have need for them. if you have need for any (RouteServiceProvider), uncomment it
+         commenting these out since they don't exist and are not expected to exist. We don't have need for them. if you have need for any (AppServiceProvider), uncomment it
          */
         /*App\Providers\AppServiceProvider::class,
         App\Providers\AuthServiceProvider::class,
         // App\Providers\BroadcastServiceProvider::class,
-        App\Providers\EventServiceProvider::class,
-        App\Providers\RouteServiceProvider::class,*/
+        App\Providers\EventServiceProvider::class,*/
+        RegistersRouteProvider::class,
 
     ],
 

@@ -34,11 +34,14 @@
 
 			$initialized->injectBindings($initialized->defaultBindings()); // required for below call
 
-			(new ConfigFileFinder)
+			$initialized->createSandbox(function () use ($initialized) {
 
-			->loadConfigurationFiles($initialized, $this->configLoader);
+				(new ConfigFileFinder)
 
-			$initialized->runContainerBootstrappers();
+				->loadConfigurationFiles($initialized, $this->configLoader);
+
+				$initialized->runContainerBootstrappers();
+			});
 		}
 
 		public function concrete():string {

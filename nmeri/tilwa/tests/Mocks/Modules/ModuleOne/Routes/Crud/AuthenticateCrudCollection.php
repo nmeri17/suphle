@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Routes;
+	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\Crud;
 
 	use Tilwa\Routing\BaseCollection;
 

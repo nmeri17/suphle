@@ -1,15 +1,15 @@
 <?php
 	namespace Tilwa\Routing;
 
-	use Tilwa\Response\Format\AbstractRenderer;
-
 	use Tilwa\Request\PathAuthorizer;
 
-	use Tilwa\Routing\Crud\{BaseBuilder, BrowserBuilder};
+	use Tilwa\Routing\Crud\BrowserBuilder;
 
 	use Tilwa\Middleware\MiddlewareRegistry;
 
-	use Tilwa\Contracts\{Routing\RouteCollection, Auth\AuthStorage, Presentation\BaseRenderer};
+	use Tilwa\Contracts\{ Auth\AuthStorage, Presentation\BaseRenderer};
+
+	use Tilwa\Contracts\Routing\{RouteCollection, CrudBuilder};
 
 	abstract class BaseCollection implements RouteCollection {
 
@@ -36,7 +36,7 @@
 		/**
 		 * `save` must be called in the invoking method
 		*/
-		public function _crud (string $viewPath, string $viewModelPath = null):BaseBuilder {
+		public function _crud (string $viewPath, string $viewModelPath = null):CrudBuilder {
 
 			$this->crudMode = true;
 

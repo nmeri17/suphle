@@ -399,18 +399,18 @@
 
 			$freshlyCreated = $this->initializeHydratingForAction ($fullName, function ($className) {
 
-				if (!method_exists($className, $this->constructor))
+				if (!method_exists($className, $this->constructor)) // note that this throws a fatal, uncatchable error when class is in an unparseable state like missing abstract method or contract implementation
 
 					return new HydratedConcrete(new $className, $this->lastHydratedFor() );
 
 				return $this->hydrateConcreteForCaller($className);
 			});
 
-			$this->storeConcrete($fullName, $freshlyCreated->getConcrete());
-
 			$concrete = $freshlyCreated->getConcrete();
 
 			$decorator = $this->getDecorator();
+
+			$this->storeConcrete($fullName, $concrete);
 
 			return $decorator ? $decorator->scopeInjecting(
 				

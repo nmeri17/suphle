@@ -42,6 +42,9 @@
 			$replicator->setupSchema();
 		}
 
+		/**
+		 * Does not take interfaces
+		*/
 		abstract protected function getActiveEntity ():string;
 
 		protected function tearDown ():void {

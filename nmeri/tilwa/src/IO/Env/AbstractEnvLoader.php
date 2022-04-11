@@ -22,9 +22,9 @@
 			$this->validateFields();
 		}
 
-		public function getField (string $name) {
+		public function getField (string $name, $defaultValue = null) {
 
-			return $_ENV[$name];
+			return $_ENV[$name] ?? $defaultValue;
 		}
 
 		/**

@@ -13,11 +13,21 @@
 
 	use Illuminate\Foundation\Bootstrap\{RegisterFacades, RegisterProviders};
 
+	use ReflectionClass;
+
 	class LaravelAppConcrete extends Application implements LaravelContainer {
 
 		private $requestDetails, $configLoader, // these bindings are stored here rather than on the config in order to avoid circular dependencies between that config and configLoader
 
-		$payloadStorage;
+		$payloadStorage,
+
+		$helpers = [
+			"Collections/helpers.php", "Events/functions.php",
+
+			"Foundation/helpers.php", "Support/helpers.php"
+		];
+
+		private static $hasSetApp = false;
 
 		protected $kernelBootstrappers = [
 
@@ -71,6 +81,39 @@
 			foreach ($this->kernelBootstrappers as $bootstrapper)
 
 				(new $bootstrapper)->bootstrap($this);
+		}
+
+		public function createSandbox (callable $explosive) {
+
+			$this->requireHelpers(); // we need this file active while running their routes so it can pick [view()]
+
+			if (!self::$hasSetApp) {
+
+				function app () { // override their definition
+
+					return $this;
+				}
+
+				self::$hasSetApp = true;
+			}
+
+			$result = $explosive();
+
+			// use get_defined_functions() and possibly reflection to unset functions declared in those files
+			return $result;
+		}
+
+		private function requireHelpers ():void {
+
+			$knownClass = new ReflectionClass(Application::class);
+
+			$rootArray = explode("\\", $knownClass->getFileName(), -2);
+
+			$packageRoot = implode(DIRECTORY_SEPARATOR, $rootArray);
+
+			foreach ($this->helpers as $relativePath)
+
+				require_once $packageRoot . DIRECTORY_SEPARATOR . $relativePath;
 		}
 	}
 ?>

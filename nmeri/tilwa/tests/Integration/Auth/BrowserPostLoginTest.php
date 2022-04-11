@@ -1,11 +1,13 @@
 <?php
 	namespace Tilwa\Tests\Integration\Auth;
 
-	use Tilwa\Testing\{Condiments\BaseDatabasePopulator, Proxies\SecureUserAssertions, TestTypes\IsolatedComponentTest};
-
-	use Tilwa\Contracts\Auth\{AuthStorage, UserContract};
+	use Tilwa\Contracts\Auth\AuthStorage;
 
 	use Tilwa\Auth\SessionStorage;
+
+	use Tilwa\Adapters\Orms\Eloquent\Models\User as EloquentUser;
+
+	use Tilwa\Testing\{Condiments\BaseDatabasePopulator, Proxies\SecureUserAssertions, TestTypes\IsolatedComponentTest};
 
 	use Tilwa\Tests\Integration\Generic\CommonBinds;
 
@@ -15,7 +17,7 @@
 
 		protected function getActiveEntity ():string {
 
-			return UserContract::class;
+			return EloquentUser::class;
 		}
 
 		public function test_session_impersonate () {

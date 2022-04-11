@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "fd9ff990ab89024e83a363868843ee17",
+    "content-hash": "55defd5e69ed16c2b3addd8dc0a81369",
     "packages": [
         {
             "name": "anorgan/qutee",
@@ -1583,6 +1583,57 @@
                 "source": "https://github.com/Level-2/Transphporm/tree/v1.5.1"
             },
             "time": "2020-08-30T18:48:00+00:00"
+        },
+        {
+            "name": "mcaskill/composer-exclude-files",
+            "version": "v2.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/mcaskill/composer-plugin-exclude-files.git",
+                "reference": "0d481db018d5849e87f87cc3145a2cbf0135e428"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/mcaskill/composer-plugin-exclude-files/zipball/0d481db018d5849e87f87cc3145a2cbf0135e428",
+                "reference": "0d481db018d5849e87f87cc3145a2cbf0135e428",
+                "shasum": ""
+            },
+            "require": {
+                "composer-plugin-api": "^1.0 || ^2.0",
+                "php": "^5.3.2 || ^7.0 || ^8.0"
+            },
+            "require-dev": {
+                "composer/composer": "^1.0 || ^2.0",
+                "symfony/phpunit-bridge": "^4.2 || ^5.0 || ^6.0"
+            },
+            "type": "composer-plugin",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "2.x-dev"
+                },
+                "class": "McAskill\\Composer\\ExcludeFilePlugin"
+            },
+            "autoload": {
+                "psr-4": {
+                    "McAskill\\Composer\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Chauncey McAskill",
+                    "email": "chauncey@mcaskill.ca"
+                }
+            ],
+            "description": "Exclude files from autoload_files.php",
+            "support": {
+                "issues": "https://github.com/mcaskill/composer-plugin-exclude-files/issues",
+                "source": "https://github.com/mcaskill/composer-plugin-exclude-files/tree/v2.1.0"
+            },
+            "time": "2022-04-01T04:35:29+00:00"
         },
         {
             "name": "monolog/monolog",
@@ -6968,7 +7019,9 @@
     },
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
+    "platform": {
+        "php": "^7.3.5"
+    },
     "platform-dev": [],
     "plugin-api-version": "2.1.0"
 }

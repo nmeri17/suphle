@@ -85,9 +85,11 @@
 		}
 		
 		/**
+		 * @param {value} Nullable since not all collection nodes take a value
+		 * 
 		 * @dataProvider getCollectionNodes
 		*/
-		public function test_collection_triggers_underlying_format (CollectionNode $unitNode, string $handler, $value ) {
+		public function test_collection_triggers_underlying_format (CollectionNode $unitNode, string $handler, $value = null ) {
 
 			$sut = $this->getHydratorForRunNode($handler, $value);
 

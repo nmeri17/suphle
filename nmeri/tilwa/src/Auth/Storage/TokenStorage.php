@@ -3,11 +3,11 @@
 
 	use Firebase\JWT\JWT;
 
-	use Tilwa\Contracts\{UserHydrator, Config\AuthContract};
-
-	use Throwable;
+	use Tilwa\Contracts\{Auth\UserHydrator, Config\AuthContract};
 
 	use Tilwa\Request\PayloadStorage;
+
+	use Throwable;
 
 	class TokenStorage extends BaseAuthStorage {
 
@@ -47,7 +47,7 @@
 			
 			$issuedAt = time();
 
-			$config = $this->config;
+			$config = $this->authConfig;
 			
 			$token = [
 				"iss" => $config->getTokenIssuer(),

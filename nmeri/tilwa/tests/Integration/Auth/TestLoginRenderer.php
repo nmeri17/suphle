@@ -1,13 +1,15 @@
 <?php
 	namespace Tilwa\Tests\Integration\Auth;
 
-	use Tilwa\Adapters\Orms\Eloquent\Models\User;
+	use Tilwa\Adapters\Orms\Eloquent\Models\User as EloquentUser;
 
 	use Tilwa\Contracts\Auth\ModuleLoginHandler;
 
-	use Tilwa\Testing\{ Condiments\BaseDatabasePopulator, TestTypes\IsolatedComponentTest };
+	use Tilwa\Routing\RouteManager;
 
-	use Tilwa\Testing\Proxies\SecureUserAssertions;
+	use Tilwa\Response\Format\Markup;
+
+	use Tilwa\Testing\{ Condiments\BaseDatabasePopulator, TestTypes\IsolatedComponentTest, Proxies\SecureUserAssertions };
 
 	use Tilwa\Tests\Integration\Generic\CommonBinds;
 
@@ -27,12 +29,21 @@
 
 		protected function getActiveEntity ():string {
 
-			return User::class;
+			return EloquentUser::class;
 		}
 
 		protected function getLoginResponse () {
 
-			$this->container->getClass(ModuleLoginHandler::class)->getResponse();
+			$routerName = RouteManager::class;
+
+			$this->container->whenTypeAny()->needsAny([
+
+				$routerName => $this->positiveDouble($routerName, [
+
+					"getPreviousRenderer" => $this->positiveDouble(Markup::class)
+				]) // since we're just sending a post request without an initial get
+			])
+			->getClass(ModuleLoginHandler::class)->getResponse();
 		}
 
 		protected function injectLoginRenderer (int $successCount, int $failureCount):void {

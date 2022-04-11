@@ -1,13 +1,13 @@
 <?php
 	namespace Tilwa\Tests\Integration\Routing\Canaries;
 
+	use Tilwa\Testing\{Condiments\BaseDatabasePopulator, Proxies\SecureUserAssertions};
+
+	use Tilwa\Adapters\Orms\Eloquent\Models\User as EloquentUser;
+
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\CanaryRoutes;
 
 	use Tilwa\Tests\Integration\Routing\TestsRouter;
-
-	use Tilwa\Testing\{Condiments\BaseDatabasePopulator, Proxies\SecureUserAssertions};
-
-	use Tilwa\Contracts\Auth\UserContract;
 
 	class CanaryUserTest extends TestsRouter {
 
@@ -20,7 +20,7 @@
 
 		protected function getActiveEntity ():string {
 
-			return UserContract::class;
+			return EloquentUser::class;
 		}
 
 		/**

@@ -1,7 +1,9 @@
 <?php
 	namespace Tilwa\Routing\Crud;
 
-	abstract class BaseBuilder {
+	use Tilwa\Contracts\Routing\CrudBuilder;
+
+	abstract class BaseBuilder implements CrudBuilder {
 
 		private $idPlaceholder = "id";
 

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <phpunit
+	colors = "true"
 	convertErrorsToExceptions = "false" 
 	convertNoticesToExceptions = "false"
 	convertWarningsToExceptions = "false"
@@ -22,10 +23,10 @@
 	<php>
 		<ini name="error_reporting" value="-1" /><!-- 
 		<ini name="display_errors" value="1" />
-		<ini name="display_startup_errors" value="1" /> -->
+		<ini name="display_startup_errors" value="1" /> --><!-- 
 		<env name="DATABASE_USER" value="test" />
 		<env name="DATABASE_PASS" value="password" />
 		<env name="DATABASE_NAME" value="thing_test" />
-		<env name="DATABASE_HOST" value="127.0.0.1" />
+		<env name="DATABASE_HOST" value="127.0.0.1" /> -->
 	</php>
 </phpunit>

@@ -54,7 +54,7 @@
 
 		public function getTokenIssuer ():string {
 
-			return $this->envAccessor->getField("SITE_HOST");
+			return $this->envAccessor->getField("SITE_HOST", "http://localhost");
 		}
 
 		public function getTokenTtl ():int {
