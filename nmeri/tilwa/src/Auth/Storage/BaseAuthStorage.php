@@ -1,13 +1,13 @@
 <?php
 	namespace Tilwa\Auth\Storage;
 
-	use Tilwa\Contracts\Auth\{AuthStorage, User};
+	use Tilwa\Contracts\Auth\{AuthStorage, UserContract};
 
 	abstract class BaseAuthStorage implements AuthStorage {
 
 		protected $userHydrator, $authConfig, $user, $identifier;
 
-		public function getUser ():?User {
+		public function getUser ():?UserContract {
 
 			if (is_null($this->identifier)) return null;
 

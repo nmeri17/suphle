@@ -29,7 +29,7 @@
 
 	use Tilwa\Auth\{LoginHandlerInterfaceLoader, Storage\SessionStorage};
 
-	use Tilwa\Adapters\Orms\Eloquent\{UserHydrator as EloquentUserHydrator, Models\User as EloquentUser, ModelReplicator, OrmLoader, DatabaseTester as EloquentTester};
+	use Tilwa\Adapters\Orms\Eloquent\{UserHydrator as EloquentUserHydrator, UserEntityLoader, ModelReplicator, OrmLoader, DatabaseTester as EloquentTester};
 
 	use Tilwa\Adapters\Markups\Transphporm as TransphpormAdapter;
 
@@ -68,7 +68,9 @@
 
 				InferiorImageContract::class => InferiorImageLoader::class,
 
-				ImageThumbnailContract::class => ImageThumbnailLoader::class
+				ImageThumbnailContract::class => ImageThumbnailLoader::class,
+
+				UserContract::class => UserEntityLoader::class
 			];
 		}
 
@@ -77,8 +79,6 @@
 			return [
 
 				HtmlParser::class => TransphpormAdapter::class,
-
-				UserContract::class => EloquentUser::class,
 
 				AuthStorage::class => SessionStorage::class,
 

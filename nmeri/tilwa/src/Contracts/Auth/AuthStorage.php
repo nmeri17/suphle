@@ -16,6 +16,6 @@
 		/**
 		 * @return null when there's no authenticated user
 		*/
-		public function getUser ():?User;
+		public function getUser ():?UserContract;
 	}
 ?>

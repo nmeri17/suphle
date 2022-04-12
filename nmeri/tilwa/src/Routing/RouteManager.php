@@ -189,14 +189,15 @@
 			return null;
 		}
 
-		private function findActiveCrud (array $routePatterns, string $remainderPath):?string {
+		public function findActiveCrud (array $routePatterns, string $remainderPath):?string {
 
 			$matchingCheck = $this->methodPartiallyMatchPattern($remainderPath, $routePatterns);
 
 			if (
 				!is_null($matchingCheck) &&
 
-				$remainderPath == $this->matchRemainder($matchingCheck, $remainderPath ) // no leftover
+				empty($this->matchRemainder($matchingCheck, $remainderPath) // no leftover
+				)
 			)
 
 				return $matchingCheck->getMethodName();

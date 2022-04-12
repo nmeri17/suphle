@@ -1,15 +1,24 @@
 <?php
 	namespace Tilwa\Response\Format;
 
-	use SuperClosure\Serializer;
+	use Opis\Closure\{SerializableClosure, serialize, unserialize};
 
 	class Redirect extends GenericRenderer {
 
 		private $destination;
 
-		function __construct(string $handler, Closure $destination) {
+		/**
+		 * @param Since PDO instances can't be serialized, when using this renderer with PDO in scope, wrap this parameter in a curried/doubly wrapped function
+		 
+		 Arguments for the eventual function is autowired and the return value is used as new request location
 
-			$this->destination = (new Serializer())->serialize($destination); // liquefy it so it can be cached later under previous requests
+		 Function is bound to this object instance
+		*/
+		public function __construct(string $handler, callable $destination) {
+
+			$wrapper = new SerializableClosure($destination);
+
+			$this->destination = serialize($wrapper); // liquefy it so it can be cached later under previous requests
 
 			$this->handler = $handler;
 
@@ -18,11 +27,24 @@
 
 		public function render ():string {
 			
-			$callable = (new Serializer)->unserialize($this->destination)->bindTo($this, $this); // so dev can have access to `rawResponse`
+			$deserialized = unserialize($this->destination)->getClosure();
 
-			$parameters = $this->container->getMethodParameters($this->destination); // autowiring in case next location will be dictated by another library
+			$url = $this->invokeDestination($deserialized);
 
-			$this->headers["Location"] = call_user_func_array($callable, $parameters);
+			$isCurried = is_callable($url);
+
+			if ($isCurried) $url = $this->invokeDestination($url);
+
+			return $this->headers["Location"] = $url;
+		}
+
+		private function invokeDestination (callable $outerFunction):string {
+
+			$parameters = $this->container->getMethodParameters($outerFunction); // autowiring in case next location will be dictated by another library
+
+			$bound = $outerFunction->bindTo($this, $this /*access protected properties*/); // so dev can have access to `rawResponse`
+
+			return call_user_func_array($bound, $parameters);
 		}
 	}
 ?>

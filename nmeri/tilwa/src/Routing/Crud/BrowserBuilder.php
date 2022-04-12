@@ -1,15 +1,17 @@
 <?php
 	namespace Tilwa\Routing\Crud;
 
-	use Tilwa\Response\Format\{Markup, Redirect, Reload, AbstractRenderer};
+	use Tilwa\Routing\MethodSorter;
 
-	use Tilwa\Contracts\Routing\RouteCollection;
+	use Tilwa\Response\Format\{Markup, Redirect, Reload};
 
-	class BrowserBuilder {
+	use Tilwa\Contracts\{Routing\RouteCollection, Presentation\BaseRenderer};
+
+	class BrowserBuilder extends BaseBuilder {
 
 		private $viewPath, $viewModelPath;
 
-		protected $allowedActions = ["showCreateForm", "saveNew", "showAll", "showOne", "updateOne", "delete", "showSearchForm"];
+		protected $allowedActions = ["showCreateForm", "saveNew", "showAll", "showOne", "updateOne", "deleteOne", "showSearchForm"];
 		
 		public function __construct(RouteCollection $collection, string $viewPath, string $viewModelPath = null) {
 
@@ -28,13 +30,17 @@
 		/**
 		 * Redirect to "/resource/new_id"
 		*/
-		protected function saveNew():array {
+		public function saveNew ():array {
 
 			$handler = __FUNCTION__;
 
-			return $this->callParentWith($handler, new Redirect($handler, function () {
+			$prefix = $this->collection->_prefixCurrent();
 
-				return $this->collection->_prefixCurrent() . "/" . $this->rawResponse["resource"]->id; // assumes the controller returns an array containing this key
+			return $this->callParentWith($handler, new Redirect($handler, function () use ($prefix) {
+
+				return function () use ($prefix) {
+					return $prefix . "/" . $this->statusCode/*rawResponse["resource"]->id*/; // assumes the controller returns an array containing this key
+				};
 			}));
 		}
 
@@ -55,13 +61,15 @@
 			return $this->callParentWith($handler, new Reload($handler));
 		}
 
-		protected function deleteOne():array {
+		protected function deleteOne ():array {
 
 			$handler = __FUNCTION__;
 
-			return $this->callParentWith($handler, new Redirect($handler, function () {
+			$prefix = $this->collection->_prefixCurrent();
+
+			return $this->callParentWith($handler, new Redirect($handler, function () use ($prefix) {
 				
-				return $this->collection->_prefixCurrent() . "/";
+				return "$prefix/";
 			}));
 		}
 
@@ -73,7 +81,7 @@
 			return $this->registerMarkupRenderer(__FUNCTION__, "show-search-form");
 		}
 
-		private function callParentWith (string $handler, AbstractRenderer $renderer):array {
+		private function callParentWith (string $handler, BaseRenderer $renderer):array {
 
 			$this->rendererMap[$handler] = $renderer;
 

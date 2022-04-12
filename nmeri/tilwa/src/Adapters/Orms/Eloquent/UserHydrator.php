@@ -1,8 +1,6 @@
 <?php
 	namespace Tilwa\Adapters\Orms\Eloquent;
 
-	use Tilwa\Adapters\Orms\Eloquent\Models\User;
-
 	use Tilwa\Contracts\Auth\{UserContract, UserHydrator as HydratorContract};
 
 	use Tilwa\Request\PayloadStorage;
@@ -11,7 +9,7 @@
 
 		private $blankModel, $payloadStorage;
 
-		public function __construct (User $user, PayloadStorage $payloadStorage) {
+		public function __construct (UserContract $user, PayloadStorage $payloadStorage) {
 
 			$this->blankModel = $user;
 

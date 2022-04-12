@@ -11,17 +11,15 @@
 
 		private $credentials, $connection, $laravelContainer,
 
-		$authStorage, $nativeClient;
+		$nativeClient;
 
-		public function __construct (Database $config, Container $container, LaravelContainer $laravelContainer, AuthStorage $authStorage) {
+		public function __construct (Database $config, Container $container, LaravelContainer $laravelContainer) {
 
 			$this->credentials = $config->getCredentials();
 
 			$this->laravelContainer = $laravelContainer;
 
 			$this->container = $container;
-
-			$this->authStorage = $authStorage;
 		}
 
 		/**
@@ -86,7 +84,11 @@
 
 			if (empty($observers)) return;
 
-			$this->laravelContainer->instance(AuthStorage::class, $this->authStorage);// guards in those observers will be relying on this value
+			$authStorageName = AuthStorage::class;
+
+			$authStorage = $this->container->getClass($authStorageName); // using local rather than instance property for this so it doesn't impede userEntity/model/authStorage from hydrating due to interface concrete circular dependencies
+
+			$this->laravelContainer->instance($authStorageName, $authStorage); // guards in those observers will be relying on this value
 
 			foreach ($observers as $model => $observer) {
 

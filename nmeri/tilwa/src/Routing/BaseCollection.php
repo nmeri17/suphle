@@ -19,13 +19,17 @@
 
 		$canaryValidator, $authStorage;
 
-		private $crudPrefix, $prefixClass, $lastRegistered;
+		private $crudPrefix, $prefixClass, $lastRegistered,
 
-		public function __construct(CanaryValidator $validator, AuthStorage $authStorage) {
+		$methodSorter;
+
+		public function __construct(CanaryValidator $validator, AuthStorage $authStorage, MethodSorter $methodSorter) {
 
 			$this->canaryValidator = $validator;
 
 			$this->authStorage = $authStorage;
+
+			$this->methodSorter = $methodSorter;
 		}
 		
 		public function _prefixCurrent():string {
@@ -92,18 +96,12 @@
 				return $name;
 			}, $methods);
 
-			usort($prefixed, function ($a, $b) { // move longer patterns up so shorter ones don't misleadingly swallow partly matching segments
+			return $this->methodSorter->descendingValues($prefixed);
+		}
 
-				$aLength = strlen($a);
+		public function _getMethodSorter ():MethodSorter {
 
-				$bLength = strlen($b);
-
-				if ($aLength == $bLength) return 0;
-
-				return ($bLength > $aLength) ? 1: -1; // push greater right upwards ie descending
-			});
-
-			return $prefixed;
+			return $this->methodSorter;
 		}
 
 		public function _authenticatedPaths():array {

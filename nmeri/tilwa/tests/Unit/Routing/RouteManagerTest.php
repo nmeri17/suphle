@@ -9,7 +9,7 @@
 
 	use Tilwa\Tests\Integration\Generic\CommonBinds;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\BrowserNoPrefix;
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\{BrowserNoPrefix, Crud\AuthenticateCrudCollection};
 
 	/**
 	 * Note: all urls passed to methods apart from [recursiveSearch] should have no surrounding slashes in order to match parsed patterns
@@ -212,6 +212,21 @@
 
 				["segment/5/segment/5", "SEGMENT_id_SEGMENT_id2O", ["id", "id2"]]
 			];
+		}
+
+		public function test_crud_can_find_active_handler () {
+
+			$sut = $this->container->getClass($this->sutName);
+
+			$collection = $this->container->getClass(AuthenticateCrudCollection::class);
+
+			$collection->SECURE__SOMEh();
+
+			$possibleRenderers = $collection->_getLastRegistered();
+
+			$methodName = $sut->findActiveCrud(array_keys($possibleRenderers), "edit/5"); // when
+
+			$this->assertSame("EDIT_id", $methodName); // then
 		}
 	}
 ?>

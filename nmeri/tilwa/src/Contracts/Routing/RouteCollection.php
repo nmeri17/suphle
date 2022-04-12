@@ -1,6 +1,8 @@
 <?php
 	namespace Tilwa\Contracts\Routing;
 
+	use Tilwa\Routing\MethodSorter;
+
 	use Tilwa\Contracts\Auth\AuthStorage;
 
 	use Tilwa\Request\PathAuthorizer;
@@ -32,5 +34,7 @@
 		public function _getLastRegistered ():array;
 
 		public function _setLastRegistered (array $renderers):void;
+
+		public function _getMethodSorter ():MethodSorter;
 	}
 ?>

@@ -3,6 +3,8 @@
 
 	use Tilwa\Contracts\Routing\CrudBuilder;
 
+	use Exception;
+
 	abstract class BaseBuilder implements CrudBuilder {
 
 		private $idPlaceholder = "id";
@@ -26,7 +28,10 @@
 				$createdRoutes[$pattern] = $renderer;
 			}
 			
-			$this->collection->_setLastRegistered($createdRoutes);
+			$this->collection->_setLastRegistered(
+
+				$this->collection->_getMethodSorter()->descendingKeys($createdRoutes)
+			);
 		}
 
 		protected function showCreateForm():array {
@@ -136,9 +141,11 @@
 			
 			$internal = lcfirst(ltrim($updating, "replace"));
 
-			if (array_key_exists($internal, $this->allowedActions))
+			if (in_array($internal, $this->allowedActions))
 				
 				return $internal;
+
+			throw new Exception ("Unknown builder method '$updating'");
 		}
 	}
 ?>
