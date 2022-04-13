@@ -5,8 +5,6 @@
 
 		public function validate (array $parameters, array $rules):void;
 
-		public function getErrors ():array;
-
-		public function setErrors (array $errors):void;
+		public function getErrors ():iterable;
 	}
 ?>

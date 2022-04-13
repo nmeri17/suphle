@@ -11,7 +11,7 @@
 
 		public function __construct (Response $response, InMemorySession $sessionClient) {
 
-			$this->sessionClient = $sessionClient
+			$this->sessionClient = $sessionClient;
 
 			parent::__construct($response);
 		}

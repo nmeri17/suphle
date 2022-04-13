@@ -34,5 +34,10 @@
 
 			return $this->eventParent ?? parent::getEventConnector();
 		}
+
+		protected function transferHeaders ():void {
+
+			// Writing anything to the real headers is redundant in test environment
+		}
 	}
 ?>

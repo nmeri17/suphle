@@ -20,7 +20,7 @@
 			$this->payloadStorage = $payloadStorage;
 		}
 
-		public function validationErrors ():array {
+		public function validationErrors ():iterable {
 
 			$mergedPayload = array_merge(
 				$this->placeholderStorage->getAllSegmentValues(),

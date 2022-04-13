@@ -11,7 +11,7 @@
 
 		private $viewPath, $viewModelPath;
 
-		protected $allowedActions = ["showCreateForm", "saveNew", "showAll", "showOne", "updateOne", "deleteOne", "showSearchForm"];
+		protected $allowedActions = ["showCreateForm", "saveNew", "showAll", "showOne", "updateOne", "deleteOne", "showSearchForm", "showEditForm"];
 		
 		public function __construct(RouteCollection $collection, string $viewPath, string $viewModelPath = null) {
 
@@ -25,6 +25,11 @@
 		protected function showCreateForm():array {
 
 			return $this->registerMarkupRenderer(__FUNCTION__, "create-form");
+		}
+
+		protected function showEditForm ():array {
+
+			return $this->registerMarkupRenderer(__FUNCTION__, "edit-form");
 		}
 
 		/**

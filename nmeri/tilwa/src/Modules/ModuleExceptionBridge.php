@@ -13,11 +13,9 @@
 
 	class ModuleExceptionBridge implements HighLevelRequestHandler {
 
-		private $container, $handler, $config,
+		private $container, $handler, $config, $payloadStorage,
 
-		$fatalExceptions = [E_ERROR, E_CORE_ERROR, E_CORE_WARNING, E_COMPILE_ERROR, E_COMPILE_WARNING],
-
-		$payloadStorage;
+		$wasHandlingShutdownError = false;
 
 		public function __construct( Container $container, ExceptionInterceptor $config, PayloadStorage $payloadStorage) {
 
@@ -60,24 +58,55 @@
 
 				$lastError = error_get_last();
 
-				$isFatal = !is_null($lastError) && in_array($lastError["type"], $this->fatalExceptions);
+				if ( is_null($lastError) ) return; // no error. Just end of request
 
-				if (!$isFatal ) return;
+				$stringifiedError = json_encode($lastError);
 
-				$this->handler = $this->container->getClass($this->config->defaultHandler());
+				if ($this->wasHandlingShutdownError) {
 
-				$exception = new Exception(json_encode($lastError)); // will have no trace
-				
-				$this->handler->setContextualData($exception);
+					echo $this->disgracefulShutdown($stringifiedError);
 
-				$this->exceptionManager->queueAlertAdapter($exception, $this->payloadStorage);
+					return;
+				}
 
-				$renderer = $this->handlingRenderer();
+				$this->wasHandlingShutdownError = true;
 
-				http_response_code($renderer->getStatusCode());
-
-				echo $renderer->render();
+				echo $this->gracefulShutdown($stringifiedError);
 			});
+		}
+
+		/**
+		 * The one place we never wanna be
+		*/
+		public function disgracefulShutdown (string $errorDetails):string {
+
+			file_put_contents($this->config->shutdownLog(), $errorDetails, FILE_APPEND);
+
+			$this->writeStatusCode(500); // send mail and at leat print somethin
+		}
+
+		public function gracefulShutdown (string $errorDetails):string {
+
+			$handler = $this->container->getClass($this->config->defaultHandler());
+
+			$exception = new Exception($errorDetails); // this means this will have a fake trace
+			
+			$handler->setContextualData($exception);
+
+			$this->exceptionManager->queueAlertAdapter($exception, $this->payloadStorage);
+
+			$renderer = $this->handlingRenderer();
+
+			$renderer->hydrateDependencies($this->container);
+
+			$this->writeStatusCode($renderer->getStatusCode());
+
+			return $renderer->render();
+		}
+
+		public function writeStatusCode (int $statusCode):void {
+
+			http_response_code($statusCode);
 		}
 	}
 ?>

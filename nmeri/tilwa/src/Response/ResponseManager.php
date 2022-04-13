@@ -9,7 +9,7 @@
 
 	use Tilwa\Services\CoodinatorManager;
 
-	use Tilwa\Contracts\{Requests\BaseResponseManager, Presentation\BaseRenderer};
+	use Tilwa\Contracts\{Requests\BaseResponseManager, Presentation\BaseRenderer, Auth\AuthStorage};
 
 	use Tilwa\Request\{ValidatorManager, PayloadStorage, RequestDetails};
 

@@ -190,7 +190,7 @@
 			$index = $this->hydratingArguments ? 2: 1; // If we're hydrating class A -> B -> C, we want to get provisions for B (who, at this point, is indexed -2 while C is -1). otherwise, we'll be looking through C's provisions instead of B
 
 			$length = count($stack);
-			
+
 			return $stack[$length - $index];
 		}
 
@@ -397,6 +397,10 @@
 		*/
 		public function instantiateConcrete (string $fullName) {
 
+			if (!class_exists($fullName))
+
+				throw new HydrationException("Undefined class $fullName");
+
 			$freshlyCreated = $this->initializeHydratingForAction ($fullName, function ($className) {
 
 				if (!method_exists($className, $this->constructor)) // note that this throws a fatal, uncatchable error when class is in an unparseable state like missing abstract method or contract implementation
@@ -450,6 +454,8 @@
 		* @param {anchorClass} the class the given method belongs to
 		* 
 		* @return {Array} associative. Contains hydrated parameters to invoke given callable with
+		* 
+		* @throws ReflectionException if method doesn't exist on class
 		*/ 
 		public function getMethodParameters ( $callable, string $anchorClass = null):array {
 
@@ -486,6 +492,8 @@
 		public function populateDependencies (ReflectionFunctionAbstract $reflectedCallable, ?ProvisionUnit $callerProvision):array {
 
 			$dependencies = [];
+			
+			$callerIsClosure = $reflectedCallable->isClosure();
 
 			foreach ($reflectedCallable->getParameters() as $parameter) {
 
@@ -495,11 +503,11 @@
 
 				if (!is_null($callerProvision) )
 
-					$dependencies[$parameterName] = $this->hydrateProvidedParameter($callerProvision, $parameterType, $parameterName);
+					$dependencies[$parameterName] = $this->hydrateProvidedParameter($callerProvision, $parameterType, $parameterName, $callerIsClosure);
 
 				elseif (!is_null($parameterType))
 
-					$dependencies[$parameterName] = $this->hydrateUnprovidedParameter($parameterType);
+					$dependencies[$parameterName] = $this->hydrateUnprovidedParameter($parameterType, $callerIsClosure);
 				
 				elseif ($parameter->isOptional() )
 
@@ -516,7 +524,7 @@
 		 * 
 		 * @return object matching type at given parameter
 		*/
-		private function hydrateProvidedParameter (ProvisionUnit $callerProvision, ReflectionType $parameterType, string $parameterName) {
+		private function hydrateProvidedParameter (ProvisionUnit $callerProvision, ReflectionType $parameterType, string $parameterName, bool $callerIsClosure) {
 
 			if ($callerProvision->hasArgument($parameterName))
 
@@ -528,10 +536,10 @@
 
 				return $callerProvision->getArgument($typeName);
 
-			return $this->hydrateUnprovidedParameter($parameterType);
+			return $this->hydrateUnprovidedParameter($parameterType, $callerIsClosure);
 		}
 
-		private function hydrateUnprovidedParameter (ReflectionType $parameterType) {
+		private function hydrateUnprovidedParameter (ReflectionType $parameterType, bool $callerIsClosure) {
 
 			$typeName = $parameterType->getName();
 
@@ -546,11 +554,18 @@
 
 			if (!in_array($typeName, $this->hydratingForStack)) {
 
-				$this->hydratingArguments = true;
+				if ($callerIsClosure)
 
-				$concrete = $this->getClass($typeName);
+					$concrete = $this->getClass($typeName); // there's no extra layer of called scope->given object (to get arguments for). We only have called scope in the stack; so, get immediate last item
 
-				$this->hydratingArguments = false;
+				else {
+
+					$this->hydratingArguments = true;
+
+					$concrete = $this->getClass($typeName);
+
+					$this->hydratingArguments = false;
+				}
 
 				return $concrete;
 			}

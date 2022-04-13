@@ -33,7 +33,7 @@
 
 	use Tilwa\Adapters\Markups\Transphporm as TransphpormAdapter;
 
-	use Tilwa\Request\{Validators\RakitValidator, NativeInputReader};
+	use Tilwa\Request\{NativeInputReader, ValidatorLoader};
 
 	use Tilwa\Config\{Auth, Transphporm, Laravel, ExceptionConfig, Console as CliConsole, PDOMysqlKeys, DefaultFlowConfig};
 
@@ -70,7 +70,9 @@
 
 				ImageThumbnailContract::class => ImageThumbnailLoader::class,
 
-				UserContract::class => UserEntityLoader::class
+				UserContract::class => UserEntityLoader::class,
+
+				RequestValidator::class => ValidatorLoader::class
 			];
 		}
 
@@ -81,8 +83,6 @@
 				HtmlParser::class => TransphpormAdapter::class,
 
 				AuthStorage::class => SessionStorage::class,
-
-				RequestValidator::class => RakitValidator::class,
 
 				QueueAdapter::class => Resque::class,
 

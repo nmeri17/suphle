@@ -9,6 +9,8 @@
 
 	use Tilwa\Exception\Explosives\{ValidationFailure, NotFoundException};
 
+	use Throwable;
+
 	abstract class ModuleHandlerIdentifier {
 
 		private $identifiedHandler, $routedModule, $authConfig;
@@ -53,7 +55,11 @@
 
 				$exceptionBridge->hydrateHandler($exception);
 
-				$content = $exceptionBridge->handlingRenderer()->render();
+				$renderer = $exceptionBridge->handlingRenderer();
+
+				$renderer->hydrateDependencies($this->container);
+
+				$content = $renderer->render();
 			}
 
 			$this->transferHeaders();

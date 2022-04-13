@@ -5,7 +5,7 @@
 
 	use Tilwa\Modules\ModuleToRoute;
 
-	use Tilwa\Testing\Condiments\DirectHttpTest;
+	use Tilwa\Testing\{Condiments\DirectHttpTest, Proxies\Extensions\TestResponseBridge};
 
 	trait ModuleHttpTest {
 
@@ -140,17 +140,17 @@
 			return $matches;
 		}
 
-		public function get(string $url, array $headers = []):TestResponse {
+		public function get(string $url, array $headers = []):TestResponseBridge {
 
 			return $this->gatewayResponse($url, __FUNCTION__, null, $headers);
 		}
 
-		public function getJson(string $url, array $headers = []):TestResponse {
+		public function getJson(string $url, array $headers = []):TestResponseBridge {
 
 			return $this->json( "get", $url, null, $headers);
 		}
 
-		private function gatewayResponse (string $requestPath, string $httpMethod, ?string $payload, array $headers):TestResponse {
+		private function gatewayResponse (string $requestPath, string $httpMethod, ?string $payload, array $headers):TestResponseBridge {
 
 			$entrance = $this->entrance;
 
@@ -163,43 +163,43 @@
 			return $this->makeExaminable($renderer);
 		}
 
-		public function post(string $url, array $payload = [], array $headers = []):TestResponse {
+		public function post(string $url, array $payload = [], array $headers = []):TestResponseBridge {
 
 			$newPayload = $this->payloadStringifier($payload, $headers);
 
 			return $this->gatewayResponse($url, __METHOD__, $newPayload, $headers);
 		}
 
-		public function postJson(string $url, array $payload = [], array $headers = []):TestResponse {
+		public function postJson(string $url, array $payload = [], array $headers = []):TestResponseBridge {
 
 			return $this->json("post", $url, $payload, $headers);
 		}
 
-		public function put(string $url, array $payload = [], array $headers = []):TestResponse {
+		public function put(string $url, array $payload = [], array $headers = []):TestResponseBridge {
 
 			$newPayload = $this->payloadStringifier($payload, $headers);
 
 			return $this->gatewayResponse($url, __METHOD__, $newPayload, $headers);
 		}
 
-		public function putJson(string $url, array $payload = [], array $headers = []):TestResponse {
+		public function putJson(string $url, array $payload = [], array $headers = []):TestResponseBridge {
 
 			return $this->json("put", $url, $payload, $headers);
 		}
 
-		public function delete(string $url, array $payload = [], array $headers = []):TestResponse {
+		public function delete(string $url, array $payload = [], array $headers = []):TestResponseBridge {
 
 			$newPayload = $this->payloadStringifier($payload, $headers);
 
 			return $this->gatewayResponse($url, __METHOD__, $newPayload, $headers);
 		}
 
-		public function deleteJson(string $url, array $payload = [], array $headers = []):TestResponse {
+		public function deleteJson(string $url, array $payload = [], array $headers = []):TestResponseBridge {
 
 			return $this->json("delete", $url, $payload, $headers);
 		}
 
-		public function json(string $httpMethod, string $url, array $payload = [], array $headers = []):TestResponse {
+		public function json(string $httpMethod, string $url, array $payload = [], array $headers = []):TestResponseBridge {
 
 			$converted = json_encode($payload);
 

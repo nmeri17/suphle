@@ -1,11 +1,15 @@
 <?php
 	namespace Tilwa\Response\Format;
 
+	use Tilwa\Hydration\Container;
+
 	use Opis\Closure\{SerializableClosure, serialize, unserialize};
 
 	class Redirect extends GenericRenderer {
 
 		private $destination;
+
+		protected $container;
 
 		/**
 		 * @param Since PDO instances can't be serialized, when using this renderer with PDO in scope, wrap this parameter in a curried/doubly wrapped function
@@ -45,6 +49,14 @@
 			$bound = $outerFunction->bindTo($this, $this /*access protected properties*/); // so dev can have access to `rawResponse`
 
 			return call_user_func_array($bound, $parameters);
+		}
+
+		public function getDependencies ():array {
+
+			return array_merge(parent::getDependencies(), [
+
+				"container" => Container::class
+			]);
 		}
 	}
 ?>

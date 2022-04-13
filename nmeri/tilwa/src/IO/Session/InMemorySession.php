@@ -14,7 +14,7 @@
 
 		public function getValue (string $key) {
 
-			return $this->store[$key];
+			return $this->hasKey($key)? $this->store[$key]: null;
 		}
 
 		public function hasKey (string $key):bool {

@@ -7,6 +7,9 @@
 
 	interface BaseRenderer {
 
+		/**
+		 * Assumes [hydrateDependencies] has been called earlier
+		*/
 		public function render ():string;
 
 		public function invokeActionHandler (array $handlerParameters):self;

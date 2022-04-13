@@ -45,6 +45,17 @@
 			return compact("r", "pattern");
 		}
 
+		protected function showEditForm():array {
+
+			$r = $this->rendererMap[__FUNCTION__];
+
+			$r->setRouteMethod("get");
+
+			$pattern = "EDIT_". $this->idPlaceholder; // safe to pass id in url for gets but mutative operations should come with a payload
+
+			return compact("r", "pattern");
+		}
+
 		protected function saveNew():array {
 
 			$r = $this->rendererMap[__FUNCTION__];
@@ -84,7 +95,7 @@
 
 			$r->setRouteMethod("put");
 
-			$pattern = "EDIT_". $this->idPlaceholder;
+			$pattern = "EDIT";
 
 			return compact("r", "pattern");
 		}
