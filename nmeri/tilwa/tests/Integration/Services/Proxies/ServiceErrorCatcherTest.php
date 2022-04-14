@@ -44,7 +44,7 @@
 
 			$container = $this->container;
 
-			$this->assertCaughtPayload($container->getClass(PayloadStorage::class)); // then 1
+			$this->assertWillCatchPayload($container->getClass(PayloadStorage::class)); // then 1
 
 			$sut = $container->getClass($this->serviceName);
 

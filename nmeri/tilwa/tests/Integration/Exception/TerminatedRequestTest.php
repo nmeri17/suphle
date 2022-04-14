@@ -93,7 +93,7 @@
 				trigger_error("waterloo", E_USER_ERROR);
 			});
 
-			$this->assertCaughtPayload($this->firstContainer->getClass(PayloadStorage::class)); // then 1
+			$this->assertWillCatchPayload($this->firstContainer->getClass(PayloadStorage::class)); // then 1
 
 			$entrance->diffusedRequestResponse(); // when
 

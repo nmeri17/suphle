@@ -3,9 +3,9 @@
 
 	use Tilwa\Hydration\Container;
 
-	use Tilwa\Contracts\IO\Session;
-
 	use Tilwa\IO\Session\InMemorySession;
+
+	use Tilwa\Contracts\IO\Session;
 
 	use Tilwa\Testing\{Condiments\GagsException, Proxies\Extensions\CheckProvisionedClasses};
 
@@ -19,9 +19,7 @@
 			GagsException::setUp as mufflerSetup;
 		}
 
-		protected $container,
-
-		$muffleExceptionBroadcast = true;
+		protected $container;
 
 		protected function setUp ():void {
 
@@ -36,9 +34,7 @@
 
 			$this->entityBindings();
 
-			if ($this->muffleExceptionBroadcast)
-
-				$this->mufflerSetup();
+			$this->mufflerSetup();
 		}
 
 		protected function entityBindings ():void {
@@ -72,7 +68,7 @@
 
 			return [
 
-				$cacheManager => $this->negativeDouble($cacheManager, [])
+				$cacheManager => $this->negativeDouble($cacheManager)
 			];
 		}
 

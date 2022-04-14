@@ -32,7 +32,8 @@
 		"illuminate/validation": "^8.83",
 		"illuminate/container": "^8.83",
 		"illuminate/events": "^8.83",
-		"mcaskill/composer-exclude-files": "^2.1"
+		"mcaskill/composer-exclude-files": "^2.1",
+		"symfony/mailer": "^5.4"
 	},
 	"require-dev": {
 		"phpunit/phpunit": "^8.5",

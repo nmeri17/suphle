@@ -1,6 +1,8 @@
 <?php
 	namespace Tilwa\Modules;
 
+	use Tilwa\Hydration\Container;
+
 	use Tilwa\Flows\OuterFlowWrapper;
 
 	use Tilwa\Contracts\{Modules\DescriptorInterface, Config\AuthContract, Auth\ModuleLoginHandler, Presentation\BaseRenderer};
@@ -152,15 +154,18 @@
 				header("$name: $value");
 		}
 
-		private function freshExceptionBridge ():ModuleExceptionBridge {
+		protected function getActiveContainer ():Container {
 
 			if (!is_null($this->routedModule))
 
-				$container = $this->routedModule->getContainer();
+				return $this->routedModule->getContainer();
 
-			$container = $this->container;
+			return $this->container;
+		}
 
-			return $container->getClass(ModuleExceptionBridge::class);
+		private function freshExceptionBridge ():ModuleExceptionBridge {
+
+			return $this->getActiveContainer()->getClass(ModuleExceptionBridge::class);
 		}
 	}
 ?>

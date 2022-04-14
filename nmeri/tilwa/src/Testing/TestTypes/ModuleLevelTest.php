@@ -22,7 +22,7 @@
 
 		protected $modules, // making this accessible for traits down the line that will need identical instances of the modules this base type is working with
 
-		$muffleExceptionBroadcast = true, $entrance;
+		$entrance;
 
 		protected function setUp ():void {
 
@@ -39,9 +39,7 @@
 
 			$entrance->extractFromContainer();
 
-			if ($this->muffleExceptionBroadcast)
-
-				$this->mufflerSetup();
+			$this->mufflerSetup();
 		}
 		
 		/**

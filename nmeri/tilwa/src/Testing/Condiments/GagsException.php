@@ -3,26 +3,68 @@
 
 	use Tilwa\Exception\DetectedExceptionManager;
 
-	use Tilwa\Testing\Condiments\MockFacilitator;
+	use Tilwa\Modules\ModuleExceptionBridge;
 
 	use Throwable;
 
 	trait GagsException {
 
-		use MockFacilitator;
-
-		private $exceptionManager,
+		private $exceptionBroadcaster,
 
 		$alerterMethod = "queueAlertAdapter",
 
-		$managerName = DetectedExceptionManager::class;
+		$exceptionBroadcasterName = DetectedExceptionManager::class,
+
+		$exceptionBridge = ModuleExceptionBridge::class;
+
+		protected $muffleExceptionBroadcast = true;
 
 		protected function setUp () {
 
-			$this->exceptionManager = $this->negativeDouble($this->managerName, []);
+			$this->setBroadcaster();
+
+			$this->provideExceptionObjects();
 		}
 
-		protected function assertCaughtPayload ($payload) {
+		private function setBroadcaster ():void {
+
+			$stubs = [];
+
+			if ($this->muffleExceptionBroadcast)
+
+				$stubs["queueAlertAdapter"] = null;
+
+			$this->exceptionBroadcaster = $this->positiveDouble($this->exceptionBroadcasterName, $stubs);
+		}
+
+		protected function provideExceptionObjects ():void {
+
+			$this->massProvide([
+
+				$this->exceptionBridge => $this->getExceptionBridge(),
+
+				$this->exceptionBroadcasterName => $this->exceptionBroadcaster
+			]);
+		}
+
+		protected function getExceptionBridge ():ModuleExceptionBridge {
+
+			return $this->replaceConstructorArguments($this->exceptionBridge,
+
+			[
+				"exceptionDetector" => $this->exceptionBroadcaster
+			],
+
+			[
+				"writeStatusCode" => null,
+
+				"disgracefulShutdown" => $this->returnArgument(1),
+
+				"gracefulShutdown" => $this->returnArgument(0)
+			]);
+		}
+
+		protected function assertWillCatchPayload ($payload) {
 
 			$sut = $this->mockCalls([
 
@@ -34,15 +76,15 @@
 					}),
 					$this->equalTo($payload)
 				]]
-			], $this->exceptionManager);
+			], $this->exceptionBroadcaster);
 
 			$this->massProvide([
 
-				$this->managerName => $sut
+				$this->exceptionBroadcasterName => $sut
 			]);
 		}
 
-		protected function assertCaughtException (string $exception) {
+		protected function assertWillCatchException (string $exception) {
 
 			$sut = $this->mockCalls([
 
@@ -54,11 +96,9 @@
 					}),
 					$this->anything()
 				]]
-			], $this->exceptionManager);
+			], $this->exceptionBroadcaster);
 
-			$this->massProvide([ $this->managerName => $sut ]);
+			$this->massProvide([ $this->exceptionBroadcasterName => $sut ]);
 		}
-
-		abstract protected function massProvide (array $provisions):void;
 	}
 ?>

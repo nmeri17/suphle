@@ -3,11 +3,11 @@
 
 	use Tilwa\Contracts\Hydration\{InterfaceCollection, DecoratorChain};
 
-	use Tilwa\Contracts\{Presentation\HtmlParser, Queues\Adapter as QueueAdapter, Modules\ControllerModule };
+	use Tilwa\Contracts\{Presentation\HtmlParser, Queues\Adapter as QueueAdapter, Modules\ControllerModule, Exception\FatalShutdownAlert};
+
+	use Tilwa\Contracts\IO\{Session, MailClient};
 
 	use Tilwa\Contracts\Requests\{RequestValidator, StdInputReader};
-
-	use Tilwa\Contracts\IO\Session;
 
 	use Tilwa\Contracts\Database\{OrmDialect, OrmReplicator, OrmTester};
 
@@ -23,7 +23,7 @@
 
 	use Tilwa\IO\Image\SaveClients\LocalSaver;
 
-	use Tilwa\IO\Session\NativeSession;
+	use Tilwa\IO\{Session\NativeSession, Mailing\MailClientLoader};
 
 	use Tilwa\Queues\Adapters\Resque;
 
@@ -42,6 +42,8 @@
 	use Tilwa\Hydration\Structures\BaseDecorators;
 
 	use Tilwa\Bridge\Laravel\InterfaceLoaders\{LaravelAppLoader, ArtisanLoader};
+
+	use Tilwa\Exception\Jobs\MailShutdownAlert;
 
 	use Psr\Http\Client\ClientInterface;
 
@@ -72,7 +74,9 @@
 
 				UserContract::class => UserEntityLoader::class,
 
-				RequestValidator::class => ValidatorLoader::class
+				RequestValidator::class => ValidatorLoader::class,
+
+				MailClient::class => MailClientLoader::class
 			];
 		}
 
@@ -106,7 +110,9 @@
 
 				IUserHydrator::class => EloquentUserHydrator::class,
 
-				StdInputReader::class => NativeInputReader::class
+				StdInputReader::class => NativeInputReader::class,
+
+				FatalShutdownAlert::class => MailShutdownAlert::class
 			];
 		}
 

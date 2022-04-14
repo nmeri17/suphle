@@ -1,13 +1,15 @@
 <?php
 	namespace Tilwa\Modules;
 
-	use Tilwa\Contracts\{Modules\HighLevelRequestHandler, Config\ExceptionInterceptor, Presentation\BaseRenderer};
-
 	use Tilwa\Hydration\Container;
 
 	use Tilwa\Response\Format\AbstractRenderer;
 
 	use Tilwa\Request\PayloadStorage;
+
+	use Tilwa\Exception\DetectedExceptionManager;
+
+	use Tilwa\Contracts\{Modules\HighLevelRequestHandler, Config\ExceptionInterceptor, Presentation\BaseRenderer, Exception\FatalShutdownAlert};
 
 	use Throwable, Exception;
 
@@ -15,15 +17,17 @@
 
 		private $container, $handler, $config, $payloadStorage,
 
-		$wasHandlingShutdownError = false;
+		$exceptionDetector;
 
-		public function __construct( Container $container, ExceptionInterceptor $config, PayloadStorage $payloadStorage) {
+		public function __construct( Container $container, ExceptionInterceptor $config, PayloadStorage $payloadStorage, DetectedExceptionManager $exceptionDetector) {
 
 			$this->container = $container;
 
 			$this->config = $config;
 
 			$this->payloadStorage = $payloadStorage;
+
+			$this->exceptionDetector = $exceptionDetector;
 		}
 
 		public function hydrateHandler (Throwable $exception) {
@@ -60,40 +64,48 @@
 
 				if ( is_null($lastError) ) return; // no error. Just end of request
 
-				$stringifiedError = json_encode($lastError);
+				$stringifiedError = json_encode($lastError, JSON_PRETTY_PRINT);
 
-				if ($this->wasHandlingShutdownError) {
+				try {
 
-					echo $this->disgracefulShutdown($stringifiedError);
-
-					return;
+					echo $this->gracefulShutdown($stringifiedError);
 				}
+				catch (Throwable $exception) {
 
-				$this->wasHandlingShutdownError = true;
-
-				echo $this->gracefulShutdown($stringifiedError);
+					echo $this->disgracefulShutdown($stringifiedError, $exception);
+				}
 			});
 		}
 
 		/**
 		 * The one place we never wanna be
 		*/
-		public function disgracefulShutdown (string $errorDetails):string {
+		public function disgracefulShutdown (string $errorDetails, Throwable $exception):string {
+
+			$errorDetails .= json_encode($exception, JSON_PRETTY_PRINT);
 
 			file_put_contents($this->config->shutdownLog(), $errorDetails, FILE_APPEND);
 
-			$this->writeStatusCode(500); // send mail and at leat print somethin
+			$this->writeStatusCode(500);
+
+			$alerter = $this->container->getClass(FatalShutdownAlert::class);
+
+			$alerter->setErrorAsJson($errorDetails);
+
+			$alerter->handle();
+
+			return $this->config->shutdownText();
 		}
 
 		public function gracefulShutdown (string $errorDetails):string {
 
-			$handler = $this->container->getClass($this->config->defaultHandler());
+			$this->handler = $this->container->getClass($this->config->defaultHandler());
 
 			$exception = new Exception($errorDetails); // this means this will have a fake trace
 			
-			$handler->setContextualData($exception);
+			$this->handler->setContextualData($exception);
 
-			$this->exceptionManager->queueAlertAdapter($exception, $this->payloadStorage);
+			$this->exceptionDetector->queueAlertAdapter($exception, $this->payloadStorage);
 
 			$renderer = $this->handlingRenderer();
 

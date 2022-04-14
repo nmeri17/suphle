@@ -1,5 +1,8 @@
 <?php
 	namespace Tilwa\Contracts\Queues;
 
-	interface Task {}
+	interface Task {
+
+		public function handle ():void;
+	}
 ?>

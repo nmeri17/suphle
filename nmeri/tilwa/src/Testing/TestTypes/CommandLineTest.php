@@ -7,13 +7,16 @@
 
 	use Tilwa\Testing\Proxies\Extensions\FrontDoor;
 
-	use Tilwa\Testing\Condiments\{ModuleReplicator, BaseModuleInteractor};
+	use Tilwa\Testing\Condiments\{ModuleReplicator, BaseModuleInteractor, GagsException};
 
 	use PHPUnit\Framework\TestCase;
 
 	abstract class CommandLineTest extends TestVirginContainer {
 
-		use ModuleReplicator, BaseModuleInteractor;
+		use ModuleReplicator, BaseModuleInteractor, GagsException {
+
+			GagsException::setUp as mufflerSetup;
+		}
 
 		private $modules; // trait will access this
 
@@ -30,7 +33,7 @@
 
 			$this->consoleRunner->loadCommands();
 
-			// is there any need to muffle exceptions?
+			$this->mufflerSetup();
 		}
 		
 		/**
