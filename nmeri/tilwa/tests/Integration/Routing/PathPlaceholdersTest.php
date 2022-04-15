@@ -31,8 +31,6 @@
 
 				"placeholderStorage" => $sut,
 
-				"container" => $container,
-
 				"requestDetails" => $container->getClass(RequestDetails::class),
 
 				"patternIndicator" => $this->negativeDouble(PatternIndicator::class),

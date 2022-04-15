@@ -63,7 +63,7 @@
 
 				"flowRequestHandler" => [$this->atLeastOnce(), [
 
-					$this->returnCallback(function($argument) {
+					$this->callback(function($argument) {
 
 						return is_a($argument, OuterFlowWrapper::class);
 					})

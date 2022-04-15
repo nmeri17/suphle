@@ -1,6 +1,8 @@
 <?php
 	namespace Tilwa\Services\Proxies;
 
+	use Tilwa\Hydration\Container;
+
 	abstract class BaseCloakBuilder {
 
 		private $originalTarget, $targetName;
@@ -42,7 +44,7 @@
 
 			foreach (get_class_methods($this->targetName) as $method)
 
-				if ($method != "__construct") // since we've overwritten the original constructor
+				if ($method != Container::CLASS_CONSTRUCTOR) // since we've overwritten the original constructor
 
 					$methods .= "public function $method () {" . '
 

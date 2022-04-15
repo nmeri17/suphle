@@ -1,16 +1,20 @@
 <?php
 	namespace Tilwa\Testing\Condiments;
 
-	use ReflectionMethod, ReflectionClass;
+	use Tilwa\Hydration\Container;
 
-	use PHPUnit\Framework\MockObject\{MockBuilder, Stub\Stub, Rule\InvocationOrder, Builder\InvocationMocker};
+	use PHPUnit\Framework\MockObject\{ MockObject, Stub\Stub, Rule\InvocationOrder, Builder\InvocationMocker};
+
+	use ReflectionMethod, ReflectionClass;
 
 	trait MockFacilitator {
 
 		/**
 		 * @param {mockMethods} = [string method => [int|InvocationOrder numTimes, [arguments]]]
+		 * 
+		 * @return Mock version of given [target], with an auto-generated class name
 		*/
-		protected function positiveDouble (string $target, array $stubs = [], array $mockMethods = [], array $constructorArguments = [])/*:MockBuilder*/ {
+		protected function positiveDouble (string $target, array $stubs = [], array $mockMethods = [], array $constructorArguments = []):MockObject {
 
 			$builder = $this->getBuilder(
 				$target, $constructorArguments,
@@ -25,7 +29,7 @@
 			return $builder;
 		}
 
-		protected function positiveDoubleMany (string $target, array $stubs = [], array $mockMethods = [], array $constructorArguments = [])/*:MockBuilder*/ {
+		protected function positiveDoubleMany (string $target, array $stubs = [], array $mockMethods = [], array $constructorArguments = []) {
 
 			$builder = $this->getBuilder(
 				$target, $constructorArguments,
@@ -61,9 +65,9 @@
 		}
 
 		/**
-		 * Use when the other methods contain actions we don't wanna trigger
+		 * Stubs all methods out except those explicitly provided
 		*/
-		protected function negativeDouble (string $target, array $stubs = [], array $mockMethods = [], array $constructorArguments = [])/*:MockBuilder*/ {
+		protected function negativeDouble (string $target, array $stubs = [], array $mockMethods = [], array $constructorArguments = []) {
 
 			$allMethods = get_class_methods($target);
 
@@ -76,7 +80,7 @@
 			return $builder;
 		}
 
-		protected function stubSingle (array $stubs, /*MockBuilder*/ $builder):void {
+		protected function stubSingle (array $stubs, MockObject $builder):void {
 
 			foreach ($stubs as $method => $newValue)
 
@@ -88,7 +92,7 @@
 		/**
 		 * Allows for stubbing multiple calls to SUT and receiving different results each time
 		*/
-		private function stubMany (array $stubs, /*MockBuilder*/ $builder):void {
+		private function stubMany (array $stubs, MockObject $builder):void {
 
 			foreach ($stubs as $method => $newValue) {
 
@@ -109,7 +113,10 @@
 			return $value instanceof Stub ? $value: $this->returnValue($value);
 		}
 
-		private function getBuilder (string $target, array $constructorArguments, array $methodsToRetain)/*:MockBuilder*/ {
+		/**
+		 * @return MockObject version of given [target]
+		*/
+		private function getBuilder (string $target, array $constructorArguments, array $methodsToRetain):MockObject {
 
 			$builder = $this->getMockBuilder($target);
 
@@ -140,12 +147,21 @@
 
 			array $methodStubs = [], array $mockMethods = [],
 
-			bool $positiveDouble = true, bool $positiveConstructor = true
-		)/*:MockBuilder*/ {
+			bool $positiveDouble = true, bool $positiveConstructor = true,
 
-			$reflectedConstructor = new ReflectionMethod($target, "__construct");
+			bool $useBaseContainer = true
+		):MockObject {
 
-			$arguments = $this->mockDummyUnion($reflectedConstructor->getParameters(), $constructorStubs, $positiveConstructor);
+			$reflectedConstructor = new ReflectionMethod($target, Container::CLASS_CONSTRUCTOR);
+
+			$arguments = $this->mockDummyUnion(
+
+				$reflectedConstructor->getParameters(),
+
+				$constructorStubs, $positiveConstructor,
+
+				$useBaseContainer
+			);
 
 			return $positiveDouble?
 			
@@ -154,9 +170,9 @@
 				$this->negativeDouble($target, $methodStubs, $mockMethods, $arguments);
 		}
 
-		private function mockDummyUnion (array $parameters, array $replacements, bool $isPositive):array {
+		private function mockDummyUnion (array $parameters, array $replacements, bool $isPositive, bool $useBaseContainer):array {
 
-			return array_map(function ($parameter) use ($replacements, $isPositive) {
+			return array_map(function ($parameter) use ($replacements, $isPositive, $useBaseContainer) {
 
 				$parameterName = $parameter->getName();
 
@@ -165,6 +181,10 @@
 					return $replacements[$parameterName];
 
 				$argumentType = $parameter->getType()->getName();
+
+				if ($argumentType == Container::class && $useBaseContainer)
+
+					return $this->getContainer();
 
 				return $isPositive?
 					$this->positiveDouble($argumentType):

@@ -56,11 +56,11 @@
 
 				$builder = "";
 
-				if ($literal = @$matches["one_word"])
+				if (isset($matches["one_word"]) && $literal = $matches["one_word"])
 
 					$builder .= $this->handleLiteralMatch($builder, $literal, $matches);
 
-				if ($foundPlaceholder = @$matches["placeholder"])
+				if (isset($matches["placeholder"]) && $foundPlaceholder = $matches["placeholder"])
 
 					$builder .= $this->handlePlaceholderMatch( $foundPlaceholder, $matches, $replacement);
 

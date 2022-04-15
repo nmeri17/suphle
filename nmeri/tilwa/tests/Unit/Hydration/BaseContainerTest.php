@@ -145,7 +145,7 @@
 			$this->bootContainer($sut);
 
 			// given
-			$reflectedCallable = new ReflectionMethod($this->aRequires, "__construct");
+			$reflectedCallable = new ReflectionMethod($this->aRequires, Container::CLASS_CONSTRUCTOR);
 
 			$provisionContext = $sut->getRecursionContext();
 
@@ -175,7 +175,7 @@
 
 			$parameters = $sut->internalMethodGetParameters(function () use ($sut) {
 
-				return $sut->getMethodParameters("__construct", $this->aRequires);
+				return $sut->getMethodParameters(Container::CLASS_CONSTRUCTOR, $this->aRequires);
 			});
 		}
 

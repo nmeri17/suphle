@@ -5,6 +5,8 @@
 
 	use Tilwa\Routing\RouteManager;
 
+	use Tilwa\Middleware\MiddlewareQueue;
+
 	use Tilwa\Bridge\Laravel\Routing\ModuleRouteMatcher;
 
 	use Tilwa\Contracts\{Auth\AuthStorage, Presentation\BaseRenderer};

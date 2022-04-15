@@ -43,7 +43,9 @@
 
 			if (empty($relevantDecors)) return $argumentList;
 
-			if ($methodName == "__construct") $hasConstructor = true;
+			if ($methodName == Container::CLASS_CONSTRUCTOR)
+
+				$hasConstructor = true;
 
 			if ($hasConstructor)
 

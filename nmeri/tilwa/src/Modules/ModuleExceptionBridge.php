@@ -3,17 +3,15 @@
 
 	use Tilwa\Hydration\Container;
 
-	use Tilwa\Response\Format\AbstractRenderer;
-
 	use Tilwa\Request\PayloadStorage;
 
 	use Tilwa\Exception\DetectedExceptionManager;
 
-	use Tilwa\Contracts\{Modules\HighLevelRequestHandler, Config\ExceptionInterceptor, Presentation\BaseRenderer, Exception\FatalShutdownAlert};
+	use Tilwa\Contracts\{Modules\HighLevelRequestHandler, Config\ExceptionInterceptor, Presentation\BaseRenderer, Exception\FatalShutdownAlert, Hydration\ClassHydrationBehavior};
 
 	use Throwable, Exception;
 
-	class ModuleExceptionBridge implements HighLevelRequestHandler {
+	class ModuleExceptionBridge implements HighLevelRequestHandler, ClassHydrationBehavior {
 
 		private $container, $handler, $config, $payloadStorage,
 
@@ -119,6 +117,11 @@
 		public function writeStatusCode (int $statusCode):void {
 
 			http_response_code($statusCode);
+		}
+
+		public function protectRefreshPurge (string $purger):bool {
+
+			return true; // in tests, this is provided before PayloadStorage, which is one of its dependencies
 		}
 	}
 ?>

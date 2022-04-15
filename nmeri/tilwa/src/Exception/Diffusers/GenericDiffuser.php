@@ -1,11 +1,11 @@
 <?php
 	namespace Tilwa\Exception\Diffusers;
 
-	use Tilwa\Contracts\Exception\ExceptionHandler;
+	use Tilwa\Contracts\{Exception\ExceptionHandler, Presentation\BaseRenderer};
 
 	use Tilwa\Request\RequestDetails;
 
-	use Tilwa\Response\Format\{AbstractRenderer, Markup, Json};
+	use Tilwa\Response\Format\{ Markup, Json};
 
 	use Throwable;
 
@@ -33,27 +33,29 @@
 
 			else $this->renderer = $this->getMarkupRenderer();
 
-			$this->renderer->setHeaders($this->origin->getCode() ?? 500, []);
+			$this->renderer->setRawResponse([
+
+				"message" => $this->origin->getMessage() ?? get_class($this->origin)
+			]);
+
+			$incomingCode = $this->origin->getCode();
+
+			$this->renderer->setHeaders($incomingCode > 0 ? $incomingCode: 500, []);
 		}
 
-		public function getRenderer ():AbstractRenderer {
+		public function getRenderer ():BaseRenderer {
 
 			return $this->renderer;
 		}
 
-		protected function getApiRenderer ():AbstractRenderer {
+		protected function getApiRenderer ():BaseRenderer {
 
-			return (new Json($this->controllerAction))
-
-			->setRawResponse([
-
-				"message" => $this->origin->getMessage() ?? get_class($this->origin)
-			]);
+			return new Json($this->controllerAction);
 		}
 
-		protected function getMarkupRenderer ():AbstractRenderer {
+		protected function getMarkupRenderer ():BaseRenderer {
 
-			return new Markup($this->controllerAction, "errors/default");
+			return new Markup($this->controllerAction, "/errors/default");
 		}
 	}
 ?>

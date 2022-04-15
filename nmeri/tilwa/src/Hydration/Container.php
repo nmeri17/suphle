@@ -1,15 +1,19 @@
 <?php
 	namespace Tilwa\Hydration;
-
-	use ReflectionMethod, ReflectionClass, ReflectionFunction, ReflectionType, ReflectionFunctionAbstract, ReflectionException;
 	
 	use Tilwa\Hydration\Structures\{ProvisionUnit, NamespaceUnit, HydratedConcrete};
 
+	use Tilwa\Contracts\Hydration\ClassHydrationBehavior;
+
 	use Tilwa\Exception\Explosives\Generic\{InvalidImplementor, HydrationException};
+
+	use ReflectionMethod, ReflectionClass, ReflectionFunction, ReflectionType, ReflectionFunctionAbstract, ReflectionException;
 
 	class Container {
 
-		const UNIVERSAL_SELECTOR = "*";
+		const UNIVERSAL_SELECTOR = "*",
+
+		CLASS_CONSTRUCTOR = "__construct";
 
 		private $provisionedNamespaces = [], // NamespaceUnit[]
 
@@ -18,8 +22,6 @@
 		$internalMethodHydrate = false, // Used when [getMethodParameters] is called directly without going through instance methods such as [instantiateConcrete]
 
 		$hydratingArguments = false,
-
-		$constructor = "__construct",
 
 		$externalHydrators = [], $externalContainerManager,
 
@@ -397,13 +399,9 @@
 		*/
 		public function instantiateConcrete (string $fullName) {
 
-			if (!class_exists($fullName))
-
-				throw new HydrationException("Undefined class $fullName");
-
 			$freshlyCreated = $this->initializeHydratingForAction ($fullName, function ($className) {
 
-				if (!method_exists($className, $this->constructor)) // note that this throws a fatal, uncatchable error when class is in an unparseable state like missing abstract method or contract implementation
+				if (!method_exists($className, self::CLASS_CONSTRUCTOR)) // note that this throws a fatal, uncatchable error when class is in an unparseable state like missing abstract method or contract implementation
 
 					return new HydratedConcrete(new $className, $this->lastHydratedFor() );
 
@@ -426,7 +424,7 @@
 
 			$dependencies = $this->internalMethodGetParameters(function () use ($className) {
 
-				return array_values($this->getMethodParameters($this->constructor, $className));
+				return array_values($this->getMethodParameters(self::CLASS_CONSTRUCTOR, $className));
 			});
 
 			return new HydratedConcrete(
@@ -720,7 +718,13 @@
 
 						foreach ($consumers[$className] as $consumer)
 
-							$this->refreshClass($consumer);
+							if (
+								!in_array(ClassHydrationBehavior::class, class_implements($consumer)) ||
+
+								!$this->getProvidedConcrete($consumer)->protectRefreshPurge($className)
+							)
+
+								$this->refreshClass($consumer);
 
 					$provisionContext->purgeAll($className);
 				}

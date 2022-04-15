@@ -17,5 +17,30 @@
 		public function parentFlow () {}
 
 		public function handleChildFlow () {}
+
+		public function handleCombined () {
+
+			return [];
+		}
+
+		public function handleSingleNode () {
+
+			return [];
+		}
+
+		public function handleFromService () {
+
+			return [];
+		}
+
+		public function handlePipeTo () {
+
+			return [];
+		}
+
+		public function handleOneOf () {
+
+			return [];
+		}
 	}
 ?>

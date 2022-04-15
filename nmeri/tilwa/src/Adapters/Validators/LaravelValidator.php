@@ -23,7 +23,7 @@
 
 		public function getErrors ():iterable {
 
-			return $this->errorHolder;
+			return $this->errorHolder->all();
 		}
 	}
 ?>

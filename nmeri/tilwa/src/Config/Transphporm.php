@@ -12,9 +12,9 @@
 			$this->fileConfig = $fileConfig;
 		}
 		
-		public function getTssPath():string {
+		public function getTssPath ():string {
 
-			return $this->fileConfig->activeModulePath() . "tss";
+			return $this->fileConfig->activeModulePath() . "Tss" . DIRECTORY_SEPARATOR;
 		}
 
 		public function inferFromViewName ():bool {

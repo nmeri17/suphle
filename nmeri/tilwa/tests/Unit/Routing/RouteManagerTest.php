@@ -194,8 +194,6 @@
 
 				"placeholderStorage" => $placeholderStorage,
 
-				"container" => $this->container,
-
 				"urlReplacer" => $this->container->getClass(CollectionMethodToUrl::class)
 			]);
 

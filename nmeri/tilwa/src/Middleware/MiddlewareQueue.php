@@ -49,7 +49,11 @@
 
 			$this->filterDuplicates();
 
-			$this->stack = [...$this->routerConfig->defaultMiddleware(), ...$this->stack];
+			$this->stack = array_merge(
+				$this->routerConfig->defaultMiddleware(),
+
+				$this->stack
+			);
 
 			$this->hydrateMiddlewares();
 

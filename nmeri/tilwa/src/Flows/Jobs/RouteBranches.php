@@ -27,7 +27,7 @@
 			$this->hydrator = $hydrator;
 		}
 
-		public function handle() {
+		public function handle ():void {
 
 			$outgoingRenderer = $this->context->getRenderer();
 

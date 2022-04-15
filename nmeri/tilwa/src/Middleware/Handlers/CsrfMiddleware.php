@@ -5,7 +5,7 @@
 
 	use Tilwa\Request\PayloadStorage;
 
-	use Tilwa\Routing\RequestDetails;
+	use Tilwa\Request\RequestDetails;
 
 	use Tilwa\Contracts\Auth\AuthStorage;
 
@@ -17,15 +17,15 @@
 
 	class CsrfMiddleware extends BaseMiddleware {
 
-		private $generator, $requestDetails, $authStorage;
+		private $generator, $authStorage;
 
 		public function __construct (CsrfGenerator $generator, RequestDetails $requestDetails, AuthStorage $authStorage) {
 
 			$this->generator = $generator;
 
-			$this->requestDetails = $requestDetails;
-
 			$this->authStorage = $authStorage;
+
+			parent::__construct($requestDetails);
 		}
 
 		public function process (PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler) {

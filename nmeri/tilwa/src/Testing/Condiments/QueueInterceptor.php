@@ -30,7 +30,11 @@
 
 		protected function assertPushed (string $taskName):void {
 
-			$this->assertTrue($this->adapter->didPushTask($taskName));
+			$this->assertTrue(
+				$this->adapter->didPushTask($taskName),
+
+				"Failed asserting that $taskName was pushed to queue"
+			);
 		}
 
 		protected function assertPushedToFlow(string $originUrl):void {
@@ -51,14 +55,24 @@
 
 			$this->get($flowUrl); // When
 
-			$this->assertTrue($this->getFlowWrapper()->canHandle()); // then
+			$this->assertTrue(
+
+				$this->getFlowWrapper()->canHandle(),
+
+				"Failed asserting that request to $flowUrl was handled by Flow"
+			); // then
 		}
 
 		protected function assertNotHandledByFlow (string $url):void {
 
 			$this->get($url); // When
 
-			$this->assertFalse($this->getFlowWrapper()->canHandle()); // then
+			$this->assertFalse(
+
+				$this->getFlowWrapper()->canHandle(),
+
+				"Request to $url was not expected to be handled by Flow"
+			); // then
 		}
 
 		private function getFlowWrapper ():OuterFlowWrapper {
