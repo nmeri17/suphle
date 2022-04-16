@@ -3,6 +3,8 @@
 
 	use Tilwa\Contracts\Auth\{UserContract, AuthStorage};
 
+	use Tilwa\Auth\Storage\SessionStorage;
+
 	use Tilwa\Hydration\Container;
 
 	trait SecureUserAssertions {
@@ -21,16 +23,20 @@
 			return $storage;
 		}
 
-		protected function actingAs(UserContract $user, string $storageName = AuthStorage::class):self {
+		protected function actingAs (UserContract $user, string $storageName = AuthStorage::class):self {
 
-			$this->getAuthStorage($storageName)->imitate($user->getId());
+			$storage = $this->getAuthStorage($storageName);
+
+			$storage->startSession($user->getId());
+
+			$storage->resumeSession();
 
 			return $this;
 		}
 
-		protected function assertAuthenticatedAs(UserContract $user, string $storageName):self {
+		protected function assertAuthenticatedAs (UserContract $user, string $storageName = SessionStorage::class):self {
 
-			$this->assertSame($user, $this->getAuthStorage($storageName)->getUser());
+			$this->assertEquals($user, $this->getAuthStorage($storageName)->getUser());
 
 			return $this;
 		}

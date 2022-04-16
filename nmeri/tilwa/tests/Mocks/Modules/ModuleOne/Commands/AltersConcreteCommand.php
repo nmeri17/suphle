@@ -5,15 +5,15 @@
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\BCounter;
 
-	use Symfony\Component\Console\Output\OutputInterface;
+	use Symfony\Component\Console\{Output\OutputInterface, Command\Command};
 
 	use Symfony\Component\Console\Input\{InputInterface, InputOption, InputArgument};
 
 	class AltersConcreteCommand extends BaseCliCommand {
 
-		protected static $defaultName = "test:alters_concrete";
+		protected static $defaultName = "test:alters_concrete",
 
-		protected static $defaultDescription = "";
+		$defaultDescription = "";
 
 		protected function configure ():void {
 

@@ -50,7 +50,7 @@
 			return $this->activeModel->inRandomOrder()->first();
 		}
 
-		public function getRandomEntities ( int $amount):array {
+		public function getRandomEntities ( int $amount):iterable {
 
 			return $this->activeModel->inRandomOrder()->limit($amount)->get();
 		}

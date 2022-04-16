@@ -37,6 +37,15 @@
 			);
 		}
 
+		protected function assertNotPushed (string $taskName):void {
+
+			$this->assertFalse(
+				$this->adapter->didPushTask($taskName),
+
+				"Did not expect $taskName to be pushed to queue"
+			);
+		}
+
 		protected function assertPushedToFlow(string $originUrl):void {
 
 			$this->get($originUrl);

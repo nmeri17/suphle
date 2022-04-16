@@ -5,13 +5,15 @@
 
 	use Tilwa\Adapters\Orms\Eloquent\Models\User as EloquentUser;
 
-	use Tilwa\Testing\{Condiments\BaseDatabasePopulator, TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
+	use Tilwa\Testing\{Condiments\BaseDatabasePopulator, TestTypes\ModuleLevelTest};
+
+	use Tilwa\TestingProxies\{SecureUserAssertions, WriteOnlyContainer};
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Routes\Crud\AuthenticateCrudCollection, Config\RouterMock};
 
 	class AuthSecureTest extends ModuleLevelTest {
 
-		use BaseDatabasePopulator;
+		use BaseDatabasePopulator, SecureUserAssertions;
 
 		protected function getModules():array {
 

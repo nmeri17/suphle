@@ -3,13 +3,17 @@
 
 	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
+	use Tilwa\Exception\Explosives\Generic\UnacceptableDependency;
+
+	use Tilwa\Tests\Integration\Generic\CommonBinds;
+
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Middlewares\AttemptsLoadingUser;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Controllers\Selective\{BlankUpdatelessController, RandomConcreteController};
 
-	use Tilwa\Exception\Explosives\Generic\UnacceptableDependency;
-
 	class SelectiveDependenciesTest extends IsolatedComponentTest {
+
+		use CommonBinds;
 
 		public function test_rejected_type_throws_errors () {
 

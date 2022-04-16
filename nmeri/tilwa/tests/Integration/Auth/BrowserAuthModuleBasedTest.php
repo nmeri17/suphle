@@ -5,13 +5,15 @@
 
 	use Tilwa\Adapters\Orms\Eloquent\Models\User as EloquentUser;
 
-	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\BaseDatabasePopulator, Proxies\WriteOnlyContainer};
+	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\BaseDatabasePopulator};
+
+	use Tilwa\Testing\Proxies\{WriteOnlyContainer, SecureUserAssertions};
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Routes\Auth\SecureBrowserCollection, Config\RouterMock};
 
 	class BrowserAuthModuleBasedTest extends ModuleLevelTest {
 
-		use BaseDatabasePopulator;
+		use BaseDatabasePopulator, SecureUserAssertions;
 
 		protected function getModules ():array {
 

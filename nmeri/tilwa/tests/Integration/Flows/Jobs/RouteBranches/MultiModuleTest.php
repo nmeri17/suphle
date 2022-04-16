@@ -9,9 +9,11 @@
 
 	use Tilwa\Testing\Proxies\WriteOnlyContainer;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\FlowRoutes, Meta\ModuleOneDescriptor, Config\RouterMock};
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\FlowRoutes, Config\RouterMock};
 
-	use Prophecy\Argument\Token\AnyValuesToken;
+	use Tilwa\Tests\Mocks\Interactions\ModuleOne;
+
+	use Tilwa\Tests\Mocks\Modules\ModuleThree\Meta\ModuleThreeDescriptor;
 
 	class MultiModuleTest extends JobFactory {
 
@@ -19,66 +21,67 @@
 
 		$flowUrl = "posts/id"; // the name used here is determined by the pattern name at the target module
 
-		private $mockFlowHydrator;
+		private $mockFlowHydrator, $sutName = FlowHydrator::class;
 
 		public function setUp ():void {
 
 			parent::setUp();
 
-			$this->mockFlowHydrator = $this->prophesize(FlowHydrator::class);
+			$this->mockFlowHydrator = $this->positiveDouble($this->sutName);
 		}
 
 		protected function getModules():array {
 
 			return [
 
-				$this->getModuleOne(), $this->getModuleTwo()
+				$this->moduleOne, $this->moduleThree
 			];
 		}
 
-		private function getModuleOne ():ModuleDescriptor {
+		protected function setModuleThree ():void {
 
-			return $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+			$this->moduleThree = $this->replicateModule(
+				ModuleThreeDescriptor::class,
 
-				//
-			});
-		}
+				function (WriteOnlyContainer $container) {
 
-		private function getModuleTwo ():ModuleDescriptor {
+					$container->replaceWithMock(Router::class, RouterMock::class, [
 
-			return $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+						"browserEntryRoute" => FlowRoutes::class
+					])
+					->replaceWithConcrete($this->sutName, $this->mockFlowHydrator);
+				}
+			)->sendExpatriates([
 
-				$container->replaceWithMock(Router::class, RouterMock::class, [
-
-					"browserEntryRoute" => FlowRoutes::class
-				])
-				->replaceWithConcrete(FlowHydrator::class, $this->mockFlowHydrator->reveal());
-			});
+				ModuleOne::class => $this->moduleOne
+			]);
 		}
 		
 		public function test_handle_flows_in_other_modules () {
 
-			// given => see module injection
+			/*	1) Give FlowRoutes to module 3
+				2) getLoadedRenderer stubs a renderer containing one of the routes in FlowRoutes/module 3, meaning it should be handled by RouteBranches (ostensibly, at the end of the request)
+			*/
 
 			$this->makeJob(
 				new BranchesContext(
 					$this->getLoadedRenderer(),
 
-					null, $this->getModules(), null
+					null, $this->modules, null
 				)
 			)->handle(); // when
 
-			$sut = $this->mockFlowHydrator;
+			$this->mockCalls([ // then
 
-			// then
-			$sut->executeRequest()->shouldBeCalled();
+				"executeRequest" => [1, []],
 
-			$sut->setDependencies(
-				$this->getModuleTwo()->getContainer()->getClass(ResponseManager::class),
+				"setDependencies" => [1, [
 
-				new AnyValuesToken
-			)
-			->shouldBeCalled();
+					$this->moduleThree->getContainer()->getClass(ResponseManager::class),
+
+					$this->anything()
+				]]
+			], $this->mockFlowHydrator);
 		}
 	}
 ?>

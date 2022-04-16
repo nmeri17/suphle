@@ -13,6 +13,8 @@
 
 	use Tilwa\Tests\Integration\Generic\CommonBinds;
 
+	use Tilwa\Tests\Mocks\Models\Eloquent\MultiEditProduct;
+
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\Services\{MultiUserEditMock, MultiUserEditError};
 
 	use DateTime, DateInterval;
@@ -22,6 +24,8 @@
 		use DirectHttpTest, BaseDatabasePopulator, CommonBinds;
 
 		private $modelName = MultiEditProduct::class;
+
+		protected $usesRealDecorator = true;
 
 		public function test_missing_key_on_update_throws_error () {
 

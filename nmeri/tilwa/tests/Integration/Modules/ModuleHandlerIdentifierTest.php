@@ -82,7 +82,7 @@
 
 			return $this->positiveDouble(ModuleHandlerIdentifier::class, [
 
-				"getModules" => $this->getModules()
+				"getModules" => $this->modules
 			]);
 		}
 	}

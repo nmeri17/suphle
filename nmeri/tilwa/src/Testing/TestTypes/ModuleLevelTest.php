@@ -3,6 +3,8 @@
 
 	use Tilwa\Modules\ModuleDescriptor;
 
+	use Tilwa\Hydration\Container;
+
 	use Tilwa\Contracts\IO\Session;
 
 	use Tilwa\IO\Session\InMemorySession;
@@ -79,6 +81,11 @@
 				
 				Session::class => new InMemorySession
 			]);
+		}
+
+		protected function getContainer ():Container {
+
+			return $this->activeModuleContainer();
 		}
 	}
 ?>

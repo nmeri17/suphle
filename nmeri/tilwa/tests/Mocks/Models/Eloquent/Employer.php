@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Models\Eloquent;
 
-	use Tilwa\Adapters\Orms\Eloquent\Factories\EmployerFactory;
+	use Tilwa\Tests\Mocks\Models\Eloquent\Factories\EmployerFactory;
 
 	use Tilwa\Adapters\Orms\Eloquent\Models\BaseModel;
 

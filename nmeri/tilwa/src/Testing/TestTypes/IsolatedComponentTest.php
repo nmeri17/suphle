@@ -19,14 +19,16 @@
 			GagsException::setUp as mufflerSetup;
 		}
 
-		protected $container;
+		protected $container, $usesRealDecorator = false;
 
 		protected function setUp ():void {
 
-			$this->container = $container = $this->positiveDouble(CheckProvisionedClasses::class, [
+			$this->container = $container = $this->positiveDouble(
 
-				"getDecorator" => $this->stubDecorator()
-			]);
+				CheckProvisionedClasses::class,
+
+				$this->setDecoratorState()
+			);
 
 			$this->bootContainer($container);
 
@@ -87,6 +89,15 @@
 				$container->refreshClass($parentType);
 
 			$container->whenTypeAny()->needsAny($provisions);
+		}
+
+		private function setDecoratorState ():array {
+
+			if (!$this->usesRealDecorator)
+
+				return ["getDecorator" => $this->stubDecorator()];
+
+			return [];
 		}
 	}
 ?>

@@ -5,7 +5,7 @@
 
 	use Tilwa\Contracts\{Presentation\HtmlParser, Queues\Adapter as QueueAdapter, Modules\ControllerModule, Exception\FatalShutdownAlert};
 
-	use Tilwa\Contracts\IO\{Session, MailClient};
+	use Tilwa\Contracts\IO\{Session, MailClient, EnvAccessor};
 
 	use Tilwa\Contracts\Requests\{RequestValidator, StdInputReader};
 
@@ -23,7 +23,7 @@
 
 	use Tilwa\IO\Image\SaveClients\LocalSaver;
 
-	use Tilwa\IO\{Session\NativeSession, Mailing\MailClientLoader};
+	use Tilwa\IO\{Session\NativeSession, Mailing\MailClientLoader, Env\DatabaseEnvReader};
 
 	use Tilwa\Queues\Adapters\Resque;
 
@@ -112,7 +112,9 @@
 
 				StdInputReader::class => NativeInputReader::class,
 
-				FatalShutdownAlert::class => MailShutdownAlert::class
+				FatalShutdownAlert::class => MailShutdownAlert::class,
+
+				EnvAccessor::class => DatabaseEnvReader::class
 			];
 		}
 

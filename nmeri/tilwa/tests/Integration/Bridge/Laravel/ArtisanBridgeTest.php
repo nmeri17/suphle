@@ -11,7 +11,7 @@
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
-	use Illuminate\Database\Migrations\Migrator;
+	use Illuminate\Database\Migrations\MigrationCreator;
 
 	use Symfony\Component\Console\Tester\CommandTester;
 
@@ -26,7 +26,7 @@
 
 					$laravelDouble = $this->positiveDouble($laravelContainer);
 
-					$migrator = Migrator::class;
+					$migrator = MigrationCreator::class;
 
 					$laravelDouble->instance($migrator, $this->negativeDouble($migrator, [], [
 

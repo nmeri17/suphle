@@ -12,7 +12,9 @@
 
 			$sut = $this->getUnderlyingConfig(); // when
 
-			$newName = (new AppConfig)->name();
+			$ourConfig = new AppConfig($sut->get("app"));
+
+			$newName = $ourConfig->name();
 
 			$this->assertSame($newName, $sut->get("app.name")); // then
 	    }

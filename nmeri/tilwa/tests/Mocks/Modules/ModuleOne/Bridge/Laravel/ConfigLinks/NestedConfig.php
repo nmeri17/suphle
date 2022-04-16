@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Bridge\Laravel\ConfigLinks;
 
-	use Tilwa\Bridge\Laravel\BaseConfigLink;
+	use Tilwa\Bridge\Laravel\Config\BaseConfigLink;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Bridge\Laravel\ConfigLinks\Structures\FirstLevel;
 

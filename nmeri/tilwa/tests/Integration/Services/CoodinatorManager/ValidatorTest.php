@@ -7,7 +7,7 @@
 
 	use Tilwa\Response\ResponseManager;
 
-	use Tilwa\Contracts\Presentation\BaseRenderer;
+	use Tilwa\Contracts\{Presentation\BaseRenderer, Requests\ValidationEvaluator};
 
 	use Tilwa\Middleware\MiddlewareQueue;
 
@@ -120,14 +120,20 @@
 				"isValidated" => true
 			]);
 
-			$sut = $this->positiveDouble($sutName, [
+			$sut = $this->replaceConstructorArguments(
 
-				"isLaravelRoute" => false,
+				$sutName,
+				[
+					"router" => $this->negativeDouble(RouteManager::class)
+				],
+				[
+					"isLaravelRoute" => false,
 
-				"attemptAuthentication" => $this->returnSelf(),
+					"attemptAuthentication" => $this->returnSelf(),
 
-				"authorizeRequest" => $this->returnSelf()
-			]);
+					"authorizeRequest" => $this->returnSelf()
+				]
+			);
 
 			$middlewareQueue = $this->negativeDouble(MiddlewareQueue::class, [], [
 
@@ -170,7 +176,10 @@
 			])
 			->getClass(ValidationFailureDiffuser::class);
 
-			$diffuser->setContextualData($this->positiveDouble(ValidationFailure::class));
+			$diffuser->setContextualData(
+
+				new ValidationFailure ($this->positiveDouble(ValidationEvaluator::class))
+			);
 
 			$diffuser->prepareRendererData(); // when
 		}

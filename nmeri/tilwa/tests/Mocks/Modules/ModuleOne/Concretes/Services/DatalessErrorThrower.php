@@ -38,6 +38,8 @@
 		public function deliberateError ():string {
 
 			trigger_error("error_msg");
+
+			return "I'm shy";
 		}
 
 		public function deliberateException ():string {

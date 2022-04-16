@@ -5,11 +5,11 @@
 
 	use Tilwa\Console\CliRunner;
 
+	use Tilwa\Hydration\Container;
+
 	use Tilwa\Testing\Proxies\Extensions\FrontDoor;
 
 	use Tilwa\Testing\Condiments\{ModuleReplicator, BaseModuleInteractor, GagsException};
-
-	use PHPUnit\Framework\TestCase;
 
 	abstract class CommandLineTest extends TestVirginContainer {
 
@@ -40,5 +40,10 @@
 		 * @return DescriptorInterface[]
 		 */
 		abstract protected function getModules ():array;
+
+		protected function getContainer ():Container {
+
+			return current($this->modules)->getContainer();
+		}
 	}
 ?>

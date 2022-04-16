@@ -7,15 +7,15 @@
 
 	use Tilwa\Response\Format\Json;
 
-	use Tilwa\Testing\TestTypes\ModuleLevelTest;
-
 	use Tilwa\Testing\Condiments\QueueInterceptor;
+
+	use Tilwa\Tests\Integration\Modules\ModuleDescriptor\DescriptorCollection;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Controllers\FlowController;
 
 	use Illuminate\Support\Collection;
 
-	abstract class JobFactory extends ModuleLevelTest {
+	abstract class JobFactory extends DescriptorCollection {
 
 		use QueueInterceptor {
 
@@ -98,7 +98,7 @@
 
 				$user, // creates 10 content models, but assigns the given user as their owner
 
-				$this->getModules(), null
+				$this->modules, null
 			);
 		}
 	}

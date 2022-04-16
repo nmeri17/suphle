@@ -3,7 +3,7 @@
 
 	use Tilwa\Contracts\Auth\AuthStorage;
 
-	use Tilwa\Auth\SessionStorage;
+	use Tilwa\Auth\Storage\SessionStorage;
 
 	use Tilwa\Adapters\Orms\Eloquent\Models\User as EloquentUser;
 
@@ -32,7 +32,7 @@
 
 			$this->assertAuthenticatedAs($user2); // then
 
-			$this->assertSame($sut->getPreviousUser(), $user1->getId());
+			$this->assertTrue($sut->getPreviousUser() == $user1->getId()); // int/string comparison
 		}
 
 		public function test_logout () {

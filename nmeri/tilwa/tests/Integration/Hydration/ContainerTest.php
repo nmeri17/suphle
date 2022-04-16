@@ -5,13 +5,38 @@
 
 	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
+	use Tilwa\Tests\Integration\Generic\CommonBinds;
+
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Interfaces\CInterface, Config\ServicesMock};
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\{NeedsSpace, CircularConstructor1, CircularConstructor2, ARequiresBCounter, BCounter, CConcrete, V1\RewriteSpaceImpl};
 
 	class ContainerTest extends IsolatedComponentTest {
 
+		use CommonBinds {
+
+			CommonBinds::simpleBinds as commonSimples;
+
+			CommonBinds::concreteBinds as commonConcretes;
+		}
+
 		private $aRequires = ARequiresBCounter::class;
+
+		protected function simpleBinds ():array {
+
+			return array_merge($this->commonSimples(), [
+
+				CInterface::class => CConcrete::class
+			]);
+		}
+
+		protected function concreteBinds ():array {
+
+			return array_merge($this->commonConcretes(), [
+
+				CConcrete::class => new CConcrete(10)
+			]);
+		}
 
 		public function test_providing_caller_gets_injected () {
 
@@ -107,16 +132,6 @@
 			$aConcrete->receiveProvidedInterface(...array_values($parameters));
 
 			$this->assertNotEquals($aConcrete->getCInterface()->getValue(), 10); // then
-		}
-
-		protected function simpleBinds ():array {
-
-			return [CInterface::class => CConcrete::class];
-		}
-
-		protected function concreteBinds ():array {
-
-			return [CConcrete::class => new CConcrete(10)];
 		}
 
 		public function test_whenSpace() {

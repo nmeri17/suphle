@@ -5,7 +5,7 @@
 
 	use Dotenv\Dotenv;
 
-	abstract class AbstractEnvLoader implements EnvAccessor {
+	abstract class AbstractEnvReader implements EnvAccessor {
 
 		private $fileConfig;
 

@@ -7,7 +7,7 @@
 
 	use Tilwa\Request\PayloadStorage;
 
-	use Tilwa\Modules\ModuleExceptionBridge;
+	use Tilwa\Modules\{ModuleExceptionBridge, ModuleHandlerIdentifier};
 
 	use Tilwa\Response\Format\Json;
 
@@ -80,7 +80,7 @@
 			// given
 			$mockSut = $this->positiveDouble($this->sut, [
 				
-				"handlingRenderer" => (new Json)->setRawResponse($response)
+				"handlingRenderer" => (new Json("actionHandler"))->setRawResponse($response)
 			]);
 
 			$this->firstContainer->whenTypeAny()->needsAny([

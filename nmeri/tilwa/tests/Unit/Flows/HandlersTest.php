@@ -7,11 +7,13 @@
 
 	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
+	use Tilwa\Tests\Integration\Generic\CommonBinds;
+
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\FlowService;
 
 	class HandlersTest extends IsolatedComponentTest {
 
-	 	use FlowData;
+	 	use FlowData, CommonBinds;
 
 		private $flowService = FlowService::class;
 

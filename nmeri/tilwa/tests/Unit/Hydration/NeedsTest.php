@@ -5,9 +5,13 @@
 
 	use Tilwa\Testing\{TestTypes\IsolatedComponentTest, Proxies\Extensions\CheckProvisionedClasses};
 
+	use Tilwa\Tests\Integration\Generic\CommonBinds;
+
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\{ ARequiresBCounter, BCounter};
 
 	class NeedsTest extends IsolatedComponentTest {
+
+		use CommonBinds;
 
 		private $ourB, $aRequires = ARequiresBCounter::class;
 

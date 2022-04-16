@@ -1,13 +1,17 @@
 <?php
 	namespace Tilwa\Tests\Unit\Flows;
 
+	use Tilwa\Flows\{FlowHydrator, Structures\RouteUserNode, Previous\SingleNode};
+
 	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
-	use Tilwa\Flows\{FlowHydrator, Structures\RouteUserNode, Previous\SingleNode};
+	use Tilwa\Tests\Integration\Generic\CommonBinds;
 
 	use DateTime;
 
 	class FlowConfigTest extends IsolatedComponentTest {
+
+		use CommonBinds;
 
 	 	private $hydrator, $unitNode;
 

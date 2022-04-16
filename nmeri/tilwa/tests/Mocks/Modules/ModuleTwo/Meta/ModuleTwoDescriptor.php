@@ -3,6 +3,10 @@
 
 	use Tilwa\Modules\ModuleDescriptor;
 
+	use Tilwa\Contracts\{Database\OrmDialect, Config\ModuleFiles};
+
+	use Tilwa\Config\AscendingHierarchy;
+
 	use Tilwa\Tests\Mocks\Interactions\{ModuleTwo, ModuleThree};
 
 	class ModuleTwoDescriptor extends ModuleDescriptor {
@@ -23,6 +27,16 @@
 		public function interfaceCollection ():string {
 
 			return CustomInterfaceCollection::class;
+		}
+
+		protected function entityBindings ():void {
+
+			parent::entityBindings();
+
+			$this->container->whenTypeAny()->needsAny([
+
+				ModuleFiles::class => new AscendingHierarchy(__DIR__)
+			]);
 		}
 	}
 ?>

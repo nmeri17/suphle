@@ -110,13 +110,13 @@
 			];
 		}
 
-		private function makeJob (AccessContext $context):UpdateCountDelete {
+		private function makeJob ($dependency):UpdateCountDelete {
 
 			$jobName = UpdateCountDelete::class;
 
-			return $this->container->whenType($jobName)
+			return $this->getContainer()->whenType($jobName)
 
-			->needs([ get_class($context) => $context ])
+			->needs([ get_class($dependency) => $dependency ])
 			
 			->getClass($jobName);
 		}

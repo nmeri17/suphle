@@ -57,7 +57,7 @@
 				$this->sessionClient->setValue($this->previousUserKey, $this->identifier);
 		}
 
-		public function getPreviousUser ():string {
+		public function getPreviousUser ():?string {
 
 			return $this->sessionClient->getValue($this->previousUserKey);
 		}

@@ -1,19 +1,21 @@
 <?php
 	namespace Tilwa\Tests\Integration\Services\Proxies\SystemModelEdit;
 
-	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
+	use Tilwa\Contracts\Database\OrmDialect;
 
-	use Tilwa\Testing\Condiments\DirectHttpTest;
+	use Tilwa\Testing\{TestTypes\IsolatedComponentTest, Condiments\DirectHttpTest};
+
+	use Tilwa\Tests\Integration\Generic\CommonBinds;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Controllers\GoodPutController;
 
-	use Tilwa\Contracts\Database\OrmDialect;
-
 	class SystemEditOrmTest extends IsolatedComponentTest {
 
-		use DirectHttpTest;
+		use DirectHttpTest, CommonBinds;
 
 		private $ormDialect = OrmDialect::class;
+
+		protected $usesRealDecorator = true;
 
 		private function mockOrm ($numTimes) {
 

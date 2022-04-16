@@ -1,9 +1,11 @@
 <?php
 	namespace Tilwa\Tests\Integration\Services;
 
+	use Tilwa\Contracts\Database\OrmDialect;
+
 	use Tilwa\Testing\{TestTypes\IsolatedComponentTest, Condiments\DirectHttpTest};
 
-	use Tilwa\Contracts\Database\OrmDialect;
+	use Tilwa\Tests\Integration\Generic\CommonBinds;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\Services\Search\SimpleSearchService;
 
@@ -11,7 +13,7 @@
 
 	class SimpleSearchTest extends IsolatedComponentTest {
 
-		use DirectHttpTest;
+		use DirectHttpTest, CommonBinds;
 
 		private $ormDialect, $searchService, $model,
 

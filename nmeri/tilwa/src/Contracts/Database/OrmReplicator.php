@@ -15,7 +15,7 @@
 		*/
 		public function getRandomEntity ();
 
-		public function getRandomEntities ( int $amount):array;
+		public function getRandomEntities ( int $amount):iterable;
 
 		public function setActiveModelType (string $model):void;
 

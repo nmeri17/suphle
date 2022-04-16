@@ -5,9 +5,7 @@
 
 	use Tilwa\Contracts\Config\{ Router, Events, Laravel};
 
-	use Tilwa\Contracts\IO\EnvAccessor;
-
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Config\{RouterMock, EventsMock, LaravelMock, EnvRequiredSub};
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Config\{RouterMock, EventsMock, LaravelMock};
 
 	use Tilwa\Tests\Mocks\Interactions\ModuleOne;
 
@@ -29,9 +27,7 @@
 
 			return array_merge(parent::simpleBinds(), [
 
-				ModuleOne::class => ModuleApi::class,
-
-				EnvAccessor::class => EnvRequiredSub::class
+				ModuleOne::class => ModuleApi::class
 			]);
 		}
 	}
