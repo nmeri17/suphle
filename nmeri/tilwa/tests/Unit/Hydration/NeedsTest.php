@@ -11,7 +11,10 @@
 
 	class NeedsTest extends IsolatedComponentTest {
 
-		use CommonBinds;
+		use CommonBinds {
+
+			concreteBinds as commonConcretes;
+		}
 
 		private $ourB, $aRequires = ARequiresBCounter::class;
 
@@ -24,10 +27,10 @@
 
 		protected function concreteBinds ():array {
 
-			return [
+			return array_merge($this->commonConcretes(), [
 
 				BCounter::class => $this->ourB
-			];
+			]);
 		}
 
 		public function test_raw_class_correctly_uses_needs () {
