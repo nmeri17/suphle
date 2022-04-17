@@ -3,6 +3,8 @@
 
 	use Tilwa\Contracts\{Auth\AuthStorage, Config\Router};
 
+	use Tilwa\Auth\Storage\SessionStorage;
+
 	use Tilwa\Adapters\Orms\Eloquent\Models\User as EloquentUser;
 
 	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\BaseDatabasePopulator};
@@ -40,7 +42,7 @@
 
 			$this->actingAs($user); // given
 
-			$sut = $this->container->getClass(AuthStorage::class);
+			$sut = $this->getContainer()->getClass(AuthStorage::class);
 
 			$sut->logout(); // when
 

@@ -9,7 +9,11 @@
 
 	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
+	use Tilwa\Tests\Integration\Generic\CommonBinds;
+
 	class FinalHandlerWrapperTest extends IsolatedComponentTest {
+
+		use CommonBinds;
 
 		public function test_extracts_from_response_manager () {
 

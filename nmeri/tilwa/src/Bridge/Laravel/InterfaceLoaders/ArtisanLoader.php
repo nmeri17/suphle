@@ -7,7 +7,7 @@
 
 	use Tilwa\Bridge\Laravel\ArtisanConcrete;
 
-	use Illuminate\Console\Application;
+	use Illuminate\{Console\Application, Events\Dispatcher};
 
 	class ArtisanLoader extends BaseInterfaceLoader {
 

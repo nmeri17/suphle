@@ -22,7 +22,10 @@
 
 			// given => see module injection
 
-			$this->mockEventReceiver->handleMultiModuleRebound()->shouldBeCalled(); // then
+			$this->mockCalls([
+
+				"handleMultiModuleRebound" => [1, []]
+			], $this->mockEventReceiver); // then
 
 			$this->getModuleFor(ModuleOne::class)->multiModuleCascadeEvent(true); // when
 		}

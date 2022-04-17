@@ -3,9 +3,7 @@
 
 	use Tilwa\Testing\{TestTypes\CommandLineTest, Proxies\WriteOnlyContainer};
 
-	use Tilwa\Bridge\Laravel\Cli\ArtisanCli;
-
-	use Tilwa\Contracts\Bridge\LaravelContainer;
+	use Tilwa\Bridge\Laravel\{Cli\ArtisanCli, LaravelAppConcrete};
 
 	use Tilwa\Hydration\Container;
 
@@ -22,7 +20,7 @@
 			return [
 				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-					$laravelContainer = LaravelContainer::class;
+					$laravelContainer = LaravelAppConcrete::class; // using the concrete since we need actual behavior by the time this reaches OrmLoader
 
 					$laravelDouble = $this->positiveDouble($laravelContainer);
 

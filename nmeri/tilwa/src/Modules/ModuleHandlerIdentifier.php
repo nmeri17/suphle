@@ -127,7 +127,7 @@
 
 		public function handleLoginRequest ():string {
 
-			$loginHandler = $this->container->getClass(ModuleLoginHandler::class);
+			$loginHandler = $this->getLoginHandler();
 
 			if (!$loginHandler->isValidRequest())
 
@@ -136,6 +136,11 @@
 			$this->identifiedHandler = $loginHandler;
 
 			return $loginHandler->getResponse();
+		}
+
+		public function getLoginHandler ():ModuleLoginHandler {
+
+			return $this->container->getClass(ModuleLoginHandler::class);
 		}
 
 		public function underlyingRenderer ():BaseRenderer {

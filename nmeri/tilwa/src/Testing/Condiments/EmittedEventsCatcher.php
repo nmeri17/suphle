@@ -9,13 +9,13 @@
 
 	trait EmittedEventsCatcher {
 
-		private $eventManager;
+		private $eventParent;
 
 		abstract protected function getModules ():array;
 
 		protected function getEventParent ():?ModuleLevelEvents {
 
-			return $this->eventManager = new MockModuleEvents($this->modules);
+			return $this->eventParent = new MockModuleEvents($this->modules);
 		}
 
 		protected function assertFiredEvent (string $emitter, string $eventName):void {
@@ -43,11 +43,13 @@
 
 		private function findInBlanks (string $sender):?EventSubscription {
 
-			foreach ($this->eventManager->getBlanks() as $subscription)
+			foreach ($this->eventParent->getBlanks() as $subscription)
 
 				if ($subscription->matchesHandler($sender))
 
 					return $subscription;
+
+			return null;
 		}
 	}
 ?>

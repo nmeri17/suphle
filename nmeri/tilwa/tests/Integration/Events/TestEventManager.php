@@ -19,22 +19,9 @@
 
 			if (!is_null($this->eventReceiverName))
 
-				$this->mockEventReceiver = $this->prophesize($this->eventReceiverName);
+				$this->mockEventReceiver = $this->positiveDouble($this->eventReceiverName);
 
-			$this->setModuleOne();
-
-			$this->setModuleThree();
-
-			$this->setModuleTwo();
-		}
-		
-		protected function getModules ():array {
-
-			return [
-				$this->moduleOne, $this->moduleTwo,
-
-				$this->moduleThree
-			];
+			parent::setUp();
 		}
 
 		/**
@@ -48,8 +35,16 @@
 
 			return $this->replicateModule($descriptorName, function(WriteOnlyContainer $container) {
 
-				$container->replaceWithConcrete($this->eventReceiverName, $this->mockEventReceiver->reveal());
+				$container->replaceWithConcrete($this->eventReceiverName, $this->mockEventReceiver);
 			});
+		}
+
+		protected function expectUpdatePayload ():void {
+
+			$this->mockCalls([
+
+				"updatePayload" => [1, [$this->payload]]
+			], $this->mockEventReceiver);
 		}
 	}
 ?>

@@ -45,7 +45,7 @@
 			return $builder->make();
 		}
 
-		public function getRandomEntity () {
+		public function getRandomEntity ():object {
 
 			return $this->activeModel->inRandomOrder()->first();
 		}

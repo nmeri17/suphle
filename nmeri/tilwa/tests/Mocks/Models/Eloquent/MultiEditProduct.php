@@ -7,6 +7,8 @@
 
 	use Tilwa\Tests\Models\Eloquent\Factories\MultiEditProductFactory;
 
+	use Illuminate\Database\Eloquent\Factories\Factory;
+
 	class MultiEditProduct extends BaseModel implements IntegrityModel {
 
 		use EditIntegrity;

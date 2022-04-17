@@ -34,12 +34,12 @@
 
 			$this->unitNode->setMaxHits($callback);
 
-			// then
-			$sut = $this->prophesize(RouteUserNode::class);
+			$sut = $this->positiveDouble(RouteUserNode::class, [// then
 
-			$sut->setMaxHitsHydrator($callback)->shouldBeCalled();
+				"setMaxHitsHydrator" => [1, [$callback]]
+			]);
 
-			$this->hydrator->runNodeConfigs( $sut->reveal(), $this->unitNode); // when
+			$this->hydrator->runNodeConfigs( $sut, $this->unitNode); // when
 		}
 
 		public function test_setExpiresAtHydrator () {
@@ -52,12 +52,12 @@
 
 			$this->unitNode->setTTL($callback);
 
-			// then
-			$sut = $this->prophesize(RouteUserNode::class);
+			$sut = $this->positiveDouble(RouteUserNode::class, [// then
 
-			$sut->setExpiresAtHydrator($callback)->shouldBeCalled();
+				"setExpiresAtHydrator" => [1, [$callback]]
+			]);
 
-			$this->hydrator->runNodeConfigs( $sut->reveal(), $this->unitNode); // when
+			$this->hydrator->runNodeConfigs( $sut, $this->unitNode); // when
 		}
 	}
 ?>

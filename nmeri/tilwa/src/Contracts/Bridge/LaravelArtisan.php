@@ -3,6 +3,6 @@
 
 	interface LaravelArtisan {
 
-		public function call ($command, array $parameters = [], $outputBuffer = null):int
+		public function invokeCommand ($command, array $parameters = []):int;
 	}
 ?>

@@ -13,7 +13,7 @@
 		/**
 		 * @return concrete instance of given model
 		*/
-		public function getRandomEntity ();
+		public function getRandomEntity ():object;
 
 		public function getRandomEntities ( int $amount):iterable;
 

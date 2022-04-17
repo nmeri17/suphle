@@ -27,7 +27,7 @@
 		public function test_authorized_user_can_perform_operation () {
 
 			// given
-			$user1 = User::factory()->make();
+			$user1 = $this->replicator->getRandomEntity();
 
 			$this->mockAuthContract();
 
@@ -72,9 +72,7 @@
 			$this->expectException(UnauthorizedServiceAccess::class); // then
 
 			// given
-			$user1 = User::factory()->make();
-
-			$user2 = User::factory()->make();
+			[$user1, $user2] = $this->replicator->getRandomEntities(2);
 
 			$this->mockAuthContract();
 

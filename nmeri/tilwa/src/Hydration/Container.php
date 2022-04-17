@@ -520,14 +520,18 @@
 		/**
 		 * Pulls out a provided instance of a dependency when present, or creates a fresh one
 		 * 
-		 * @return object matching type at given parameter
+		 * @param {parameterType} Null for parameters that weren't typed
+		 * 
+		 * @return mixed. Entity matching type at given parameter
 		*/
-		private function hydrateProvidedParameter (ProvisionUnit $callerProvision, ReflectionType $parameterType, string $parameterName, bool $callerIsClosure) {
+		private function hydrateProvidedParameter (ProvisionUnit $callerProvision, ?ReflectionType $parameterType, string $parameterName, bool $callerIsClosure) {
 
 			if ($callerProvision->hasArgument($parameterName))
 
 				return $callerProvision->getArgument($parameterName);
 
+			if (is_null($parameterType)) return null;
+				
 			$typeName = $parameterType->getName();
 
 			if ($callerProvision->hasArgument($typeName))

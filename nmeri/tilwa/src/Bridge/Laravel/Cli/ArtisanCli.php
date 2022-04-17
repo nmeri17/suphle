@@ -31,7 +31,7 @@
 
 			$exitCode = $this->moduleToRun($input)->getContainer()->getClass(LaravelArtisan::class)
 
-			->call($input->getArgument("to_forward"));
+			->invokeCommand($input->getArgument("to_forward"));
 
 			$output->writeln("Operation completed successfully");
 

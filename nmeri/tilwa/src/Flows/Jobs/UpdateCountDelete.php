@@ -19,7 +19,7 @@
 			$this->cacheManager = $cacheManager;
 		}
 
-		public function handle() {
+		public function handle ():void {
 
 			$accessed = $this->accessedContext;
 

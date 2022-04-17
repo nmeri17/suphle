@@ -1,17 +1,17 @@
 <?php
 	namespace Tilwa\Tests\Integration\Modules;
 
-	use Tilwa\Tests\Integration\Flows\Jobs\RouteBranches\JobFactory;
-
-	use Tilwa\Testing\Condiments\DirectHttpTest;
-
 	use Tilwa\Modules\ModuleHandlerIdentifier;
 
 	use Tilwa\Hydration\Container; 
 
-	use Tilwa\Auth\LoginRequestHandler;
+	use Tilwa\Contracts\Auth\ModuleLoginHandler;
 
 	use Tilwa\Flows\OuterFlowWrapper;
+
+	use Tilwa\Testing\Condiments\DirectHttpTest;
+
+	use Tilwa\Tests\Integration\Flows\Jobs\RouteBranches\JobFactory;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
@@ -33,10 +33,8 @@
 
 			$this->stubSingle([
 
-				"getLoginHandler" => $this->mockLoginHandler(), // then
-
-				$sut
-			]); // given
+				"getLoginHandler" => $this->mockLoginHandler() // then	
+			], $sut); // given
 
 			// when
 			$this->setHttpParams("/login", "post", []);
@@ -44,9 +42,9 @@
 			$sut->respondFromHandler();
 		}
 
-		private function mockLoginHandler ():LoginRequestHandler {
+		private function mockLoginHandler ():ModuleLoginHandler {
 
-			$handler = $this->negativeDouble(LoginRequestHandler::class, ["isValidRequest" => true], [
+			$handler = $this->negativeDouble(ModuleLoginHandler::class, ["isValidRequest" => true], [
 
 				"getResponse" => [
 

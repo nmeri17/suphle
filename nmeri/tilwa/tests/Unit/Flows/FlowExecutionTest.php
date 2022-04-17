@@ -33,14 +33,13 @@
 			// given
 			$hydrator = $this->getHydratorForExecuteRequest(true);
 
-			$responseManager = $this->prophesize($this->responseManager);
+			$sut = $this->positiveDouble($this->responseManager, [
 
-			$responseManager->handleValidRequest()->shouldBeCalled();
+				"handleValidRequest" => [1, []]
+			]);
  
  			// when
-			$hydrator->setDependencies($responseManager->reveal(), [])
-
-			->executeRequest();
+			$hydrator->setDependencies($sut, [])->executeRequest();
 		}
 
 		private function getHydratorForExecuteRequest (bool $canProcessPath):FlowHydrator {

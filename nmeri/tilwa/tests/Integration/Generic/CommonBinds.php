@@ -3,11 +3,9 @@
 
 	use Tilwa\Contracts\Config\{Router, ModuleFiles};
 
-	use Tilwa\Contracts\IO\EnvAccessor;
-
 	use Tilwa\Config\AscendingHierarchy;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Config\{RouterMock, EnvRequiredSub};
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Config\{RouterMock};
 
 	trait CommonBinds {
 
@@ -15,15 +13,18 @@
 
 			return array_merge(parent::simpleBinds(), [
 
-				Router::class => RouterMock::class,
-
-				EnvAccessor::class => EnvRequiredSub::class
+				Router::class => RouterMock::class
 			]);
+		}
+
+		protected function fileConfigModuleName ():string {
+
+			return "ModuleOne";
 		}
 
 		protected function concreteBinds ():array {
 
-			$anchorPath = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . "Mocks/Modules/ModuleOne/Config";
+			$anchorPath = dirname(__DIR__, 2) . "/Mocks/Modules/". $this->fileConfigModuleName() . "/Config";
 
 			return array_merge(parent::concreteBinds(), [
 
