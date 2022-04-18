@@ -25,9 +25,9 @@
 
 		public function setUp ():void {
 
-			parent::setUp();
-
 			$this->mockFlowHydrator = $this->positiveDouble($this->sutName);
+
+			parent::setUp();
 		}
 
 		protected function getModules():array {

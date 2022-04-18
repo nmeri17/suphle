@@ -17,6 +17,8 @@
 
 		private $serviceName = DatalessErrorThrower::class;
 
+		protected $usesRealDecorator = true;
+
 		public function test_successful_call_returns_value () {
 
 			$value = 55;

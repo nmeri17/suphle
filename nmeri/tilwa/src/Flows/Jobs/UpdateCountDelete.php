@@ -29,9 +29,11 @@
 
 			$mainFlow = $accessed->getRouteUserNode();
 
+			$urlPattern = $accessed->getPath();
+
 			$hits = $mainFlow->currentHits();
 
-			if ($hits >= $mainFlow->getMaxHits())
+			if ($hits >= $mainFlow->getMaxHits( $accessingUser, $urlPattern ))
 
 				$routeUmbrella->clearUser($accessingUser);
 
@@ -41,7 +43,7 @@
 				$routeUmbrella->addUser($accessingUser, $mainFlow);
 			}
 			
-			$cacheManager->save($accessed->getPath(), $routeUmbrella); // override whatever was there
+			$this->cacheManager->save($urlPattern, $routeUmbrella); // override whatever was there
 		}
 	}
 ?>

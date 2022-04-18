@@ -33,7 +33,7 @@
 			// given
 			$hydrator = $this->getHydratorForExecuteRequest(true);
 
-			$sut = $this->positiveDouble($this->responseManager, [
+			$sut = $this->positiveDouble($this->responseManager, [], [
 
 				"handleValidRequest" => [1, []]
 			]);
@@ -52,9 +52,10 @@
 			// given
 			$hydrator = $this->getHydratorForExecuteRequest(false);
 
-			$responseManager = $this->prophesize($this->responseManager);
+			$responseManager = $this->positiveDouble($this->responseManager, [], [
 
-			$responseManager->handleValidRequest()->shouldNotBeCalled();
+				"handleValidRequest" => [0, []]
+			]);
  
  			// when
 			$hydrator->setDependencies($responseManager, [])

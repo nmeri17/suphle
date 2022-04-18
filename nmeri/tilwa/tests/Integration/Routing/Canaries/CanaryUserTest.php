@@ -1,9 +1,11 @@
 <?php
 	namespace Tilwa\Tests\Integration\Routing\Canaries;
 
-	use Tilwa\Testing\{Condiments\BaseDatabasePopulator, Proxies\SecureUserAssertions};
+	use Tilwa\Contracts\Auth\UserContract;
 
 	use Tilwa\Adapters\Orms\Eloquent\Models\User as EloquentUser;
+
+	use Tilwa\Testing\{Condiments\BaseDatabasePopulator, Proxies\SecureUserAssertions};
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\CanaryRoutes;
 
@@ -37,6 +39,8 @@
 
 				$matchingRenderer = $this->fakeRequest("/special-foo/same-url"); // when
 
+				$this->assertNotNull($matchingRenderer);
+
 				$this->assertTrue($matchingRenderer->matchesHandler($handlerName) ); // then
 			});
 		}
@@ -45,9 +49,9 @@
 
 			return [
 
-				[$this->container->getClass(User::class)->find(5), "user5Handler"],
+				[$this->container->getClass(UserContract::class)->find(5), "user5Handler"],
 
-				[$this->container->getClass(User::class)->find(4), "fooHandler"]
+				[$this->container->getClass(UserContract::class)->find(4), "fooHandler"]
 			];
 		}
 	}

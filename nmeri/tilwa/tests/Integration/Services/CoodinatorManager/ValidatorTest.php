@@ -7,7 +7,7 @@
 
 	use Tilwa\Response\ResponseManager;
 
-	use Tilwa\Contracts\{Presentation\BaseRenderer, Requests\ValidationEvaluator};
+	use Tilwa\Contracts\{Presentation\BaseRenderer, Requests\ValidationEvaluator, Modules\DescriptorInterface};
 
 	use Tilwa\Middleware\MiddlewareQueue;
 
@@ -114,42 +114,40 @@
 
 			$sutName = ModuleInitializer::class;
 
+			$middlewareQueueName = MiddlewareQueue::class;
+
+			$responseManager = ResponseManager::class;
+
+			$container = $this->container;
+
 			// given
-			$validatorManager = $this->positiveDouble(ValidatorManager::class, [
-
-				"isValidated" => true
-			]);
-
 			$sut = $this->replaceConstructorArguments(
 
 				$sutName,
 				[
-					"router" => $this->negativeDouble(RouteManager::class)
+					"descriptor" => $this->positiveDouble(DescriptorInterface::class, [
+
+						"getContainer" => $container
+					])
 				],
 				[
-					"isLaravelRoute" => false,
-
-					"attemptAuthentication" => $this->returnSelf(),
-
-					"authorizeRequest" => $this->returnSelf()
+					"isLaravelRoute" => false
 				]
 			);
 
-			$middlewareQueue = $this->negativeDouble(MiddlewareQueue::class, [], [
+			$container->whenTypeAny()->needsAny([
 
-				"runStack" => [1, [$this->anything()]]
-			]); // then
+				ResponseManager::class => $this->negativeDouble(ResponseManager::class),
 
-			$this->container->whenTypeAny()->needsAny([
+				$middlewareQueueName => $this->negativeDouble($middlewareQueueName, [], [
 
-				ValidatorManager::class => $validatorManager,
-
-				MiddlewareQueue::class => $middlewareQueue,
+					"runStack" => [1, []]
+				]), // then
 
 				$sutName => $sut
-			])
+			]);
 
-			->getClass($sutName)->triggerRequest(); // when
+			$sut->initialize()->triggerRequest(); // when
 		}
 
 		public function test_failed_validation_reverts_renderer () {

@@ -5,13 +5,15 @@
 
 	use Tilwa\Contracts\Services\Models\IntegrityModel;
 
-	use Tilwa\Tests\Models\Eloquent\Factories\MultiEditProductFactory;
+	use Tilwa\Tests\Mocks\Models\Eloquent\Factories\MultiEditProductFactory;
 
 	use Illuminate\Database\Eloquent\Factories\Factory;
 
 	class MultiEditProduct extends BaseModel implements IntegrityModel {
 
 		use EditIntegrity;
+
+		protected $table = "multi_edit_product";
 
 		protected static function newFactory ():Factory {
 
@@ -20,7 +22,7 @@
 
 		public static function migrationFolders ():array {
 
-			return [dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . "Migrations"];
+			return [__DIR__ . DIRECTORY_SEPARATOR . "Migrations"];
 		}
 	}
 ?>

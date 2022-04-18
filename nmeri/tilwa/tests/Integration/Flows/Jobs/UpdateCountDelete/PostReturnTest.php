@@ -70,9 +70,9 @@
 			$this->dataProvider([
 
 				[$this, "expiredContexts"]
-			], function (RouteUserNode $context) {
+			], function (RouteUserNode $payload) {
 
-				$this->makeJob($context)->handle(); // given
+				$this->makeJob( $this->makeAccessContext($payload))->handle(); // given
 
 				$this->assertNotHandledByFlow($this->resourceUrl); // then
 			});

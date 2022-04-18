@@ -14,6 +14,8 @@
 	use Tilwa\Tests\Mocks\Interactions\ModuleOne;
 
 	class InterjectsRequestTest extends ModuleLevelTest {
+
+		private $sutName = HierarchialMiddleware2::class;
 		
 		protected function getModules ():array {
 
@@ -25,37 +27,31 @@
 						"defaultMiddleware" => [
 							HierarchialMiddleware1::class,
 
-							HierarchialMiddleware2::class,
+							$this->sutName,
 
 							FinalHandlerWrapper::class
 						]
-					]);
+					])
+					->replaceWithConcrete($this->sutName, $this->mockMiddleware2()); // then
 				})
 			];
 		}
 
-		public function test_default_middleware_executes_top_to_bottom () {
+		private function mockMiddleware2 ():HierarchialMiddleware2 {
 
-			// given => @see [getModules]
+			return $this->positiveDouble($this->sutName, [], [
 
-			$sutName = HierarchialMiddleware2::class;
-
-			// then
-			$hierarchial2 = $this->positiveDouble($sutName, [], [
-
-				"process" => [1, [$this->returnCallback(function($subject) {
+				"process" => [1, [$this->callback(function($subject) {
 
 					return $subject->hasKey("foo");
 
 				}), $this->anything()]]
 			]);
+		}
 
-			$this->getModules()[0]->getContainer()->whenTypeAny()
+		public function test_default_middleware_executes_top_to_bottom () {
 
-			->needsAny([
-
-				$sutName => $hierarchial2
-			]);
+			// given => @see [getModules]
 
 			$this->get("/segment"); // when
 		}

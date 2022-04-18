@@ -5,13 +5,11 @@
 
 	use Tilwa\Routing\Crud\ApiBuilder;
 
-	use Tilwa\Request\PathAuthorizer;
-
 	class BaseApiCollection extends BaseCollection implements ApiRouteCollection {
 
 		protected $collectionParent = BaseApiCollection::class;
 
-		public function __construct(CanaryValidator $validator, TokenStorage $authStorage, MiddlewareRegistry $middlewareRegistry, PathAuthorizer $pathAuthorizer) {
+		public function __construct(CanaryValidator $validator, TokenStorage $authStorage, MethodSorter $methodSorter) {
 
 			parent::__construct($validator, $authStorage, $middlewareRegistry, $pathAuthorizer);
 		}

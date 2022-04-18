@@ -34,7 +34,7 @@
 
 			$this->unitNode->setMaxHits($callback);
 
-			$sut = $this->positiveDouble(RouteUserNode::class, [// then
+			$sut = $this->positiveDouble(RouteUserNode::class, [], [// then
 
 				"setMaxHitsHydrator" => [1, [$callback]]
 			]);
@@ -52,7 +52,7 @@
 
 			$this->unitNode->setTTL($callback);
 
-			$sut = $this->positiveDouble(RouteUserNode::class, [// then
+			$sut = $this->positiveDouble(RouteUserNode::class, [], [ // then
 
 				"setExpiresAtHydrator" => [1, [$callback]]
 			]);

@@ -9,6 +9,8 @@
 
 	use Illuminate\Database\Migrations\Migrator;
 
+	use Exception;
+
 	class ModelReplicator implements OrmReplicator {
 
 		/**
@@ -68,7 +70,20 @@
 
 				$repository->createRepository();
 
+			$this->validateMigrationPaths();
+
 			$this->migrator->run($this->activeModel::migrationFolders());
+		}
+
+		private function validateMigrationPaths ():void {
+
+			$model = $this->activeModel;
+
+			foreach ($model::migrationFolders() as $path)
+
+				if (!is_dir($path))
+
+					throw new Exception("Invalid migration path given while trying to migrate model ". get_class($model). ": $path");
 		}
 
 		public function dismantleSchema ():void {

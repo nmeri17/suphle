@@ -27,7 +27,7 @@
 
 				CheckProvisionedClasses::class,
 
-				$this->setDecoratorState()
+				$this->getContainerStubs()
 			);
 
 			$this->bootContainer($container);
@@ -35,6 +35,8 @@
 			$this->withDefaultInterfaceCollection($container);
 
 			$this->entityBindings();
+
+			$this->maySetRealDecorator();
 
 			$this->mufflerSetup();
 		}
@@ -91,13 +93,22 @@
 			$container->whenTypeAny()->needsAny($provisions);
 		}
 
-		private function setDecoratorState ():array {
+		private function getContainerStubs ():array {
+
+			$stubs = [];
 
 			if (!$this->usesRealDecorator)
 
-				return ["getDecorator" => $this->stubDecorator()];
+				$stubs["getDecorator"] = $this->stubDecorator();
 
-			return [];
+			return $stubs;
+		}
+
+		private function maySetRealDecorator ():void {
+
+			if ($this->usesRealDecorator)
+
+				$this->container->interiorDecorate();
 		}
 	}
 ?>

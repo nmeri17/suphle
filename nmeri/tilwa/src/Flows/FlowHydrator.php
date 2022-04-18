@@ -291,7 +291,7 @@
 				return $this->responseManager->handleValidRequest($this->requestDetails);
 		}
 
-		public function handleOneOf(array $indexes, string $requestProperty):BaseRenderer {
+		public function handleOneOf (array $indexes, string $requestProperty):?BaseRenderer {
 
 			return $this->updateRequest([
 
@@ -300,7 +300,7 @@
 			->executeRequest();
 		}
 
-		public function handleRange(iterable $indexes, RangeContext $context):BaseRenderer {
+		public function handleRange (iterable $indexes, RangeContext $context):?BaseRenderer {
 
 			return $this->updateRequest([
 

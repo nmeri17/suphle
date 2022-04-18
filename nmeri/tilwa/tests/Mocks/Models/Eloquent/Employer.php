@@ -21,7 +21,7 @@
 
 		public static function migrationFolders ():array {
 
-			return [dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . "Migrations"];
+			return [__DIR__ . DIRECTORY_SEPARATOR . "Migrations"];
 		}
 	}
 ?>

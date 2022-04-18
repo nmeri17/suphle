@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Models\Eloquent\Migrations;
 
-	use Tilwa\Tests\Mocks\Models\Eloquent\Models\Employer;
+	use Tilwa\Tests\Mocks\Models\Eloquent\Employer;
 
 	use Illuminate\Database\{Migrations\Migration, Schema\Blueprint};
 

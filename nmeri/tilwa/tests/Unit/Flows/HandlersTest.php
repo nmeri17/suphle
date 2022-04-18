@@ -15,7 +15,9 @@
 
 	 	use FlowData, CommonBinds;
 
-		private $flowService = FlowService::class;
+		private $flowService = FlowService::class,
+
+		$sutName = FlowHydrator::class;
 
 		public function setUp ():void {
 
@@ -48,13 +50,13 @@
 			$sut->handlePipe($indexes, 1, $this->createCollectionNode());
 		}
 
-		private function mockFlowHydrator ( array $mocks) {
+		private function mockFlowHydrator ( array $mocks):FlowHydrator {
 
 			$mocks = array_merge(["executeRequest" => [1, []]], $mocks);
 
 			return $this->replaceConstructorArguments(
 
-				FlowHydrator::class, [], [], $mocks
+				$this->sutName, [], [], $mocks
 			);
 		}
 
@@ -100,13 +102,16 @@
 			$this->assertSame(
 				$result,
 
-				$flowServiceInstance->customHandlePrevious( $this->indexesToModels() )
+				$flowServiceInstance->customHandlePrevious([
+					
+					"data" => $this->indexesToModels()
+				])
 			); // then
 		}
 
 		private function getHydratorForService ():FlowHydrator {
 
-			return $this->replaceConstructorArguments(FlowHydrator::class, [/*using this so they can receive proper containers*/], [
+			return $this->replaceConstructorArguments($this->sutName, [/*using this so they can receive proper containers*/], [
 
 				"getNodeFromPrevious" => $this->payloadFromPrevious()
 			]);
@@ -114,16 +119,19 @@
 
 		public function test_fromService_doesnt_edit_request_or_trigger_controller() {
 
-			// then
-			$sut = $this->mockFlowHydrator([
+			$sut = $this->getHydratorForService();
+
+			$this->mockCalls([ // then
 
 				"executeRequest" => [0, []],
 
 				"updateRequest" => [0, []],
-			]);
+			], $sut);
 
-			// when
-			$sut->handleServiceSource(null, $this->getServiceContext(), $this->createCollectionNode() );
+			$sut->handleServiceSource( // when
+
+				null, $this->getServiceContext(), $this->createCollectionNode() // given
+			);
 		}
 
 		public function test_fromService_passes_previous_payload() {
