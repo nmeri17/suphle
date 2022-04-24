@@ -14,7 +14,7 @@
 		 * 
 		 * @return Mock version of given [target], with an auto-generated class name
 		*/
-		protected function positiveDouble (string $target, array $stubs = [], array $mockMethods = [], array $constructorArguments = []):MockObject {
+		protected function positiveDouble (string $target, array $stubs = [], array $mockMethods = [], ?array $constructorArguments = null):MockObject {
 
 			$builder = $this->getBuilder(
 				$target, $constructorArguments,
@@ -29,7 +29,7 @@
 			return $builder;
 		}
 
-		protected function positiveDoubleMany (string $target, array $stubs = [], array $mockMethods = [], array $constructorArguments = []) {
+		protected function positiveDoubleMany (string $target, array $stubs = [], array $mockMethods = [], ?array $constructorArguments = null) {
 
 			$builder = $this->getBuilder(
 				$target, $constructorArguments,
@@ -67,7 +67,7 @@
 		/**
 		 * Stubs all methods out except those explicitly provided
 		*/
-		protected function negativeDouble (string $target, array $stubs = [], array $mockMethods = [], array $constructorArguments = []) {
+		protected function negativeDouble (string $target, array $stubs = [], array $mockMethods = [], ?array $constructorArguments = null) {
 
 			$allMethods = get_class_methods($target);
 
@@ -114,13 +114,14 @@
 		}
 
 		/**
+		 * @param {constructorArguments} when null, constructor will be skipped
 		 * @return MockObject version of given [target]
 		*/
-		private function getBuilder (string $target, array $constructorArguments, array $methodsToRetain):MockObject {
+		private function getBuilder (string $target, ?array $constructorArguments, array $methodsToRetain):MockObject {
 
 			$builder = $this->getMockBuilder($target);
 
-			if (!empty($constructorArguments))
+			if (!is_null($constructorArguments))
 
 				$builder->setConstructorArgs($constructorArguments);
 
@@ -149,7 +150,7 @@
 
 			bool $positiveDouble = true, bool $positiveConstructor = true,
 
-			bool $useBaseContainer = true
+			bool $useBaseContainer = true, bool $constructorCallsStubs = false
 		):MockObject {
 
 			$reflectedConstructor = new ReflectionMethod($target, Container::CLASS_CONSTRUCTOR);
@@ -163,11 +164,20 @@
 				$useBaseContainer
 			);
 
-			return $positiveDouble?
-			
-				$this->positiveDouble($target, $methodStubs, $mockMethods, $arguments):
+			$doubleMode = $positiveDouble ? "positiveDouble": "negativeDouble";
 
-				$this->negativeDouble($target, $methodStubs, $mockMethods, $arguments);
+			if (!$constructorCallsStubs)
+
+				$double = $this->$doubleMode($target, $methodStubs, $mockMethods, $arguments);
+
+			else {
+
+				$double = $this->$doubleMode($target, $methodStubs, $mockMethods);
+
+				$double->__construct(...array_values($arguments));
+			}
+
+			return $double;
 		}
 
 		private function mockDummyUnion (array $parameters, array $replacements, bool $isPositive, bool $useBaseContainer):array {

@@ -3,7 +3,7 @@
 
 	use Tilwa\Contracts\{Config\Laravel, Bridge\LaravelContainer};
 
-	use Tilwa\Bridge\Laravel\Config\ConfigLoader;
+	use Tilwa\Bridge\Laravel\{DefaultExceptionHandler, Config\ConfigLoader};
 
 	use Tilwa\Request\{RequestDetails, PayloadStorage};
 
@@ -11,7 +11,9 @@
 
 	use Illuminate\Foundation\Application;
 
-	use Illuminate\Foundation\Bootstrap\{RegisterFacades, RegisterProviders};
+	use Illuminate\Foundation\Bootstrap\{RegisterFacades, RegisterProviders, BootProviders};
+
+	use Illuminate\Contracts\Debug\ExceptionHandler;
 
 	use ReflectionClass;
 
@@ -31,7 +33,9 @@
 
 		protected $kernelBootstrappers = [
 
-			RegisterProviders::class, RegisterFacades::class
+			RegisterFacades::class, RegisterProviders::class,
+
+			BootProviders::class
 		];
 
 		public function __construct (RequestDetails $requestDetails, ConfigLoader $configLoader, PayloadStorage $payloadStorage, string $basePath) {
@@ -45,7 +49,7 @@
 			parent::__construct($basePath);
 		}
 
-		public function defaultBindings ():array {
+		public function concreteBinds ():array {
 
 			return [
 				"app" => $this,
@@ -56,11 +60,26 @@
 			];
 		}
 
-		public function injectBindings (array $bindings):void {
+		public function simpleBinds ():array {
+
+			return [
+
+				ExceptionHandler::class => DefaultExceptionHandler::class
+			];
+		}
+
+		public function registerConcreteBindings (array $bindings):void {
 
 			foreach ($bindings as $alias => $concrete)
 
 				$this->instance($alias, $concrete);
+		}
+
+		public function registerSimpleBindings (array $bindings):void {
+
+			foreach ($bindings as $alias => $concrete)
+
+				$this->singleton($alias, $concrete);
 		}
 
 		protected function provideRequest ():Request {
@@ -85,7 +104,7 @@
 
 		public function createSandbox (callable $explosive) {
 
-			$this->requireHelpers(); // we need this file active while running their routes so it can pick [view()]
+			$this->requireHelpers();
 
 			if (!self::$hasSetApp) {
 

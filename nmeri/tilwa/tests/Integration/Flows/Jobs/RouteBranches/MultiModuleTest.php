@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Integration\Flows\Jobs\RouteBranches;
 
-	use Tilwa\Flows\Structures\BranchesContext;
+	use Tilwa\Flows\{FlowHydrator, Structures\BranchesContext};
 
 	use Tilwa\Modules\ModuleDescriptor;
 

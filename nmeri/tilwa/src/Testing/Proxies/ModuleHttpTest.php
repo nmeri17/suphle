@@ -31,11 +31,6 @@
 			return $this;
 		}
 
-		protected function firstModuleContainer ():Container {
-
-			return $this->entrance->firstContainer();
-		}
-
 		protected function getInitializerWrapper ():ModuleToRoute {
 
 			return $this->firstModuleContainer()->getClass(ModuleToRoute::class);

@@ -20,7 +20,7 @@
 
 		public function afterBind ($initialized):void {
 
-			$this->laravelContainer->injectBindings($this->databaseBindings($initialized)); // implicitly sets connection
+			$this->laravelContainer->registerConcreteBindings($this->databaseBindings($initialized)); // implicitly sets connection
 
 			$client = $initialized->getNativeClient();
 

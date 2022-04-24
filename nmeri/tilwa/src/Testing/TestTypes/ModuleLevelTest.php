@@ -9,8 +9,6 @@
 
 	use Tilwa\IO\Session\InMemorySession;
 
-	use Tilwa\Events\ModuleLevelEvents;
-
 	use Tilwa\Testing\Condiments\{ModuleReplicator, GagsException, BaseModuleInteractor};
 
 	use Tilwa\Testing\Proxies\{ModuleHttpTest, Extensions\FrontDoor};
@@ -21,10 +19,6 @@
 
 			GagsException::setUp as mufflerSetup;
 		}
-
-		protected $modules, // making this accessible for traits down the line that will need identical instances of the modules this base type is working with
-
-		$entrance;
 
 		protected function setUp ():void {
 
@@ -48,11 +42,6 @@
 		 * @return ModuleDescriptor[]
 		 */
 		abstract protected function getModules ():array;
-
-		protected function getEventParent ():?ModuleLevelEvents {
-
-			return null;
-		}
 
 		/**
 		 * Doesn't return the descriptor but rather the concrete associated with inteface exported by given module

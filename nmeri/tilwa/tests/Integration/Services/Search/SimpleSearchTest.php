@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Tests\Integration\Services;
+	namespace Tilwa\Tests\Integration\Services\Search;
 
 	use Tilwa\Contracts\Database\OrmDialect;
 
@@ -25,7 +25,10 @@
 
 			$this->ormDialect = $this->negativeDouble(OrmDialect::class);
 
-			$this->searchService = $this->positiveDouble(SimpleSearchService::class);
+			$this->searchService = $this->replaceConstructorArguments(SimpleSearchService::class, [
+
+				"ormDialect" => $this->ormDialect
+			]);
 			
 			$this->model = new stdClass;
 

@@ -53,7 +53,7 @@
 			}
 			catch (Throwable $exception) {
 
-				$this->identifiedHandler = $exceptionBridge = $this->freshExceptionBridge();
+				$this->identifiedHandler = $exceptionBridge;
 
 				$exceptionBridge->hydrateHandler($exception);
 

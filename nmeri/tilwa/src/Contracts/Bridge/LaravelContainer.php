@@ -17,9 +17,13 @@
 
 		public function instance($abstract, $instance);
 
-		public function defaultBindings ():array;
+		public function concreteBinds ():array;
 
-		public function injectBindings (array $bindings):void;
+		public function simpleBinds ():array;
+
+		public function registerConcreteBindings (array $bindings):void;
+
+		public function registerSimpleBindings (array $bindings):void;
 
 		public function runContainerBootstrappers ():void;
 

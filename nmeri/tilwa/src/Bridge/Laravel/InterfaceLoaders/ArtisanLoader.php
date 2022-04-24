@@ -20,6 +20,8 @@
 
 		public function bindArguments ():array {
 
+			$this->laravelContainer->loadDeferredProviders(); // it's important that providers are booted before our concrete is being instantiated, since concrete will expect commands to have already been injected into console, which only happens during booting
+
 			return [
 				"laravel" => $this->laravelContainer,
 

@@ -18,16 +18,17 @@
 			GagsException::setUp as mufflerSetup;
 		}
 
-		private $modules; // trait will access this
-
 		protected $consoleRunner;
 
 		protected function setUp ():void {
 
 			$this->consoleRunner = new CliRunner (
 
-				new FrontDoor($this->modules = $this->getModules()),
+				$this->entrance = new FrontDoor(
+					$this->modules = $this->getModules(),
 
+					$this->getEventParent()
+				),
 				new SymfonyCli("SuphleTest", "v2")
 			);
 

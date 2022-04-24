@@ -94,9 +94,9 @@
 
 		public function except (array $exclude):array {
 
-			return array_filter($this->payload, function ($key) use ($include) {
+			return array_filter($this->payload, function ($key) use ($exclude) {
 
-				return !array_key_exists($key, $include);
+				return !array_key_exists($key, $exclude);
 			}, ARRAY_FILTER_USE_KEY);
 		}
 	}

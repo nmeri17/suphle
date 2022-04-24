@@ -9,6 +9,8 @@
 
 	use Tilwa\Contracts\Config\{ModuleFiles, Laravel as LaravelConfig};
 
+	use Tilwa\Contracts\Bridge\LaravelContainer;
+
 	class LaravelAppLoader extends BaseInterfaceLoader {
 
 		private $fileConfig, $laravelConfig, $configLoader;
@@ -32,16 +34,23 @@
 
 		public function afterBind ($initialized):void {
 
-			$initialized->injectBindings($initialized->defaultBindings()); // required for below call
+			$this->injectBindings($initialized); // required for below call
 
 			$initialized->createSandbox(function () use ($initialized) {
 
 				(new ConfigFileFinder)
 
-				->loadConfigurationFiles($initialized, $this->configLoader);
+				->loadConfigurationFiles($initialized, $this->configLoader); // leaving this here instead of in app bootstrappers so we can inject custom loader
 
 				$initialized->runContainerBootstrappers();
 			});
+		}
+
+		private function injectBindings (LaravelContainer $laravelContainer):void {
+
+			$laravelContainer->registerConcreteBindings($laravelContainer->concreteBinds());
+
+			$laravelContainer->registerSimpleBindings($laravelContainer->simpleBinds());
 		}
 
 		public function concrete():string {

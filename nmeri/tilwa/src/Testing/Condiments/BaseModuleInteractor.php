@@ -1,11 +1,16 @@
 <?php
 	namespace Tilwa\Testing\Condiments;
 
+	use Tilwa\Hydration\Container;
+
+	use Tilwa\Events\ModuleLevelEvents;
+
 	trait BaseModuleInteractor {
 
-		/**
-		 * Client test type must set [$this->modules]
-		*/
+		protected $modules, // making this accessible for traits down the line that will need identical instances of the modules this base type is working with
+
+		$entrance;
+
 		protected function massProvide (array $provisions):void {
 
 			foreach ($this->modules as $descriptor) {
@@ -33,6 +38,16 @@
 
 				$descriptor->prepareToRun();
 			}
+		}
+
+		protected function getEventParent ():?ModuleLevelEvents {
+
+			return null;
+		}
+
+		protected function firstModuleContainer ():Container {
+
+			return $this->entrance->firstContainer();
 		}
 	}
 ?>

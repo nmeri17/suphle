@@ -13,46 +13,54 @@
 
 	use Tilwa\Testing\TestTypes\ModuleLevelTest;
 
-	use Exception;
+	use Throwable, Exception;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
 	class TerminatedRequestTest extends ModuleLevelTest {
 
-		private $firstContainer, $sut = ModuleExceptionBridge::class;
+		private $sutName = ModuleExceptionBridge::class,
 
-		public function setUp ():void {
-
-			$this->firstContainer = new Container;
-
-			parent::setUp();
-		}
+		$handlerIdentifier = ModuleHandlerIdentifier::class;
 
 		/**
-		 * @param {exception} mocked Throwable
+		 * @param {exception} mocked 
 		*/
-		private function exceptionStubModuleHandler ( $exception):ModuleHandlerIdentifier {
+		private function exceptionStubModuleHandler (Throwable $exception):ModuleHandlerIdentifier {
 
-			return $this->positiveDouble(ModuleHandlerIdentifier::class, [
-				"getModules" => $this->getModules(),
+			$handler = $this->replaceConstructorArguments($this->handlerIdentifier, [], [
+				
+				"getModules" => $this->modules,
 
-				"respondFromHandler" => $exception
-			]);
+				"respondFromHandler" => $exception,
+
+				"transferHeaders" => null
+			], [], true, true, true, true);
+
+			$this->bootMockEntrance($handler);
+
+			return $handler;
 		}
 
-		private function errorStubModuleHandler (callback $exception):ModuleHandlerIdentifier {
+		private function errorStubModuleHandler (callable $callback):ModuleHandlerIdentifier {
 
-			return $this->positiveDouble(ModuleHandlerIdentifier::class, [
+			$handler = $this->replaceConstructorArguments($this->handlerIdentifier, [], [
 				
-				"getModules" => $this->getModules(),
+				"getModules" => $this->modules,
 
-				"respondFromHandler" => $this->returnCallback($callback)
-			]);
+				"respondFromHandler" => $this->returnCallback($callback),
+
+				"transferHeaders" => null
+			], [], true, true, true, true);
+
+			$this->bootMockEntrance($handler);
+
+			return $handler;
 		}
 
 		protected function getModules ():array {
 
-			return [new ModuleOneDescriptor($this->firstContainer)];
+			return [new ModuleOneDescriptor(new Container)];
 		}
 
 		public function test_exceptions_uses_assigned_handler () {
@@ -77,27 +85,39 @@
 
 			$response = "boo!";
 
+			$container = $this->getContainer();
+
+			$parameters = $container->getMethodParameters(Container::CLASS_CONSTRUCTOR, $this->sutName);
+
 			// given
-			$mockSut = $this->positiveDouble($this->sut, [
+			$sut = $this->replaceConstructorArguments($this->sutName, $parameters, [
 				
 				"handlingRenderer" => (new Json("actionHandler"))->setRawResponse($response)
 			]);
 
-			$this->firstContainer->whenTypeAny()->needsAny([
+			$container->whenTypeAny()->needsAny([
 
-				$this->sut => $mockSut
+				$this->sutName => $sut
 			]);
 
 			$entrance = $this->errorStubModuleHandler(function (){
 
 				trigger_error("waterloo", E_USER_ERROR);
 			});
-
-			$this->assertWillCatchPayload($this->firstContainer->getClass(PayloadStorage::class)); // then 1
+		
+// can move this to an instance property
+			$this->assertWillCatchPayload($container->getClass(PayloadStorage::class)); // then 1
 
 			$entrance->diffusedRequestResponse(); // when
 
 			$this->expectOutputString($response); // then 2
+		}
+
+		private function bootMockEntrance (ModuleHandlerIdentifier $entrance):void {
+
+			$entrance->bootModules();
+
+			$entrance->extractFromContainer();
 		}
 	}
 ?>
