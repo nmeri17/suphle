@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Testing\Condiments;
 
-	use Tilwa\Contracts\Database\{OrmReplicator, OrmTester};
+	use Tilwa\Contracts\Database\{OrmReplicator, OrmTester, OrmDialect};
 
 	trait BaseDatabasePopulator {
 
@@ -9,7 +9,7 @@
 
 		$databaseApi;
 
-		protected static $isFirstTest = false,
+		protected static $isFirstTest = true, // using this to maintain state since PHPUnit resets all instance properties per test
 
 		$staticReplicator; // duplicating this value since it's the one used in [tearDownAfterClass] but we want to maintain consistency using `$this` instead of a static property
 
@@ -17,14 +17,14 @@
 
 			parent::setUp();
 
-			if (!static::$isFirstTest) { // testBeforeClass is the designated method for universal setups like this. But container needed for extracting replicator is unavailable then
+			$this->setReplicator();
 
-				$this->structureTable();
+			if (static::$isFirstTest) { // testBeforeClass is the designated method for universal setups like this. But container needed for extracting replicator is unavailable then
 
-				static::$isFirstTest = true;
+				$this->replicator->setupSchema();
+
+				static::$isFirstTest = false;
 			}
-
-			else $this->replicator = static::$staticReplicator;
 
 			$this->replicator->listenForQueries(); // note: since we have no control/wrapper around actual running test, if it throws \Error, the seeding below won't be rolled back
 
@@ -33,13 +33,11 @@
 			$this->databaseApi = $this->getContainer()->getClass(OrmTester::class);
 		}
 
-		private function structureTable ():void {
+		private function setReplicator ():void {
 
-			static::$staticReplicator = $this->replicator = $replicator = $this->getContainer()->getClass(OrmReplicator::class);
+			$this->replicator = static::$staticReplicator = $this->getContainer()->getClass(OrmReplicator::class);
 
-			$replicator->setActiveModelType($this->getActiveEntity());
-
-			$replicator->setupSchema();
+			$this->replicator->setActiveModelType($this->getActiveEntity());
 		}
 
 		/**

@@ -1,15 +1,23 @@
 <?php
 	namespace Tilwa\Auth\Storage;
 
-	use Tilwa\Contracts\Auth\{AuthStorage, UserContract};
+	use Tilwa\Contracts\Auth\{AuthStorage, UserContract, UserHydrator};
 
+	/**
+	 * Assumes ormDialect has already booted. They should probably be coupled together, but AuthStorage is crucis enough to exist independently (type-hinting, for one)
+	*/
 	abstract class BaseAuthStorage implements AuthStorage {
 
-		protected $userHydrator, $authConfig, $user, $identifier;
+		protected $userHydrator, $user, $identifier;
+
+		public function setHydrator (UserHydrator $userHydrator):void {
+
+			$this->userHydrator = $userHydrator;
+		}
 
 		public function getUser ():?UserContract {
 
-			if (is_null($this->identifier)) return null;
+			if (is_null($this->identifier) || is_null($this->userHydrator)) return null;
 
 			if ( is_null($this->user)) // when accessed for the first time
 

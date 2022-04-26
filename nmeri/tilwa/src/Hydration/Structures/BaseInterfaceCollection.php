@@ -13,7 +13,7 @@
 
 	use Tilwa\Contracts\Bridge\{LaravelContainer, LaravelArtisan};
 
-	use Tilwa\Contracts\Auth\{AuthStorage, UserContract, UserHydrator as IUserHydrator, ModuleLoginHandler};
+	use Tilwa\Contracts\Auth\{AuthStorage, ModuleLoginHandler};
 
 	use Tilwa\Contracts\Config\{AuthContract, Transphporm as TransphpormConfig, Laravel as LaravelConfig, ExceptionInterceptor, Console as ConsoleContract, Database, Flows as FlowConfig};
 
@@ -29,7 +29,7 @@
 
 	use Tilwa\Auth\{LoginHandlerInterfaceLoader, Storage\SessionStorage};
 
-	use Tilwa\Adapters\Orms\Eloquent\{UserHydrator as EloquentUserHydrator, UserEntityLoader, ModelReplicator, OrmLoader, DatabaseTester as EloquentTester};
+	use Tilwa\Adapters\Orms\Eloquent\{ UserEntityLoader, ModelReplicator, OrmLoader, DatabaseTester as EloquentTester};
 
 	use Tilwa\Adapters\Markups\Transphporm as TransphpormAdapter;
 
@@ -72,8 +72,6 @@
 
 				ImageThumbnailContract::class => ImageThumbnailLoader::class,
 
-				UserContract::class => UserEntityLoader::class,
-
 				RequestValidator::class => ValidatorLoader::class,
 
 				MailClient::class => MailClientLoader::class
@@ -107,8 +105,6 @@
 				ImageLocator::class => LocalSaver::class,
 
 				Session::class => NativeSession::class,
-
-				IUserHydrator::class => EloquentUserHydrator::class,
 
 				StdInputReader::class => NativeInputReader::class,
 

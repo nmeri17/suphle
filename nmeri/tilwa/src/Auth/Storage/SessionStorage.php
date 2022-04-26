@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Auth\Storage;
 
-	use Tilwa\Contracts\{Auth\UserHydrator, IO\Session};
+	use Tilwa\Contracts\IO\Session;
 
 	use Tilwa\Contracts\Config\AuthContract;
 
@@ -13,11 +13,7 @@
 
 		$isImpersonating, $sessionClient;
 
-		public function __construct (UserHydrator $userHydrator, AuthContract $authConfig, Session $sessionClient) {
-
-			$this->userHydrator = $userHydrator;
-
-			$this->authConfig = $authConfig;
+		public function __construct ( Session $sessionClient) {
 
 			$this->sessionClient = $sessionClient;
 		}

@@ -9,11 +9,9 @@
 
 	class VersioningTest extends TestsRouter {
 
-		protected function entityBindings ():void {
+		protected function concreteBinds ():array {
 
-			parent::entityBindings();
-
-			$this->container->whenTypeAny()->needsAny([
+			return array_merge(parent::concreteBinds(), [
 
 				IRouter::class => $this->positiveDouble(
 					RouterMock::class, [

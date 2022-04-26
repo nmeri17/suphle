@@ -11,5 +11,7 @@
 		public function exportsImplements ():string;
 
 		public function getContainer ():Container;
+
+		public function globalConcretes ():array;
 	}
 ?>

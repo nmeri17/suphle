@@ -80,8 +80,6 @@
 
 			$correctParameters = $this->validActionDependencies($parameters);
 
-			$this->prepareActionModels($correctParameters);
-
 			$this->handlerParameters = $correctParameters;
 		}
 

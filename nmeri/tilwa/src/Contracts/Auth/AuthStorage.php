@@ -17,5 +17,7 @@
 		 * @return null when there's no authenticated user
 		*/
 		public function getUser ():?UserContract;
+
+		public function setHydrator (UserHydrator $userHydrator):void;
 	}
 ?>

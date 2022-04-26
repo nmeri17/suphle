@@ -47,11 +47,13 @@
 
 		public function getUserAndResult ():array {
 
+			$model = $this->container->getClass(OrmDialect::class)->userModel();
+
 			return [
 
-				[$this->container->getClass(UserContract::class)->find(5), "user5Handler"],
+				[$model->find(5), "user5Handler"],
 
-				[$this->container->getClass(UserContract::class)->find(4), "fooHandler"]
+				[$model->find(4), "fooHandler"]
 			];
 		}
 	}

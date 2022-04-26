@@ -1,13 +1,15 @@
 <?php
 	namespace Tilwa\Contracts\Database;
 
+	use Tilwa\Contracts\Auth\{AuthStorage, UserHydrator, UserContract};
+
 	interface OrmDialect {
 
 		public function getConnection ():object;
 
 		public function runTransaction(callable $queries, array $lockModels = [], bool $hardLock = false);
 
-		public function registerObservers(array $observers):void;
+		public function registerObservers(array $observers, AuthStorage $authStorage):void;
 
 		/**
 		 * @return A builder/query object, with the filters applied
@@ -27,5 +29,12 @@
 		 * The underlying vendor being wrapped by this adapter
 		*/
 		public function getNativeClient ():object;
+
+		/**
+		 * Lives here to guarantee user can only be hydrated when orm is ready
+		*/
+		public function getUserHydrator ():UserHydrator;
+
+		public function userModel ():UserContract;
 	}
 ?>

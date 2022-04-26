@@ -3,15 +3,15 @@
 
 	use Tilwa\Middleware\BaseMiddleware;
 
-	use Tilwa\Contracts\Auth\UserContract;
+	use Tilwa\Contracts\Auth\AuthStorage;
 
 	class AttemptsLoadingUser extends BaseMiddleware {
 
-		private $user;
+		private $authStorage;
 
-		public function __construct (UserContract $user) {
+		public function __construct (AuthStorage $authStorage) {
 
-			$this->user = $user;
+			$this->authStorage = $authStorage;
 		}
 
 		public function process ($request, $requestHandler) {

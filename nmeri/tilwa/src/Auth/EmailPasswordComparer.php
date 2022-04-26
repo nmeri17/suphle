@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Auth;
 
-	use Tilwa\Contracts\Auth\UserHydrator;
+	use Tilwa\Contracts\Database\OrmDialect;
 
 	use Tilwa\Request\PayloadStorage;
 
@@ -9,9 +9,9 @@
 
 		private $userHydrator, $payloadStorage, $user;
 
-		public function __construct (UserHydrator $userHydrator, PayloadStorage $payloadStorage) {
+		public function __construct (OrmDialect $ormDialect, PayloadStorage $payloadStorage) {
 
-			$this->userHydrator = $userHydrator;
+			$this->userHydrator = $ormDialect->getUserHydrator();
 
 			$this->payloadStorage = $payloadStorage;
 		}

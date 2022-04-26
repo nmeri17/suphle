@@ -17,6 +17,8 @@
 
 		public function instance($abstract, $instance);
 
+		public function basePath($path = "");
+
 		public function concreteBinds ():array;
 
 		public function simpleBinds ():array;

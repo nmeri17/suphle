@@ -3,7 +3,7 @@
 
 	use Tilwa\Flows\{ ControllerFlows, Jobs\RouteBranches, Structures\BranchesContext};
 
-	use Tilwa\Contracts\{Auth\UserContract, Presentation\BaseRenderer};
+	use Tilwa\Contracts\{Auth\UserContract, Presentation\BaseRenderer, Database\OrmDialect};
 
 	use Tilwa\Response\Format\Json;
 
@@ -83,11 +83,11 @@
 
 		protected function makeUser (int $id):UserContract {
 
-			$entity = $this->container->getClass(UserContract::class);
+			$model = $this->container->getClass(OrmDialect::class)->userModel();
 
-			$entity->setId($id);
+			$model->setId($id);
 
-			return $entity;
+			return $model;
 		}
 
 		protected function makeBranchesContext (?UserContract $user):BranchesContext {

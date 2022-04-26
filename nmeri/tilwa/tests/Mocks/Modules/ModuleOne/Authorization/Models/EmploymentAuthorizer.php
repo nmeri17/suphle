@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Authorization\Models;
 
-	use Tilwa\Contracts\Auth\ModelAuthorities;
+	use Tilwa\Contracts\Auth\{ModelAuthorities, AuthStorage};
 
 	use Tilwa\Exception\Explosives\UnauthorizedServiceAccess;
 

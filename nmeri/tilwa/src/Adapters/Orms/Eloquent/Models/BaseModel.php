@@ -9,6 +9,8 @@
 
 		use HasFactory;
 
+		protected $guarded = ["id"];
+
 		abstract protected static function newFactory ():Factory; // we can't use a common interface for all adapters, since they'll have different way of setting factories
 
 		public static function __callStatic($method, $parameters) {

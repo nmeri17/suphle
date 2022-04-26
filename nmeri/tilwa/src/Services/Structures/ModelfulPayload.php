@@ -5,13 +5,19 @@
 
 	use Tilwa\Request\PayloadStorage;
 
+	use Tilwa\Routing\PathPlaceholders;
+
 	abstract class ModelfulPayload {
 
-		protected $payloadStorage, $ormDialect;
+		protected $payloadStorage, $ormDialect, $pathPlaceholders;
 
-		public function __construct (PayloadStorage $payloadStorage) {
+		public function __construct (PayloadStorage $payloadStorage, PathPlaceholders $pathPlaceholders, OrmDialect $ormDialect) {
 
 			$this->payloadStorage = $payloadStorage;
+
+			$this->pathPlaceholders = $pathPlaceholders;
+
+			$this->ormDialect = $ormDialect;
 		}
 
 		protected function onlyFields ():array {
@@ -23,11 +29,6 @@
 		 * @return a query builder after interacting with [payloadStorage]
 		*/
 		abstract protected function getBaseCriteria ();
-
-		public function setDependencies (OrmDialect $ormDialect) {
-
-			$this->ormDialect = $ormDialect;
-		}
 
 		/**
 		 * This is the only method dev cares about

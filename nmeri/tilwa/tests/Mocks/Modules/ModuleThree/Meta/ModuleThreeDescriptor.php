@@ -29,11 +29,9 @@
 			return CustomInterfaceCollection::class;
 		}
 
-		protected function entityBindings ():void {
+		public function globalConcretes ():array {
 
-			parent::entityBindings();
-
-			$this->container->whenTypeAny()->needsAny([
+			return array_merge(parent::globalConcretes(), [
 
 				ModuleFiles::class => new AscendingHierarchy(__DIR__)
 			]);

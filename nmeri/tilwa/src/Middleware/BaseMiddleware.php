@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Middleware;
 
-	use Tilwa\Contracts\{Routing\Middleware, Services\Decorators\SelectiveDependencies, Auth\UserContract};
+	use Tilwa\Contracts\{Routing\Middleware, Services\Decorators\SelectiveDependencies, Auth\AuthStorage};
 
 	use Tilwa\Request\RequestDetails;
 
@@ -21,7 +21,7 @@
 
 		public function getRejected ():array {
 
-			return [UserContract::class];
+			return [AuthStorage::class];
 		}
 	}
 ?>

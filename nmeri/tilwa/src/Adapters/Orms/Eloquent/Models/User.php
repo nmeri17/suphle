@@ -11,7 +11,7 @@
 
 		protected $hidden = ["password"], $table = "users",
 
-		$fillable = ["email", "password"];
+		$guarded = ["id", "password"];
 
 		protected static function newFactory ():Factory {
 

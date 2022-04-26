@@ -1,13 +1,15 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Models\Eloquent;
 
-	use Tilwa\Adapters\Orms\Eloquent\Models\BaseModel;
+	use Tilwa\Adapters\Orms\Eloquent\Models\{BaseModel, User};
 
 	use Tilwa\Tests\Mocks\Models\Eloquent\Factories\EmploymentFactory;
 
 	use Illuminate\Database\Eloquent\Factories\Factory;
 
 	class Employment extends BaseModel {
+
+		protected $table = "employment";
 
 		public function employer () {
 
@@ -21,7 +23,11 @@
 
 		public static function migrationFolders ():array {
 
-			return [__DIR__ . DIRECTORY_SEPARATOR . "Migrations"];
+			return array_merge(
+				[__DIR__ . DIRECTORY_SEPARATOR . "Migrations"],
+
+				User::migrationFolders()
+			);
 		}
 	}
 ?>

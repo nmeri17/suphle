@@ -34,6 +34,16 @@
 			$this->activeModel::factory()->count($amount)->create();
 		}
 
+		public function stopQueryListen ():void {
+
+			$this->databaseConnection->rollBack();
+		}
+
+		public function getCount ():int {
+
+			return $this->activeModel->count();
+		}
+
 		public function getBeforeInsertion ( int $amount = 1, array $customizeFields = [], callable $customizeModel = null) {
 
 			$builder = $this->activeModel::factory()->count($amount);
@@ -94,11 +104,6 @@
 		public function listenForQueries ():void {
 
 			$this->databaseConnection->beginTransaction();
-		}
-
-		public function stopQueryListen ():void {
-
-			$this->databaseConnection->rollBack();
 		}
 	}
 ?>

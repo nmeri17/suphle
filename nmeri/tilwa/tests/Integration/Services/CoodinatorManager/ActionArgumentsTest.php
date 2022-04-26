@@ -50,21 +50,6 @@
 			$this->assertSame($newList, $correctParameters); // then
 		}
 
-		public function test_injects_dependencies () {
-
-			// given, then
-			$parameters = [
-
-				$this->mockModelful(),
-
-				$this->positiveDouble(ModellessPayload::class),
-
-				$this->mockModelful()
-			];
-
-			$newList = $this->sut->prepareActionModels($parameters); // when
-		}
-
 		private function mockModelful ():ModelfulPayload {
 
 			return $this->positiveDouble(ModelfulPayload::class, [], [

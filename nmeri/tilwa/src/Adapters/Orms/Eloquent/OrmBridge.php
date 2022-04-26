@@ -1,9 +1,13 @@
 <?php
 	namespace Tilwa\Adapters\Orms\Eloquent;
 
-	use Tilwa\Contracts\{Database\OrmDialect, Config\Database, Bridge\LaravelContainer, Auth\AuthStorage};
-
 	use Tilwa\Hydration\Container;
+
+	use Tilwa\Adapters\Orms\Eloquent\Models\User as EloquentUser;
+
+	use Tilwa\Contracts\{Database\OrmDialect, Config\Database, Bridge\LaravelContainer};
+
+	use Tilwa\Contracts\Auth\{UserHydrator as HydratorContract, AuthStorage, UserContract};
 
 	use Illuminate\Database\{DatabaseManager, Capsule\Manager as CapsuleManager, Connection};
 
@@ -80,24 +84,17 @@
 		/**
 		 * {@inheritdoc}
 		*/
-		public function registerObservers(array $observers):void {
+		public function registerObservers (array $observers, AuthStorage $authStorage):void {
 
 			if (empty($observers)) return;
 
-			$authStorageName = AuthStorage::class;
+			$authStorage->setHydrator($this->getUserHydrator());
 
-			$authStorage = $this->container->getClass($authStorageName); // using local rather than instance property for this so it doesn't impede userEntity/model/authStorage from hydrating due to interface concrete circular dependencies
+			$this->laravelContainer->instance(AuthStorage::class, $authStorage); // guards in those observers will be relying on this contract
 
-			$this->laravelContainer->instance($authStorageName, $authStorage); // guards in those observers will be relying on this value
+			foreach ($observers as $model => $observer)
 
-			foreach ($observers as $model => $observer) {
-
-				$observerName = $model. "Authorization";
-
-				$this->laravelContainer->instance($observerName, $this->container->getClass($observer)); // this works since this is the same container passed to the eventDispatcher for use in hydrating the listeners
-
-				$model::observe($observerName);
-			}
+				$model::observe($this->container->getClass($observer));
 		}
 
 		public function selectFields ($builder, array $filters) {
@@ -113,6 +110,20 @@
 		public function getNativeClient ():object {
 
 			return $this->nativeClient;
+		}
+
+		public function getUserHydrator ():HydratorContract {
+
+			$hydrator = $this->container->getClass(UserHydrator::class);
+
+			$hydrator->setUserModel($this->userModel());
+
+			return $hydrator;
+		}
+
+		public function userModel ():UserContract {
+
+			return new EloquentUser;
 		}
 	}
 ?>

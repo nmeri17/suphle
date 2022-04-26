@@ -5,11 +5,9 @@
 
 	use Tilwa\Contracts\Bridge\LaravelContainer;
 
-	use Tilwa\Testing\TestTypes\CommandLineTest;
+	use Tilwa\Testing\{TestTypes\CommandLineTest, Proxies\WriteOnlyContainer, Condiments\FilesystemCleaner};
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
-
-	use org\bovigo\vfs\{vfsStream, vfsStreamDirectory};
 
 	use Illuminate\Database\MigrationServiceProvider;
 
@@ -17,28 +15,22 @@
 
 	class ArtisanBridgeTest extends CommandLineTest {
 
-		private $root, $migrationFolder = "sample_migrations";
+		use FilesystemCleaner;
 
-		protected function setUp ():void {
-
-			parent::setUp();
-
-			$this->root = vfsStream::setup($this->laravelBasePath());
-		}
+		private $migrationFolder = "sample_migrations";
 
 		protected function getModules ():array {
 
-			return [
-
-				new ModuleOneDescriptor (new Container)
-			];
+			return [new ModuleOneDescriptor(new Container) ];
 		}
 
 		public function test_can_create_migrations () {
 
 			// given => migrator command is wired in during laravel booting in artisan environment
-/*var_dump($this->laravelBasePath(), $this->root->url(), $this->root->hasChild($this->migrationFolder));
-			$this->assertFalse($this->root->hasChild($this->migrationFolder));*/
+
+			$migrationPath = $this->migrationPath();
+
+			$this->assertEmptyDirectory($migrationPath); // I would've liked to replace migrator instance injected in MigrationServiceProvider with a mock, but that replacement hasn't been possible
 
 			$command = $this->consoleRunner->findHandler("bridge:laravel");
 
@@ -46,18 +38,22 @@
 
 			$commandTester->execute([ // when
 
-				"to_forward" => "make:migration create_users_table --path=" . $this->migrationFolder, // I would've liked to replace migrator instance injected in MigrationServiceProvider with a mock, but that replacement hasn't been possible
+				"to_forward" => "make:migration create_users_table --path=" . $this->migrationFolder,
 			]);
 
 			// then
 			$commandTester->assertCommandIsSuccessful(); // $commandTester::getDisplay can be used to extract console output as a string
 
-			$this->assertTrue($this->root->hasChild($this->migrationFolder));
+			$this->assertNotEmptyDirectory($migrationPath);
+
+			$this->emptyDirectory($migrationPath);
 		}
 
-		private function laravelBasePath ():string {
+		private function migrationPath ():string {
 
-			return $this->firstModuleContainer()->getClass(LaravelContainer::class)->basePath();
+			return $this->firstModuleContainer()->getClass(LaravelContainer::class)
+
+			->basePath() . DIRECTORY_SEPARATOR . $this->migrationFolder;
 		}
 	}
 ?>

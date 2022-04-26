@@ -15,12 +15,6 @@
 		*/
 		public function markupRedirect ():string;
 
-		public function getTokenSecretKey ():string;
-
-		public function getTokenIssuer ():string;
-
-		public function getTokenTtl ():int;
-
 		// [<Model> => <ModelAuthorities>]
 		public function getModelObservers ():array;
 

@@ -58,15 +58,20 @@
 			return ControllerModule::class;
 		}
 
-		/**
-		 * Simply bind things into `$this->container`
-		*/
-		protected function entityBindings ():void {
+		public function globalConcretes ():array {
 
-			$this->container->whenTypeAny()->needsAny([
+			return [
 
 				DescriptorInterface::class => $this
-			]);
+			];
+		}
+
+		/**
+		 * Bind objects either globally or to specific consumers
+		*/
+		protected function registerConcreteBindings ():void {
+
+			$this->container->whenTypeAny()->needsAny($this->globalConcretes());
 		}
 
 		public function getContainer():Container {
@@ -148,7 +153,7 @@
 
 			$this->container->setExternalContainerManager();
 
-			$this->entityBindings();
+			$this->registerConcreteBindings();
 
 			$this->hasPreparedExpatriates = true;
 

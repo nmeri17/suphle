@@ -3,30 +3,22 @@
 
 	use Tilwa\Contracts\Database\{OrmTester, OrmDialect};
 
-	use Tilwa\Contracts\Bridge\LaravelContainer;
-
 	use PHPUnit\Framework\TestCase;
 
 	use Illuminate\Foundation\Testing\Concerns\InteractsWithDatabase;
 
 	/**
-	 * Extending TestCase to make [$this->assertThat] available
+	 * Extending TestCase to make [$this->assert...] available to the trait
 	*/
 	class DatabaseTester extends TestCase implements OrmTester {
 
-		use InteractsWithDatabase {
+		use InteractsWithDatabase;
 
-			getConnection as traitConnectionMethod;
-		}
+		private $connection;
 
-		protected $app;
+		public function __construct (OrmDialect $ormDialect) {
 
-		/**
-		 * @param {ormDialect} Trigger hydration of this for it to get bound for later use in $app, thereby taking that burden off the consumer
-		*/
-		public function __construct (LaravelContainer $laravelContainer, OrmDialect $ormDialect) {
-
-			$this->app = $laravelContainer;
+			$this->connection = $ormDialect->getConnection();
 		}
 
 		public function __call (string $methodName, array $arguments) {
@@ -36,7 +28,7 @@
 
 		public function getConnection ($connection = null) {
 
-			return $this->traitConnectionMethod($connection);
+			return $this->connection;
 		}
 	}
 ?>
