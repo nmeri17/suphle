@@ -9,9 +9,9 @@
 
 	use Tilwa\IO\Session\InMemorySession;
 
-	use Tilwa\Testing\Condiments\{ModuleReplicator, GagsException, BaseModuleInteractor};
+	use Tilwa\Testing\Condiments\{ModuleReplicator, BaseModuleInteractor};
 
-	use Tilwa\Testing\Proxies\{ModuleHttpTest, Extensions\FrontDoor};
+	use Tilwa\Testing\Proxies\{ModuleHttpTest, GagsException, Extensions\FrontDoor};
 
 	abstract class ModuleLevelTest extends TestVirginContainer {
 

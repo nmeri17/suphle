@@ -8,5 +8,7 @@
 		public function isValidRequest ():bool;
 		
 		public function getResponse ();
+
+		public function setResponseRenderer ():void;
 	}
 ?>

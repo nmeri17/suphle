@@ -18,10 +18,10 @@
 
 		public function getInsertedUser (string $password):UserContract {
 
-			return $this->replicator->getBeforeInsertion(1, [ // inserting a new row rather than pulling a random one so we can access the "password" field during login request
+			return $this->replicator->modifyInsertion(1, [ // inserting a new row rather than pulling a random one so we can access the "password" field during login request
 
 				"password" => password_hash($password, PASSWORD_DEFAULT)
-			])->first(); // no need to save?
+			])->first();
 		}
 
 		public function sendCorrectRequest (string $loginPath):void {

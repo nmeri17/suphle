@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Hydration;
 	
-	use Tilwa\Hydration\Structures\{ProvisionUnit, NamespaceUnit, HydratedConcrete};
+	use Tilwa\Hydration\Structures\{ProvisionUnit, NamespaceUnit, HydratedConcrete, BuiltInType};
 
 	use Tilwa\Contracts\Hydration\ClassHydrationBehavior;
 
@@ -545,14 +545,9 @@
 
 			$typeName = $parameterType->getName();
 
-			if ( $parameterType->isBuiltin()) {
+			if ( $parameterType->isBuiltin())
 
-				$defaultValue = null;
-
-				settype($defaultValue, $typeName);
-
-				return $defaultValue;
-			}
+				return (new BuiltInType)->getDefaultValue($typeName);
 
 			if (!in_array($typeName, $this->hydratingForStack)) {
 

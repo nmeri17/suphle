@@ -7,12 +7,12 @@
 
 	use Tilwa\Contracts\IO\Session;
 
-	use Tilwa\Testing\{Condiments\GagsException, Proxies\Extensions\CheckProvisionedClasses};
+	use Tilwa\Testing\Proxies\{GagsException, Extensions\CheckProvisionedClasses};
 
 	/**
-	 * Used for tests that require a container. Boots and provides this container to them
+	 * Used for tests that mostly require a Container. Boots and provides this container to them
 	*/
-	class IsolatedComponentTest extends TestVirginContainer {
+	abstract class IsolatedComponentTest extends TestVirginContainer {
 
 		use GagsException {
 

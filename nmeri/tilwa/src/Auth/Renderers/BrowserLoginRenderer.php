@@ -24,22 +24,23 @@
 
 		public function successRenderer ():BaseRenderer {
 
-			return new Redirect( "successLogin", function (PayloadStorage $payloadStorage) {
+			$defaultPath = $this->successDestination;
 
-				if ($payloadStorage->hasKey("path")) {
+			return new Redirect( "successLogin", function (PayloadStorage $payloadStorage) use ($defaultPath) {
 
-					$path = $payloadStorage->getKey("path");
+				if (!$payloadStorage->hasKey("path"))
 
-					$queryPart = $payloadStorage->getKey("query");
+					return $defaultPath;
 
-					if (!empty($queryPart))
+				$path = $payloadStorage->getKey("path");
 
-						$path .= "?" . $queryPart;
+				$queryPart = $payloadStorage->getKey("query");
 
-					return $path;
-				}
+				if (!empty($queryPart))
 
-				return $this->successDestination;
+					$path .= "?" . $queryPart;
+
+				return $path;
 			});
 		}
 

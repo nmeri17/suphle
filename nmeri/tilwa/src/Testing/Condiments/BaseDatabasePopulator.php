@@ -5,7 +5,7 @@
 
 	trait BaseDatabasePopulator {
 
-		protected $replicator, $initialCount = 15,
+		protected $replicator, $initialCount = 10,
 
 		$databaseApi;
 
@@ -19,18 +19,18 @@
 
 			$this->setReplicator();
 
+			$this->databaseApi = $this->getContainer()->getClass(OrmTester::class);
+
 			if (static::$isFirstTest) { // testBeforeClass is the designated method for universal setups like this. But container needed for extracting replicator is unavailable then
 
 				$this->replicator->setupSchema();
 
+				$this->replicator->seedDatabase( $this->initialCount);
+
 				static::$isFirstTest = false;
 			}
 
-			$this->replicator->listenForQueries(); // note: since we have no control/wrapper around actual running test, if it throws \Error, the seeding below won't be rolled back
-
-			$this->replicator->seedDatabase( $this->initialCount);
-
-			$this->databaseApi = $this->getContainer()->getClass(OrmTester::class);
+			$this->replicator->listenForQueries();
 		}
 
 		private function setReplicator ():void {

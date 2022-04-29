@@ -55,7 +55,11 @@
 
 		protected function getMarkupRenderer ():Markup {
 
-			return new Markup($this->controllerAction, "errors/not-found");
+			return (new Markup($this->controllerAction, "errors/not-found"))
+			->setRawResponse([
+
+				"url" => $this->requestDetails->getPath()
+			]);
 		}
 	}
 ?>

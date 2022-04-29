@@ -3,9 +3,9 @@
 
 	use Tilwa\Request\PayloadStorage;
 
-	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
-
 	use Tilwa\Exception\Explosives\NotFoundException;
+
+	use Tilwa\Testing\{TestTypes\IsolatedComponentTest, Condiments\InvestigateSystemCrash};
 
 	use Tilwa\Tests\Integration\Generic\CommonBinds;
 
@@ -13,7 +13,7 @@
 
 	class ServiceErrorCatcherTest extends IsolatedComponentTest {
 
-		use CommonBinds;
+		use CommonBinds, InvestigateSystemCrash;
 
 		private $serviceName = DatalessErrorThrower::class;
 

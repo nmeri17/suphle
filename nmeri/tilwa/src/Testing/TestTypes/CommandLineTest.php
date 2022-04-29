@@ -7,9 +7,9 @@
 
 	use Tilwa\Hydration\Container;
 
-	use Tilwa\Testing\Proxies\Extensions\FrontDoor;
+	use Tilwa\Testing\Proxies\{Extensions\FrontDoor, GagsException};
 
-	use Tilwa\Testing\Condiments\{ModuleReplicator, BaseModuleInteractor, GagsException};
+	use Tilwa\Testing\Condiments\{ModuleReplicator, BaseModuleInteractor};
 
 	abstract class CommandLineTest extends TestVirginContainer {
 

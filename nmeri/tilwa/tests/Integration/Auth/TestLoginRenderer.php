@@ -3,11 +3,9 @@
 
 	use Tilwa\Adapters\Orms\Eloquent\Models\User as EloquentUser;
 
-	use Tilwa\Contracts\Auth\ModuleLoginHandler;
+	use Tilwa\Contracts\{Auth\ModuleLoginHandler, Presentation\BaseRenderer};
 
 	use Tilwa\Routing\RouteManager;
-
-	use Tilwa\Response\Format\Markup;
 
 	use Tilwa\Testing\{ Condiments\BaseDatabasePopulator, TestTypes\IsolatedComponentTest, Proxies\SecureUserAssertions };
 
@@ -17,45 +15,52 @@
 
 		use BaseDatabasePopulator, UserInserter, CommonBinds, SecureUserAssertions {
 
-			BaseDatabasePopulator::setUp as databasePopulatorSetup;
+			CommonBinds::concreteBinds as commonConcretes;
 		}
 
-		protected $loginRendererName;
-
-		protected function setUp ():void {
-
-			$this->databasePopulatorSetup();
-		}
+		protected $loginRendererName, $loginRepoService;
 
 		protected function getActiveEntity ():string {
 
 			return EloquentUser::class;
 		}
 
-		protected function getLoginResponse () {
+		protected function concreteBinds ():array {
 
 			$routerName = RouteManager::class;
 
-			$this->container->whenTypeAny()->needsAny([
+			return array_merge($this->commonConcretes(), [
 
-				$routerName => $this->positiveDouble($routerName, [
+				$routerName => $this->replaceConstructorArguments($routerName, [], [
 
-					"getPreviousRenderer" => $this->positiveDouble(Markup::class)
-				]) // since we're just sending a post request without an initial get
-			])
-			->getClass(ModuleLoginHandler::class)->getResponse();
+					"getPreviousRenderer" => $this->positiveDouble(BaseRenderer::class ) // since we're just sending a post request without an initial get
+				])
+			]);
+		}
+
+		protected function evaluateLoginStatus ():void {
+
+			$this->container->getClass(ModuleLoginHandler::class)->setResponseRenderer();
 		}
 
 		protected function injectLoginRenderer (int $successCount, int $failureCount):void {
 
-			$this->container->whenTypeAny()->needsAny([
+			$localLoginManager = $this->replaceConstructorArguments(
 
-				$this->loginRendererName => $this->negativeDouble($this->loginRendererName, [], [
+				$this->loginRendererName, [
+
+					"authService" => $this->container->getClass($this->loginRepoService)
+				], [], [
 
 					"successRenderer" => [$successCount, []],
 
 					"failedRenderer" => [$failureCount, []]
-				])
+				]
+			);
+
+			$this->container->whenTypeAny()->needsAny([
+
+				$this->loginRendererName => $localLoginManager
 			]);
 		}
 	}

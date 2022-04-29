@@ -47,25 +47,9 @@
 
 			$this->expectException(EditIntegrityException::class); // then
 
-			$sutName = MultiUserEditMock::class;
-
 			$threeMinutesAgo = (new DateTime)->sub(new DateInterval("PT3M"));
 
-			$datedModel = $this->replicator->getBeforeInsertion(1, [
-
-				IntegrityModel::INTEGRITY_COLUMN => $threeMinutesAgo
-			])->first();
-
 			// given
-			$mock = $this->positiveDouble($sutName,
-
-				["getResource" => $datedModel],
-				[
-
-					"updateResource" => [2, []]
-				]
-			);
-
 			$this->setJsonParams("/dummy", [
 
 				MultiUserModelCallProxy::INTEGRITY_KEY => $threeMinutesAgo,
@@ -73,10 +57,20 @@
 				"name" => "nmeri"
 			], "put");
 
+			$datedModel = $this->replicator->modifyInsertion(1, [
+
+				IntegrityModel::INTEGRITY_COLUMN => $threeMinutesAgo
+			])->first();
+
+			$sutName = MultiUserEditMock::class;
+
 			$sut = $this->container->whenTypeAny()->needsAny([
 
-				$sutName => $mock
-			])->getClass($sutName);
+				$sutName => $this->positiveDouble($sutName,
+
+					["getResource" => $datedModel]
+				)
+			])->getClass($sutName); // to wrap in decorator
 
 			for ($i = 0; $i < 2; $i++) $sut->updateResource();
 		}

@@ -1,45 +1,32 @@
 <?php
 	namespace Tilwa\Tests\Integration\Auth;
 
-	use Tilwa\Auth\{ Renderers\BrowserLoginRenderer, Storage\SessionStorage};
-
-	use Tilwa\Routing\RouteManager;
-
-	use Tilwa\Contracts\Presentation\BaseRenderer;
+	use Tilwa\Auth\{ Renderers\BrowserLoginRenderer, Repositories\BrowserAuthRepo};
 
 	class BrowserLoginRendererTest extends TestLoginRenderer {
 
 		const LOGIN_PATH = "/login";
 
-		protected $loginRendererName = BrowserLoginRenderer::class;
+		protected $loginRendererName = BrowserLoginRenderer::class,
+
+		$loginRepoService = BrowserAuthRepo::class;
 
 		public function test_successLogin () {
 
-			$this->injectLoginRenderer(1, 0); // then
-
 			$this->sendCorrectRequest(self::LOGIN_PATH); // given
 
-			$this->getLoginResponse(); // when
-		}
+			$this->injectLoginRenderer(1, 0); // then
 
-		protected function concreteBinds ():array {
-
-			return array_merge(parent::concreteBinds(), [
-
-				RouteManager::class => $this->replaceConstructorArguments(RouteManager::class, [], [
-
-					"getPreviousRenderer" => $this->positiveDouble(BaseRenderer::class )
-				])
-			]);
+			$this->evaluateLoginStatus(); // when
 		}
 
 		public function test_failedLogin () {
 
-			$this->injectLoginRenderer(0, 1); // then
-
 			$this->sendIncorrectRequest(self::LOGIN_PATH); // given
 
-			$this->getLoginResponse(); // when
+			$this->injectLoginRenderer(0, 1); // then
+
+			$this->evaluateLoginStatus(); // when
 		}
 	}
 ?>

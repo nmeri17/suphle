@@ -1,30 +1,32 @@
 <?php
 	namespace Tilwa\Tests\Integration\Auth;
 
-	use Tilwa\Auth\Renderers\ApiLoginRenderer;
+	use Tilwa\Auth\{Renderers\ApiLoginRenderer, Repositories\ApiAuthRepo};
 
 	class ApiLoginRendererTest extends TestLoginRenderer {
 
-		private $loginPath = "/api/v1/login";
+		const LOGIN_PATH = "/api/v1/login";
 
-		protected $loginRendererName = ApiLoginRenderer::class;
+		protected $loginRendererName = ApiLoginRenderer::class,
+
+		$loginRepoService = ApiAuthRepo::class;
 
 		public function test_successLogin () {
 
+			$this->sendCorrectRequest(self::LOGIN_PATH); // given
+
 			$this->injectLoginRenderer(1, 0); // then
 
-			$this->sendCorrectRequest($this->loginPath); // given
-
-			$this->getLoginResponse(); // when
+			$this->evaluateLoginStatus(); // when
 		}
 
 		public function test_failedLogin () {
 
+			$this->sendIncorrectRequest(self::LOGIN_PATH); // given
+
 			$this->injectLoginRenderer(0, 1); // then
 
-			$this->sendIncorrectRequest($this->loginPath); // given
-
-			$response = $this->getLoginResponse(); // when
+			$this->evaluateLoginStatus(); // when
 		}
 	}
 ?>

@@ -53,7 +53,7 @@
 			return $renderer->render();
 		}
 
-		private function setResponseRenderer ():void {
+		public function setResponseRenderer ():void {
 
 			if ($this->loginService->compareCredentials())
 

@@ -1,6 +1,8 @@
 <?php
 	namespace Tilwa\Adapters\Orms\Eloquent;
 
+	use Tilwa\Hydration\Container;
+
 	use Tilwa\Contracts\Database\{OrmReplicator, OrmDialect};
 
 	use Tilwa\Contracts\Bridge\LaravelContainer;
@@ -18,15 +20,17 @@
 		*/
 		private $activeModel,
 
-		$databaseConnection, $laravelContainer, $migrator;
+		$databaseConnection, $laravelContainer, $migrator, $container;
 
-		public function __construct (OrmDialect $ormDialect, LaravelContainer $laravelContainer) {
+		public function __construct (OrmDialect $ormDialect, LaravelContainer $laravelContainer, Container $container) {
 
 			$this->databaseConnection = $ormDialect->getConnection();
 
 			$this->laravelContainer = $laravelContainer;
 
 			$this->migrator = $laravelContainer->make("migrator"); // bound to Migrator
+
+			$this->container = $container;
 		}
 
 		public function seedDatabase ( int $amount):void {
@@ -44,7 +48,10 @@
 			return $this->activeModel->count();
 		}
 
-		public function getBeforeInsertion ( int $amount = 1, array $customizeFields = [], callable $customizeModel = null) {
+		/**
+		 * @return Collection
+		*/
+		public function modifyInsertion ( int $amount = 1, array $customizeFields = [], callable $customizeModel = null):iterable {
 
 			$builder = $this->activeModel::factory()->count($amount);
 
@@ -52,9 +59,9 @@
 
 			if (!empty($customizeFields))
 
-				return $builder->make($customizeFields);
+				return $builder->create($customizeFields);
 
-			return $builder->make();
+			return $builder->create();
 		}
 
 		public function getRandomEntity ():object {
@@ -69,7 +76,7 @@
 
 		public function setActiveModelType (string $model):void {
 
-			$this->activeModel = new $model;
+			$this->activeModel = $this->container->getClass($model); // resolving from container so it can be stubbed out
 		}
 
 		public function setupSchema ():void {

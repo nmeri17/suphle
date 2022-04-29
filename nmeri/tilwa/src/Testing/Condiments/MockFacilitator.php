@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Testing\Condiments;
 
-	use Tilwa\Hydration\Container;
+	use Tilwa\Hydration\{Container, Structures\BuiltInType};
 
 	use PHPUnit\Framework\MockObject\{ MockObject, Stub\Stub, Rule\InvocationOrder, Builder\InvocationMocker};
 
@@ -129,10 +129,6 @@
 
 			$builder->onlyMethods($methodsToRetain);
 
-			/*$builder->disableProxyingToOriginalMethods()
-
-			->disableAutoReturnValueGeneration()*/;
-
 			$builder->disableArgumentCloning();
 
 			if ((new ReflectionClass($target))->isAbstract())
@@ -150,7 +146,7 @@
 
 			bool $positiveDouble = true, bool $positiveConstructor = true,
 
-			bool $useBaseContainer = true, bool $constructorCallsStubs = false
+			bool $useBaseContainer = true, bool $invokeConstructor = false
 		):MockObject {
 
 			$reflectedConstructor = new ReflectionMethod($target, Container::CLASS_CONSTRUCTOR);
@@ -166,7 +162,7 @@
 
 			$doubleMode = $positiveDouble ? "positiveDouble": "negativeDouble";
 
-			if (!$constructorCallsStubs)
+			if (!$invokeConstructor)
 
 				$double = $this->$doubleMode($target, $methodStubs, $mockMethods, $arguments);
 
@@ -190,7 +186,13 @@
 
 					return $replacements[$parameterName];
 
-				$argumentType = $parameter->getType()->getName();
+				$parameterType = $parameter->getType();
+
+				$argumentType = $parameterType->getName();
+
+				if ($parameterType->isBuiltin())
+
+					return (new BuiltInType)->getDefaultValue($argumentType);
 
 				if ($argumentType == Container::class && $useBaseContainer)
 

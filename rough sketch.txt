@@ -52,7 +52,26 @@ test only and except from routeCollection
 
 	- connect AlertAdapter/Bugsnag in interface loader
 	- typesense search adapter
+		- indexing on model save/update
+		- converting from/to orm type during retrieval
+		- passing to collection type
 	- integrate cache library and remove the cache from moduleLevelTest->provideCriticalObjects and isolatedComponent->concreteBinds
 
 
 
+what would be a really valuable test is visiting flows defined in 3 from 1 ie. full get
+	- MultiModuleTest->test_handle_flows_in_other_modules transfer flow routes in FlowRoutes to another module
+
+write tests for
+	- meb ->grace and disgraceful. can we combine TerminatedRequestTest or does it require a new test then we refactor TerminatedRequestTest? whatever route is taken, should only be done so after confirming decorators work and can catch us
+	- MiddlewareRegistryTest
+	- FlowHydrator->executeRequest sends request to where it can hit controller
+	- FetchAndEditTest->test_update_can_withstand_errors
+
+create argument allowing us replace uploaded files and filesystem on the operator
+
+
+
+/*$builder->disableProxyingToOriginalMethods()
+
+->disableAutoReturnValueGeneration()*/;

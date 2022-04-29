@@ -107,7 +107,7 @@
 
 			$sanitizedPath = preg_quote(trim($path, "/"), "/");
 
-			return preg_match("/\/?" . $sanitizedPath . "\/?/i", $this->getPath());
+			return preg_match("/^\/?" . $sanitizedPath . "\/?$/i", $this->getPath());
 		}
 	}
 ?>

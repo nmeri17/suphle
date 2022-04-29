@@ -11,28 +11,29 @@
 
 	use Tilwa\Response\Format\Json;
 
-	use Tilwa\Testing\TestTypes\ModuleLevelTest;
+	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\InvestigateSystemCrash};
 
 	use Throwable, Exception;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
+	use PHPUnit\Framework\MockObject\Stub\Exception as PHPUnitExceptionDouble;
+
 	class TerminatedRequestTest extends ModuleLevelTest {
+
+		use InvestigateSystemCrash;
 
 		private $sutName = ModuleExceptionBridge::class,
 
 		$handlerIdentifier = ModuleHandlerIdentifier::class;
 
-		/**
-		 * @param {exception} mocked 
-		*/
-		private function exceptionStubModuleHandler (Throwable $exception):ModuleHandlerIdentifier {
+		private function exceptionStubModuleHandler (PHPUnitExceptionDouble $exceptionDouble):ModuleHandlerIdentifier {
 
 			$handler = $this->replaceConstructorArguments($this->handlerIdentifier, [], [
 				
 				"getModules" => $this->modules,
 
-				"respondFromHandler" => $exception,
+				"respondFromHandler" => $exceptionDouble,
 
 				"transferHeaders" => null
 			], [], true, true, true, true);
@@ -83,30 +84,31 @@
 
 		public function test_fatal_exception_shutsdown_gracefully () {
 
+			$container = $this->getContainer();
+			
+			$this->assertWillCatchPayload($container->getClass(PayloadStorage::class)); // then 1
+
 			$response = "boo!";
 
-			$container = $this->getContainer();
-
-			$parameters = $container->getMethodParameters(Container::CLASS_CONSTRUCTOR, $this->sutName);
-
 			// given
-			$sut = $this->replaceConstructorArguments($this->sutName, $parameters, [
-				
-				"handlingRenderer" => (new Json("actionHandler"))->setRawResponse($response)
-			]);
-
 			$container->whenTypeAny()->needsAny([
 
-				$this->sutName => $sut
+				$this->sutName => $this->replaceConstructorArguments(
+					
+					$this->sutName,
+
+					$container->getMethodParameters(Container::CLASS_CONSTRUCTOR, $this->sutName),
+					[
+					
+						"handlingRenderer" => (new Json("actionHandler"))->setRawResponse($response)
+					]
+				)
 			]);
 
 			$entrance = $this->errorStubModuleHandler(function (){
 
 				trigger_error("waterloo", E_USER_ERROR);
 			});
-		
-// can move this to an instance property
-			$this->assertWillCatchPayload($container->getClass(PayloadStorage::class)); // then 1
 
 			$entrance->diffusedRequestResponse(); // when
 

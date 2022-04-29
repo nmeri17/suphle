@@ -27,15 +27,12 @@
 
 		public function getLoginCollection ():?string {
 
-			$rendererList = $this->getLoginPaths();
+			foreach ($this->getLoginPaths() as $key => $renderer) {
 
-			$requestDetails = $this->requestDetails;
+				if ($this->requestDetails->matchesPath($key))
 
-			foreach ($rendererList as $key => $renderer)
-
-				if ($requestDetails->matchesPath($key))
-
-					return $rendererList[$key];
+					return $renderer;
+			}
 
 			return null;
 		}
