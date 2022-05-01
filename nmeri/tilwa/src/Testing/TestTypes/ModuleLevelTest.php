@@ -31,9 +31,7 @@
 
 			$this->provideCriticalObjects();
 
-			$entrance->bootModules();
-
-			$entrance->extractFromContainer();
+			$this->bootMockEntrance($entrance);
 
 			$this->mufflerSetup();
 		}

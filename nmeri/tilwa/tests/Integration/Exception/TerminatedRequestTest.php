@@ -7,57 +7,15 @@
 
 	use Tilwa\Request\PayloadStorage;
 
-	use Tilwa\Modules\{ModuleExceptionBridge, ModuleHandlerIdentifier};
+	use Tilwa\Contracts\Config\ExceptionInterceptor;
 
-	use Tilwa\Response\Format\Json;
-
-	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\InvestigateSystemCrash};
-
-	use Throwable, Exception;
+	use Tilwa\Testing\TestTypes\InvestigateSystemCrash;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
-	use PHPUnit\Framework\MockObject\Stub\Exception as PHPUnitExceptionDouble;
+	use Exception;
 
-	class TerminatedRequestTest extends ModuleLevelTest {
-
-		use InvestigateSystemCrash;
-
-		private $sutName = ModuleExceptionBridge::class,
-
-		$handlerIdentifier = ModuleHandlerIdentifier::class;
-
-		private function exceptionStubModuleHandler (PHPUnitExceptionDouble $exceptionDouble):ModuleHandlerIdentifier {
-
-			$handler = $this->replaceConstructorArguments($this->handlerIdentifier, [], [
-				
-				"getModules" => $this->modules,
-
-				"respondFromHandler" => $exceptionDouble,
-
-				"transferHeaders" => null
-			], [], true, true, true, true);
-
-			$this->bootMockEntrance($handler);
-
-			return $handler;
-		}
-
-		private function errorStubModuleHandler (callable $callback):ModuleHandlerIdentifier {
-
-			$handler = $this->replaceConstructorArguments($this->handlerIdentifier, [], [
-				
-				"getModules" => $this->modules,
-
-				"respondFromHandler" => $this->returnCallback($callback),
-
-				"transferHeaders" => null
-			], [], true, true, true, true);
-
-			$this->bootMockEntrance($handler);
-
-			return $handler;
-		}
+	class TerminatedRequestTest extends InvestigateSystemCrash {
 
 		protected function getModules ():array {
 
@@ -66,60 +24,53 @@
 
 		public function test_exceptions_uses_assigned_handler () {
 
-			$entrance = $this->exceptionStubModuleHandler($this->throwException(new NotFoundException)); // given
+			$exceptionName = NotFoundException::class;
 
-			$entrance->diffusedRequestResponse(); // when
+			$this->exceptionModuleHandler(
 
-			$this->assertTrue($entrance->underlyingRenderer()->matchesHandler("missingHandler")); // then
+				$this->throwException(new $exceptionName) // given
+			)
+			->diffusedRequestResponse(); // when
+
+			$container = $this->getContainer();
+
+			$diffuser = $container->getClass(ExceptionInterceptor::class)->getHandlers()[$exceptionName];
+
+			$this->assertExceptionUsesRenderer(
+			
+				$container->getClass($diffuser)->getRenderer()
+			); // then
 		}
 
 		public function test_exceptions_without_assigned_handler_uses_default () {
 
-			$entrance = $this->exceptionStubModuleHandler($this->throwException(new Exception)); // given
+			$this->exceptionModuleHandler(
 
-			$entrance->diffusedRequestResponse(); // when
+				$this->throwException(new Exception) // given
+			)
+			->diffusedRequestResponse(); // when
 
-			$this->assertTrue($entrance->underlyingRenderer()->matchesHandler("genericHandler")); // then
+			$container = $this->getContainer();
+
+			$defaultHandler = $container->getClass(ExceptionInterceptor::class)->defaultHandler();
+
+			$this->assertExceptionUsesRenderer(
+			
+				$container->getClass($defaultHandler)->getRenderer()
+			); // then
 		}
 
 		public function test_fatal_exception_shutsdown_gracefully () {
 
-			$container = $this->getContainer();
-			
-			$this->assertWillCatchPayload($container->getClass(PayloadStorage::class)); // then 1
+			$this->assertWillCatchPayload($this->getContainer()->getClass(PayloadStorage::class)); // then
 
-			$response = "boo!";
+			$this->exceptionModuleHandler(
 
-			// given
-			$container->whenTypeAny()->needsAny([
+				$this->returnCallback(function () { // given
 
-				$this->sutName => $this->replaceConstructorArguments(
-					
-					$this->sutName,
-
-					$container->getMethodParameters(Container::CLASS_CONSTRUCTOR, $this->sutName),
-					[
-					
-						"handlingRenderer" => (new Json("actionHandler"))->setRawResponse($response)
-					]
-				)
-			]);
-
-			$entrance = $this->errorStubModuleHandler(function (){
-
-				trigger_error("waterloo", E_USER_ERROR);
-			});
-
-			$entrance->diffusedRequestResponse(); // when
-
-			$this->expectOutputString($response); // then 2
-		}
-
-		private function bootMockEntrance (ModuleHandlerIdentifier $entrance):void {
-
-			$entrance->bootModules();
-
-			$entrance->extractFromContainer();
+					trigger_error("waterloo", E_USER_ERROR);
+				})
+			)->diffusedRequestResponse(); // when
 		}
 	}
 ?>

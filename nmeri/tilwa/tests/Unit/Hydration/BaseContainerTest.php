@@ -114,7 +114,7 @@
 			], $otherOverrides));
 		}
 
-		public function test_can_hydrate_concrete_for_caller () {
+		public function test_isolated_hydration_reports_given_class_as_caller () {
 
 			// given
 			$sut = $this->withArgumentsForARequires();
@@ -130,7 +130,7 @@
 			// then
 			$this->assertInstanceOf($this->aRequires, $freshlyCreated->getConcrete());
 
-			$this->assertSame($freshlyCreated->getCreatedFor(), get_class());
+			$this->assertSame($freshlyCreated->getCreatedFor(), $this->aRequires);
 		}
 
 		public function test_can_hydrate_method_parameters_without_interface () {

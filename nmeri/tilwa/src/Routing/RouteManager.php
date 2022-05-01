@@ -69,7 +69,7 @@
 
 		private function recursiveSearch (string $collectionName, string $incomingPath ):?BaseRenderer {
 
-			$collection = $this->container->instantiateConcrete($collectionName);
+			$collection = $this->container->getClass($collectionName);
 
 			$matchingCheck = $this->findMatchingMethod( $incomingPath, $collection->_getPatterns() );
 

@@ -5,6 +5,8 @@
 
 	use Tilwa\Events\ModuleLevelEvents;
 
+	use Tilwa\Modules\ModuleHandlerIdentifier;
+
 	trait BaseModuleInteractor {
 
 		protected $modules, // making this accessible for traits down the line that will need identical instances of the modules this base type is working with
@@ -48,6 +50,13 @@
 		protected function firstModuleContainer ():Container {
 
 			return $this->entrance->firstContainer();
+		}
+
+		protected function bootMockEntrance (ModuleHandlerIdentifier $entrance):void {
+
+			$entrance->bootModules();
+ 
+			$entrance->extractFromContainer();
 		}
 	}
 ?>

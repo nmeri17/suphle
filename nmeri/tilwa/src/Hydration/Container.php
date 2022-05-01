@@ -292,7 +292,9 @@
 
 			$isFirstCall = is_null($this->lastHydratedFor());
 
-			$hydrateFor = $isFirstCall ? $this->lastCaller(): $fullName;
+			$notIsolatedMethodResolution = $isFirstCall && $this->hydratingArguments;
+
+			$hydrateFor = $notIsolatedMethodResolution ? $this->lastCaller(): $fullName;
 
 			$this->pushHydratingFor($hydrateFor);
 		}
@@ -390,10 +392,7 @@
 		}
 
 		/**
-		 * A shorter version of [getClass], but neither checks in cache or contextual provisions. This means they're useful to:
-		 * 1) To hydrate classes we're sure doesn't exist in the cache
-		 * 2) In methods that won't be called more than once in the request cycle
-		 * 3) To create objects that are more or less static, or can't be overidden by an extension
+		 * In comparison to [getClass], this neither checks cache nor for contextual provisions. It assumes it's called within a hydration context that has already set appropriate scopes in place i.e. not in isolation
 		 * 
 		 *  All objects internally derived from this trigger decorators if any are applied
 		*/
@@ -551,7 +550,7 @@
 
 			if (!in_array($typeName, $this->hydratingForStack)) {
 
-				if ($callerIsClosure)
+				if ($callerIsClosure || !$this->internalMethodHydrate)
 
 					$concrete = $this->getClass($typeName); // there's no extra layer of called scope->given object (to get arguments for). We only have called scope in the stack; so, get immediate last item
 
@@ -687,7 +686,7 @@
 
 		public function interiorDecorate ():void {
 
-			$this->decorator = $this->instantiateConcrete(DecoratorHydrator::class);
+			$this->decorator = $this->getClass(DecoratorHydrator::class);
 
 			$this->decorator->assignScopes();
 		}

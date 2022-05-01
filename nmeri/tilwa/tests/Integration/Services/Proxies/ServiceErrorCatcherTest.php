@@ -5,19 +5,32 @@
 
 	use Tilwa\Exception\Explosives\NotFoundException;
 
-	use Tilwa\Testing\{TestTypes\IsolatedComponentTest, Condiments\InvestigateSystemCrash};
+	use Tilwa\Testing\{TestTypes\InvestigateSystemCrash, Proxies\WriteOnlyContainer};
 
-	use Tilwa\Tests\Integration\Generic\CommonBinds;
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Concretes\Services\DatalessErrorThrower, Meta\ModuleOneDescriptor};
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\Services\DatalessErrorThrower;
+	class ServiceErrorCatcherTest extends InvestigateSystemCrash {
 
-	class ServiceErrorCatcherTest extends IsolatedComponentTest {
+		private $serviceName = DatalessErrorThrower::class,
 
-		use CommonBinds, InvestigateSystemCrash;
+		$container;
 
-		private $serviceName = DatalessErrorThrower::class;
+		protected function setUp ():void {
 
-		protected $usesRealDecorator = true;
+			parent::setUp();
+
+			$this->container = $this->getContainer();
+		}
+
+		protected function getModules ():array {
+
+			return [
+				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+
+					//
+				}, false)
+			];
+		}
 
 		public function test_successful_call_returns_value () {
 
@@ -46,7 +59,7 @@
 
 			$container = $this->container;
 
-			$this->assertWillCatchPayload($container->getClass(PayloadStorage::class)); // then 1
+			$this->assertWillCatchPayload($container->getClass(PayloadStorage::class)); // then 1 // may not work except it's called from mhi, although it was injected
 
 			$sut = $container->getClass($this->serviceName);
 

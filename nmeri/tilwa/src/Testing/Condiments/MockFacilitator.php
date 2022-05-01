@@ -138,6 +138,9 @@
 			return $builder->getMock();
 		}
 
+		/**
+		 * @param {invokeConstructor} Constructors can't invoke stubbed methods during the doubling process since they're unavailable then. Constructors with this requirement have to be triggered manually
+		*/
 		protected function replaceConstructorArguments (
 
 			string $target, array $constructorStubs,

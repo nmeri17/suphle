@@ -19,7 +19,7 @@
 
 		$debugCaughtExceptions = false,
 
-		$exceptionBroadcaster;
+		$exceptionBroadcaster, $exceptionBridge;
 
 		protected function setUp () {
 
@@ -44,9 +44,11 @@
 
 		protected function provideExceptionBridge (array $bridgeStubs):void {
 
+			$this->constructExceptionBridge($bridgeStubs);
+
 			$this->massProvide([
 
-				$this->bridgeName => $this->constructExceptionBridge($bridgeStubs)
+				$this->bridgeName => $this->exceptionBridge
 			]);
 		}
 
@@ -62,7 +64,7 @@
 		protected function getDisgracefulShutdown ():Stub {
 
 			return $this->returnCallback(function ($argument) {
-
+var_dump($argument);
 				return "GagsException->constructExceptionBridge->disgracefulShutdown";
 			});
 		}
@@ -75,7 +77,7 @@
 			});
 		}
 
-		private function constructExceptionBridge (array $dynamicStubs):ModuleExceptionBridge {
+		private function constructExceptionBridge (array $dynamicStubs):void {
 
 			$defaultStubs = ["writeStatusCode" => null];
 
@@ -86,7 +88,7 @@
 					throw $argument;
 				});
 
-			return $this->replaceConstructorArguments(
+			$this->exceptionBridge = $this->replaceConstructorArguments(
 
 				$this->bridgeName,
 

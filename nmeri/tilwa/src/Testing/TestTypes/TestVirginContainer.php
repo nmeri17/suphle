@@ -18,7 +18,7 @@
 			$container->provideSelf();
 		}
 
-		protected function stubDecorator () {
+		protected function stubDecorator ():DecoratorHydrator {
 
 			return $this->positiveDouble(DecoratorHydrator::class, [
 
@@ -28,12 +28,12 @@
 			]);
 		}
 
-		protected function withDefaultInterfaceCollection ($container) {
+		protected function withDefaultInterfaceCollection ($container):void {
 
 			$container->setInterfaceHydrator(BaseInterfaceCollection::class);
 		}
 
-		protected function stubbedInterfaceCollection () {
+		protected function stubbedInterfaceCollection ():InterfaceHydrator {
 
 			return $this->positiveDouble(InterfaceHydrator::class, [
 
