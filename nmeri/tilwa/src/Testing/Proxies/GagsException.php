@@ -11,15 +11,11 @@
 
 	trait GagsException {
 
-		private $bridgeName = ModuleExceptionBridge::class,
-
-		$broadcasterName = DetectedExceptionManager::class;
+		private $bridgeName = ModuleExceptionBridge::class;
 
 		protected $muffleExceptionBroadcast = true,
 
-		$debugCaughtExceptions = false,
-
-		$exceptionBroadcaster, $exceptionBridge;
+		$debugCaughtExceptions = false;
 
 		protected function setUp () {
 
@@ -32,23 +28,23 @@
 
 			$stubs = [];
 
+			$broadcasterName = DetectedExceptionManager::class;
+
 			if ($this->muffleExceptionBroadcast)
 
-				$stubs["queueAlertAdapter"] = null;
+				$stubs[DetectedExceptionManager::ALERTER_METHOD] = null;
 
 			$this->getContainer()->whenTypeAny()->needsAny([
 
-				$this->broadcasterName => $this->exceptionBroadcaster = $this->replaceConstructorArguments($this->broadcasterName, [], $stubs)
+				$broadcasterName => $this->replaceConstructorArguments($broadcasterName, [], $stubs)
 			]);
 		}
 
 		protected function provideExceptionBridge (array $bridgeStubs):void {
 
-			$this->constructExceptionBridge($bridgeStubs);
-
 			$this->massProvide([
 
-				$this->bridgeName => $this->exceptionBridge
+				$this->bridgeName => $this->constructExceptionBridge($bridgeStubs)
 			]);
 		}
 
@@ -77,7 +73,7 @@ var_dump($argument);
 			});
 		}
 
-		private function constructExceptionBridge (array $dynamicStubs):void {
+		private function constructExceptionBridge (array $dynamicStubs):ModuleExceptionBridge {
 
 			$defaultStubs = ["writeStatusCode" => null];
 
@@ -88,7 +84,7 @@ var_dump($argument);
 					throw $argument;
 				});
 
-			$this->exceptionBridge = $this->replaceConstructorArguments(
+			return $this->replaceConstructorArguments(
 
 				$this->bridgeName,
 

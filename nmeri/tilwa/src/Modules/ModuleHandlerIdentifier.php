@@ -43,9 +43,7 @@
 
 		public function diffusedRequestResponse ():string {
 
-			$exceptionBridge = $this->freshExceptionBridge();
-
-			$exceptionBridge->epilogue();
+			$this->freshExceptionBridge()->epilogue();
 
 			try {
 
@@ -53,20 +51,17 @@
 			}
 			catch (Throwable $exception) {
 
-				$this->identifiedHandler = $exceptionBridge;
-
-				$exceptionBridge->hydrateHandler($exception);
-
-				$renderer = $exceptionBridge->handlingRenderer();
-
-				$renderer->hydrateDependencies($this->container);
-
-				$content = $renderer->render();
+				$content = $this->findExceptionRenderer($exception)->render();
 			}
 
 			$this->transferHeaders();
 
 			return $content;
+		}
+
+		private function freshExceptionBridge ():ModuleExceptionBridge {
+
+			return $this->getActiveContainer()->getClass(ModuleExceptionBridge::class);
 		}
 		
 		/**
@@ -85,6 +80,24 @@
 				return $this->flowRequestHandler($wrapper);
 
 			return $this->handleGenericRequest();
+		}
+
+		public function handleLoginRequest ():string {
+
+			$loginHandler = $this->getLoginHandler();
+
+			if (!$loginHandler->isValidRequest())
+
+				throw new ValidationFailure($loginHandler);
+
+			$this->identifiedHandler = $loginHandler;
+
+			return $loginHandler->getResponse();
+		}
+
+		public function getLoginHandler ():ModuleLoginHandler {
+
+			return $this->container->getClass(ModuleLoginHandler::class);
 		}
 
 		protected function handleGenericRequest ():string {
@@ -120,27 +133,22 @@
 			return $response;
 		}
 
+		public function findExceptionRenderer (Throwable $exception):BaseRenderer {
+
+			$exceptionBridge = $this->identifiedHandler = $this->freshExceptionBridge(); // from currently active container after routing may have occured
+
+			$exceptionBridge->hydrateHandler($exception);
+
+			$renderer = $exceptionBridge->handlingRenderer();
+
+			$renderer->hydrateDependencies($this->container);
+
+			return $renderer;
+		}
+
 		public function extractFromContainer ():void {
 
 			$this->authConfig = $this->container->getClass(AuthContract::class);
-		}
-
-		public function handleLoginRequest ():string {
-
-			$loginHandler = $this->getLoginHandler();
-
-			if (!$loginHandler->isValidRequest())
-
-				throw new ValidationFailure($loginHandler);
-
-			$this->identifiedHandler = $loginHandler;
-
-			return $loginHandler->getResponse();
-		}
-
-		public function getLoginHandler ():ModuleLoginHandler {
-
-			return $this->container->getClass(ModuleLoginHandler::class);
 		}
 
 		public function underlyingRenderer ():BaseRenderer {
@@ -166,11 +174,6 @@
 				return $this->routedModule->getContainer();
 
 			return $this->container;
-		}
-
-		private function freshExceptionBridge ():ModuleExceptionBridge {
-
-			return $this->getActiveContainer()->getClass(ModuleExceptionBridge::class);
 		}
 	}
 ?>

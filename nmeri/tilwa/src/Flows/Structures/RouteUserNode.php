@@ -10,7 +10,9 @@
 	*/
 	class RouteUserNode {
 
-		private $renderer, $hits = 0;
+		private $renderer, $maxHitsHydrator, $expiresAtHydrator,
+
+		$hits = 0;
 		
 		public function __construct (BaseRenderer $renderer) {
 

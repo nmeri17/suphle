@@ -7,18 +7,20 @@
 
 	use Tilwa\Routing\RouteManager;
 
-	use Tilwa\Testing\{ Condiments\BaseDatabasePopulator, TestTypes\IsolatedComponentTest, Proxies\SecureUserAssertions };
+	use Tilwa\Testing\{ Condiments\BaseDatabasePopulator, Proxies\SecureUserAssertions };
 
 	use Tilwa\Tests\Integration\Generic\CommonBinds;
 
-	class TestLoginRenderer extends IsolatedComponentTest {
+	trait TestLoginRenderer {
 
 		use BaseDatabasePopulator, UserInserter, CommonBinds, SecureUserAssertions {
 
 			CommonBinds::concreteBinds as commonConcretes;
 		}
 
-		protected $loginRendererName, $loginRepoService;
+		abstract protected function loginRendererName ():string;
+
+		abstract protected function loginRepoService ():string;
 
 		protected function getActiveEntity ():string {
 
@@ -47,9 +49,9 @@
 
 			$localLoginManager = $this->replaceConstructorArguments(
 
-				$this->loginRendererName, [
+				$this->loginRendererName(), [
 
-					"authService" => $this->container->getClass($this->loginRepoService)
+					"authService" => $this->container->getClass($this->loginRepoService())
 				], [], [
 
 					"successRenderer" => [$successCount, []],
@@ -60,7 +62,7 @@
 
 			$this->container->whenTypeAny()->needsAny([
 
-				$this->loginRendererName => $localLoginManager
+				$this->loginRendererName() => $localLoginManager
 			]);
 		}
 	}

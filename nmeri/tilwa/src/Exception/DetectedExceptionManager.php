@@ -11,6 +11,8 @@
 
 	class DetectedExceptionManager {
 
+		const ALERTER_METHOD = "queueAlertAdapter";
+
 		private $queueManager, $payloadStorage;
 
 		public function __construct (AdapterManager $queueManager, PayloadStorage $payloadStorage) {

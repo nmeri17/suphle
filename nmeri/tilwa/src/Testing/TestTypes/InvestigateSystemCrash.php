@@ -1,15 +1,17 @@
 <?php
 	namespace Tilwa\Testing\TestTypes;
 
-	use Tilwa\Contracts\Presentation\BaseRenderer;
+	use Tilwa\Contracts\{Presentation\BaseRenderer, Modules\DescriptorInterface};
 
 	use Tilwa\Hydration\Container;
 
-	use Tilwa\Modules\ModuleHandlerIdentifier;
+	use Tilwa\Modules\ModuleExceptionBridge;
 
-	use Tilwa\Testing\Condiments\{MockFacilitator, BaseModuleInteractor, ModuleReplicator};
+	use Tilwa\Exception\DetectedExceptionManager;
 
-	use Tilwa\Testing\Proxies\{GagsException, Extensions\FrontDoor};
+	use Tilwa\Testing\Condiments\{ BaseModuleInteractor, ModuleReplicator};
+
+	use Tilwa\Testing\Proxies\Extensions\FrontDoor;
 
 	use PHPUnit\Framework\MockObject\Stub\Stub;
 
@@ -17,97 +19,146 @@
 
 	abstract class InvestigateSystemCrash extends TestVirginContainer { // extending from this for sub classes to have access to [dataProvider]
 
-		use GagsException, BaseModuleInteractor, ModuleReplicator {
+		use BaseModuleInteractor, ModuleReplicator;
 
-			GagsException::setUp as mufflerSetup;
-		}
+		private $shockAbsorber;
 
-		private $alerterMethod = "queueAlertAdapter",
-
-		$disgracefulShutdown = "disgracefulShutdown";
+		protected $hideShame = false;
 
 		protected function setUp ():void {
 
-			$entrance = new FrontDoor ($this->modules = $this->getModules());
+			$this->entrance = new FrontDoor ($this->modules = [$this->getModule()]);
 
-			$this->bootMockEntrance($entrance);
-
-			$this->mufflerSetup();
+			$this->bootMockEntrance($this->entrance);
 		}
-
-		abstract protected function getModules ():array;
 
 		protected function getContainer ():Container {
 
-			return $this->modules[0]->getContainer();
+			return $this->firstModuleContainer();
 		}
 
-		protected function exceptionModuleHandler (Stub $exceptionalConduct):ModuleHandlerIdentifier {
+		abstract protected function getModule ():DescriptorInterface;
 
-			$handlerIdentifier = $this->replaceConstructorArguments(ModuleHandlerIdentifier::class, [], [
+		/**
+		 * Mocks the broadcast alerter
+		*/
+		protected function assertWillCatchPayload ($payload, callable $flammable):void {
+
+			$this->mockAlerterManager([
+
+				$this->callback(function ($subject) {
+
+					return in_array(Throwable::class, class_implements($subject));
+				}),
+				$this->equalTo($payload)
+			]);
+
+			if ($this->hideShame)
+
+				$this->stubExceptionBridge();
+
+			$this->braceForImpact($flammable);
+		}
+
+		private function mockAlerterManager (array $argumentList):void {
+
+			$broadcasterName = DetectedExceptionManager::class;
+
+			$this->getContainer()->whenTypeAny()->needsAny([
+
+				$broadcasterName => $this->replaceConstructorArguments($broadcasterName, [], [], [
+
+					DetectedExceptionManager::ALERTER_METHOD => [1, $argumentList]
+				])
+			]);
+		}
+
+		private function braceForImpact (callable $action):void {
+
+			try {
 				
-				"getModules" => $this->modules,
+				$action();
+			} catch (Throwable $e) {
 
-				"respondFromHandler" => $exceptionalConduct,
+				$this->setShockAbsorber();
 
-				"transferHeaders" => null
-			], [], true, true, true, true);
-
-			$this->bootMockEntrance($handlerIdentifier);
-
-			return $handlerIdentifier;
+				$this->shockAbsorber->shutdownRites();
+			}
 		}
 
-		protected function assertWillCatchPayload ($payload):void {
+		/**
+		 * This should first be called if dev wants to directly test custom behavior defined in disgracefulShutdown
+		*/
+		protected function setShockAbsorber ():void {
 
-			$this->mockCalls([
+			$this->shockAbsorber = $this->getContainer()->getClass(ModuleExceptionBridge::class);
+		}
 
-				$this->alerterMethod => [1, [
+		/**
+		 * In order to trigger this, you'd have to violate alerter mock by not calling it, or throwing another error from [gracefulShutdown]
+		*/
+		private function stubExceptionBridge ():void {
 
-					$this->callback(function ($subject) {
+			$bridgeName = ModuleExceptionBridge::class;
 
-						return in_array(Throwable::class, class_implements($subject));
+			$container = $this->getContainer();
+
+			$parameters = $container->getMethodParameters(Container::CLASS_CONSTRUCTOR, $bridgeName);
+
+			$container->whenTypeAny()->needsAny([
+
+				$bridgeName => $this->replaceConstructorArguments(
+
+					$bridgeName, $parameters, [
+
+					"disgracefulShutdown" => $this->returnCallback(function ($errorDetails, $latestException) {
+
+						throw $latestException;
 					}),
-					$this->equalTo($payload)
-				]]
-			], $this->exceptionBroadcaster);
-
-			$this->provideExceptionBridge($this->defaultBridgeStubs()); // trigger a new one to replace [exceptionBridge] stubs
+					
+					"writeStatusCode" => null
+				])
+			]);
 		}
 
-		protected function defaultBridgeStubs ():array {
+		protected function assertWillCatchException (string $exception, callable $flammable):void {
 
-			return [
+			$this->mockAlerterManager([
+
+				$this->callback(function ($subject) use ($exception) {
+
+					return $subject instanceof $exception;
+				}),
+				$this->anything()
+			]);
+
+			if ($this->hideShame)
+
+				$this->stubExceptionBridge();
+
+			$this->braceForImpact($flammable);
+		}
+
+		protected function assertExceptionUsesRenderer (BaseRenderer $renderer, callable $flammable):void {
+
+			if ($this->hideShame)
+
+				$this->stubExceptionBridge();
+
+			try {
 				
-				$this->disgracefulShutdown => $this->getDisgracefulShutdown()
-			];
-		}
+				$flammable();
+			} catch (Throwable $exception) {
 
-		protected function assertWillCatchException (string $exception):void {
+				$resolvedRenderer = $this->entrance->findExceptionRenderer($exception);
+				
+				$this->assertTrue(
 
-			$this->mockCalls([
+					$renderer->matchesHandler($resolvedRenderer->getHandler()),
 
-				$this->alerterMethod => [1, [
-
-					$this->callback(function ($subject) use ($exception) {
-
-						return $subject instanceof $exception;
-					}),
-					$this->anything()
-				]]
-			], $this->exceptionBroadcaster);
-
-			$this->provideExceptionBridge($this->defaultBridgeStubs());
-		}
-
-		protected function assertExceptionUsesRenderer (BaseRenderer $renderer):void {
-
-			$this->assertEquals(
-
-				$renderer, $this->exceptionBridge->handlingRenderer(),
-
-				"Failed asserting that caught exception was handled with given renderer"
-			); // then
+					"Failed asserting that exception '". get_class($exception) . "' was handled with given renderer"
+				);
+			}
 		}
 	}
 ?>

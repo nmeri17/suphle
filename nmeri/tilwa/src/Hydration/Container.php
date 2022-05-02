@@ -117,6 +117,8 @@
 
 			return $this->initializeHydratingForAction($fullName, function ($className) {
 
+				$this->setConsumer($className);
+
 				if ($this->getReflectedClass($className)->isInterface())
 
 					return $this->provideInterface($className);
@@ -149,7 +151,7 @@
 			}
 		}
 
-		public function getProvidedConcrete (string $fullName) {
+		public function getProvidedConcrete (string $fullName):?object {
 
 			$context = $this->getRecursionContext();
 
@@ -163,6 +165,7 @@
 
 				return $context->getConcrete($fullName);
 			}
+			return null;
 		}
 
 		/**
@@ -204,7 +207,11 @@
 
 			$concreteHydratedFor = $this->lastHydratedFor();
 
-			if ($concreteHydratedFor != $fullName)
+			if (
+				$concreteHydratedFor != $fullName && // prevent recursive loop during purge
+
+				!in_array($concreteHydratedFor, $this->hydratedClassConsumers[$fullName]) // maintain unique list
+			)
 
 				$this->hydratedClassConsumers[$fullName][] = $concreteHydratedFor;
 		}
@@ -246,8 +253,6 @@
 				throw new InvalidImplementor($interface, get_class($concrete));
 
 			$this->storeConcrete( $interface, $concrete);
-
-			$this->setConsumer($interface);
 		}
 
 		private function storeConcrete (string $fullName, $concrete):ProvisionUnit {
@@ -290,7 +295,9 @@
 		*/
 		protected function initializeHydratingFor (string $fullName):void {
 
-			$isFirstCall = is_null($this->lastHydratedFor());
+			$dependent = $this->lastHydratedFor();
+
+			$isFirstCall = is_null($dependent);
 
 			$notIsolatedMethodResolution = $isFirstCall && $this->hydratingArguments;
 
@@ -396,9 +403,9 @@
 		 * 
 		 *  All objects internally derived from this trigger decorators if any are applied
 		*/
-		public function instantiateConcrete (string $fullName) {
+		public function instantiateConcrete (string $fullName):object {
 
-			$freshlyCreated = $this->initializeHydratingForAction ($fullName, function ($className) {
+			$freshlyCreated = $this->initializeHydratingForAction ($fullName, function ($className) { // we need this double coating since we intend to read arguments later, and [lastHydratedFor] is expected to see a list of at least 2 items during argument reading
 
 				if (!method_exists($className, self::CLASS_CONSTRUCTOR)) // note that this throws a fatal, uncatchable error when class is in an unparseable state like missing abstract method or contract implementation
 
@@ -533,13 +540,19 @@
 				
 			$typeName = $parameterType->getName();
 
-			if ($callerProvision->hasArgument($typeName))
+			if ($callerProvision->hasArgument($typeName)) {
+
+				$this->setConsumer($typeName);
 
 				return $callerProvision->getArgument($typeName);
+			}
 
 			return $this->hydrateUnprovidedParameter($parameterType, $callerIsClosure);
 		}
 
+		/**
+		 * @return mixed. Can be anything argument is typed to
+		*/
 		private function hydrateUnprovidedParameter (ReflectionType $parameterType, bool $callerIsClosure) {
 
 			$typeName = $parameterType->getName();
@@ -562,6 +575,8 @@
 
 					$this->hydratingArguments = false;
 				}
+
+				$this->setConsumer($typeName);
 
 				return $concrete;
 			}

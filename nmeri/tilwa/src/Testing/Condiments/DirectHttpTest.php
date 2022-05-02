@@ -47,11 +47,6 @@
 
 				StdInputReader::class => $this->positiveDouble(StdInputReader::class, $reader)
 			]);
-
-			$container->refreshMany([
-
-				UserHydrator::class, RequestDetails::class
-			]);
 		}
 
 		protected function setJsonParams (string $requestPath, array $payload, string $httpMethod = "post"):bool {

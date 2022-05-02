@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Integration\Routing\Canaries;
 
-	use Tilwa\Contracts\Auth\UserContract;
+	use Tilwa\Contracts\{Auth\UserContract, Database\OrmDialect};
 
 	use Tilwa\Adapters\Orms\Eloquent\Models\User as EloquentUser;
 

@@ -28,7 +28,7 @@
 		}
 
 		/**
-		 * Organic behavior is for only module matching incoming request to be prepared. But in tests, we may want to examin mdular functionality without routing. In such case, boot everything
+		 * Organic behavior is for only module matching incoming request to be prepared. But in tests, we may want to examine modular functionality without routing. In such case, boot everything
 		 * 
 		 * @param {skipFirst} Since base type is likely to have booted this automatically
 		*/

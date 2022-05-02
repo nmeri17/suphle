@@ -3,13 +3,23 @@
 
 	use Tilwa\Auth\{Renderers\ApiLoginRenderer, Repositories\ApiAuthRepo};
 
-	class ApiLoginRendererTest extends TestLoginRenderer {
+	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
+
+	class ApiLoginRendererTest extends IsolatedComponentTest {
+
+		use TestLoginRenderer;
 
 		const LOGIN_PATH = "/api/v1/login";
 
-		protected $loginRendererName = ApiLoginRenderer::class,
+		protected function loginRendererName ():string {
 
-		$loginRepoService = ApiAuthRepo::class;
+			return ApiLoginRenderer::class;
+		}
+
+		protected function loginRepoService ():string {
+
+			return ApiAuthRepo::class;
+		}
 
 		public function test_successLogin () {
 

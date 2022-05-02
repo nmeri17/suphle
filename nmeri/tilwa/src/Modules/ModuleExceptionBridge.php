@@ -54,25 +54,30 @@
 
 		public function epilogue ():void {
 
-			ini_set("display_errors", false); // prevent error from flashing at user
-
 			register_shutdown_function(function () {
 
-				$lastError = error_get_last();
-
-				if ( is_null($lastError) ) return; // no error. Just end of request
-
-				$stringifiedError = json_encode($lastError, JSON_PRETTY_PRINT);
-
-				try {
-
-					echo $this->gracefulShutdown($stringifiedError);
-				}
-				catch (Throwable $exception) {
-
-					echo $this->disgracefulShutdown($stringifiedError, $exception);
-				}
+				echo $this->shutdownRites();
 			});
+		}
+
+		public function shutdownRites ():?string {
+
+			$lastError = error_get_last();
+
+			if ( is_null($lastError) )
+
+				return null; // no error. Just end of request
+
+			$stringifiedError = json_encode($lastError, JSON_PRETTY_PRINT);
+
+			try {
+
+				return $this->gracefulShutdown($stringifiedError);
+			}
+			catch (Throwable $exception) {
+
+				return $this->disgracefulShutdown($stringifiedError, $exception);
+			}
 		}
 
 		/**

@@ -12,9 +12,11 @@
 			return [Task::class];
 		}
 
-		public function setPayload ($data):static {
+		public function setPayload ($data):self {
 
 			$this->payload = $data;
+
+			return $this;
 		}
 
 		abstract public function sendMessage ():void;

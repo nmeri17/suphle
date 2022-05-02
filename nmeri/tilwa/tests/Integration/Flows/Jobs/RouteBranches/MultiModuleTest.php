@@ -5,7 +5,9 @@
 
 	use Tilwa\Modules\ModuleDescriptor;
 
-	use Tilwa\Contracts\Config\Router;
+	use Tilwa\Contracts\{Config\Router, Presentation\BaseRenderer};
+
+	use Tilwa\Response\ResponseManager;
 
 	use Tilwa\Testing\Proxies\WriteOnlyContainer;
 
@@ -20,15 +22,6 @@
 		protected $originDataName = "post_titles",
 
 		$flowUrl = "posts/id"; // the name used here is determined by the pattern name at the target module
-
-		private $mockFlowHydrator, $sutName = FlowHydrator::class;
-
-		public function setUp ():void {
-
-			$this->mockFlowHydrator = $this->positiveDouble($this->sutName);
-
-			parent::setUp();
-		}
 
 		protected function getModules():array {
 
@@ -48,8 +41,7 @@
 					$container->replaceWithMock(Router::class, RouterMock::class, [
 
 						"browserEntryRoute" => FlowRoutes::class
-					])
-					->replaceWithConcrete($this->sutName, $this->mockFlowHydrator);
+					]);
 				}
 			)->sendExpatriates([
 
@@ -63,25 +55,41 @@
 				2) getLoadedRenderer stubs a renderer containing one of the routes in FlowRoutes/module 3, meaning it should be handled by RouteBranches (ostensibly, at the end of the request)
 			*/
 
+			$this->prepareAllModules();
+
+			$container = $this->moduleThree->getContainer();
+
+			$renderer = $this->getLoadedRenderer();
+
+			$sutName = FlowHydrator::class;
+
+			$container->whenTypeAny()->needsAny([
+
+				BaseRenderer::class => $renderer
+			]);
+
+			$container->whenTypeAny()->needsAny([
+
+				$sutName => $this->positiveDouble($sutName, [], [ // then
+
+					"executeRequest" => [1, []],
+
+					"setDependencies" => [1, [
+
+						$container->getClass(ResponseManager::class),
+
+						$this->anything()
+					]]
+				])
+			]);
+
 			$this->makeJob(
 				new BranchesContext(
-					$this->getLoadedRenderer(),
+					$renderer,
 
 					null, $this->modules, null
 				)
 			)->handle(); // when
-
-			$this->mockCalls([ // then
-
-				"executeRequest" => [1, []],
-
-				"setDependencies" => [1, [
-
-					$this->moduleThree->getContainer()->getClass(ResponseManager::class),
-
-					$this->anything()
-				]]
-			], $this->mockFlowHydrator);
 		}
 	}
 ?>

@@ -1,11 +1,15 @@
 <?php
 	namespace Tilwa\Tests\Integration\Services\Proxies;
 
+	use Tilwa\Hydration\Container;
+
 	use Tilwa\Request\PayloadStorage;
 
 	use Tilwa\Exception\Explosives\NotFoundException;
 
-	use Tilwa\Testing\{TestTypes\InvestigateSystemCrash, Proxies\WriteOnlyContainer};
+	use Tilwa\Contracts\Modules\DescriptorInterface;
+
+	use Tilwa\Testing\TestTypes\InvestigateSystemCrash;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Concretes\Services\DatalessErrorThrower, Meta\ModuleOneDescriptor};
 
@@ -22,14 +26,9 @@
 			$this->container = $this->getContainer();
 		}
 
-		protected function getModules ():array {
+		protected function getModule ():DescriptorInterface {
 
-			return [
-				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
-
-					//
-				}, false)
-			];
+			return new ModuleOneDescriptor (new Container);
 		}
 
 		public function test_successful_call_returns_value () {
@@ -57,15 +56,19 @@
 		*/
 		public function test_failureState_replaces_error (string $methodName) {
 
-			$container = $this->container;
+			$this->assertWillCatchPayload( // then 1
 
-			$this->assertWillCatchPayload($container->getClass(PayloadStorage::class)); // then 1 // may not work except it's called from mhi, although it was injected
+				$this->container->getClass(PayloadStorage::class),
 
-			$sut = $container->getClass($this->serviceName);
+				function () use ($methodName) {
 
-			$result = call_user_func([$sut, $methodName]); // when
+					$sut = $this->container->getClass($this->serviceName);
 
-			$this->assertTrue($result->hasErrors()); // then 2
+					$result = call_user_func([$sut, $methodName]); // when
+
+					$this->assertTrue($result->hasErrors()); // then 2
+				}
+			);
 		}
 
 		public function failureStateMethods ():array {
