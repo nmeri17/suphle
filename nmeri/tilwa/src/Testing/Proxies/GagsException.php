@@ -61,7 +61,7 @@
 
 			return $this->returnCallback(function ($argument) {
 var_dump($argument);
-				return "GagsException->constructExceptionBridge->disgracefulShutdown";
+				return "GagsException->getDisgracefulShutdown";
 			});
 		}
 

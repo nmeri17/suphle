@@ -55,7 +55,7 @@
 
 			$this->actingAs($user, SessionStorage::class); // given
 
-			$this->get("/api/v1/secure-segment") // when
+			$this->get("/api/v1/segment") // when
 
 			->assertUnauthorized(); // then
 		}

@@ -88,8 +88,6 @@
 
 			if (empty($observers)) return;
 
-			$authStorage->setHydrator($this->getUserHydrator());
-
 			$this->laravelContainer->instance(AuthStorage::class, $authStorage); // guards in those observers will be relying on this contract
 
 			foreach ($observers as $model => $observer)
@@ -123,7 +121,7 @@
 
 		public function userModel ():UserContract {
 
-			return new EloquentUser;
+			return $this->container->getClass(EloquentUser::class);
 		}
 	}
 ?>

@@ -16,7 +16,7 @@
 
 		public function addRule (array $patterns, string $rule):self {
 
-			$this->createAndInclude($this->allRules, $rule, $patterns);
+			$this->createAndInclude($this->allRules, $patterns, $rule);
 
 			return $this;
 		}
@@ -35,7 +35,7 @@
 		*/
 		public function forgetRule (array $patterns, string $rule):self {
 
-			$this->createAndInclude($this->excludeRules, $rule, $patterns);
+			$this->createAndInclude($this->excludeRules, $patterns, $rule);
 
 			return $this;
 		}

@@ -48,9 +48,11 @@
 
 		public function findRenderer ():void {
 
-			$requestPath = trim($this->requestDetails->getPath(), "/");
+			$collectionList = $this->entryRouteMap();
 
-			foreach ($this->entryRouteMap() as $collection) {
+			$requestPath = trim($this->requestDetails->getPath(), "/"); // this should only be read after setting collection list since it can mutate request path
+
+			foreach ($collectionList as $collection) {
 				
 				$hit = $this->recursiveSearch($collection, $requestPath);
 
@@ -281,7 +283,7 @@
 		}
 
 		// @return Strings<RouteCollection>[]
-		public function entryRouteMap():array {
+		public function entryRouteMap ():array {
 
 			$requestDetails = $this->requestDetails;
 
@@ -291,13 +293,13 @@
 			
 			if ($requestDetails->isApiRoute()) {
 
-				$requestDetails->stripApiPrefix();
-
 				$apiStack = $requestDetails->apiVersionClasses();
 
 				if ($config->mirrorsCollections())
 
-					$apiStack = array_push($apiStack, $entryRoute); // push it to the bottom
+					array_push($apiStack, $entryRoute); // push it to the bottom
+
+				$requestDetails->stripApiPrefix(); // just before we go on our search
 
 				return $apiStack;
 			}

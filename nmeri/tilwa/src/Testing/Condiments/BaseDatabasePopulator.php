@@ -5,9 +5,7 @@
 
 	trait BaseDatabasePopulator {
 
-		protected $replicator, $initialCount = 10,
-
-		$databaseApi;
+		protected $replicator, $databaseApi;
 
 		protected static $isFirstTest = true, // using this to maintain state since PHPUnit resets all instance properties per test
 
@@ -25,12 +23,17 @@
 
 				$this->replicator->setupSchema();
 
-				$this->replicator->seedDatabase( $this->initialCount);
+				$this->replicator->seedDatabase($this->getInitialCount());
 
 				static::$isFirstTest = false;
 			}
 
 			$this->replicator->listenForQueries();
+		}
+
+		protected function getInitialCount ():int {
+
+			return 10;
 		}
 
 		private function setReplicator ():void {

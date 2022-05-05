@@ -50,12 +50,15 @@
 					$name => $concrete
 				]);
 
-			foreach ($this->simpleBinds() as $contract => $className)
+			foreach ($this->simpleBinds() as $contract => $className) {
+
+				$concrete = $this->container->getClass($className); // for some funny reason, this provision doesn't work except it's first stored in a variable
 
 				$this->container->whenTypeAny()->needsAny([
 
-					$contract => $this->container->getClass($className)
+					$contract => $concrete
 				]);
+			}
 		}
 
 		protected function simpleBinds ():array {

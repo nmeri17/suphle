@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Adapters\Orms\Eloquent;
 
-	use Tilwa\Hydration\BaseInterfaceLoader;
+	use Tilwa\Hydration\{BaseInterfaceLoader, Container};
 
 	use Tilwa\Contracts\{ Config\AuthContract, Bridge\LaravelContainer, Database\OrmDialect, Auth\AuthStorage};
 
@@ -9,15 +9,19 @@
 
 	class OrmLoader extends BaseInterfaceLoader {
 
-		private $authContract, $authStorage, $laravelContainer;
+		private $authContract, $authStorage, $container,
 
-		public function __construct (AuthContract $authContract, AuthStorage $authStorage, LaravelContainer $laravelContainer) {
+		$laravelContainer;
+
+		public function __construct (AuthContract $authContract, AuthStorage $authStorage, LaravelContainer $laravelContainer, Container $container) {
 
 			$this->authContract = $authContract;
 
 			$this->authStorage = $authStorage;
 
 			$this->laravelContainer = $laravelContainer;
+
+			$this->container = $container;
 		}
 
 		public function afterBind ($initialized):void {
@@ -29,6 +33,8 @@
 			$client->setEventDispatcher($this->laravelContainer->make(Dispatcher::class));
 
 			$client->bootEloquent(); // in addition to using the above to register observers below, this does the all important job of Model::setConnectionResolver for us
+
+			$this->injectHydrator($initialized); // just before giving this to the observers
 
 			$initialized->registerObservers(
 
@@ -43,7 +49,7 @@
 			return OrmBridge::class;
 		}
 
-		protected function databaseBindings ($initialized):array {
+		protected function databaseBindings (OrmDialect $initialized):array {
 
 			return [
 
@@ -51,6 +57,18 @@
 
 				"db" => $initialized->getNativeClient()->getDatabaseManager()
 			];
+		}
+
+		protected function injectHydrator (OrmDialect $initialized):void {
+
+			$authStorage = $this->authStorage;
+
+			$authStorage->setHydrator($initialized->getUserHydrator());
+
+			$this->container->whenTypeAny()->needsAny([
+
+				AuthStorage::class => $authStorage
+			]);
 		}
 	}
 ?>

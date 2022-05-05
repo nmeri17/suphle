@@ -44,7 +44,7 @@
 
 			if (array_key_exists($interface, $loaders)) {
 
-				$loader = $container->instantiateConcrete($loaders[$interface]);
+				$loader = $container->getClass($loaders[$interface]);
 
 				return $this->extractFromLoader($loader);
 			}

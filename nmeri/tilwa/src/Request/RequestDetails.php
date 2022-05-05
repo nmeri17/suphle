@@ -10,7 +10,7 @@
 	*/
 	class RequestDetails {
 
-		private $config, $path;
+		private $config, $path, $originalApiPath;
 
 		public function __construct (Router $config) {
 
@@ -21,11 +21,16 @@
 
 			$pathKey = "tilwa_path";
 
-			if (array_key_exists($pathKey, $_GET)) // leave it open to be set multiple since framework can be run in contexts where url isn't the first thing to happen e.g. some tests where database is setup before receiving url
+			if (is_null($this->path) && array_key_exists($pathKey, $_GET)) // leave it open to be set multiple since framework can be run in contexts where url isn't the first thing to happen e.g. some tests where database is setup before receiving url
 
 				$this->path = $_GET[$pathKey];
 
 			return $this->path;
+		}
+
+		public function getOriginalApiPath ():?string {
+
+			return $this->originalApiPath;
 		}
 
 		public function httpMethod ():string {
@@ -46,27 +51,34 @@
 			return $this->httpMethod() == "post";
 		}
 
+		private function regexApiPrefix ():string {
+
+			return "^\/?" . $this->config->apiPrefix();
+		}
+
 		public function isApiRoute ():bool {
 
-			return preg_match("/^" . $this->config->apiPrefix() . "/", $this->path);
+			return preg_match("/" . $this->regexApiPrefix() . "/", $this->path);
 		}
 
 		// given a request to api/v3/verb/noun, return verb/noun
 		public function stripApiPrefix():void {
 			
-			$pattern = $this->config->apiPrefix() . "\/.+?\/(.+)";
+			$pattern = $this->regexApiPrefix() . "\/.+?\/(.+)";
 
-			preg_match("/^" . $pattern . "/i", $this->path, $pathArray);
-			
+			preg_match("/" . $pattern . "/i", $this->path, $pathArray);
+
+			$this->originalApiPath = $this->path;
+
 			$this->path = $pathArray[1];
 		}
 
 		// given a request to api/v3/verb/noun, return v3
 		private function incomingVersion():string {
 			
-			$pattern = $this->config->apiPrefix() . "\/(.+?)\/";
+			$pattern = $this->regexApiPrefix() . "\/(.+?)\/";
 
-			preg_match("/^" . $pattern . "/i", $this->path, $version);
+			preg_match("/" . $pattern . "/i", $this->path, $version);
 
 			return $version[1];
 		}

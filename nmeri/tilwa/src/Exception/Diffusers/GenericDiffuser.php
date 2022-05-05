@@ -35,12 +35,12 @@
 
 			$this->renderer->setRawResponse([
 
-				"message" => $this->origin->getMessage() ?? get_class($this->origin)
+				"message" => $this->origin->getTraceAsString() ?? get_class($this->origin)
 			]);
 
 			$incomingCode = $this->origin->getCode();
 
-			$this->renderer->setHeaders($incomingCode > 0 ? $incomingCode: 500, []);
+			$this->renderer->setHeaders($incomingCode > 100 ? $incomingCode: 500, []);
 		}
 
 		public function getRenderer ():BaseRenderer {

@@ -16,6 +16,8 @@
 		use DirectHttpTest, CommonBinds {
 
 			CommonBinds::concreteBinds as commonConcretes;
+
+			CommonBinds::simpleBinds as commonSimples;
 		}
 
 		public function getRouter ():RouteManager {
@@ -39,6 +41,15 @@
 					]
 				)
 			]);
+		}
+
+		protected function simpleBinds ():array {
+
+			$commonSimples = $this->commonSimples();
+
+			unset($commonSimples[RouterContract::class]);
+
+			return $commonSimples;
 		}
 
 		/**

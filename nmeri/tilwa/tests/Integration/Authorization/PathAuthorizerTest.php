@@ -3,31 +3,53 @@
 
 	use Tilwa\Request\PathAuthorizer;
 
-	use Tilwa\Testing\Proxies\SecureUserAssertions;
+	use Tilwa\Bridge\Laravel\LaravelAppConcrete;
+
+	use Tilwa\Adapters\Orms\Eloquent\OrmLoader;
+
+	use Tilwa\Contracts\{Auth\UserContract, Database\OrmBridge};
+
+	use Tilwa\Testing\{Proxies\SecureUserAssertions, Condiments\BaseDatabasePopulator};
 
 	use Tilwa\Tests\Integration\Routing\TestsRouter;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Auth\AuthorizeRoutes, Authorization\Paths\ModelEditRule};
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Auth\AuthorizeRoutes, Authorization\Paths\ModelEditRule, Adapters\AdminableOrmBridge, InterfaceLoader\AdminableOrmLoader};
 
 	use Tilwa\Tests\Mocks\Models\Eloquent\AdminableUser;
 
 	class PathAuthorizerTest extends TestsRouter {
 
-		use SecureUserAssertions;
+		use SecureUserAssertions, BaseDatabasePopulator;
+
+		protected function getInitialCount ():int {
+
+			return 10;
+		}
 		
 		protected function getEntryCollection ():string {
 
 			return AuthorizeRoutes::class;
 		}
 
-		private function getUser67 (bool $makeAdmin = false) {
+		protected function getActiveEntity ():string {
 
-			return $this->positiveDouble(AdminableUser::class, [
+			return AdminableUser::class;
+		}
 
-				"isAdmin" => $makeAdmin,
+		protected function simpleBinds ():array {
 
-				"getId" => 67
+			return array_merge(parent::simpleBinds(), [
+
+				OrmLoader::class => AdminableOrmLoader::class
 			]);
+		}
+
+		private function getUser67 (bool $makeAdmin = false):UserContract {
+
+			return $this->replicator->modifyInsertion(1, [
+
+				"is_admin" => $makeAdmin
+			])->first();
 		}
 
 		private function authorizationSuccess ():bool {
