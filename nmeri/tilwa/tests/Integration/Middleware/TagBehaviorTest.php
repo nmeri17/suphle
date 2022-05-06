@@ -47,14 +47,19 @@
 				"process" => [$numTimes, []]
 			], $additionalMocks));
 		}
+
+		private function provideMiddleware (array $middlewareList):void {
+
+			$this->moduleOne->getContainer()
+
+			->whenTypeAny()->needsAny($middlewareList);
+		}
  
 		public function test_multi_patterns_to_single_tag_should_work () {
 
 			// given => @see [getModules]
 			// then 
-			$this->moduleOne->getContainer()
-
-			->whenTypeAny()->needsAny([
+			$this->provideMiddleware([
 
 				BlankMiddleware::class => $this->mockMiddleware(BlankMiddleware::class, 1),
 
@@ -68,9 +73,7 @@
 
 			// given => @see [getModules]
 			// then 
-			$this->moduleOne->getContainer()
-
-			->whenTypeAny()->needsAny([
+			$this->provideMiddleware([
 
 				BlankMiddleware::class => $this->mockMiddleware(BlankMiddleware::class, 1),
 
@@ -84,9 +87,7 @@
 
 			// given => @see [getModules]
 			// then 
-			$this->moduleOne->getContainer()
-
-			->whenTypeAny()->needsAny([
+			$this->provideMiddleware([
 
 				BlankMiddleware::class => $this->mockMiddleware(BlankMiddleware::class, 0),
 
@@ -102,9 +103,7 @@
 
 			// given => @see [getModules]
 			// then 
-			$this->moduleOne->getContainer()
-
-			->whenTypeAny()->needsAny([
+			$this->provideMiddleware([
 
 				BlankMiddleware::class => $this->mockMiddleware(BlankMiddleware::class, 1),
 
@@ -118,9 +117,7 @@
 
 			// given => @see [getModules]
 			// then 
-			$this->moduleOne->getContainer()
-
-			->whenTypeAny()->needsAny([
+			$this->provideMiddleware([
 
 				BlankMiddleware2::class => $this->mockMiddleware(BlankMiddleware2::class, 1),
 
@@ -134,9 +131,7 @@
 
 			// given => @see [getModules]
 			// then 
-			$this->moduleOne->getContainer()
-
-			->whenTypeAny()->needsAny([
+			$this->provideMiddleware([
 
 				BlankMiddleware2::class => $this->mockMiddleware(BlankMiddleware2::class, 0),
 

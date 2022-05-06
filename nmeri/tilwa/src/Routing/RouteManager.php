@@ -53,7 +53,7 @@
 			$requestPath = trim($this->requestDetails->getPath(), "/"); // this should only be read after setting collection list since it can mutate request path
 
 			foreach ($collectionList as $collection) {
-				
+
 				$hit = $this->recursiveSearch($collection, $requestPath);
 
 				if (!is_null($hit)) {
@@ -69,19 +69,19 @@
 			}
 		}
 
-		private function recursiveSearch (string $collectionName, string $incomingPath ):?BaseRenderer {
+		private function recursiveSearch (string $collectionName, string $incomingPath, string $parentPrefix = "" ):?BaseRenderer {
 
 			$collection = $this->container->getClass($collectionName);
+
+			$collection->_setParentPrefix($parentPrefix);
 
 			$matchingCheck = $this->findMatchingMethod( $incomingPath, $collection->_getPatterns() );
 
 			if (is_null($matchingCheck)) return null;
 
-			$methodName = $matchingCheck->getMethodName();
+			$methodName = $this->visitedMethods[] = $matchingCheck->getMethodName();
 
-			$this->visitedMethods[] = $methodName;
-
-			$collection->$methodName();
+			$collection->_invokePattern($methodName);
 
 			$remainder = $this->matchRemainder($matchingCheck, $incomingPath);
 
@@ -95,7 +95,11 @@
 
 				$this->indicatorProxy($collection, $methodName);
 
-				return $this->recursiveSearch($prefixClass, $remainder);
+				return $this->recursiveSearch(
+					$prefixClass, $remainder,
+
+					$collection->_prefixCurrent()
+				);
 			}
 
 			return $this->extractRenderer($collection, $remainder, $methodName, $expectsCrud);
@@ -125,7 +129,7 @@
 
 		public function methodPartiallyMatchPattern (string $currentRouteState, array $patterns):?PlaceholderCheck {
 
-			$methodRegexes = $this->getPlaceholderMethods($patterns);
+			$methodRegexes = $this->patternPlaceholderDetails($patterns);
 
 			foreach ($methodRegexes as $methodPattern => $methodDetails) { // not using in_array or ^$ since method is not guaranteed to match entire string
 
@@ -146,26 +150,20 @@
 			return null;
 		}
 
-		public function getPlaceholderMethods (array $patterns):array {
-
-			$methods = array_filter($patterns, function ($pattern) {
-
-				return preg_match("/". CollectionMethodToUrl::PLACEHOLDER_IDENTIFIER ."/", $pattern);
-			});
+		public function patternPlaceholderDetails (array $patterns):array {
 
 			$values = array_map(function ($pattern) {
 
 				$result = $this->urlReplacer->replacePlaceholders($pattern, self::PLACEHOLDER_REPLACEMENT);
-
 
 				return [
 					"url" => $result->regexifiedUrl(),
 
 					"placeholders" => $result->getPlaceholders()
 				];
-			}, $methods);
+			}, $patterns);
 
-			return array_combine($methods, $values);
+			return array_combine($patterns, $values);
 		}
 
 		private function extractRenderer (RouteCollection $collection, string $remainder, string $methodName, bool $expectsCrud):?BaseRenderer {

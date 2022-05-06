@@ -21,7 +21,7 @@
 
 			$pathKey = "tilwa_path";
 
-			if (is_null($this->path) && array_key_exists($pathKey, $_GET)) // leave it open to be set multiple since framework can be run in contexts where url isn't the first thing to happen e.g. some tests where database is setup before receiving url
+			if (is_null($this->path) && array_key_exists($pathKey, $_GET)) // leave path open to be set multiple times i.e. no [setPath], since framework can be run in contexts where url isn't the first thing to happen e.g. some tests where database is setup before receiving url
 
 				$this->path = $_GET[$pathKey];
 
@@ -84,7 +84,7 @@
 		}
 
 		# api/v3/verb/noun should return all versions from v3 and below
-		public function apiVersionClasses():array {
+		public function apiVersionClasses ():array {
 
 			$apiStack = $this->config->apiStack();
 
@@ -94,18 +94,16 @@
 
 			$versionPresent = strtolower($this->incomingVersion()); // case-insensitive search
 
-			$versionCount = count($versionHandlers) - 1;
-
 			// if there's no specific version, we will serve the most recent
 			if ( !empty($versionPresent))
 
 				$startIndex = array_search($versionPresent, $versionKeys);
 
-			else $startIndex = $versionCount;
+			else $startIndex = count($versionHandlers) - 1;
 
-			$versionHandlers = array_slice($versionHandlers, $startIndex, $versionCount);
+			$versionHandlers = array_slice($versionHandlers, $startIndex);
 
-			$versionKeys = array_slice($versionKeys, $startIndex, $versionCount);
+			$versionKeys = array_slice($versionKeys, $startIndex);
 
 			return array_combine($versionKeys, $versionHandlers);
 		}

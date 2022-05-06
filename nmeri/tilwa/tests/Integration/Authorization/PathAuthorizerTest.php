@@ -40,7 +40,7 @@
 
 			return array_merge(parent::simpleBinds(), [
 
-				OrmLoader::class => AdminableOrmLoader::class
+				OrmLoader::class => AdminableOrmLoader::class // can't inject User instead since OrmDialect won't have booted, and we can't do hydrating work here, since that would mean possibly missing out on [parent::simpleBinds()]
 			]);
 		}
 

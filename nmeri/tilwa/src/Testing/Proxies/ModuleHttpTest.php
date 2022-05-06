@@ -5,6 +5,8 @@
 
 	use Tilwa\Modules\ModuleToRoute;
 
+	use Tilwa\Middleware\MiddlewareRegistry;
+
 	use Tilwa\Testing\{Condiments\DirectHttpTest, Proxies\Extensions\TestResponseBridge};
 
 	trait ModuleHttpTest {
@@ -111,12 +113,20 @@
 
 			$matches = $this->getMatchingMiddleware($middlewares);
 
-			$this->assertEmpty(array_diff($middlewares, $matches));
+			$this->assertEmpty(
+				array_diff($middlewares, $matches),
+
+				"Failed to assert that middlewares ". json_encode($middlewares). " were used"
+			);
 		}
 
 		protected function assertDidntUseMiddleware (array $middlewares) {
 
-			$this->assertEmpty($this->getMatchingMiddleware($middlewares));
+			$this->assertEmpty(
+				$this->getMatchingMiddleware($middlewares),
+
+				"Did not expect to use middlewares " . $middlewares
+			);
 		}
 
 		private function getMatchingMiddleware (array $middlewares):array {

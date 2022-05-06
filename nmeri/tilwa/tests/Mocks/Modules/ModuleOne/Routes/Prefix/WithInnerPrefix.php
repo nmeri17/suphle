@@ -14,9 +14,9 @@
 			return NestedController::class;
 		}
 		
-		public function _prefixCurrent():string {
+		public function _prefixCurrent ():string {
 			
-			return "inner";
+			return empty($this->parentPrefix) ? "inner": "";
 		}
 		
 		public function WITH () {

@@ -5,7 +5,7 @@
 
 	use PHPUnit\Framework\MockObject\{ MockObject, Stub\Stub, Rule\InvocationOrder, Builder\InvocationMocker};
 
-	use ReflectionMethod, ReflectionClass;
+	use ReflectionMethod, ReflectionClass, Exception;
 
 	trait MockFacilitator {
 
@@ -140,6 +140,7 @@
 
 		/**
 		 * @param {invokeConstructor} Constructors can't invoke stubbed methods during the doubling process since they're unavailable then. Constructors with this requirement have to be triggered manually
+		 * When it receives argument names not matching method signature, it doesn't complain but returns the double equivalent
 		*/
 		protected function replaceConstructorArguments (
 
@@ -151,6 +152,8 @@
 
 			bool $useBaseContainer = true, bool $invokeConstructor = false
 		):MockObject {
+
+			$this->ensureAssocConstructor($constructorStubs);
 
 			$reflectedConstructor = new ReflectionMethod($target, Container::CLASS_CONSTRUCTOR);
 
@@ -177,6 +180,16 @@
 			}
 
 			return $double;
+		}
+
+		private function ensureAssocConstructor (array $constructorStubs):void {
+
+			array_walk($constructorStubs, function ($value, $key) {
+
+				if (is_numeric($key))
+
+					throw new Exception("Stub array must be associative");
+			});
 		}
 
 		private function mockDummyUnion (array $parameters, array $replacements, bool $isPositive, bool $useBaseContainer):array {

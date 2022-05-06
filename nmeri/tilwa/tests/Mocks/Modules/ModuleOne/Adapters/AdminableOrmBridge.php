@@ -10,7 +10,7 @@
 	class AdminableOrmBridge extends OrmBridge {
 
 		public function userModel ():UserContract {
-var_dump("expression");
+
 			return $this->container->getClass(AdminableUser::class);
 		}
 	}

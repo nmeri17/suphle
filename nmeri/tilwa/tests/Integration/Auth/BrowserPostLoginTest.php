@@ -22,7 +22,7 @@
 
 		protected function simpleBinds ():array {
 
-			return array_merge($this->commonSimples, [
+			return array_merge($this->commonSimples(), [
 
 				$this->genericStorage => SessionStorage::class // ensure we're working with session in this test although that's the default
 			]);

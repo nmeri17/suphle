@@ -32,15 +32,18 @@
 			];
 		}
 
+		public function concrete():string {
+
+			return LaravelAppConcrete::class;
+		}
+
 		public function afterBind ($initialized):void {
 
 			$this->injectBindings($initialized); // required for below call
 
 			$initialized->createSandbox(function () use ($initialized) {
 
-				(new ConfigFileFinder)
-
-				->loadConfigurationFiles($initialized, $this->configLoader); // leaving this here instead of in app bootstrappers so we can inject custom loader
+				$this->attendToConfig($initialized);
 
 				$initialized->runContainerBootstrappers();
 			});
@@ -53,9 +56,20 @@
 			$laravelContainer->registerSimpleBindings($laravelContainer->simpleBinds());
 		}
 
-		public function concrete():string {
+		/**
+		  * Leaving this here instead of in app bootstrappers so:
+			* 1) we can inject custom loader
+			* 2) we deliberately want to avoid calling [bootstrap]
+		*/
+		protected function attendToConfig (LaravelContainer $laravelContainer):void {
 
-			return LaravelAppConcrete::class;
+			$finder = new ConfigFileFinder;
+
+			$finder->loadConfigurationFiles($laravelContainer, $this->configLoader);
+
+			foreach ($finder->getConfigNames($laravelContainer) as $fileName)
+
+				$this->configLoader->get($fileName);
 		}
 
 		protected function getBasePath ():string {

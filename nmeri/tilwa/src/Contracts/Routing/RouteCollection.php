@@ -15,9 +15,13 @@
 		
 		public function _prefixCurrent():string;
 
+		public function _setParentPrefix (string $prefix):void;
+
 		public function _getPrefixCollection ():?string;
 
 		public function _getPatterns():array;
+
+		public function _invokePattern (string $methodPattern):void;
 
 		public function _authenticatedPaths():array;
 

@@ -11,13 +11,15 @@
 
 	use Tilwa\Contracts\Routing\{RouteCollection, CrudBuilder};
 
+	use Exception;
+
 	abstract class BaseCollection implements RouteCollection {
 
 		protected $collectionParent = BaseCollection::class,
 
 		$crudMode = false,
 
-		$canaryValidator, $authStorage;
+		$canaryValidator, $authStorage, $parentPrefix;
 
 		private $crudPrefix, $prefixClass, $lastRegistered,
 
@@ -37,6 +39,16 @@
 			return "";
 		}
 
+		public function _handlingClass ():string {
+
+			return "";
+		}
+
+		public function _setParentPrefix (string $prefix):void {
+
+			$this->parentPrefix = $prefix;
+		}
+
 		/**
 		 * `save` must be called in the invoking method
 		*/
@@ -54,6 +66,8 @@
 			if (in_array($method, ["_get", "_post", "_delete", "_put"]))
 
 				return $this->_register($renderer, $method);
+
+			throw new Exception("Unknown collection method $method");
 		}
 
 		protected function _register(BaseRenderer $renderer, string $method):self {
@@ -80,12 +94,24 @@
 			$this->prefixClass = $routeClass;
 		}
 
-		# filter off methods that belong to this base
+		/**
+		 * Filter off methods that belong to this base, but first prepend prefixes to them where applicable so the manager dooesn't do that each time manually
+		*/
 		public function _getPatterns():array {
 
-			$methods = array_diff(get_class_methods($this), get_class_methods($this->collectionParent));
+			$methods = array_diff(
 
-			$prefixed = array_map(function($name) {
+				get_class_methods($this),
+
+				get_class_methods($this->collectionParent)
+			);
+
+			return $this->methodSorter->descendingValues($this->prependPrefix($methods));
+		}
+
+		private function prependPrefix (array $patterns):array {
+
+			return array_map(function($name) {
 
 				$prefix = $this->_prefixCurrent();
 
@@ -94,9 +120,24 @@
 					return strtoupper($prefix) . "_$name";
 
 				return $name;
-			}, $methods);
+			}, $patterns);
+		}
 
-			return $this->methodSorter->descendingValues($prefixed);
+		/**
+		 * Antithesis of the [_getPatterns] to trim off prefix
+		*/
+		public function _invokePattern (string $methodPattern):void {
+
+			$prefix = $this->_prefixCurrent();
+
+			if (!empty($prefix)) {
+
+				$matches = preg_split("/". $prefix. "_/i", $methodPattern);
+
+				$methodPattern = $matches[1];
+			}
+
+			$this->$methodPattern();
 		}
 
 		public function _getMethodSorter ():MethodSorter {
@@ -120,12 +161,18 @@
 
 		protected function _only(array $include):array {
 			
-			return array_intersect($this->_getPatterns(), $include);
+			return array_intersect(
+
+				$this->_getPatterns(), $this->prependPrefix($include)
+			);
 		}
 
 		protected function _except(array $exclude):array {
 			
-			return array_diff($this->_getPatterns(), $exclude);
+			return array_diff(
+
+				$this->_getPatterns(), $this->prependPrefix($exclude)
+			);
 		}
 
 		protected function _canaryEntry(array $canaries):void {

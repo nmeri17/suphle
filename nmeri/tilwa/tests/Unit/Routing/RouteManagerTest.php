@@ -77,9 +77,9 @@
 			];
 		}
 
-		public function test_getPlaceholderMethods_returns_correctly_transformed () {
+		public function test_patternPlaceholderDetails_returns_correctly_transformed () {
 
-			$result = $this->sut->getPlaceholderMethods(
+			$result = $this->sut->patternPlaceholderDetails(
 
 				$this->collection->_getPatterns() // given 
 			); // when
@@ -87,6 +87,8 @@
 			$placeholder = RouteManager::PLACEHOLDER_REPLACEMENT;
 
 			$this->assertEqualsCanonicalizing([
+
+				"SEGMENT/?",
 
 				"SEGMENT/$placeholder/?",
 

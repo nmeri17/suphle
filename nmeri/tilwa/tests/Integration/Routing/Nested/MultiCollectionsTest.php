@@ -1,6 +1,8 @@
 <?php
 	namespace Tilwa\Tests\Integration\Routing\Nested;
 
+	use Tilwa\Hydration\Container;
+
 	use Tilwa\Contracts\Config\Router;
 
 	use Tilwa\Routing\PatternIndicator;
@@ -9,7 +11,7 @@
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{ Meta\ModuleOneDescriptor, Config\RouterMock, Middlewares\BlankMiddleware};
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\Prefix\{ActualEntry, MisleadingEntry};
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\Prefix\{ActualEntry, Secured\MisleadingEntry};
 
 	class MultiCollectionsTest extends ModuleLevelTest {
 
@@ -25,16 +27,19 @@
 
 						"apiStack" => [
 
-							"v1" => ActualEntry::class,
+							"v2" => MisleadingEntry::class,
 
-							"v2" => MisleadingEntry::class
+							"v1" => ActualEntry::class
 						]
 					]);
 				})
 			];
 		}
 
-		public function test_needs_recovery_from_misleading_trail () { // it incorrectly fails after running first entrance. check what array is received by $this->entryRouteMap()
+		/**
+		 * Misleading collection tags BlankMiddleware, but the eventual collection group doesn't
+		*/
+		public function test_needs_recovery_from_misleading_trail () {
 
 			$this->stubIndicator(); // given
 
@@ -51,7 +56,13 @@
 			$sutName = PatternIndicator::class;
 
 			$this->massProvide([
-				$sutName => $this->positiveDouble($sutName, [
+				$sutName => $this->replaceConstructorArguments(
+					$sutName,
+
+					$this->getContainer()->getMethodParameters(
+						
+						Container::CLASS_CONSTRUCTOR, $sutName
+					), [
 
 					"resetIndications" => null
 				])

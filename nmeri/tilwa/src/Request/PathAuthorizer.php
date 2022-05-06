@@ -56,9 +56,17 @@
 
 			$activeRules = array_filter($this->allRules, function ($patterns) {
 
-				return !empty(array_intersect($this->interactedPatterns, $patterns)) &&
+				if (empty(array_intersect($this->interactedPatterns, $patterns)))
 
-				empty(array_intersect($this->excludeRules, $patterns));
+					return false;
+
+				foreach ($this->excludeRules as $middlewareName => $excludedPatterns)
+
+					if (!empty(array_intersect($excludedPatterns, $patterns)))
+
+						return false;
+				
+				return true;
 			});
 
 			foreach ($activeRules as $rule => $patterns) {

@@ -1,12 +1,24 @@
 <?php
 	namespace Tilwa\Tests\Integration\Bridge\Laravel;
 
+	use Tilwa\Contracts\Config\Laravel;
+
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Config\LaravelMock;
+
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Bridge\Laravel\ConfigLinks\{AppConfig, NestedConfig};
 
 	/**
 	 * The idea demonstrated here is to compare results from the [RepositoryContract] given to laravel, and the one gotten after hydrating the object paired to that config i.e. [app => appOOP], we compare the results of [RepositoryContract] with directly calling [appOOP]
 	*/
 	class ConfigLoaderTest extends TestsConfig {
+
+		protected function simpleBinds ():array {
+
+			return array_merge(parent::simpleBinds(), [
+
+				Laravel::class => LaravelMock::class
+			]);
+		}
 
 		public function test_their_config_can_get_ours () {
 
@@ -32,7 +44,7 @@
 
 			$sut = $this->getUnderlyingConfig(); // when
 
-			$value = $this->container->getClass(NestedConfig::class)->first_level()->second_level()["value"];
+			$value = $this->container->getClass(NestedConfig::class)->first_level()->second_level()->value();
 
 			$this->assertSame($value, $sut->get("nested.first_level.second_level.value")); // then
 	    }

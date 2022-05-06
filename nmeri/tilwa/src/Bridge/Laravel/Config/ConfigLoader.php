@@ -80,9 +80,8 @@
 	    	->needsArguments([
 
 	    		"nativeValues" => parent::get($configName)
-	    	])
-
-	    	->getClass($className);
+	    	
+	    	])->getClass($className);
 	    }
 
 	    /**
