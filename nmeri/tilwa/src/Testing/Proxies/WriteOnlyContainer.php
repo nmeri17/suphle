@@ -16,15 +16,17 @@
 			$this->container = $container;
 		}
 
-		public function replaceWithMock (string $interface, string $concrete, array $overrides, bool $retainOtherMethods = true):self {
+		public function replaceWithMock (
+			string $interface, string $concrete, array $methodStubs,
+
+			array $mockMethods = [], bool $retainOtherMethods = true
+		):self {
+
+			$doubleMode = $retainOtherMethods ? "positiveDouble":"negativeDouble";
 
 			$this->container->whenTypeAny()->needsAny([
 
-				$interface => $retainOtherMethods ?
-
-					$this->positiveDouble($concrete, $overrides):
-
-					$this->negativeDouble($concrete, $overrides)
+				$interface => $this->$doubleMode($concrete, $methodStubs, $mockMethods)
 			]);
 
 			return $this;

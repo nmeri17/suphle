@@ -18,7 +18,7 @@
 			GagsException::setUp as mufflerSetup;
 		}
 
-		protected $consoleRunner;
+		protected $consoleRunner, $modules;
 
 		protected function setUp ():void {
 

@@ -26,10 +26,10 @@
 							$finalName
 						]
 					])
-					->replaceWithConcrete($finalName, $this->negativeDouble($finalName, [
+					->replaceWithMock($finalName, $finalName, [
 					
 						"process" => ["foo" => "bar"]
-					]));
+					], [], false);
 				})
 			];
 		}

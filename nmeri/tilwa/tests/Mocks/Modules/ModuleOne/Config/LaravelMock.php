@@ -40,7 +40,7 @@
 		/**
 		 * {@inheritdoc}
 		*/
-		public function hasRoutes ():array {
+		public function registersRoutes ():array {
 
 			return [
 

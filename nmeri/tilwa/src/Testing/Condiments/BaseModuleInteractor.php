@@ -19,9 +19,10 @@
 
 				$container = $descriptor->getContainer();
 
-				foreach ($provisions as $parentType => $concrete)
+				foreach ($provisions as $parentType => $concrete) {
 
 					$container->refreshClass($parentType);
+				}
 
 				$container->whenTypeAny()->needsAny($provisions);
 			}

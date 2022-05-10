@@ -56,6 +56,7 @@ test only and except from routeCollection
 		- converting from/to orm type during retrieval
 		- passing to collection type
 	- integrate cache library and remove the cache from moduleLevelTest->provideCriticalObjects and isolatedComponent->concreteBinds
+	- that place where you have laravel route finders, replace with insertable generics like for the container
 
 
 
@@ -63,14 +64,15 @@ what would be a really valuable test is visiting flows defined in 3 from 1 ie. f
 	- MultiModuleTest->test_handle_flows_in_other_modules transfer flow routes in FlowRoutes to another module
 
 write tests for
-	- meb ->grace and disgraceful. can we combine TerminatedRequestTest or does it require a new test then we refactor TerminatedRequestTest? whatever route is taken, should only be done so after confirming decorators work and can catch us
-	- MiddlewareRegistryTest
 	- FlowHydrator->executeRequest sends request to where it can hit controller
 	- FetchAndEditTest->test_update_can_withstand_errors
+	- TransphpormTest
 
 create argument allowing us replace uploaded files and filesystem on the operator
+- multiEdit cloaker should complain on get if no authorization is found
 
 
+@see ServiceErrorCatcherTest->failureState
 
 /*$builder->disableProxyingToOriginalMethods()
 

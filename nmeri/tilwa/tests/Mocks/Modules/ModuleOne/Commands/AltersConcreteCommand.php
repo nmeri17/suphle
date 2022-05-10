@@ -11,10 +11,6 @@
 
 	class AltersConcreteCommand extends BaseCliCommand {
 
-		protected static $defaultName = "test:alters_concrete",
-
-		$defaultDescription = "";
-
 		protected function configure ():void {
 
 			parent::configure();
@@ -24,7 +20,12 @@
 			);
 		}
 
-		protected function execute (InputInterface $input, OutputInterface $output):int {
+		protected function commandSignature ():string {
+
+			return "test:alters_concrete";
+		}
+
+		public function execute (InputInterface $input, OutputInterface $output):int {
 
 			$this->moduleToRun($input)->getContainer()->getClass(BCounter::class)
 

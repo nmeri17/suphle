@@ -14,8 +14,6 @@
 	*/
 	class ArtisanCli extends BaseCliCommand {
 
-		protected static $defaultName = "bridge:laravel";
-
 		protected static $defaultDescription = "Interface with artisan commands";
 
 		protected function configure ():void {
@@ -25,6 +23,11 @@
 			$this->addArgument(
 				"to_forward", InputArgument::REQUIRED, "Commands to forward to artisan"
 			);
+		}
+
+		protected function commandSignature ():string {
+
+			return "bridge:laravel";
 		}
 
 		protected function execute (InputInterface $input, OutputInterface $output):int {
