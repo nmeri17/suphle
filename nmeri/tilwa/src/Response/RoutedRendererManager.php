@@ -15,13 +15,19 @@
 
 	use Tilwa\Exception\Explosives\ValidationFailure;
 
-	class ResponseManager implements BaseResponseManager {
+	class RoutedRendererManager implements BaseResponseManager {
 
 		private $container, $router, $renderer, $requestDetails,
 
 		$controllerManager, $flowQueuer;
 
-		function __construct (Container $container, RouteManager $router, CoodinatorManager $controllerManager, FlowResponseQueuer $flowQueuer, BaseRenderer $renderer, RequestDetails $requestDetails) {
+		public function __construct (
+			BaseRenderer $renderer, Container $container,
+
+			RouteManager $router, CoodinatorManager $controllerManager,
+
+			FlowResponseQueuer $flowQueuer, RequestDetails $requestDetails
+		) {
 
 			$this->container = $container;
 
@@ -67,6 +73,11 @@
 			if (!$this->requestDetails->isApiRoute())
 
 				$this->router->setPreviousRenderer($renderer);
+
+			$this->container->whenTypeAny()->needsAny([
+
+				PayloadStorage::class => $payloadStorage
+			]);
 
 			return $renderer->invokeActionHandler($this->controllerManager->getHandlerParameters());
 		}

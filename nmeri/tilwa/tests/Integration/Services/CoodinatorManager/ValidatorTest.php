@@ -5,7 +5,7 @@
 
 	use Tilwa\Request\ValidatorManager;
 
-	use Tilwa\Response\ResponseManager;
+	use Tilwa\Response\RoutedRendererManager;
 
 	use Tilwa\Contracts\{Presentation\BaseRenderer, Requests\ValidationEvaluator, Modules\DescriptorInterface};
 
@@ -107,7 +107,7 @@
 				BaseRenderer::class => $this->negativeDouble(BaseRenderer::class)
 			]) // given
 
-			->getClass(ResponseManager::class)->mayBeInvalid(); // when
+			->getClass(RoutedRendererManager::class)->mayBeInvalid(); // when
 		}
 
 		public function test_successful_validation_initiates_middleware () {
@@ -116,7 +116,7 @@
 
 			$middlewareQueueName = MiddlewareQueue::class;
 
-			$responseManager = ResponseManager::class;
+			$rendererManager = RoutedRendererManager::class;
 
 			$container = $this->container;
 
@@ -137,7 +137,7 @@
 
 			$container->whenTypeAny()->needsAny([
 
-				ResponseManager::class => $this->negativeDouble(ResponseManager::class),
+				$rendererManager => $this->negativeDouble($rendererManager),
 
 				$middlewareQueueName => $this->negativeDouble($middlewareQueueName, [], [
 

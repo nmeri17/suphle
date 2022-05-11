@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Modules;
 
-	use Tilwa\Response\ResponseManager;
+	use Tilwa\Response\RoutedRendererManager;
 
 	use Tilwa\Routing\RouteManager;
 
@@ -17,7 +17,7 @@
 	
 	class ModuleInitializer implements HighLevelRequestHandler {
 
-		private $router, $descriptor, $responseManager,
+		private $router, $descriptor, $rendererManager,
 
 		$laravelMatcher, $container, $indicator;
 
@@ -57,11 +57,11 @@
 
 			$this->indicator = $this->router->getIndicator();
 
-			$this->responseManager = $this->container->getClass(ResponseManager::class);
+			$this->setRendererManager();
 
 			$this->attemptAuthentication()->authorizeRequest();
 
-			$validationPassed = $this->responseManager
+			$validationPassed = $this->rendererManager
 
 			->bootCoodinatorManager()->mayBeInvalid();
 
@@ -70,14 +70,19 @@
 			->runStack();
 		}
 
+		public function setRendererManager ():void {
+
+			$this->rendererManager = $this->container->getClass(RoutedRendererManager::class);
+		}
+
 		public function getRouter ():RouteManager {
 			
 			return $this->router;
 		}
 
-		public function getResponseManager ():ResponseManager {
+		public function getRoutedRendererManager ():RoutedRendererManager {
 			
-			return $this->responseManager;
+			return $this->rendererManager;
 		}
 
 		public function initialize ():self {
@@ -122,7 +127,7 @@
 
 			if (!is_null($authMethod)) {
 
-				if ( !$this->responseManager->requestAuthenticationStatus($authMethod))
+				if ( !$this->rendererManager->requestAuthenticationStatus($authMethod))
 
 					throw new Unauthenticated($authMethod);
 

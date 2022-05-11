@@ -7,11 +7,11 @@
 
 	use Tilwa\Contracts\{CacheManager, Presentation\BaseRenderer, Config\Flows};
 
-	use Tilwa\Response\ResponseManager;
+	use Tilwa\Response\RoutedRendererManager;
 
 	use Tilwa\Hydration\Container;
 
-	use Tilwa\Request\RequestDetails;
+	use Tilwa\Request\PayloadStorage;
 
 	use Tilwa\Routing\PathPlaceholders;
 
@@ -21,9 +21,9 @@
 
 	class FlowHydrator {
 
-		private $previousResponse, $cacheManager, $requestDetails,
+		private $previousResponse, $cacheManager, $payloadStorage,
 
-		$responseManager, $container, $placeholderStorage,
+		$rendererManager, $container, $placeholderStorage,
 
 		$flowConfig,
 
@@ -58,7 +58,7 @@
 			UnitNode::MAX_HITS => "setMaxHitsHydrator"
 		];
 
-		function __construct(CacheManager $cacheManager, Container $randomContainer, PathPlaceholders $placeholderStorage, RequestDetails $requestDetails, Flows $flowConfig) {
+		function __construct(CacheManager $cacheManager, Container $randomContainer, PathPlaceholders $placeholderStorage, PayloadStorage $payloadStorage, Flows $flowConfig) {
 
 			$this->cacheManager = $cacheManager;
 
@@ -66,7 +66,7 @@
 
 			$this->placeholderStorage = $placeholderStorage;
 
-			$this->requestDetails = $requestDetails;
+			$this->payloadStorage = $payloadStorage;
 
 			$this->flowConfig = $flowConfig;
 		}
@@ -94,13 +94,13 @@
 		}
 
 		/**
-		*	@param {responseManager} the manager designated to handle this request if it entered app organically
+		*	@param {rendererManager} the manager designated to handle this request if it entered app organically
 		*/
-		public function setDependencies(ResponseManager $responseManager, $previousResponse):self {
+		public function setDependencies(RoutedRendererManager $rendererManager, $previousResponse):self {
 
 			$this->previousResponse = $previousResponse;
 
-			$this->responseManager = $responseManager;
+			$this->rendererManager = $rendererManager;
 
 			return $this;
 		}
@@ -130,9 +130,8 @@
 				$this->runNodeConfigs($unitPayload, $flowStructure);
 
 				$this->storeContext(
-					$renderer->getPath(),
-
-					$unitPayload, $userId,
+					
+					$renderer->getPath(), $unitPayload, $userId,
 
 					$this->getContentType($renderer)
 				);
@@ -223,14 +222,17 @@
 			return $nodeActions;
 		}
 
-		private function extractCollectionData(CollectionNode $rawNode):array {
+		private function extractCollectionData (CollectionNode $rawNode):array {
 
 			$dataIndex = $rawNode->getLeafName();
 
-			return array_map(function ($valueObject) use ($dataIndex) { 
-				
-				return Arr::get($valueObject, $dataIndex);
-			}, $this->getNodeFromPrevious($rawNode));
+			$mapped = [];
+
+			foreach ($this->getNodeFromPrevious($rawNode) as $key => $valueObject)
+
+				$mapped[$key] = Arr::get($valueObject, $dataIndex);
+
+			return $mapped;
 		}
 
 		public function getNodeFromPrevious(UnitNode $rawNode):iterable {
@@ -253,7 +255,7 @@
 
 		public function canProcessPath():bool {
 
-			return $this->responseManager->bootCoodinatorManager()
+			return $this->rendererManager->bootCoodinatorManager()
 
 			->isValidRequest();
 		}
@@ -288,7 +290,7 @@
 
 			if ($this->canProcessPath())
 
-				return $this->responseManager->handleValidRequest($this->requestDetails);
+				return $this->rendererManager->handleValidRequest($this->payloadStorage);
 		}
 
 		public function handleOneOf (array $indexes, string $requestProperty):?BaseRenderer {

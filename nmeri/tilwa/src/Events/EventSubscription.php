@@ -8,15 +8,13 @@
 	*/
 	class EventSubscription {
 
-		private $handlingClass, $handlingUnits, $container;
+		private $handlingUnits = [], $handlingClass, $container;
 		
 		public function __construct(string $handlingClass, Container $container) {
 
 			$this->handlingClass = $handlingClass;
 
 			$this->container = $container;
-
-			$this->handlingUnits = [];
 		}
 		
 		// since each local event manager points to its own module, we can know that pulling a listener from another module will load the class from its correct scope
@@ -36,11 +34,6 @@
 
 				return $unit->matchesEvent($eventName);
 			});
-		}
-
-		public function matchesHandler (string $name):bool {
-
-			return $name == $this->handlingClass;
 		}
 	}
 ?>

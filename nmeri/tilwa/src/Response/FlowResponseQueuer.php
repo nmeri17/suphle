@@ -18,7 +18,7 @@
 			$this->authStorage = $authStorage;
 		}
 
-		public function insert (BaseRenderer $renderer, ResponseManager $responseManager):void {
+		public function insert (BaseRenderer $renderer, RoutedRendererManager $rendererManager):void {
 
 			$this->queueManager->augmentArguments(RouteBranches::class, [
 				"context" => new BranchesContext(
@@ -26,7 +26,7 @@
 
 					$this->authStorage->getUser(),
 
-					null, $responseManager
+					null, $rendererManager
 				)
 			]);
 		}

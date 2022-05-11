@@ -141,7 +141,7 @@
 		*/
 		public function splitIntoSegments (string $tokenizedUrl):array {
 
-			preg_match_all( "/(?:([\w]+)\/)/", $tokenizedUrl, $matches );
+			preg_match_all( "/(?:([\w-]+)\/)/", $tokenizedUrl, $matches );
 
 			return $matches[1];
 		}

@@ -5,6 +5,11 @@
 
 	$awesomeApp = new MyApp;
 
+	// subject to how those guys make url available
+	// set as early as possible for the below calls
+	// set again inside the loop
+	$awesomeApp->setRequestPath($_GET["suphle_url"]);
+
 	$awesomeApp->bootModules();
 
 	$awesomeApp->extractFromContainer();

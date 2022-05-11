@@ -47,13 +47,7 @@
 
 		private function getRequestDetails (string $url):RequestDetails {
 
-			$requestDetails = $this->container->getClass(RequestDetails::class);
-
-			$_GET["tilwa_path"] = $url;
-
-			$requestDetails->getPath();
-
-			return $requestDetails;
+			return RequestDetails::fromContainer($this->container, $url);
 		}
 	}
 ?>

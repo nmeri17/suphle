@@ -21,14 +21,6 @@
 		*/
 		protected function setHttpParams (string $requestPath, string $httpMethod = "get", ?array $payload = [], array $headers = []):void {
 
-			$container = $this->getContainer();
-
-			$components = parse_url($requestPath);
-
-			$_GET["tilwa_path"] = $components["path"];
-
-			$_GET = array_merge($_GET, [$components["query"] ?? ""]);
-
 			$headers["REQUEST_METHOD"] = $httpMethod;
 
 			$reader = ["getHeaders" => $headers];
@@ -47,7 +39,11 @@
 
 				StdInputReader::class => $this->positiveDouble(StdInputReader::class, $reader)
 			]);
+
+			$this->setRequestPath($requestPath);
 		}
+
+		abstract protected function setRequestPath (string $requestPath):void;
 
 		protected function setJsonParams (string $requestPath, array $payload, string $httpMethod = "post"):bool {
 

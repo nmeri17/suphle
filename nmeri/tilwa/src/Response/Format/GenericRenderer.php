@@ -7,6 +7,8 @@
 
 	use Tilwa\Flows\ControllerFlows;
 
+	use Tilwa\Services\ServiceCoordinator;
+
 	abstract class GenericRenderer implements BaseRenderer {
 
 		private $controller, $path, $flows, $routeMethod;
@@ -15,7 +17,7 @@
 
 		$rawResponse = [], $headers = [];
 
-		public function setControllingClass (object $controller):void {
+		public function setControllingClass (ServiceCoordinator $controller):void {
 			
 			$this->controller = $controller;
 		}
@@ -27,15 +29,17 @@
 
 		public function invokeActionHandler (array $handlerParameters):BaseRenderer {
 
-			$this->rawResponse = call_user_func_array([
+			$this->rawResponse = call_user_func_array(
 
-				$this->controller, $this->handler], $handlerParameters
+				[$this->getController(), $this->handler],
+
+				$handlerParameters
 			);
 
 			return $this;
 		}
 
-		public function getController ():object {
+		public function getController ():ServiceCoordinator {
 			
 			return $this->controller;
 		}
@@ -52,7 +56,7 @@
 
 		public function hasBranches():bool {
 			
-			return !is_null($this->flows);
+			return !is_null($this->getFlow());
 		}
 
 		public function setRawResponse($response):BaseRenderer {

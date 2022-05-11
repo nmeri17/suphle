@@ -3,9 +3,9 @@
 
 	use Tilwa\Contracts\Config\Router;
 
+	use Tilwa\Hydration\Container;
+
 	/**
-	 * Suffices for components without access to their own handlers i.e. login
-	 * 
 	 * Our closest adaptation of the PSR\RequestInterface
 	*/
 	class RequestDetails {
@@ -19,13 +19,35 @@
 
 		public function getPath ():?string {
 
-			$pathKey = "tilwa_path";
-
-			if (is_null($this->path) && array_key_exists($pathKey, $_GET)) // leave path open to be set multiple times i.e. no [setPath], since framework can be run in contexts where url isn't the first thing to happen e.g. some tests where database is setup before receiving url
-
-				$this->path = $_GET[$pathKey];
-
 			return $this->path;
+		}
+
+		public function setPath (string $requestPath):void {
+
+			$this->path = $requestPath;
+		}
+
+		public static function fromModules (array $descriptors, string $requestPath):void {
+
+			foreach ($descriptors as $descriptor)
+
+				static::fromContainer($descriptor->getContainer(), $requestPath);
+		}
+
+		public static function fromContainer (Container $container, string $requestPath):void {
+
+			$selfName = get_called_class();
+
+			$container->refreshClass($selfName);
+
+			$instance = $container->getClass($selfName);
+
+			$instance->setPath(parse_url($requestPath)["path"]);
+
+			$container->whenTypeAny()->needsAny([
+
+				$selfName => $instance
+			]);
 		}
 
 		public function getOriginalApiPath ():?string {
@@ -35,10 +57,21 @@
 
 		public function httpMethod ():string {
 
-			return strtolower(
+			$hiddenField = "_method";
 
-				$_POST["_method"] ?? @$_SERVER["REQUEST_METHOD"]
-			);
+			$serverField = "REQUEST_METHOD";
+
+			if (array_key_exists($hiddenField, $_POST))
+
+				$methodName = $_POST[$hiddenField];
+
+			elseif (array_key_exists($serverField, $_SERVER))
+
+				$methodName = $_SERVER[$serverField];
+
+			else $methodName = "get";
+
+			return strtolower($methodName);
 		}
 
 		public function isGetRequest ():bool {

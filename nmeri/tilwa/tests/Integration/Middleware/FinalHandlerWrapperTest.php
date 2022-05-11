@@ -5,7 +5,7 @@
 
 	use Tilwa\Request\PayloadStorage;
 
-	use Tilwa\Response\ResponseManager;
+	use Tilwa\Response\RoutedRendererManager;
 
 	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
@@ -17,7 +17,7 @@
 
 		public function test_extracts_from_response_manager () {
 
-			$sutName = ResponseManager::class;
+			$sutName = RoutedRendererManager::class;
 
 			$mockManager = $this->positiveDouble($sutName, [], [ // then
 

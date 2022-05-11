@@ -5,6 +5,8 @@
 
 	use Tilwa\Flows\ControllerFlows;
 
+	use Tilwa\Services\ServiceCoordinator;
+
 	interface BaseRenderer {
 
 		/**
@@ -18,9 +20,9 @@
 
 		public function getHandler ():string;
 
-		public function setControllingClass (object $class):void;
+		public function setControllingClass (ServiceCoordinator $class):void;
 
-		public function getController ():object;
+		public function getController ():ServiceCoordinator;
 
 		public function hydrateDependencies( Container $container):void;
 

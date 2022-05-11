@@ -7,6 +7,8 @@
 
 	use Tilwa\Modules\ModuleHandlerIdentifier;
 
+	use Tilwa\Request\RequestDetails;
+
 	trait BaseModuleInteractor {
 
 		protected $modules, // making this accessible for traits down the line that will need identical instances of the modules this base type is working with
@@ -58,6 +60,11 @@
 			$entrance->bootModules();
  
 			$entrance->extractFromContainer();
+		}
+
+		protected function setRequestPath (string $requestPath):void {
+
+			RequestDetails::fromModules( $this->modules, $requestPath);
 		}
 	}
 ?>

@@ -5,7 +5,7 @@
 
 	use Tilwa\Contracts\{CacheManager, Auth\User, Config\Router, Presentation\BaseRenderer};
 
-	use Tilwa\Response\{Format\Json, ResponseManager};
+	use Tilwa\Response\{Format\Json, RoutedRendererManager};
 
 	use Tilwa\Testing\Proxies\WriteOnlyContainer;
 
@@ -76,11 +76,11 @@
 		*/
 		public function contextParameters ():array {
 
-			$responseManager = $this->negativeDouble(ResponseManager::class); // stubbing since the information this naturally expects to carry is too contextual to be pulled from just a container
+			$responseManager = $this->negativeDouble(RoutedRendererManager::class); // stubbing since the information this naturally expects to carry is too contextual to be pulled from just a container
 
 			$user = $this->makeUser(5);
 
-			$renderer = $this->getLoadedRenderer();
+			$renderer = $this->getPrecedingRenderer();
 
 			return [
 				[new BranchesContext($renderer, null, $this->getModules(), null)],

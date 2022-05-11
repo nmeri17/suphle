@@ -5,6 +5,8 @@
 
 	use Tilwa\IO\Session\InMemorySession;
 
+	use Tilwa\Request\RequestDetails;
+
 	use Tilwa\Contracts\IO\Session;
 
 	use Tilwa\Testing\Proxies\{GagsException, Extensions\CheckProvisionedClasses};
@@ -112,6 +114,11 @@
 			if ($this->usesRealDecorator)
 
 				$this->container->interiorDecorate();
+		}
+
+		protected function setRequestPath (string $requestPath):void {
+
+			RequestDetails::fromContainer($this->container, $requestPath);
 		}
 	}
 ?>

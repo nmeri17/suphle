@@ -3,7 +3,7 @@
 
 	use Tilwa\Testing\Proxies\Extensions\MockModuleEvents;
 
-	use Tilwa\Modules\ModulesBooter;
+	use Tilwa\Contracts\Config\Events;
 
 	use Tilwa\Events\{EventSubscription, ModuleLevelEvents};
 
@@ -20,16 +20,23 @@
 
 		protected function assertFiredEvent (string $emitter, string $eventName):void {
 
-			$subscription = $this->findInBlanks($emitter);
+			$subscription = $this->getEventSender($emitter);
 
-			$this->assertNotNull($subscription, "Event '$eventName' not fired");
+			$this->assertNotNull($subscription,
+
+				"Failed to assert that '$emitter' fired any event"
+			);
 			
-			$this->assertNotEmpty($subscription->getMatchingUnits($eventName));
+			$this->assertNotEmpty(
+				$subscription->getMatchingUnits($eventName),
+
+				"Failed to assert that '$emitter' emitted an event named '$eventName'"
+			);
 		}
 
 		protected function assertNotFiredEvent (string $emitter, string $eventName):void {
 
-			$subscription = $this->findInBlanks($emitter);
+			$subscription = $this->getEventSender($emitter);
 
 			if (is_null($subscription)) {
 
@@ -38,18 +45,20 @@
 				return;
 			}
 
-			$this->assertEmpty($subscription->getMatchingUnits($eventName), "Event '$eventName' fired by '$emitter'");
+			$this->assertEmpty(
+				$subscription->getMatchingUnits($eventName),
+
+				"Did not expect '$emitter' to fire event '$eventName'"
+			);
 		}
 
-		private function findInBlanks (string $sender):?EventSubscription {
+		private function getEventSender (string $sender):?EventSubscription {
 
-			foreach ($this->eventParent->getBlanks() as $subscription)
+			$container = $this->getContainer();
 
-				if ($subscription->matchesHandler($sender))
+			$config = $container->getClass(Events::class);
 
-					return $subscription;
-
-			return null;
+			return $container->getClass($config->getManager())->getLocalHandler($sender);
 		}
 	}
 ?>

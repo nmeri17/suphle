@@ -26,7 +26,9 @@
 
 		$userUrl = "/user-content/5", // corresponds to the content generated after using [flowUrl] to create a context
 
-		$originDataName = "all_users", $flowUrl = "user-content/id",
+		$flowUrl = "user-content/id", // this is expected to exist in one of the module entry collections
+
+		$originDataName = "all_users",
 
 		$rendererController = FlowController::class;
 
@@ -40,11 +42,11 @@
 		/**
 		 * Stub out the renderer for an imaginary previous request before the flow one we are about to make
 		*/
-		protected function getLoadedRenderer ():BaseRenderer {
+		protected function getPrecedingRenderer ():BaseRenderer {
 
 			$models = [];
 
-			for ($i=0; $i < 10; $i++) $models[] = ["id" => $i]; // the list the flow is gonna iterate over
+			for ($i=1; $i < 11; $i++) $models[] = ["id" => $i]; // the list the flow is gonna iterate over
 
 			return $this->positiveDouble (Json::class, [
 
@@ -55,9 +57,9 @@
 
 				"getFlow" => $this->constructFlow(),
 
-				"getController" => $this->rendererController
+				"getController" => $this->positiveDouble($this->rendererController)
 
-			], [], ["preloaded"]);
+			], [], ["handler" => "preloaded"]);
 		}
 
 		protected function constructFlow ():ControllerFlows {
@@ -94,11 +96,11 @@
 
 			return new BranchesContext(
 
-				$this->getLoadedRenderer(),
+				$this->getPrecedingRenderer(),
 
 				$user, // creates 10 content models, but assigns the given user as their owner
 
-				$this->modules, null
+				$this->modules
 			);
 		}
 	}

@@ -111,5 +111,10 @@
 
 			$this->_get(new Json("noFlowHandler"));
 		}
+
+		public function USER__CONTENTh_id () {
+
+			$this->_get(new Json("readFlowPayload"));
+		}
 	}
 ?>

@@ -7,7 +7,7 @@
 
 	use Tilwa\Contracts\{Config\Router, Presentation\BaseRenderer};
 
-	use Tilwa\Response\ResponseManager;
+	use Tilwa\Response\RoutedRendererManager;
 
 	use Tilwa\Testing\Proxies\WriteOnlyContainer;
 
@@ -52,14 +52,14 @@
 		public function test_handle_flows_in_other_modules () {
 
 			/*	1) Give FlowRoutes to module 3
-				2) getLoadedRenderer stubs a renderer containing one of the routes in FlowRoutes/module 3, meaning it should be handled by RouteBranches (ostensibly, at the end of the request)
+				2) getPrecedingRenderer stubs a renderer containing one of the routes in FlowRoutes/module 3, meaning it should be handled by RouteBranches (ostensibly, at the end of the request)
 			*/
 
 			$this->prepareAllModules();
 
 			$container = $this->moduleThree->getContainer();
 
-			$renderer = $this->getLoadedRenderer();
+			$renderer = $this->getPrecedingRenderer();
 
 			$sutName = FlowHydrator::class;
 
@@ -76,7 +76,7 @@
 
 					"setDependencies" => [1, [
 
-						$container->getClass(ResponseManager::class),
+						$container->getClass(RoutedRendererManager::class),
 
 						$this->anything()
 					]]

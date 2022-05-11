@@ -3,26 +3,26 @@
 
 	use Tilwa\Middleware\{BaseMiddleware, MiddlewareNexts};
 
-	use Tilwa\Response\ResponseManager;
+	use Tilwa\Response\RoutedRendererManager;
 
 	use Tilwa\Request\PayloadStorage;
 
 	class FinalHandlerWrapper extends BaseMiddleware {
 
-		private $manager;
+		private $rendererManager;
 
-		public function __construct (ResponseManager $manager) {
+		public function __construct (RoutedRendererManager $rendererManager) {
 
-			$this->manager = $manager;
+			$this->rendererManager = $rendererManager;
 		}
 
 		public function process (PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler) {
 
-			$this->manager->handleValidRequest($payloadStorage);
+			$this->rendererManager->handleValidRequest($payloadStorage);
 
-			$this->manager->afterRender();
+			$this->rendererManager->afterRender();
 
-			return $this->manager->getResponse();
+			return $this->rendererManager->getResponse();
 		}
 	}
 ?>

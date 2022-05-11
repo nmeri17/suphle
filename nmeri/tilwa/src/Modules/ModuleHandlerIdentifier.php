@@ -11,6 +11,8 @@
 
 	use Tilwa\Exception\Explosives\{ValidationFailure, NotFoundException};
 
+	use Tilwa\Request\RequestDetails;
+
 	use Throwable;
 
 	abstract class ModuleHandlerIdentifier {
@@ -39,6 +41,11 @@
 		protected function getEventConnector ():ModuleLevelEvents {
 
 			return new ModuleLevelEvents($this->getModules());
+		}
+
+		public function setRequestPath (string $requestPath):void {
+
+			RequestDetails::fromModules($this->getModules(), $requestPath);
 		}
 
 		public function diffusedRequestResponse ():string {

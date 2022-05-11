@@ -5,7 +5,9 @@
 
 	use Tilwa\Flows\{FlowHydrator, Structures\BranchesContext, Previous\UnitNode};
 
-	use Tilwa\Response\ResponseManager;
+	use Tilwa\Response\RoutedRendererManager;
+
+	use Tilwa\Request\RequestDetails;
 
 	use Tilwa\Contracts\Queues\Task;
 
@@ -29,7 +31,12 @@
 
 			if ($outgoingRenderer->hasBranches())
 			
-				$outgoingRenderer->getFlow()->eachBranch($this->eachFlowBranch);
+				$outgoingRenderer->getFlow()
+
+				->eachBranch(function ($urlPattern, $structure) {
+
+					return $this->eachFlowBranch($urlPattern, $structure);
+				});
 		}
 
 		private function eachFlowBranch(string $urlPattern, UnitNode $structure) {
@@ -42,16 +49,15 @@
 
 				$manager = $this->getManagerFromModules($modules, $urlPattern);
 
-			else $manager = $context->getResponseManager();
+			else $manager = $context->getRoutedRendererManager();
 
-			if ($manager) {
-				
-				$previousPayload = $context->getRenderer()->getRawResponse();
+			if (!$manager) return;
+			
+			$previousPayload = $context->getRenderer()->getRawResponse();
 
-				$this->hydrator->setDependencies($manager, $previousPayload)
-				
-				->runNodes( $structure, $context->getUserId());
-			}
+			$this->hydrator->setDependencies($manager, $previousPayload)
+			
+			->runNodes( $structure, $context->getUserId());
 		}
 
 		/**
@@ -59,13 +65,20 @@
 		 * 
 		 * Given the origin path stored a flow pointing to "sub-path/id", this tries to uproot the responseManager in the module containing that path
 		*/
-		private function getManagerFromModules(array $modules, string $pattern):?ResponseManager {
+		private function getManagerFromModules(array $modules, string $pattern):?RoutedRendererManager {
 
-			$moduleInitializer = $this->moduleFinder->findContext($modules, $pattern);
+			RequestDetails::fromModules($modules, $pattern);
 
-			if (!is_null($moduleInitializer))
+			$moduleInitializer = $this->moduleFinder->findContext($modules);
 
-				return $moduleInitializer->getResponseManager();
+			if (!is_null($moduleInitializer)) {
+
+				$moduleInitializer->whenActive()->setRendererManager();
+
+				return $moduleInitializer->getRoutedRendererManager();
+			}
+
+			return null;
 		}
 	}
 ?>

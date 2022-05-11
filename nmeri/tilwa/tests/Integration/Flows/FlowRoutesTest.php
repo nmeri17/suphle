@@ -25,7 +25,7 @@
 
 					$container->replaceWithMock(Router::class, RouterMock::class, [
 
-						"browserEntryRoute" => OriginCollection::class // used by `test_visiting_origin_path_pushes_caching_job`
+						"browserEntryRoute" => OriginCollection::class
 					]);
 				})
 			];
@@ -40,6 +40,7 @@
 
 				$this->actingAs($visitor); // given
 
+				// this guy makes the internal requests for us i.e. to locate renderer for each flow, provided it exists on active route collection
 				$this->makeJob($context)->handle(); // when
 
 				$this->assertHandledByFlow($this->userUrl); // then
@@ -110,7 +111,7 @@
 
 		/**
 		 * @dataProvider getOriginUrls
-		 * @coverss ResponseManager::afterRender Fudging, since this is said to be unrecommended
+		 * @coverss RoutedRendererManager::afterRender Fudging, since this is said to be unrecommended
 		*/
 		public function test_visiting_origin_path_pushes_caching_job (string $url) {
 

@@ -7,7 +7,7 @@
 
 	use Tilwa\Flows\Structures\{RouteUserNode, ServiceContext};
 
-	use Tilwa\Response\ResponseManager;
+	use Tilwa\Response\RoutedRendererManager;
 
 	use Tilwa\Contracts\Presentation\BaseRenderer;
 
@@ -19,7 +19,7 @@
 
 	 	use FlowData, CommonBinds;
 
-	 	private $responseManager = ResponseManager::class;
+	 	private $rendererManager = RoutedRendererManager::class;
 
 	 	public function setUp ():void {
 
@@ -33,7 +33,7 @@
 			// given
 			$hydrator = $this->getHydratorForExecuteRequest(true);
 
-			$sut = $this->positiveDouble($this->responseManager, [], [
+			$sut = $this->positiveDouble($this->rendererManager, [], [
 
 				"handleValidRequest" => [1, []]
 			]);
@@ -52,13 +52,13 @@
 			// given
 			$hydrator = $this->getHydratorForExecuteRequest(false);
 
-			$responseManager = $this->positiveDouble($this->responseManager, [], [
+			$rendererManager = $this->positiveDouble($this->rendererManager, [], [
 
 				"handleValidRequest" => [0, []]
 			]);
  
  			// when
-			$hydrator->setDependencies($responseManager, [])
+			$hydrator->setDependencies($rendererManager, [])
 
 			->executeRequest();
 		}
@@ -72,9 +72,9 @@
 			$unitNode = new SingleNode($this->payloadKey);
 
 			// given
-			$responseManager = $this->negativeDouble($this->responseManager);
+			$rendererManager = $this->negativeDouble($this->rendererManager);
 			
-			$hydrator->setDependencies($responseManager, [
+			$hydrator->setDependencies($rendererManager, [
 
 				$this->payloadKey => $models
 			]);
