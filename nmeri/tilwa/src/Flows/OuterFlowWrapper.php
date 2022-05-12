@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Flows;
 
-	use Tilwa\Contracts\{Requests\BaseResponseManager, CacheManager, Auth\AuthStorage, Modules\HighLevelRequestHandler, Presentation\BaseRenderer};
+	use Tilwa\Contracts\{Requests\BaseResponseManager, IO\CacheManager, Auth\AuthStorage, Modules\HighLevelRequestHandler, Presentation\BaseRenderer};
 
 	use Tilwa\Queues\AdapterManager;
 
@@ -52,7 +52,7 @@
 
 		public function canHandle():bool {
 
-			$this->routeUmbrella = $this->cacheManager->get($this->dataPath()); // or combine [tag] with the [get]
+			$this->routeUmbrella = $this->cacheManager->getItem($this->dataPath()); // or combine [tag] with the [get]
 
 			if (is_null($this->routeUmbrella)) return false;
 

@@ -5,6 +5,8 @@
 
 	use Tilwa\Routing\RouteManager;
 
+	use Tilwa\Request\RequestDetails;
+
 	use Tilwa\Middleware\MiddlewareQueue;
 
 	use Tilwa\Bridge\Laravel\Routing\ModuleRouteMatcher;
@@ -17,25 +19,31 @@
 	
 	class ModuleInitializer implements HighLevelRequestHandler {
 
-		private $router, $descriptor, $rendererManager,
+		private $foundRoute = false, $router, $descriptor,
 
-		$laravelMatcher, $container, $indicator;
+		$rendererManager, $laravelMatcher, $container, $indicator,
 
-		private $foundRoute = false;
+		$requestDetails;
 
-		function __construct(DescriptorInterface $descriptor) {
+		public function __construct (DescriptorInterface $descriptor, RequestDetails $requestDetails) {
 
 			$this->descriptor = $descriptor;
 
 			$this->container = $descriptor->getContainer();
+
+			$this->requestDetails = $requestDetails;
 		}
 
-		public function assignRoute():self {
+		public function assignRoute ():self {
 
 			$this->router->findRenderer();
 			
-			if ($this->handlingRenderer() ) $this->foundRoute = true;
+			if ($this->router->getActiveRenderer() ) {
 
+				$this->foundRoute = true;
+
+				$this->bindRoutingSideEffects();
+			}
 			else {
 
 				$this->laravelMatcher = $this->container->getClass(ModuleRouteMatcher::class);
@@ -44,6 +52,18 @@
 			}
 
 			return $this;
+		}
+
+		private function bindRoutingSideEffects ():void {
+
+			$this->router->getPlaceholderStorage()
+
+			->exchangeTokenValues($this->requestDetails->getPath()); // thanks to object references, this update affects the object stored in Container without explicitly rebinding;
+
+			$this->container->whenTypeAny()->needsAny([
+
+				BaseRenderer::class => $this->router->getActiveRenderer() // any object using this expects its module to have routed to a renderer
+			]);
 		}
 
 		/**
@@ -92,14 +112,6 @@
 			return $this;
 		}
 
-		private function bindContextualGlobals ():void {
-
-			$this->container->whenTypeAny()->needsAny([
-
-				BaseRenderer::class => $this->handlingRenderer()
-			]);
-		}
-
 		public function didFindRoute():bool {
 			
 			return $this->foundRoute;
@@ -107,11 +119,9 @@
 
 		public function whenActive ():self {
 
-			$this->bindContextualGlobals();
+			if (!$this->isLaravelRoute()) // not booting module for external routers since request won't be handled in the module but by a separate app
 
-			if ($this->isLaravelRoute()) return $this;
-
-			$this->descriptor->prepareToRun();
+				$this->descriptor->prepareToRun();
 
 			return $this;
 		}

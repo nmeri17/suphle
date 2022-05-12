@@ -29,35 +29,29 @@
 
 			$outgoingRenderer = $this->context->getRenderer();
 
-			if ($outgoingRenderer->hasBranches())
+			if (!$outgoingRenderer->hasBranches()) return;
 			
-				$outgoingRenderer->getFlow()
+			$outgoingRenderer->getFlow()
 
-				->eachBranch(function ($urlPattern, $structure) {
+			->eachBranch(function ($urlPattern, $structure) {
 
-					return $this->eachFlowBranch($urlPattern, $structure);
-				});
+				$manager = $this->findRendererManager($urlPattern);
+
+				if (!$manager) return;
+
+				$this->executeFlowBranch($manager, $urlPattern, $structure);
+			});
 		}
 
-		private function eachFlowBranch(string $urlPattern, UnitNode $structure) {
+		private function findRendererManager (string $urlPattern):?RoutedRendererManager {
 
-			$context = $this->context;
-
-			$modules = $context->getModules();
+			$modules = $this->context->getModules();
 
 			if (!is_null($modules))
 
-				$manager = $this->getManagerFromModules($modules, $urlPattern);
+				return $this->getManagerFromModules($modules, $urlPattern);
 
-			else $manager = $context->getRoutedRendererManager();
-
-			if (!$manager) return;
-			
-			$previousPayload = $context->getRenderer()->getRawResponse();
-
-			$this->hydrator->setDependencies($manager, $previousPayload)
-			
-			->runNodes( $structure, $context->getUserId());
+			return $this->context->getRoutedRendererManager();
 		}
 
 		/**
@@ -79,6 +73,15 @@
 			}
 
 			return null;
+		}
+
+		private function executeFlowBranch (RoutedRendererManager $rendererManager, string $urlPattern, UnitNode $structure):void {
+
+			$previousPayload = $this->context->getRenderer()->getRawResponse();
+
+			$this->hydrator->setDependencies($rendererManager, $previousPayload, $urlPattern)
+			
+			->runNodes( $structure, $this->context->getUserId());
 		}
 	}
 ?>

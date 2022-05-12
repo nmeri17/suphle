@@ -5,9 +5,9 @@
 
 	use Tilwa\Hydration\Container;
 
-	use Tilwa\Contracts\IO\Session;
+	use Tilwa\Contracts\IO\{Session, CacheManager};
 
-	use Tilwa\IO\Session\InMemorySession;
+	use Tilwa\IO\{Session\InMemorySession, Cache\InMemoryCache};
 
 	use Tilwa\Testing\Condiments\{ModuleReplicator, BaseModuleInteractor};
 
@@ -60,11 +60,9 @@
 
 		protected function provideCriticalObjects ():void {
 
-			$cacheManager = \Tilwa\Contracts\CacheManager::class;
-
 			$this->massProvide([
 
-				$cacheManager => $this->negativeDouble($cacheManager, []),
+				CacheManager::class => new InMemoryCache,
 				
 				Session::class => new InMemorySession
 			]);

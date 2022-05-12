@@ -1,20 +1,14 @@
 <?php
 	namespace Tilwa\Routing;
 
-	use Tilwa\Request\RequestDetails;
-
 	/**
 	 * Used by route finder during matching to compose and interpolate patterns read from collections and what is incoming in request
 	*/
 	class PathPlaceholders {
 
-		private $stack = [], $hasExtractedToken = false,
+		private $stack = [], $methodSegments = [], $urlReplacer;
 
-		$methodSegments = [], $urlReplacer, $requestPath;
-
-		public function __construct(RequestDetails $requestDetails, CollectionMethodToUrl $urlReplacer) {
-
-			$this->requestPath = $requestDetails->getPath();
+		public function __construct (CollectionMethodToUrl $urlReplacer) {
 
 			$this->urlReplacer = $urlReplacer;
 		}
@@ -26,20 +20,12 @@
 
 		/**
 		 * Given computed path such as FOO/id, and incoming request with path foo/5, it synchronizes in-app storage of placeholders, recording id as 5
-		*
 		*/
-		private function extractTokenValue ():void {
+		public function exchangeTokenValues (string $requestPath):void {
 
-			if ($this->hasExtractedToken) return;
+			if (empty($this->stack)) return;
 
-			if (empty($this->stack)) {
-
-				$this->hasExtractedToken = true;
-
-				return;
-			}
-
-			$realSegments = explode("/", trim($this->requestPath, "/"));
+			$realSegments = explode("/", trim($requestPath, "/"));
 
 			foreach ($this->splitMethodSegments() as $index => $segment) {
 
@@ -47,8 +33,22 @@
 
 					$this->stack[$segment] = $realSegments[$index];
 			}
+		}
 
-			$this->hasExtractedToken = true;
+		public function getPathFromStack (string $urlPattern):string {
+
+			if (empty($this->stack)) return $urlPattern;
+
+			$realSegments = explode("/", trim($urlPattern, "/"));
+
+			foreach ($this->splitMethodSegments() as $index => $segment) {
+
+				if (array_key_exists($segment, $this->stack))
+
+					$realSegments[$index] = $this->stack[$segment];
+			}
+
+			return implode("/", $realSegments);
 		}
 
 		private function splitMethodSegments ():array {
@@ -66,14 +66,10 @@
 
 		public function getSegmentValue (string $name) {
 
-			$this->extractTokenValue();
-
 			return $this->stack[$name];
 		}
 
 		public function getAllSegmentValues ():array {
-
-			$this->extractTokenValue();
 
 			return $this->stack;
 		}

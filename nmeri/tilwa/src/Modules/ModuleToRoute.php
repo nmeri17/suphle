@@ -12,9 +12,13 @@
 			
 			foreach ($descriptors as $descriptor) {
 
-				$routeMatcher = (new ModuleInitializer($descriptor))
+				$context = $descriptor->getContainer()->whenTypeAny()->needsAny([
 
-				->initialize()->assignRoute();
+					DescriptorInterface::class => $descriptor
+				])
+				->getClass(ModuleInitializer::class);
+
+				$routeMatcher = $context->initialize()->assignRoute();
 				
 				if ($routeMatcher->didFindRoute()) {
 

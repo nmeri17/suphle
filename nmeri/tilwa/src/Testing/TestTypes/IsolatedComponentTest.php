@@ -3,11 +3,11 @@
 
 	use Tilwa\Hydration\Container;
 
-	use Tilwa\IO\Session\InMemorySession;
+	use Tilwa\IO\{Session\InMemorySession, Cache\InMemoryCache};
 
 	use Tilwa\Request\RequestDetails;
 
-	use Tilwa\Contracts\IO\Session;
+	use Tilwa\Contracts\IO\{Session, CacheManager};
 
 	use Tilwa\Testing\Proxies\{GagsException, Extensions\CheckProvisionedClasses};
 
@@ -67,18 +67,15 @@
 
 			return [
 
-				Session::class => InMemorySession::class
+				Session::class => InMemorySession::class,
+
+				CacheManager::class => InMemoryCache::class
 			];
 		}
 
 		protected function concreteBinds ():array {
 
-			$cacheManager = \Tilwa\Contracts\CacheManager::class;
-
-			return [
-
-				$cacheManager => $this->negativeDouble($cacheManager)
-			];
+			return [];
 		}
 
 		// used for normalizing traits that are applicable to both this and module level test

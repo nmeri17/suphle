@@ -3,7 +3,16 @@
 
 	use Tilwa\Services\ServiceCoordinator;
 
+	use Tilwa\Routing\PathPlaceholders;
+
 	class FlowController extends ServiceCoordinator {
+
+		private $pathPlaceholders;
+
+		public function __construct (PathPlaceholders $pathPlaceholders) {
+
+			$this->pathPlaceholders = $pathPlaceholders;
+		}
 
 		public function noFlowHandler () {}
 
@@ -41,6 +50,14 @@
 		public function handleOneOf () {
 
 			return [];
+		}
+
+		public function readFlowPayload () {
+
+			return [
+
+				"id" => $this->pathPlaceholders->getSegmentValue("id")
+			];
 		}
 	}
 ?>

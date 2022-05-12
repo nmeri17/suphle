@@ -83,16 +83,6 @@
 			return $this->rawResponse;
 		}
 
-		public function getPath():string {
-			
-			return $this->path;
-		}
-
-		public function setPath(string $path):void {
-			
-			$this->path = $path;
-		}
-
 		public function getRouteMethod():string {
 			
 			return $this->routeMethod;

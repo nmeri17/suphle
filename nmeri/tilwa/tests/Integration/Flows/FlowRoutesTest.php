@@ -5,17 +5,39 @@
 
 	use Tilwa\Flows\Structures\BranchesContext;
 
-	use Tilwa\Tests\Integration\Flows\Jobs\RouteBranches\JobFactory;
+	use Tilwa\Adapters\Orms\Eloquent\Models\User as EloquentUser;
 
-	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\QueueInterceptor};
+	use Tilwa\Testing\TestTypes\ModuleLevelTest;
+
+	use Tilwa\Testing\Condiments\{QueueInterceptor, BaseDatabasePopulator};
 
 	use Tilwa\Testing\Proxies\{WriteOnlyContainer, SecureUserAssertions};
+
+	use Tilwa\Tests\Integration\Flows\Jobs\RouteBranches\JobFactory;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\OriginCollection, Meta\ModuleOneDescriptor, Config\RouterMock};
 
 	class FlowRoutesTest extends JobFactory {
 
-		use QueueInterceptor, SecureUserAssertions;
+		use QueueInterceptor, SecureUserAssertions, BaseDatabasePopulator {
+
+			BaseDatabasePopulator::setUp as databaseSetup;
+		}
+
+		protected function setUp ():void {
+
+			$this->databaseSetup();
+		}
+
+		protected function getActiveEntity ():string {
+
+			return EloquentUser::class;
+		}
+
+		protected function getInitialCount ():int {
+
+			return 5;
+		}
 
 		protected function getModules():array { // using this since we intend to make front door requests
 
@@ -38,7 +60,9 @@
 				[$this, "specializedUser"]
 			], function (BranchesContext $context, ?UserContract $visitor) {
 
-				$this->actingAs($visitor); // given
+				$isGuest = is_null($visitor);
+
+				if (!$isGuest) $this->actingAs($visitor); // given
 
 				// this guy makes the internal requests for us i.e. to locate renderer for each flow, provided it exists on active route collection
 				$this->makeJob($context)->handle(); // when

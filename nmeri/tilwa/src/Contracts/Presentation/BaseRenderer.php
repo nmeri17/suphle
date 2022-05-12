@@ -40,10 +40,6 @@
 
 		public function getRawResponse();
 
-		public function getPath():string;
-
-		public function setPath (string $path):void;
-
 		public function getRouteMethod ():string;
 
 		public function setRouteMethod (string $httpMethod):void;

@@ -29,7 +29,16 @@
 
 		$sessionClient, $urlReplacer;
 
-		public function __construct(RouterConfig $config, Container $container, RequestDetails $requestDetails, PathPlaceholders $placeholderStorage, PatternIndicator $patternIndicator, Session $sessionClient, CollectionMethodToUrl $urlReplacer) {
+		public function __construct (
+
+			RouterConfig $config, Container $container,
+
+			RequestDetails $requestDetails, PathPlaceholders $placeholderStorage,
+
+			PatternIndicator $patternIndicator, Session $sessionClient,
+
+			CollectionMethodToUrl $urlReplacer
+		) {
 
 			$this->config = $config;
 
@@ -57,8 +66,6 @@
 				$hit = $this->recursiveSearch($collection, $requestPath);
 
 				if (!is_null($hit)) {
-
-					$hit->setPath($requestPath);
 
 					$this->activeRenderer = $hit;
 
@@ -308,6 +315,14 @@
 		public function getIndicator ():PatternIndicator {
 
 			return $this->patternIndicator;
+		}
+
+		/**
+		 * Get the instance we've made changes to
+		*/
+		public function getPlaceholderStorage ():PathPlaceholders {
+
+			return $this->placeholderStorage;
 		}
 
 		public function finishCollectionHousekeeping ():void {

@@ -68,7 +68,7 @@
 
 				$this->getFlowWrapper()->canHandle(),
 
-				"Failed asserting that request to $flowUrl was handled by Flow"
+				"Failed asserting that request to '$flowUrl' was handled by Flow"
 			); // then
 		}
 

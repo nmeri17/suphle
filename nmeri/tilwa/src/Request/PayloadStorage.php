@@ -41,7 +41,7 @@
 
 			if ($this->requestDetails->isGetRequest())
 
-				$this->payload = array_diff_key(["tilwa_path" => 55], $_GET);
+				$this->payload = $_GET; // subject to change since we may be moving away from using this superglobal but still need a way to read query part
 
 			else if ($this->isJsonPayload() )
 

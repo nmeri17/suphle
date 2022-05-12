@@ -60,10 +60,7 @@
 
 		public function globalConcretes ():array {
 
-			return [
-
-				DescriptorInterface::class => $this
-			];
+			return [];
 		}
 
 		/**
