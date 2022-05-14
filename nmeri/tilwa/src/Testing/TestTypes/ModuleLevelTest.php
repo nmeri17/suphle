@@ -29,7 +29,7 @@
 				$this->getEventParent()
 			);
 
-			$this->provideCriticalObjects();
+			$this->provideTestEquivalents();
 
 			$this->bootMockEntrance($entrance);
 
@@ -58,7 +58,7 @@
 				}
 		}
 
-		protected function provideCriticalObjects ():void {
+		protected function provideTestEquivalents ():void {
 
 			$this->massProvide([
 

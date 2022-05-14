@@ -5,12 +5,6 @@
 
 	use Tilwa\Flows\Structures\BranchesContext;
 
-	use Tilwa\Adapters\Orms\Eloquent\Models\User as EloquentUser;
-
-	use Tilwa\Testing\TestTypes\ModuleLevelTest;
-
-	use Tilwa\Testing\Condiments\{QueueInterceptor, BaseDatabasePopulator};
-
 	use Tilwa\Testing\Proxies\{WriteOnlyContainer, SecureUserAssertions};
 
 	use Tilwa\Tests\Integration\Flows\Jobs\RouteBranches\JobFactory;
@@ -19,25 +13,7 @@
 
 	class FlowRoutesTest extends JobFactory {
 
-		use QueueInterceptor, SecureUserAssertions, BaseDatabasePopulator {
-
-			BaseDatabasePopulator::setUp as databaseSetup;
-		}
-
-		protected function setUp ():void {
-
-			$this->databaseSetup();
-		}
-
-		protected function getActiveEntity ():string {
-
-			return EloquentUser::class;
-		}
-
-		protected function getInitialCount ():int {
-
-			return 5;
-		}
+		use SecureUserAssertions;
 
 		protected function getModules():array { // using this since we intend to make front door requests
 
@@ -102,13 +78,13 @@
 
 		public function strangeUsers ():array {
 
-			$user3 = $this->makeUser(3);
+			$owner5 = $this->makeUser(5);
 
 			return [
 
-				[$this->makeBranchesContext($user3), $user3], // create for user 3. Visit user 5's content as user 3 should hit a brick wall
+				[$this->makeBranchesContext($owner5), $this->makeUser(3)], // create for user 5 and visit it as user 3; should see nothing
 
-				[$this->makeBranchesContext($this->makeUser(5)), null] // create content for user 5. Visiting as nobody should hit a brick wall
+				[$this->makeBranchesContext($owner5), null] // create content for user 5. Visiting as nobody should hit a brick wall
 			];
 		}
 		

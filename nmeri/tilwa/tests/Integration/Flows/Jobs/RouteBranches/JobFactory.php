@@ -7,7 +7,9 @@
 
 	use Tilwa\Response\Format\Json;
 
-	use Tilwa\Testing\Condiments\QueueInterceptor;
+	use Tilwa\Adapters\Orms\Eloquent\Models\User as EloquentUser;
+
+	use Tilwa\Testing\Condiments\{QueueInterceptor, BaseDatabasePopulator};
 
 	use Tilwa\Tests\Integration\Modules\ModuleDescriptor\DescriptorCollection;
 
@@ -17,9 +19,9 @@
 
 	abstract class JobFactory extends DescriptorCollection {
 
-		use QueueInterceptor {
+		use QueueInterceptor, BaseDatabasePopulator {
 
-			QueueInterceptor::setUp as queueSetup;
+			BaseDatabasePopulator::setUp as databaseSetup;
 		}
 
 		protected $container,
@@ -34,9 +36,21 @@
 
 		protected function setUp ():void {
 
-			$this->queueSetup();
+			$this->databaseSetup();
+
+			$this->catchQueuedTasks();
 
 			$this->container = $this->firstModuleContainer();
+		}
+
+		protected function getActiveEntity ():string {
+
+			return EloquentUser::class;
+		}
+
+		protected function getInitialCount ():int {
+
+			return 5;
 		}
 
 		/**
@@ -85,11 +99,7 @@
 
 		protected function makeUser (int $id):UserContract {
 
-			$model = $this->container->getClass(OrmDialect::class)->userModel();
-
-			$model->setId($id);
-
-			return $model;
+			return $this->replicator->getExistingEntities(1, compact("id"))[0];
 		}
 
 		protected function makeBranchesContext (?UserContract $user):BranchesContext {
@@ -98,7 +108,7 @@
 
 				$this->getPrecedingRenderer(),
 
-				$user, // creates 10 content models, but assigns the given user as their owner
+				$user, // creates a collection of 10 models in preceding renderer, then assigns the given user as their owner in the flow we are going to make
 
 				$this->modules
 			);

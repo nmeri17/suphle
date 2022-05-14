@@ -22,6 +22,8 @@
 
 		public function getRandomEntities ( int $amount):iterable;
 
+		public function getExistingEntities ( int $amount, array $constraints):iterable;
+
 		public function setActiveModelType (string $model):void;
 
 		/**

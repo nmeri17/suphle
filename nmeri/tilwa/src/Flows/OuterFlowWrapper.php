@@ -43,14 +43,7 @@
 			$this->modules = $modules;
 		}
 
-		private function getUserId():string { 
-
-			$user = $this->authStorage->getUser();
-
-			return is_null($user) ? self::ALL_USERS: strval($user->getId());
-		}
-
-		public function canHandle():bool {
+		public function canHandle ():bool {
 
 			$this->routeUmbrella = $this->cacheManager->getItem($this->dataPath()); // or combine [tag] with the [get]
 
@@ -61,12 +54,7 @@
 			return !is_null($this->context);
 		}
 
-		public function getResponse():string {
-
-			return $this->handlingRenderer()->render();
-		}
-
-		private function getActiveFlow(string $userId):RouteUserNode {
+		private function getActiveFlow (string $userId):?RouteUserNode {
 
 			$context = $this->routeUmbrella->getUserPayload($userId);
 
@@ -79,6 +67,18 @@
 			$this->activeUser = $userId;
 
 			return $context;
+		}
+
+		private function getUserId ():string { 
+
+			$user = $this->authStorage->getUser();
+
+			return is_null($user) ? self::ALL_USERS: strval($user->getId());
+		}
+
+		public function getResponse ():string {
+
+			return $this->handlingRenderer()->render();
 		}
 
 		public function afterRender($cachedResponse):void {
@@ -102,7 +102,7 @@
 
 		private function dataPath ():string {
 
-			return self::FLOW_PREFIX . $this->requestDetails->getPath();
+			return self::FLOW_PREFIX . "/" . trim($this->requestDetails->getPath(), "/");
 		}
 
 		// it is safest for listeners to listen "external" on the target controller

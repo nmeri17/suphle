@@ -5,7 +5,7 @@
 
 	use Tilwa\Testing\Condiments\MockFacilitator;
 
-	use PHPUnit\Framework\TestCase;
+	use PHPUnit\Framework\{TestCase, ExpectationFailedException};
 
 	class TestVirginContainer extends TestCase {
 
@@ -44,13 +44,39 @@
 			]);
 		}
 
+		/**
+		 * @param {callables} Expects them all to be methods, not closures or anonymous methods
+		*/
 		protected function dataProvider (array $callables, callable $testBody):void {
 
-			foreach ($callables as $provider)
+			foreach ($callables as $provider) {
 
-				foreach ($provider() as $dataFixture)
+				foreach ($provider() as $index => $dataFixture)
 
-					$testBody(...$dataFixture);
+					try { $testBody(...$dataFixture); }
+
+					catch (ExpectationFailedException $exception) {
+
+						echo $this->providerExceptionMessage($provider, $index, $dataFixture);
+
+						throw $exception;
+					}
+			}
+		}
+
+		private function providerExceptionMessage (array $providerCallable, int $errorIndex, array $dataRow):string {
+
+			$newLine = "\n";
+
+			$providerName = get_class($providerCallable[0]) . "::". $providerCallable[1];
+
+			$messages = [
+				"Failed test with data provider '$providerName', on index $errorIndex:",
+
+				json_encode($dataRow, JSON_PRETTY_PRINT)
+			];
+
+			return $newLine. implode($newLine, $messages). $newLine;
 		}
 	}
 ?>

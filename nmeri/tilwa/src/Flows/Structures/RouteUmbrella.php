@@ -10,26 +10,25 @@
 
 		//private $nodeTags; // should give us a bird's eye view of the path to each model [collection] i.e. [Cows => "user35,foo", "user*,bar"]
 
-		function __construct(string $routeName) {
+		public function __construct(string $routeName) {
 			
 			$this->routeName = $routeName;
 		}
 
-		public function addUser(string $userId, RouteUserNode $unitPayload):void {
+		public function addUser (string $userId, RouteUserNode $unitPayload):void {
 
 			$this->users[$userId] = $unitPayload;
 		}
 
-		public function getUserPayload(string $userId):?RouteUserNode {
+		public function getUserPayload (string $userId):?RouteUserNode {
+
+			if (!array_key_exists($userId, $this->users)) return null;
 
 			$context = $this->users[$userId];
 
-			if ($context) {
+			$expiresAt = $context->getExpiresAt($userId, $this->routeName);
 
-				$expiresAt = $context->getExpiresAt($userId, $this->routeName);
-
-				if ($expiresAt >= new DateTime) return $context;
-			}
+			if ($expiresAt >= new DateTime) return $context;
 		}
 
 		public function clearUser(string $userId):void {

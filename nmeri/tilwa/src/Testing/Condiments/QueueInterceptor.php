@@ -18,7 +18,7 @@
 			$this->catchQueuedTasks();
 		}
 
-		private function catchQueuedTasks ():void {
+		protected function catchQueuedTasks ():void {
 
 			if (is_null($this->adapter)) { // using this nonce so we can assert more than once in the same test without overwriting the instance
 
