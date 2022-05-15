@@ -15,6 +15,11 @@
 
 			$this->eventManager = $eventManager;
 		}
+		
+		public function getModules ():array {
+
+			return $this->modules;
+		}
 
 		public function bootAll ():self {
 
@@ -24,7 +29,9 @@
 
 				$descriptor->getContainer()->whenTypeAny()->needsAny([
 
-					DescriptorInterface::class => $descriptor
+					DescriptorInterface::class => $descriptor,
+
+					get_called_class() => $this
 				]);
 			}
 

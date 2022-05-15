@@ -102,15 +102,13 @@
 			return $this->replicator->getExistingEntities(1, compact("id"))[0];
 		}
 
-		protected function makeBranchesContext (?UserContract $user):BranchesContext {
+		protected function makeBranchesContext (?UserContract $user = null):BranchesContext {
 
 			return new BranchesContext(
 
 				$this->getPrecedingRenderer(),
 
-				$user, // creates a collection of 10 models in preceding renderer, then assigns the given user as their owner in the flow we are going to make
-
-				$this->modules
+				$user // creates a collection of 10 models in preceding renderer, then assigns the given user as their owner in the flow we are going to make
 			);
 		}
 	}

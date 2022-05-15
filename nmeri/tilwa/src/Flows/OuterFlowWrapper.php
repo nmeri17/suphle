@@ -1,13 +1,15 @@
 <?php
 	namespace Tilwa\Flows;
 
-	use Tilwa\Contracts\{Requests\BaseResponseManager, IO\CacheManager, Auth\AuthStorage, Modules\HighLevelRequestHandler, Presentation\BaseRenderer};
-
-	use Tilwa\Queues\AdapterManager;
-
 	use Tilwa\Flows\Jobs\{RouteBranches, BranchesContext, UpdateCountDelete};
 
 	use Tilwa\Flows\Structures\{RouteUserNode, RouteUmbrella,AccessContext};
+
+	use Tilwa\Contracts\{Requests\BaseResponseManager, IO\CacheManager, Auth\AuthStorage, Modules\HighLevelRequestHandler, Presentation\BaseRenderer};
+
+	use Tilwa\Modules\ModulesBooter;
+
+	use Tilwa\Queues\AdapterManager;
 
 	use Tilwa\Events\EventManager;
 
@@ -23,9 +25,14 @@
 
 		$cacheManager, $authStorage, $routeUmbrella,
 
-		$activeUser, $eventManager;
+		$activeUser, $eventManager, $routeUserNode;
 
-		public function __construct(RequestDetails $requestDetails, AdapterManager $queueManager, CacheManager $cacheManager, AuthStorage $authStorage, EventManager $eventManager) {
+		public function __construct(
+			RequestDetails $requestDetails, AdapterManager $queueManager,
+			CacheManager $cacheManager, AuthStorage $authStorage,
+
+			EventManager $eventManager, ModulesBooter $modulesBooter
+		) {
 			
 			$this->requestDetails = $requestDetails;
 
@@ -36,11 +43,8 @@
 			$this->authStorage = $authStorage;
 
 			$this->eventManager = $eventManager;
-		}
 
-		public function setModules (array $modules):void {
-
-			$this->modules = $modules;
+			$this->modules = $modulesBooter->getModules();
 		}
 
 		public function canHandle ():bool {
@@ -49,24 +53,24 @@
 
 			if (is_null($this->routeUmbrella)) return false;
 
-			$this->context = $this->getActiveFlow($this->getUserId() );
+			$this->routeUserNode = $this->getActiveFlow($this->getUserId() );
 
-			return !is_null($this->context);
+			return !is_null($this->routeUserNode);
 		}
 
 		private function getActiveFlow (string $userId):?RouteUserNode {
 
-			$context = $this->routeUmbrella->getUserPayload($userId);
+			$userPayload = $this->routeUmbrella->getUserPayload($userId);
 
-			if (is_null($context) && ($userId != self::ALL_USERS)) { // assume data was saved for general user base
+			if (is_null($userPayload) && ($userId != self::ALL_USERS)) { // assume data was saved for general user base
 				$userId = self::ALL_USERS;
 
-				$context = $this->routeUmbrella->getUserPayload($userId);
+				$userPayload = $this->routeUmbrella->getUserPayload($userId);
 			}
 
 			$this->activeUser = $userId;
 
-			return $context;
+			return $userPayload;
 		}
 
 		private function getUserId ():string { 
@@ -93,7 +97,7 @@
 			$this->queueManager->augmentArguments(UpdateCountDelete::class, [
 				"theAccessed" => new AccessContext(
 
-					$this->dataPath(), $this->context,
+					$this->dataPath(), $this->routeUserNode,
 
 					$this->routeUmbrella, $this->activeUser
 				)
@@ -122,16 +126,14 @@
 				"context" => new BranchesContext(
 					$this->handlingRenderer(),
 
-					$this->authStorage->getUser(),
-
-					$this->modules
+					$this->authStorage->getUser()
 				)
 			]);
 		}
 
 		public function handlingRenderer ():?BaseRenderer {
 
-			return $this->context->getRenderer();
+			return $this->routeUserNode->getRenderer();
 		}
 	}
 ?>

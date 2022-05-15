@@ -59,37 +59,27 @@
 
 			$container = $this->moduleThree->getContainer();
 
-			$renderer = $this->getPrecedingRenderer();
-
 			$sutName = FlowHydrator::class;
 
 			$container->whenTypeAny()->needsAny([
 
-				BaseRenderer::class => $renderer
-			]);
+				$sutName => $this->replaceConstructorArguments($sutName, [], [], [ // then
 
-			$container->whenTypeAny()->needsAny([
-
-				$sutName => $this->positiveDouble($sutName, [], [ // then
-
-					"executeRequest" => [1, []],
+					"executeGeneratedUrl" => [1, []],
 
 					"setDependencies" => [1, [
 
-						$container->getClass(RoutedRendererManager::class),
+						$this->callback(function ($subject) {
+
+							return $subject instanceof RoutedRendererManager;
+						}),
 
 						$this->anything()
 					]]
 				])
 			]);
 
-			$this->makeJob(
-				new BranchesContext(
-					$renderer,
-
-					null, $this->modules, null
-				)
-			)->handle(); // when
+			$this->makeJob( $this->makeBranchesContext() )->handle(); // when
 		}
 	}
 ?>

@@ -125,11 +125,9 @@
 			throw new NotFoundException;
 		}
 
-		public function flowRequestHandler(OuterFlowWrapper $wrapper):string {
+		public function flowRequestHandler (OuterFlowWrapper $wrapper):string {
 
 			$this->identifiedHandler = $wrapper;
-
-			$wrapper->setModules($this->getModules());
 
 			$response = $wrapper->getResponse();
 			

@@ -254,6 +254,9 @@
 			return $mapped;
 		}
 
+		/**
+		 * @param {rawNode}, where payload e.g. = ["data" => iterable]
+		 */
 		public function getNodeFromPrevious(UnitNode $rawNode):iterable {
 
 			return Arr::get($this->previousResponse, $rawNode->getNodeName());
@@ -305,25 +308,31 @@
 		*/
 		public function handlePipe (array $indexes, int $dummyValue, CollectionNode $rawNode):array {
 
-			return array_map (function($value) use ($rawNode) {
+			$allUnits = array_map (function($value) use ($rawNode) {
 
-				return $this->updatePlaceholders([
+				$generationUnit = $this->updatePlaceholders([
 
 					$rawNode->getLeafName() => $value
 				])
 				->executeGeneratedUrl();
+
+				return $generationUnit;
 			}, $indexes );
+
+			return $allUnits;
 		}
 
 		public function executeGeneratedUrl ():?GeneratedUrlExecution {
 
 			if (!$this->canProcessPath()) return null;
 
-			$renderer = $this->rendererManager->handleValidRequest($this->payloadStorage);
+			$originalRenderer = $this->rendererManager->handleValidRequest($this->payloadStorage);
+
+			$clonedRenderer = clone $originalRenderer; // since we're working with just one renderer for all those calls, without cloning, updates to one (by virtue of updating placeholderStorage) cascades to them all. By cloning, we're able to store the temporary state in memory as its own unique object
 
 			$requestPath = $this->placeholderStorage->getPathFromStack($this->baseUrlPattern);
 
-			return new GeneratedUrlExecution($requestPath, $renderer);
+			return new GeneratedUrlExecution($requestPath, $clonedRenderer);
 		}
 
 		public function handleOneOf (array $indexes, string $requestProperty):?GeneratedUrlExecution {

@@ -49,9 +49,9 @@
 
 		public function afterRender ($data = null):void {
 
-			if ($this->renderer->hasBranches())// the very first request won't be caught in a flow. so, delegate queueing branches
+			if ($this->renderer->hasBranches())// the first organic request needs to trigger the flows below it
 
-				$this->flowQueuer->insert($this->renderer, $this);
+				$this->flowQueuer->saveSubBranches($this->renderer);
 		}
 
 		public function bootCoodinatorManager ():self {

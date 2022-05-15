@@ -52,7 +52,7 @@
 
 		private function handleFlowJob ():void {
 
-			$this->makeJob($this->makeBranchesContext(null))->handle();
+			$this->makeJob($this->makeBranchesContext())->handle();
 		}
 	}
 ?>

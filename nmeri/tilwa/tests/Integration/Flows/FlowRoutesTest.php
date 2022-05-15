@@ -55,7 +55,7 @@
 
 				[$this->makeBranchesContext($user), $user],
 
-				[$this->makeBranchesContext(null), null] // create content to be mass consumed. Visiting user 5's resource as nobody should access it
+				[$this->makeBranchesContext(), null] // create content to be mass consumed. Visiting user 5's resource as nobody should access it
 			];
 		}
 		
@@ -99,7 +99,7 @@
 
 					$this->actingAs($visitor);
 
-				$this->makeJob($this->makeBranchesContext(null)) // given
+				$this->makeJob($this->makeBranchesContext()) // given
 				->handle(); // when
 
 				// then

@@ -43,7 +43,7 @@
 					})
 				]],
 
-				"executeRequest" => [$indexesCount, []]
+				"executeGeneratedUrl" => [$indexesCount, []]
 			]);
 
 			// when
@@ -52,7 +52,7 @@
 
 		private function mockFlowHydrator ( array $mocks):FlowHydrator {
 
-			$mocks = array_merge(["executeRequest" => [1, []]], $mocks);
+			$mocks = array_merge(["executeGeneratedUrl" => [1, []]], $mocks);
 
 			return $this->replaceConstructorArguments(
 
@@ -123,7 +123,7 @@
 
 			$this->mockCalls([ // then
 
-				"executeRequest" => [0, []],
+				"executeGeneratedUrl" => [0, []],
 
 				"updateRequest" => [0, []],
 			], $sut);

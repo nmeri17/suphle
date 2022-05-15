@@ -5,7 +5,7 @@
 
 	use Tilwa\Flows\Previous\{CollectionNode, SingleNode};
 
-	use Tilwa\Flows\Structures\{RouteUserNode, ServiceContext};
+	use Tilwa\Flows\Structures\{RouteUserNode, ServiceContext, GeneratedUrlExecution};
 
 	use Tilwa\Response\RoutedRendererManager;
 
@@ -28,7 +28,7 @@
 			$this->indexes = $this->getIndexes();
 		}
 		
-		public function test_executeRequest_triggers_controller () {
+		public function test_executeGeneratedUrl_triggers_controller () {
 
 			// given
 			$hydrator = $this->getHydratorForExecuteRequest(true);
@@ -39,7 +39,7 @@
 			]);
  
  			// when
-			$hydrator->setDependencies($sut, [])->executeRequest();
+			$hydrator->setDependencies($sut, [])->executeGeneratedUrl();
 		}
 
 		private function getHydratorForExecuteRequest (bool $canProcessPath):FlowHydrator {
@@ -60,7 +60,7 @@
  			// when
 			$hydrator->setDependencies($rendererManager, [])
 
-			->executeRequest();
+			->executeGeneratedUrl();
 		}
 
 		public function test_getNodeFromPrevious() {
@@ -126,9 +126,12 @@
 
 				"getNodeFromPrevious" => $payload,
 
-				$handler => $this->negativeDouble(BaseRenderer::class, [
+				$handler => $this->positiveDouble(GeneratedUrlExecution::class, [
 
-					"getRawResponse" => ["foo"]
+					"getRenderer" => $this->negativeDouble(BaseRenderer::class, [
+
+						"getRawResponse" => ["foo"]
+					])
 				])
 			], [
 

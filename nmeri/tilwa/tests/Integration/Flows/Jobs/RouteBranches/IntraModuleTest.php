@@ -5,7 +5,7 @@
 
 	use Tilwa\Flows\Structures\BranchesContext;
 
-	use Tilwa\Contracts\{IO\CacheManager, Config\Router};
+	use Tilwa\Contracts\{IO\CacheManager, Config\Router, Presentation\BaseRenderer};
 
 	use Tilwa\Response\RoutedRendererManager;
 
@@ -40,10 +40,10 @@
 
 				// given => see setup
 				$this->makeJob($context)->handle(); // When
-var_dump("getting now");
+
 				$umbrella = $this->container->getClass(CacheManager::class)
 
-				->getItem(OuterFlowWrapper::FLOW_PREFIX . $this->user5Url); // why are you getting last item on the list, "/user-content/8"
+				->getItem(OuterFlowWrapper::FLOW_PREFIX . $this->user5Url); // it saves content for all given indexes, not just 5. This means that "/user-content/8" is available and will return 8
 
 				$this->assertNotNull($umbrella);
 
@@ -67,20 +67,10 @@ var_dump("getting now");
 		*/
 		public function contextParameters ():array {
 
-			$rendererManager = $this->replaceConstructorArguments(RoutedRendererManager::class, []);
-
-			$user = $this->makeUser(5);
-
-			$renderer = $this->getPrecedingRenderer();
-
-			$modules = $this->modules;
-
 			return [
-				[new BranchesContext($renderer, null, $modules, null)],
+				[$this->makeBranchesContext()],
 
-				[new BranchesContext($renderer, $user, null, $rendererManager)],
-
-				[new BranchesContext($renderer, $user, $modules, null)]
+				[$this->makeBranchesContext($this->makeUser(5))]
 			];
 		}
 
@@ -88,7 +78,7 @@ var_dump("getting now");
 
 			return [
 
-				"id" => "5"
+				"id" => 5
 			];
 		}
 

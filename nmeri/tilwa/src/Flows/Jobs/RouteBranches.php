@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Flows\Jobs;
 
-	use Tilwa\Modules\ModuleToRoute;
+	use Tilwa\Modules\{ModuleToRoute, ModulesBooter};
 
 	use Tilwa\Flows\{FlowHydrator, Structures\BranchesContext, Previous\UnitNode};
 
@@ -14,15 +14,21 @@
 	// for queueing the cached endpoint on hit and queuing sub-flows
 	class RouteBranches implements Task {
 
-		private $context, $moduleFinder, $hydrator;
+		private $context, $moduleFinder, $hydrator, $modules;
 
-		function __construct(BranchesContext $context, ModuleToRoute $moduleFinder, FlowHydrator $hydrator) {
+		public function __construct(
+			BranchesContext $context, ModuleToRoute $moduleFinder,
+
+			FlowHydrator $hydrator, ModulesBooter $modulesBooter
+		) {
 			
 			$this->context = $context;
 
 			$this->moduleFinder = $moduleFinder;
 
 			$this->hydrator = $hydrator;
+
+			$this->modules = $modulesBooter->getModules();
 		}
 
 		public function handle ():void {
@@ -35,35 +41,22 @@
 
 			->eachBranch(function ($urlPattern, $structure) {
 
-				$manager = $this->findRendererManager($urlPattern);
+				$manager = $this->findManagerForPattern( $urlPattern);
 
-				if (!$manager) return;
+				if (!$manager) return; // invalid url
 
 				$this->executeFlowBranch($manager, $urlPattern, $structure);
 			});
 		}
 
-		private function findRendererManager (string $urlPattern):?RoutedRendererManager {
-
-			$modules = $this->context->getModules();
-
-			if (!is_null($modules))
-
-				return $this->getManagerFromModules($modules, $urlPattern);
-
-			return $this->context->getRoutedRendererManager();
-		}
-
 		/**
-		 * Transitions from non-flow to flow links won't cache the first link if it's outside the active module i.e. routes in moduleA controllers can't visit those in moduleB if the moduleA route wasn't loaded from cache
-		 * 
 		 * Given the origin path stored a flow pointing to "sub-path/id", this tries to uproot the responseManager in the module containing that path
 		*/
-		private function getManagerFromModules(array $modules, string $pattern):?RoutedRendererManager {
+		private function findManagerForPattern (string $pattern):?RoutedRendererManager {
 
-			RequestDetails::fromModules($modules, $pattern);
+			RequestDetails::fromModules($this->modules, $pattern);
 
-			$moduleInitializer = $this->moduleFinder->findContext($modules);
+			$moduleInitializer = $this->moduleFinder->findContext($this->modules);
 
 			if (!is_null($moduleInitializer)) {
 
