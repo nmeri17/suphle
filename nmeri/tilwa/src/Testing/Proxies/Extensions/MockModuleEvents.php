@@ -9,25 +9,11 @@
 
 	class MockModuleEvents extends ModuleLevelEvents {
 
-		private $blanks = [];
-
-		public function triggerHandlers(?EventSubscription $scope, string $eventName, $payload):ModuleLevelEvents {
-
-			$this->blanks[] = $scope;
-
-			return $this;
-		}
-
-		public function getBlanks ():array {
-
-			return $this->blanks;
-		}
-
 		protected function moduleHasListeners (Events $config, Container $container):void {
 
 			$container->whenTypeAny()->needsAny([
 
-				ModuleLevelEvents::class => $this // provide self for the call below
+				ModuleLevelEvents::class => $this // provide self since managers import ModuleLevelEvents
 			]);
 
 			parent::moduleHasListeners($config, $container);

@@ -27,6 +27,11 @@
 			return $_ENV[$name] ?? $defaultValue;
 		}
 
+		public function setField (string $name, $value):void {
+
+			$_ENV[$name] = $value;
+		}
+
 		/**
 		 * Make use of [client]
 		*/
@@ -36,7 +41,7 @@
 
 			$path = $this->fileConfig->activeModulePath();
 
-			$this->client = Dotenv::createImmutable($path );
+			$this->client = Dotenv::createImmutable($path ); // don't programmatically overwrite env values
 		}
 	}
 ?>

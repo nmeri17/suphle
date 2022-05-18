@@ -3,9 +3,11 @@
 
 	use Tilwa\Contracts\{Auth\UserContract, Config\Router};
 
-	use Tilwa\Flows\Structures\BranchesContext;
+	use Tilwa\Flows\{OuterFlowWrapper, Structures\BranchesContext};
 
 	use Tilwa\Testing\Proxies\{WriteOnlyContainer, SecureUserAssertions};
+
+	use Tilwa\Testing\Condiments\EmittedEventsCatcher;
 
 	use Tilwa\Tests\Integration\Flows\Jobs\RouteBranches\JobFactory;
 
@@ -13,9 +15,9 @@
 
 	class FlowRoutesTest extends JobFactory {
 
-		use SecureUserAssertions;
+		use SecureUserAssertions, EmittedEventsCatcher;
 
-		protected function getModules():array { // using this since we intend to make front door requests
+		protected function getModules():array {
 
 			return [
 
@@ -41,7 +43,7 @@
 				if (!$isGuest) $this->actingAs($visitor); // given
 
 				// this guy makes the internal requests for us i.e. to locate renderer for each flow, provided it exists on active route collection
-				$this->makeJob($context)->handle(); // when
+				$this->makeRouteBranches($context)->handle(); // when
 
 				$this->assertHandledByFlow($this->userUrl); // then
 			});
@@ -70,7 +72,7 @@
 
 					$this->actingAs($visitor); // given
 
-				$this->makeJob($context)->handle(); // when
+				$this->makeRouteBranches($context)->handle(); // when
 
 				$this->assertNotHandledByFlow($this->userUrl); // then
 			});
@@ -99,8 +101,7 @@
 
 					$this->actingAs($visitor);
 
-				$this->makeJob($this->makeBranchesContext()) // given
-				->handle(); // when
+				$this->handleDefaultBranchesContext(); // when
 
 				// then
 				$this->assertHandledByFlow($this->userUrl);
@@ -127,6 +128,16 @@
 				["/pipe-to"],
 				["/one-of"]
 			];
+		}
+
+		public function test_will_emitEvent_after_returning_flow_request() {
+
+			$this->handleDefaultBranchesContext();
+
+			$this->get($this->userUrl); // when
+
+			// OuterFlowWrapper::HIT_EVENT
+			$this->assertFiredEvent ($this->rendererController); // then
 		}
 	}
 ?>

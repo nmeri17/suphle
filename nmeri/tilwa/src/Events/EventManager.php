@@ -57,11 +57,13 @@
 
 			$localHandlers = $this->getLocalHandler($emitter);
 
-			$this->parentManager->triggerHandlers($localHandlers, $eventName, $payload)
+			$moduleIdentifier = $this->module->exportsImplements();
 
-			->gatherForeignSubscribers($this->module->exportsImplements()) // this means external listeners of this module can comfortably listen to the module exports interface rather than bothering about the specific entity emitting the event
+			$this->parentManager->triggerHandlers($emitter, $localHandlers, $eventName, $payload)
+
+			->gatherForeignSubscribers($moduleIdentifier) // this means external listeners of this module can comfortably listen to the module exports interface rather than bothering about the specific entity emitting the event
 			
-			->triggerExternalHandlers($eventName, $payload);
+			->triggerExternalHandlers($moduleIdentifier, $eventName, $payload);
 		}
 
 		/**

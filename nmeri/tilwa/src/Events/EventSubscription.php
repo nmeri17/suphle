@@ -18,7 +18,7 @@
 		}
 		
 		// since each local event manager points to its own module, we can know that pulling a listener from another module will load the class from its correct scope
-		public function getHandlingClass() {
+		public function getHandlingClass ():object {
 
 			return $this->container->getClass($this->handlingClass);
 		}

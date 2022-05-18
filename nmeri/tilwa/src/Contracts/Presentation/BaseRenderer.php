@@ -36,7 +36,7 @@
 
 		public function setFlow (ControllerFlows $flow):self;
 
-		public function getFlow ():ControllerFlows;
+		public function getFlow ():?ControllerFlows;
 
 		public function getRawResponse();
 

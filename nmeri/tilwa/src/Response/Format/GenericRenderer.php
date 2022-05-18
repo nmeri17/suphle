@@ -73,7 +73,7 @@
 			return $this;
 		}
 
-		public function getFlow():ControllerFlows {
+		public function getFlow():?ControllerFlows {
 			
 			return $this->flows;
 		}

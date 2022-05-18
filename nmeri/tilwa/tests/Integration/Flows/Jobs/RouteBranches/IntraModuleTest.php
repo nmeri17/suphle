@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Integration\Flows\Jobs\RouteBranches;
 
-	use Tilwa\Flows\{OuterFlowWrapper, Structures\RouteUmbrella};
+	use Tilwa\Flows\{UmbrellaSaver, Structures\RouteUmbrella};
 
 	use Tilwa\Flows\Structures\BranchesContext;
 
@@ -39,11 +39,11 @@
 			], function (BranchesContext $context) {
 
 				// given => see setup
-				$this->makeJob($context)->handle(); // When
+				$this->makeRouteBranches($context)->handle(); // When
 
 				$umbrella = $this->container->getClass(CacheManager::class)
 
-				->getItem(OuterFlowWrapper::FLOW_PREFIX . $this->user5Url); // it saves content for all given indexes, not just 5. This means that "/user-content/8" is available and will return 8
+				->getItem(UmbrellaSaver::FLOW_PREFIX . $this->user5Url); // it saves content for all given indexes, not just 5. This means that "/user-content/8" is available and will return 8
 
 				$this->assertNotNull($umbrella);
 
@@ -97,7 +97,7 @@
 			], function (BranchesContext $context) {
 
 				// given => see dataProvider
-				$this->makeJob($context)->handle(); // When
+				$this->makeRouteBranches($context)->handle(); // When
 				
 				// then
 				$this->assertHandledByFlow($this->user5Url);

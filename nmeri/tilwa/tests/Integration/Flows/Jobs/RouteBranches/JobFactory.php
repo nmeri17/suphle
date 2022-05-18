@@ -86,7 +86,7 @@
 			);
 		}
 
-		protected function makeJob (BranchesContext $context):RouteBranches {
+		protected function makeRouteBranches (BranchesContext $context):RouteBranches {
 
 			$jobName = RouteBranches::class;
 
@@ -110,6 +110,14 @@
 
 				$user // creates a collection of 10 models in preceding renderer, then assigns the given user as their owner in the flow we are going to make
 			);
+		}
+
+		/**
+		 * Push in user-content/1-10
+		*/
+		protected function handleDefaultBranchesContext ():void {
+
+			$this->makeRouteBranches($this->makeBranchesContext())->handle();
 		}
 	}
 ?>

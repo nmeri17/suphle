@@ -79,7 +79,7 @@
 				])
 			]);
 
-			$this->makeJob( $this->makeBranchesContext() )->handle(); // when
+			$this->handleDefaultBranchesContext(); // when
 		}
 	}
 ?>

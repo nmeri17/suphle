@@ -1,6 +1,8 @@
 <?php
 	namespace Tilwa\Testing\Condiments;
 
+	use Tilwa\Contracts\IO\{Session, CacheManager};
+
 	use Tilwa\Hydration\Container;
 
 	use Tilwa\Events\ModuleLevelEvents;
@@ -8,6 +10,10 @@
 	use Tilwa\Modules\ModuleHandlerIdentifier;
 
 	use Tilwa\Request\RequestDetails;
+
+	use Tilwa\Flows\OuterFlowWrapper;
+
+	use Tilwa\IO\{Session\InMemorySession, Cache\InMemoryCache};
 
 	trait BaseModuleInteractor {
 
@@ -65,6 +71,16 @@
 		protected function setRequestPath (string $requestPath):void {
 
 			RequestDetails::fromModules( $this->modules, $requestPath);
+		}
+
+		protected function provideTestEquivalents ():void {
+
+			$this->massProvide([
+
+				CacheManager::class => new InMemoryCache,
+				
+				Session::class => new InMemorySession
+			]);
 		}
 	}
 ?>

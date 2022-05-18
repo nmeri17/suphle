@@ -1,11 +1,11 @@
 <?php
 	namespace Tilwa\Flows;
 
-	use Tilwa\Flows\Structures\{RouteUserNode, RouteUmbrella, RangeContext, ServiceContext, GeneratedUrlExecution};
+	use Tilwa\Flows\Structures\{RouteUserNode, RangeContext, ServiceContext, GeneratedUrlExecution};
 
 	use Tilwa\Flows\Previous\{ SingleNode, CollectionNode, UnitNode};
 
-	use Tilwa\Contracts\{IO\CacheManager, Presentation\BaseRenderer, Config\Flows};
+	use Tilwa\Contracts\Presentation\BaseRenderer;
 
 	use Tilwa\Response\RoutedRendererManager;
 
@@ -21,11 +21,11 @@
 
 	class FlowHydrator {
 
-		private $previousResponse, $cacheManager, $payloadStorage,
+		private $previousResponse, $flowSaver, $payloadStorage,
 
 		$rendererManager, $container, $placeholderStorage,
 
-		$flowConfig, $baseUrlPattern,
+		$baseUrlPattern,
 
 		$parentHandlers = [
 			SingleNode::class => "handleSingleNodes",
@@ -60,46 +60,18 @@
 
 		public function __construct (
 
-			CacheManager $cacheManager, Container $randomContainer,
+			UmbrellaSaver $flowSaver, Container $randomContainer,
 
-			PathPlaceholders $placeholderStorage, PayloadStorage $payloadStorage, 
-
-			Flows $flowConfig
+			PathPlaceholders $placeholderStorage, PayloadStorage $payloadStorage
 		) {
 
-			$this->cacheManager = $cacheManager;
+			$this->flowSaver = $flowSaver;
 
 			$this->container = $randomContainer;
 
 			$this->placeholderStorage = $placeholderStorage;
 
 			$this->payloadStorage = $payloadStorage;
-
-			$this->flowConfig = $flowConfig;
-		}
-
-		# @param {contentType} model type, where present
-		private function storeContext(string $urlPattern, RouteUserNode $nodeContent, string $userId, ?string $contentType):void {
-
-			$cacheManager = $this->cacheManager;
-
-			$prefixed = OuterFlowWrapper::FLOW_PREFIX . "/" . trim($urlPattern, "/");
-			
-			$umbrella = $cacheManager->getItem($prefixed);
-
-			if (!$umbrella)
-
-				$umbrella = new RouteUmbrella($prefixed);
-
-			$umbrella->addUser($userId, $nodeContent);
-
-			$saved = $cacheManager->saveItem($prefixed, $umbrella);
-
-			if ($contentType)
-
-				$cacheManager->tagItem($contentType, $umbrella);
-
-			// better still, this guy can subscribe to a topic(instead of using tags?). update listener publishes to that topic (so we never have outdated content)
 		}
 
 		/**
@@ -148,28 +120,12 @@
 
 				$this->runNodeConfigs($unitPayload, $flowStructure);
 
-				$this->storeContext(
-					
-					$generationUnit->getRequestPath(), $unitPayload, $userId,
+				$this->flowSaver->saveNewUmbrella(
+					$generationUnit->getRequestPath(),
 
-					$this->getContentType($renderer)
+					$unitPayload, $userId
 				);
 			}
-		}
-
-		private function getContentType(BaseRenderer $renderer):?string {
-
-			$contentTypes = $this->flowConfig->contentTypeIdentifier();
-
-			$payload = $renderer->getRawResponse();
-
-			$payloadType = gettype($payload);
-
-			if (array_key_exists($payloadType, $contentTypes))
-
-				return call_user_func([$payload, $contentTypes[$payloadType]]);
-
-			return null;
 		}
 
 		// @return BaseRenderer[]

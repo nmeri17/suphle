@@ -18,9 +18,18 @@
 			return $this->eventParent = new MockModuleEvents($this->modules);
 		}
 
-		protected function assertFiredEvent (string $emitter, string $eventName):void {
+		protected function assertFiredEvent (string $emitter):void {
 
-			$subscription = $this->getEventSender($emitter);
+			$this->assertNotNull(
+				$this->getEventSubscription($emitter),
+
+				"Failed to assert that '$emitter' fired any event"
+			);
+		}
+
+		protected function assertHandledEvent (string $emitter, string $eventName):void {
+
+			$subscription = $this->getEventSubscription($emitter);
 
 			$this->assertNotNull($subscription,
 
@@ -34,9 +43,19 @@
 			);
 		}
 
-		protected function assertNotFiredEvent (string $emitter, string $eventName):void {
+		protected function assertNotFiredEvent (string $emitter):void {
 
-			$subscription = $this->getEventSender($emitter);
+			$this->assertNull(
+
+				$this->getEventSubscription($emitter),
+
+				"Did not expect '$emitter' to fire event"
+			);
+		}
+
+		protected function assertNotHandledEvent (string $emitter, string $eventName):void {
+
+			$subscription = $this->getEventSubscription($emitter);
 
 			if (is_null($subscription)) {
 
@@ -52,13 +71,21 @@
 			);
 		}
 
-		private function getEventSender (string $sender):?EventSubscription {
+		private function getEventSubscription (string $sender):?EventSubscription {
 
-			$container = $this->getContainer();
+			$allSent = $this->eventParent->getFiredEvents();
 
-			$config = $container->getClass(Events::class);
+			if (array_key_exists($sender, $allSent)) {
 
-			return $container->getClass($config->getManager())->getLocalHandler($sender);
+				$subscription = $allSent[$sender];
+
+				if (is_null($subscription)) // was event fired without any paired handlers?
+					$subscription = new EventSubscription("", $this->getContainer()); // so the asserters don't mistake false positive
+
+				return $subscription;
+			}
+
+			return null;
 		}
 	}
 ?>

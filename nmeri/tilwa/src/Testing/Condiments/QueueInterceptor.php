@@ -1,6 +1,8 @@
 <?php
 	namespace Tilwa\Testing\Condiments;
 
+	use Tilwa\Queues\AdapterManager;
+
 	use Tilwa\Testing\Proxies\StubbedQueueAdapter;
 
 	use Tilwa\Flows\{Jobs\RouteBranches, OuterFlowWrapper};
@@ -9,7 +11,7 @@
 
 	trait QueueInterceptor {
 
-		private $adapter;
+		private $queueAdapter;
 
 		public function setUp ():void {
 
@@ -20,18 +22,18 @@
 
 		protected function catchQueuedTasks ():void {
 
-			if (is_null($this->adapter)) { // using this nonce so we can assert more than once in the same test without overwriting the instance
+			if (is_null($this->queueAdapter)) // using this nonce so we can assert more than once in the same test without overwriting the instance
 
-				$this->adapter = new StubbedQueueAdapter;
+				$this->massProvide([
 
-				$this->massProvide([Adapter::class => $this->adapter]); // since we don't know yet what the active module is at this point this
-			}
+					Adapter::class => $this->queueAdapter = new StubbedQueueAdapter // mass providing from the onset since we don't know yet what the active module is at this point this
+				]);
 		}
 
 		protected function assertPushed (string $taskName):void {
 
 			$this->assertTrue(
-				$this->adapter->didPushTask($taskName),
+				$this->queueAdapter->didPushTask($taskName),
 
 				"Failed asserting that $taskName was pushed to queue"
 			);
@@ -40,7 +42,7 @@
 		protected function assertNotPushed (string $taskName):void {
 
 			$this->assertFalse(
-				$this->adapter->didPushTask($taskName),
+				$this->queueAdapter->didPushTask($taskName),
 
 				"Did not expect $taskName to be pushed to queue"
 			);
@@ -62,7 +64,8 @@
 
 		protected function assertHandledByFlow (string $flowUrl):void {
 
-			$this->get($flowUrl); // When
+			// the [given] part is in whatever action was taken before calling this method
+			$this->setHttpParams($flowUrl); // When
 
 			$this->assertTrue(
 
@@ -74,7 +77,7 @@
 
 		protected function assertNotHandledByFlow (string $url):void {
 
-			$this->get($url); // When
+			$this->setHttpParams($url); // When
 
 			$this->assertFalse(
 
@@ -87,6 +90,13 @@
 		private function getFlowWrapper ():OuterFlowWrapper {
 
 			return $this->firstModuleContainer()->getClass(OuterFlowWrapper::class);
+		}
+
+		protected function processQueuedTasks ():void {
+
+			$this->getContainer()->getClass(AdapterManager::class)
+
+			->beginProcessing();
 		}
 	}
 ?>

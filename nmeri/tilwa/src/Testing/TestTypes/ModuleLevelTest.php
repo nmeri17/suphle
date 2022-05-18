@@ -5,10 +5,6 @@
 
 	use Tilwa\Hydration\Container;
 
-	use Tilwa\Contracts\IO\{Session, CacheManager};
-
-	use Tilwa\IO\{Session\InMemorySession, Cache\InMemoryCache};
-
 	use Tilwa\Testing\Condiments\{ModuleReplicator, BaseModuleInteractor};
 
 	use Tilwa\Testing\Proxies\{ModuleHttpTest, GagsException, Extensions\FrontDoor};
@@ -56,16 +52,6 @@
 
 					return $descriptor->materialize();
 				}
-		}
-
-		protected function provideTestEquivalents ():void {
-
-			$this->massProvide([
-
-				CacheManager::class => new InMemoryCache,
-				
-				Session::class => new InMemorySession
-			]);
 		}
 
 		protected function getContainer ():Container {

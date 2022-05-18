@@ -68,7 +68,7 @@
 				]]
 			], $this->getIdentifier()); // then
 
-			$this->makeJob($this->makeBranchesContext())->handle(); // given
+			$this->handleDefaultBranchesContext(); // given
 
 			// when
 			$this->setHttpParams($this->userUrl);

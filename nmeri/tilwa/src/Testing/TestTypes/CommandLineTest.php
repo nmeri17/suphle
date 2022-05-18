@@ -32,6 +32,8 @@
 				new SymfonyCli("SuphleTest", "v2")
 			);
 
+			$this->provideTestEquivalents();
+
 			$this->consoleRunner->loadCommands();
 
 			$this->mufflerSetup();

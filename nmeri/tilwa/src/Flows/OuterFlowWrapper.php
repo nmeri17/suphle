@@ -1,9 +1,9 @@
 <?php
 	namespace Tilwa\Flows;
 
-	use Tilwa\Flows\Jobs\{RouteBranches, BranchesContext, UpdateCountDelete};
+	use Tilwa\Flows\Jobs\{RouteBranches, UpdateCountDelete};
 
-	use Tilwa\Flows\Structures\{RouteUserNode, RouteUmbrella,AccessContext};
+	use Tilwa\Flows\Structures\{RouteUserNode, RouteUmbrella,AccessContext, BranchesContext};
 
 	use Tilwa\Contracts\{Requests\BaseResponseManager, IO\CacheManager, Auth\AuthStorage, Modules\HighLevelRequestHandler, Presentation\BaseRenderer};
 
@@ -17,19 +17,17 @@
 
 	class OuterFlowWrapper implements BaseResponseManager, HighLevelRequestHandler {
 
-		const FLOW_PREFIX = "tilwa_flow",
-
-		ALL_USERS = "*", HIT_EVENT = "flow_hit";
+		const ALL_USERS = "*", HIT_EVENT = "flow_hit";
 
 		private $requestDetails, $queueManager, $modules,
 
-		$cacheManager, $authStorage, $routeUmbrella,
+		$flowSaver, $authStorage, $routeUmbrella,
 
 		$activeUser, $eventManager, $routeUserNode;
 
 		public function __construct(
 			RequestDetails $requestDetails, AdapterManager $queueManager,
-			CacheManager $cacheManager, AuthStorage $authStorage,
+			UmbrellaSaver $flowSaver, AuthStorage $authStorage,
 
 			EventManager $eventManager, ModulesBooter $modulesBooter
 		) {
@@ -38,7 +36,7 @@
 
 			$this->queueManager = $queueManager;
 
-			$this->cacheManager = $cacheManager;
+			$this->flowSaver = $flowSaver;
 
 			$this->authStorage = $authStorage;
 
@@ -49,7 +47,7 @@
 
 		public function canHandle ():bool {
 
-			$this->routeUmbrella = $this->cacheManager->getItem($this->dataPath()); // or combine [tag] with the [get]
+			$this->routeUmbrella = $this->flowSaver->getExistingUmbrella($this->dataPath());
 
 			if (is_null($this->routeUmbrella)) return false;
 
@@ -106,18 +104,20 @@
 
 		private function dataPath ():string {
 
-			return self::FLOW_PREFIX . "/" . trim($this->requestDetails->getPath(), "/");
+			return $this->flowSaver->getPatternLocation($this->requestDetails->getPath());
 		}
 
-		// it is safest for listeners to listen "external" on the target controller
+		// it is safest for listeners to listen "external" on the target controller (why?)
 		private function emitEvents($cachedResponse):void {
 
 			$controller = $this->handlingRenderer()->getController();
 
 			$this->eventManager->emit(
 
-				get_class($controller), self::HIT_EVENT, $cachedResponse
-			); // should probably include incoming request parameters?
+				get_class($controller), self::HIT_EVENT,
+
+				$cachedResponse // event handler can then inject payloadStorage/pathPlaceholders
+			);
 		}
  
 		private function queueBranches():void {

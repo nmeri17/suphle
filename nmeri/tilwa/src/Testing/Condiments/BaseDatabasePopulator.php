@@ -19,14 +19,20 @@
 
 			$this->databaseApi = $this->getContainer()->getClass(OrmTester::class);
 
-			if (static::$isFirstTest) { // testBeforeClass is the designated method for universal setups like this. But container needed for extracting replicator is unavailable then
+			/**
+			 I'm commenting below check out since PHPUnit doesn't reset static properties after each test. Which means every 2nd test using this trait will see `$isFirstTest` as true
+			 *
+			 * @backupStaticAttributes enabled doesn't have any effect
+			*/
+
+			// if (static::$isFirstTest) { // testBeforeClass is the designated method for universal setups like this. But container needed for extracting replicator is unavailable then
 
 				$this->replicator->setupSchema();
 
 				$this->replicator->seedDatabase($this->getInitialCount());
 
-				static::$isFirstTest = false;
-			}
+				/*static::$isFirstTest = false;
+			}*/
 
 			$this->replicator->listenForQueries();
 		}
