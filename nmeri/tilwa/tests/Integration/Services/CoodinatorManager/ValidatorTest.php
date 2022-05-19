@@ -147,7 +147,7 @@
 				$sutName => $sut
 			]);
 
-			$sut->initialize()->triggerRequest(); // when
+			$sut->initialize()->fullRequestProtocols(); // when
 		}
 
 		public function test_failed_validation_reverts_renderer () {

@@ -7,7 +7,7 @@
 
 	use Tilwa\Request\RequestDetails;
 
-	use Tilwa\Contracts\Auth\AuthStorage;
+	use Tilwa\Contracts\{Auth\AuthStorage, Presentation\BaseRenderer};
 
 	use Tilwa\Auth\Storage\SessionStorage;
 
@@ -28,7 +28,7 @@
 			parent::__construct($requestDetails);
 		}
 
-		public function process (PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler) {
+		public function process (PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler):BaseRenderer {
 
 			if ($this->requestDetails->isGetRequest() )
 

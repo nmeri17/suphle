@@ -18,7 +18,7 @@
 			$this->activeRenderer = $activeRenderer;
 		}
 
-		public function process (PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler) {
+		public function process (PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler):BaseRenderer {
 
 			if ($this->activeRenderer instanceof Markup && $payloadStorage->acceptsJson())
 

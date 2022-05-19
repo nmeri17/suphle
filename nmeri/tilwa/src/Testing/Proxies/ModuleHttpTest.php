@@ -9,6 +9,8 @@
 
 	use Tilwa\Testing\{Condiments\DirectHttpTest, Proxies\Extensions\TestResponseBridge};
 
+	use Tilwa\Exception\Explosives\NotFoundException;
+
 	trait ModuleHttpTest {
 
 		use DirectHttpTest, ExaminesHttpResponse;
@@ -56,6 +58,10 @@
 			$initializer = $this->getInitializerWrapper()
 
 			->findContext($this->getModules());
+
+			if (!$initializer)
+
+				throw new NotFoundException;
 
 			$initializer->getRouter()
 

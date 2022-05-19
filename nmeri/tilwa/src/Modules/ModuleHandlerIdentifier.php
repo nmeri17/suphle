@@ -54,16 +54,16 @@
 
 			try {
 
-				$content = $this->respondFromHandler();
+				$renderer = $this->respondFromHandler();
 			}
 			catch (Throwable $exception) {
 
-				$content = $this->findExceptionRenderer($exception)->render();
+				$renderer = $this->findExceptionRenderer($exception);
 			}
 
 			$this->transferHeaders();
 
-			return $content;
+			return $renderer->render();
 		}
 
 		private function freshExceptionBridge ():ModuleExceptionBridge {
@@ -74,7 +74,7 @@
 		/**
 		 * Each of the request handlers should update this class with the underlying renderer they're pulling a response from
 		*/
-		protected function respondFromHandler ():string {
+		protected function respondFromHandler ():BaseRenderer {
 
 			if ( $this->authConfig->isLoginRequest())
 
@@ -89,7 +89,7 @@
 			return $this->handleGenericRequest();
 		}
 
-		public function handleLoginRequest ():string {
+		public function handleLoginRequest ():BaseRenderer {
 
 			$loginHandler = $this->getLoginHandler();
 
@@ -99,7 +99,9 @@
 
 			$this->identifiedHandler = $loginHandler;
 
-			return $loginHandler->getResponse();
+			$loginHandler->setResponseRenderer()->processLoginRequest();
+
+			return $loginHandler->handlingRenderer();
 		}
 
 		public function getLoginHandler ():ModuleLoginHandler {
@@ -107,7 +109,7 @@
 			return $this->container->getClass(ModuleLoginHandler::class);
 		}
 
-		protected function handleGenericRequest ():string {
+		protected function handleGenericRequest ():BaseRenderer {
 
 			$moduleRouter = $this->container->getClass(ModuleToRoute::class); // pulling from a container so tests can replace properties on the singleton
 
@@ -119,23 +121,27 @@
 
 				$this->routedModule = $moduleRouter->getActiveModule();
 
-				return $initializer->whenActive()->triggerRequest();
+				$initializer->whenActive()->fullRequestProtocols()
+
+				->setHandlingRenderer();
+
+				return $initializer->handlingRenderer();
 			}
 
 			throw new NotFoundException;
 		}
 
-		public function flowRequestHandler (OuterFlowWrapper $wrapper):string {
+		public function flowRequestHandler (OuterFlowWrapper $wrapper):BaseRenderer {
 
 			$this->identifiedHandler = $wrapper;
 
-			$response = $wrapper->getResponse();
+			$renderer = $wrapper->handlingRenderer();
 			
-			$wrapper->afterRender($response);
+			$wrapper->afterRender($renderer->render());
 
 			$wrapper->emptyFlow();
 
-			return $response;
+			return $renderer;
 		}
 
 		public function findExceptionRenderer (Throwable $exception):BaseRenderer {

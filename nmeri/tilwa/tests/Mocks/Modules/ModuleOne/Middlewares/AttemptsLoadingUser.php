@@ -1,9 +1,11 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Middlewares;
 
-	use Tilwa\Middleware\BaseMiddleware;
+	use Tilwa\Middleware\{BaseMiddleware, MiddlewareNexts};
 
-	use Tilwa\Contracts\Auth\AuthStorage;
+	use Tilwa\Request\PayloadStorage;
+
+	use Tilwa\Contracts\{Auth\AuthStorage, Presentation\BaseRenderer};
 
 	class AttemptsLoadingUser extends BaseMiddleware {
 
@@ -14,7 +16,7 @@
 			$this->authStorage = $authStorage;
 		}
 
-		public function process ($request, $requestHandler) {
+		public function process (PayloadStorage $request, ?MiddlewareNexts $requestHandler):BaseRenderer {
 
 			return $requestHandler->handle($request);
 		}

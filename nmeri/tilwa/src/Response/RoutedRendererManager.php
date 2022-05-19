@@ -41,10 +41,10 @@
 
 			$this->requestDetails = $requestDetails;
 		}
-		
-		public function getResponse ():string {
 
-			return $this->renderer->render();
+		public function responseRenderer ():BaseRenderer {
+
+			return $this->renderer;
 		}
 
 		public function afterRender ($data = null):void {

@@ -1,13 +1,15 @@
 <?php
 	namespace Tilwa\Bridge\Laravel\Routing;
 
-	use Tilwa\Contracts\{Config\Laravel as LaravelConfig, Bridge\LaravelContainer};
+	use Tilwa\Contracts\{Config\Laravel as LaravelConfig, Bridge\LaravelContainer, Presentation\BaseRenderer};
+
+	use Tilwa\Response\Format\ExternallyEvaluatedRenderer;
 
 	use Tilwa\Bridge\Laravel\Package\LaravelProviderManager;
 
 	use Illuminate\Routing\{Router, Route};
 
-	use Illuminate\Http\{Request, Response};
+	use Illuminate\Http\Request;
 
 	use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -67,9 +69,21 @@
 			}
 		}
 		
-		public function getResponse ():Response {
+		public function convertToRenderer ():BaseRenderer {
 
-			return $this->router->dispatch($this->request);
+			$fullRequest = $this->router->dispatch($this->request);
+
+			$renderer = (new ExternallyEvaluatedRenderer)
+
+			->setRawResponse($fullRequest->getContent());
+
+			$renderer->setHeaders(
+				$fullRequest->getStatusCode(),
+
+				$fullRequest->headers->all()
+			);
+
+			return $renderer;
 		}
 	}
 ?>

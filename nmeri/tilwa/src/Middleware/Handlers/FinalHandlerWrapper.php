@@ -1,6 +1,8 @@
 <?php
 	namespace Tilwa\Middleware\Handlers;
 
+	use Tilwa\Contracts\Presentation\BaseRenderer;
+
 	use Tilwa\Middleware\{BaseMiddleware, MiddlewareNexts};
 
 	use Tilwa\Response\RoutedRendererManager;
@@ -16,13 +18,13 @@
 			$this->rendererManager = $rendererManager;
 		}
 
-		public function process (PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler) {
+		public function process (PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler):BaseRenderer {
 
 			$this->rendererManager->handleValidRequest($payloadStorage);
 
 			$this->rendererManager->afterRender();
 
-			return $this->rendererManager->getResponse();
+			return $this->rendererManager->responseRenderer();
 		}
 	}
 ?>

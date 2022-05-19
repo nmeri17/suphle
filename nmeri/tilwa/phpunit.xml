@@ -4,8 +4,8 @@
 	colors = "true"
 	convertErrorsToExceptions = "false" 
 	convertNoticesToExceptions = "false"
-	convertWarningsToExceptions = "false"
-><!-- for the error catchers -->
+><!-- for the error catchers
+	convertWarningsToExceptions = "false" -->
 	<testsuites>
 		<testsuite name="all_tests">
 			<directory>./tests</directory>

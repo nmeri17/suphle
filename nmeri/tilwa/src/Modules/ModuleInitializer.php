@@ -23,7 +23,7 @@
 
 		$rendererManager, $laravelMatcher, $container, $indicator,
 
-		$requestDetails;
+		$requestDetails, $finalRenderer;
 
 		public function __construct (DescriptorInterface $descriptor, RequestDetails $requestDetails) {
 
@@ -69,11 +69,9 @@
 		/**
 		 * @throws UnauthorizedServiceAccess, Unauthenticated, ValidationFailure
 		*/
-		public function triggerRequest():string {
+		public function fullRequestProtocols ():self {
 
-			if ($this->isLaravelRoute())
-
-				return $this->laravelMatcher->getResponse();
+			if ($this->isLaravelRoute()) return $this;
 
 			$this->indicator = $this->router->getIndicator();
 
@@ -81,13 +79,27 @@
 
 			$this->attemptAuthentication()->authorizeRequest();
 
-			$validationPassed = $this->rendererManager
+			$this->rendererManager->bootCoodinatorManager()
 
-			->bootCoodinatorManager()->mayBeInvalid();
+			->mayBeInvalid(); // throws no error if validation Passed
 
-			return $this->container->getClass (MiddlewareQueue::class)
+			return $this;
+		}
+
+		public function setHandlingRenderer ():void {
+
+			if ($this->isLaravelRoute())
+
+				$this->finalRenderer = $this->laravelMatcher->convertToRenderer();
+
+			else $this->finalRenderer = $this->container->getClass (MiddlewareQueue::class)
 
 			->runStack();
+		}
+
+		public function handlingRenderer ():?BaseRenderer {
+
+			return $this->finalRenderer;
 		}
 
 		public function setRendererManager ():void {
@@ -159,15 +171,6 @@
 				throw new UnauthorizedServiceAccess;
 
 			return $this;
-		}
-
-		public function handlingRenderer ():?BaseRenderer {
-
-			// if (!$this->isLaravelRoute())
-
-				return $this->router->getActiveRenderer();
-
-			// else createFrom(their response object)
 		}
 
 		public function isLaravelRoute ():bool {

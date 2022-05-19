@@ -78,11 +78,6 @@
 			return is_null($user) ? self::ALL_USERS: strval($user->getId());
 		}
 
-		public function getResponse ():string {
-
-			return $this->handlingRenderer()->render();
-		}
-
 		public function afterRender($cachedResponse):void {
 
 			$this->emitEvents($cachedResponse);
@@ -110,7 +105,7 @@
 		// it is safest for listeners to listen "external" on the target controller (why?)
 		private function emitEvents($cachedResponse):void {
 
-			$controller = $this->handlingRenderer()->getController();
+			$controller = $this->responseRenderer()->getController();
 
 			$this->eventManager->emit(
 
@@ -124,16 +119,21 @@
 
 			$this->queueManager->augmentArguments(RouteBranches::class, [
 				"context" => new BranchesContext(
-					$this->handlingRenderer(),
+					$this->responseRenderer(),
 
 					$this->authStorage->getUser()
 				)
 			]);
 		}
 
-		public function handlingRenderer ():?BaseRenderer {
+		public function responseRenderer ():BaseRenderer {
 
 			return $this->routeUserNode->getRenderer();
+		}
+
+		public function handlingRenderer ():?BaseRenderer {
+
+			return $this->responseRenderer();
 		}
 	}
 ?>

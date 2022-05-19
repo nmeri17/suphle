@@ -6,9 +6,9 @@
 	interface ModuleLoginHandler extends HighLevelRequestHandler, ValidationEvaluator {
 
 		public function isValidRequest ():bool;
-		
-		public function getResponse ();
 
-		public function setResponseRenderer ():void;
+		public function setResponseRenderer ():self;
+
+		public function processLoginRequest ():void;
 	}
 ?>

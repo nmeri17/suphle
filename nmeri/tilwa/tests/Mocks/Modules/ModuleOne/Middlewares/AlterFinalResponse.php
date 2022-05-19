@@ -1,15 +1,24 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Middlewares;
 
-	use Tilwa\Middleware\BaseMiddleware;
+	use Tilwa\Contracts\Presentation\BaseRenderer;
+
+	use Tilwa\Middleware\{BaseMiddleware, MiddlewareNexts};
+
+	use Tilwa\Request\PayloadStorage;
 
 	class AlterFinalResponse extends BaseMiddleware {
 
-		public function process ($payloadStorage, $requestHandler) {
+		public function process (PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler):BaseRenderer {
 
-			$decodedResponse = json_decode($requestHandler->handle($payloadStorage), true);
+			$originalRenderer = $requestHandler->handle($payloadStorage);
 
-			return json_encode( array_merge($decodedResponse, ["foo" => "baz"]));
+			$originalRenderer->setRawResponse(array_merge(
+
+				$originalRenderer->getRawResponse(), ["foo" => "baz"]
+			));
+
+			return $originalRenderer;
 		}
 	}
 ?>

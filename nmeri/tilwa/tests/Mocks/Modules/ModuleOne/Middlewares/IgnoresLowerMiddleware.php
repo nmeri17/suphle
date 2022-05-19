@@ -1,13 +1,17 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Middlewares;
 
-	use Tilwa\Middleware\BaseMiddleware;
+	use Tilwa\Contracts\Presentation\BaseRenderer;
+
+	use Tilwa\Middleware\{BaseMiddleware, MiddlewareNexts};
+
+	use Tilwa\Request\PayloadStorage;
 
 	class IgnoresLowerMiddleware extends BaseMiddleware {
 
-		public function process ($payloadStorage, $requestHandler) {
+		public function process (PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler):BaseRenderer {
 
-			return ["foo" => "bar"];
+			return (new Json(""))->setRawResponse(["foo" => "bar"]);
 		}
 	}
 ?>

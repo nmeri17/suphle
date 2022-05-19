@@ -38,9 +38,7 @@
 			return $this->validatorManager->validationErrors();
 		}
 
-		public function getResponse ():string {
-
-			$this->setResponseRenderer();
+		public function processLoginRequest ():void {
 
 			$renderer = $this->responseRenderer;
 
@@ -49,17 +47,17 @@
 			$renderer->hydrateDependencies($this->container);
 
 			$this->executeRenderer();
-
-			return $renderer->render();
 		}
 
-		public function setResponseRenderer ():void {
+		public function setResponseRenderer ():self {
 
 			if ($this->loginService->compareCredentials())
 
 				$this->responseRenderer = $this->rendererCollection->successRenderer();
 
 			else $this->responseRenderer = $this->rendererCollection->failedRenderer();
+
+			return $this;
 		}
 
 		private function executeRenderer ():void {

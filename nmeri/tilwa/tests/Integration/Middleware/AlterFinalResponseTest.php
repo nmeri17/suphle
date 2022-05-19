@@ -5,11 +5,15 @@
 
 	use Tilwa\Middleware\Handlers\FinalHandlerWrapper;
 
+	use Tilwa\Response\Format\Json;
+
 	use Tilwa\Testing\{ TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer };
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock, Middlewares\AlterFinalResponse};
 
 	class AlterFinalResponseTest extends ModuleLevelTest {
+
+		protected $debugCaughtExceptions = true;
 		
 		protected function getModules():array {
 
@@ -28,7 +32,7 @@
 					])
 					->replaceWithMock($finalName, $finalName, [
 					
-						"process" => ["foo" => "bar"]
+						"process" => (new Json(""))->setRawResponse(["foo" => "bar"])
 					], [], false);
 				})
 			];

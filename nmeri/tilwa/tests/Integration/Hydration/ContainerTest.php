@@ -119,21 +119,6 @@
 			$this->assertEquals($aConcrete->getConstructorB(), $ourB);
 		}
 
-		public function test_will_not_hydrate_interface_from_bound_concrete () {
-
-			// given @see [simpleBinds] and [concreteBinds]
-
-			$container = $this->container;
-
-			$parameters = $container->getMethodParameters ( "receiveProvidedInterface", $this->aRequires); // when
-
-			$aConcrete = $container->getClass($this->aRequires);
-
-			$aConcrete->receiveProvidedInterface(...array_values($parameters));
-
-			$this->assertNotEquals($aConcrete->getCInterface()->getValue(), 10); // then
-		}
-
 		public function test_whenSpace() {
 
 			$container = $this->container;

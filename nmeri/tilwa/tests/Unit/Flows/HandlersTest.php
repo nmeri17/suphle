@@ -35,7 +35,7 @@
 			// then
 			$sut = $this->mockFlowHydrator([
 				
-				"updateRequest" => [$indexesCount, [
+				"updatePlaceholders" => [$indexesCount, [
 
 					$this->callback(function($subject) use ($indexes) {
 
@@ -79,7 +79,7 @@
 			// then
 			$sut = $this->mockFlowHydrator([
 
-				"updateRequest" => [1, [$queryUpdate]]
+				"updatePayloadStorage" => [1, [$queryUpdate]]
 			]);
 
 			// when
@@ -125,7 +125,7 @@
 
 				"executeGeneratedUrl" => [0, []],
 
-				"updateRequest" => [0, []],
+				"updatePlaceholders" => [0, []],
 			], $sut);
 
 			$sut->handleServiceSource( // when
@@ -167,7 +167,7 @@
 			// then
 			$sut = $this->mockFlowHydrator([
 
-				"updateRequest" => [1, [
+				"updatePlaceholders" => [1, [
 
 					[$requestProperty => implode(",", $indexes) ]
 				]]
@@ -189,7 +189,7 @@
 			// then
 			$sut = $this->mockFlowHydrator([
 
-				"updateRequest" => [1, [
+				"updatePlaceholders" => [1, [
 					[
 						$range->getParameterMax() => max($indexes),
 
@@ -219,7 +219,7 @@
 			// then
 			$sut = $this->mockFlowHydrator([
 
-				"updateRequest" => [1, [
+				"updatePlaceholders" => [1, [
 					[
 						$range->getParameterMax() => current($dates),
 
