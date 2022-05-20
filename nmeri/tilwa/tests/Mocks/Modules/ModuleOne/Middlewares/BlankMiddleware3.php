@@ -1,13 +1,13 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Middlewares;
 
-	use Tilwa\Contracts\Presentation\BaseRenderer;
+	use Tilwa\Contracts\{Presentation\BaseRenderer, Routing\Middleware};
 
-	use Tilwa\Middleware\{BaseMiddleware, MiddlewareNexts};
+	use Tilwa\Middleware\MiddlewareNexts;
 
 	use Tilwa\Request\PayloadStorage;
 
-	class BlankMiddleware3 extends BaseMiddleware {
+	class BlankMiddleware3 implements Middleware {
 
 		public function process (PayloadStorage $request, ?MiddlewareNexts $requestHandler):BaseRenderer {
 

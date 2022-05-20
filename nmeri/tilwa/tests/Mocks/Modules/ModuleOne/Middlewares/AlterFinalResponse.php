@@ -1,13 +1,13 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Middlewares;
 
-	use Tilwa\Contracts\Presentation\BaseRenderer;
+	use Tilwa\Contracts\{Presentation\BaseRenderer, Routing\Middleware};
 
-	use Tilwa\Middleware\{BaseMiddleware, MiddlewareNexts};
+	use Tilwa\Middleware\MiddlewareNexts;
 
 	use Tilwa\Request\PayloadStorage;
 
-	class AlterFinalResponse extends BaseMiddleware {
+	class AlterFinalResponse implements Middleware {
 
 		public function process (PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler):BaseRenderer {
 

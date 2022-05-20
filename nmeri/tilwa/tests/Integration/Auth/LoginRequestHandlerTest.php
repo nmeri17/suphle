@@ -52,7 +52,7 @@
 
 				$sutName => $this->positiveDouble($sutName, [], [
 
-					"getResponse" => [1, [$this->anything()]]
+					"processLoginRequest" => [1, []]
 				]) // then
 			]);
 

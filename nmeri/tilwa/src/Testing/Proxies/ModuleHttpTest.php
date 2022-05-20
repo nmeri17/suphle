@@ -122,7 +122,7 @@
 			$this->assertEmpty(
 				array_diff($middlewares, $matches),
 
-				"Failed to assert that middlewares ". json_encode($middlewares). " were used"
+				"Failed to assert that middlewares ". json_encode($middlewares, JSON_PRETTY_PRINT). " were used"
 			);
 		}
 
@@ -131,7 +131,7 @@
 			$this->assertEmpty(
 				$this->getMatchingMiddleware($middlewares),
 
-				"Did not expect to use middlewares " . $middlewares
+				"Did not expect to use middlewares " . json_encode($middlewares, JSON_PRETTY_PRINT)
 			);
 		}
 

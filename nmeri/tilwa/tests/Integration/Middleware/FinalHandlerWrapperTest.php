@@ -28,7 +28,7 @@
 
 				"afterRender" => [1, []],
 
-				"getResponse" => [1, []]
+				"responseRenderer" => [1, []]
 			]);
 
 			$this->container->whenTypeAny()->needsAny([

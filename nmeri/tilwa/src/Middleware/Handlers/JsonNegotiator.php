@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Middleware\Handlers;
 
-	use Tilwa\Middleware\{BaseMiddleware, MiddlewareNexts};
+	use Tilwa\Middleware\MiddlewareNexts;
 
 	use Tilwa\Request\PayloadStorage;
 
@@ -9,7 +9,7 @@
 
 	use Tilwa\Contracts\Presentation\BaseRenderer;
 
-	class JsonNegotiator extends BaseMiddleware {
+	class JsonNegotiator implements Middleware {
 
 		private $activeRenderer;
 

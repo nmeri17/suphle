@@ -3,7 +3,7 @@
 
 	use Tilwa\Contracts\Config\Router;
 
-	use Tilwa\Middleware\FinalHandlerWrapper;
+	use Tilwa\Middleware\Handlers\FinalHandlerWrapper;
 
 	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
@@ -39,7 +39,12 @@
 
 		private function mockMiddleware2 ():HierarchialMiddleware2 {
 
-			return $this->positiveDouble($this->sutName, [], [
+			return $this->positiveDouble($this->sutName, [
+
+				"process" => $this->returnCallback(function($request, $requestHandler) {
+
+					return $requestHandler->handle($request);
+				})], [
 
 				"process" => [1, [$this->callback(function($subject) {
 

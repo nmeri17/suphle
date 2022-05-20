@@ -1,9 +1,11 @@
 <?php
 	namespace Tilwa\Tests\Integration\Middleware;
 
-	use Tilwa\Contracts\Config\Router;
+	use Tilwa\Contracts\{Config\Router, Routing\Middleware};
 
-	use Tilwa\Request\RequestDetails;
+	use Tilwa\Request\PayloadStorage;
+
+	use Tilwa\Response\Format\Json;
 
 	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
@@ -11,48 +13,51 @@
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Middlewares\{BlankMiddleware, BlankMiddleware2, BlankMiddleware3, BlankMiddleware4};
 
-	use Tilwa\Tests\Mocks\Interactions\ModuleOne;
-
 	class TagBehaviorTest extends ModuleLevelTest {
 
-		private $moduleOne;
+		private $moduleOne, $container;
+
+		protected $debugCaughtExceptions = true;
 
 		protected function setUp ():void {
 
-			$this->setModuleOne();
-
 			parent::setUp();
-		}
 
-		private function setModuleOne ():void {
-
-			$this->moduleOne = $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
-
-				$container->replaceWithMock(Router::class, RouterMock::class, [
-
-					"browserEntryRoute" => MultiTagSamePattern::class
-				]);
-			});
+			$this->container = $this->getContainer();
 		}
 		
 		protected function getModules():array {
 
-			return [$this->moduleOne];
+			return [
+
+				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+
+					$container->replaceWithMock(Router::class, RouterMock::class, [
+
+						"browserEntryRoute" => MultiTagSamePattern::class
+					]);
+				})
+			];
 		}
 
-		private function mockMiddleware (string $className, ?int $numTimes, array $additionalMocks = []) {
+		// without this, we'll use getModules and then need to have test classes for each of these different configurations
+		private function mockMiddleware (string $className, int $numTimes):Middleware {
 
-			return $this->positiveDouble($className, [], array_merge([
+			return $this->positiveDouble($className, [
+
+				"process" => $this->returnCallback(function($request, $requestHandler) {
+
+					return $requestHandler->handle($request);
+				})
+			], [
 
 				"process" => [$numTimes, []]
-			], $additionalMocks));
+			]);
 		}
 
 		private function provideMiddleware (array $middlewareList):void {
 
-			$this->moduleOne->getContainer()
-
-			->whenTypeAny()->needsAny($middlewareList);
+			$this->container->whenTypeAny()->needsAny($middlewareList);
 		}
  
 		public function test_multi_patterns_to_single_tag_should_work () {
@@ -117,14 +122,16 @@
 
 			// given => @see [getModules]
 			// then 
-			$this->provideMiddleware([
+			/*$this->provideMiddleware([
 
 				BlankMiddleware2::class => $this->mockMiddleware(BlankMiddleware2::class, 1),
 
 				BlankMiddleware4::class => $this->mockMiddleware(BlankMiddleware4::class, 0)
-			]);
+			]);*/
 
 			$this->get("/fourth-single/second-untag"); // when
+
+			$this->assertDidntUseMiddleware([BlankMiddleware4::class, BlankMiddleware2::class]);
 		}
 
 		public function test_can_untag_multiple_middlewares () {
@@ -145,21 +152,24 @@
 
 		public function test_final_middleware_has_no_request_handler () {
 
-			$middlewareList = $this->moduleOne->getContainer()
+			$middlewareList = $this->container->getClass(Router::class)
 
-			->getClass(Router::class)->defaultMiddleware();
+			->defaultMiddleware();
 
 			$lastMiddleware = end($middlewareList);
 
-			$this->moduleOne->getContainer()->whenTypeAny()->needsAny([
+			$this->provideMiddleware([
 
-				$lastMiddleware => $this->mockMiddleware($lastMiddleware, null, [
+				$lastMiddleware => $this->positiveDouble($lastMiddleware, [
+
+					"process" => $this->replaceConstructorArguments(Json::class, [])
+				], [
 
 					"process" => [1, [
 
 						$this->callback(function ($subject) {
 
-							return $subject instanceof RequestDetails;
+							return $subject instanceof PayloadStorage;
 						}),
 
 						$this->equalTo(null)

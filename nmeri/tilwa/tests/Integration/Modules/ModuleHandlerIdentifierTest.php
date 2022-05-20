@@ -46,9 +46,9 @@
 
 			$handler = $this->negativeDouble(ModuleLoginHandler::class, ["isValidRequest" => true], [
 
-				"getResponse" => [
+				"processLoginRequest" => [
 
-					$this->atLeastOnce(), [$this->anything()]
+					$this->atLeastOnce(), []
 				]
 			]);
 

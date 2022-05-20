@@ -1,6 +1,8 @@
 <?php
 	namespace Tilwa\Middleware;
 
+	use Tilwa\Contracts\Routing\Middleware;
+
 	use Tilwa\Request\PayloadStorage;
 
 	/**
@@ -10,7 +12,7 @@
 
 		private $currentMiddleware, $nextHandler; 
 
-		public function __construct (BaseMiddleware $currentMiddleware, ?self $nextHandler) {
+		public function __construct (Middleware $currentMiddleware, ?self $nextHandler) {
 
 			$this->nextHandler = $nextHandler;
 

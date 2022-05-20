@@ -1,15 +1,15 @@
 <?php
 	namespace Tilwa\Middleware\Handlers;
 
-	use Tilwa\Contracts\Presentation\BaseRenderer;
+	use Tilwa\Contracts\{Presentation\BaseRenderer, Routing\Middleware};
 
-	use Tilwa\Middleware\{BaseMiddleware, MiddlewareNexts};
+	use Tilwa\Middleware\MiddlewareNexts;
 
 	use Tilwa\Response\RoutedRendererManager;
 
 	use Tilwa\Request\PayloadStorage;
 
-	class FinalHandlerWrapper extends BaseMiddleware {
+	class FinalHandlerWrapper implements Middleware {
 
 		private $rendererManager;
 

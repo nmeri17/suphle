@@ -48,10 +48,10 @@
 
 			$this->filterDuplicates();
 
-			$this->stack = array_merge(
-				$this->routerConfig->defaultMiddleware(),
+			$this->stack = array_merge( // any temporary ones attached to route precede the defaults
+				$this->stack,
 
-				$this->stack
+				$this->routerConfig->defaultMiddleware()
 			);
 
 			$this->hydrateMiddlewares();
@@ -73,8 +73,10 @@
 		private function getHandlerChain (array $middlewareList, MiddlewareNexts $accumNexts = null):?MiddlewareNexts {
 
 			if (empty($middlewareList)) return $accumNexts;
+			
+			$lastMiddleware = array_pop($middlewareList); // we're reading from behind so that last item on the list is what is passed to the caller, and thus, is first to be evaluated on our way down the rabbit hole
 
-			$nextHandler = new MiddlewareNexts(array_shift($middlewareList), $accumNexts);
+			$nextHandler = new MiddlewareNexts($lastMiddleware, $accumNexts);
 
 			// [1,2,4] => [4(2(1(cur, null), cur), cur)]
 			/* [1,2,4] => 1,[2,4]
