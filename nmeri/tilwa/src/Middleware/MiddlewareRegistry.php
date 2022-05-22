@@ -39,7 +39,7 @@
 		 * 
 		 * @param {parentTags} Middlewares previously tagged while descending the route collections to the point where this is called
 		 * 
-		 * @param {patterns} If any of these turns out to be the active pattern, [parentTag] will be detached
+		 * @param {patterns} If any of these turns out to be among active patterns, this list of [parentTags] will be detached
 		*/
 		public function removeTag (array $patterns, array $parentTags):self {
 
@@ -49,7 +49,7 @@
 
 					$this->excludePatterns[$pattern] = [];
 
-				$this->excludePatterns[$pattern] = array_merge($this->excludePatterns[$pattern], $patterns);
+				$this->excludePatterns[$pattern] = array_merge($this->excludePatterns[$pattern], $parentTags);
 			}
 
 			return $this;
@@ -65,20 +65,20 @@
 				return in_array($pattern, $this->interactedPatterns);
 			}, ARRAY_FILTER_USE_KEY);
 
-			foreach ($activeHolders as $pattern => $holder)
+			// If we exclude tags in a child collection, it won't exist in [registry] since our remove action doesn't use such mechanism
+			$activeExcludes = array_filter ($this->excludePatterns, function ($pattern) {
 
-				if (array_key_exists($pattern, $this->excludePatterns))
+				return in_array($pattern, $this->interactedPatterns);
+			}, ARRAY_FILTER_USE_KEY);
 
-					$this->extractFromHolders($holder, $this->excludePatterns[$pattern]);
+			// search among parents for those containing middlewares intersecting with given list
+			foreach ($activeExcludes as $excludeList)
+			
+				foreach ($activeHolders as $holder)
+
+					$holder->omitWherePresent($excludeList);
 
 			return $activeHolders;
-		}
-
-		protected function extractFromHolders (PatternMiddleware $holder, array $toOmit):void {
-
-			foreach ($toOmit as $middleware)
-
-				$holder->omitWherePresent($middleware);
 		}
 
 		public function emptyAllStacks ():void {

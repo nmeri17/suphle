@@ -1,7 +1,9 @@
 <?php
 	namespace Tilwa\Routing;
 
-	use Tilwa\Auth\TokenStorage;
+	use Tilwa\Contracts\Routing\{ApiRouteCollection, CrudBuilder};
+
+	use Tilwa\Auth\Storage\TokenStorage;
 
 	use Tilwa\Routing\Crud\ApiBuilder;
 
@@ -11,10 +13,10 @@
 
 		public function __construct(CanaryValidator $validator, TokenStorage $authStorage, MethodSorter $methodSorter) {
 
-			parent::__construct($validator, $authStorage, $middlewareRegistry, $pathAuthorizer);
+			parent::__construct($validator, $authStorage, $methodSorter);
 		}
 
-		protected function _crudJson ():CrudBuilder {
+		public function _crudJson ():CrudBuilder {
 
 			$this->crudMode = true;
 

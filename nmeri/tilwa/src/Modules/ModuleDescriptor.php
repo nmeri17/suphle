@@ -86,7 +86,7 @@
 
 		public function warmModuleContainer ():void {
 
-			$this->container->provideSelf();
+			$this->container->setEssentials();
 
 			$this->container->setInterfaceHydrator($this->interfaceCollection());
 
@@ -119,6 +119,9 @@
 			return $this;
 		}
 
+		/**
+		 * Doesn't do any hydration; just statically verifies that both lists are compatible
+		*/
 		private function deportUnexpected ():void {
 
 			$given = array_keys($this->expatriates);

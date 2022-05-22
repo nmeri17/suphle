@@ -42,12 +42,18 @@
 
 			$instance = $container->getClass($selfName);
 
-			$instance->setPath(parse_url($requestPath)["path"]);
+			$components = parse_url($requestPath);
+
+			$instance->setPath($components["path"]);
 
 			$container->whenTypeAny()->needsAny([
 
 				$selfName => $instance
 			]);
+
+			parse_str($components["query"] ?? "", $queryArray);
+
+			$_GET = array_merge($_GET, $queryArray);
 		}
 
 		public function getOriginalApiPath ():?string {

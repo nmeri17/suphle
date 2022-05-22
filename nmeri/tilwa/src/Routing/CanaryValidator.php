@@ -1,29 +1,82 @@
 <?php
 	namespace Tilwa\Routing;
 
-	use Tilwa\Hydration\Container;
+	use Tilwa\Hydration\{Container, Structures\ObjectDetails};
 
-	use Tilwa\Contracts\{CanaryGateway, RouteCollection};
+	use Tilwa\Contracts\Routing\{CanaryGateway, RouteCollection};
+
+	use Tilwa\Contracts\Auth\AuthStorage;
+
+	use Tilwa\Exception\Explosives\Generic\InvalidImplementor;
 
 	class CanaryValidator {
 
-		private $container;
+		private $allCanaries = [], $canaryInstances = [], $container,
 
-		public function __construct(Container $container) {
+		$objectMeta;
+
+		public function __construct (Container $container, ObjectDetails $objectMeta) {
 			
 			$this->container = $container;
+
+			$this->objectMeta = $objectMeta;
 		}
 
-		// @return array of passing canaries
-		public function validate (array $canaries):array {
+		public function setCanaries (array $canaries):self {
 
-			return array_filter($canaries, function ($canary) {
+			$this->allCanaries = $canaries;
+
+			return $this;
+		}
+
+		public function collectionAuthStorage (AuthStorage $authStorage):self {
+
+			foreach ($this->allCanaries as $canaryName)
+
+				$this->container->whenType($canaryName)->needsArguments([
+
+					AuthStorage::class => $authStorage
+				]);
+
+			return $this;
+		}
+
+		public function setValidCanaries ():self {
+
+			$gatewayName = CanaryGateway::class;
+
+			$collectionInterface = RouteCollection::class;
+
+			array_walk($this->allCanaries, function ($canary) use ($gatewayName, $collectionInterface) {
+
+				if ( !$this->objectMeta->implementsInterface(
+
+					$canary, $gatewayName
+				))
+
+					throw new InvalidImplementor($gatewayName, $canary);
 
 				$instance = $this->container->getClass($canary);
-				
-				return is_subclass_of($instance, CanaryGateway::class) &&
-				is_subclass_of($instance->entryClass(), RouteCollection::class);
+
+				$nextCollection = $instance->entryClass();
+
+				if ( !$this->objectMeta->implementsInterface(
+
+					$nextCollection, $collectionInterface
+				))
+
+					throw new InvalidImplementor($collectionInterface, $nextCollection);
+
+				$this->canaryInstances[] = $instance;
+
 			});
+
+			return $this;
+		}
+
+		public function getCanaryInstances ():array {
+
+			return $this->canaryInstances;
 		}
 	}
 ?>

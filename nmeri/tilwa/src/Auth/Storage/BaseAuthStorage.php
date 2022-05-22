@@ -4,11 +4,11 @@
 	use Tilwa\Contracts\Auth\{AuthStorage, UserContract, UserHydrator};
 
 	/**
-	 * Assumes ormDialect has already booted. They should probably be coupled together, but AuthStorage is crucis enough to exist independently (type-hinting, for one)
+	 * Assumes ormDialect has already booted. They should probably be coupled together, but AuthStorage is crucial enough to exist independently (type-hinting, for one)
 	*/
 	abstract class BaseAuthStorage implements AuthStorage {
 
-		protected $userHydrator, $user, $identifier;
+		protected $hasResumed = false, $userHydrator, $user, $identifier;
 
 		public function setHydrator (UserHydrator $userHydrator):void {
 
@@ -17,13 +17,37 @@
 
 		public function getUser ():?UserContract {
 
-			if (is_null($this->identifier) || is_null($this->userHydrator)) return null;
+			$userId = $this->getId();
+
+			if (is_null($userId)
+
+				// || is_null($this->userHydrator) // fail loudly in the absence of a hydrator?
+			)
+
+				return null;
 
 			if ( is_null($this->user)) // when accessed for the first time
 
-				$this->user = $this->userHydrator->findById( $this->identifier );
+				$this->user = $this->userHydrator->findById( $userId );
 
 			return $this->user;
+		}
+		
+		public function getId ():?string {
+
+			$this->ensureSessionResumption();
+
+			return $this->identifier;
+		}
+
+		protected function ensureSessionResumption ():void {
+
+			if (!$this->hasResumed) {
+
+				$this->resumeSession();
+
+				$this->hasResumed = true;
+			}
 		}
 
 		/**
@@ -37,11 +61,6 @@
 			$this->discardUser();
 
 			return $this->startSession($value);
-		}
-		
-		public function getId ():string {
-
-			return $this->identifier;
 		}
 
 		public function logout ():void {

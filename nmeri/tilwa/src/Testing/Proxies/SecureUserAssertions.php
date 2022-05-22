@@ -18,17 +18,13 @@
 		abstract protected function getContainer ():Container;
 
 		/**
-		 * @param {storageName} When none is specified, we just want to retrive default authStorage mechanism wired in; otherwise we prefer a more precise assertion
+		 * @param {storageName} When none is specified, we just want to retrieve bound authStorage mechanism
 		*/
 		protected function getAuthStorage (?string $storageName):AuthStorage {
 
 			if (is_null($storageName))
 
 				$storageName = $this->genericStorage; // work with whichever one was originally bound in container
-
-			elseif ((new ReflectionClass($storageName))->isInterface())
-
-				throw new Exception ("storageName must be a concrete class");
 
 			return $this->ensureHasHydrator($storageName);
 		}
@@ -45,7 +41,11 @@
 
 			$authStorage = $container->getClass($storageName);
 
-			if ($storageName != $this->genericStorage && get_class($authStorage) != $storageName)
+			$isNotDefault = $storageName != $this->genericStorage &&
+
+			get_class($authStorage) != $storageName;
+
+			if ($isNotDefault) // the default has hydrator set. If dev wants to test another storage mechanism, we'll do that explicitly
 
 				$authStorage->setHydrator($ormDialect->getUserHydrator());
 
@@ -54,6 +54,9 @@
 			return $authStorage;
 		}
 
+		/**
+		 * Will update bound instance of authStorage since it doesn't make sense for developer to authenticate to one mechanism while app is running on another
+		*/
 		protected function actingAs (UserContract $user, string $storageName = null):self {
 
 			$storage = $this->getAuthStorage($storageName);
@@ -65,7 +68,7 @@
 			$this->getContainer()->whenTypeAny()->needsAny([
 
 				$this->genericStorage => $storage
-			]); // since it doesn't make sense for developer to authenticate to one mechanism while app is running on another
+			]);
 
 			return $this;
 		}
@@ -93,7 +96,7 @@
 			$this->assertNull(
 				$foundUser,
 
-				"Unexprected user $foundUser found");
+				"Unexpected user $foundUser found");
 
 			return $this;
 		}

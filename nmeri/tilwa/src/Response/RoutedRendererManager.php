@@ -9,7 +9,7 @@
 
 	use Tilwa\Services\CoodinatorManager;
 
-	use Tilwa\Contracts\{Requests\BaseResponseManager, Presentation\BaseRenderer, Auth\AuthStorage};
+	use Tilwa\Contracts\{Requests\BaseResponseManager, Presentation\BaseRenderer};
 
 	use Tilwa\Request\{ValidatorManager, PayloadStorage, RequestDetails};
 
@@ -94,11 +94,5 @@
 				throw new ValidationFailure($this->controllerManager);
 		}
 
-		public function requestAuthenticationStatus (AuthStorage $storage):bool {
-
-			$storage->resumeSession();
-
-			return !is_null($storage->getUser()); // confirms there's an active session and that its owner exists on the underlying database
-		}
 	}
 ?>

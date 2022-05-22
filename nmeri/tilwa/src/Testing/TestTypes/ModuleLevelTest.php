@@ -40,7 +40,7 @@
 		/**
 		 * Doesn't return the descriptor but rather the concrete associated with inteface exported by given module
 		*/
-		protected function getModuleFor (string $interface) {
+		protected function getModuleFor (string $interface):object {
 
 			foreach ($this->getModules() as $descriptor)
 

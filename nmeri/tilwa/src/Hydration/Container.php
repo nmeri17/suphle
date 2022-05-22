@@ -1,13 +1,13 @@
 <?php
 	namespace Tilwa\Hydration;
 	
-	use Tilwa\Hydration\Structures\{ProvisionUnit, NamespaceUnit, HydratedConcrete, BuiltInType};
+	use Tilwa\Hydration\Structures\{ProvisionUnit, NamespaceUnit, HydratedConcrete, BuiltInType, ObjectDetails};
 
 	use Tilwa\Contracts\Hydration\ClassHydrationBehavior;
 
 	use Tilwa\Exception\Explosives\Generic\{InvalidImplementor, HydrationException};
 
-	use ReflectionMethod, ReflectionClass, ReflectionFunction, ReflectionType, ReflectionFunctionAbstract, ReflectionException;
+	use ReflectionMethod, ReflectionFunction, ReflectionType, ReflectionFunctionAbstract, ReflectionException;
 
 	class Container {
 
@@ -27,7 +27,7 @@
 
 		$hydratedClassConsumers = [],
 
-		$interfaceHydrator, $decorator,
+		$interfaceHydrator, $decorator, $objectMeta,
 
 		$provisionContext, // the active Type before calling `needs`
 
@@ -119,7 +119,7 @@
 
 				$this->setConsumer($className);
 
-				if ($this->getReflectedClass($className)->isInterface())
+				if ($this->objectMeta->isInterface($className))
 
 					return $this->provideInterface($className);
 
@@ -260,22 +260,6 @@
 			return $this->getRecursionContext()->addConcrete($fullName, $concrete);
 		}
 
-		private function getReflectedClass (string $className):ReflectionClass {
-
-			try {
-
-				return new ReflectionClass($className);
-			}
-			catch (ReflectionException $re) {
-
-				$message = "Unable to hydrate ". $this->lastHydratedFor() . ": ". $re->getMessage();
-
-				$hint = "Hint: Cross-check its dependencies";
-
-				throw new HydrationException("$message. $hint");
-			}
-		}
-
 		/**
 		 * Wrap any call that internally attempts to read from [lastHydratedFor] in this i.e. calls that do some hydration and need to know what context/provision they're being hydrated for
 		*/
@@ -372,14 +356,18 @@
 
 		private function hasRenamedSpace (string $caller):bool {
 
-			return array_key_exists($this->classNamespace($caller), $this->provisionedNamespaces);
+			return array_key_exists(
+				$this->objectMeta->classNamespace($caller),
+
+				$this->provisionedNamespaces
+			);
 		}
 
 		private function relocateSpace (string $dependency, string $caller):string {
 
-			$callerSpace = $this->classNamespace($caller);
+			$callerSpace = $this->objectMeta->classNamespace($caller);
 			
-			$dependencySpace = $this->classNamespace($dependency);
+			$dependencySpace = $this->objectMeta->classNamespace($dependency);
 
 			foreach ($this->provisionedNamespaces[$callerSpace] as $spaceUnit)
 				
@@ -391,11 +379,6 @@
 
 					return $spaceUnit->getLocation() . "\\". $newIdentity;
 				}
-		}
-
-		public function classNamespace (string $entityName):string {
-			
-			return (new ReflectionClass($entityName))->getNamespaceName();
 		}
 
 		/**
@@ -581,7 +564,7 @@
 				return $concrete;
 			}
 
-			if ($this->getReflectedClass($typeName)->isInterface())
+			if ($this->objectMeta->isInterface($typeName))
 
 				throw new HydrationException ("$typeName's concrete cannot depend on its dependency's concrete");
 
@@ -692,6 +675,13 @@
 		    eval($genericContents);
 
 		    return $constructor($types);
+		}
+
+		public function setEssentials ():void {
+
+			$this->provideSelf();
+
+			$this->objectMeta = new ObjectDetails($this);
 		}
 
 		public function provideSelf ():void {

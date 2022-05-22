@@ -177,16 +177,23 @@
 
 		protected function _canaryEntry(array $canaries):void {
 
-			$validEntries = $this->canaryValidator->validate($canaries);
+			$validator = $this->canaryValidator;
+
+			$instances = $validator->setCanaries($canaries)
+
+			->collectionAuthStorage($this->authStorage)
+
+			->setValidCanaries()->getCanaryInstances();
 			
-			foreach ($validEntries as $canary)
-				
+			foreach ($instances as $canary) {
+
 				if ($canary->willLoad() ) {
 
 					$this->_prefixFor($canary->entryClass());
 
 					break;
 				}
+			}
 		}
 
 		public function _getPrefixCollection ():?string {

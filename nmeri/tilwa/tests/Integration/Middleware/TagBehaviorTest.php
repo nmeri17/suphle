@@ -15,9 +15,7 @@
 
 	class TagBehaviorTest extends ModuleLevelTest {
 
-		private $moduleOne, $container;
-
-		protected $debugCaughtExceptions = true;
+		private $container;
 
 		protected function setUp ():void {
 
@@ -122,16 +120,14 @@
 
 			// given => @see [getModules]
 			// then 
-			/*$this->provideMiddleware([
+			$this->provideMiddleware([
 
 				BlankMiddleware2::class => $this->mockMiddleware(BlankMiddleware2::class, 1),
 
 				BlankMiddleware4::class => $this->mockMiddleware(BlankMiddleware4::class, 0)
-			]);*/
+			]);
 
 			$this->get("/fourth-single/second-untag"); // when
-
-			$this->assertDidntUseMiddleware([BlankMiddleware4::class, BlankMiddleware2::class]);
 		}
 
 		public function test_can_untag_multiple_middlewares () {

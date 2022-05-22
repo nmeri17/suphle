@@ -119,19 +119,25 @@
 
 			$matches = $this->getMatchingMiddleware($middlewares);
 
-			$this->assertEmpty(
-				array_diff($middlewares, $matches),
+			$unused = array_diff($middlewares, $matches);
 
-				"Failed to assert that middlewares ". json_encode($middlewares, JSON_PRETTY_PRINT). " were used"
+			$this->assertEmpty($unused,
+
+				"Failed to assert that middlewares ".
+
+				json_encode($unused, JSON_PRETTY_PRINT). " were used"
 			);
 		}
 
 		protected function assertDidntUseMiddleware (array $middlewares) {
 
-			$this->assertEmpty(
-				$this->getMatchingMiddleware($middlewares),
+			$intersectingUsed = $this->getMatchingMiddleware($middlewares);
 
-				"Did not expect to use middlewares " . json_encode($middlewares, JSON_PRETTY_PRINT)
+			$this->assertEmpty($intersectingUsed,
+
+				"Did not expect to use middlewares " .
+
+				json_encode($intersectingUsed, JSON_PRETTY_PRINT)
 			);
 		}
 

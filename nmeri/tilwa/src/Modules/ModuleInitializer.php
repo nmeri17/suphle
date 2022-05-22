@@ -149,7 +149,7 @@
 
 			if (!is_null($authMethod)) {
 
-				if ( !$this->rendererManager->requestAuthenticationStatus($authMethod))
+				if ( !is_null($authMethod->getId()))
 
 					throw new Unauthenticated($authMethod);
 

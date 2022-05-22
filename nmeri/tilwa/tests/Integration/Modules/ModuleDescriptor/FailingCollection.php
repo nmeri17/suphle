@@ -5,7 +5,7 @@
 
 	use Tilwa\Tests\Mocks\Interactions\ModuleTwo;
 
-	class FailingCollection extends DescriptorCollection {
+	abstract class FailingCollection extends DescriptorCollection {
 
 		public function test_will_throw_errors () {
 

@@ -7,7 +7,7 @@
 
 		public function imitate (string $value):string;
 
-		public function getId ():string;
+		public function getId ():?string;
 
 		public function startSession (string $userId):string;
 

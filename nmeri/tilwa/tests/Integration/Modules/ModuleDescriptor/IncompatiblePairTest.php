@@ -3,11 +3,13 @@
 
 	use Tilwa\Hydration\Container;
 
-	use Tilwa\Tests\Mocks\Interactions\ModuleThree;
+	use Tilwa\Exception\Explosives\Generic\InvalidImplementor;
+
+	use Tilwa\Tests\Mocks\Interactions\{ModuleThree, ModuleTwo};
 
 	use Tilwa\Tests\Mocks\Modules\ModuleTwo\Meta\ModuleTwoDescriptor;
 
-	class IncompatiblePairTest extends FailingCollection {
+	class IncompatiblePairTest extends DescriptorCollection {
 
 		protected function setModuleTwo ():void {
 
@@ -17,6 +19,13 @@
 
 				ModuleThree::class => $this->moduleOne
 			]);
+		}
+
+		public function test_will_throw_implementor_exception () {
+
+			$this->expectException(InvalidImplementor::class); // then
+
+			$this->getModuleFor(ModuleTwo::class); // when
 		}
 	}
 ?>

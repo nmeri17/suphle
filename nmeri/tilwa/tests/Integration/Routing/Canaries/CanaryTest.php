@@ -27,9 +27,9 @@
 		public function pathsToValidCanaries ():array {
 
 			return [
-				["/same-url", "defaultHandler"],
+				["same-url", "defaultHandler"],
 
-				["/5", "defaultPlaceholder"]
+				["5", "defaultPlaceholder"]
 			];
 		}
 
@@ -54,9 +54,11 @@
 
 		public function test_can_hydrate_and_evaluate_dependencies () {
 
-			$matchingRenderer = $this->fakeRequest("/special-foo?foo=32");
+			$matchingRenderer = $this->fakeRequest("/special-foo/same-url?foo=32");
 
-			$this->assertSame($matchingRenderer, "fooHandler");
+			$this->assertNotNull($matchingRenderer);
+
+			$this->assertTrue($matchingRenderer->matchesHandler("fooHandler"));
 		}
 	}
 ?>

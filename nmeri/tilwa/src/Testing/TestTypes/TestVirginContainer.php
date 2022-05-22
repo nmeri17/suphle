@@ -15,7 +15,7 @@
 
 			$container->initializeUniversalProvision();
 
-			$container->provideSelf();
+			$container->setEssentials();
 		}
 
 		protected function stubDecorator ():DecoratorHydrator {

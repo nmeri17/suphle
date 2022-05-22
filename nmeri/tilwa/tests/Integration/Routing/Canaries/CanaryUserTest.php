@@ -33,11 +33,12 @@
 			$this->dataProvider([
 
 				[$this, "getUserAndResult"]
-			], function (EloquentUser $user, string $handlerName) {
+			], function (EloquentUser $user, string $handlerName, ?string $queryPart) {
 
+				// default = sessionStorage
 				$this->actingAs($user); // given
 
-				$matchingRenderer = $this->fakeRequest("/special-foo/same-url"); // when
+				$matchingRenderer = $this->fakeRequest("/special-foo/same-url?$queryPart"); // when
 
 				$this->assertNotNull($matchingRenderer);
 
@@ -51,9 +52,9 @@
 
 			return [
 
-				[$model->find(5), "user5Handler"],
+				[$model->find(5), "user5Handler", null],
 
-				[$model->find(4), "fooHandler"]
+				[$model->find(4), "fooHandler", "foo=8"]
 			];
 		}
 	}
