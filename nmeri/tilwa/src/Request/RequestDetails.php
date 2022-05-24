@@ -10,7 +10,8 @@
 	*/
 	class RequestDetails {
 
-		private $config, $path, $originalApiPath;
+		private $config, $computedPath, $permanentPath // readonly version of [computedPath]
+		;
 
 		public function __construct (Router $config) {
 
@@ -19,12 +20,12 @@
 
 		public function getPath ():?string {
 
-			return $this->path;
+			return $this->computedPath;
 		}
 
 		public function setPath (string $requestPath):void {
 
-			$this->path = $requestPath;
+			$this->permanentPath = $this->computedPath = $requestPath;
 		}
 
 		public static function fromModules (array $descriptors, string $requestPath):void {
@@ -56,9 +57,9 @@
 			$_GET = array_merge($_GET, $queryArray);
 		}
 
-		public function getOriginalApiPath ():?string {
+		public function getPermanentPath ():?string {
 
-			return $this->originalApiPath;
+			return $this->permanentPath;
 		}
 
 		public function httpMethod ():string {
@@ -97,7 +98,7 @@
 
 		public function isApiRoute ():bool {
 
-			return preg_match("/" . $this->regexApiPrefix() . "/", $this->path);
+			return preg_match("/" . $this->regexApiPrefix() . "/", $this->permanentPath); // using permanent since computed may have been changed by the time this method is being read
 		}
 
 		// given a request to api/v3/verb/noun, return verb/noun
@@ -105,11 +106,9 @@
 			
 			$pattern = $this->regexApiPrefix() . "\/.+?\/(.+)";
 
-			preg_match("/" . $pattern . "/i", $this->path, $pathArray);
+			preg_match("/" . $pattern . "/i", $this->permanentPath, $pathArray);
 
-			$this->originalApiPath = $this->path;
-
-			$this->path = $pathArray[1];
+			$this->computedPath = $pathArray[1];
 		}
 
 		// given a request to api/v3/verb/noun, return v3
@@ -117,7 +116,7 @@
 			
 			$pattern = $this->regexApiPrefix() . "\/(.+?)\/";
 
-			preg_match("/" . $pattern . "/i", $this->path, $version);
+			preg_match("/" . $pattern . "/i", $this->permanentPath, $version);
 
 			return $version[1];
 		}

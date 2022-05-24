@@ -1,6 +1,8 @@
 <?php
 	namespace Tilwa\Tests\Integration\Routing\Canaries;
 
+	use Tilwa\Exception\Explosives\Generic\InvalidImplementor;
+
 	use Tilwa\Tests\Integration\Routing\TestsRouter;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\CanaryRoutes;
@@ -12,25 +14,11 @@
 			return CanaryRoutes::class;
 		}
 
-		/**
-	     * @dataProvider pathsToValidCanaries
-	     */
-		public function test_will_filter_invalid_canaries (string $segment, string $handler) {
+		public function test_will_fail_on_invalid_canaries () {
 
-			$matchingRenderer = $this->fakeRequest("/load-default/$segment"); // when
+			$this->expectException(InvalidImplementor::class);
 
-			$this->assertNotNull($matchingRenderer);
-
-			$this->assertTrue($matchingRenderer->matchesHandler($handler) ); // then
-		}
-
-		public function pathsToValidCanaries ():array {
-
-			return [
-				["same-url", "defaultHandler"],
-
-				["5", "defaultPlaceholder"]
-			];
+			$this->fakeRequest("/load-default/same-url"); // when
 		}
 
 		/**

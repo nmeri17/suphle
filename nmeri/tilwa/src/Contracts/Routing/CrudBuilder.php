@@ -3,6 +3,6 @@
 
 	interface CrudBuilder {
 
-		public function save():void;
+		public function registerCruds():void;
 	}
 ?>

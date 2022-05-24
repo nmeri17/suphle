@@ -44,5 +44,10 @@
 
 			//
 		}
+
+		public function showEditForm () {
+
+			//
+		}
 	}
 ?>

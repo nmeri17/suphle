@@ -149,7 +149,7 @@
 
 			if (!is_null($authMethod)) {
 
-				if ( !is_null($authMethod->getId()))
+				if ( is_null($authMethod->getId()))
 
 					throw new Unauthenticated($authMethod);
 

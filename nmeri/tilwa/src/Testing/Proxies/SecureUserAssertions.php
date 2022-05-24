@@ -57,20 +57,18 @@
 		/**
 		 * Will update bound instance of authStorage since it doesn't make sense for developer to authenticate to one mechanism while app is running on another
 		*/
-		protected function actingAs (UserContract $user, string $storageName = null):self {
+		protected function actingAs (UserContract $user, string $storageName = null):string {
 
 			$storage = $this->getAuthStorage($storageName);
 
-			$storage->startSession($user->getId());
-
-			$storage->resumeSession();
+			$identifier = $storage->startSession($user->getId());
 
 			$this->getContainer()->whenTypeAny()->needsAny([
 
 				$this->genericStorage => $storage
 			]);
 
-			return $this;
+			return $identifier;
 		}
 
 		protected function assertAuthenticatedAs (UserContract $expectedUser, string $storageName = null):self {

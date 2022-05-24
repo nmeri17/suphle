@@ -5,6 +5,8 @@
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\Crud\BasicRoutes;
 
+	use Exception;
+
 	class GenericTest extends TestsRouter {
 
 		protected function getEntryCollection ():string {
@@ -15,7 +17,7 @@
 		/**
 	     * @dataProvider allPathsAndHandlers
 	     */
-		public function test_can_find_all_routes (string $requestPath, string $handler, string $httpMethod) {
+		public function test_can_find_all_routes (string $requestPath, string $handler, string $httpMethod, $payload = null) {
 
 			$matchingRenderer = $this->fakeRequest("/save-all/$requestPath", $httpMethod);
 
@@ -35,9 +37,9 @@
 
 				["5", "showOne", "get"],
 
-				["edit/5", "updateOne", "put"],
+				["edit", "updateOne", "put", ["id" => 5]],
 
-				["5", "delete", "delete"],
+				["delete", "deleteOne", "delete", ["id" => 5]],
 
 				["search", "showSearchForm", "get"]
 			];
@@ -61,7 +63,7 @@
 
 		public function test_override_non_existent_throws_error () {
 
-			$this->expectException("PHPUnit_Framework_Error"); // then
+			$this->expectException(Exception::class); // then
 
 			$this->fakeRequest("/non-existent/save"); // when
 		}

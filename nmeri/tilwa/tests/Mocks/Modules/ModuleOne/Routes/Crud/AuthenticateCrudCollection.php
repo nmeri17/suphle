@@ -14,7 +14,7 @@
 		
 		public function SECURE__SOMEh () {
 			
-			$this->_crud("secure-some")->save();
+			$this->_crud("secure-some")->registerCruds();
 		}
 
 		public function _authenticatedPaths():array {

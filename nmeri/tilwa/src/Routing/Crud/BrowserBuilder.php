@@ -7,11 +7,21 @@
 
 	use Tilwa\Contracts\{Routing\RouteCollection, Presentation\BaseRenderer};
 
+	/**
+	 * A list of renderer setting methods
+	*/
 	class BrowserBuilder extends BaseBuilder {
 
 		private $viewPath, $viewModelPath;
 
-		protected $allowedActions = ["showCreateForm", "saveNew", "showAll", "showOne", "updateOne", "deleteOne", "showSearchForm", "showEditForm"];
+		protected $validActions = [
+
+			self::SHOW_CREATE, self::SAVE_NEW, self::SHOW_ALL,
+
+			self::SHOW_ONE, self::UPDATE_ONE, self::DELETE_ONE,
+
+			self::SHOW_SEARCH, self::SHOW_EDIT
+		];
 		
 		public function __construct(RouteCollection $collection, string $viewPath, string $viewModelPath = null) {
 
@@ -22,82 +32,71 @@
 			$this->viewModelPath = $viewModelPath ? $viewModelPath . DIRECTORY_SEPARATOR : $this->viewPath;
 		}
 
-		protected function showCreateForm():array {
+		protected function showCreateForm ():BaseRenderer {
 
-			return $this->registerMarkupRenderer(__FUNCTION__, "create-form");
+			return $this->getMarkupRenderer(__FUNCTION__, "create-form");
 		}
 
-		protected function showEditForm ():array {
+		protected function showEditForm ():BaseRenderer {
 
-			return $this->registerMarkupRenderer(__FUNCTION__, "edit-form");
+			return $this->getMarkupRenderer(__FUNCTION__, "edit-form");
 		}
 
 		/**
 		 * Redirect to "/resource/new_id"
 		*/
-		public function saveNew ():array {
-
-			$handler = __FUNCTION__;
+		public function saveNew ():BaseRenderer {
 
 			$prefix = $this->collection->_prefixCurrent();
 
-			return $this->callParentWith($handler, new Redirect($handler, function () use ($prefix) {
+			return new Redirect(__FUNCTION__, function () use ($prefix) {
 
 				return function () use ($prefix) {
 					return $prefix . "/" . $this->statusCode/*rawResponse["resource"]->id*/; // assumes the controller returns an array containing this key
 				};
-			}));
+			});
 		}
 
-		protected function showAll():array {
+		protected function showAll ():BaseRenderer {
 
-			return $this->registerMarkupRenderer(__FUNCTION__, "show-all");
+			return $this->getMarkupRenderer(__FUNCTION__, "show-all");
 		}
 
-		protected function showOne():array {
+		protected function showOne ():BaseRenderer {
 
-			return $this->registerMarkupRenderer(__FUNCTION__, "show-one");
+			return $this->getMarkupRenderer(__FUNCTION__, "show-one");
 		}
 
-		protected function updateOne():array {
+		protected function updateOne ():BaseRenderer {
 
-			$handler = __FUNCTION__;
-
-			return $this->callParentWith($handler, new Reload($handler));
+			return new Reload(__FUNCTION__);
 		}
 
-		protected function deleteOne ():array {
-
-			$handler = __FUNCTION__;
+		protected function deleteOne ():BaseRenderer {
 
 			$prefix = $this->collection->_prefixCurrent();
 
-			return $this->callParentWith($handler, new Redirect($handler, function () use ($prefix) {
+			return new Redirect(__FUNCTION__, function () use ($prefix) {
 				
 				return "$prefix/";
-			}));
+			});
 		}
 
 		/**
-		 * It's assumed to the same page where the form lives is where the results will be displayed
+		 * It's assumed that the same page where the form lives is where results will be displayed
 		*/
-		protected function showSearchForm ():array {
+		protected function showSearchForm ():BaseRenderer {
 
-			return $this->registerMarkupRenderer(__FUNCTION__, "show-search-form");
+			return $this->getMarkupRenderer(__FUNCTION__, "show-search-form");
 		}
 
-		private function callParentWith (string $handler, BaseRenderer $renderer):array {
+		private function getMarkupRenderer (string $handler, string $fileName):Markup {
 
-			$this->rendererMap[$handler] = $renderer;
+			return new Markup(
+				$handler, $this->viewPath . $fileName,
 
-			return parent::$handler();
-		}
-
-		private function registerMarkupRenderer (string $handler, string $fileName):array {
-
-			$this->rendererMap[$handler] = new Markup($handler, $this->viewPath . $fileName, $this->viewModelPath . $fileName);
-
-			return parent::$handler();
+				$this->viewModelPath . $fileName
+			);
 		}
 	}
 ?>

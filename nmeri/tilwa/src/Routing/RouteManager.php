@@ -198,7 +198,7 @@
 
 		public function findActiveCrud (array $routePatterns, string $remainderPath):?string {
 
-			$matchingCheck = $this->methodPartiallyMatchPattern($remainderPath, $routePatterns);
+			$matchingCheck = $this->findMatchingMethod($remainderPath, $routePatterns);
 
 			if (
 				!is_null($matchingCheck) &&

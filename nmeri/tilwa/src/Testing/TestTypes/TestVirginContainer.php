@@ -71,7 +71,7 @@
 			$providerName = get_class($providerCallable[0]) . "::". $providerCallable[1];
 
 			$messages = [
-				"Failed test with data provider '$providerName', on index $errorIndex:",
+				"$providerName with data set #$errorIndex:",
 
 				json_encode($dataRow, JSON_PRETTY_PRINT)
 			];

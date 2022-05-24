@@ -1,7 +1,9 @@
 <?php
 	namespace Tilwa\Tests\Integration\Routing\Canaries;
 
-	use Tilwa\Contracts\{Auth\UserContract, Database\OrmDialect};
+	use Tilwa\Contracts\Database\OrmDialect;
+
+	use Tilwa\Auth\Storage\TokenStorage;
 
 	use Tilwa\Adapters\Orms\Eloquent\Models\User as EloquentUser;
 
@@ -26,36 +28,20 @@
 		}
 
 		/**
-		 * This should be true since canary is evaluated before collection storage method is derived (which is done after all segments match)
+		 * This should be true since canaries use authStorge received from parent collection
 	     */
-		public function test_injecting_authStorage_uses_its_default_not_collection_auth () {
-
-			$this->dataProvider([
-
-				[$this, "getUserAndResult"]
-			], function (EloquentUser $user, string $handlerName, ?string $queryPart) {
-
-				// default = sessionStorage
-				$this->actingAs($user); // given
-
-				$matchingRenderer = $this->fakeRequest("/special-foo/same-url?$queryPart"); // when
-
-				$this->assertNotNull($matchingRenderer);
-
-				$this->assertTrue($matchingRenderer->matchesHandler($handlerName) ); // then
-			});
-		}
-
-		public function getUserAndResult ():array {
+		public function test_canaries_use_collection_auth () {
 
 			$model = $this->container->getClass(OrmDialect::class)->userModel();
 
-			return [
+			// default = sessionStorage
+			$this->actingAs($model->find(5)); // given
 
-				[$model->find(5), "user5Handler", null],
+			$matchingRenderer = $this->fakeRequest("/special-foo/same-url"); // when
 
-				[$model->find(4), "fooHandler", "foo=8"]
-			];
+			$this->assertNull($matchingRenderer);
+
+			$this->assertGuest(TokenStorage::class); // then
 		}
 	}
 ?>
