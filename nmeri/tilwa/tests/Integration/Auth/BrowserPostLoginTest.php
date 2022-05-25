@@ -18,24 +18,17 @@
 			CommonBinds::simpleBinds as commonSimples;
 		}
 
-		private $genericStorage = AuthStorage::class;
-
 		protected function simpleBinds ():array {
 
 			return array_merge($this->commonSimples(), [
 
-				$this->genericStorage => SessionStorage::class // ensure we're working with session in this test although that's the default
+				AuthStorage::class => SessionStorage::class // ensure we're working with session in this test although that's the default
 			]);
 		}
 
 		protected function getActiveEntity ():string {
 
 			return EloquentUser::class;
-		}
-
-		private function getAuthStorage ():AuthStorage {
-
-			return $this->container->getClass($this->genericStorage);
 		}
 
 		public function test_session_impersonate () {

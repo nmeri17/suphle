@@ -33,7 +33,7 @@
 				"email" => $user->email,
 
 				"password" => $this->correctPassword
-			]);
+			], "post");
 		}
 
 		public function sendIncorrectRequest (string $loginPath):void {
@@ -45,7 +45,7 @@
 				"email" => $user->email,
 
 				"password" => $this->incorrectPassword
-			]);
+			], "post");
 		}
 
 		public function getLoginPath ():string {

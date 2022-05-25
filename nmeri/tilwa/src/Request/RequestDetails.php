@@ -10,8 +10,9 @@
 	*/
 	class RequestDetails {
 
-		private $config, $computedPath, $permanentPath // readonly version of [computedPath]
-		;
+		private $config, $computedPath, $permanentPath, // readonly version of [computedPath]
+		
+		$versionPresent;
 
 		public function __construct (Router $config) {
 
@@ -98,30 +99,42 @@
 
 		public function isApiRoute ():bool {
 
-			return preg_match("/" . $this->regexApiPrefix() . "/", $this->permanentPath); // using permanent since computed may have been changed by the time this method is being read
+			$matches = preg_match("/" . $this->regexApiPrefix() . "/", $this->permanentPath); // using permanent since computed may have been changed by the time this method is being read
+
+			if ($matches) $this->setIncomingVersion();
+
+			return $matches;
 		}
 
-		// given a request to api/v3/verb/noun, return verb/noun
+		/**
+		* Given a request to api(?:/v3)/verb/noun, set computed path to verb/noun
+		*/
 		public function stripApiPrefix():void {
+
+			$possibleVersion = $this->versionPresent ?
+
+				"(?:\/". $this->versionPresent .")?":
+
+				"";
 			
-			$pattern = $this->regexApiPrefix() . "\/.+?\/(.+)";
+			$pattern = $this->regexApiPrefix() . $possibleVersion. "\/(.+)";
 
 			preg_match("/" . $pattern . "/i", $this->permanentPath, $pathArray);
 
 			$this->computedPath = $pathArray[1];
 		}
 
-		// given a request to api/v3/verb/noun, return v3
-		private function incomingVersion():string {
+		// given a request to api/v3/verb/noun, sets property to v3
+		private function setIncomingVersion ():void {
 			
 			$pattern = $this->regexApiPrefix() . "\/(.+?)\/";
 
 			preg_match("/" . $pattern . "/i", $this->permanentPath, $version);
 
-			return $version[1];
+			$this->versionPresent = $version[1] ?? null;
 		}
 
-		# api/v3/verb/noun should return all versions from v3 and below
+		# api/v3/verb/noun or api/verb/noun will return all versions from v3 and below
 		public function apiVersionClasses ():array {
 
 			$apiStack = $this->config->apiStack();
@@ -130,14 +143,14 @@
 
 			$versionHandlers = array_values($apiStack);
 
-			$versionPresent = strtolower($this->incomingVersion()); // case-insensitive search
+			if ( !is_null($this->versionPresent)) {
 
-			// if there's no specific version, we will serve the most recent
-			if ( !empty($versionPresent))
-
-				$startIndex = array_search($versionPresent, $versionKeys);
-
-			else $startIndex = count($versionHandlers) - 1;
+				$startIndex = array_search(
+					strtolower($this->versionPresent), // case-insensitive search
+					$versionKeys
+				);
+			}
+			else $startIndex = count($versionHandlers) - 1; // if there's no specific version, we will serve the most recent
 
 			$versionHandlers = array_slice($versionHandlers, $startIndex);
 

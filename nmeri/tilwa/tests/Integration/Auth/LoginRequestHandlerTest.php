@@ -29,10 +29,10 @@
 
 			$this->expectException(ValidationFailure::class); // then
 
-			$this->setJsonParams("/login", [
+			$this->setJsonParams("/login", [ // not necessary to set request method since we call the method directly, skipping the check; but using it all the same to avoid ambiguity on test's veracity
 
 				"email" => $this->email
-			]); // given
+			], "post"); // given
 
 			$this->entrance->handleLoginRequest(); // when
 		}
@@ -44,7 +44,7 @@
 				"email" => $this->email,
 
 				"password" => "alphon123"
-			]); // given
+			], "post"); // given
 
 			$sutName = ModuleLoginHandler::class;
 

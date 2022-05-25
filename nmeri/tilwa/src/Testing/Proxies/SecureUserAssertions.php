@@ -20,17 +20,12 @@
 		/**
 		 * @param {storageName} When none is specified, we just want to retrieve bound authStorage mechanism
 		*/
-		protected function getAuthStorage (?string $storageName):AuthStorage {
+		protected function getAuthStorage (?string $storageName = null):AuthStorage { // can be called with null (courtesy of member methods receiving null defaults), and no argument
 
 			if (is_null($storageName))
 
-				$storageName = $this->genericStorage; // work with whichever one was originally bound in container
+				$storageName = $this->genericStorage;
 
-			return $this->ensureHasHydrator($storageName);
-		}
-
-		private function ensureHasHydrator (string $storageName):AuthStorage {
-			
 			$container = $this->getContainer();
 
 			if ($this->hasHydratedOrmDialect)

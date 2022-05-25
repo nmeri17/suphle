@@ -40,10 +40,12 @@
 
 			$tokenClass = TokenStorage::class;
 
-			$this->actingAs($this->replicator->getRandomEntity(), $tokenClass); // given
+			$requestToken = $this->actingAs($this->replicator->getRandomEntity(), $tokenClass); // given
 
-			$this->get("/api/v1/segment") // when
+			$this->get("/api/v1/segment", [
 
+				TokenStorage::AUTHORIZATION_HEADER => "Bearer ". $requestToken
+			]) // when
 			->assertOk(); // then
 
 			$this->assertInstanceOf($tokenClass, $this->getAuthStorage());

@@ -54,14 +54,16 @@
 
 			return $this->hasHeader(self::CONTENT_TYPE_KEY) &&
 
-			$this->getHeader(self::CONTENT_TYPE_KEY) == self::JSON_HEADER_VALUE;
+			$this->matchesHeader(self::CONTENT_TYPE_KEY, self::JSON_HEADER_VALUE);
 		}
 
 		public function acceptsJson ():bool {
 
 			$acceptsHeader = "Accept";
 
-			return $this->hasHeader($acceptsHeader) && $this->getHeader($acceptsHeader) == self::JSON_HEADER_VALUE;
+			return $this->hasHeader($acceptsHeader) &&
+
+			$this->matchesHeader($acceptsHeader, self::JSON_HEADER_VALUE);
 		}
 
 		public function hasHeader (string $name):bool {
@@ -71,7 +73,14 @@
 
 		public function getHeader (string $name):string {
 
-			return strtolower($this->headers[$name]);
+			return $this->headers[$name];
+		}
+
+		public function matchesHeader (string $name, string $expectedValue):bool {
+
+			$currentValue = $this->getHeader($name);
+
+			return preg_match("/^$currentValue$/i", $expectedValue);
 		}
 
 		public function hasKey (string $property):bool {

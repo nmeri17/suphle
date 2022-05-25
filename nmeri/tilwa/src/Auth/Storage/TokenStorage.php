@@ -5,11 +5,13 @@
 
 	use Tilwa\Request\PayloadStorage;
 
-	use Firebase\JWT\JWT;
+	use Firebase\JWT\{JWT, Key};
 
 	use Throwable;
 
 	class TokenStorage extends BaseAuthStorage {
+
+		const AUTHORIZATION_HEADER = "Authorization";
 
 		private $payloadStorage, $envAccessor,
 
@@ -24,30 +26,38 @@
 
 		public function resumeSession ():void {
 
-			$payloadStorage = $this->payloadStorage;
+			if (!$this->payloadStorage->hasHeader(self::AUTHORIZATION_HEADER))
 
-			$headerKey = "Authorization";
-
-			if (!$payloadStorage->hasHeader($headerKey)) return;
-
-			$incomingToken = explode(" ", $payloadStorage->getHeader($headerKey) )[1]; // the bearer part
+				return;
 
 			try {
+
+				$incomingToken = explode(" ",
+
+					$this->payloadStorage->getHeader(self::AUTHORIZATION_HEADER)
+				)[1]; // the bearer part
+
 				$decoded = JWT::decode(
 
-					$incomingToken,
+					$incomingToken, new Key(
 
-					$this->envAccessor->getField("APP_SECRET_KEY"),
+						$this->envAccessor->getField("APP_SECRET_KEY"),
 
-					["HS256"]
+						"HS256"
+					)
+				);
+			}
+			catch (Throwable $exception) {
+
+				var_dump("Unable to decode token",
+
+					$exception->getMessage(), get_class($exception)
 				);
 
-				$this->identifier = $decoded["data"][$this->identifierKey];
+				return;
 			}
-			catch(Throwable $e) { // why are we unable to decode token?
 
-				var_dump($e->getMessage()); die();
-			}
+			$this->identifier = $decoded->data->{$this->identifierKey};
 		}
 
 		public function startSession(string $value):string {
@@ -56,19 +66,23 @@
 
 			$envAccessor = $this->envAccessor;
 
-			$token = [
+			$tokenDetails = [
 				"iss" => $envAccessor->getField("SITE_HOST"),
 				// "aud" => $audience, // $audience
 				"iat" => $issuedAt,
 
-				"nbf" => $issuedAt + 10, // in seconds
+				//"nbf" => $issuedAt + 10, // in seconds
 
 				"exp" => $issuedAt + $envAccessor->getField("JWT_TTL"),
 
 				"data" => [$this->identifierKey => $value]
 			];
 
-			return JWT::encode($token, $envAccessor->getField("APP_SECRET_KEY"));
+			$outgoingToken = JWT::encode(
+				$tokenDetails, $envAccessor->getField("APP_SECRET_KEY")
+			);
+
+			return $outgoingToken;
 		}
 	}
 ?>
