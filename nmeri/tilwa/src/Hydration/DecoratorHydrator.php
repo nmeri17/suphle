@@ -4,6 +4,8 @@
 	use Tilwa\Contracts\Hydration\DecoratorChain;
 
 	use Tilwa\Contracts\Hydration\ScopeHandlers\{ModifiesArguments, ModifyInjected};
+
+	use Tilwa\Hydration\Structures\ObjectDetails;
 	
 	use ReflectionClass;
 
@@ -11,25 +13,27 @@
 
 		private $chain, $argumentScope, $injectScope,
 
-		$container;
+		$container, $objectMeta;
 
-		public function __construct (Container $container, DecoratorChain $chain) {
+		public function __construct (Container $container, DecoratorChain $chain, ObjectDetails $objectMeta) {
 
 			$this->chain = $chain->allScopes();
 
 			$this->container = $container;
+
+			$this->objectMeta = $objectMeta;
 		}
 
 		public function assignScopes ():void {
 
 			$this->argumentScope = array_filter($this->chain, function ($decorator) {
 
-				return $decorator instanceof ModifiesArguments;
+				return $this->objectMeta->implementsInterface($decorator, ModifiesArguments::class);
 			});
 
 			$this->injectScope = array_filter($this->chain, function ($decorator) {
 
-				return $decorator instanceof ModifyInjected;
+				return $this->objectMeta->implementsInterface($decorator, ModifyInjected::class);
 			});
 		}
 

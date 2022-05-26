@@ -27,7 +27,7 @@
 
 		$hydratedClassConsumers = [],
 
-		$interfaceHydrator, $decorator, $objectMeta,
+		$interfaceHydrator, $decorator, $objectMeta, $typeSetter,
 
 		$provisionContext, // the active Type before calling `needs`
 
@@ -542,7 +542,7 @@
 
 			if ( $parameterType->isBuiltin())
 
-				return (new BuiltInType)->getDefaultValue($typeName);
+				return $this->typeSetter->getDefaultValue($typeName);
 
 			if (!in_array($typeName, $this->hydratingForStack)) {
 
@@ -680,6 +680,8 @@
 		public function setEssentials ():void {
 
 			$this->provideSelf();
+
+			$this->typeSetter = new BuiltInType;
 
 			$this->objectMeta = new ObjectDetails($this);
 		}

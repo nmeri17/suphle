@@ -9,7 +9,7 @@
 
 		protected $serviceCallProxy, // instance of BaseCallProxy to be injected via constructor
 
-		$templatePath = "../Templates/CallInterceptorTemplate.php";
+		$systemReader, $objectMeta;
 
 		/**
 		 * @param {originalTarget} the concrete decorated to require this cloak
@@ -25,17 +25,34 @@
 
 		public function buildClass () {
 
-			$dynamicName = $this->targetName . get_called_class(); // to avoid clashes with other cloaks for decorated entity
+			$dynamicName = $this->getNewClassName();
 
-			$genericContents = file_get_contents($this->templatePath);
+			$genericContents = file_get_contents($this->getTemplatePath());
 
 		    foreach ($this->templateTypes() as $placeholder => $type)
 
 		        $genericContents = str_replace("<$placeholder>", $type, $genericContents);
-
-			eval($genericContents);
+var_dump($genericContents);
+			eval("?>" . $genericContents);
 
 			return new $dynamicName($this->serviceCallProxy, $this->originalTarget);
+		}
+
+		protected function getNewClassName ():string {
+
+			return str_replace(
+				"\\", "",
+
+				str_shuffle($this->targetName . get_called_class()) // to avoid clashes with other cloaks for decorated entity
+			);
+		}
+
+		protected function getTemplatePath ():string {
+
+			return $this->systemReader->pathFromLevels(__DIR__,
+
+				"Templates/CallInterceptorTemplate.php", 2
+			);
 		}
 
 		protected function wrapClassMethods ():string {
@@ -44,12 +61,24 @@
 
 			foreach (get_class_methods($this->targetName) as $method)
 
-				if ($method != Container::CLASS_CONSTRUCTOR) // since we've overwritten the original constructor
+				if ($method == Container::CLASS_CONSTRUCTOR)
 
-					$methods .= "public function $method () {" . '
+					continue; // since we've overwritten the original constructor
 
-						return $this->catcherType->artificial__call(__FUNCTION__, func_get_args());
-					}';
+				$returnType = $this->objectMeta->methodReturnType($this->targetName, $method);
+
+				if (!is_null($returnType))
+
+					$returnType = ":$returnType";
+
+				else $returnType = "";
+
+				$methods .= "public function $method ()". $returnType .
+
+				" {" . '
+
+					return $this->catcherType->artificial__call(__FUNCTION__, func_get_args());
+				}';
 
 			return $methods;
 		}
@@ -57,7 +86,7 @@
 		protected function templateTypes ():array {
 
 			return [
-				"NewName" => $dynamicName,
+				"NewName" => $this->getNewClassName(),
 
 				"OldName" => $this->targetName,
 

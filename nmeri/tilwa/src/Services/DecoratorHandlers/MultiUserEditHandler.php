@@ -14,7 +14,10 @@
 			$this->cloakBuilder = $cloakBuilder;
 		}
 
-		public function proxifyInstance (MultiUserModelEdit $concrete, string $caller) {
+		/**
+		 * @param {concrete} MultiUserModelEdit
+		*/
+		public function proxifyInstance (object $concrete, string $caller):object {
 
 			$this->cloakBuilder->setTarget($concrete);
 

@@ -5,7 +5,7 @@
 
 	use Tilwa\Exception\Explosives\Generic\HydrationException;
 
-	use ReflectionClass, ReflectionException;
+	use ReflectionClass, ReflectionException, ReflectionMethod;
 
 	class ObjectDetails {
 
@@ -46,6 +46,17 @@
 		public function implementsInterface (string $target, string $interface):bool {
 
 			return in_array( $interface, class_implements($target) );
+		}
+
+		public function methodReturnType (string $className, string $method):?string {
+
+			$type = (new ReflectionMethod($className, $method))
+
+			->getReturnType();
+
+			if (!is_null($type)) return $type->getName();
+
+			return null;
 		}
 	}
 ?>

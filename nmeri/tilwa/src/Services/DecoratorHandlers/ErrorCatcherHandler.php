@@ -14,7 +14,10 @@
 			$this->cloakBuilder = $cloakBuilder;
 		}
 
-		public function proxifyInstance (ServiceErrorCatcher $concrete, string $caller) {
+		/**
+		 * @param {concrete} ServiceErrorCatcher
+		*/
+		public function proxifyInstance (object $concrete, string $caller):object {
 
 			$this->cloakBuilder->setTarget($concrete);
 

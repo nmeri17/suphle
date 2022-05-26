@@ -1,5 +1,4 @@
 <?php
-	namespace Tilwa\Services\Templates;
 
 	class <NewName> extends <OldName> {
 

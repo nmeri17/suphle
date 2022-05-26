@@ -160,9 +160,9 @@
 
 					"setRawResponse" => [
 
-						1, [$this->returnCallback(function($subject) {
+						1, [$this->callback(function($subject) {
 
-							return array_key_exists("errors", $subject); // if getPreviousRenderer is not called, our mock won't run. So, 2 tests for the price of 1
+							return array_key_exists("errors", $subject); // if getPreviousRenderer is not called, our mock won't run-- 2 verifications for the price of 1
 						})] // then
 					]
 				]

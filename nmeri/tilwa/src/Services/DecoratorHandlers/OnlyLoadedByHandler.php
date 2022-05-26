@@ -10,7 +10,7 @@
 		/**
 		 * @param {concrete} OnlyLoadedBy
 		*/
-		public function proxifyInstance ( $concrete, string $caller) {
+		public function proxifyInstance (object $concrete, string $caller):object {
 
 			foreach ($concrete->allowedConsumers() as $consumer)
 

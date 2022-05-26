@@ -5,15 +5,23 @@
 
 	use Tilwa\Services\Structures\OptionalDTO;
 
-	use ReflectionMethod;
+	use Tilwa\Hydration\Structures\{ObjectDetails, BuiltInType};
+
+	use ReflectionType;
 
 	abstract class BaseCallProxy {
 
-		protected $activeService, $exceptionDetector;
+		protected $activeService, $exceptionDetector, $objectMeta,
 
-		public function __construct (DetectedExceptionManager $exceptionDetector) {
+		$container, $typeSetter;
+
+		public function __construct (DetectedExceptionManager $exceptionDetector, ObjectDetails $objectMeta, BuiltInType $typeSetter) {
 
 			$this->exceptionDetector = $exceptionDetector;
+
+			$this->objectMeta = $objectMeta;
+
+			$this->typeSetter = $typeSetter;
 		}
 
 		abstract public function artificial__call (string $method, array $arguments);
@@ -23,22 +31,9 @@
 			return call_user_func_array([$this->activeService, $method], $arguments);
 		}
 
-		public function setConcrete ($instance):void {
+		public function setConcrete (object $instance):void {
 
 			$this->activeService = $instance;
-		}
-
-		private function methodDefaultValue(string $method) {
-
-			$default = null;
-			
-			$reflectedMethod = new ReflectionMethod($this->activeService, $method);
-
-			$type = $reflectedMethod->getPrototype()->getReturnType();
-
-			settype($default, $type);
-
-			return $default;
 		}
 
 		protected function attemptDiffuse (Throwable $exception, string $method):OptionalDTO {
@@ -47,7 +42,23 @@
 
 			$callerResponse = $this->activeService->failureState($method);
 
-			return $callerResponse ?? new OptionalDTO($this->methodDefaultValue($method), false);
+			return $callerResponse ?? $this->buildFailureContent($method);
+		}
+
+		private function buildFailureContent (string $method):OptionalDTO {
+
+			$returnType = $this->objectMeta->methodReturnType(
+
+				get_class($this->activeService), $method
+			);
+
+			if ( (new ReflectionType($returnType))->isBuiltin())
+
+				$typeDummy = $this->typeSetter->getDefaultValue($returnType);
+
+			else $typeDummy = $this->container->getClass($returnType); // replace with null proxy
+
+			return new OptionalDTO($typeDummy, false );
 		}
 	}
 ?>

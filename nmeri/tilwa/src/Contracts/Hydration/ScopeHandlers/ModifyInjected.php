@@ -6,6 +6,6 @@
 		/**
 		 * @return wrapped object for the caller
 		*/
-		public function proxifyInstance ($concrete, string $caller);
+		public function proxifyInstance (object $concrete, string $caller):object;
 	}
 ?>

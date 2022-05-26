@@ -17,7 +17,7 @@
 		/**
 		 * @param {concrete} SystemModelEdit
 		*/
-		public function proxifyInstance ( $concrete, string $caller) {
+		public function proxifyInstance (object $concrete, string $caller):object {
 
 			$this->cloakBuilder->setTarget($concrete);
 
