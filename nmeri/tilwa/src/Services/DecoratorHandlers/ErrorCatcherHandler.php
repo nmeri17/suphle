@@ -1,27 +1,29 @@
 <?php
 	namespace Tilwa\Services\DecoratorHandlers;
 
-	use Tilwa\Services\Proxies\ErrorCloakBuilder;
+	use Tilwa\Services\Structures\DecoratorCallResult;
 
-	use Tilwa\Contracts\{Services\Decorators\ServiceErrorCatcher, Hydration\ScopeHandlers\ModifyInjected};
+	use Throwable;
 
-	class ErrorCatcherHandler implements ModifyInjected {
+	class ErrorCatcherHandler extends BaseDecoratorHandler {
 
-		private $cloakBuilder;
+		public function methodPreHooks ():array {
 
-		public function __construct (ErrorCloakBuilder $cloakBuilder) {
+			return $this->allMethodAction(function (string $methodName, array $argumentList) {
 
-			$this->cloakBuilder = $cloakBuilder;
-		}
+				try {
 
-		/**
-		 * @param {concrete} ServiceErrorCatcher
-		*/
-		public function proxifyInstance (object $concrete, string $caller):object {
+					$result = $this->originAccessor->triggerOrigin($methodName, $argumentList);
+				}
+				catch (Throwable $exception) {
 
-			$this->cloakBuilder->setTarget($concrete);
+					$result = $this->originAccessor->attemptDiffuse($exception, $methodName);
+				}
 
-			return $this->cloakBuilder->buildClass();
+				$concrete = $this->originAccessor->getCallDetails()->getConcrete();
+				
+				return new DecoratorCallResult($concrete, $result, true);
+			});
 		}
 	}
 ?>

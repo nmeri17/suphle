@@ -5,7 +5,7 @@
 
 	use Tilwa\Contracts\Services\Decorators\{SystemModelEdit, MultiUserModelEdit};
 
-	use Tilwa\Routing\RequestDetails;
+	use Tilwa\Request\RequestDetails;
 
 	use Tilwa\Exception\Explosives\Generic\MissingPostDecorator;
 

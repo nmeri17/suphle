@@ -5,7 +5,7 @@
 
 	use Tilwa\Contracts\{Services\Decorators\SystemModelEdit, Hydration\ScopeHandlers\ModifyInjected};
 
-	class SystemModelEditHandler implements ModifyInjected {
+	class SystemModelEditHandler extends BaseCallProxy implements ModifyInjected {
 
 		private $cloakBuilder;
 
@@ -17,11 +17,24 @@
 		/**
 		 * @param {concrete} SystemModelEdit
 		*/
-		public function proxifyInstance (object $concrete, string $caller):object {
+		public function setCallDetails (object $concrete, string $caller):object {
 
-			$this->cloakBuilder->setTarget($concrete);
+			if ($method == "updateModels") // restrict this decorator from running on unrelated methods
 
-			return $this->cloakBuilder->buildClass();
+				try {
+
+					return $this->orm->runTransaction(function () use ($method) {
+
+						return $this->triggerOrigin($method);
+
+					}, $this->activeService->modelsToUpdate());
+				}
+				catch (Throwable $exception) {
+
+					return $this->attemptDiffuse($exception, $method);
+				}
+
+			return $this->triggerOrigin($method, $arguments);
 		}
 	}
 ?>

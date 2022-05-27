@@ -33,7 +33,8 @@
 		"illuminate/container": "^8.83",
 		"illuminate/events": "^8.83",
 		"mcaskill/composer-exclude-files": "^2.1",
-		"symfony/mailer": "^5.4"
+		"symfony/mailer": "^5.4",
+		"friendsofphp/proxy-manager-lts": "^1.0"
 	},
 	"require-dev": {
 		"phpunit/phpunit": "^8.5",
@@ -52,5 +53,10 @@
 			"laravel/framework/src/Illuminate/Foundation/helpers.php",
 			"laravel/framework/src/Illuminate/Support/helpers.php"
 		]
+	},
+	"config": {
+		"allow-plugins": {
+			"mcaskill/composer-exclude-files": true
+		}
 	}
 }
