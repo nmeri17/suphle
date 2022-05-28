@@ -9,7 +9,7 @@
 
 			return $this->pathFromLevels($currentWorkingDirectory,
 
-				end($allSegments), count($allSegments)
+				end($allSegments), count($allSegments)-1
 			);
 		}
 
@@ -22,9 +22,9 @@
 
 		public function pathFromLevels (string $currentWorkingDirectory, string $intendedPath, int $upLevels):string {
 
-			if ($upLevels > 1)
+			if ($upLevels > 0)
 
-				$absoluteDirectory = dirname($currentWorkingDirectory, $upLevels-1); // since dirname already goes one level up
+				$absoluteDirectory = dirname($currentWorkingDirectory, $upLevels); // since dirname already goes one level up
 
 			else $absoluteDirectory = $currentWorkingDirectory;
 

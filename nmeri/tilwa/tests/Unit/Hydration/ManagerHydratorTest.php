@@ -9,6 +9,8 @@
 
 	use Tilwa\Config\AscendingHierarchy;
 
+	use Tilwa\File\FileSystemReader;
+
 	use Tilwa\Testing\TestTypes\TestVirginContainer;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Config\RouterMock;
@@ -42,11 +44,13 @@
 				LaravelProviderManager::class
 			]); // when // IMPORTANT: this is meant to run after the above
 
-			$anchorPath = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . "Mocks/Modules/ModuleOne/Config";
+			$systemReader = $container->getClass(FileSystemReader::class);
+
+			$anchorPath = $systemReader->pathFromLevels(__DIR__, "Mocks/Modules/ModuleOne/Config", 2);
 
 			$container->whenTypeAny()->needsAny([
 
-				ModuleFiles::class => new AscendingHierarchy($anchorPath)
+				ModuleFiles::class => new AscendingHierarchy($anchorPath, $systemReader)
 			]);
 
 			$container->setExternalContainerManager();

@@ -1,35 +1,35 @@
 <?php
 	namespace Tilwa\Services\DecoratorHandlers;
 
-	use Tilwa\Services\Structures\DecoratorCallResult;
+	use Tilwa\Contracts\Hydration\ScopeHandlers\ModifyInjected;
+
+	use Tilwa\Hydration\Structures\ObjectDetails;
 
 	use Tilwa\Exception\Explosives\Generic\UnacceptableDependency;
 
-	class OnlyLoadedByHandler extends BaseDecoratorHandler {
+	class OnlyLoadedByHandler implements ModifyInjected {
 
-		public function methodPreHooks ():array {
+		private $objectMeta;
 
-			return $this->allMethodAction(function (string $methodName, array $argumentList) { // object may have been called ie. higher accessor is working with results, not actual concrete
+		public function __construct (ObjectDetails $objectMeta) {
 
-				$accessor = $this->originAccessor;
+			$this->objectMeta = $objectMeta;
+		}
 
-				$callDetails = $accessor->getCallDetails();
+		public function examineInstance (object $concrete, string $caller):object {
 
-				$concrete = $callDetails->getConcrete();
+			foreach ($concrete->allowedConsumers() as $consumer)
 
-				$caller = $accessor->getServiceCaller();
+				if ($this->objectMeta->stringInClassTree($caller, $consumer))
 
-				foreach ($concrete->allowedConsumers() as $consumer)
+					return $concrete;
 
-					if ($caller instanceof $consumer) // can be concrete or interface
+			throw new UnacceptableDependency($caller, get_class($concrete));
+		}
 
-						return new DecoratorCallResult(
+		public function getMethodHooks ():array {
 
-							$concrete// , $accessor->triggerOrigin($) // continue here
-						);
-
-				throw new UnacceptableDependency($caller, get_class($concrete));
-			});
+			return [];
 		}
 	}
 ?>

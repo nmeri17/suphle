@@ -3,9 +3,18 @@
 
 	use Tilwa\Contracts\Hydration\ScopeHandlers\ModifiesArguments;
 
+	use Tilwa\Hydration\Structures\ObjectDetails;
+
 	use Tilwa\Exception\Explosives\Generic\UnacceptableDependency;
 
 	class ServicePreferenceHandler implements ModifiesArguments {
+
+		private $objectMeta;
+
+		public function __construct ( ObjectDetails $objectMeta) {
+
+			$this->objectMeta = $objectMeta;
+		}
 
 		public function transformConstructor ($dummyInstance, array $injectedArguments):array {
 
@@ -21,7 +30,10 @@
 
 				if ($stranger || $enemy)
 
-					throw new UnacceptableDependency (get_class($dummyInstance), get_class($service));
+					throw new UnacceptableDependency (
+
+						get_class($dummyInstance), get_class($service)
+					);
 			}
 			
 			return $injectedArguments;
@@ -36,7 +48,11 @@
 
 			foreach ($parentList as $type)
 
-				if ($dependency instanceof $type) return true;
+				if ($this->objectMeta->stringInClassTree(
+
+					$dependency, $type
+				))
+					return true;
 
 			return false;
 		}

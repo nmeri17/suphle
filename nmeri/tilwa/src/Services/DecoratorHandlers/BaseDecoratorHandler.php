@@ -1,39 +1,41 @@
-<?
+<?php
 	namespace Tilwa\Services\DecoratorHandlers;
 
-	use Tilwa\Hydration\{Container, ScopeHandlers\ModifyInjected};
+	use Tilwa\Contracts\Hydration\ScopeHandlers\ModifyInjected;
+
+	use Tilwa\Contracts\Config\DecoratorProxy;
+
+	use Tilwa\Hydration\Container;
+
+	use ProxyManager\Factory\AccessInterceptorValueHolderFactory as AccessInterceptor;
 
 	abstract class BaseDecoratorHandler implements ModifyInjected {
 
-		protected $originAccessor;
+		protected $methodHooks = [], $proxyConfig;
 
-		public function __construct (OriginAccessor $originAccessor) {
+		public function __construct (DecoratorProxy $proxyConfig) {
 
-			$this->originAccessor = $originAccessor;
+			$this->proxyConfig = $proxyConfig;
 		}
 
-		public function getOriginAccessor ():OriginAccessor {
+		public function getMethodHooks ():array {
 
-			return $this->originAccessor;
+			return $this->methodHooks;
 		}
 
-		protected function allMethodAction (callable $action):array {
+		/**
+		 * @return Object proxy
+		*/
+		protected function allMethodAction (object $concrete, callable $action):object {
 
-			$methodList = [];
+			foreach ($this->callableMethods($concrete) as $methodName)
 
-			$concrete = $this->originAccessor->getCallDetails()->getConcrete();
+				$this->methodHooks[$methodName] = $action;
 
-			foreach ($this->safeMethods($concrete) as $methodName)
-
-				$methodList[$methodName] = function (array $argumentList) use ($action) { // decoratorHydrator expects a closure with this signature
-
-					return $action($methodName, $argumentList);
-				};
-
-			return $methodList;
+			return $this->getProxy($concrete);
 		}
 
-		private function safeMethods (object $instance):array {
+		protected function callableMethods (object $instance):array {
 
 			$methods = get_class_methods($instance);
 
@@ -42,6 +44,49 @@
 			]);
 
 			return $methods;
+		}
+
+		protected function getProxy (object $concrete):object {
+
+			return (new AccessInterceptor(
+
+				$this->proxyConfig->getConfigClient()
+			))
+			->createProxy( $concrete,
+
+				$this->convertActionsToHook( $this->getMethodHooks())
+				// no argument 3 since we don't care about post hooks
+			);
+		}
+
+		/**
+		 * @param {baseActions} [method => function (object $concrete, string $methodName, array $argumentList)]
+		*/
+		private function convertActionsToHook (array $baseActions):array {
+
+			$hookers = [];
+
+			foreach ($baseActions as $hooker => $action) // handlers with same method won't clash since we're using unique proxies for each handler
+
+				$hookers[$hooker] = function ($proxy, $concrete, $calledMethod, $parameters, &$earlyReturn) use ($action) { // think hooker == calledMethod
+
+					$earlyReturn = true; // since handlers want to take responsibility of calling underlying concrete, not this library
+
+					return call_user_func_array($action, [
+
+						$concrete, $calledMethod, $parameters
+					]);
+				};
+
+			return $hookers;
+		}
+
+		protected function triggerOrigin (object $concrete, string $method, array $arguments) {
+
+			return call_user_func_array(
+			
+				[$concrete, $method], $arguments
+			);
 		}
 	}
 ?>

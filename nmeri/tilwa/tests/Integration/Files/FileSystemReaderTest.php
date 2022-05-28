@@ -36,7 +36,7 @@
 
 				dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . $this->filePath,
 
-				$this->sut->getAbsolutePath(__DIR__, "../" . $this->filePath)
+				$this->sut->getAbsolutePath(__DIR__, "../" . $this->filePath) // integration/filePath
 			);
 		}
 

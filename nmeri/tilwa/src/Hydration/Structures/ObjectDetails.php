@@ -58,5 +58,12 @@
 
 			return null;
 		}
+
+		public function stringInClassTree (string $childClass, string $parent):bool {
+
+			return $this->implementsInterface($childClass, $parent) ||
+
+			is_a($childClass, $parent, true); // argument 3 = accept string
+		}
 	}
 ?>

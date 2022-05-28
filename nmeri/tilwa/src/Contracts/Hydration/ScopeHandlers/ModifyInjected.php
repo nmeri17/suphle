@@ -6,6 +6,8 @@
 		/**
 		 * @return wrapped object for the caller
 		*/
-		public function setCallDetails (object $concrete, string $caller):object;
+		public function examineInstance (object $concrete, string $caller):object;
+
+		public function getMethodHooks ():array;
 	}
 ?>

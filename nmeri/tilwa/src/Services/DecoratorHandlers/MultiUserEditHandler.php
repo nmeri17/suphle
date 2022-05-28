@@ -1,17 +1,13 @@
 <?php
 	namespace Tilwa\Services\DecoratorHandlers;
 
-	use Tilwa\Services\Proxies\MultiUserModelEditCloaker;
-
-	use Tilwa\Contracts\Services\Decorators\MultiUserModelEdit;
-
-	use Tilwa\Contracts\Database\OrmDialect;
+	use Tilwa\Contracts\{Services\Decorators\MultiUserModelEdit, Database\OrmDialect, Config\DecoratorProxy};
 
 	use Tilwa\Queues\AdapterManager;
 
 	use Tilwa\Request\PayloadStorage;
 
-	use Tilwa\Exception\{Explosives\EditIntegrityException, DetectedExceptionManager};
+	use Tilwa\Exception\Explosives\EditIntegrityException;
 
 	use Throwable, DateTime;
 
@@ -23,55 +19,75 @@
 
 		const INTEGRITY_KEY = "_collision_protect"; // submitted form/payload is expected to contain this key
 
-		private $ormDialect, $queueManager, $payloadStorage;
+		private $ormDialect, $queueManager, $payloadStorage,
 
-		public function __construct (OrmDialect $ormDialect, AdapterManager $queueManager, PayloadStorage $payloadStorage, DetectedExceptionManager $exceptionDetector) {
+		$errorDecoratorHandler;
+
+		public function __construct (
+			OrmDialect $ormDialect, AdapterManager $queueManager,
+
+			PayloadStorage $payloadStorage, ErrorCatcherHandler $errorDecoratorHandler,
+
+			DecoratorProxy $proxyConfig
+		) {
 
 			$this->ormDialect = $ormDialect;
 
 			$this->queueManager = $queueManager;
 
 			$this->payloadStorage = $payloadStorage;
+
+			$this->errorDecoratorHandler = $errorDecoratorHandler; // composing instead of extending to decouple constructor dependencies
+
+			parent::__construct($proxyConfig);
 		}
 
 		/**
 		 * @param {concrete} MultiUserModelEdit
 		*/
-		public function setCallDetails (object $concrete, string $caller):object {
+		public function examineInstance (object $concrete, string $caller):object {
 
-			if ($method == "getResource") // should getting editable resource fail, there's nothing to fallback on. Terminate request by bubbling up 
+			return $this->getProxy($concrete);
+		}
 
-				return $this->activeService->getResource();
-			
-			if ($method == "updateResource")
+		public function getMethodHooks ():array {
 
-				return $this->handleUpdateResource();
+			return [ // we're not wrapping "getResource" since we want request rermination if getting editable resource failed; there's nothing to fallback on
 
-			return $this->triggerOrigin($method, $arguments); // calling other methods is allowed, but not protected
+				"updateResource" => [$this, "wrapUpdateResource"]
+			];
 		}
 
 		/**
+		 * @return mixed. Operation result
+		 * 
 		 * @throws EditIntegrityException
 		*/
-		private function handleUpdateResource () {
+		public function wrapUpdateResource (object $concrete, string $methodName, array $argumentList) {
 
 			if (!$this->payloadStorage->hasKey(self::INTEGRITY_KEY))
 
 				throw new EditIntegrityException;
 
-			$currentVersion = $this->activeService->getResource();
+			$currentVersion = $concrete->getResource();
 
-			if (!$currentVersion->includesEditIntegrity($this->payloadStorage->getKey(self::INTEGRITY_KEY)) ) // this is the main part of the entire setup
+			if (!$currentVersion->includesEditIntegrity(
+
+				$this->payloadStorage->getKey(self::INTEGRITY_KEY)
+			)) // this is the heart of the entire decoration
 
 				throw new EditIntegrityException;
 
 			try {
 
-				return $this->ormDialect->runTransaction(function () use ($currentVersion) {
+				return $this->ormDialect->runTransaction(function () use ($currentVersion, $concrete) {
 
-					$result = $this->activeService->updateResource(); // user's incoming changes
+					$result = $concrete->updateResource(); // user's incoming changes
 
-					$currentVersion->nullifyEditIntegrity(new DateTime("Y-m-d H:i:s"));
+					$currentVersion->nullifyEditIntegrity(
+
+						new DateTime("Y-m-d H:i:s")
+					);
 
 					return $result;
 
@@ -79,7 +95,10 @@
 			}
 			catch (Throwable $exception) {
 
-				return $this->attemptDiffuse($exception, "updateResource");
+				return $this->errorDecoratorHandler->attemptDiffuse(
+
+					$exception, $concrete, $methodName
+				);
 			}
 		}
 	}

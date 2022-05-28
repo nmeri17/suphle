@@ -5,6 +5,8 @@
 
 	use Tilwa\Contracts\Services\Decorators\{SystemModelEdit, MultiUserModelEdit};
 
+	use Tilwa\Hydration\Structures\ObjectDetails;
+
 	use Tilwa\Request\RequestDetails;
 
 	use Tilwa\Exception\Explosives\Generic\MissingPostDecorator;
@@ -16,11 +18,13 @@
 			SystemModelEdit::class, MultiUserModelEdit::class
 		],
 
-		$requestDetails;
+		$requestDetails, $objectMeta;
 
-		public function __construct (RequestDetails $requestDetails) {
+		public function __construct (RequestDetails $requestDetails, ObjectDetails $objectMeta) {
 
 			$this->requestDetails = $requestDetails;
+
+			$this->objectMeta = $objectMeta;
 		}
 
 		public function transformConstructor ($dummyInstance, array $arguments):array {
@@ -33,7 +37,10 @@
 
 				foreach ($this->postDecorators as $decorator) {
 
-					if ($dependency instanceof $decorator)
+					if ($this->objectMeta->implementsInterface(
+
+						$dependency, $decorator
+					))
 
 						return $arguments;
 				}

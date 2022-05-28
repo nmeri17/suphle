@@ -15,7 +15,7 @@
 
 	use Tilwa\Contracts\Auth\{AuthStorage, ModuleLoginHandler};
 
-	use Tilwa\Contracts\Config\{AuthContract, Transphporm as TransphpormConfig, Laravel as LaravelConfig, ExceptionInterceptor, Console as ConsoleContract, Database, Flows as FlowConfig};
+	use Tilwa\Contracts\Config\{AuthContract, Database, DecoratorProxy, ExceptionInterceptor, Transphporm as TransphpormConfig, Laravel as LaravelConfig, Console as ConsoleContract, Flows as FlowConfig};
 
 	use Tilwa\Contracts\IO\Image\{ImageThumbnailContract, InferiorImageContract, ImageLocator};
 
@@ -35,7 +35,7 @@
 
 	use Tilwa\Request\{NativeInputReader, ValidatorLoader};
 
-	use Tilwa\Config\{Auth, Transphporm, Laravel, ExceptionConfig, Console as CliConsole, PDOMysqlKeys, DefaultFlowConfig};
+	use Tilwa\Config\{Auth, Transphporm, Laravel, ExceptionConfig, Console as CliConsole, PDOMysqlKeys, DefaultFlowConfig, ProxyManagerConfig};
 
 	use Tilwa\Modules\ControllerModuleApi;
 
@@ -145,7 +145,9 @@
 
 				Database::class => PDOMysqlKeys::class,
 
-				FlowConfig::class => DefaultFlowConfig::class
+				FlowConfig::class => DefaultFlowConfig::class,
+
+				DecoratorProxy::class => ProxyManagerConfig::class
 			];
 		}
 	}

@@ -1,40 +1,58 @@
 <?php
 	namespace Tilwa\Services\DecoratorHandlers;
 
-	use Tilwa\Services\Proxies\SystemModelEditCloaker;
+	use Tilwa\Contracts\{Services\Decorators\SystemModelEdit, Database\OrmDialect, Config\DecoratorProxy};
 
-	use Tilwa\Contracts\{Services\Decorators\SystemModelEdit, Hydration\ScopeHandlers\ModifyInjected};
+	class SystemModelEditHandler extends BaseDecoratorHandler {
 
-	class SystemModelEditHandler extends BaseCallProxy implements ModifyInjected {
+		private $ormDialect, $errorDecoratorHandler;
 
-		private $cloakBuilder;
+		public function __construct (
+			OrmDialect $ormDialect, ErrorCatcherHandler $errorDecoratorHandler,
 
-		public function __construct (SystemModelEditCloaker $cloakBuilder) {
+			DecoratorProxy $proxyConfig
+		) {
 
-			$this->cloakBuilder = $cloakBuilder;
+			$this->ormDialect = $ormDialect;
+
+			$this->errorDecoratorHandler = $errorDecoratorHandler;
+
+			parent::__construct($proxyConfig);
 		}
 
 		/**
 		 * @param {concrete} SystemModelEdit
 		*/
-		public function setCallDetails (object $concrete, string $caller):object {
+		public function examineInstance (object $concrete, string $caller):object {
 
-			if ($method == "updateModels") // restrict this decorator from running on unrelated methods
+			return $this->getProxy($concrete);
+		}
 
-				try {
+		public function getMethodHooks ():array {
 
-					return $this->orm->runTransaction(function () use ($method) {
+			return [
 
-						return $this->triggerOrigin($method);
+				"updateResource" => [$this, "wrapUpdateModels"]
+			];
+		}
 
-					}, $this->activeService->modelsToUpdate());
-				}
-				catch (Throwable $exception) {
+		public function wrapUpdateModels (object $concrete, string $methodName, array $argumentList) {
 
-					return $this->attemptDiffuse($exception, $method);
-				}
+			try {
 
-			return $this->triggerOrigin($method, $arguments);
+				return $this->ormDialect->runTransaction(function () use ($concrete) {
+
+					return $concrete->updateModels();
+
+				}, $concrete->modelsToUpdate());
+			}
+			catch (Throwable $exception) {
+
+				return $this->errorDecoratorHandler->attemptDiffuse(
+
+					$exception, $concrete, $method
+				);
+			}
 		}
 	}
 ?>

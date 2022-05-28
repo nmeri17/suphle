@@ -90,9 +90,15 @@
 
 			$this->laravelContainer->instance(AuthStorage::class, $authStorage); // guards in those observers will be relying on this contract
 
-			foreach ($observers as $model => $observer)
+			foreach ($observers as $model => $observer) {
 
-				$model::observe($this->container->getClass($observer));
+				$this->laravelContainer->bind($observer, function ($app) use ($observer) {
+
+					return $this->container->getClass($observer); // just to be on the safe side in case observer has bound entities
+				});
+
+				$model::observe($observer); // even if we hydrate an instance, they'll still flatten it, anyway
+			}
 		}
 
 		public function selectFields ($builder, array $filters) {

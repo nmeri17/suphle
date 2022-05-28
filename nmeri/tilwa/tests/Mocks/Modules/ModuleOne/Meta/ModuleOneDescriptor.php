@@ -7,6 +7,8 @@
 
 	use Tilwa\Config\AscendingHierarchy;
 
+	use Tilwa\File\FileSystemReader;
+
 	use Tilwa\Tests\Mocks\Interactions\ModuleOne;
 
 	class ModuleOneDescriptor extends ModuleDescriptor {
@@ -28,7 +30,7 @@
 
 			return array_merge(parent::globalConcretes(), [
 
-				ModuleFiles::class => new AscendingHierarchy(__DIR__)
+				ModuleFiles::class => new AscendingHierarchy(__DIR__, $this->container->getClass(FileSystemReader::class))
 			]);
 		}
 

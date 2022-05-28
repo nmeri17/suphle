@@ -5,6 +5,8 @@
 
 	use Tilwa\Config\AscendingHierarchy;
 
+	use Tilwa\File\FileSystemReader;
+
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Config\{RouterMock};
 
 	trait CommonBinds {
@@ -24,11 +26,16 @@
 
 		protected function concreteBinds ():array {
 
-			$anchorPath = dirname(__DIR__, 2) . "/Mocks/Modules/". $this->fileConfigModuleName() . "/Config";
+			$systemReader = $this->getContainer()->getClass(FileSystemReader::class);
+
+			$anchorPath = $systemReader->pathFromLevels(__DIR__,
+
+				"/Mocks/Modules/". $this->fileConfigModuleName() . "/Config", // "config" so that back tracking by levels will land us at module root. Can be any folder there
+			2);
 
 			return array_merge(parent::concreteBinds(), [
 
-				ModuleFiles::class => new AscendingHierarchy($anchorPath)
+				ModuleFiles::class => new AscendingHierarchy($anchorPath, $systemReader)
 			]);
 		}
 	}
