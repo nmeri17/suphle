@@ -78,7 +78,7 @@
 
 		public function matchesHeader (string $name, string $expectedValue):bool {
 
-			$currentValue = $this->getHeader($name);
+			$currentValue = str_replace("/", "\/", $this->getHeader($name));
 
 			return preg_match("/^$currentValue$/i", $expectedValue);
 		}

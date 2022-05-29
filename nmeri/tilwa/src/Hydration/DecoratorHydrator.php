@@ -73,12 +73,28 @@
 		/**
 		 * @return numerically indexed names of matching decorators
 		*/
-		private function getRelevantDecors (array $context, string $search):array {
+		public function getRelevantDecors (array $context, string $search):array {
 
-			return array_intersect(
+			$active = $this->objectMeta->parentInterfaceMatches(
 
-				array_keys($context), class_implements($search)
+				$search, array_keys($context)
 			);
+
+			$unique = $active; // one decorator extending another should not select super handler since it's likely already used in the sub
+
+			foreach ($active as $decorator) {
+
+				$parents = $this->objectMeta->parentInterfaceMatches(
+
+					$decorator, $active // safe not to omit self since it's not its own parent
+				);
+
+				if (!empty($parents)) // weed out preceding ancestors
+
+					$unique = array_diff($unique, $parents);
+			}
+
+			return array_values($unique);
 		}
 
 		/**

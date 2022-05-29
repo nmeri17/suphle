@@ -9,28 +9,26 @@
 
 	use Tilwa\Services\Structures\OptionalDTO;
 
-	use Tilwa\Hydration\Structures\{ObjectDetails, BuiltInType};
+	use Tilwa\Hydration\Structures\ObjectDetails;
 
 	use ProxyManager\Factory\NullObjectFactory;
 
-	use ReflectionType, Throwable;
+	use ReflectionClass, Throwable;
 
 	/**
 	 * Any decorator composed of this handler must extend ServiceErrorCatcher
 	*/
 	class ErrorCatcherHandler extends BaseDecoratorHandler {
 
-		private $exceptionDetector, $objectMeta, $typeSetter;
+		private $exceptionDetector, $objectMeta;
 
 		public function __construct (
 			DetectedExceptionManager $exceptionDetector, ObjectDetails $objectMeta,
-			BuiltInType $typeSetter, DecoratorProxy $proxyConfig) {
+			DecoratorProxy $proxyConfig) {
 
 			$this->exceptionDetector = $exceptionDetector;
 
 			$this->objectMeta = $objectMeta;
-
-			$this->typeSetter = $typeSetter;
 
 			parent::__construct($proxyConfig);
 		}
@@ -58,7 +56,7 @@
 			}
 		}
 
-		public function attemptDiffuse (Throwable $exception, object $concrete, string $method):OptionalDTO {
+		public function attemptDiffuse (Throwable $exception, ServiceErrorCatcher $concrete, string $method):OptionalDTO {
 
 			$this->exceptionDetector->detonateOrDiffuse($exception, $concrete);
 
@@ -69,16 +67,22 @@
 			$this->buildFailureContent($concrete, $method);
 		}
 
-		private function buildFailureContent (object $concrete, string $method):OptionalDTO {
+		private function buildFailureContent (ServiceErrorCatcher $concrete, string $method):OptionalDTO {
 
-			$returnType = $this->objectMeta->methodReturnType(
+			$objectMeta = $this->objectMeta;
+
+			$returnType = $objectMeta->methodReturnType(
 
 				get_class($concrete), $method
 			);
 
-			if ( (new ReflectionType($returnType))->isBuiltin())
+			if (is_null($returnType))
 
-				$typeDummy = $this->typeSetter->getDefaultValue($returnType);
+				return new OptionalDTO(null, false);
+			
+			if ( $objectMeta->isBuiltIn(get_class($concrete), $method))
+
+				$typeDummy = $objectMeta->getScalarValue($returnType);
 
 			else $typeDummy = (new NullObjectFactory(
 

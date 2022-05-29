@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Hydration;
 	
-	use Tilwa\Hydration\Structures\{ProvisionUnit, NamespaceUnit, HydratedConcrete, BuiltInType, ObjectDetails};
+	use Tilwa\Hydration\Structures\{ProvisionUnit, NamespaceUnit, HydratedConcrete, ObjectDetails};
 
 	use Tilwa\Contracts\Hydration\ClassHydrationBehavior;
 
@@ -27,7 +27,7 @@
 
 		$hydratedClassConsumers = [],
 
-		$interfaceHydrator, $decorator, $objectMeta, $typeSetter,
+		$interfaceHydrator, $decorator, $objectMeta,
 
 		$provisionContext, // the active Type before calling `needs`
 
@@ -542,7 +542,7 @@
 
 			if ( $parameterType->isBuiltin())
 
-				return $this->typeSetter->getDefaultValue($typeName);
+				return $this->objectMeta->getScalarValue($typeName);
 
 			if (!in_array($typeName, $this->hydratingForStack)) {
 
@@ -680,8 +680,6 @@
 		public function setEssentials ():void {
 
 			$this->provideSelf();
-
-			$this->typeSetter = new BuiltInType;
 
 			$this->objectMeta = new ObjectDetails($this);
 		}

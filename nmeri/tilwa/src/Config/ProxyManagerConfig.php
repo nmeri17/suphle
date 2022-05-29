@@ -14,9 +14,12 @@
 			$this->fileConfig = $fileConfig;
 		}
 
+		/**
+		 * Choose a unique name that won't affect another name somewhere when used in .gitignore
+		*/
 		public function generatedClassesLocation ():string {
 
-			return $this->fileConfig->activeModulePath() . "proxies";
+			return $this->fileConfig->activeModulePath() . "generated-proxies";
 		}
 
 		public function getConfigClient ():object {

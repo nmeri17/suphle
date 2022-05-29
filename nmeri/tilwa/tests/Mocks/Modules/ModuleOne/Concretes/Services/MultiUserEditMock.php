@@ -5,15 +5,24 @@
 
 	use Tilwa\Services\Structures\OptionalDTO;
 
-	use Tilwa\Tests\Models\Eloquent\MultiEditProduct;
+	use Tilwa\Request\PayloadStorage;
+
+	use Tilwa\Tests\Mocks\Models\Eloquent\MultiEditProduct;
 
 	class MultiUserEditMock implements MultiUserModelEdit {
 
-		private $integrity;
+		private $integrity, $payloadStorage, $model;
+
+		public function __construct (PayloadStorage $payloadStorage, MultiEditProduct $model) {
+
+			$this->payloadStorage = $payloadStorage;
+
+			$this->model = $model;
+		}
 
 		public function getResource ():IntegrityModel {
 
-			return new MultiEditProduct(["id" => 55]); // irl, this comes from payloadStorage
+			return $this->model->find($this->payloadStorage->getKey("id"));
 		}
 
 		public function updateResource () {

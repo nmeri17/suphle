@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Testing\Condiments;
 
-	use Tilwa\Hydration\{Container, Structures\BuiltInType};
+	use Tilwa\Hydration\{Container, Structures\ObjectDetails};
 
 	use PHPUnit\Framework\MockObject\{ MockObject, Stub\Stub, Rule\InvocationOrder, Builder\InvocationMocker};
 
@@ -198,6 +198,8 @@
 
 				$parameterName = $parameter->getName();
 
+				$container = $this->getContainer();
+
 				if (array_key_exists($parameterName, $replacements))
 
 					return $replacements[$parameterName];
@@ -206,13 +208,15 @@
 
 				$argumentType = $parameterType->getName();
 
-				if ($parameterType->isBuiltin())
-
-					return (new BuiltInType)->getDefaultValue($argumentType);
-
 				if ($argumentType == Container::class && $useBaseContainer)
 
-					return $this->getContainer();
+					return $container;
+
+				if ($parameterType->isBuiltin())
+
+					return $container->getClass(ObjectDetails::class)
+
+					->getScalarValue($argumentType);
 
 				return $isPositive?
 					$this->positiveDouble($argumentType):

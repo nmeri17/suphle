@@ -3,6 +3,8 @@
 
 	use Tilwa\Hydration\DecoratorHydrator;
 
+	use Tilwa\Contracts\Services\Decorators\{MultiUserModelEdit, ServiceErrorCatcher};
+
 	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
 	use Tilwa\Tests\Integration\Generic\CommonBinds;
@@ -17,7 +19,11 @@
 
 		use CommonBinds;
 
-		private $hydrator;
+		private $subDecorator = MultiUserModelEdit::class,
+
+		$superDecorator = ServiceErrorCatcher::class,
+
+		$decoratedClass = MultiUserEditMock::class, $hydrator;
 
 		protected function setUp ():void {
 
@@ -26,12 +32,25 @@
 			$this->hydrator = $this->container->getClass(DecoratorHydrator::class);
 		}
 
-		/*public function test_injectScope_wraps_concrete () {
+		public function test_getRelevantDecors_sub_first_returns_sub () {
 
-			// decorate object, call that method with it, expect its type to be of proxified instance
+			$result = $this->hydrator->getRelevantDecors([
 
-			$this->container->getClass(MultiUserEditMock::class);
-		}*/
+				$this->subDecorator => null, $this->superDecorator => null
+			], $this->decoratedClass);
+
+			$this->assertSame([$this->subDecorator], $result);
+		}
+
+		public function test_getRelevantDecors_super_first_returns_sub () {
+
+			$result = $this->hydrator->getRelevantDecors([
+
+				$this->superDecorator => null, $this->subDecorator => null
+			], $this->decoratedClass);
+
+			$this->assertSame([$this->subDecorator], $result);
+		}
 
 		public function test_catches_error () {
 

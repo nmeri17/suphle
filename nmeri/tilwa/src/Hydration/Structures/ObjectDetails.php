@@ -5,7 +5,7 @@
 
 	use Tilwa\Exception\Explosives\Generic\HydrationException;
 
-	use ReflectionClass, ReflectionException, ReflectionMethod;
+	use ReflectionClass, ReflectionException, ReflectionMethod, ReflectionType;
 
 	class ObjectDetails {
 
@@ -48,15 +48,27 @@
 			return in_array( $interface, class_implements($target) );
 		}
 
-		public function methodReturnType (string $className, string $method):?string {
+		private function getReturnType (string $className, string $method):?ReflectionType {
 
-			$type = (new ReflectionMethod($className, $method))
+			return (new ReflectionMethod($className, $method))
 
 			->getReturnType();
+		}
 
-			if (!is_null($type)) return $type->getName();
+		public function methodReturnType (string $className, string $method):?string {
 
-			return null;
+			$type = $this->getReturnType($className, $method);
+
+			return $type ? "\\" . $type->getName() : // adding forward slash so it can be used in other contexts without escaping
+
+			$type;
+		}
+
+		public function isBuiltIn (string $className, string $method):bool {
+
+			$type = $this->getReturnType($className, $method);
+
+			return $type ? $type->isBuiltin() : false;
 		}
 
 		public function stringInClassTree (string $childClass, string $parent):bool {
@@ -64,6 +76,23 @@
 			return $this->implementsInterface($childClass, $parent) ||
 
 			is_a($childClass, $parent, true); // argument 3 = accept string
+		}
+
+		public function getScalarValue (string $typeName) {
+
+			$initial = null;
+
+			settype($initial, $typeName);
+
+			return $initial;
+		}
+
+		public function parentInterfaceMatches (string $entityName, array $interfaceList ):array {
+
+			return array_intersect(
+
+				$interfaceList, class_implements($entityName)
+			);
 		}
 	}
 ?>

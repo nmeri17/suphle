@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Integration\Services\Proxies\MultiUserModel;
 
-	use Tilwa\Services\{ Proxies\MultiUserModelCallProxy, Structures\OptionalDTO};
+	use Tilwa\Services\{ DecoratorHandlers\MultiUserEditHandler, Structures\OptionalDTO};
 
 	use Tilwa\Contracts\Services\Models\IntegrityModel;
 
@@ -23,7 +23,9 @@
 
 		use DirectHttpTest, BaseDatabasePopulator, CommonBinds;
 
-		private $modelName = MultiEditProduct::class;
+		private $modelName = MultiEditProduct::class,
+
+		$sutName = MultiUserEditMock::class;
 
 		protected $usesRealDecorator = true;
 
@@ -33,9 +35,9 @@
 
 			$this->setHttpParams("/dummy", "put"); // given
 
-			$this->container->getClass(MultiUserEditMock::class)
+			$sut = $this->container->getClass($this->sutName);
 
-			->updateResource(); // when
+			$sut->updateResource(); // when
 		}
 
 		protected function getActiveEntity ():string {
@@ -47,38 +49,41 @@
 
 			$this->expectException(EditIntegrityException::class); // then
 
-			$threeMinutesAgo = (new DateTime)->sub(new DateInterval("PT3M"));
+			$threeMinutesAgo = (new DateTime)->sub(new DateInterval("PT3M"))
+
+			->format(MultiUserEditHandler::DATE_FORMAT);
 
 			// given
 			$this->setJsonParams("/dummy", [
 
-				MultiUserModelCallProxy::INTEGRITY_KEY => $threeMinutesAgo,
+				MultiUserEditHandler::INTEGRITY_KEY => $threeMinutesAgo,
 
-				"name" => "nmeri"
+				"name" => "nmeri",
+
+				"id" => $this->replicator->getRandomEntity()->id
 			], "put");
 
-			$datedModel = $this->replicator->modifyInsertion(1, [
+			// when
+			$sut = $this->container->getClass($this->sutName); // to wrap in decorator
 
-				IntegrityModel::INTEGRITY_COLUMN => $threeMinutesAgo
-			])->first();
-
-			$sutName = MultiUserEditMock::class;
-
-			$sut = $this->container->whenTypeAny()->needsAny([
-
-				$sutName => $this->positiveDouble($sutName,
-
-					["getResource" => $datedModel]
-				)
-			])->getClass($sutName); // to wrap in decorator
-
-			for ($i = 0; $i < 2; $i++) $sut->updateResource();
+			for ($i = 0; $i < 2; $i++) $sut->updateResource(); // first request updates integrityKey. Next iteration should fail
 		}
 
 		public function test_update_can_withstand_errors () {
 
-			return $this->assertTrue(true);
-// decorator proxy never gets called. can either use a mock or inspect what container returns below
+			$model = $this->replicator->getRandomEntity();
+
+			$columnName = IntegrityModel::INTEGRITY_COLUMN;
+
+			$this->setJsonParams("/dummy", [
+
+				MultiUserEditHandler::INTEGRITY_KEY => $model->$columnName,
+
+				"name" => "nmeri",
+
+				"id" => $model->id
+			], "put");
+
 			$result = $this->container->getClass(MultiUserEditError::class)
 
 			->updateResource(); // when

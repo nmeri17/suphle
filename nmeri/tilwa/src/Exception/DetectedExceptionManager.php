@@ -1,6 +1,8 @@
 <?php
 	namespace Tilwa\Exception;
 
+	use Tilwa\Contracts\Services\Decorators\ServiceErrorCatcher;
+
 	use Tilwa\Queues\AdapterManager;
 
 	use Tilwa\Exception\Jobs\DeferExceptionAlert;

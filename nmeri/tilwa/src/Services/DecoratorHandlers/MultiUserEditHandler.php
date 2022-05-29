@@ -17,7 +17,9 @@
 
 	class MultiUserEditHandler extends BaseDecoratorHandler {
 
-		const INTEGRITY_KEY = "_collision_protect"; // submitted form/payload is expected to contain this key
+		const INTEGRITY_KEY = "_collision_protect", // submitted form/payload is expected to contain this key
+
+		DATE_FORMAT = "Y-m-d H:i:s";
 
 		private $ormDialect, $queueManager, $payloadStorage,
 
@@ -63,7 +65,7 @@
 		 * 
 		 * @throws EditIntegrityException
 		*/
-		public function wrapUpdateResource (object $concrete, string $methodName, array $argumentList) {
+		public function wrapUpdateResource (MultiUserModelEdit $concrete, string $methodName, array $argumentList) {
 
 			if (!$this->payloadStorage->hasKey(self::INTEGRITY_KEY))
 
@@ -86,7 +88,7 @@
 
 					$currentVersion->nullifyEditIntegrity(
 
-						new DateTime("Y-m-d H:i:s")
+						new DateTime(self::DATE_FORMAT)
 					);
 
 					return $result;

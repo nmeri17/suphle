@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Contracts\Config;
 
-	interface DecoratorProxy {
+	interface DecoratorProxy extends ConfigMarker {
 
 		public function generatedClassesLocation ():string;
 

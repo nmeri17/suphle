@@ -36,7 +36,7 @@
 			];
 		}
 
-		public function wrapUpdateModels (object $concrete, string $methodName, array $argumentList) {
+		public function wrapUpdateModels (SystemModelEdit $concrete, string $methodName, array $argumentList) {
 
 			try {
 
