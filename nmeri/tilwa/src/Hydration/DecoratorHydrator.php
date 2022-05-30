@@ -26,14 +26,14 @@
 
 		public function assignScopes ():void {
 
-			$this->argumentScope = array_filter($this->chain, function ($decorator) {
+			$this->argumentScope = array_filter($this->chain, function ($handler) {
 
-				return $this->objectMeta->implementsInterface($decorator, ModifiesArguments::class);
+				return $this->objectMeta->implementsInterface($handler, ModifiesArguments::class);
 			});
 
-			$this->injectScope = array_filter($this->chain, function ($decorator) {
+			$this->injectScope = array_filter($this->chain, function ($handler) {
 
-				return $this->objectMeta->implementsInterface($decorator, ModifyInjected::class);
+				return $this->objectMeta->implementsInterface($handler, ModifyInjected::class);
 			});
 		}
 

@@ -16,7 +16,7 @@
 			$this->objectMeta = $objectMeta;
 		}
 
-		public function transformConstructor ($dummyInstance, array $injectedArguments):array {
+		public function transformConstructor (object $dummyInstance, array $injectedArguments):array {
 
 			$permitted = $dummyInstance->getPermitted();
 
@@ -39,20 +39,31 @@
 			return $injectedArguments;
 		}
 
-		public function transformMethods ($concreteInstance, array $arguments):array {
+		public function transformMethods (object $concreteInstance, array $arguments):array {
 
 			return $arguments;
 		}
 
+		/**
+		 * @param {dependency} mixed. Can be any type passed as argument
+		*/
 		private function containsParent (array $parentList, $dependency):bool {
 
-			foreach ($parentList as $type)
+			$dependencyType = $this->objectMeta->getValueType($dependency);
 
-				if ($this->objectMeta->stringInClassTree(
+			foreach ($parentList as $typeToMatch) {
 
-					$dependency, $type
-				))
+				if (is_object($dependency)) {
+
+					if ($this->objectMeta->stringInClassTree(
+
+						$dependencyType, $typeToMatch
+					))
 					return true;
+				}
+
+				else if ($dependencyType == $typeToMatch) return true;
+			}
 
 			return false;
 		}

@@ -173,9 +173,9 @@
 
 			$this->bootContainer($sut);
 
-			$parameters = $sut->internalMethodGetParameters(function () use ($sut) {
+			$parameters = $sut->internalMethodGetParameters($this->aRequires, function ($className) use ($sut) {
 
-				return $sut->getMethodParameters(Container::CLASS_CONSTRUCTOR, $this->aRequires);
+				return $sut->getMethodParameters(Container::CLASS_CONSTRUCTOR, $className);
 			});
 		}
 

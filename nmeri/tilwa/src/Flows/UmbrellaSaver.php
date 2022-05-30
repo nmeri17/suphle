@@ -5,17 +5,21 @@
 
 	use Tilwa\Contracts\{IO\CacheManager, Presentation\BaseRenderer, Config\Flows};
 
+	use Tilwa\Hydration\Structures\ObjectDetails;
+
 	class UmbrellaSaver {
 
 		const FLOW_PREFIX = "tilwa_flow";
 
-		private $cacheManager, $flowConfig;
+		private $cacheManager, $flowConfig, $objectMeta;
 
-		public function __construct (Flows $flowConfig, CacheManager $cacheManager) {
+		public function __construct (Flows $flowConfig, CacheManager $cacheManager, ObjectDetails $objectMeta) {
 
 			$this->flowConfig = $flowConfig;
 
 			$this->cacheManager = $cacheManager;
+
+			$this->objectMeta = $objectMeta;
 		}
 
 		public function getPatternLocation (string $urlPattern) {
@@ -53,7 +57,7 @@
 
 			$payload = $renderer->getRawResponse();
 
-			$payloadType = gettype($payload);
+			$payloadType = $this->objectMeta->getValueType($payload);
 
 			if (array_key_exists($payloadType, $contentTypes))
 

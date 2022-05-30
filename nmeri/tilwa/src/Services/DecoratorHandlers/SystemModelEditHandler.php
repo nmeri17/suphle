@@ -3,6 +3,8 @@
 
 	use Tilwa\Contracts\{Services\Decorators\SystemModelEdit, Database\OrmDialect, Config\DecoratorProxy};
 
+	use Throwable;
+
 	class SystemModelEditHandler extends BaseDecoratorHandler {
 
 		private $ormDialect, $errorDecoratorHandler;
@@ -32,7 +34,7 @@
 
 			return [
 
-				"updateResource" => [$this, "wrapUpdateModels"]
+				"updateModels" => [$this, "wrapUpdateModels"]
 			];
 		}
 
@@ -50,7 +52,7 @@
 
 				return $this->errorDecoratorHandler->attemptDiffuse(
 
-					$exception, $concrete, $method
+					$exception, $concrete, $methodName
 				);
 			}
 		}

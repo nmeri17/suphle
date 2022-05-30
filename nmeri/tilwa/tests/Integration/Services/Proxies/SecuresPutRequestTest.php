@@ -13,6 +13,8 @@
 
 		use DirectHttpTest, CommonBinds;
 
+		protected $usesRealDecorator = true;
+
 		public function test_missing_types_throws_errors () {
 
 			$this->expectException(MissingPostDecorator::class); // then

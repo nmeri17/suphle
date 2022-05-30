@@ -19,7 +19,7 @@
 
 		$hydratingForStack = [], // String[]. Doubles as a dependency chain. @see [lastHydratedFor] for main usage
 
-		$internalMethodHydrate = false, // Used when [getMethodParameters] is called directly without going through instance methods such as [instantiateConcrete]
+		$internalMethodHydrate = [], // Used when [getMethodParameters] is called directly without going through instance methods such as [instantiateConcrete]
 
 		$hydratingArguments = false,
 
@@ -265,29 +265,37 @@
 		*/
 		public function initializeHydratingForAction (string $fullName, callable $action) {
 
-			$this->initializeHydratingFor($fullName);
+			$pushedItems = $this->initializeHydratingFor($fullName);
 
 			$result = $action($fullName);
 
-			$this->popHydratingFor($fullName);
+			foreach ($pushedItems as $entity)
+
+				$this->popHydratingFor($entity);
 
 			return $result;
 		}
 
 		/**
-		 * Tells us who to hydrate arguments for
+		 * Decides who to hydrate arguments for
+		 * 
+		 * @return its decision, so it can be used for popping after performing desired actions
 		*/
-		protected function initializeHydratingFor (string $fullName):void {
+		protected function initializeHydratingFor (string $fullName):array {
 
 			$dependent = $this->lastHydratedFor();
 
 			$isFirstCall = is_null($dependent);
 
-			$notIsolatedMethodResolution = $isFirstCall && $this->hydratingArguments;
+			if ( $isFirstCall) $hydrateFor = $this->lastCaller();
 
-			$hydrateFor = $notIsolatedMethodResolution ? $this->lastCaller(): $fullName;
+			else $hydrateFor = $dependent;
 
 			$this->pushHydratingFor($hydrateFor);
+
+			$this->pushHydratingFor($fullName); // pushing both caller and class being hydrated so lastHydratedFor can read from either if need be
+
+			return [$hydrateFor, $fullName];
 		}
 
 		private function lastCaller ():string {
@@ -317,9 +325,14 @@
 		*/
 		private function popHydratingFor (string $completedHydration):void {
 
-			if (end($this->hydratingForStack) == $completedHydration)
+			$index = array_search($completedHydration, $this->hydratingForStack);
 
-				array_pop($this->hydratingForStack);
+			if (isset($this->hydratingForStack[$index])) {
+
+				unset($this->hydratingForStack[$index]);
+
+				$this->hydratingForStack = array_values($this->hydratingForStack);
+			}
 		}
 
 		/**
@@ -388,18 +401,23 @@
 		*/
 		public function instantiateConcrete (string $fullName):object {
 
-			$freshlyCreated = $this->initializeHydratingForAction ($fullName, function ($className) { // we need this double coating since we intend to read arguments later, and [lastHydratedFor] is expected to see a list of at least 2 items during argument reading
+			$decorator = $this->getDecorator();
 
-				if (!method_exists($className, self::CLASS_CONSTRUCTOR)) // note that this throws a fatal, uncatchable error when class is in an unparseable state like missing abstract method or contract implementation
+			$freshlyCreated = $this->initializeHydratingForAction ($fullName, function ($className) use ($decorator) { // we need this double coating since we intend to read arguments later, and [lastHydratedFor] is expected to see a list of at least 2 items during argument reading
+
+				if (!method_exists($className, self::CLASS_CONSTRUCTOR)) { // note that this throws a fatal, uncatchable error when class is in an unparseable state like missing abstract method or contract implementation
+
+					if (!is_null($decorator))
+
+						$decorator->scopeArguments( $className, [], self::CLASS_CONSTRUCTOR);
 
 					return new HydratedConcrete(new $className, $this->lastHydratedFor() );
+				}
 
 				return $this->hydrateConcreteForCaller($className);
 			});
 
 			$concrete = $freshlyCreated->getConcrete();
-
-			$decorator = $this->getDecorator();
 
 			$this->storeConcrete($fullName, $concrete);
 
@@ -411,10 +429,10 @@
 
 		public function hydrateConcreteForCaller (string $className):HydratedConcrete {
 
-			$dependencies = $this->internalMethodGetParameters(function () use ($className) {
+			$dependencies = array_values( $this->getMethodParameters(
 
-				return array_values($this->getMethodParameters(self::CLASS_CONSTRUCTOR, $className));
-			});
+				self::CLASS_CONSTRUCTOR, $className
+			));
 
 			return new HydratedConcrete(
 				new $className (...$dependencies),
@@ -423,13 +441,20 @@
 			);
 		}
 
-		public function internalMethodGetParameters (callable $action) {
+		public function internalMethodGetParameters (string $className, callable $action) {
 
-			$this->internalMethodHydrate = true;
+			$this->internalMethodHydrate[] = $className;
 
-			$result = $action();
+			$this->hydratingArguments = true;
 
-			$this->internalMethodHydrate = false;
+			$result = $action($className);
+
+			unset($this->internalMethodHydrate[
+
+				array_search($className, $this->internalMethodHydrate)
+			]);
+
+			$this->hydratingArguments = false;
 
 			return $result;
 		}
@@ -448,6 +473,8 @@
 
 			$context = null;
 
+			$pushedItems = [];
+
 			if (is_null($anchorClass))
 
 				$reflectedCallable = new ReflectionFunction($callable);
@@ -456,9 +483,9 @@
 
 				$reflectedCallable = new ReflectionMethod($anchorClass, $callable);
 
-				if (!$this->internalMethodHydrate)
+				if (!$this->hydratingInternally($anchorClass))
 
-					$this->initializeHydratingFor($anchorClass);
+					$pushedItems = $this->initializeHydratingFor($anchorClass);
 
 				$context = $this->getRecursionContext();
 			}
@@ -467,13 +494,20 @@
 
 			if (is_null($anchorClass)) return $dependencies;
 
-			elseif (!$this->internalMethodHydrate)
+			elseif (!$this->hydratingInternally($anchorClass))
 
-				$this->popHydratingFor($anchorClass);
+				foreach ($pushedItems as $entity)
+
+					$this->popHydratingFor($entity);
 
 			$decorator = $this->getDecorator();
 
 			return $decorator ? $decorator->scopeArguments( $anchorClass, $dependencies, $callable): $dependencies;
+		}
+
+		private function hydratingInternally (string $fullName):bool {
+
+			return in_array($fullName, $this->internalMethodHydrate);
 		}
 
 		public function populateDependencies (ReflectionFunctionAbstract $reflectedCallable, ?ProvisionUnit $callerProvision):array {
@@ -544,20 +578,19 @@
 
 				return $this->objectMeta->getScalarValue($typeName);
 
-			if (!in_array($typeName, $this->hydratingForStack)) {
+			if (!in_array($typeName, $this->hydratingForStack) ||
 
-				if ($callerIsClosure || !$this->internalMethodHydrate)
+				!$this->hydratingArguments // when in this state, it means class A did $container->getClass(B), where B has A in its constructor. Since $hydratingForStack stores both caller and target, A will equally be there. Luckily, $hydratingArguments will be false
+			) {
 
-					$concrete = $this->getClass($typeName); // there's no extra layer of called scope->given object (to get arguments for). We only have called scope in the stack; so, get immediate last item
+				if (!$callerIsClosure )
 
-				else {
+					$concrete = $this->internalMethodGetParameters($typeName, function ($className) {
 
-					$this->hydratingArguments = true;
+						return $this->getClass($className);
+					});
 
-					$concrete = $this->getClass($typeName);
-
-					$this->hydratingArguments = false;
-				}
+				else $concrete = $this->getClass($typeName); // there's no extra layer of called scope->given object (to get arguments for). We only have called scope in the stack; so, get immediate last item
 
 				$this->setConsumer($typeName);
 

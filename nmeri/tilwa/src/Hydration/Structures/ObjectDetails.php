@@ -64,7 +64,7 @@
 			$type;
 		}
 
-		public function isBuiltIn (string $className, string $method):bool {
+		public function returnsBuiltIn (string $className, string $method):bool {
 
 			$type = $this->getReturnType($className, $method);
 
@@ -93,6 +93,11 @@
 
 				$interfaceList, class_implements($entityName)
 			);
+		}
+
+		public function getValueType ($value):string {
+
+			return is_object($value)? get_class($value): gettype($value);
 		}
 	}
 ?>

@@ -27,9 +27,9 @@
 			$this->objectMeta = $objectMeta;
 		}
 
-		public function transformConstructor ($dummyInstance, array $arguments):array {
+		public function transformConstructor (object $dummyInstance, array $arguments):array {
 
-			if ($this->requestDetails->httpMethod() != "put")
+			if (!$this->requestDetails->matchesMethod("put"))
 
 				return $arguments;
 
@@ -37,18 +37,20 @@
 
 				foreach ($this->postDecorators as $decorator) {
 
-					if ($this->objectMeta->implementsInterface(
+					if (is_object($dependency) && $this->objectMeta->implementsInterface(
 
-						$dependency, $decorator
+						get_class($dependency),
+
+						$decorator
 					))
 
 						return $arguments;
 				}
 
-			throw new MissingPostDecorator($dummyInstance);
+			throw new MissingPostDecorator(get_class($dummyInstance));
 		}
 
-		public function transformMethods ($concreteInstance, array $arguments):array {
+		public function transformMethods (object $concreteInstance, array $arguments):array {
 
 			return $arguments;
 		}

@@ -80,7 +80,7 @@
 
 				return new OptionalDTO(null, false);
 			
-			if ( $objectMeta->isBuiltIn(get_class($concrete), $method))
+			if ( $objectMeta->returnsBuiltIn(get_class($concrete), $method))
 
 				$typeDummy = $objectMeta->getScalarValue($returnType);
 

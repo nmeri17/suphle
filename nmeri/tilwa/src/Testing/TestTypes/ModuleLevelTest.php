@@ -20,7 +20,12 @@
 
 			$entrance = $this->entrance = new FrontDoor(
 				
-				$this->modules = $this->getModules(), // storing in an instance variable instead of reading directly from method so mutative methods can iterate and modify
+				/*
+				 Storing in an instance variable instead of reading directly from method so mutative methods can iterate and modify
+
+				 Also, reading from getModules() with new ModuleDescriptor1 will return a new instance each time
+				*/
+				$this->modules = $this->getModules(),
 
 				$this->getEventParent()
 			);
@@ -42,7 +47,7 @@
 		*/
 		protected function getModuleFor (string $interface):object {
 
-			foreach ($this->getModules() as $descriptor)
+			foreach ($this->modules as $descriptor)
 
 				if ($interface == $descriptor->exportsImplements()) {
 

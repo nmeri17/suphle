@@ -105,7 +105,7 @@
 
 			return array_filter($this->payload, function ($key) use ($exclude) {
 
-				return !array_key_exists($key, $exclude);
+				return !in_array($key, $exclude);
 			}, ARRAY_FILTER_USE_KEY);
 		}
 	}
