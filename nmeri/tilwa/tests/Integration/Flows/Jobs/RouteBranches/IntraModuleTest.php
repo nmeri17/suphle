@@ -41,9 +41,11 @@
 				// given => see setup
 				$this->makeRouteBranches($context)->handle(); // When
 
-				$umbrella = $this->container->getClass(CacheManager::class)
+				$flowSaver = $this->container->getClass(UmbrellaSaver::class);
 
-				->getItem(UmbrellaSaver::FLOW_PREFIX . $this->user5Url); // it saves content for all given indexes, not just 5. This means that "/user-content/8" is available and will return 8
+				$location = $flowSaver->getPatternLocation($this->user5Url);
+				
+				$umbrella = $flowSaver->getExistingUmbrella($location); // since it saves content for all given indexes, not just 5. This means that "/user-content/8" is available and will return 8
 
 				$this->assertNotNull($umbrella);
 

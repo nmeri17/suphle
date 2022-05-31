@@ -90,11 +90,15 @@
 
 			$jobName = RouteBranches::class;
 
-			return $this->container->whenType($jobName)
+			$jobInstance = $this->container->whenType($jobName)
 
 			->needsArguments([ BranchesContext::class => $context ])
 
 			->getClass($jobName);
+
+			$this->container->refreshClass($jobName);
+
+			return $jobInstance;
 		}
 
 		protected function makeUser (int $id):UserContract {

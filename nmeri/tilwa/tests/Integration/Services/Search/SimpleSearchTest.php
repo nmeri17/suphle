@@ -13,9 +13,6 @@
 
 	use stdClass;
 
-	/**
-	 * @backupGlobals enabled . Without this, the $_GET sticks around in-between tests
-	*/
 	class SimpleSearchTest extends IsolatedComponentTest {
 
 		use DirectHttpTest, CommonBinds;
@@ -88,7 +85,7 @@
 
 				"ormDialect" => $this->ormDialect,
 
-				"payloadStorage" => $this->container->getClass(PayloadStorage::class) // if we rely on a stub for this, PHPUnit gives a static $_GET that is never affected by our url updates
+				"payloadStorage" => $this->container->getClass(PayloadStorage::class) // Without this instance, PHPUnit will not recursively wire in dependencies, thereby missing out on requestDetails
 			], [], $mockMethods);
 		}
 	}

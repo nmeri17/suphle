@@ -3,7 +3,7 @@
 
 	use Tilwa\Flows\{FlowHydrator, Previous\CollectionNode};
 
-	use Tilwa\Flows\Structures\{RangeContext, ServiceContext};
+	use Tilwa\Flows\Structures\{RangeContext, ServiceContext, GeneratedUrlExecution};
 
 	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
@@ -32,14 +32,18 @@
 
 			$indexesCount = count($indexes);
 
+			$unitNode = $this->createCollectionNode();
+
 			// then
 			$sut = $this->mockFlowHydrator([
 				
 				"updatePlaceholders" => [$indexesCount, [
 
-					$this->callback(function($subject) use ($indexes) {
+					$this->callback(function($subject) use ($indexes, $unitNode) {
 
-						return in_array($subject, $indexes);
+						$id = $subject[$unitNode->getLeafName()];
+
+						return in_array($id, $indexes);
 					})
 				]],
 
@@ -47,7 +51,7 @@
 			]);
 
 			// when
-			$sut->handlePipe($indexes, 1, $this->createCollectionNode());
+			$sut->handlePipe($indexes, 1, $unitNode);
 		}
 
 		private function mockFlowHydrator ( array $mocks):FlowHydrator {
@@ -56,7 +60,14 @@
 
 			return $this->replaceConstructorArguments(
 
-				$this->sutName, [], [], $mocks
+				$this->sutName, [], [
+
+					"updatePlaceholders" => $this->returnSelf(),
+
+					"updatePayloadStorage" => $this->returnSelf(),
+
+					"executeGeneratedUrl" => $this->positiveDouble(GeneratedUrlExecution::class)
+				], $mocks
 			);
 		}
 
@@ -68,14 +79,6 @@
 			// given
 			$queryUpdate = ["page_number" => $pageNumber];
 
-			$leafName = "next_page_url";
-
-			$payload = [
-				$this->payloadKey => $this->indexesToModels(),
-
-				$leafName => "/posts/?" . http_build_query($queryUpdate) // suppose next page is 2 according to current outgoing request, flow runs and stores for 2
-			];
-
 			// then
 			$sut = $this->mockFlowHydrator([
 
@@ -83,7 +86,10 @@
 			]);
 
 			// when
-			$sut->handleQuerySegmentAlter($payload, $leafName);
+			$sut->handleQuerySegmentAlter( // suppose next page is 2 according to current outgoing request, flow runs and stores for 2
+
+				"/posts/?" . http_build_query($queryUpdate)
+			);
 		}
 
 		public function getPageNumbers ():array {
@@ -109,28 +115,28 @@
 			); // then
 		}
 
-		private function getHydratorForService ():FlowHydrator {
+		private function getHydratorForService (array $mockMethods = []):FlowHydrator {
 
 			return $this->replaceConstructorArguments($this->sutName, [/*using this so they can receive proper containers*/], [
 
 				"getNodeFromPrevious" => $this->payloadFromPrevious()
-			]);
+			], $mockMethods);
 		}
 
 		public function test_fromService_doesnt_edit_request_or_trigger_controller() {
 
-			$sut = $this->getHydratorForService();
-
-			$this->mockCalls([ // then
+			$sut = $this->getHydratorForService([ // then
 
 				"executeGeneratedUrl" => [0, []],
 
 				"updatePlaceholders" => [0, []],
-			], $sut);
+			]);
 
 			$sut->handleServiceSource( // when
 
-				null, $this->getServiceContext(), $this->createCollectionNode() // given
+				null, $this->getServiceContext(),
+
+				$this->createCollectionNode() // given
 			);
 		}
 
@@ -140,7 +146,10 @@
 
 				$this->flowService => $this->positiveDouble($this->flowService, [], [
 
-					"customHandlePrevious" => [1, [$this->indexesToModels()]]
+					"customHandlePrevious" => [1, [
+
+						$this->payloadFromPrevious()
+					]]
 				]) // then
 			]);
 
@@ -214,16 +223,25 @@
 
 			$range = new RangeContext;
 
-			$dates = ["2021-01-15", "2021-07-01", "2021-08-15", "2021-07-17", "2021-12-09"]; // given
+			$maxDate = "2021-12-09";
+
+			$minDate = "2021-01-15";
+
+			$dates = [
+
+				"2021-07-17", $maxDate, "2021-08-15", // deliberately scatter them
+
+				$minDate, "2021-07-01"
+			]; // given
 
 			// then
 			$sut = $this->mockFlowHydrator([
 
 				"updatePlaceholders" => [1, [
 					[
-						$range->getParameterMax() => current($dates),
+						$range->getParameterMax() => $maxDate,
 
-						$range->getParameterMin() => end($dates)
+						$range->getParameterMin() => $minDate
 					]
 				]]
 			]);

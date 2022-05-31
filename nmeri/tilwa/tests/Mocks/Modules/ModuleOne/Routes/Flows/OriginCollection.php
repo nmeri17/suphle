@@ -28,9 +28,9 @@
 
 			$flow->linksTo("paged-data", $flow
 
-				->previousResponse()->getNode("C")
+				->previousResponse()->getNode($this->queryNodeHolder)
 
-				->altersQuery($this->queryNodeHolder)
+				->altersQuery()
 			)
 			->linksTo("categories/id", $flow->previousResponse()->collectionNode("data") // assumes we're coming from "/categories"
 
@@ -48,9 +48,9 @@
 
 			$flow->linksTo("paged-data", $flow
 
-				->previousResponse()->getNode("C")
+				->previousResponse()->getNode($this->queryNodeHolder)
 
-				->altersQuery($this->queryNodeHolder)
+				->altersQuery()
 			);
 
 			$this->_get($renderer->setFlow($flow));

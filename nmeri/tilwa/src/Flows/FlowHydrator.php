@@ -128,12 +128,14 @@
 			}
 		}
 
-		// @return BaseRenderer[]
+		/**
+		*	@return GeneratedUrlExecution[]
+		*/
 		private function handleSingleNodes(SingleNode $builtNode):array {
 
 			$carryRenderer = null;
 			
-			foreach ($this->builtNodeActions($builtNode) as $attribute => $value) {
+			foreach ($this->builtNodeActions($builtNode) as $attribute => $dummyValue) {
 
 				$handler = $this->singleSubHandlers[$attribute];
 
@@ -142,7 +144,7 @@
 				$carryRenderer = call_user_func_array(
 					[$this, $handler],
 
-					[$previousContent, $value/*, $carryRenderer*/]
+					[$previousContent/*, $value, $carryRenderer*/]
 				);
 
 				$this->handledValidAction($carryRenderer);
@@ -153,7 +155,7 @@
 		}
 
 		/**
-		*	@return BaseRenderer[]
+		*	@return GeneratedUrlExecution[]
 		*/
 		private function handleCollectionNodes(CollectionNode $builtNode):array {
 
@@ -211,18 +213,26 @@
 		}
 
 		/**
-		 * @param {rawNode}, where payload e.g. = ["data" => iterable]
+		 * @param {rawNode}:mixed, where payload e.g. = ["data" => mixed]. Null where key doesn't exist
 		 */
-		public function getNodeFromPrevious(UnitNode $rawNode):iterable {
+		public function getNodeFromPrevious (UnitNode $rawNode) {
 
-			return Arr::get($this->previousResponse, $rawNode->getNodeName());
+			if (Arr::has(
+
+				$this->previousResponse, $rawNode->getNodeName()
+			))
+				return Arr::get(
+
+					$this->previousResponse, $rawNode->getNodeName()
+				);
+
+			return null;
 		}
 
-		public function handleQuerySegmentAlter (array $nodeContent, string $newQueryHolder):?GeneratedUrlExecution {
-
-			$valuePath = $nodeContent[$newQueryHolder];
-
-			if (is_null($valuePath)) return null;
+		/**
+		 * @return GeneratedUrlExecution. All SingleNode based handlers are expected to return this type, to maintain uniformity
+		*/
+		public function handleQuerySegmentAlter (string $valuePath):GeneratedUrlExecution {
 
 			$queryPart = parse_url($valuePath, PHP_URL_QUERY);
 
@@ -260,7 +270,7 @@
 		 * This runs the validation sequence for each single item in this stream just in case any of the ids in the list is invalid
 		 * @param {indexes} Array of ids
 		 * 
-		 * @return GeneratedUrlExecution[]
+		 * @return GeneratedUrlExecution[]. All collectionNode based handlers are expected to return this type, to maintain uniformity
 		*/
 		public function handlePipe (array $indexes, int $dummyValue, CollectionNode $rawNode):array {
 
@@ -291,40 +301,55 @@
 			return new GeneratedUrlExecution($requestPath, $clonedRenderer);
 		}
 
-		public function handleOneOf (array $indexes, string $requestProperty):?GeneratedUrlExecution {
+		/**
+		 * @return GeneratedUrlExecution[]
+		*/
+		public function handleOneOf (array $indexes, string $requestProperty):array {
 
-			return $this->updatePlaceholders([
+			$generatedContent = $this->updatePlaceholders([
 
 				$requestProperty => implode(",", $indexes)
 			])
 			->executeGeneratedUrl();
+
+			return [$generatedContent];
 		}
 
-		public function handleRange (iterable $indexes, RangeContext $context):?GeneratedUrlExecution {
+		/**
+		 * @return GeneratedUrlExecution[]
+		*/
+		public function handleRange (iterable $indexes, RangeContext $context):array {
 
-			return $this->updatePlaceholders([
+			$generatedContent = $this->updatePlaceholders([
 
 				$context->getParameterMax() => max($indexes),
 
 				$context->getParameterMin() => min($indexes)
 			])
 			->executeGeneratedUrl();
+
+			return [$generatedContent];
 		}
 
-		public function handleDateRange (array $indexes, RangeContext $context):?GeneratedUrlExecution {
+		/**
+		 * @return GeneratedUrlExecution[]
+		*/
+		public function handleDateRange (array $indexes, RangeContext $context):array {
 
 			usort($indexes, function($a, $b) {
 
 				return strtotime($a) - strtotime($b); // asc
 			});
 
-			return $this->updatePlaceholders([
+			$generatedContent = $this->updatePlaceholders([
 
 				$context->getParameterMin() => $indexes[0], // use `current` here instead?
 
 				$context->getParameterMax() => end($indexes)
 			])
 			->executeGeneratedUrl();
+
+			return [$generatedContent];
 		}
 
 		public function handleServiceSource($dummyPrevious, ServiceContext $context, CollectionNode $rawNode ):iterable {

@@ -12,7 +12,7 @@
 
 		private $config, $computedPath, $permanentPath, // readonly version of [computedPath]
 		
-		$versionPresent;
+		$versionPresent, $queryParameters = [];
 
 		public function __construct (Router $config) {
 
@@ -27,6 +27,16 @@
 		public function setPath (string $requestPath):void {
 
 			$this->permanentPath = $this->computedPath = $requestPath;
+		}
+
+		public function setQueries (array $queryParameters):void {
+
+			$this->queryParameters = $queryParameters;
+		}
+
+		public function getQueryParameters ():array {
+
+			return $this->queryParameters;
 		}
 
 		public static function fromModules (array $descriptors, string $requestPath):void {
@@ -48,14 +58,14 @@
 
 			$instance->setPath($components["path"]);
 
+			parse_str($components["query"] ?? "", $queryParameters);
+
+			$instance->setQueries($queryParameters);
+
 			$container->whenTypeAny()->needsAny([
 
 				$selfName => $instance
 			]);
-
-			parse_str($components["query"] ?? "", $queryArray);
-
-			$_GET = array_merge($_GET, $queryArray);
 		}
 
 		public function getPermanentPath ():?string {

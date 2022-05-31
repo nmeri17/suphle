@@ -7,6 +7,8 @@
 
 	use PHPUnit\Framework\{TestCase, ExpectationFailedException};
 
+	use Throwable;
+
 	class TestVirginContainer extends TestCase {
 
 		use MockFacilitator;
@@ -55,7 +57,7 @@
 
 					try { $testBody(...$dataFixture); }
 
-					catch (ExpectationFailedException $exception) {
+					catch (Throwable $exception) { // test failures throw ExpectationFailedException, but without catching errors, error message will appear as if all providers and data sets failed
 
 						echo $this->providerExceptionMessage($provider, $index, $dataFixture);
 

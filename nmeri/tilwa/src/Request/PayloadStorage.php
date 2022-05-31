@@ -41,7 +41,7 @@
 
 			if ($this->requestDetails->isGetRequest())
 
-				$this->payload = $_GET; // subject to change since we may be moving away from using this superglobal but still need a way to read query part
+				$this->payload = $this->requestDetails->getQueryParameters();
 
 			else if ($this->isJsonPayload() )
 

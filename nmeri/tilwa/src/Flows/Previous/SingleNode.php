@@ -10,9 +10,9 @@
 			$this->nodeName = $nodeName;
 		}
 		
-		public function altersQuery (string $newQuery):self {
+		public function altersQuery ():self {
 
-			$this->actions[self::ALTERS_QUERY_SEGMENT] = $newQuery;
+			$this->actions[self::ALTERS_QUERY_SEGMENT] = null;
 
 			return $this;
 		}
