@@ -5,30 +5,48 @@
 
 	use Tilwa\Console\CliRunner;
 
-	use Tilwa\Testing\Proxies\Extensions\FrontDoor;
+	use Tilwa\Hydration\Container;
 
-	use Tilwa\Testing\Condiments\ModuleReplicator;
+	use Tilwa\Testing\Proxies\{Extensions\FrontDoor, GagsException};
 
-	use PHPUnit\Framework\TestCase;
+	use Tilwa\Testing\Condiments\{ModuleReplicator, BaseModuleInteractor};
 
-	abstract class CommandLineTest extends TestCase {
+	abstract class CommandLineTest extends TestVirginContainer {
 
-		use ModuleReplicator;
+		use ModuleReplicator, BaseModuleInteractor, GagsException {
 
-		protected $consoleClient, $consoleRunner;
+			GagsException::setUp as mufflerSetup;
+		}
+
+		protected $consoleRunner, $modules;
 
 		protected function setUp ():void {
 
-			$this->consoleClient = new SymfonyCli("SuphleTest", "v2");
+			$this->consoleRunner = new CliRunner (
 
-			$this->consoleRunner = new CliRunner (new FrontDoor($this->getModules()), $this->consoleClient);
+				$this->entrance = new FrontDoor(
+					$this->modules = $this->getModules(),
+
+					$this->getEventParent()
+				),
+				new SymfonyCli("SuphleTest", "v2")
+			);
+
+			$this->provideTestEquivalents();
 
 			$this->consoleRunner->loadCommands();
+
+			$this->mufflerSetup();
 		}
 		
 		/**
-		 * @return ModuleDescriptor[]
+		 * @return DescriptorInterface[]
 		 */
-		abstract protected function getModules():array;
+		abstract protected function getModules ():array;
+
+		protected function getContainer ():Container {
+
+			return current($this->modules)->getContainer();
+		}
 	}
 ?>

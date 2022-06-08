@@ -1,13 +1,13 @@
 <?php
 	namespace Tilwa\Middleware\Handlers;
 
-	use Tilwa\Middleware\{BaseMiddleware, MiddlewareNexts};
+	use Tilwa\Middleware\MiddlewareNexts;
 
 	use Tilwa\Request\PayloadStorage;
 
-	use Tilwa\Routing\RequestDetails;
+	use Tilwa\Request\RequestDetails;
 
-	use Tilwa\Contracts\Auth\AuthStorage;
+	use Tilwa\Contracts\{Auth\AuthStorage, Presentation\BaseRenderer, Routing\Middleware};
 
 	use Tilwa\Auth\Storage\SessionStorage;
 
@@ -15,20 +15,20 @@
 
 	use Tilwa\Security\CSRF\CsrfGenerator;
 
-	class CsrfMiddleware extends BaseMiddleware {
+	class CsrfMiddleware implements Middleware {
 
-		private $generator, $requestDetails, $authStorage;
+		private $generator, $authStorage, $requestDetails;
 
 		public function __construct (CsrfGenerator $generator, RequestDetails $requestDetails, AuthStorage $authStorage) {
 
 			$this->generator = $generator;
 
-			$this->requestDetails = $requestDetails;
-
 			$this->authStorage = $authStorage;
+
+			$this->requestDetails = $requestDetails;
 		}
 
-		public function process (PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler) {
+		public function process (PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler):BaseRenderer {
 
 			if ($this->requestDetails->isGetRequest() )
 
@@ -38,9 +38,12 @@
 
 			$usingSession = $this->authStorage instanceof SessionStorage;
 
-			$incomingToken = !$this->generator->isVerifiedToken($payloadStorage->getKey(CsrfGenerator::TOKEN_FIELD));
+			$failedVerification = !$this->generator->isVerifiedToken(
 
-			if ($isBrowserRoute && $usingSession && $incomingToken)
+				$payloadStorage->getKey(CsrfGenerator::TOKEN_FIELD)
+			);
+
+			if ($isBrowserRoute && $usingSession && $failedVerification)
 
 				throw new CsrfException;
 

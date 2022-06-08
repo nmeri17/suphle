@@ -1,13 +1,15 @@
 <?php
 	namespace Tilwa\Exception\Diffusers;
 
-	use Tilwa\Contracts\Exception\ExceptionHandler;
+	use Tilwa\Contracts\{Exception\ExceptionHandler, Presentation\BaseRenderer};
 
-	use Tilwa\Routing\RequestDetails;
+	use Tilwa\Request\RequestDetails;
 
-	use Tilwa\Response\Format\{AbstractRenderer, Markup, Json};
+	use Tilwa\Response\Format\{ Markup, Json};
 
 	use Tilwa\Exception\Explosives\NotFoundException;
+
+	use Throwable;
 
 	class NotFoundDiffuser implements ExceptionHandler {
 
@@ -20,7 +22,10 @@
 			$this->requestDetails = $requestDetails;
 		}
 
-		public function setContextualData (NotFoundException $origin):void {
+		/**
+		 * @param {origin} NotFoundException
+		*/
+		public function setContextualData (Throwable $origin):void {
 
 			//
 		}
@@ -36,21 +41,25 @@
 			$this->renderer->setHeaders(404, []);
 		}
 
-		public function getRenderer ():AbstractRenderer {
+		public function getRenderer ():BaseRenderer {
 
 			return $this->renderer;
 		}
 
-		protected function getApiRenderer ():AbstractRenderer {
+		protected function getApiRenderer ():Json {
 
 			return (new Json($this->controllerAction))
 
 			->setRawResponse([ "message" => "Not Found" ]);
 		}
 
-		protected function getMarkupRenderer ():AbstractRenderer {
+		protected function getMarkupRenderer ():Markup {
 
-			return new Markup($this->controllerAction, "errors/not-found");
+			return (new Markup($this->controllerAction, "errors/not-found"))
+			->setRawResponse([
+
+				"url" => $this->requestDetails->getPath()
+			]);
 		}
 	}
 ?>

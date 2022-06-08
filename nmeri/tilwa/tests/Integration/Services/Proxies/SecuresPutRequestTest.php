@@ -5,11 +5,15 @@
 
 	use Tilwa\Exception\Explosives\Generic\MissingPostDecorator;
 
+	use Tilwa\Tests\Integration\Generic\CommonBinds;
+
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Controllers\ValidatorController;
 
 	class SecuresPutRequestTest extends IsolatedComponentTest {
 
-		use DirectHttpTest;
+		use DirectHttpTest, CommonBinds;
+
+		protected $usesRealDecorator = true;
 
 		public function test_missing_types_throws_errors () {
 

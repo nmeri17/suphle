@@ -20,10 +20,12 @@
 
 			// given => see module injection
 
-			// then
-			$this->mockEventReceiver->doNothing()->shouldBeCalled();
+			$this->mockCalls([ // then
 
-			$this->mockEventReceiver->unionHandler()->shouldBeCalledTimes(2);
+				"doNothing" => [1, []],
+
+				"unionHandler" => [2, []]
+			], $this->mockEventReceiver);
 
 			$this->getModuleFor(ModuleOne::class)->sendConcatEvents($this->payload); // when
 		}

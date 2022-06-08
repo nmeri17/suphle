@@ -9,19 +9,11 @@
 
 	use Tilwa\Tests\Integration\Flows\Jobs\RouteBranches\JobFactory;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\FlowRoutes, ModuleOneDescriptor, Config\RouterMock};
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\FlowRoutes, Meta\ModuleOneDescriptor, Config\RouterMock};
 
 	class OuterFlowWrapperTest extends JobFactory {
 
-		use EmittedEventsCatcher {
-
-			EmittedEventsCatcher::setUp as eventsSetup;
-		}
-
-		public function setUp ():void {
-
-			$this->eventsSetup();
-		}
+		use EmittedEventsCatcher;
 
 		protected function getModules():array {
 
@@ -36,15 +28,6 @@
 				})
 			];
 		}
-
-		public function test_will_emitEvents_after_returning_flow_request() {
-
-			$this->handleFlowJob();
-
-			$this->get($this->userUrl); // when
-
-			$this->assertFiredEvent ($this->rendererController, OuterFlowWrapper::HIT_EVENT); // then
-		}
  
 		public function test_will_queueBranches_after_returning_flow_request() {
 
@@ -53,14 +36,9 @@
 
 			$this->flowUrl = "/initial-flow/id";
 
-			$this->handleFlowJob(); // when
+			$this->handleDefaultBranchesContext(); // when
 
 			$this->assertPushedToFlow("/flow-with-flow/5"); // then
-		}
-
-		private function handleFlowJob ():void {
-
-			$this->makeJob($this->makeBranchesContext(null))->handle();
 		}
 	}
 ?>

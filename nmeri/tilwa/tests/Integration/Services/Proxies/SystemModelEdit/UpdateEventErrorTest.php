@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Tests\Integration\Services\Proxies\MultiUserModel;
+	namespace Tilwa\Tests\Integration\Services\Proxies\SystemModelEdit;
 
 	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\EmittedEventsCatcher};
 
@@ -26,7 +26,7 @@
 
 			->systemUpdateErrorEvent($payload); // when
 
-			$this->assertEquals($result->operationValue(), $payload * 3); // then
+			$this->assertEquals($result->operationValue(), $payload); // then
 		}
 	}
 ?>

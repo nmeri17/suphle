@@ -3,9 +3,7 @@
 
 	use Tilwa\Events\ModuleLevelEvents;
 
-	use Tilwa\Contracts\Config\ModuleFiles;
-
-	use Dotenv\Dotenv;
+	use Tilwa\Contracts\Modules\DescriptorInterface;
 
 	class ModulesBooter {
 
@@ -18,28 +16,36 @@
 			$this->eventManager = $eventManager;
 		}
 		
-		public function boot():void {
+		public function getModules ():array {
+
+			return $this->modules;
+		}
+
+		public function bootAll ():self {
 
 			foreach ($this->modules as $descriptor) {
 
-				$this->loadEnv($descriptor->fileConfig());
-
-				$descriptor->warmUp(); // We're setting these to be able to attach events soon after
+				$descriptor->warmModuleContainer(); // We're setting these to be able to attach events soon after
 
 				$descriptor->getContainer()->whenTypeAny()->needsAny([
 
-					ModuleFiles::class => $descriptor->fileConfig()
+					DescriptorInterface::class => $descriptor,
+
+					get_called_class() => $this
 				]);
 			}
 
 			$this->eventManager->bootReactiveLogger();
+
+			return $this;
 		}
 
-		protected function loadEnv (ModuleFiles $fileConfig):void {		
+		/**
+		 * Without this, trying to extract things like Auth/ModuleFile won't be possible since they rely on user-land bound concretes
+		*/
+		public function prepareFirstModule ():void {
 
-			Dotenv::createImmutable( $fileConfig->activeModulePath())
-
-			->load();
+			current($this->modules)->prepareToRun();
 		}
 	}
 ?>

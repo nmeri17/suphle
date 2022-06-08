@@ -1,11 +1,11 @@
 <?php
 	namespace Tilwa\Bridge\Laravel\Config;
 
-	use Illuminate\Config\Repository;
+	use Tilwa\Hydration\Container;
 
 	use Tilwa\Contracts\Config\Laravel;
 
-	use Tilwa\Hydration\Container;
+	use Illuminate\Config\Repository;
 
 	class ConfigLoader extends Repository {
 
@@ -48,6 +48,8 @@
 	        if (array_key_exists($name, $bridge))
 
 	        	return $bridge[$name];
+
+	        return null;
 	    }
 
 	    /**
@@ -58,6 +60,8 @@
 	    	$currentContext = null;
 
 	    	foreach ($this->pathSegments as $segment) {
+
+	    		if (!method_exists($config, $segment)) return null;
 
 	    		if (is_null($currentContext))
 	    		
@@ -76,9 +80,8 @@
 	    	->needsArguments([
 
 	    		"nativeValues" => parent::get($configName)
-	    	])
-
-	    	->getClass($className);
+	    	
+	    	])->getClass($className);
 	    }
 
 	    /**

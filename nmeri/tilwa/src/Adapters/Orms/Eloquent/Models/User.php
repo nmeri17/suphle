@@ -11,7 +11,7 @@
 
 		protected $hidden = ["password"], $table = "users",
 
-		$fillable = ["email", "password"];
+		$guarded = ["id", "password"];
 
 		protected static function newFactory ():Factory {
 
@@ -35,7 +35,7 @@
 
 		public function find ($id, $columns = ['*']) {
 
-			return $this->find($id, $columns);
+			return parent::find($id, $columns);
 		}
 
 		public static function migrationFolders ():array {

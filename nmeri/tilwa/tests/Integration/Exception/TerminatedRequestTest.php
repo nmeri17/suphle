@@ -7,97 +7,71 @@
 
 	use Tilwa\Request\PayloadStorage;
 
-	use Tilwa\Modules\ModuleExceptionBridge;
+	use Tilwa\Response\Format\Markup;
 
-	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\MockFacilitator};
+	use Tilwa\Contracts\{Config\ExceptionInterceptor, Modules\DescriptorInterface};
 
-	use Exception;
+	use Tilwa\Testing\TestTypes\InvestigateSystemCrash;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
-	class TerminatedRequestTest extends ModuleLevelTest {
+	use Exception;
 
-		use MockFacilitator;
+	class TerminatedRequestTest extends InvestigateSystemCrash {
 
-		private $firstContainer, $sut = ModuleExceptionBridge::class;
+		private $exceptionConfig;
 
-		public function setUp ():void {
-
-			$this->firstContainer = new Container;
+		protected function setUp ():void {
 
 			parent::setUp();
+
+			$this->exceptionConfig = $this->getContainer()->getClass(ExceptionInterceptor::class);
 		}
 
-		/**
-		 * @param {exception} mocked Throwable
-		*/
-		private function exceptionStubModuleHandler ( $exception):ModuleHandlerIdentifier {
+		protected function getModule ():DescriptorInterface {
 
-			return $this->positiveDouble(ModuleHandlerIdentifier::class, [
-				"getModules" => $this->getModules(),
-
-				"respondFromHandler" => $exception
-			]);
-		}
-
-		private function errorStubModuleHandler (callback $exception):ModuleHandlerIdentifier {
-
-			return $this->positiveDouble(ModuleHandlerIdentifier::class, [
-				
-				"getModules" => $this->getModules(),
-
-				"respondFromHandler" => $this->returnCallback($callback)
-			]);
-		}
-
-		protected function getModules ():array {
-
-			return [new ModuleOneDescriptor($this->firstContainer)];
+			return new ModuleOneDescriptor(new Container);
 		}
 
 		public function test_exceptions_uses_assigned_handler () {
 
-			$entrance = $this->exceptionStubModuleHandler($this->willThrowException(new NotFoundException)); // given
+			$this->assertExceptionUsesRenderer( // then
+			
+				new Markup("missingHandler", "errors/not-found"),
 
-			$entrance->diffusedRequestResponse(); // when
+				function () {
 
-			$this->assertTrue($entrance->underlyingRenderer()->matchesHandler("missingHandler")); // then
+					throw new NotFoundException; // when
+				}
+			);
 		}
 
 		public function test_exceptions_without_assigned_handler_uses_default () {
 
-			$entrance = $this->exceptionStubModuleHandler($this->willThrowException(new Exception)); // given
+			$this->assertExceptionUsesRenderer( // then
+			
+				new Markup("genericHandler", "/errors/default"),
 
-			$entrance->diffusedRequestResponse(); // when
+				function () {
 
-			$this->assertTrue($entrance->underlyingRenderer()->matchesHandler("genericHandler")); // then
+					throw new Exception; // when
+				}
+			);
 		}
 
 		public function test_fatal_exception_shutsdown_gracefully () {
 
-			$response = "boo!";
+			$this->assertWillCatchPayload(
 
-			// given
-			$mockSut = $this->positiveDouble($this->sut, [
-				
-				"handlingRenderer" => (new Json)->setRawResponse($response)
-			]);
+				$this->getContainer()->getClass(PayloadStorage::class),
 
-			$this->firstContainer->whenTypeAny()->needsAny([
+				function () {
 
-				$this->sut => $mockSut
-			]);
+					throw new Exception; // when
+				}
+			); // then
 
-			$entrance = $this->errorStubModuleHandler(function (){
-
-				trigger_error("waterloo", E_USER_ERROR);
-			});
-
-			$this->assertCaughtPayload($this->firstContainer->getClass(PayloadStorage::class)); // then 1
-
-			$entrance->diffusedRequestResponse(); // when
-
-			$this->expectOutputString($response); // then 2
+			
 		}
 	}
 ?>

@@ -1,21 +1,23 @@
 <?php
 	namespace Tilwa\Modules;
 
-	use Tilwa\Contracts\{Hydration\InterfaceCollection, Modules\ControllerModule, Config\ModuleFiles};
+	use Tilwa\Contracts\Modules\{DescriptorInterface, ControllerModule};
+
+	use Tilwa\Hydration\InterfaceCollection;
 
 	use Tilwa\Hydration\{Container, Structures\BaseInterfaceCollection};
 
-	use Tilwa\Exception\Explosives\UnexpectedModules;
+	use Tilwa\Exception\Explosives\Generic\UnexpectedModules;
 
 	use Tilwa\Request\PayloadStorage;
 
-	abstract class ModuleDescriptor {
+	abstract class ModuleDescriptor implements DescriptorInterface {
 
-		protected $container;
+		protected $container, $expatriates = [],
 
-		private $expatriates, $hasPreparedExpatriates = false;
+		$hasPreparedExpatriates = false;
 
-		function __construct(Container $container) {
+		public function __construct (Container $container) {
 			
 			$this->container = $container;
 		}
@@ -23,12 +25,14 @@
 		/**
 		 * @param {dependencies} [Interactions\Interface => new ModuleDescriptor]
 		*/
-		public function sendExpatriates(array $dependencies):void {
+		public function sendExpatriates(array $dependencies):DescriptorInterface {
 
 			$this->expatriates = $dependencies;
+
+			return $this;
 		}
 
-		public function getExpatriates():array {
+		public function getExpatriates ():array {
 
 			return $this->expatriates;
 		}
@@ -36,7 +40,7 @@
 		/**
 		 * @return Interfaces implemented by sibling modules that this module requires to function
 		*/
-		public function expatriateNames():array {
+		public function expatriateNames ():array {
 
 			return [];
 		}
@@ -47,19 +51,24 @@
 		}
 
 		/**
-		 * Interface which will be consumers' API on this module
+		 * {@inheritdoc}
 		*/
-		public function exportsImplements():string {
+		public function exportsImplements ():string {
 
 			return ControllerModule::class;
 		}
 
-		/**
-		 * Simply bind things into `$this->container`
-		*/
-		protected function entityBindings ():void {
+		public function globalConcretes ():array {
 
-			//
+			return [];
+		}
+
+		/**
+		 * Bind objects either globally or to specific consumers
+		*/
+		protected function registerConcreteBindings ():void {
+
+			$this->container->whenTypeAny()->needsAny($this->globalConcretes());
 		}
 
 		public function getContainer():Container {
@@ -75,11 +84,9 @@
 			return BaseInterfaceCollection::class;
 		}
 
-		abstract public function fileConfig ():ModuleFiles;
+		public function warmModuleContainer ():void {
 
-		public function warmUp ():void {
-
-			$this->container->provideSelf();
+			$this->container->setEssentials();
 
 			$this->container->setInterfaceHydrator($this->interfaceCollection());
 
@@ -112,6 +119,9 @@
 			return $this;
 		}
 
+		/**
+		 * Doesn't do any hydration; just statically verifies that both lists are compatible
+		*/
 		private function deportUnexpected ():void {
 
 			$given = array_keys($this->expatriates);
@@ -141,24 +151,15 @@
 		*/
 		public function prepareToRun ():self {
 
-			$this->provideSelf();
-
 			$this->container->setExternalContainerManager();
 
-			$this->entityBindings();
+			$this->registerConcreteBindings();
 
 			$this->hasPreparedExpatriates = true;
 
 			$this->validateExpatriates()->empowerExpatriates();
 
-			$this->container->getClass(PayloadStorage::class)->setPayload();
-
 			return $this;
-		}
-
-		private function provideSelf ():void {
-
-			$this->whenTypeAny()->needsAny([get_class() => $this]);
 		}
 	}
 ?>

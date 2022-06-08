@@ -1,84 +1,81 @@
 <?php
 	namespace Tilwa\Flows;
 
-	use Tilwa\Contracts\{Requests\BaseResponseManager, CacheManager, Auth\AuthStorage, Modules\HighLevelRequestHandler};
+	use Tilwa\Flows\Jobs\{RouteBranches, UpdateCountDelete};
+
+	use Tilwa\Flows\Structures\{RouteUserNode, RouteUmbrella,AccessContext, BranchesContext};
+
+	use Tilwa\Contracts\{Requests\BaseResponseManager, IO\CacheManager, Auth\AuthStorage, Modules\HighLevelRequestHandler, Presentation\BaseRenderer};
+
+	use Tilwa\Modules\ModulesBooter;
 
 	use Tilwa\Queues\AdapterManager;
 
-	use Tilwa\Flows\Jobs\{RouteBranches, BranchesContext, UpdateCountDelete};
-
-	use Tilwa\Flows\Structures\{RouteUserNode, RouteUmbrella,AccessContext};
-
 	use Tilwa\Events\EventManager;
 
-	use Tilwa\Routing\RequestDetails;
+	use Tilwa\Request\RequestDetails;
 
 	class OuterFlowWrapper implements BaseResponseManager, HighLevelRequestHandler {
 
-		const FLOW_PREFIX = "tilwa_flow",
-
-		ALL_USERS = "*", HIT_EVENT = "flow_hit";
+		const ALL_USERS = "*", HIT_EVENT = "flow_hit";
 
 		private $requestDetails, $queueManager, $modules,
 
-		$cacheManager, $authStorage, $routeUmbrella,
+		$flowSaver, $authStorage, $routeUmbrella,
 
-		$activeUser, $eventManager;
+		$activeUser, $eventManager, $routeUserNode;
 
-		public function __construct(RequestDetails $requestDetails, AdapterManager $queueManager, CacheManager $cacheManager, AuthStorage $authStorage, EventManager $eventManager) {
+		public function __construct(
+			RequestDetails $requestDetails, AdapterManager $queueManager,
+			UmbrellaSaver $flowSaver, AuthStorage $authStorage,
+
+			EventManager $eventManager, ModulesBooter $modulesBooter
+		) {
 			
 			$this->requestDetails = $requestDetails;
 
 			$this->queueManager = $queueManager;
 
-			$this->cacheManager = $cacheManager;
+			$this->flowSaver = $flowSaver;
 
 			$this->authStorage = $authStorage;
 
 			$this->eventManager = $eventManager;
+
+			$this->modules = $modulesBooter->getModules();
 		}
 
-		public function setModules (array $modules):void {
+		public function canHandle ():bool {
 
-			$this->modules = $modules;
-		}
-
-		private function getUserId():string { 
-
-			$user = $this->authStorage->getUser();
-
-			return is_null($user) ? self::ALL_USERS: strval($user->getId());
-		}
-
-		public function canHandle():bool {
-
-			$this->routeUmbrella = $this->cacheManager->get($this->dataPath()); // or combine [tag] with the [get]
+			$this->routeUmbrella = $this->flowSaver->getExistingUmbrella($this->dataPath());
 
 			if (is_null($this->routeUmbrella)) return false;
 
-			$this->context = $this->getActiveFlow($this->getUserId() );
+			$this->routeUserNode = $this->getActiveFlow($this->getUserId() );
 
-			return !is_null($this->context);
+			return !is_null($this->routeUserNode);
 		}
 
-		public function getResponse():string {
+		private function getActiveFlow (string $userId):?RouteUserNode {
 
-			return $this->handlingRenderer()->render();
-		}
+			$userPayload = $this->routeUmbrella->getUserPayload($userId);
 
-		private function getActiveFlow(string $userId):RouteUserNode {
-
-			$context = $this->routeUmbrella->getUserPayload($userId);
-
-			if (is_null($context) && ($userId != self::ALL_USERS)) { // assume data was saved for general user base
+			if (is_null($userPayload) && ($userId != self::ALL_USERS)) { // assume data was saved for general user base
 				$userId = self::ALL_USERS;
 
-				$context = $this->routeUmbrella->getUserPayload($userId);
+				$userPayload = $this->routeUmbrella->getUserPayload($userId);
 			}
 
 			$this->activeUser = $userId;
 
-			return $context;
+			return $userPayload;
+		}
+
+		private function getUserId ():string { 
+
+			$user = $this->authStorage->getUser();
+
+			return is_null($user) ? self::ALL_USERS: strval($user->getId());
 		}
 
 		public function afterRender($cachedResponse):void {
@@ -93,7 +90,7 @@
 			$this->queueManager->augmentArguments(UpdateCountDelete::class, [
 				"theAccessed" => new AccessContext(
 
-					$this->dataPath(), $this->context,
+					$this->dataPath(), $this->routeUserNode,
 
 					$this->routeUmbrella, $this->activeUser
 				)
@@ -102,34 +99,41 @@
 
 		private function dataPath ():string {
 
-			return self::FLOW_PREFIX . $this->requestDetails->getPath();
+			return $this->flowSaver->getPatternLocation($this->requestDetails->getPath());
 		}
 
-		// it is safest for listeners to listen "external" on the target controller
+		// it is safest for listeners to listen "external" on the target controller (why?)
 		private function emitEvents($cachedResponse):void {
+
+			$controller = $this->responseRenderer()->getController();
 
 			$this->eventManager->emit(
 
-				$this->handlingRenderer()->getController(), self::HIT_EVENT, $cachedResponse
-			); // should probably include incoming request parameters?
+				get_class($controller), self::HIT_EVENT,
+
+				$cachedResponse // event handler can then inject payloadStorage/pathPlaceholders
+			);
 		}
  
 		private function queueBranches():void {
 
 			$this->queueManager->augmentArguments(RouteBranches::class, [
 				"context" => new BranchesContext(
-					$this->handlingRenderer(),
+					$this->responseRenderer(),
 
-					$this->authStorage->getUser(),
-
-					$this->modules
+					$this->authStorage->getUser()
 				)
 			]);
 		}
 
-		public function handlingRenderer ():AbstractRenderer {
+		public function responseRenderer ():BaseRenderer {
 
-			return $this->context->getRenderer();
+			return $this->routeUserNode->getRenderer();
+		}
+
+		public function handlingRenderer ():?BaseRenderer {
+
+			return $this->responseRenderer();
 		}
 	}
 ?>

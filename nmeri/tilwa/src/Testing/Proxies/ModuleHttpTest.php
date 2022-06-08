@@ -1,7 +1,15 @@
 <?php
 	namespace Tilwa\Testing\Proxies;
 
-	use Tilwa\Testing\{Condiments\DirectHttpTest, Proxies\ExaminesHttpResponse};
+	use Tilwa\Hydration\Container;
+
+	use Tilwa\Modules\ModuleToRoute;
+
+	use Tilwa\Middleware\MiddlewareRegistry;
+
+	use Tilwa\Testing\{Condiments\DirectHttpTest, Proxies\Extensions\TestResponseBridge};
+
+	use Tilwa\Exception\Explosives\NotFoundException;
 
 	trait ModuleHttpTest {
 
@@ -27,31 +35,33 @@
 			return $this;
 		}
 
-		protected function firstModuleContainer ():Container {
-
-			return $this->entrance->firstContainer();
-		}
-
 		protected function getInitializerWrapper ():ModuleToRoute {
 
 			return $this->firstModuleContainer()->getClass(ModuleToRoute::class);
 		}
 
-		/**
-		 * Assumes [gatewayResponse] has already been called
-		*/
 		protected function activeModuleContainer ():Container {
 
-			return $this->getInitializerWrapper()->getActiveModule()->getContainer();
+			$activeModule = $this->getInitializerWrapper()->getActiveModule();
+
+			if (!is_null($activeModule)) // if [gatewayResponse] has not been called
+
+				return $activeModule->getContainer();
+
+			return $this->firstModuleContainer();
 		}
 
-		public function from(string $url):self {
+		public function from (string $url):self {
 
 			$this->setHttpParams($url);
 
 			$initializer = $this->getInitializerWrapper()
 
 			->findContext($this->getModules());
+
+			if (!$initializer)
+
+				throw new NotFoundException;
 
 			$initializer->getRouter()
 
@@ -109,12 +119,26 @@
 
 			$matches = $this->getMatchingMiddleware($middlewares);
 
-			$this->assertEmpty(array_diff($middlewares, $matches));
+			$unused = array_diff($middlewares, $matches);
+
+			$this->assertEmpty($unused,
+
+				"Failed to assert that middlewares ".
+
+				json_encode($unused, JSON_PRETTY_PRINT). " were used"
+			);
 		}
 
 		protected function assertDidntUseMiddleware (array $middlewares) {
 
-			$this->assertEmpty($this->getMatchingMiddleware($middlewares));
+			$intersectingUsed = $this->getMatchingMiddleware($middlewares);
+
+			$this->assertEmpty($intersectingUsed,
+
+				"Did not expect to use middlewares " .
+
+				json_encode($intersectingUsed, JSON_PRETTY_PRINT)
+			);
 		}
 
 		private function getMatchingMiddleware (array $middlewares):array {
@@ -133,21 +157,21 @@
 			return $matches;
 		}
 
-		public function get(string $url, array $headers = []):TestResponse {
+		public function get(string $url, array $headers = []):TestResponseBridge {
 
 			return $this->gatewayResponse($url, __FUNCTION__, null, $headers);
 		}
 
-		public function getJson(string $url, array $headers = []):TestResponse {
+		public function getJson(string $url, array $headers = []):TestResponseBridge {
 
 			return $this->json( "get", $url, null, $headers);
 		}
 
-		private function gatewayResponse (string $requestPath, string $httpMethod, ?string $payload, array $headers):TestResponse {
+		private function gatewayResponse (string $requestPath, string $httpMethod, ?string $payload, array $headers):TestResponseBridge {
 
 			$entrance = $this->entrance;
 
-			$this->setHttpParams($url, $httpMethod, $payload, $headers);
+			$this->setHttpParams($requestPath, $httpMethod, $payload, $headers);
 
 			$entrance->diffusedRequestResponse();
 
@@ -156,43 +180,43 @@
 			return $this->makeExaminable($renderer);
 		}
 
-		public function post(string $url, array $payload = [], array $headers = []):TestResponse {
+		public function post(string $url, array $payload = [], array $headers = []):TestResponseBridge {
 
 			$newPayload = $this->payloadStringifier($payload, $headers);
 
 			return $this->gatewayResponse($url, __METHOD__, $newPayload, $headers);
 		}
 
-		public function postJson(string $url, array $payload = [], array $headers = []):TestResponse {
+		public function postJson(string $url, array $payload = [], array $headers = []):TestResponseBridge {
 
 			return $this->json("post", $url, $payload, $headers);
 		}
 
-		public function put(string $url, array $payload = [], array $headers = []):TestResponse {
+		public function put(string $url, array $payload = [], array $headers = []):TestResponseBridge {
 
 			$newPayload = $this->payloadStringifier($payload, $headers);
 
 			return $this->gatewayResponse($url, __METHOD__, $newPayload, $headers);
 		}
 
-		public function putJson(string $url, array $payload = [], array $headers = []):TestResponse {
+		public function putJson(string $url, array $payload = [], array $headers = []):TestResponseBridge {
 
 			return $this->json("put", $url, $payload, $headers);
 		}
 
-		public function delete(string $url, array $payload = [], array $headers = []):TestResponse {
+		public function delete(string $url, array $payload = [], array $headers = []):TestResponseBridge {
 
 			$newPayload = $this->payloadStringifier($payload, $headers);
 
 			return $this->gatewayResponse($url, __METHOD__, $newPayload, $headers);
 		}
 
-		public function deleteJson(string $url, array $payload = [], array $headers = []):TestResponse {
+		public function deleteJson(string $url, array $payload = [], array $headers = []):TestResponseBridge {
 
 			return $this->json("delete", $url, $payload, $headers);
 		}
 
-		public function json(string $httpMethod, string $url, array $payload = [], array $headers = []):TestResponse {
+		public function json(string $httpMethod, string $url, array $payload = [], array $headers = []):TestResponseBridge {
 
 			$converted = json_encode($payload);
 

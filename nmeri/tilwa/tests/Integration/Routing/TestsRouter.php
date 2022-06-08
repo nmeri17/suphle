@@ -1,19 +1,24 @@
 <?php
 	namespace Tilwa\Tests\Integration\Routing;
 
-	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
-
-	use Tilwa\Testing\Condiments\{DirectHttpTest, MockFacilitator};
-
 	use Tilwa\Routing\RouteManager;
+
+	use Tilwa\Contracts\{Config\Router as RouterContract, Presentation\BaseRenderer};
+
+	use Tilwa\Testing\{TestTypes\IsolatedComponentTest, Condiments\DirectHttpTest};
+
+	use Tilwa\Tests\Integration\Generic\CommonBinds;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\BrowserNoPrefix, Config\RouterMock};
 
-	use Tilwa\Contracts\Config\Router as IRouter;
-
 	class TestsRouter extends IsolatedComponentTest {
 
-		use DirectHttpTest, MockFacilitator;
+		use DirectHttpTest, CommonBinds {
+
+			CommonBinds::concreteBinds as commonConcretes;
+
+			CommonBinds::simpleBinds as commonSimples;
+		}
 
 		public function getRouter ():RouteManager {
 
@@ -25,13 +30,11 @@
 			return BrowserNoPrefix::class;
 		}
 
-		protected function entityBindings ():void {
+		protected function concreteBinds ():array {
 
-			parent::entityBindings();
+			return array_merge($this->commonConcretes(), [
 
-			$this->container->whenTypeAny()->needsAny([
-
-				IRouter::class => $this->positiveDouble(
+				RouterContract::class => $this->positiveDouble(
 					RouterMock::class, [
 
 						"browserEntryRoute" => $this->getEntryCollection()
@@ -40,10 +43,19 @@
 			]);
 		}
 
+		protected function simpleBinds ():array {
+
+			$commonSimples = $this->commonSimples();
+
+			unset($commonSimples[RouterContract::class]);
+
+			return $commonSimples;
+		}
+
 		/**
 		 * Use in tests involving pulling path from requestDetails
 		*/
-		protected function fakeRequest (string $url, string $httpMethod = "get"):AbstractRenderer {
+		protected function fakeRequest (string $url, string $httpMethod = "get"):?BaseRenderer {
 
 			$this->setHttpParams($url, $httpMethod);
 

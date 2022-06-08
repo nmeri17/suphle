@@ -4,6 +4,8 @@
 	use Tilwa\Contracts\Hydration\DecoratorChain;
 
 	use Tilwa\Contracts\Hydration\ScopeHandlers\{ModifiesArguments, ModifyInjected};
+
+	use Tilwa\Hydration\Structures\ObjectDetails;
 	
 	use ReflectionClass;
 
@@ -11,25 +13,27 @@
 
 		private $chain, $argumentScope, $injectScope,
 
-		$container;
+		$container, $objectMeta;
 
-		public function __construct (Container $container, DecoratorChain $chain) {
+		public function __construct (Container $container, DecoratorChain $chain, ObjectDetails $objectMeta) {
 
 			$this->chain = $chain->allScopes();
 
 			$this->container = $container;
+
+			$this->objectMeta = $objectMeta;
 		}
 
 		public function assignScopes ():void {
 
-			$this->argumentScope = array_filter($this->chain, function ($decorator) {
+			$this->argumentScope = array_filter($this->chain, function ($handler) {
 
-				return $decorator instanceof ModifiesArguments;
+				return $this->objectMeta->implementsInterface($handler, ModifiesArguments::class);
 			});
 
-			$this->injectScope = array_filter($this->chain, function ($decorator) {
+			$this->injectScope = array_filter($this->chain, function ($handler) {
 
-				return $decorator instanceof ModifyInjected;
+				return $this->objectMeta->implementsInterface($handler, ModifyInjected::class);
 			});
 		}
 
@@ -43,11 +47,12 @@
 
 			if (empty($relevantDecors)) return $argumentList;
 
-			if ($methodName == "__construct") $hasConstructor = true;
+			if ($methodName == Container::CLASS_CONSTRUCTOR) {
 
-			if ($hasConstructor)
+				$hasConstructor = true;
 
 				$concrete = $this->noConstructor($entityName);
+			}
 
 			else $concrete = $container->getClass($entityName);
 
@@ -65,9 +70,31 @@
 			return $argumentList;
 		}
 
-		private function getRelevantDecors (array $context, string $search):array {
+		/**
+		 * @return numerically indexed names of matching decorators
+		*/
+		public function getRelevantDecors (array $context, string $search):array {
 
-			return array_intersect(array_keys($context), class_implements($search));
+			$active = $this->objectMeta->parentInterfaceMatches(
+
+				$search, array_keys($context)
+			);
+
+			$unique = $active; // one decorator extending another should not select super handler since it's likely already used in the sub
+
+			foreach ($active as $decorator) {
+
+				$parents = $this->objectMeta->parentInterfaceMatches(
+
+					$decorator, $active // safe not to omit self since it's not its own parent
+				);
+
+				if (!empty($parents)) // weed out preceding ancestors
+
+					$unique = array_diff($unique, $parents);
+			}
+
+			return array_values($unique);
 		}
 
 		/**
@@ -77,18 +104,19 @@
 			return (new ReflectionClass($className))->newInstanceWithoutConstructor();
 		}
 
-		public function scopeInjecting ($concrete, string $caller) {
+		public function scopeInjecting (object $concrete, string $caller) {
 
 			$scope = $this->injectScope;
 
 			$relevantDecors = $this->getRelevantDecors($scope, get_class($concrete));
 
-			foreach ($relevantDecors as $decorator) {
+			foreach ($relevantDecors as $decorator)
 
-				$handler = $this->container->getClass($scope[$decorator]);
+				$concrete = $this->container
 
-				$concrete = $handler->proxifyInstance ($concrete, $caller);
-			}
+				->getClass($scope[$decorator])
+
+				->examineInstance($concrete, $caller);
 
 			return $concrete;
 		}

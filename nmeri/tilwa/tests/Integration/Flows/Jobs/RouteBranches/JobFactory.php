@@ -1,47 +1,66 @@
 <?php
 	namespace Tilwa\Tests\Integration\Flows\Jobs\RouteBranches;
 
-	use Tilwa\Response\Format\{Json, AbstractRenderer};
-
-	use Tilwa\Testing\TestTypes\ModuleLevelTest;
-
-	use Tilwa\Testing\Condiments\{QueueInterceptor, MockFacilitator};
-
-	use Illuminate\Support\Collection;
-
 	use Tilwa\Flows\{ ControllerFlows, Jobs\RouteBranches, Structures\BranchesContext};
 
-	use Tilwa\Contracts\Auth\User;
+	use Tilwa\Contracts\{Auth\UserContract, Presentation\BaseRenderer, Database\OrmDialect};
+
+	use Tilwa\Response\Format\Json;
+
+	use Tilwa\Adapters\Orms\Eloquent\Models\User as EloquentUser;
+
+	use Tilwa\Testing\Condiments\{QueueInterceptor, BaseDatabasePopulator};
+
+	use Tilwa\Tests\Integration\Modules\ModuleDescriptor\DescriptorCollection;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Controllers\FlowController;
 
-	abstract class JobFactory extends ModuleLevelTest {
+	use Illuminate\Support\Collection;
 
-		use QueueInterceptor, MockFacilitator;
+	abstract class JobFactory extends DescriptorCollection {
 
-		private $container;
+		use QueueInterceptor, BaseDatabasePopulator {
 
-		protected $userUrl = "/user-content/5", // corresponds to the content generated after using [flowUrl] to create a context
+			BaseDatabasePopulator::setUp as databaseSetup;
+		}
 
-		$originDataName = "all_users", $flowUrl = "user-content/id",
+		protected $container,
+
+		$userUrl = "/user-content/5", // corresponds to the content generated after using [flowUrl] to create a context
+
+		$flowUrl = "user-content/id", // this is expected to exist in one of the module entry collections
+
+		$originDataName = "all_users",
 
 		$rendererController = FlowController::class;
 
-		public function setUp ():void {
+		protected function setUp ():void {
 
-			parent::setUp();
+			$this->databaseSetup();
+
+			$this->catchQueuedTasks();
 
 			$this->container = $this->firstModuleContainer();
+		}
+
+		protected function getActiveEntity ():string {
+
+			return EloquentUser::class;
+		}
+
+		protected function getInitialCount ():int {
+
+			return 5;
 		}
 
 		/**
 		 * Stub out the renderer for an imaginary previous request before the flow one we are about to make
 		*/
-		protected function getLoadedRenderer ():AbstractRenderer {
+		protected function getPrecedingRenderer ():BaseRenderer {
 
 			$models = [];
 
-			for ($i=0; $i < 10; $i++) $models[] = ["id" => $i]; // the list the flow is gonna iterate over
+			for ($i=1; $i < 11; $i++) $models[] = ["id" => $i]; // the list the flow is gonna iterate over
 
 			return $this->positiveDouble (Json::class, [
 
@@ -52,9 +71,9 @@
 
 				"getFlow" => $this->constructFlow(),
 
-				"getController" => $this->rendererController
+				"getController" => $this->positiveDouble($this->rendererController)
 
-			], ["preloaded"]);
+			], [], ["handler" => "preloaded"]);
 		}
 
 		protected function constructFlow ():ControllerFlows {
@@ -67,36 +86,42 @@
 			);
 		}
 
-		protected function makeJob (BranchesContext $context):RouteBranches {
+		protected function makeRouteBranches (BranchesContext $context):RouteBranches {
 
 			$jobName = RouteBranches::class;
 
-			return $this->container->whenType($jobName)
+			$jobInstance = $this->container->whenType($jobName)
 
-			->needs([ get_class($context) => $context ])
+			->needsArguments([ BranchesContext::class => $context ])
 
 			->getClass($jobName);
+
+			$this->container->refreshClass($jobName);
+
+			return $jobInstance;
 		}
 
-		protected function makeUser (int $id):User {
+		protected function makeUser (int $id):UserContract {
 
-			$entity = $this->container->getClass(User::class);
-
-			$entity->setId($id);
-
-			return $entity;
+			return $this->replicator->getExistingEntities(1, compact("id"))[0];
 		}
 
-		protected function makeBranchesContext (?User $user):BranchesContext {
+		protected function makeBranchesContext (?UserContract $user = null):BranchesContext {
 
 			return new BranchesContext(
 
-				$this->getLoadedRenderer(),
+				$this->getPrecedingRenderer(),
 
-				$user, // creates 10 content models, but assigns the given user as their owner
-
-				$this->getModules(), null
+				$user // creates a collection of 10 models in preceding renderer, then assigns the given user as their owner in the flow we are going to make
 			);
+		}
+
+		/**
+		 * Push in user-content/1-10
+		*/
+		protected function handleDefaultBranchesContext ():void {
+
+			$this->makeRouteBranches($this->makeBranchesContext())->handle();
 		}
 	}
 ?>

@@ -18,12 +18,18 @@
 
 			$matchingRenderer = $this->fakeRequest("/outer/use-method/without"); // when
 
-			$this->assertNotEquals($matchingRenderer->getController(), $entry->_handlingClass()); // then
+			$this->assertNotNull($matchingRenderer);
+
+			$controller = $matchingRenderer->getController();
+
+			$this->assertNotEquals(get_class($controller), $entry->_handlingClass()); // then
 		}
 
 		public function test_method_name_overwrites_internal_prefix () {
 
 			$matchingRenderer = $this->fakeRequest("/outer/ignore-internal/with"); // when
+
+			$this->assertNotNull($matchingRenderer);
 
 			$this->assertTrue($matchingRenderer->matchesHandler("hasInner")); // then
 		}

@@ -3,15 +3,19 @@
 
 	use Tilwa\Contracts\Hydration\{InterfaceCollection, DecoratorChain};
 
-	use Tilwa\Contracts\{HtmlParser, Requests\RequestValidator, Queues\Adapter as QueueAdapter, Modules\ControllerModule, IO\Session};
+	use Tilwa\Contracts\{Presentation\HtmlParser, Queues\Adapter as QueueAdapter, Modules\ControllerModule, Exception\FatalShutdownAlert};
 
-	use Tilwa\Contracts\Database\{OrmDialect, OrmReplicator};
+	use Tilwa\Contracts\IO\{Session, MailClient, EnvAccessor};
+
+	use Tilwa\Contracts\Requests\{RequestValidator, StdInputReader};
+
+	use Tilwa\Contracts\Database\{OrmDialect, OrmReplicator, OrmTester};
 
 	use Tilwa\Contracts\Bridge\{LaravelContainer, LaravelArtisan};
 
-	use Tilwa\Contracts\Auth\{AuthStorage, UserContract, UserHydrator as IUserHydrator, ModuleLoginHandler};
+	use Tilwa\Contracts\Auth\{AuthStorage, ModuleLoginHandler};
 
-	use Tilwa\Contracts\Config\{Auth as AuthConfig, Transphporm as TransphpormConfig, Laravel as LaravelConfig, ExceptionInterceptor, Console as ConsoleContract, Database};
+	use Tilwa\Contracts\Config\{AuthContract, Database, DecoratorProxy, ExceptionInterceptor, Transphporm as TransphpormConfig, Laravel as LaravelConfig, Console as ConsoleContract, Flows as FlowConfig};
 
 	use Tilwa\Contracts\IO\Image\{ImageThumbnailContract, InferiorImageContract, ImageLocator};
 
@@ -19,25 +23,27 @@
 
 	use Tilwa\IO\Image\SaveClients\LocalSaver;
 
-	use Tilwa\IO\Session\NativeSession;
+	use Tilwa\IO\{Session\NativeSession, Mailing\MailClientLoader, Env\DatabaseEnvReader};
 
 	use Tilwa\Queues\Adapters\Resque;
 
 	use Tilwa\Auth\{LoginHandlerInterfaceLoader, Storage\SessionStorage};
 
-	use Tilwa\Adapters\Orms\Eloquent\{UserHydrator as EloquentUserHydrator, User as EloquentUser, ModelReplicator, OrmLoader};
+	use Tilwa\Adapters\Orms\Eloquent\{ UserEntityLoader, ModelReplicator, OrmLoader, DatabaseTester as EloquentTester};
 
 	use Tilwa\Adapters\Markups\Transphporm as TransphpormAdapter;
 
-	use Tilwa\Request\Validators\RakitValidator;
+	use Tilwa\Request\{NativeInputReader, ValidatorLoader};
 
-	use Tilwa\Config\{Auth, Transphporm, Laravel, ExceptionConfig, Console as CliConsole, EnvDatabase};
+	use Tilwa\Config\{Auth, Transphporm, Laravel, ExceptionConfig, Console as CliConsole, PDOMysqlKeys, DefaultFlowConfig, ProxyManagerConfig};
 
 	use Tilwa\Modules\ControllerModuleApi;
 
 	use Tilwa\Hydration\Structures\BaseDecorators;
 
 	use Tilwa\Bridge\Laravel\InterfaceLoaders\{LaravelAppLoader, ArtisanLoader};
+
+	use Tilwa\Exception\Jobs\MailShutdownAlert;
 
 	use Psr\Http\Client\ClientInterface;
 
@@ -64,7 +70,11 @@
 
 				InferiorImageContract::class => InferiorImageLoader::class,
 
-				ImageThumbnailContract::class => ImageThumbnailLoader::class
+				ImageThumbnailContract::class => ImageThumbnailLoader::class,
+
+				RequestValidator::class => ValidatorLoader::class,
+
+				MailClient::class => MailClientLoader::class
 			];
 		}
 
@@ -74,11 +84,7 @@
 
 				HtmlParser::class => TransphpormAdapter::class,
 
-				UserContract::class => EloquentUser::class,
-
 				AuthStorage::class => SessionStorage::class,
-
-				RequestValidator::class => RakitValidator::class,
 
 				QueueAdapter::class => Resque::class,
 
@@ -94,9 +100,17 @@
 
 				OrmReplicator::class => ModelReplicator::class,
 
+				OrmTester::class => EloquentTester::class,
+
 				ImageLocator::class => LocalSaver::class,
 
-				Session::class => NativeSession::class
+				Session::class => NativeSession::class,
+
+				StdInputReader::class => NativeInputReader::class,
+
+				FatalShutdownAlert::class => MailShutdownAlert::class,
+
+				EnvAccessor::class => DatabaseEnvReader::class
 			];
 		}
 
@@ -121,17 +135,19 @@
 
 				LaravelConfig::class => Laravel::class,
 
-				AuthConfig::class => Auth::class,
+				AuthContract::class => Auth::class,
 
 				TransphpormConfig::class => Transphporm::class,
-
-				IUserHydrator::class => EloquentUserHydrator::class,
 
 				ExceptionInterceptor::class => ExceptionConfig::class,
 
 				ConsoleContract::class => CliConsole::class,
 
-				Database::class => EnvDatabase::class
+				Database::class => PDOMysqlKeys::class,
+
+				FlowConfig::class => DefaultFlowConfig::class,
+
+				DecoratorProxy::class => ProxyManagerConfig::class
 			];
 		}
 	}

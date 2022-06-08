@@ -5,7 +5,7 @@
 
 	class SimpleSearchService extends SimpleSearch {
 
-		protected function custom_filter ($model, $value) {
+		public function custom_filter ($model, $value) {
 
 			return $model;
 		}	

@@ -22,7 +22,7 @@
 
 			// given => see module injection
 
-			$this->mockEventReceiver->updatePayload($this->payload)->shouldBeCalled(); // then
+			$this->expectUpdatePayload(); // then
 
 			$this->getModuleFor(ModuleOne::class)->payloadEvent($this->payload); // when
 		}

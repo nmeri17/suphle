@@ -3,7 +3,7 @@
 
 	use Tilwa\Hydration\Container;
 
-	use Tilwa\Contracts\{ Modules\HighLevelRequestHandler, Request\ValidationEvaluator, Presentation\BaseRenderer};
+	use Tilwa\Contracts\{ Modules\HighLevelRequestHandler, Presentation\BaseRenderer};
 
 	use Tilwa\Contracts\Auth\{LoginRenderers, ModuleLoginHandler};
 
@@ -38,28 +38,26 @@
 			return $this->validatorManager->validationErrors();
 		}
 
-		public function getResponse ():string {
-
-			$this->setResponseRenderer();
+		public function processLoginRequest ():void {
 
 			$renderer = $this->responseRenderer;
 
-			$renderer->setControllingClass($this->rendererCollection->getLoginService());
+			$renderer->setControllingClass($this->loginService);
 			
 			$renderer->hydrateDependencies($this->container);
 
 			$this->executeRenderer();
-
-			return $renderer->render();
 		}
 
-		private function setResponseRenderer ():void {
+		public function setResponseRenderer ():self {
 
 			if ($this->loginService->compareCredentials())
 
 				$this->responseRenderer = $this->rendererCollection->successRenderer();
 
 			else $this->responseRenderer = $this->rendererCollection->failedRenderer();
+
+			return $this;
 		}
 
 		private function executeRenderer ():void {
@@ -69,13 +67,13 @@
 			$dependencies = $this->container->getMethodParameters(
 				$renderer->getHandler(),
 
-				$renderer->getController()
+				get_class($renderer->getController())
 			);
 
 			$renderer->invokeActionHandler($dependencies);
 		}
 
-		public function handlingRenderer ():BaseRenderer {
+		public function handlingRenderer ():?BaseRenderer {
 
 			return $this->responseRenderer;
 		}

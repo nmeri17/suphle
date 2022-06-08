@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Meta;
 
-	use Tilwa\Hydration\BaseInterfaceCollection;
+	use Tilwa\Hydration\Structures\BaseInterfaceCollection;
 
 	use Tilwa\Contracts\Config\{ Router, Events, Laravel};
 
@@ -12,7 +12,7 @@
 	class CustomInterfaceCollection extends BaseInterfaceCollection {
 
 		public function getConfigs ():array {
-			
+
 			return array_merge(parent::getConfigs(), [
 
 				Events::class => EventsMock::class,
@@ -23,7 +23,7 @@
 			]);
 		}
 
-		protected function simpleBinds ():string {
+		public function simpleBinds ():array {
 
 			return array_merge(parent::simpleBinds(), [
 

@@ -1,6 +1,10 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\Flows;
 
+	use Tilwa\Flows\ControllerFlows;
+
+	use Tilwa\Routing\BaseCollection;
+
 	use Tilwa\Response\Format\Json;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Controllers\FlowController;

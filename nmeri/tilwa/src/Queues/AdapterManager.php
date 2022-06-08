@@ -32,7 +32,7 @@
 
 			$parameters = $this->container->whenType($taskClass)->needsArguments($deferredDependencies)
 
-			->getMethodParameters("__construct", $taskClass);
+			->getMethodParameters(Container::CLASS_CONSTRUCTOR, $taskClass);
 
 			$this->addTask($taskClass, $parameters);
 		}

@@ -1,17 +1,17 @@
 <?php
 	namespace Tilwa\Bridge\Laravel\Package\Templates;
 
-    use Tilwa\Hydration\LaravelProviderManager;
+    use Tilwa\Contracts\Bridge\LaravelContainer;
 
 	class ProvidedServiceWrapper extends <target> {
 
-        protected $target, $manager;
+        protected $target, $laravelContainer;
 
-		function __construct( $target, LaravelProviderManager $manager) {
+		function __construct( $target, LaravelContainer $laravelContainer) {
 
             $this->target = $target;
 
-            $this->manager = $manager;
+            $this->laravelContainer = $laravelContainer;
         }
 
         public function __get($property) {
@@ -21,7 +21,7 @@
 
         public function __call($method, $arguments) {
 
-            return $this->manager->createSandbox(function () use ($method, $arguments) {
+            return $this->laravelContainer->createSandbox(function () use ($method, $arguments) {
 
                 return $this->target->$method( ...$arguments);
             });

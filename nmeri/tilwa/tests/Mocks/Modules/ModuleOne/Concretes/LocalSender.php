@@ -1,23 +1,25 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes;
 
-	use Tilwa\Events\{EmitProxy, EventManager};
+	use Tilwa\Events\EmitProxy;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Meta\ModuleApi;
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleApi, Events\AssignListeners};
 
 	class LocalSender {
 
 		use EmitProxy;
 
-		const CASCADE_BEGIN_EVENT = "cascading";
+		const CASCADE_BEGIN_EVENT = "cascading",
 
-		const CONCAT_EVENT = "concating";
+		CONCAT_EVENT = "concating",
 
-		const CASCADE_EXTERNAL_BEGIN_EVENT = "begin_external_cascade";
+		CASCADE_EXTERNAL_BEGIN_EVENT = "begin_external_cascade",
+
+		EMPTY_PAYLOAD_EVENT = "no_payload";
 
 		private $eventManager;
 
-		public function __construct (EventManager $eventManager) {
+		public function __construct (AssignListeners $eventManager) {
 
 			$this->eventManager = $eventManager;
 		}

@@ -1,22 +1,22 @@
 <?php
 	namespace Tilwa\Routing;
 
-	use Tilwa\Auth\TokenStorage;
+	use Tilwa\Contracts\Routing\{ApiRouteCollection, CrudBuilder};
 
-	use Tilwa\Routing\Crud\{BaseBuilder, ApiBuilder};
+	use Tilwa\Auth\Storage\TokenStorage;
 
-	use Tilwa\Request\PathAuthorizer;
+	use Tilwa\Routing\Crud\ApiBuilder;
 
 	class BaseApiCollection extends BaseCollection implements ApiRouteCollection {
 
 		protected $collectionParent = BaseApiCollection::class;
 
-		public function __construct(CanaryValidator $validator, TokenStorage $authStorage, MiddlewareRegistry $middlewareRegistry, PathAuthorizer $pathAuthorizer) {
+		public function __construct(CanaryValidator $validator, TokenStorage $authStorage, MethodSorter $methodSorter) {
 
-			parent::__construct($validator, $authStorage, $middlewareRegistry, $pathAuthorizer);
+			parent::__construct($validator, $authStorage, $methodSorter);
 		}
 
-		protected function _crudJson ():BaseBuilder {
+		public function _crudJson ():CrudBuilder {
 
 			$this->crudMode = true;
 

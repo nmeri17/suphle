@@ -7,7 +7,7 @@
 
 		public function imitate (string $value):string;
 
-		public function getId ():string;
+		public function getId ():?string;
 
 		public function startSession (string $userId):string;
 
@@ -16,6 +16,8 @@
 		/**
 		 * @return null when there's no authenticated user
 		*/
-		public function getUser ():?User;
+		public function getUser ():?UserContract;
+
+		public function setHydrator (UserHydrator $userHydrator):void;
 	}
 ?>

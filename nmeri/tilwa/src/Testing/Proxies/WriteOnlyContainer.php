@@ -1,33 +1,32 @@
 <?php
 	namespace Tilwa\Testing\Proxies;
 
-	use Tilwa\Hydration\Container;
+	use Tilwa\Testing\{Condiments\MockFacilitator, Proxies\Extensions\CheckProvisionedClasses};
 
-	use Tilwa\Testing\Condiments\MockFacilitator;
+	use PHPUnit\Framework\TestCase;
 
-	/**
-	 * Using a wrapper rather than an extension cuz we don't want Container's methods polluting the callback where this will be used
-	*/
-	class WriteOnlyContainer {
+	class WriteOnlyContainer extends TestCase { // so we can have access to the doubling methods
 
 		use MockFacilitator;
 
 		private $container;
 
-		public function __construct () {
+		public function __construct (CheckProvisionedClasses $container) {
 
-			$this->container = new Container;
+			$this->container = $container;
 		}
 
-		public function replaceWithMock (string $interface, string $concrete, array $overrides, bool $retainOtherMethods = true):self {
+		public function replaceWithMock (
+			string $interface, string $concrete, array $methodStubs,
+
+			array $mockMethods = [], bool $retainOtherMethods = true
+		):self {
+
+			$doubleMode = $retainOtherMethods ? "positiveDouble":"negativeDouble";
 
 			$this->container->whenTypeAny()->needsAny([
 
-				$interface => $retainOtherMethods ?
-
-					$this->positiveDouble($concrete, $overrides):
-
-					$this->negativeDouble($concrete, $overrides)
+				$interface => $this->$doubleMode($concrete, $methodStubs, $mockMethods)
 			]);
 
 			return $this;
@@ -41,11 +40,6 @@
 			]);
 
 			return $this;
-		}
-
-		public function getContainer ():Container {
-
-			return $this->container;
 		}
 	}
 ?>

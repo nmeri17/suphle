@@ -1,31 +1,33 @@
 <?php
 	namespace Tilwa\Request;
 
-	use Tilwa\Routing\RequestDetails;
+	use Tilwa\Request\RequestDetails;
+
+	use Tilwa\Contracts\Requests\StdInputReader;
 
 	/**
 	 * Our closest adaptation of PSR\MessageInterface
 	*/
 	class PayloadStorage {
 
-		const JSON_HEADER_VALUE = "application/json";
+		const JSON_HEADER_VALUE = "application/json",
 
-		private $requestDetails, $headers, $payload = [],
+		CONTENT_TYPE_KEY = "Content-Type";
 
-		$hasSetPayload = false;
+		private $requestDetails, $stdInputReader, $headers, $payload = [];
 
-		public function __construct (RequestDetails $requestDetails) {
+		public function __construct (RequestDetails $requestDetails, StdInputReader $stdInputReader) {
 
 			$this->requestDetails = $requestDetails;
 
-			$this->headers = getallheaders();
+			$this->stdInputReader = $stdInputReader;
+
+			$this->headers = $stdInputReader->getHeaders();
+
+			$this->setPayload();
 		}
 
 		public function fullPayload ():array {
-
-			if (!$this->hasSetPayload)
-
-				$this->setPayload();
 
 			return $this->payload;
 		}
@@ -38,32 +40,30 @@
 		public function setPayload ():void {
 
 			if ($this->requestDetails->isGetRequest())
-			
-				$this->payload = array_diff_key(["tilwa_path" => 55], $_GET);
+
+				$this->payload = $this->requestDetails->getQueryParameters();
 
 			else if ($this->isJsonPayload() )
 
-				$this->payload = json_decode(file_get_contents("php://input"), true);
+				$this->payload = $this->stdInputReader->getPayload();
 
 			else $this->payload = $_POST;
-
-			$this->hasSetPayload = true;
 		}
 
 		public function isJsonPayload ():bool {
 
-			$headers = $this->headers;
+			return $this->hasHeader(self::CONTENT_TYPE_KEY) &&
 
-			$contentType = "Content-Type";
-
-			return isset($headers[$contentType]) &&
-
-			strtolower($headers[$contentType]) == self::JSON_HEADER_VALUE;
+			$this->matchesHeader(self::CONTENT_TYPE_KEY, self::JSON_HEADER_VALUE);
 		}
 
-		public function acceptsJson():bool {
+		public function acceptsJson ():bool {
 
-			return strtolower($this->headers["Accept"]) == self::JSON_HEADER_VALUE;
+			$acceptsHeader = "Accept";
+
+			return $this->hasHeader($acceptsHeader) &&
+
+			$this->matchesHeader($acceptsHeader, self::JSON_HEADER_VALUE);
 		}
 
 		public function hasHeader (string $name):bool {
@@ -74,6 +74,13 @@
 		public function getHeader (string $name):string {
 
 			return $this->headers[$name];
+		}
+
+		public function matchesHeader (string $name, string $expectedValue):bool {
+
+			$currentValue = str_replace("/", "\/", $this->getHeader($name));
+
+			return preg_match("/^$currentValue$/i", $expectedValue);
 		}
 
 		public function hasKey (string $property):bool {
@@ -96,9 +103,9 @@
 
 		public function except (array $exclude):array {
 
-			return array_filter($this->payload, function ($key) use ($include) {
+			return array_filter($this->payload, function ($key) use ($exclude) {
 
-				return !array_key_exists($key, $include);
+				return !in_array($key, $exclude);
 			}, ARRAY_FILTER_USE_KEY);
 		}
 	}

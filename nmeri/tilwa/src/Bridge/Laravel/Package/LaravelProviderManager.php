@@ -7,15 +7,13 @@
 
 	use Tilwa\Contracts\{Bridge\LaravelContainer, Config\Laravel as LaravelConfig, Hydration\ExternalPackageManager};
 
-	use ReflectionClass;
-
-	use Illuminate\{Support\ServiceProvider, Foundation\Application};
+	use Illuminate\Support\ServiceProvider;
 
 	class LaravelProviderManager implements ExternalPackageManager {
 
 		private $provider, $concrete, $laravelContainer,
 
-		$config, $tilwaContainer, $helperFilePath;
+		$config, $tilwaContainer;
 
 		public function __construct ( LaravelContainer $laravelContainer, LaravelConfig $config, Container $tilwaContainer) {
 
@@ -52,7 +50,7 @@
 
 			$this->setActiveProvider($providerName);
 
-			return $this->createSandbox(function () {
+			return $this->laravelContainer->createSandbox(function () {
 
 				$this->extractConcrete();
 			
@@ -73,41 +71,6 @@
 			$latestKey = array_diff_key($currentBindings, $newBindings);
 
 			$this->concrete = $newBindings[current($latestKey)]["concrete"]();
-		}
-
-		// use a known class within that namespace to pull the file's directory
-		private function getHelperFilePath ():string {
-
-			if (!is_null($this->helperFilePath))
-
-				return $this->helperFilePath;
-
-			$this->setHelperFilePath();
-
-			return $this->helperFilePath;
-		}
-
-		public function createSandbox (callable $explosive) {
-
-			require_once $this->getHelperFilePath(); // we need this file active while running their routes so it can pick [view()]
-
-			function app () { // override their definition
-
-				return $this->laravelContainer;
-			}
-
-			return $explosive();
-		}
-
-		private function setHelperFilePath ():void {
-
-			$knownClass = new ReflectionClass(Application::class);
-
-			$namespaces = explode("\\", $knownClass->getFileName(), -1);
-
-			$namespaces[] = "helpers.php";
-
-			$this->helperFilePath = implode(DIRECTORY_SEPARATOR, $namespaces);
 		}
 
 		private function wrapConcrete ():ProvidedServiceWrapper {

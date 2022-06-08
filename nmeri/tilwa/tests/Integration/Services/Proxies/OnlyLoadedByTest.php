@@ -3,11 +3,17 @@
 
 	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\Services\{LoadablesForsaken, LoadablesChosenOne, LoadableDependency};
-
 	use Tilwa\Exception\Explosives\Generic\UnacceptableDependency;
 
+	use Tilwa\Tests\Integration\Generic\CommonBinds;
+
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\Services\{LoadablesForsaken, LoadablesChosenOne, LoadableDependency};
+
 	class OnlyLoadedByTest extends IsolatedComponentTest {
+
+		use CommonBinds;
+
+		protected $usesRealDecorator = true;
 
 		public function test_unwanted_dependency_throws_errors () {
 

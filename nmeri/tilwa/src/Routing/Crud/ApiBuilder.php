@@ -3,52 +3,52 @@
 
 	use Tilwa\Response\Format\Json;
 
-	use Tilwa\Contracts\Routing\RouteCollection;
+	use Tilwa\Contracts\{Routing\RouteCollection, Presentation\BaseRenderer};
 
 	class ApiBuilder extends BaseBuilder {
 
-		private $allowedActions = [ "saveNew", "showAll", "showOne", "updateOne", "delete", "getSearchResults"];
+		protected $validActions = [
+
+			self::SAVE_NEW, self::SHOW_ALL,
+
+			self::SHOW_ONE, self::UPDATE_ONE, self::DELETE_ONE,
+
+			self::SEARCH_RESULTS
+		];
 		
 		public function __construct(RouteCollection $collection) {
 
 			$this->collection = $collection;
 		}
 
-		protected function saveNew():array {
+		protected function saveNew():BaseRenderer {
 
-			return $this->callParentWith( __FUNCTION__);
+			return new Json(__FUNCTION__);
 		}
 
-		protected function showAll():array {
+		protected function showAll():BaseRenderer {
 
-			return $this->callParentWith( __FUNCTION__);
+			return new Json(__FUNCTION__);
 		}
 
-		protected function showOne():array {
+		protected function showOne():BaseRenderer {
 
-			return $this->callParentWith( __FUNCTION__);
+			return new Json(__FUNCTION__);
 		}
 
-		protected function updateOne():array {
+		protected function updateOne():BaseRenderer {
 
-			return $this->callParentWith( __FUNCTION__);
+			return new Json(__FUNCTION__);
 		}
 
-		protected function deleteOne():array {
+		protected function deleteOne():BaseRenderer {
 
-			return $this->callParentWith( __FUNCTION__);
+			return new Json(__FUNCTION__);
 		}
 
-		protected function getSearchResults ():array {
+		protected function getSearchResults ():BaseRenderer {
 
-			return $this->callParentWith( __FUNCTION__);
-		}
-
-		private function callParentWith (string $handler):array {
-
-			$this->rendererMap[$handler] = new Json($handler);
-
-			return parent::$handler();
+			return new Json(__FUNCTION__);
 		}
 	}
 ?>

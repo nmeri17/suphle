@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Adapters\Orms\Eloquent\Factories;
+	namespace Tilwa\Tests\Mocks\Models\Eloquent\Factories;
 
 	use Illuminate\Database\Eloquent\Factories\Factory;
 

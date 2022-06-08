@@ -9,6 +9,8 @@
 
 	use Tilwa\Contracts\Config\{ModuleFiles, Laravel as LaravelConfig};
 
+	use Tilwa\Contracts\Bridge\LaravelContainer;
+
 	class LaravelAppLoader extends BaseInterfaceLoader {
 
 		private $fileConfig, $laravelConfig, $configLoader;
@@ -22,20 +24,52 @@
 			$this->configLoader = $configLoader;
 		}
 
-		public function afterBind ($initialized):void {
+		public function bindArguments():array {
 
-			$initialized->setBasePath($this->getBasePath());
+			return [
 
-			$initialized->injectBindings($initialized->defaultBindings());
-
-			(new ConfigFileFinder)
-
-			->loadConfigurationFiles($initialized, $this->configLoader);
+				"basePath" => $this->getBasePath()
+			];
 		}
 
 		public function concrete():string {
 
 			return LaravelAppConcrete::class;
+		}
+
+		public function afterBind ($initialized):void {
+
+			$this->injectBindings($initialized); // required for below call
+
+			$initialized->createSandbox(function () use ($initialized) {
+
+				$this->attendToConfig($initialized);
+
+				$initialized->runContainerBootstrappers();
+			});
+		}
+
+		private function injectBindings (LaravelContainer $laravelContainer):void {
+
+			$laravelContainer->registerConcreteBindings($laravelContainer->concreteBinds());
+
+			$laravelContainer->registerSimpleBindings($laravelContainer->simpleBinds());
+		}
+
+		/**
+		  * Leaving this here instead of in app bootstrappers so:
+			* 1) we can inject custom loader
+			* 2) we deliberately want to avoid calling [bootstrap]
+		*/
+		protected function attendToConfig (LaravelContainer $laravelContainer):void {
+
+			$finder = new ConfigFileFinder;
+
+			$finder->loadConfigurationFiles($laravelContainer, $this->configLoader);
+
+			foreach ($finder->getConfigNames($laravelContainer) as $fileName)
+
+				$this->configLoader->get($fileName);
 		}
 
 		protected function getBasePath ():string {

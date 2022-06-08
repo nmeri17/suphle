@@ -7,31 +7,32 @@
 
 	use Tilwa\Exception\Explosives\ValidationFailure;
 
-	use Tilwa\Testing\TestTypes\ModuleLevelTest;
-
-	use Tilwa\Testing\Condiments\{DirectHttpTest, MockFacilitator};
+	use Tilwa\Testing\{Condiments\DirectHttpTest, TestTypes\ModuleLevelTest};
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
 	class LoginRequestHandlerTest extends ModuleLevelTest {
 
-		use DirectHttpTest, MockFacilitator;
+		use DirectHttpTest;
 
 		private $email = "foo@nmeri.com";
 
 		public function getModules ():array {
 
-			return new ModuleOneDescriptor(new Container);
+			return [
+				
+				new ModuleOneDescriptor(new Container)
+			];
 		}
 
 		public function test_invalid_payload_terminates_request () {
 
 			$this->expectException(ValidationFailure::class); // then
 
-			$this->setJsonParams("/login", [
+			$this->setJsonParams("/login", [ // not necessary to set request method since we call the method directly, skipping the check; but using it all the same to avoid ambiguity on test's veracity
 
 				"email" => $this->email
-			]); // given
+			], "post"); // given
 
 			$this->entrance->handleLoginRequest(); // when
 		}
@@ -43,7 +44,7 @@
 				"email" => $this->email,
 
 				"password" => "alphon123"
-			]); // given
+			], "post"); // given
 
 			$sutName = ModuleLoginHandler::class;
 
@@ -51,7 +52,7 @@
 
 				$sutName => $this->positiveDouble($sutName, [], [
 
-					"getResponse" => [1, [$this->anything()]]
+					"processLoginRequest" => [1, []]
 				]) // then
 			]);
 

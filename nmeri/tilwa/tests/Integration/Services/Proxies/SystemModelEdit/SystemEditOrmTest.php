@@ -1,22 +1,26 @@
 <?php
 	namespace Tilwa\Tests\Integration\Services\Proxies\SystemModelEdit;
 
-	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
+	use Tilwa\Contracts\Database\OrmDialect;
 
-	use Tilwa\Testing\Condiments\{DirectHttpTest, MockFacilitator};
+	use Tilwa\Testing\{TestTypes\IsolatedComponentTest, Condiments\DirectHttpTest};
+
+	use Tilwa\Tests\Integration\Generic\CommonBinds;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Controllers\GoodPutController;
 
-	use Tilwa\Contracts\Database\OrmDialect;
-
 	class SystemEditOrmTest extends IsolatedComponentTest {
 
-		use DirectHttpTest, MockFacilitator;
+		use DirectHttpTest, CommonBinds;
+
+		private $ormDialect = OrmDialect::class;
+
+		protected $usesRealDecorator = true;
 
 		private function mockOrm ($numTimes) {
 
-			return $this->negativeDouble(OrmDialect::class, [], [
-
+			return $this->positiveDouble($this->ormDialect, [], [
+				
 				"runTransaction" => [$numTimes, [$this->anything()]]
 			]);
 		}
@@ -28,7 +32,7 @@
 
 			$this->container->whenTypeAny()->needsArguments([
 
-				OrmDialect::class => $this->mockOrm($this->once()) // then
+				$this->ormDialect => $this->mockOrm($this->once()) // then
 			])
 
 			->getClass(GoodPutController::class)
@@ -43,9 +47,8 @@
 
 			$this->container->whenTypeAny()->needsArguments([
 
-				OrmDialect::class => $this->mockOrm($this->never()) // then
+				$this->ormDialect => $this->mockOrm($this->never()) // then
 			])
-
 			->getClass(GoodPutController::class)
 
 			->putOtherServiceMethod(); // when

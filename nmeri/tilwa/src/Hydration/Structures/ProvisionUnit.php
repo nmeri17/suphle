@@ -46,5 +46,12 @@
 			
 			return $this->arguments[$fullName];
 		}
+
+		public function purgeAll (string $fullName):void {
+
+			unset($this->arguments[$fullName]);
+
+			unset($this->concretes[$fullName]);
+		}
 	}
 ?>

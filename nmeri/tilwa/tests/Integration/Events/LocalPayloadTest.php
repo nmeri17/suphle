@@ -18,7 +18,7 @@
 
 			// given => see module injection
 
-			$this->mockEventReceiver->updatePayload($this->payload)->shouldBeCalled(); // then
+			$this->expectUpdatePayload(); // then
 
 			$this->getModuleFor(ModuleOne::class)->payloadEvent($this->payload); // when
 		}
@@ -28,7 +28,7 @@
 
 			// given => see module injection
 
-			$this->mockEventReceiver->updatePayload($this->payload)->shouldBeCalled(); // then
+			$this->expectUpdatePayload(); // then
 
 			$this->getModuleFor(ModuleOne::class)->sendExtendedEvent($this->payload); // when
 		}

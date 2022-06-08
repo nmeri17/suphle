@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Routes;
+	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\Crud;
 
 	use Tilwa\Routing\BaseCollection;
 
@@ -14,7 +14,7 @@
 		
 		public function SECURE__SOMEh () {
 			
-			$this->_crud("secure-some")->save();
+			$this->_crud("secure-some")->registerCruds();
 		}
 
 		public function _authenticatedPaths():array {

@@ -1,19 +1,19 @@
 <?php
 	namespace Tilwa\Tests\Integration\Modules;
 
-	use Tilwa\Tests\Integration\Flows\Jobs\RouteBranches\JobFactory;
-
-	use Tilwa\Testing\Condiments\DirectHttpTest;
-
 	use Tilwa\Modules\ModuleHandlerIdentifier;
 
 	use Tilwa\Hydration\Container; 
 
-	use Tilwa\Auth\LoginRequestHandler;
+	use Tilwa\Contracts\Auth\ModuleLoginHandler;
 
 	use Tilwa\Flows\OuterFlowWrapper;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\ModuleOneDescriptor;
+	use Tilwa\Testing\Condiments\DirectHttpTest;
+
+	use Tilwa\Tests\Integration\Flows\Jobs\RouteBranches\JobFactory;
+
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
 	class ModuleHandlerIdentifierTest extends JobFactory {
 
@@ -33,8 +33,8 @@
 
 			$this->stubSingle([
 
-				"getLoginHandler" => $this->mockLoginHandler() // then
-			]); // given
+				"getLoginHandler" => $this->mockLoginHandler() // then	
+			], $sut); // given
 
 			// when
 			$this->setHttpParams("/login", "post", []);
@@ -42,13 +42,13 @@
 			$sut->respondFromHandler();
 		}
 
-		private function mockLoginHandler ():LoginRequestHandler {
+		private function mockLoginHandler ():ModuleLoginHandler {
 
-			$handler = $this->negativeDouble(LoginRequestHandler::class, ["isValidRequest" => true], [
+			$handler = $this->negativeDouble(ModuleLoginHandler::class, ["isValidRequest" => true], [
 
-				"getResponse" => [
+				"processLoginRequest" => [
 
-					$this->atLeastOnce(), [$this->anything()]
+					$this->atLeastOnce(), []
 				]
 			]);
 
@@ -61,14 +61,14 @@
 
 				"flowRequestHandler" => [$this->atLeastOnce(), [
 
-					$this->returnCallback(function($argument) {
+					$this->callback(function($argument) {
 
 						return is_a($argument, OuterFlowWrapper::class);
 					})
 				]]
 			], $this->getIdentifier()); // then
 
-			$this->makeJob($this->makeBranchesContext(null))->handle(); // given
+			$this->handleDefaultBranchesContext(); // given
 
 			// when
 			$this->setHttpParams($this->userUrl);
@@ -80,7 +80,7 @@
 
 			return $this->positiveDouble(ModuleHandlerIdentifier::class, [
 
-				"getModules" => $this->getModules()
+				"getModules" => $this->modules
 			]);
 		}
 	}

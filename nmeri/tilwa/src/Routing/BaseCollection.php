@@ -1,15 +1,17 @@
 <?php
 	namespace Tilwa\Routing;
 
-	use Tilwa\Response\Format\AbstractRenderer;
-
 	use Tilwa\Request\PathAuthorizer;
 
-	use Tilwa\Routing\Crud\{BaseBuilder, BrowserBuilder};
+	use Tilwa\Routing\Crud\BrowserBuilder;
 
 	use Tilwa\Middleware\MiddlewareRegistry;
 
-	use Tilwa\Contracts\{Routing\RouteCollection, Auth\AuthStorage};
+	use Tilwa\Contracts\{ Auth\AuthStorage, Presentation\BaseRenderer};
+
+	use Tilwa\Contracts\Routing\{RouteCollection, CrudBuilder};
+
+	use Exception;
 
 	abstract class BaseCollection implements RouteCollection {
 
@@ -17,31 +19,40 @@
 
 		$crudMode = false,
 
-		$canaryValidator, $authStorage;
+		$canaryValidator, $authStorage, $parentPrefix;
 
-		private $crudPrefix, $prefixClass, $lastRegistered;
+		private $crudPrefix, $prefixClass, $lastRegistered,
 
-		public function __construct(CanaryValidator $validator, AuthStorage $authStorage) {
+		$methodSorter;
+
+		public function __construct(CanaryValidator $validator, AuthStorage $authStorage, MethodSorter $methodSorter) {
 
 			$this->canaryValidator = $validator;
 
 			$this->authStorage = $authStorage;
+
+			$this->methodSorter = $methodSorter;
 		}
 		
 		public function _prefixCurrent():string {
 			
 			return "";
 		}
-		
-		public function _setCrudPrefix(string $prefix):void {
-			
-			$this->crudPrefix = $prefix;
+
+		public function _handlingClass ():string {
+
+			return "";
+		}
+
+		public function _setParentPrefix (string $prefix):void {
+
+			$this->parentPrefix = $prefix;
 		}
 
 		/**
 		 * `save` must be called in the invoking method
 		*/
-		protected function _crud (string $viewPath, string $viewModelPath = null):BaseBuilder {
+		public function _crud (string $viewPath, string $viewModelPath = null):CrudBuilder {
 
 			$this->crudMode = true;
 
@@ -55,9 +66,11 @@
 			if (in_array($method, ["_get", "_post", "_delete", "_put"]))
 
 				return $this->_register($renderer, $method);
+
+			throw new Exception("Unknown collection method $method");
 		}
 
-		protected function _register(AbstractRenderer $renderer, string $method):self {
+		protected function _register(BaseRenderer $renderer, string $method):self {
 
 			$renderer->setRouteMethod(ltrim($method, "_"));
 
@@ -81,10 +94,55 @@
 			$this->prefixClass = $routeClass;
 		}
 
-		# filter off methods that belong to this base
+		/**
+		 * Filter off methods that belong to this base, but first prepend prefixes to them where applicable so the manager dooesn't do that each time manually
+		*/
 		public function _getPatterns():array {
 
-			return array_diff(get_class_methods($this), get_class_methods($this->collectionParent));
+			$methods = array_diff(
+
+				get_class_methods($this),
+
+				get_class_methods($this->collectionParent)
+			);
+
+			return $this->methodSorter->descendingValues($this->prependPrefix($methods));
+		}
+
+		private function prependPrefix (array $patterns):array {
+
+			return array_map(function($name) {
+
+				$prefix = $this->_prefixCurrent();
+
+				if (!empty($prefix))
+
+					return strtoupper($prefix) . "_$name";
+
+				return $name;
+			}, $patterns);
+		}
+
+		/**
+		 * Antithesis of the [_getPatterns] to trim off prefix
+		*/
+		public function _invokePattern (string $methodPattern):void {
+
+			$prefix = $this->_prefixCurrent();
+
+			if (!empty($prefix)) {
+
+				$matches = preg_split("/". $prefix. "_/i", $methodPattern);
+
+				$methodPattern = $matches[1];
+			}
+
+			$this->$methodPattern();
+		}
+
+		public function _getMethodSorter ():MethodSorter {
+
+			return $this->methodSorter;
 		}
 
 		public function _authenticatedPaths():array {
@@ -103,26 +161,39 @@
 
 		protected function _only(array $include):array {
 			
-			return array_intersect($this->_getPatterns(), $include);
+			return array_intersect(
+
+				$this->_getPatterns(), $this->prependPrefix($include)
+			);
 		}
 
 		protected function _except(array $exclude):array {
 			
-			return array_diff($this->_getPatterns(), $exclude);
+			return array_diff(
+
+				$this->_getPatterns(), $this->prependPrefix($exclude)
+			);
 		}
 
 		protected function _canaryEntry(array $canaries):void {
 
-			$validEntries = $this->canaryValidator->validate($canaries);
+			$validator = $this->canaryValidator;
+
+			$instances = $validator->setCanaries($canaries)
+
+			->collectionAuthStorage($this->authStorage)
+
+			->setValidCanaries()->getCanaryInstances();
 			
-			foreach ($validEntries as $canary)
-				
+			foreach ($instances as $canary) {
+
 				if ($canary->willLoad() ) {
 
 					$this->_prefixFor($canary->entryClass());
 
 					break;
 				}
+			}
 		}
 
 		public function _getPrefixCollection ():?string {
@@ -133,11 +204,6 @@
 		public function _expectsCrud ():bool {
 
 			return $this->crudMode;
-		}
-
-		public function _getCrudPrefix ():string {
-
-			return $this->crudPrefix;
 		}
 	}
 ?>

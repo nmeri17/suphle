@@ -1,9 +1,9 @@
 <?php
 	namespace Tilwa\Contracts\Routing;
 
-	use Tilwa\Contracts\Auth\AuthStorage;
+	use Tilwa\Routing\MethodSorter;
 
-	use Tilwa\Routing\Crud\BaseBuilder;
+	use Tilwa\Contracts\Auth\AuthStorage;
 
 	use Tilwa\Request\PathAuthorizer;
 
@@ -15,9 +15,13 @@
 		
 		public function _prefixCurrent():string;
 
+		public function _setParentPrefix (string $prefix):void;
+
 		public function _getPrefixCollection ():?string;
 
 		public function _getPatterns():array;
+
+		public function _invokePattern (string $methodPattern):void;
 
 		public function _authenticatedPaths():array;
 
@@ -26,17 +30,15 @@
 		public function _assignMiddleware(MiddlewareRegistry $registry):void;
 
 		public function _getAuthenticator ():AuthStorage;
-		
-		public function _setCrudPrefix(string $prefix):void;
-
-		public function _getCrudPrefix ():string;
 
 		public function _expectsCrud ():bool;
 
-		protected function _crud (string $viewPath, string $viewModelPath = null):BaseBuilder;
+		public function _crud (string $viewPath, string $viewModelPath = null):CrudBuilder;
 
 		public function _getLastRegistered ():array;
 
-		public function _setLastRegistered (array $renderers):void
+		public function _setLastRegistered (array $renderers):void;
+
+		public function _getMethodSorter ():MethodSorter;
 	}
 ?>

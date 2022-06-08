@@ -1,45 +1,95 @@
 <?php
 	namespace Tilwa\Testing\Proxies;
 
-	use Tilwa\Contracts\Auth\{User, AuthStorage};
-
 	use Tilwa\Hydration\Container;
+
+	use Tilwa\Contracts\Auth\{UserContract, AuthStorage};
+
+	use Tilwa\Contracts\Database\OrmDialect;
+
+	use ReflectionClass, Exception;
 
 	trait SecureUserAssertions {
 
+		private $genericStorage = AuthStorage::class;
+
+		protected $hasHydratedOrmDialect = false;
+
 		abstract protected function getContainer ():Container;
 
-		protected function getAuthStorage (string $storageName = AuthStorage::class):AuthStorage {
+		/**
+		 * @param {storageName} When none is specified, we just want to retrieve bound authStorage mechanism
+		*/
+		protected function getAuthStorage (?string $storageName = null):AuthStorage { // can be called with null (courtesy of member methods receiving null defaults), and no argument
+
+			if (is_null($storageName))
+
+				$storageName = $this->genericStorage;
 
 			$container = $this->getContainer();
 
-			$storage = $container->getClass($authStorage);
+			if ($this->hasHydratedOrmDialect)
 
-			$container->whenTypeAny()->needsAny([ // assumes we're overwriting the bound concrete
+				return $container->getClass($storageName);
 
-				AuthStorage::class => $storage
+			$ormDialect = $container->getClass(OrmDialect::class);
+
+			$authStorage = $container->getClass($storageName);
+
+			$isNotDefault = $storageName != $this->genericStorage &&
+
+			get_class($authStorage) != $storageName;
+
+			if ($isNotDefault) // the default has hydrator set. If dev wants to test another storage mechanism, we'll do that explicitly
+
+				$authStorage->setHydrator($ormDialect->getUserHydrator());
+
+			$this->hasHydratedOrmDialect = true;
+
+			return $authStorage;
+		}
+
+		/**
+		 * Will update bound instance of authStorage since it doesn't make sense for developer to authenticate to one mechanism while app is running on another
+		*/
+		protected function actingAs (UserContract $user, string $storageName = null):string {
+
+			$storage = $this->getAuthStorage($storageName);
+
+			$identifier = $storage->startSession($user->getId());
+
+			$this->getContainer()->whenTypeAny()->needsAny([
+
+				$this->genericStorage => $storage
 			]);
 
-			return $storage;
+			return $identifier;
 		}
 
-		protected function actingAs(User $user, ?string $storageName):self {
+		protected function assertAuthenticatedAs (UserContract $expectedUser, string $storageName = null):self {
 
-			$this->getAuthStorage($storageName)->imitate($user->getId());
+			$foundUser = $this->getAuthStorage($storageName)->getUser();
+
+			$this->assertNotNull($foundUser, "No user authenticated");
+
+			$this->assertEquals(
+
+				$expectedUser, $foundUser,
+
+				"Failed asserting authenticated user matches $expectedUser"
+			);
 
 			return $this;
 		}
 
-		protected function assertAuthenticatedAs(User $user, string $storageName):self {
+		protected function assertGuest (string $storageName = null):self {
 
-			$this->assertSame($user, $this->getAuthStorage($storageName)->getUser());
+			$foundUser = $this->getAuthStorage($storageName)->getUser();
 
-			return $this;
-		}
+			$this->assertNull(
+				$foundUser,
 
-		protected function assertGuest (string $storageName):self {
-
-			$this->assertNull( $this->getAuthStorage($storageName)->getUser());
+				"Unexpected user $foundUser found");
 
 			return $this;
 		}

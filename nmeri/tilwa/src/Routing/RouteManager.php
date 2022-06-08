@@ -1,29 +1,44 @@
 <?php
 	namespace Tilwa\Routing;
 
+	use Tilwa\Routing\Structures\PlaceholderCheck;
+
 	use Tilwa\Hydration\Container;
 
-	use Generator;
-
-	use Tilwa\Contracts\{Auth\AuthStorage, Config\Router as RouterConfig, Routing\RouteCollection, Presentation\BaseRenderer, IO\Session};
+	use Tilwa\Contracts\{ Config\Router as RouterConfig, Routing\RouteCollection, Presentation\BaseRenderer, IO\Session};
 
 	use Tilwa\Response\Format\Markup;
 
-	use Tilwa\Errors\{IncompatiblePatternReplacement, IncompatibleHttpMethod};
+	use Tilwa\Request\RequestDetails;
+
+	use Tilwa\Exception\Explosives\IncompatibleHttpMethod;
 
 	class RouteManager {
 
-		const PREV_RENDERER = 'prv_rdr';
+		const PREV_RENDERER = "prv_rdr",
 
-		private $config, $activeRenderer, $payload,
+		PLACEHOLDER_REPLACEMENT = "[\w-]+";
 
-		$requestDetails, $fullTriedPath, $container,
+		private $indexMethod = "_index",
 
-		$activePlaceholders, $patternIndicator,
+		$visitedMethods = [],
 
-		$sessionClient;
+		$config, $activeRenderer, $requestDetails, $container,
 
-		function __construct(RouterConfig $config, Container $container, RequestDetails $requestDetails, PathPlaceholders $placeholderStorage, PatternIndicator $patternIndicator, Session $sessionClient) {
+		$placeholderStorage, $patternIndicator,
+
+		$sessionClient, $urlReplacer;
+
+		public function __construct (
+
+			RouterConfig $config, Container $container,
+
+			RequestDetails $requestDetails, PathPlaceholders $placeholderStorage,
+
+			PatternIndicator $patternIndicator, Session $sessionClient,
+
+			CollectionMethodToUrl $urlReplacer
+		) {
 
 			$this->config = $config;
 
@@ -31,105 +46,190 @@
 
 			$this->requestDetails = $requestDetails;
 
-			$this->activePlaceholders = $placeholderStorage;
+			$this->placeholderStorage = $placeholderStorage;
 
 			$this->patternIndicator = $patternIndicator;
 
 			$this->sessionClient = $sessionClient;
+
+			$this->urlReplacer = $urlReplacer;
 		}
 
 		public function findRenderer ():void {
 
-			foreach ($this->entryRouteMap() as $collection) {
-				
-				$hit = $this->recursiveSearch($collection);
+			$collectionList = $this->entryRouteMap();
+
+			$requestPath = trim($this->requestDetails->getPath(), "/"); // this should only be read after setting collection list since it can mutate request path
+
+			foreach ($collectionList as $collection) {
+
+				$hit = $this->recursiveSearch($collection, $requestPath);
 
 				if (!is_null($hit)) {
-
-					$hit->setPath($this->fullTriedPath);
 
 					$this->activeRenderer = $hit;
 
 					return;
 				}
 
-				$this->patternIndicator->resetIndications();
+				$this->finishCollectionHousekeeping();
 			}
 		}
 
-		public function loadPatterns(RouteCollection $collection):Generator {
-			
-			foreach ($collection->_getPatterns() as $pattern)
-			 	
-			 	yield $pattern;
+		private function recursiveSearch (string $collectionName, string $incomingPath, string $parentPrefix = "" ):?BaseRenderer {
+
+			$collection = $this->container->getClass($collectionName);
+
+			$collection->_setParentPrefix($parentPrefix);
+
+			$matchingCheck = $this->findMatchingMethod( $incomingPath, $collection->_getPatterns() );
+
+			if (is_null($matchingCheck)) return null;
+
+			$methodName = $this->visitedMethods[] = $matchingCheck->getMethodName();
+
+			$collection->_invokePattern($methodName);
+
+			$remainder = $this->matchRemainder($matchingCheck, $incomingPath);
+
+			$expectsCrud = $collection->_expectsCrud();
+
+			if (!empty($remainder) && !$expectsCrud) {
+
+				$prefixClass = $collection->_getPrefixCollection();
+
+				if (!$prefixClass) return null;
+
+				$this->indicatorProxy($collection, $methodName);
+
+				return $this->recursiveSearch(
+					$prefixClass, $remainder,
+
+					$collection->_prefixCurrent()
+				);
+			}
+
+			return $this->extractRenderer($collection, $remainder, $methodName, $expectsCrud);
 		}
 
-		private function recursiveSearch(string $patternsCollection, string $routeState = "", string $invokerPrefix = ""/*, bool $fromCache = false*/):?BaseRenderer {
+		public function findMatchingMethod ( string $fullRouteState, array $patterns):?PlaceholderCheck {
 
-			$collection = $this->container->getClass($patternsCollection);
+			$literalMatch = strtoupper($fullRouteState);
 
-			$patternPrefix = $invokerPrefix ?? $collection->_prefixCurrent();
+			if ( in_array($literalMatch, $patterns))
+
+				return new PlaceholderCheck($fullRouteState, $literalMatch);
 			
-			foreach ($this->loadPatterns($collection) as $pattern) {
+			$indexMethodIndex = array_search($this->indexMethod, $patterns);
 
-				$computedPattern = $this->patternToUrlSegment($pattern, $patternPrefix);
+			if ($indexMethodIndex !== false) {
 
-				$fullRouteState = "$routeState/$computedPattern";
+				if ($fullRouteState == "" )
 
-				$parsed = $this->regexForm($fullRouteState);
+					return new PlaceholderCheck("", $this->indexMethod );
 
-				if (!$this->prefixMatch($parsed)) continue;
+				unset($patterns[$indexMethodIndex]); // since we're sure it's not the one, no need to confuse the other guys, who will always "partially" match an empty string
+			}
 
-				call_user_func([$collection, $pattern]);
+			return $this->methodPartiallyMatchPattern($fullRouteState, $patterns);
+		}
 
-				$nested = $collection->_getPrefixCollection();
+		public function methodPartiallyMatchPattern (string $currentRouteState, array $patterns):?PlaceholderCheck {
 
-				if (!is_null($nested)) {
+			$methodRegexes = $this->patternPlaceholderDetails($patterns);
 
-					$this->indicatorProxy($collection, $pattern);
+			foreach ($methodRegexes as $methodPattern => $methodDetails) { // not using in_array or ^$ since method is not guaranteed to match entire string
 
-					return $this->recursiveSearch($nested, $fullRouteState, $computedPattern); /** we don't bother checking whether a route was found or not because if there was none after going downwards*, searching sideways* won't help either
+				$safeRegex = str_replace("/", "\/", $methodDetails["url"]);
 
-					 * downwards = deeper into a collection
-					 * sideways = other patterns on this same collection
-					*/
-				}
+				preg_match("/^$safeRegex/i", $currentRouteState, $matches); // ^ == avoid matches that just appear in the middle of the method instead of being the method
+
+				if (!empty($matches)) {
+
+					$matchedSegment = $matches[0];
 				
-				foreach ($collection->_getLastRegistered() as $path => $renderer) { // we'll usually get one route here, except for CRUD invocations
+					$this->placeholderStorage->foundSegments($methodDetails["placeholders"]);
 
-					$routeMethod = $renderer->getRouteMethod();
-
-					if ($collection->_expectsCrud()) {
-
-						$collection->_setCrudPrefix($pattern);
-
-						$isHit = $this->routeCompare($parsed . "/" . $this->regexForm($path), $routeMethod);
-					}
-
-					else $isHit = $this->routeCompare($parsed, $routeMethod);
-
-					if ($isHit) {
-
-						$this->onSearchHit($collection, $renderer, $pattern);
-
-						return $renderer;
-					}
+					return new PlaceholderCheck($matchedSegment, $methodPattern );
 				}
 			}
+
+			return null;
 		}
 
-		/**
-			- pair empty incoming path with _index method
-		*/
-		private function patternToUrlSegment (string $pattern, string $prefix):string {
+		public function patternPlaceholderDetails (array $patterns):array {
 
-			if ($pattern == "_index") $segment = "";
+			$values = array_map(function ($pattern) {
 
-			else $segment = $pattern;
+				$result = $this->urlReplacer->replacePlaceholders($pattern, self::PLACEHOLDER_REPLACEMENT);
 
-			if (!empty($prefix)) $segment = "$prefix/$segment";
+				return [
+					"url" => $result->regexifiedUrl(),
 
-			return $segment;
+					"placeholders" => $result->getPlaceholders()
+				];
+			}, $patterns);
+
+			return array_combine($patterns, $values);
+		}
+
+		private function extractRenderer (RouteCollection $collection, string $remainder, string $methodName, bool $expectsCrud):?BaseRenderer {
+
+			$possibleRenderers = $collection->_getLastRegistered();
+
+			if ($expectsCrud) {
+
+				$methodName = $this->findActiveCrud(array_keys($possibleRenderers), $remainder);
+
+				$renderer = $possibleRenderers[$methodName];
+			}
+
+			else $renderer = $possibleRenderers[0];
+
+			if ($this->confirmRouteMethod($renderer)) {
+
+				$this->onSearchCompletion($collection, $renderer, $methodName);
+
+				return $renderer;
+			}
+
+			return null;
+		}
+
+		public function findActiveCrud (array $routePatterns, string $remainderPath):?string {
+
+			$matchingCheck = $this->findMatchingMethod($remainderPath, $routePatterns);
+
+			if (
+				!is_null($matchingCheck) &&
+
+				empty($this->matchRemainder($matchingCheck, $remainderPath) // no leftover
+				)
+			)
+
+				return $matchingCheck->getMethodName();
+
+			return null;
+		}
+
+		private function matchRemainder (PlaceholderCheck $check, string $fullRouteState):string {
+
+			if (empty($fullRouteState) && $check->getMethodName() == $this->indexMethod)
+
+				return $fullRouteState;
+
+			return explode($check->getRouteState(), $fullRouteState, 2)[1];
+		}
+
+		public function confirmRouteMethod (BaseRenderer $renderer):bool {
+
+			$rendererMethod = $renderer->getRouteMethod();
+
+			if ( !$this->requestDetails->matchesMethod($rendererMethod))
+
+				throw new IncompatibleHttpMethod( $rendererMethod);
+
+			return true;
 		}
 
 		private function isMirroring ():bool {
@@ -137,7 +237,7 @@
 			return $this->requestDetails->isApiRoute() && $this->config->mirrorsCollections();
 		}
 
-		private function onSearchHit (RouteCollection $collection, BaseRenderer $renderer, string $pattern):void {
+		private function onSearchCompletion (RouteCollection $collection, BaseRenderer $renderer, string $pattern):void {
 
 			$this->indicatorProxy($collection, $pattern);
 
@@ -145,9 +245,16 @@
 
 				$renderer->setWantsJson();
 
-			$renderer->setControllingClass($collection->_handlingClass());
+			$container = $this->container;
+
+			$renderer->setControllingClass(
+
+				$container->getClass($collection->_handlingClass())
+			);
 			
-			$renderer->hydrateDependencies($this->container);
+			$renderer->hydrateDependencies($container);
+
+			$this->placeholderStorage->setMethodSegments($this->visitedMethods);
 		}
 
 		private function indicatorProxy (RouteCollection $collection, string $pattern):void {
@@ -165,109 +272,6 @@
 			$this->patternIndicator->indicate($collection, $pattern);
 		}
 
-		public function routeCompare(string $path, string $rendererMethod):bool {
-
-			try {
-
-				$this->fullTriedPath = strtolower($this->activePlaceholders->replaceInPattern($path));
-			}
-			catch (IncompatiblePatternReplacement $e) {
-
-				return false;
-			}
-
-			$matchingPaths = $this->prefixMatch($this->fullTriedPath, true);
-
-			$matchingMethods = $this->requestDetails->matchesMethod($rendererMethod);
-
-			if ($matchingPaths && !$matchingMethods)
-
-				throw new IncompatibleHttpMethod($this->requestDetails, $rendererMethod);
-
-			return $matchingPaths && $matchingMethods;
-		}
-
-		/* given hypothetical path: PATH_id_EDIT_id2_EDIT__SAME__OKJh_optionalO_TOMP, clean and return a path similar to a real life path; but still in a regex format so optional segments can be indicated as such
-		PATH/id/EDIT/id2/EDIT-SAME-OKJ/(optional/)?TOMP
-		*/
-		public function regexForm(string $routeState):string {
-
-			$segmentDelimiters = ["h" => "-", "u" => "_"];
-
-			$pattern = "(
-				(_)?#literal to literal i.e. no placeholder in between
-				(?<one_word>
-					[A-Z0-9]+# one word match
-					(
-						(
-							_{2}[A-Z0-9]+)+# chain as many uppercase characters
-							(?<merge_delimiter>[hu])?# double underscores with uppercase letters ending with any of these will be replaced with their counterparts
-					)?# compound word
-				)
-			)?# literal match
-			(
-				(?:_)?# path segments delimited by single underscores
-				(?<placeholder>
-					[a-z0-9]+
-					(?<is_optional>[O])?
-				)
-				_?# possible trailing slash before next literal
-			)?";
-
-			return preg_replace_callback("/$pattern/x", function ($matches) use ( $segmentDelimiters, $routeState) {
-
-				$builder = "";
-
-				$slash = "/";
-				
-				if ($default = @$matches["one_word"]) {
-
-					if ($delimiter = @$matches["merge_delimiter"])
-
-						$default = implode(
-							$segmentDelimiters[$delimiter], explode(
-								"__", rtrim($default, $delimiter) // trailing "h"
-							)
-						);
-
-					$builder .=  $default . $slash;
-				}
-
-				if ($hasPlaceholder = @$matches["placeholder"]) {
-
-					if (!empty($matches["is_optional"])) {
-
-						$hasPlaceholder = rtrim($hasPlaceholder, "O") . $slash;
-
-						$builder .= "($hasPlaceholder)?";
-
-						$this->activePlaceholders->pushSegment($hasPlaceholder);
-					}
-
-					else {
-
-						$builder .= $hasPlaceholder . $slash;
-
-						$this->activePlaceholders->pushSegment($hasPlaceholder);
-					}
-				}
-
-				return $builder;
-			}, $routeState);
-		}
-
-		/**
-		 * @param {fullRouteState} Regex pattern. @see return value of [regexForm]
-		 * */
-		private function prefixMatch (string $fullRouteState, bool $fullMatch = false):bool {
-
-			$escaped = preg_quote($fullRouteState, "/") . "\/?"; # neutralize trailing slash in replaced path
-
-			if ($fullMatch) $escaped .= "$";
-// var_dump($escaped, $this->requestDetails->getPath());
-			return preg_match("/^$escaped/i", $this->requestDetails->getPath());
-		}
-
 		public function setPreviousRenderer(BaseRenderer $renderer):void {
 
 			$this->sessionClient->setValue(self::PREV_RENDERER, $renderer);
@@ -283,8 +287,8 @@
 			return $this->activeRenderer;
 		}
 
-		// @return Strings[]
-		private function entryRouteMap():array {
+		// @return Strings<RouteCollection>[]
+		public function entryRouteMap ():array {
 
 			$requestDetails = $this->requestDetails;
 
@@ -294,13 +298,13 @@
 			
 			if ($requestDetails->isApiRoute()) {
 
-				$requestDetails->stripApiPrefix();
-
 				$apiStack = $requestDetails->apiVersionClasses();
 
 				if ($config->mirrorsCollections())
 
-					$apiStack = array_push($apiStack, $entryRoute); // push it to the bottom
+					array_push($apiStack, $entryRoute); // push it to the bottom
+
+				$requestDetails->stripApiPrefix(); // just before we go on our search
 
 				return $apiStack;
 			}
@@ -311,6 +315,23 @@
 		public function getIndicator ():PatternIndicator {
 
 			return $this->patternIndicator;
+		}
+
+		/**
+		 * Get the instance we've made changes to
+		*/
+		public function getPlaceholderStorage ():PathPlaceholders {
+
+			return $this->placeholderStorage;
+		}
+
+		public function finishCollectionHousekeeping ():void {
+
+			$this->patternIndicator->resetIndications();
+
+			$this->placeholderStorage->clearAllSegments();
+
+			$this->visitedMethods = [];
 		}
 	}
 ?>

@@ -1,17 +1,21 @@
 <?php
 	namespace Tilwa\Tests\Integration\Auth;
 
-	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\PopulatesDatabaseTest, Proxies\WriteOnlyContainer};
+	use Tilwa\Contracts\{Auth\AuthStorage, Config\Router};
 
-	use Tilwa\Contracts\Auth\{AuthStorage, User};
+	use Tilwa\Auth\Storage\SessionStorage;
 
-	use Tilwa\Contracts\Config\Router;
+	use Tilwa\Adapters\Orms\Eloquent\Models\User as EloquentUser;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\{ModuleOneDescriptor, Routes\Auth\SecureBrowserCollection, Config\RouterMock};
+	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\BaseDatabasePopulator};
+
+	use Tilwa\Testing\Proxies\{WriteOnlyContainer, SecureUserAssertions};
+
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Routes\Auth\SecureBrowserCollection, Config\RouterMock};
 
 	class BrowserAuthModuleBasedTest extends ModuleLevelTest {
 
-		use PopulatesDatabaseTest;
+		use BaseDatabasePopulator, SecureUserAssertions;
 
 		protected function getModules ():array {
 
@@ -29,7 +33,7 @@
 
 		protected function getActiveEntity ():string {
 
-			return User::class;
+			return EloquentUser::class;
 		}
 
 		public function test_cant_resume_auth_session_after_logout () {
@@ -38,11 +42,20 @@
 
 			$this->actingAs($user); // given
 
-			$sut = $this->container->getClass(AuthStorage::class);
+			$sut = $this->getContainer()->getClass(AuthStorage::class);
 
 			$sut->logout(); // when
 
-			$this->get("/segment")
+			$this->get("/segment")->assertUnauthorized(); // then
+		}
+
+		public function test_cant_access_api_auth_route_with_session () {
+
+			$user = $this->replicator->getRandomEntity();
+
+			$this->actingAs($user, SessionStorage::class); // given
+
+			$this->get("/api/v1/segment") // when
 
 			->assertUnauthorized(); // then
 		}

@@ -3,6 +3,6 @@
 
 	interface ApiRouteCollection {
 
-		protected function _crudJson ():BaseBuilder;
+		public function _crudJson ():CrudBuilder;
 	}
 ?>

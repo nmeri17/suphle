@@ -5,7 +5,7 @@
 
 	use Illuminate\Support\Facades\Schema;
 
-	class CreateTableMultiEditProduct extends Migration {
+	return new class extends Migration {
 
 		public function up ():void {
 
@@ -25,5 +25,5 @@
 
 			Schema::drop("multi_edit_product");
 		}
-	}
+	};
 ?>

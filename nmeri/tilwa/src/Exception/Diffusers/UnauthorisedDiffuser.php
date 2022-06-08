@@ -1,13 +1,15 @@
 <?php
 	namespace Tilwa\Exception\Diffusers;
 
-	use Tilwa\Contracts\Exception\ExceptionHandler;
+	use Tilwa\Contracts\{Exception\ExceptionHandler, Presentation\BaseRenderer};
 
-	use Tilwa\Routing\RequestDetails;
+	use Tilwa\Request\RequestDetails;
 
-	use Tilwa\Response\Format\{AbstractRenderer, Markup, Json};
+	use Tilwa\Response\Format\{ Markup, Json};
 
 	use Tilwa\Exception\Explosives\UnauthorizedServiceAccess;
+
+	use Throwable;
 
 	class UnauthorisedDiffuser implements ExceptionHandler {
 
@@ -18,7 +20,10 @@
 			$this->requestDetails = $requestDetails;
 		}
 
-		public function setContextualData (UnauthorizedServiceAccess $origin):void {
+		/**
+		 * @param {origin} UnauthorizedServiceAccess
+		*/
+		public function setContextualData (Throwable $origin):void {
 
 			//
 		}
@@ -34,19 +39,19 @@
 			$this->renderer->setHeaders(403, []);
 		}
 
-		public function getRenderer ():AbstractRenderer {
+		public function getRenderer ():BaseRenderer {
 
 			return $this->renderer;
 		}
 
-		protected function getApiRenderer ():AbstractRenderer {
+		protected function getApiRenderer ():BaseRenderer {
 
 			return (new Json($this->controllerAction))
 
 			->setRawResponse([ "message" => "Unauthorized" ]);
 		}
 
-		protected function getMarkupRenderer ():AbstractRenderer {
+		protected function getMarkupRenderer ():Markup {
 
 			return new Markup($this->controllerAction, "errors/authorization-failure"); // tell user they shouldn't be here
 		}

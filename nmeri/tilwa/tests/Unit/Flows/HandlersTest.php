@@ -1,21 +1,23 @@
 <?php
 	namespace Tilwa\Tests\Unit\Flows;
 
+	use Tilwa\Flows\{FlowHydrator, Previous\CollectionNode};
+
+	use Tilwa\Flows\Structures\{RangeContext, ServiceContext, GeneratedUrlExecution};
+
 	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
-	use Tilwa\Testing\Condiments\MockFacilitator;
-
-	use Prophecy\Argument\Token\InArrayToken;
+	use Tilwa\Tests\Integration\Generic\CommonBinds;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\FlowService;
 
-	use Tilwa\Flows\{FlowHydrator, Structures\RangeContext, Previous\CollectionNode};
-
 	class HandlersTest extends IsolatedComponentTest {
 
-	 	use MockFacilitator, FlowData;
+	 	use FlowData, CommonBinds;
 
-		private $flowService = FlowService::class;
+		private $flowService = FlowService::class,
+
+		$sutName = FlowHydrator::class;
 
 		public function setUp ():void {
 
@@ -26,33 +28,47 @@
 
 		public function test_pipeTo() {
 
-			$sut = $this->mockFlowHydrator();
-
 			$indexes = $this->indexes; // given
 
+			$indexesCount = count($indexes);
+
+			$unitNode = $this->createCollectionNode();
+
 			// then
-			$sut->updateRequest(new InArrayToken($indexes))
+			$sut = $this->mockFlowHydrator([
+				
+				"updatePlaceholders" => [$indexesCount, [
 
-			->shouldBeCalledTimes(count($indexes));
+					$this->callback(function($subject) use ($indexes, $unitNode) {
 
-			$sut->executeRequest()
+						$id = $subject[$unitNode->getLeafName()];
 
-			->shouldBeCalledTimes(count($indexes));
+						return in_array($id, $indexes);
+					})
+				]],
+
+				"executeGeneratedUrl" => [$indexesCount, []]
+			]);
 
 			// when
-			$sut->reveal()
-
-			->handlePipe($indexes, 1, $this->createCollectionNode());
+			$sut->handlePipe($indexes, 1, $unitNode);
 		}
 
-		// Note: Always returns a new instance. Store in a variable if behavior is unwanted
-		private function mockFlowHydrator () {
+		private function mockFlowHydrator ( array $mocks):FlowHydrator {
 
-			$hydrator = $this->prophesize(FlowHydrator::class);
+			$mocks = array_merge(["executeGeneratedUrl" => [1, []]], $mocks);
 
-			$hydrator->executeRequest()->shouldBeCalled();
+			return $this->replaceConstructorArguments(
 
-			return $hydrator;
+				$this->sutName, [], [
+
+					"updatePlaceholders" => $this->returnSelf(),
+
+					"updatePayloadStorage" => $this->returnSelf(),
+
+					"executeGeneratedUrl" => $this->positiveDouble(GeneratedUrlExecution::class)
+				], $mocks
+			);
 		}
 
 		/**
@@ -60,28 +76,20 @@
 	     */
 		public function test_handleQuerySegmentAlter(int $pageNumber) {
 
-			$sut = $this->mockFlowHydrator();
-
 			// given
 			$queryUpdate = ["page_number" => $pageNumber];
 
-			$leafName = "next_page_url";
-
-			$payload = [
-				$this->payloadKey => $this->indexes,
-
-				$leafName => "/posts/?" . http_build_query($queryUpdate)
-			];
-
 			// then
-			$sut->updateRequest($queryUpdate)->shouldBeCalled();
+			$sut = $this->mockFlowHydrator([
 
-			$sut->executeRequest()->shouldBeCalled();
+				"updatePayloadStorage" => [1, [$queryUpdate]]
+			]);
 
 			// when
-			$sut->reveal()
+			$sut->handleQuerySegmentAlter( // suppose next page is 2 according to current outgoing request, flow runs and stores for 2
 
-			->handleQuerySegmentAlter($payload, $leafName);
+				"/posts/?" . http_build_query($queryUpdate)
+			);
 		}
 
 		public function getPageNumbers ():array {
@@ -97,56 +105,61 @@
 
 			$flowServiceInstance = $this->container->getClass($this->flowService);
 
-			$this->assertSame($result, $flowServiceInstance->customHandlePrevious($this->indexesToModels())); // then
+			$this->assertSame(
+				$result,
+
+				$flowServiceInstance->customHandlePrevious([
+					
+					"data" => $this->indexesToModels()
+				])
+			); // then
 		}
 
-		private function getHydratorForService ():FlowHydrator {
+		private function getHydratorForService (array $mockMethods = []):FlowHydrator {
 
-			return $this->replaceConstructorArguments(FlowHydrator::class, [
-
-				"randomContainer" => $this->container
-			], [
+			return $this->replaceConstructorArguments($this->sutName, [/*using this so they can receive proper containers*/], [
 
 				"getNodeFromPrevious" => $this->payloadFromPrevious()
-			]);
+			], $mockMethods);
 		}
 
 		public function test_fromService_doesnt_edit_request_or_trigger_controller() {
 
-			$sut = $this->prophesize(FlowHydrator::class);
+			$sut = $this->getHydratorForService([ // then
 
-			// then
-			$sut->updateRequest()->shouldNotBeCalled();
+				"executeGeneratedUrl" => [0, []],
 
-			$sut->executeRequest()->shouldNotBeCalled();
+				"updatePlaceholders" => [0, []],
+			]);
 
-			// when
-			$sut->reveal()
+			$sut->handleServiceSource( // when
 
-			->handleServiceSource(null, $this->getServiceContext(), $this->createCollectionNode() );
+				null, $this->getServiceContext(),
+
+				$this->createCollectionNode() // given
+			);
 		}
 
 		public function test_fromService_passes_previous_payload() {
 
-			$sut = $this->getHydratorForService();
+			$this->container->whenTypeAny()->needsAny([ // given
 
-			$mockService = $this->prophesize($this->flowService);
+				$this->flowService => $this->positiveDouble($this->flowService, [], [
 
-			// then
-			$mockService
+					"customHandlePrevious" => [1, [
 
-			->customHandlePrevious($this->indexesToModels())
-
-			->shouldBeCalled();
-
-			// given
-			$this->container->whenTypeAny()->needsAny([
-
-				$this->flowService => $mockService->reveal()
+						$this->payloadFromPrevious()
+					]]
+				]) // then
 			]);
 
 			// when
-			$sut->handleServiceSource(null, $this->getServiceContext(), $this->createCollectionNode() );
+			$this->getHydratorForService()->handleServiceSource(
+				
+				null, $this->getServiceContext(),
+
+				$this->createCollectionNode()
+			);
 		}
 
 		private function getServiceContext ():ServiceContext {
@@ -156,25 +169,21 @@
 
 		public function test_handleOneOf () {
 
-			$sut = $this->mockFlowHydrator();
-
 			$indexes = $this->indexes;
 
 			$requestProperty = "ids"; // given
 
 			// then
-			$sut->updateRequest([
+			$sut = $this->mockFlowHydrator([
 
-				$requestProperty => implode(",", $indexes)
-			])
-			->shouldBeCalled();
+				"updatePlaceholders" => [1, [
 
-			$sut->executeRequest()->shouldBeCalled();
+					[$requestProperty => implode(",", $indexes) ]
+				]]
+			]);
 
 			// when
-			$sut->reveal()
-
-			->handleOneOf($indexes, $requestProperty, $this->createCollectionNode());
+			$sut->handleOneOf($indexes, $requestProperty, $this->createCollectionNode());
 		}
 
 		/**
@@ -182,28 +191,27 @@
 		*/
 		public function test_handleRange (RangeContext $range) {
 
-			$sut = $this->mockFlowHydrator();
-
 			$range = new RangeContext;
 
 			$indexes = $this->indexes; // given
 
 			// then
-			$sut->updateRequest([
+			$sut = $this->mockFlowHydrator([
 
-				$range->getParameterMax() => max($indexes),
+				"updatePlaceholders" => [1, [
+					[
+						$range->getParameterMax() => max($indexes),
 
-				$range->getParameterMin() => min($indexes)
-			])
-			->shouldBeCalled();
-
-			$sut->executeRequest()->shouldBeCalled();
+						$range->getParameterMin() => min($indexes)
+					]
+				]]
+			]);
 
 			// when
-			$sut->reveal()->handleRange($indexes, $range);
+			$sut->handleRange($indexes, $range);
 		}
 
-		protected function getRegularRanges ():array {
+		public function getRegularRanges ():array {
 
 			return [
 				[new RangeContext],
@@ -213,25 +221,33 @@
 
 		public function test_handleDateRange () {
 
-			$sut = $this->mockFlowHydrator();
-
 			$range = new RangeContext;
 
-			$dates = ["2021-01-15", "2021-07-01", "2021-08-15", "2021-07-17", "2021-12-09"]; // given
+			$maxDate = "2021-12-09";
+
+			$minDate = "2021-01-15";
+
+			$dates = [
+
+				"2021-07-17", $maxDate, "2021-08-15", // deliberately scatter them
+
+				$minDate, "2021-07-01"
+			]; // given
 
 			// then
-			$sut->updateRequest([
+			$sut = $this->mockFlowHydrator([
 
-				$range->getParameterMax() => current($dates),
+				"updatePlaceholders" => [1, [
+					[
+						$range->getParameterMax() => $maxDate,
 
-				$range->getParameterMin() => end($dates)
-			])
-			->shouldBeCalled();
-
-			$sut->executeRequest()->shouldBeCalled();
+						$range->getParameterMin() => $minDate
+					]
+				]]
+			]);
 
 			// when
-			$sut->reveal()->handleDateRange($dates, $range);
+			$sut->handleDateRange($dates, $range);
 		}
 	}
 ?>

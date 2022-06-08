@@ -1,36 +1,40 @@
 <?php
 	namespace Tilwa\Adapters\Orms\Eloquent;
 
-	use Tilwa\Contracts\Auth\UserHydrator as HydratorContract;
+	use Tilwa\Contracts\Auth\{UserContract, UserHydrator as HydratorContract};
 
 	use Tilwa\Request\PayloadStorage;
 
 	class UserHydrator implements HydratorContract {
 
-		private $blankModel, $payloadStorage;
+		private $payloadStorage, $model,
 
-		public function __construct (User $user, PayloadStorage $payloadStorage) {
+		$loginColumnIdentifier = "email";
 
-			$this->blankModel = $user;
+		public function __construct ( PayloadStorage $payloadStorage) {
 
 			$this->payloadStorage = $payloadStorage;
 		}
 
-		public function findById(string $id):?User {
+		public function setUserModel (UserContract $model):void {
 
-			return $this->user->find($id);
+			$this->model = $model;
+		}
+
+		public function findById (string $id):?UserContract {
+
+			return $this->model->find($id);
 		}
 
 		/**
 		 *  {@inheritdoc}
 		*/
-		public function findAtLogin():?User {
+		public function findAtLogin ():?UserContract {
 
-			return $this->user
+			return $this->model->where([
 
-			->where($this->payloadStorage->getKey("email"))
-
-			->first();
+				$this->loginColumnIdentifier => $this->payloadStorage->getKey($this->loginColumnIdentifier)
+			])->first();
 		}
 	}
 ?>

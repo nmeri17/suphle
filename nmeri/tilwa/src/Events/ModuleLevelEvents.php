@@ -9,7 +9,7 @@
 
 		private $modules, $subscriberLog = [], // this is where subscribers to the immediate last fired external event reside
 
-		$eventManagers = [];
+		$eventManagers = [], $firedEvents = [];
 
 		public function __construct (array $modules) {
 
@@ -53,24 +53,33 @@
 			return $this;
 		}
 
-		public function triggerExternalHandlers(string $eventName, $payload):void {
+		public function triggerExternalHandlers(string $evaluatedModule, string $eventName, $payload):void {
 
 			foreach ($this->subscriberLog as $subscription)
 
-				$this->triggerHandlers($subscription, $eventName, $payload);
+				$this->triggerHandlers($evaluatedModule, $subscription, $eventName, $payload);
 
 			$this->subscriberLog = []; // ahead of next invocation
 		}
 
-		public function triggerHandlers(EventSubscription $scope, string $eventName, $payload):self {
-			
-			$hydratedHandler = $scope->getHandlingClass();
+		public function triggerHandlers (string $sender, ?EventSubscription $subscription, string $eventName, $payload):self {
 
-			foreach ($scope->getMatchingUnits($eventName) as $unit)
+			$this->firedEvents[$sender] = $subscription; // even though event won't be handled, by logging it all the same, we can verify later that it was emitted
+
+			if (is_null($subscription)) return $this; // no local event handlers attached
+			
+			$hydratedHandler = $subscription->getHandlingClass();
+
+			foreach ($subscription->getMatchingUnits($eventName) as $unit)
 				
 				$unit->fire($hydratedHandler, $payload);
 
 			return $this;
+		}
+
+		public function getFiredEvents ():array {
+
+			return $this->firedEvents;
 		}
 	}
 ?>

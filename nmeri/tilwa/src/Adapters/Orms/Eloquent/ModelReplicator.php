@@ -1,6 +1,8 @@
 <?php
 	namespace Tilwa\Adapters\Orms\Eloquent;
 
+	use Tilwa\Hydration\Container;
+
 	use Tilwa\Contracts\Database\{OrmReplicator, OrmDialect};
 
 	use Tilwa\Contracts\Bridge\LaravelContainer;
@@ -9,6 +11,8 @@
 
 	use Illuminate\Database\Migrations\Migrator;
 
+	use Exception;
+
 	class ModelReplicator implements OrmReplicator {
 
 		/**
@@ -16,13 +20,17 @@
 		*/
 		private $activeModel,
 
-		$databaseClient, $laravelContainer;
+		$databaseConnection, $laravelContainer, $migrator, $container;
 
-		public function __construct (OrmDialect $ormDialect, LaravelContainer $laravelContainer) {
+		public function __construct (OrmDialect $ormDialect, LaravelContainer $laravelContainer, Container $container) {
 
-			$this->databaseClient = $ormDialect->getNativeClient();
+			$this->databaseConnection = $ormDialect->getConnection();
 
 			$this->laravelContainer = $laravelContainer;
+
+			$this->migrator = $laravelContainer->make("migrator"); // bound to Migrator
+
+			$this->container = $container;
 		}
 
 		public function seedDatabase ( int $amount):void {
@@ -30,7 +38,20 @@
 			$this->activeModel::factory()->count($amount)->create();
 		}
 
-		public function getBeforeInsertion ( int $amount = 1, array $customizeFields = [], callable $customizeModel = null) {
+		public function stopQueryListen ():void {
+
+			$this->databaseConnection->rollBack();
+		}
+
+		public function getCount ():int {
+
+			return $this->activeModel->count();
+		}
+
+		/**
+		 * @return Collection
+		*/
+		public function modifyInsertion ( int $amount = 1, array $customizeFields = [], callable $customizeModel = null):iterable {
 
 			$builder = $this->activeModel::factory()->count($amount);
 
@@ -38,33 +59,53 @@
 
 			if (!empty($customizeFields))
 
-				return $builder->make($customizeFields);
+				return $builder->create($customizeFields);
 
-			return $builder->make();
+			return $builder->create();
 		}
 
-		public function getRandomEntity () {
+		public function getRandomEntity ():object {
 
 			return $this->activeModel->inRandomOrder()->first();
 		}
 
-		public function getRandomEntities ( int $amount):array {
+		public function getRandomEntities ( int $amount):iterable {
 
 			return $this->activeModel->inRandomOrder()->limit($amount)->get();
 		}
 
+		public function getExistingEntities ( int $amount, array $constraints):iterable {
+
+			return $this->activeModel->limit($amount)->where($constraints)->get();
+		}
+
 		public function setActiveModelType (string $model):void {
 
-			$this->activeModel = new $model;
+			$this->activeModel = $this->container->getClass($model); // resolving from container so it can be stubbed out
 		}
 
 		public function setupSchema ():void {
 
-			$this->migrator = $migrator = $this->laravelContainer->make(Migrator::class);
+			$repository = $this->migrator->getRepository();
 
-			$migrator->getRepository()->createRepository();
+			if (!$repository->repositoryExists())
 
-			$migrator->run($this->activeModel::migrationFolders());
+				$repository->createRepository();
+
+			$this->validateMigrationPaths();
+
+			$this->migrator->run($this->activeModel::migrationFolders());
+		}
+
+		private function validateMigrationPaths ():void {
+
+			$model = $this->activeModel;
+
+			foreach ($model::migrationFolders() as $path)
+
+				if (!is_dir($path))
+
+					throw new Exception("Invalid migration path given while trying to migrate model ". get_class($model). ": $path");
 		}
 
 		public function dismantleSchema ():void {
@@ -74,12 +115,7 @@
 
 		public function listenForQueries ():void {
 
-			$this->databaseClient->beginTransaction();
-		}
-
-		public function stopQueryListen ():void {
-
-			// Nothing to do here, since none of the queries were committed. But may be needed by another vendor
+			$this->databaseConnection->beginTransaction();
 		}
 	}
 ?>

@@ -17,13 +17,11 @@
 		$incorrectPassword = "incorrect";
 
 		public function getInsertedUser (string $password):UserContract {
-			
-			$user = $this->replicator->getBeforeInsertion(1, [ // inserting a new row rather than pulling a random one so we can access the "password" field during login request
+
+			return $this->replicator->modifyInsertion(1, [ // inserting a new row rather than pulling a random one so we can access the "password" field during login request
 
 				"password" => password_hash($password, PASSWORD_DEFAULT)
-			]); // no need to save?
-
-			return $user;
+			])->first();
 		}
 
 		public function sendCorrectRequest (string $loginPath):void {
@@ -35,7 +33,7 @@
 				"email" => $user->email,
 
 				"password" => $this->correctPassword
-			]);
+			], "post");
 		}
 
 		public function sendIncorrectRequest (string $loginPath):void {
@@ -47,7 +45,7 @@
 				"email" => $user->email,
 
 				"password" => $this->incorrectPassword
-			]);
+			], "post");
 		}
 
 		public function getLoginPath ():string {

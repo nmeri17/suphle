@@ -1,13 +1,17 @@
 <?php
 	namespace Tilwa\Tests\Unit\Requests;
 
-	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
-
 	use Tilwa\Contracts\Config\Router;
 
-	use Tilwa\Routing\RequestDetails;
+	use Tilwa\Request\RequestDetails;
+
+	use Tilwa\Testing\{TestTypes\IsolatedComponentTest, Condiments\DirectHttpTest};
+
+	use Tilwa\Tests\Integration\Generic\CommonBinds;
 
 	class RequestDetailsTest extends IsolatedComponentTest {
+
+		use DirectHttpTest, CommonBinds;
 
 		public function test_mock_request_populates_superglobal () {
 

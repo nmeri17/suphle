@@ -3,51 +3,42 @@
 
 	use Tilwa\Contracts\Config\Router;
 
-	use Tilwa\Middleware\FinalHandlerWrapper;
+	use Tilwa\Middleware\Handlers\FinalHandlerWrapper;
 
-	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\MockFacilitator};
+	use Tilwa\Response\Format\Json;
 
-	use Tilwa\Testing\Proxies\WriteOnlyContainer;
+	use Tilwa\Testing\{ TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer };
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock, Middlewares\AlterFinalResponse};
 
 	class AlterFinalResponseTest extends ModuleLevelTest {
-
-		use MockFacilitator;
 		
 		protected function getModules():array {
 
 			return [
 				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
+					$finalName = FinalHandlerWrapper::class;
+
 					$container->replaceWithMock(Router::class, RouterMock::class, [
 
 						"defaultMiddleware" => [
 							AlterFinalResponse::class,
 
-							FinalHandlerWrapper::class
+							$finalName
 						]
-					]);
+					])
+					->replaceWithMock($finalName, $finalName, [
+					
+						"process" => (new Json(""))->setRawResponse(["foo" => "bar"])
+					], [], false);
 				})
 			];
 		}
 
 		public function test_middleware_can_alter_response () {
 
-			$finalName = FinalHandlerWrapper::class;
-
-			// given
-			$finalMiddleware = $this->negativeDouble($finalName, [
-			
-				"process" => ["foo" => "bar"]
-			]);
-
-			$this->getModuleFor(ModuleOne::class)->getContainer()
-
-			->whenTypeAny()->needsAny([
-
-				$finalName => $finalMiddleware
-			]);
+			// given @see module injection
 
 			$this->get("/segment") // when
 

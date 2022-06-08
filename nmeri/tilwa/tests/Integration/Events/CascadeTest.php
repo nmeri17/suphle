@@ -18,7 +18,10 @@
 
 			// given => see module injection
 
-			$this->mockEventReceiver->ricochetReactor($this->payload)->shouldBeCalled(); // then
+			$this->mockCalls([
+
+				"ricochetReactor" => [1, [$this->payload]]
+			], $this->mockEventReceiver); // then
 
 			$this->getModuleFor(ModuleOne::class)
 

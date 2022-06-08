@@ -1,6 +1,8 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\Flows;
 
+	use Tilwa\Routing\BaseCollection;
+
 	use Tilwa\Response\Format\Json;
 
 	use Tilwa\Flows\{ControllerFlows, Structures\ServiceContext};
@@ -26,9 +28,9 @@
 
 			$flow->linksTo("paged-data", $flow
 
-				->previousResponse()->getNode("C")
+				->previousResponse()->getNode($this->queryNodeHolder)
 
-				->altersQuery($this->queryNodeHolder)
+				->altersQuery()
 			)
 			->linksTo("categories/id", $flow->previousResponse()->collectionNode("data") // assumes we're coming from "/categories"
 
@@ -46,9 +48,9 @@
 
 			$flow->linksTo("paged-data", $flow
 
-				->previousResponse()->getNode("C")
+				->previousResponse()->getNode($this->queryNodeHolder)
 
-				->altersQuery($this->queryNodeHolder)
+				->altersQuery()
 			);
 
 			$this->_get($renderer->setFlow($flow));
@@ -108,6 +110,11 @@
 		public function NO__FLOWh() {
 
 			$this->_get(new Json("noFlowHandler"));
+		}
+
+		public function USER__CONTENTh_id () {
+
+			$this->_get(new Json("readFlowPayload"));
 		}
 	}
 ?>

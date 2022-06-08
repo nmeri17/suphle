@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<phpunit bootstrap="test-autoload.php">
+<phpunit
+	colors = "true"
+	convertErrorsToExceptions = "false" 
+	convertNoticesToExceptions = "false"
+><!-- for the error catchers
+	convertWarningsToExceptions = "false" -->
 	<testsuites>
 		<testsuite name="all_tests">
 			<directory>./tests</directory>
@@ -16,10 +21,12 @@
 	</testsuites>
 
 	<php>
-		<ini name="error_reporting" value="-1" />
-		<env name="dbUser" value="test" />
-		<env name="dbPass" value="password" />
-		<env name="dbName" value="thing_test" />
-		<env name="dbHost" value="127.0.0.1" />
+		<ini name="error_reporting" value="-1" /><!-- 
+		<ini name="display_errors" value="1" />
+		<ini name="display_startup_errors" value="1" /> --><!-- 
+		<env name="DATABASE_USER" value="test" />
+		<env name="DATABASE_PASS" value="password" />
+		<env name="DATABASE_NAME" value="thing_test" />
+		<env name="DATABASE_HOST" value="127.0.0.1" /> -->
 	</php>
 </phpunit>

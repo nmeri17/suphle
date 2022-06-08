@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Tests\Interactions;
+	namespace Tilwa\Tests\Mocks\Interactions;
 
 	interface ModuleTwo {
 

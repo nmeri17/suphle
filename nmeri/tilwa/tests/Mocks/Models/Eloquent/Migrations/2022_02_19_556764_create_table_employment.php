@@ -1,13 +1,13 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Models\Eloquent\Migrations;
 
-	use Tilwa\Tests\Mocks\Models\Eloquent\Models\Employer;
+	use Tilwa\Tests\Mocks\Models\Eloquent\Employer;
 
 	use Illuminate\Database\{Migrations\Migration, Schema\Blueprint};
 
 	use Illuminate\Support\Facades\Schema;
 
-	class CreateTableEmployment extends Migration {
+	return new class extends Migration {
 
 		public function up ():void {
 
@@ -27,5 +27,5 @@
 
 			Schema::drop("employment");
 		}
-	}
+	};
 ?>

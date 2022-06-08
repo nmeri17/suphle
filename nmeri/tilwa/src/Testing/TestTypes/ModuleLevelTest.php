@@ -1,70 +1,62 @@
 <?php
 	namespace Tilwa\Testing\TestTypes;
 
-	use Tilwa\Testing\Condiments\{ModuleReplicator, GagsException};
+	use Tilwa\Modules\ModuleDescriptor;
 
-	use Tilwa\Testing\Proxies\Extensions\{FrontDoor, MiddlewareManipulator};
+	use Tilwa\Hydration\Container;
 
-	use Tilwa\Testing\Proxies\ModuleHttpTest;
+	use Tilwa\Testing\Condiments\{ModuleReplicator, BaseModuleInteractor};
 
-	use Tilwa\Modules\{ ModuleDescriptor, ModuleToRoute};
+	use Tilwa\Testing\Proxies\{ModuleHttpTest, GagsException, Extensions\FrontDoor};
 
-	use Tilwa\Hydration\Container; 
+	abstract class ModuleLevelTest extends TestVirginContainer {
 
-	use Tilwa\Middleware\MiddlewareRegistry;
-
-	use PHPUnit\Framework\TestCase;
-
-	use Illuminate\Testing\TestResponse;
-
-	abstract class ModuleLevelTest extends TestCase {
-
-		use ModuleReplicator, GagsException, ModuleHttpTest {
+		use ModuleReplicator, GagsException, ModuleHttpTest, BaseModuleInteractor {
 
 			GagsException::setUp as mufflerSetup;
 		}
 
-		protected $muffleExceptionBroadcast = true, $entrance;
-
 		protected function setUp ():void {
 
-			$entrance = $this->entrance = new FrontDoor($this->getModules());
+			$entrance = $this->entrance = new FrontDoor(
+				
+				/*
+				 Storing in an instance variable instead of reading directly from method so mutative methods can iterate and modify
 
-			$entrance->bootModules();
+				 Also, reading from getModules() with new ModuleDescriptor1 will return a new instance each time
+				*/
+				$this->modules = $this->getModules(),
 
-			$entrance->extractFromContainer();
+				$this->getEventParent()
+			);
 
-			if ($this->muffleExceptionBroadcast)
+			$this->provideTestEquivalents();
 
-				$this->mufflerSetup();
+			$this->bootMockEntrance($entrance);
+
+			$this->mufflerSetup();
 		}
 		
 		/**
 		 * @return ModuleDescriptor[]
 		 */
-		abstract protected function getModules():array;
+		abstract protected function getModules ():array;
 
-		protected function getModuleFor (string $interface) {
+		/**
+		 * Doesn't return the descriptor but rather the concrete associated with inteface exported by given module
+		*/
+		protected function getModuleFor (string $interface):object {
 
-			foreach ($this->getModules() as $descriptor)
+			foreach ($this->modules as $descriptor)
 
 				if ($interface == $descriptor->exportsImplements()) {
 
-					$descriptor->warmUp();
+					$descriptor->warmModuleContainer();
 
 					$descriptor->prepareToRun();
 
 					return $descriptor->materialize();
 				}
-		}
-
-		protected function massProvide (array $provisions):void {
-
-			foreach ($this->getModules() as $descriptor)
-
-				$descriptor->getContainer()->whenTypeAny()
-
-				->needsAny($provisions);
 		}
 
 		protected function getContainer ():Container {

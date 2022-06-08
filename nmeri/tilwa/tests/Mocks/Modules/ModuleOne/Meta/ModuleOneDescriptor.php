@@ -7,6 +7,8 @@
 
 	use Tilwa\Config\AscendingHierarchy;
 
+	use Tilwa\File\FileSystemReader;
+
 	use Tilwa\Tests\Mocks\Interactions\ModuleOne;
 
 	class ModuleOneDescriptor extends ModuleDescriptor {
@@ -24,14 +26,19 @@
 			return CustomInterfaceCollection::class;
 		}
 
-		protected function entityBindings ():void {
+		public function globalConcretes ():array {
 
-			$this->container->getClass(OrmDialect::class);
+			return array_merge(parent::globalConcretes(), [
+
+				ModuleFiles::class => new AscendingHierarchy(__DIR__, $this->container->getClass(FileSystemReader::class))
+			]);
 		}
 
-		public function fileConfig ():ModuleFiles {
+		protected function registerConcreteBindings ():void {
 
-			return new AscendingHierarchy (__DIR__);
+			parent::registerConcreteBindings();
+
+			$this->container->getClass(OrmDialect::class);
 		}
 	}
 ?>

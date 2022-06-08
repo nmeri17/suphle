@@ -1,21 +1,23 @@
 <?php
 	namespace Tilwa\Tests\Integration\Flows;
 
-	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\QueueInterceptor, Proxies\WriteOnlyContainer};
+	use Tilwa\Contracts\{Auth\UserContract, Config\Router};
 
-	use Tilwa\Contracts\{Auth\User, Config\Router};
+	use Tilwa\Flows\{OuterFlowWrapper, Structures\BranchesContext};
 
-	use Tilwa\Flows\BranchesContext;
+	use Tilwa\Testing\Proxies\{WriteOnlyContainer, SecureUserAssertions};
+
+	use Tilwa\Testing\Condiments\EmittedEventsCatcher;
 
 	use Tilwa\Tests\Integration\Flows\Jobs\RouteBranches\JobFactory;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\OriginCollection, ModuleOneDescriptor, Config\RouterMock};
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\OriginCollection, Meta\ModuleOneDescriptor, Config\RouterMock};
 
 	class FlowRoutesTest extends JobFactory {
 
-		use QueueInterceptor;
+		use SecureUserAssertions, EmittedEventsCatcher;
 
-		protected function getModules():array { // using this since we intend to make front door requests
+		protected function getModules():array {
 
 			return [
 
@@ -23,22 +25,28 @@
 
 					$container->replaceWithMock(Router::class, RouterMock::class, [
 
-						"browserEntryRoute" => OriginCollection::class // used by `test_visiting_origin_path_pushes_caching_job`
+						"browserEntryRoute" => OriginCollection::class
 					]);
 				})
 			];
 		}
 		
-		/**
-		 * @dataProvider specializedUser
-		*/
-		public function test_specialized_user_can_access_his_content (BranchesContext $context, User $visitor) {
+		public function test_specialized_user_can_access_his_content () {
 
-			$this->actingAs($visitor); // given
+			$this->dataProvider([
 
-			$this->makeJob($context)->handle(); // when
+				[$this, "specializedUser"]
+			], function (BranchesContext $context, ?UserContract $visitor) {
 
-			$this->assertHandledByFlow($this->userUrl); // then
+				$isGuest = is_null($visitor);
+
+				if (!$isGuest) $this->actingAs($visitor); // given
+
+				// this guy makes the internal requests for us i.e. to locate renderer for each flow, provided it exists on active route collection
+				$this->makeRouteBranches($context)->handle(); // when
+
+				$this->assertHandledByFlow($this->userUrl); // then
+			});
 		}
 
 		public function specializedUser ():array {
@@ -49,58 +57,62 @@
 
 				[$this->makeBranchesContext($user), $user],
 
-				[$this->makeBranchesContext(null), null] // create content to be mass consumed. Visiting user 5's resource as nobody should access it
+				[$this->makeBranchesContext(), null] // create content to be mass consumed. Visiting user 5's resource as nobody should access it
 			];
 		}
 		
-		/**
-		 * @dataProvider strangeUsers
-		*/
-		public function test_other_users_cant_access_specialized_user_content (BranchesContext $context, ?User $visitor) {
+		public function test_other_users_cant_access_specialized_user_content () {
 
-			if (!is_null($visitor))
+			$this->dataProvider([
 
-				$this->actingAs($visitor); // given
+				[$this, "strangeUsers"]
+			], function (BranchesContext $context, ?UserContract $visitor) {
 
-			$this->makeJob($context)->handle(); // when
+				if (!is_null($visitor))
 
-			$this->assertNotHandledByFlow($this->userUrl); // then
+					$this->actingAs($visitor); // given
+
+				$this->makeRouteBranches($context)->handle(); // when
+
+				$this->assertNotHandledByFlow($this->userUrl); // then
+			});
 		}
 
 		public function strangeUsers ():array {
 
-			$user3 = $this->makeUser(3);
+			$owner5 = $this->makeUser(5);
 
 			return [
 
-				[$this->makeBranchesContext($user3), $user3], // create for user 3. Visit user 5's content as user 3 should hit a brick wall
+				[$this->makeBranchesContext($owner5), $this->makeUser(3)], // create for user 5 and visit it as user 3; should see nothing
 
-				[$this->makeBranchesContext($this->makeUser(5)), null] // create content for user 5. Visiting as nobody should hit a brick wall
+				[$this->makeBranchesContext($owner5), null] // create content for user 5. Visiting as nobody should hit a brick wall
 			];
 		}
 		
-		/**
-		 * @dataProvider specializedUser
-		 * @dataProvider strangeUsers
-		*/
-		public function test_all_can_access_generalized_content (BranchesContext $dummyContext, ?User $visitor) {
+		public function test_all_can_access_generalized_content () {
 
-			if (!is_null($visitor))
+			$this->dataProvider([
+				[$this, "specializedUser"],
+				[$this, "strangeUsers"]
+			], function (BranchesContext $dummyContext, ?UserContract $visitor) {
 
-				$this->actingAs($visitor);
+				if (!is_null($visitor))
 
-			$this->makeJob($this->makeBranchesContext(null)) // given
-			->handle(); // when
+					$this->actingAs($visitor);
 
-			// then
-			$this->assertHandledByFlow($this->userUrl);
+				$this->handleDefaultBranchesContext(); // when
 
-			$this->assertHandledByFlow("/user-content/3");
+				// then
+				$this->assertHandledByFlow($this->userUrl);
+
+				$this->assertHandledByFlow("/user-content/3");
+			});
 		}
 
 		/**
 		 * @dataProvider getOriginUrls
-		 * @coverss ResponseManager::afterRender Fudging, since this is said to be unrecommended
+		 * @coverss RoutedRendererManager::afterRender Fudging, since this is said to be unrecommended
 		*/
 		public function test_visiting_origin_path_pushes_caching_job (string $url) {
 
@@ -116,6 +128,16 @@
 				["/pipe-to"],
 				["/one-of"]
 			];
+		}
+
+		public function test_will_emitEvent_after_returning_flow_request() {
+
+			$this->handleDefaultBranchesContext();
+
+			$this->get($this->userUrl); // when
+
+			// OuterFlowWrapper::HIT_EVENT
+			$this->assertFiredEvent ($this->rendererController); // then
 		}
 	}
 ?>

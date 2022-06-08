@@ -1,28 +1,30 @@
 <?php
 	namespace Tilwa\Middleware\Handlers;
 
-	use Tilwa\Middleware\{BaseMiddleware, MiddlewareNexts};
+	use Tilwa\Contracts\{Presentation\BaseRenderer, Routing\Middleware};
 
-	use Tilwa\Response\ResponseManager;
+	use Tilwa\Middleware\MiddlewareNexts;
+
+	use Tilwa\Response\RoutedRendererManager;
 
 	use Tilwa\Request\PayloadStorage;
 
-	class FinalHandlerWrapper extends BaseMiddleware {
+	class FinalHandlerWrapper implements Middleware {
 
-		private $manager;
+		private $rendererManager;
 
-		public function __construct (ResponseManager $manager) {
+		public function __construct (RoutedRendererManager $rendererManager) {
 
-			$this->manager = $manager;
+			$this->rendererManager = $rendererManager;
 		}
 
-		public function process (PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler) {
+		public function process (PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler):BaseRenderer {
 
-			$this->manager->handleValidRequest($payloadStorage);
+			$this->rendererManager->handleValidRequest($payloadStorage);
 
-			$this->manager->afterRender();
+			$this->rendererManager->afterRender();
 
-			return $this->manager->getResponse();
+			return $this->rendererManager->responseRenderer();
 		}
 	}
 ?>

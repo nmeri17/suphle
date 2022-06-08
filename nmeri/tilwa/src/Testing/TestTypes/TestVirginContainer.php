@@ -5,7 +5,9 @@
 
 	use Tilwa\Testing\Condiments\MockFacilitator;
 
-	use PHPUnit\Framework\TestCase;
+	use PHPUnit\Framework\{TestCase, ExpectationFailedException};
+
+	use Throwable;
 
 	class TestVirginContainer extends TestCase {
 
@@ -15,10 +17,10 @@
 
 			$container->initializeUniversalProvision();
 
-			$container->provideSelf();
+			$container->setEssentials();
 		}
 
-		protected function stubDecorator () {
+		protected function stubDecorator ():DecoratorHydrator {
 
 			return $this->positiveDouble(DecoratorHydrator::class, [
 
@@ -28,12 +30,12 @@
 			]);
 		}
 
-		protected function withDefaultInterfaceCollection ($container) {
+		protected function withDefaultInterfaceCollection ($container):void {
 
 			$container->setInterfaceHydrator(BaseInterfaceCollection::class);
 		}
 
-		protected function stubbedInterfaceCollection () {
+		protected function stubbedInterfaceCollection ():InterfaceHydrator {
 
 			return $this->positiveDouble(InterfaceHydrator::class, [
 
@@ -42,6 +44,41 @@
 					return $this->positiveDouble($subject, []);
 				})
 			]);
+		}
+
+		/**
+		 * @param {callables} Expects them all to be methods, not closures or anonymous methods
+		*/
+		protected function dataProvider (array $callables, callable $testBody):void {
+
+			foreach ($callables as $provider) {
+
+				foreach ($provider() as $index => $dataFixture)
+
+					try { $testBody(...$dataFixture); }
+
+					catch (Throwable $exception) { // test failures throw ExpectationFailedException, but without catching errors, error message will appear as if all providers and data sets failed
+
+						echo $this->providerExceptionMessage($provider, $index, $dataFixture);
+
+						throw $exception;
+					}
+			}
+		}
+
+		private function providerExceptionMessage (array $providerCallable, int $errorIndex, array $dataRow):string {
+
+			$newLine = "\n";
+
+			$providerName = get_class($providerCallable[0]) . "::". $providerCallable[1];
+
+			$messages = [
+				"$providerName with data set #$errorIndex:",
+
+				json_encode($dataRow, JSON_PRETTY_PRINT)
+			];
+
+			return $newLine. implode($newLine, $messages). $newLine;
 		}
 	}
 ?>

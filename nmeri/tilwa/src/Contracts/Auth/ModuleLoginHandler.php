@@ -1,16 +1,14 @@
 <?php
 	namespace Tilwa\Contracts\Auth;
 
-	use Tilwa\Contracts\{ Modules\HighLevelRequestHandler, Request\ValidationEvaluator};
+	use Tilwa\Contracts\{ Modules\HighLevelRequestHandler, Requests\ValidationEvaluator};
 
 	interface ModuleLoginHandler extends HighLevelRequestHandler, ValidationEvaluator {
 
 		public function isValidRequest ():bool;
-		
-		public function getResponse ();
 
-		public function isLoginRequest ():bool;
+		public function setResponseRenderer ():self;
 
-		public function setAuthService ():void;
+		public function processLoginRequest ():void;
 	}
 ?>

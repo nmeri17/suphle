@@ -3,28 +3,34 @@
 
 	use Tilwa\Hydration\Container;
 
-	use Tilwa\Testing\Condiments\GagsException;
+	use Tilwa\IO\{Session\InMemorySession, Cache\InMemoryCache};
+
+	use Tilwa\Request\RequestDetails;
+
+	use Tilwa\Contracts\IO\{Session, CacheManager};
+
+	use Tilwa\Testing\Proxies\{GagsException, Extensions\CheckProvisionedClasses};
 
 	/**
-	 * Used for tests that require a container. Boots and provides this container to them
+	 * Used for tests that mostly require a Container. Boots and provides this container to them
 	*/
-	class IsolatedComponentTest extends TestVirginContainer {
+	abstract class IsolatedComponentTest extends TestVirginContainer {
 
 		use GagsException {
 
 			GagsException::setUp as mufflerSetup;
 		}
 
-		protected $container,
-
-		$muffleExceptionBroadcast = true;
+		protected $container, $usesRealDecorator = false;
 
 		protected function setUp ():void {
 
-			$this->container = $container = $this->positiveDouble(Container::class, [
+			$this->container = $container = $this->positiveDouble(
 
-				"getDecorator" => $this->stubDecorator()
-			]);
+				CheckProvisionedClasses::class,
+
+				$this->getContainerStubs()
+			);
 
 			$this->bootContainer($container);
 
@@ -32,31 +38,39 @@
 
 			$this->entityBindings();
 
-			if ($this->muffleExceptionBroadcast)
+			$this->maySetRealDecorator();
 
-				$this->mufflerSetup();
+			$this->mufflerSetup();
 		}
 
 		protected function entityBindings ():void {
 
-			foreach ($this->simpleBinds() as $contract => $className)
-
-				$this->container->whenTypeAny()->needsAny([
-
-					$contract => $this->container->getClass($className)
-				]);
-
-			foreach ($this->concreteBinds() as $name => $concrete)
+			foreach ($this->concreteBinds() as $name => $concrete) // this goes first so if any of the simpleBinds below requires a concrete, it'll be available to it
 
 				$this->container->whenTypeAny()->needsAny([
 
 					$name => $concrete
 				]);
+
+			foreach ($this->simpleBinds() as $contract => $className) {
+
+				$concrete = $this->container->getClass($className); // for some funny reason, this provision doesn't work except it's first stored in a variable
+
+				$this->container->whenTypeAny()->needsAny([
+
+					$contract => $concrete
+				]);
+			}
 		}
 
 		protected function simpleBinds ():array {
 
-			return [];
+			return [
+
+				Session::class => InMemorySession::class,
+
+				CacheManager::class => InMemoryCache::class
+			];
 		}
 
 		protected function concreteBinds ():array {
@@ -72,7 +86,36 @@
 
 		protected function massProvide (array $provisions):void {
 
-			$this->container->whenTypeAny()->needsAny($provisions);
+			$container = $this->container;
+
+			foreach ($provisions as $parentType => $concrete)
+
+				$container->refreshClass($parentType);
+
+			$container->whenTypeAny()->needsAny($provisions);
+		}
+
+		private function getContainerStubs ():array {
+
+			$stubs = [];
+
+			if (!$this->usesRealDecorator)
+
+				$stubs["getDecorator"] = $this->stubDecorator();
+
+			return $stubs;
+		}
+
+		private function maySetRealDecorator ():void {
+
+			if ($this->usesRealDecorator)
+
+				$this->container->interiorDecorate();
+		}
+
+		protected function setRequestPath (string $requestPath):void {
+
+			RequestDetails::fromContainer($this->container, $requestPath);
 		}
 	}
 ?>

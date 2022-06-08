@@ -5,9 +5,7 @@
 
 	use Tilwa\Contracts\{Requests\ValidationEvaluator, Database\OrmDialect};
 
-	use Tilwa\Request\ValidatorManager;
-
-	use Tilwa\Routing\RequestDetails;
+	use Tilwa\Request\{ValidatorManager, RequestDetails};
 
 	use Tilwa\Services\Structures\{ModelfulPayload, ModellessPayload, ImagePicker};
 
@@ -64,7 +62,10 @@
 
 				if ($this->requestDetails->isGetRequest()) return;
 
-				throw new NoCompatibleValidator;
+				throw new NoCompatibleValidator(
+
+					get_class($this->controller), $this->actionMethod
+				);
 			}
 
 			$this->validatorManager->setActionRules(
@@ -78,8 +79,6 @@
 			$parameters = $this->container->getMethodParameters($this->actionMethod, get_class($this->controller));
 
 			$correctParameters = $this->validActionDependencies($parameters);
-
-			$this->prepareActionModels($correctParameters);
 
 			$this->handlerParameters = $correctParameters;
 		}

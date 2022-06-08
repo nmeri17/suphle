@@ -1,13 +1,17 @@
 <?php
 	namespace Tilwa\Bridge\Laravel\Routing;
 
-	use Tilwa\Contracts\{Config\Laravel as LaravelConfig, Bridge\LaravelContainer};
+	use Tilwa\Contracts\{Config\Laravel as LaravelConfig, Bridge\LaravelContainer, Presentation\BaseRenderer};
 
-	use Tilwa\Hydration\LaravelProviderManager;
+	use Tilwa\Response\Format\ExternallyEvaluatedRenderer;
 
-	use Illuminate\Routing\Router;
+	use Tilwa\Bridge\Laravel\Package\LaravelProviderManager;
 
-	use Illuminate\Http\{Request, Response};
+	use Illuminate\Routing\{Router, Route};
+
+	use Illuminate\Http\Request;
+
+	use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 	class ModuleRouteMatcher {
 
@@ -28,18 +32,21 @@
 
 			$routeProviders = $this->config->registersRoutes();
 
-			if (!empty($routeProviders)) {
+			if (empty($routeProviders)) return false;
 
-				$this->activateProviders($routeProviders);
+			$this->activateProviders($routeProviders);
 
-				$this->router = $this->laravelContainer->make(Router::class);
+			$this->router = $this->laravelContainer->make(Router::class);
 
-				$this->request = $this->laravelContainer->make(Request::class);
+			$this->request = $this->laravelContainer->make(Request::class);
 
-				return $this->router->getRoutes()->match($this->request);
+			try {
+				
+				return $this->router->getRoutes()->match($this->request) instanceof Route;
+			} catch (NotFoundHttpException $e) {
+			
+				return false;	
 			}
-
-			return false;
 		}
 
 		private function activateProviders (array $providers):void {
@@ -53,7 +60,7 @@
 				$concrete = $booter->getActiveProvider();
 
 				// we're using this instead of actually providing the service, to slightly speed up boot process since we don't know if this will be the eventual handler
-				$booter->createSandbox(function () use ($concrete) {
+				$this->laravelContainer->createSandbox(function () use ($concrete) {
 
 					$concrete->register(); // idk how necessary this is since routes are registered in the boot method
 				
@@ -62,9 +69,21 @@
 			}
 		}
 		
-		public function getResponse ():Response {
+		public function convertToRenderer ():BaseRenderer {
 
-			return $this->router->dispatch($this->request);
+			$fullRequest = $this->router->dispatch($this->request);
+
+			$renderer = (new ExternallyEvaluatedRenderer)
+
+			->setRawResponse($fullRequest->getContent());
+
+			$renderer->setHeaders(
+				$fullRequest->getStatusCode(),
+
+				$fullRequest->headers->all()
+			);
+
+			return $renderer;
 		}
 	}
 ?>

@@ -3,11 +3,9 @@
 
 	use Tilwa\Hydration\Container;
 
-	use Tilwa\Testing\TestTypes\TestVirginContainer;
-
-	use Tilwa\Tests\Unit\Hydration\Extensions\CheckProvisionedClasses;
-
 	use Tilwa\Contracts\Auth\UserContract;
+
+	use Tilwa\Testing\{TestTypes\TestVirginContainer, Proxies\Extensions\CheckProvisionedClasses};
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\{ ARequiresBCounter, BCounter};
 
@@ -116,7 +114,7 @@
 			], $otherOverrides));
 		}
 
-		public function test_can_hydrate_concrete_for_caller () {
+		public function test_isolated_hydration_reports_given_class_as_caller () {
 
 			// given
 			$sut = $this->withArgumentsForARequires();
@@ -132,7 +130,7 @@
 			// then
 			$this->assertInstanceOf($this->aRequires, $freshlyCreated->getConcrete());
 
-			$this->assertSame($freshlyCreated->getCreatedFor(), get_class());
+			$this->assertSame($freshlyCreated->getCreatedFor(), $this->aRequires);
 		}
 
 		public function test_can_hydrate_method_parameters_without_interface () {
@@ -147,7 +145,7 @@
 			$this->bootContainer($sut);
 
 			// given
-			$reflectedCallable = new ReflectionMethod($this->aRequires, "__construct");
+			$reflectedCallable = new ReflectionMethod($this->aRequires, Container::CLASS_CONSTRUCTOR);
 
 			$provisionContext = $sut->getRecursionContext();
 
@@ -175,9 +173,9 @@
 
 			$this->bootContainer($sut);
 
-			$parameters = $sut->internalMethodGetParameters(function () use ($sut) {
+			$parameters = $sut->internalMethodGetParameters($this->aRequires, function ($className) use ($sut) {
 
-				return $sut->getMethodParameters("__construct", $this->aRequires);
+				return $sut->getMethodParameters(Container::CLASS_CONSTRUCTOR, $className);
 			});
 		}
 
@@ -185,7 +183,7 @@
 
 			return array_map(function ($type) {
 
-				return $this->positiveDouble($type, []);
+				return $this->positiveDouble($type);
 			}, $types);
 		}
 

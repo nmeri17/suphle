@@ -1,7 +1,11 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\Services;
 
-	use Tilwa\Events\{EmitProxy, EventManager};
+	use Tilwa\Events\EmitProxy;
+
+	use Tilwa\Services\Structures\OptionalDTO;
+
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Events\AssignListeners;
 
 	class UpdatefulEmitter extends SystemModelEditMock1 {
 
@@ -11,12 +15,15 @@
 
 		private $eventManager;
 
-		public function __construct (EventManager $eventManager) {
+		public function __construct (AssignListeners $eventManager) {
 
 			$this->eventManager = $eventManager;
 		}
 
-		public function initializeUpdateModels (int $payload):void {
+		/**
+		 * @param {payload}:int
+		*/
+		public function initializeUpdateModels ( $payload):void {
 
 			$this->payload = $payload;
 		}
@@ -25,12 +32,12 @@
 
 			$this->emitHelper (self::UPDATE_ERROR, $this->payload); // one of the handlers here is expected to rollback updates before it and prevent ours below from running
 
-			return new OptionalDTO($this->payload * 3); // stand in for database update
+			return new OptionalDTO($this->payload * 3); // since event listener doesn't implement ServiceErrorCatcher, this method should terminate and return value of [failureState]
 		}
 
 		public function failureState (string $method):?OptionalDTO {
 
-			return 1;
+			return new OptionalDTO($this->payload);
 		}
 	}
 ?>

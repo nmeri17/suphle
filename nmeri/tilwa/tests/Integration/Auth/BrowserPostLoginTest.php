@@ -1,19 +1,34 @@
 <?php
 	namespace Tilwa\Tests\Integration\Auth;
 
-	use Tilwa\Testing\{Condiments\PopulatesDatabaseTest, Proxies\SecureUserAssertions, TestTypes\IsolatedComponentTest};
+	use Tilwa\Contracts\Auth\AuthStorage;
 
-	use Tilwa\Contracts\Auth\{AuthStorage, User};
+	use Tilwa\Auth\Storage\SessionStorage;
 
-	use Tilwa\Auth\SessionStorage;
+	use Tilwa\Adapters\Orms\Eloquent\Models\User as EloquentUser;
+
+	use Tilwa\Testing\{Condiments\BaseDatabasePopulator, Proxies\SecureUserAssertions, TestTypes\IsolatedComponentTest};
+
+	use Tilwa\Tests\Integration\Generic\CommonBinds;
 
 	class BrowserPostLoginTest extends IsolatedComponentTest {
 
-		use PopulatesDatabaseTest, SecureUserAssertions;
+		use BaseDatabasePopulator, SecureUserAssertions, CommonBinds {
+
+			CommonBinds::simpleBinds as commonSimples;
+		}
+
+		protected function simpleBinds ():array {
+
+			return array_merge($this->commonSimples(), [
+
+				AuthStorage::class => SessionStorage::class // ensure we're working with session in this test although that's the default
+			]);
+		}
 
 		protected function getActiveEntity ():string {
 
-			return User::class;
+			return EloquentUser::class;
 		}
 
 		public function test_session_impersonate () {
@@ -22,13 +37,13 @@
 
 			$this->actingAs($user1); // given
 
-			$sut = $this->container->getClass(SessionStorage::class);
+			$sut = $this->getAuthStorage();
 
 			$sut->imitate($user2->getId()); // when
 
 			$this->assertAuthenticatedAs($user2); // then
 
-			$this->assertSame($sut->getPreviousUser(), $user1->getId());
+			$this->assertTrue($sut->getPreviousUser() == $user1->getId()); // int/string comparison
 		}
 
 		public function test_logout () {
@@ -37,7 +52,7 @@
 
 			$this->actingAs($user); // given
 
-			$sut = $this->container->getClass(AuthStorage::class);
+			$sut = $this->getAuthStorage();
 
 			$sut->logout(); // when
 

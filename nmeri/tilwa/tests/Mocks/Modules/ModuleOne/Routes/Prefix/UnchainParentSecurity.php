@@ -3,6 +3,8 @@
 
 	use Tilwa\Routing\BaseCollection;
 
+	use Tilwa\Response\Format\Json;
+
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Controllers\MixedNestedSecuredController;
 
 	class UnchainParentSecurity extends BaseCollection {

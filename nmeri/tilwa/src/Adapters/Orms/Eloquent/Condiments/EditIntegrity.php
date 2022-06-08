@@ -7,6 +7,8 @@
 
 	use Illuminate\Database\Eloquent\Relations\Relation;
 
+	use DateTime;
+
 	/**
 	 * Using a trait instead of wrapping model in an additional service, since this is already being returned by a service (MultiUserModelEdit), and would result in clunky DX
 	 * 

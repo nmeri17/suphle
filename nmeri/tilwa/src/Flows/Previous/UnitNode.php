@@ -6,11 +6,11 @@
 	*/
 	abstract class UnitNode {
 
-		protected $nodeName; // the key on the previous response body this node is attached to
+		protected $nodeName, // the key on the previous response body this node is attached to
 
-		private $actions = [], // on CollectionNodes, this is the list of actions to take, while on SingleNodes, this is the list of attributes applied
+		$actions = []; // on CollectionNodes, this is the list of actions to take, while on SingleNodes, this is the list of attributes applied
 
-		$config = [];
+		private $config = [];
 
 		const TTL = 1, MAX_HITS = 2;
 

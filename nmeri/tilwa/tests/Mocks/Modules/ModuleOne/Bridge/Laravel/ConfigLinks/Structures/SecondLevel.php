@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Bridge\Laravel\ConfigLinks\Structures;
 
-	use Tilwa\Bridge\Laravel\BaseConfigLink;
+	use Tilwa\Bridge\Laravel\Config\BaseConfigLink;
 
 	class SecondLevel extends BaseConfigLink {
 

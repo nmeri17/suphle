@@ -1,27 +1,23 @@
 <?php
 	namespace Tilwa\Tests\Integration\Flows\Jobs\RouteBranches;
 
+	use Tilwa\Flows\{UmbrellaSaver, Structures\RouteUmbrella};
+
+	use Tilwa\Flows\Structures\BranchesContext;
+
+	use Tilwa\Contracts\{IO\CacheManager, Config\Router, Presentation\BaseRenderer};
+
+	use Tilwa\Response\RoutedRendererManager;
+
 	use Tilwa\Testing\Proxies\WriteOnlyContainer;
 
-	use Tilwa\Flows\{FlowHydrator, OuterFlowWrapper, Structures\BranchesContext};
-
-	use Tilwa\Contracts\{CacheManager, Auth\User, Config\Router};
-
-	use Tilwa\Response\Format\{Json, AbstractRenderer};
-
-	use Tilwa\Response\ResponseManager;
-
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\OriginCollection, ModuleOneDescriptor, Config\RouterMock};
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\OriginCollection, Meta\ModuleOneDescriptor, Config\RouterMock};
 
 	class IntraModuleTest extends JobFactory {
 
-		protected $originDataName = "all_categories",
-
-		$flowUrl = "categories/id";
+		private $user5Url = "/user-content/5";
 
 		protected function getModules():array {
-
-			$hydrator = FlowHydrator::class;
 
 			return [
 
@@ -30,34 +26,38 @@
 					$container->replaceWithMock(Router::class, RouterMock::class, [
 
 						"browserEntryRoute" => OriginCollection::class
-					])
-					->replaceWithMock($hydrator, $hydrator, [
-
-						"executeRequest" => $this->flowGeneratedRenderer()
 					]);
 				})
 			];
 		}
 
-		/**
-		 * @dataProvider contextParameters
-		*/
-		public function test_stores_correct_data_in_cache (BranchesContext $context) {
+		public function test_stores_correct_data_in_cache () {
 
-			// given => see setup
-			$this->makeJob($context)->handle(); // When
+			$this->dataProvider([
 
-			$umbrella = $this->container->getClass(CacheManager::class)
+				[$this, "contextParameters"]
+			], function (BranchesContext $context) {
 
-			->get("categories/5");
+				// given => see setup
+				$this->makeRouteBranches($context)->handle(); // When
 
-			$this->assertNotNull($umbrella);
+				$flowSaver = $this->container->getClass(UmbrellaSaver::class);
 
-			$this->assertSame( // then
-				$umbrella->getUserPayload("*")->getRenderer(),
+				$location = $flowSaver->getPatternLocation($this->user5Url);
+				
+				$umbrella = $flowSaver->getExistingUmbrella($location); // since it saves content for all given indexes, not just 5. This means that "/user-content/8" is available and will return 8
 
-				$this->flowGeneratedRenderer()
-			);
+				$this->assertNotNull($umbrella);
+
+				$this->assertSame( // then
+					$this->expectedResponse(),
+
+					$this->extractResponse(
+
+						$umbrella, $context->getUserId()
+					)
+				);
+			});
 		}
 
 		/**
@@ -65,45 +65,45 @@
 		 * 
 		 * @return [
 			 * 	BranchesContext => configured to match what we expect an origin url to populate a task with
-			 * url => the flow link expected to enable us access the given task
 		 * ]
 		*/
 		public function contextParameters ():array {
 
-			$responseManager = $this->negativeDouble(ResponseManager::class); // stubbing since the information this naturally expects to carry is too contextual to be pulled from just a container
-
-			$user = $this->makeUser(5);
-
-			$renderer = $this->getLoadedRenderer();
-
 			return [
-				[new BranchesContext($renderer, null, $this->getModules(), null)],
+				[$this->makeBranchesContext()],
 
-				[new BranchesContext($renderer, $user, null, $responseManager)],
-
-				[new BranchesContext($renderer, $user, $this->getModules(), null)]
+				[$this->makeBranchesContext($this->makeUser(5))]
 			];
 		}
 
-		private function flowGeneratedRenderer ():AbstractRenderer {
+		private function expectedResponse ():array {
 
-			return new Json("generatedRenderer");
+			return [
+
+				"id" => 5
+			];
 		}
 
-		/**
-		 * @dataProvider contextParameters
-		*/
-		public function test_will_be_handled_by_flow (BranchesContext $context) {
+		private function extractResponse (RouteUmbrella $routeUmbrella, string $userId):array {
 
-			// given => see dataProvider
-			$this->makeJob($context)->handle(); // When
-			
-			// then
-			$this->assertHandledByFlow("/categories/5"); // Note: we can get away with not even creating an endpoint for this since if the above call behaves correctly, request won't even go there
-			
-			$wrapper = $this->container->getClass(OuterFlowWrapper::class);
+			return $routeUmbrella->getUserPayload($userId)
 
-			$this->assertSame($wrapper->handlingRenderer(), $this->flowGeneratedRenderer());
+			->getRenderer()->getRawResponse();
+		}
+
+		public function test_will_be_handled_by_flow () {
+
+			$this->dataProvider([
+
+				[$this, "contextParameters"]
+			], function (BranchesContext $context) {
+
+				// given => see dataProvider
+				$this->makeRouteBranches($context)->handle(); // When
+				
+				// then
+				$this->assertHandledByFlow($this->user5Url);
+			});
 		}
 
 		public function test_no_flow_does_nothing () {

@@ -5,6 +5,6 @@
 
 	interface HighLevelRequestHandler {
 
-		public function handlingRenderer ():BaseRenderer;
+		public function handlingRenderer ():?BaseRenderer;
 	}
 ?>

@@ -5,7 +5,9 @@
 
 	use Tilwa\Request\ValidatorManager;
 
-	use Tilwa\Response\{ResponseManager, Format\AbstractRenderer};
+	use Tilwa\Response\RoutedRendererManager;
+
+	use Tilwa\Contracts\{Presentation\BaseRenderer, Requests\ValidationEvaluator, Modules\DescriptorInterface};
 
 	use Tilwa\Middleware\MiddlewareQueue;
 
@@ -17,17 +19,24 @@
 
 	use Tilwa\Exception\Diffusers\ValidationFailureDiffuser;
 
-	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
+	use Tilwa\Testing\Condiments\DirectHttpTest;
 
-	use Tilwa\Testing\Condiments\{DirectHttpTest, MockFacilitator};
+	use Tilwa\Tests\Integration\Routing\TestsRouter;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Controllers\ValidatorController, Validators\ValidatorOne};
 
-	class ValidatorTest extends IsolatedComponentTest {
+	class ValidatorTest extends TestsRouter {
 
-		use DirectHttpTest, MockFacilitator;
+		use DirectHttpTest;
 
-		private $controller = ValidatorController::class;
+		private $controller;
+
+		protected function setUp ():void {
+
+			parent::setUp();
+
+			$this->controller = $this->container->getClass(ValidatorController::class);
+		}
 
 		public function test_get_needs_no_validation () {
 
@@ -93,39 +102,52 @@
 
 			$this->container->whenTypeAny()->needsAny([
 
-				ValidatorManager::class => $validatorManager
+				ValidatorManager::class => $validatorManager,
+
+				BaseRenderer::class => $this->negativeDouble(BaseRenderer::class)
 			]) // given
 
-			->getClass(ResponseManager::class)->mayBeInvalid(); // when
+			->getClass(RoutedRendererManager::class)->mayBeInvalid(); // when
 		}
 
 		public function test_successful_validation_initiates_middleware () {
 
 			$sutName = ModuleInitializer::class;
 
+			$middlewareQueueName = MiddlewareQueue::class;
+
+			$rendererManager = RoutedRendererManager::class;
+
+			$container = $this->container;
+
 			// given
-			$validatorManager = $this->positiveDouble(ValidatorManager::class, [
+			$sut = $this->replaceConstructorArguments(
 
-				"isValidated" => true
-			]);
+				$sutName,
+				[
+					"descriptor" => $this->positiveDouble(DescriptorInterface::class, [
 
-			$sut = $this->negativeDouble($sutName, ["triggerRequest"]); // huh??
+						"getContainer" => $container
+					])
+				],
+				[
+					"isLaravelRoute" => false
+				]
+			);
 
-			$middlewareQueue = $this->negativeDouble(MiddlewareQueue::class, [], [
+			$container->whenTypeAny()->needsAny([
 
-				"runStack" => [1, [$this->anything()]]
-			]); // then
+				$rendererManager => $this->negativeDouble($rendererManager),
 
-			$this->container->whenTypeAny()->needsAny([
+				$middlewareQueueName => $this->negativeDouble($middlewareQueueName, [], [
 
-				ValidatorManager::class => $validatorManager,
-
-				MiddlewareQueue::class => $middlewareQueue,
+					"runStack" => [1, []]
+				]), // then
 
 				$sutName => $sut
-			])
+			]);
 
-			->getClass($sutName)->triggerRequest(); // when
+			$sut->initialize()->fullRequestProtocols(); // when
 		}
 
 		public function test_failed_validation_reverts_renderer () {
@@ -134,25 +156,30 @@
 
 			$router = $this->negativeDouble(RouteManager::class, [
 
-				"getPreviousRenderer" => $this->negativeDouble(AbstractRenderer::class, [], [
+				"getPreviousRenderer" => $this->negativeDouble(BaseRenderer::class, [], [
 
 					"setRawResponse" => [
 
-						1, [$this->returnCallback(function($subject) {
+						1, [$this->callback(function($subject) {
 
-							return array_key_exists("errors", $subject); // if getPreviousRenderer is not called, our mock won't run. So, 2 tests for the price of 1
+							return array_key_exists("errors", $subject); // if getPreviousRenderer is not called, our mock won't run-- 2 verifications for the price of 1
 						})] // then
 					]
 				]
 			)]);
 
-			$this->container->whenTypeAny()->needsAny([
+			$diffuser = $this->container->whenTypeAny()->needsAny([
 
 				RouteManager::class => $router
 			])
-			->getClass(ValidationFailureDiffuser::class)
+			->getClass(ValidationFailureDiffuser::class);
 
-			->prepareRendererData(); // when
+			$diffuser->setContextualData(
+
+				new ValidationFailure ($this->positiveDouble(ValidationEvaluator::class))
+			);
+
+			$diffuser->prepareRendererData(); // when
 		}
 	}
 ?>

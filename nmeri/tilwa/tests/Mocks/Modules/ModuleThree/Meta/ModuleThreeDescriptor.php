@@ -3,11 +3,13 @@
 
 	use Tilwa\Modules\ModuleDescriptor;
 
-	use Tilwa\Contracts\Config\ModuleFiles;
+	use Tilwa\Contracts\{Database\OrmDialect, Config\ModuleFiles};
 
 	use Tilwa\Config\AscendingHierarchy;
 
-	use Tilwa\Tests\Mocks\Interactions\{ModuleThree/*, ModuleThree*/};
+	use Tilwa\File\FileSystemReader;
+
+	use Tilwa\Tests\Mocks\Interactions\{ModuleThree, ModuleOne};
 
 	class ModuleThreeDescriptor extends ModuleDescriptor {
 
@@ -29,9 +31,15 @@
 			return CustomInterfaceCollection::class;
 		}
 
-		public function fileConfig ():ModuleFiles {
+		public function globalConcretes ():array {
 
-			return new AscendingHierarchy (__DIR__);
+			return array_merge(parent::globalConcretes(), [
+
+				ModuleFiles::class => new AscendingHierarchy(__DIR__,
+
+					$this->container->getClass(FileSystemReader::class)
+				)
+			]);
 		}
 	}
 ?>

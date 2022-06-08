@@ -3,44 +3,59 @@
 
 	use Tilwa\Testing\Proxies\Extensions\MockModuleEvents;
 
-	use Tilwa\Modules\ModulesBooter;
+	use Tilwa\Contracts\Config\Events;
 
-	use Tilwa\Events\EventSubscription;
+	use Tilwa\Events\{EventSubscription, ModuleLevelEvents};
 
 	trait EmittedEventsCatcher {
 
-		private $eventManager;
-
-		/**
-		 * We avoid calling parent::setUp here, to circumvent the actual listeners getting bound, which would result in both stubed and real event managers running
-		 * 
-		 * Tests making use of this trait are expected to only call its [setUp], and not that of [parent]
-		*/
-		protected function setUp ():void {
-
-			$modules = $this->getModules();
-
-			$this->eventManager = new MockModuleEvents($modules);
-
-			(new ModulesBooter($modules, $this->eventManager))
-
-			->boot();
-		}
+		private $eventParent;
 
 		abstract protected function getModules ():array;
 
-		protected function assertFiredEvent (string $emitter, string $eventName):void {
+		protected function getEventParent ():?ModuleLevelEvents {
 
-			$subscription = $this->findInBlanks($emitter);
-
-			$this->assertNotNull($subscription, "Event '$eventName' not fired");
-			
-			$this->assertNotEmpty($subscription->getMatchingUnits($eventName));
+			return $this->eventParent = new MockModuleEvents($this->modules);
 		}
 
-		protected function assertNotFiredEvent (string $emitter, string $eventName):void {
+		protected function assertFiredEvent (string $emitter):void {
 
-			$subscription = $this->findInBlanks($emitter);
+			$this->assertNotNull(
+				$this->getEventSubscription($emitter),
+
+				"Failed to assert that '$emitter' fired any event"
+			);
+		}
+
+		protected function assertHandledEvent (string $emitter, string $eventName):void {
+
+			$subscription = $this->getEventSubscription($emitter);
+
+			$this->assertNotNull($subscription,
+
+				"Failed to assert that '$emitter' fired any event"
+			);
+			
+			$this->assertNotEmpty(
+				$subscription->getMatchingUnits($eventName),
+
+				"Failed to assert that '$emitter' emitted an event named '$eventName'"
+			);
+		}
+
+		protected function assertNotFiredEvent (string $emitter):void {
+
+			$this->assertNull(
+
+				$this->getEventSubscription($emitter),
+
+				"Did not expect '$emitter' to fire event"
+			);
+		}
+
+		protected function assertNotHandledEvent (string $emitter, string $eventName):void {
+
+			$subscription = $this->getEventSubscription($emitter);
 
 			if (is_null($subscription)) {
 
@@ -49,16 +64,28 @@
 				return;
 			}
 
-			$this->assertEmpty($subscription->getMatchingUnits($eventName), "Event '$eventName' fired by '$emitter'");
+			$this->assertEmpty(
+				$subscription->getMatchingUnits($eventName),
+
+				"Did not expect '$emitter' to fire event '$eventName'"
+			);
 		}
 
-		private function findInBlanks (string $sender):?EventSubscription {
+		private function getEventSubscription (string $sender):?EventSubscription {
 
-			foreach ($this->eventManager->getBlanks() as $subscription)
+			$allSent = $this->eventParent->getFiredEvents();
 
-				if ($subscription->matchesHandler($sender))
+			if (array_key_exists($sender, $allSent)) {
 
-					return $subscription;
+				$subscription = $allSent[$sender];
+
+				if (is_null($subscription)) // was event fired without any paired handlers?
+					$subscription = new EventSubscription("", $this->getContainer()); // so the asserters don't mistake false positive
+
+				return $subscription;
+			}
+
+			return null;
 		}
 	}
 ?>

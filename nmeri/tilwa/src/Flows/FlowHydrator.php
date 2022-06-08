@@ -1,25 +1,31 @@
 <?php
 	namespace Tilwa\Flows;
 
-	use Tilwa\Flows\Structures\{RouteUserNode, RouteUmbrella, RangeContext, ServiceContext};
+	use Tilwa\Flows\Structures\{RouteUserNode, RangeContext, ServiceContext, GeneratedUrlExecution};
 
 	use Tilwa\Flows\Previous\{ SingleNode, CollectionNode, UnitNode};
 
-	use Tilwa\Contracts\{CacheManager, Presentation\BaseRenderer};
+	use Tilwa\Contracts\Presentation\BaseRenderer;
 
-	use Tilwa\Response\ResponseManager;
+	use Tilwa\Response\RoutedRendererManager;
 
 	use Tilwa\Hydration\Container;
 
-	use Tilwa\Routing\{PathPlaceholders, RequestDetails};
+	use Tilwa\Request\PayloadStorage;
 
-	use Illuminate\Support\{Collection as LaravelCollection, Arr};
+	use Tilwa\Routing\PathPlaceholders;
+
+	use Illuminate\Support\Arr;
+
+	use Exception;
 
 	class FlowHydrator {
 
-		private $previousResponse, $cacheManager, $requestDetails,
+		private $previousResponse, $flowSaver, $payloadStorage,
 
-		$responseManager, $container, $placeholderStorage,
+		$rendererManager, $container, $placeholderStorage,
+
+		$baseUrlPattern,
 
 		$parentHandlers = [
 			SingleNode::class => "handleSingleNodes",
@@ -52,47 +58,34 @@
 			UnitNode::MAX_HITS => "setMaxHitsHydrator"
 		];
 
-		function __construct(CacheManager $cacheManager, Container $randomContainer, PathPlaceholders $placeholderStorage, RequestDetails $requestDetails) {
+		public function __construct (
 
-			$this->cacheManager = $cacheManager;
+			UmbrellaSaver $flowSaver, Container $randomContainer,
+
+			PathPlaceholders $placeholderStorage, PayloadStorage $payloadStorage
+		) {
+
+			$this->flowSaver = $flowSaver;
 
 			$this->container = $randomContainer;
 
 			$this->placeholderStorage = $placeholderStorage;
 
-			$this->requestDetails = $requestDetails;
-		}
-
-		# @param {contentType} model type, where present
-		private function storeContext(string $urlPattern, RouteUserNode $nodeContent, string $userId, string $contentType):void {
-
-			$manager = $this->cacheManager;
-			
-			$umbrella = $manager->get($urlPattern);
-
-			if (!$umbrella)
-
-				$umbrella = new RouteUmbrella($urlPattern);
-
-			$umbrella->addUser($userId, $nodeContent);
-
-			$saved = $manager->save($urlPattern, $umbrella);
-
-			if ($contentType)
-
-				$saved->tag($contentType);
-
-			// better still, this guy can subscribe to a topic(instead of using tags?). update listener publishes to that topic (so we hopefully have no loop)
+			$this->payloadStorage = $payloadStorage;
 		}
 
 		/**
-		*	@param {responseManager} the manager designated to handle this request if it entered app organically
+		 * These dependencies are obtained after reading flow structure so they can't be injected in our constructor
+		 * 
+		 * @param {rendererManager} the manager designated to handle this request
 		*/
-		public function setDependencies(ResponseManager $responseManager, $previousResponse):self {
+		public function setDependencies(RoutedRendererManager $rendererManager, $previousResponse, string $urlPattern):self {
 
 			$this->previousResponse = $previousResponse;
 
-			$this->responseManager = $responseManager;
+			$this->rendererManager = $rendererManager;
+
+			$this->baseUrlPattern = $urlPattern;
 
 			return $this;
 		}
@@ -113,127 +106,162 @@
 			);
 		}
 
+		/**
+		 * @param {generatedRenderers} GeneratedUrlExecution[]
+		 * @param {flowStructure} the original one given
+		*/
 		public function rendererToStorable (array $generatedRenderers, UnitNode $flowStructure, string $userId):void {
 
-			foreach ($generatedRenderers as $renderer) {
+			foreach ($generatedRenderers as $generationUnit) {
+
+				$renderer = $generationUnit->getRenderer();
 				
 				$unitPayload = new RouteUserNode($renderer);
 
 				$this->runNodeConfigs($unitPayload, $flowStructure);
 
-				$this->storeContext(
-					$renderer->getPath(),
+				$this->flowSaver->saveNewUmbrella(
+					$generationUnit->getRequestPath(),
 
-					$unitPayload, $userId,
-
-					$this->getContentType($renderer)
+					$unitPayload, $userId
 				);
 			}
 		}
 
-		private function getContentType(BaseRenderer $renderer):string {
-
-			$contentTypes = [
-				
-				LaravelCollection::class => "getQueueableClass"
-			];
-
-			$payload = $renderer->getRawResponse();
-
-			$payloadType = get_class($payload);
-
-			if (array_key_exists($payloadType, $contentTypes))
-
-				return call_user_func([$payload, $contentTypes[$payloadType]]);
-		}
-
-		// @return BaseRenderer[]
-		private function handleSingleNodes(SingleNode $rawNode):array {
+		/**
+		*	@return GeneratedUrlExecution[]
+		*/
+		private function handleSingleNodes(SingleNode $builtNode):array {
 
 			$carryRenderer = null;
-
-			foreach($rawNode->getActions() as $attribute => $value) {
+			
+			foreach ($this->builtNodeActions($builtNode) as $attribute => $dummyValue) {
 
 				$handler = $this->singleSubHandlers[$attribute];
 
-				$previousContent = $this->getNodeFromPrevious($rawNode);
+				$previousContent = $this->getNodeFromPrevious($builtNode);
 
 				$carryRenderer = call_user_func_array(
 					[$this, $handler],
 
-					[$previousContent, $value/*, $carryRenderer*/]
+					[$previousContent/*, $value, $carryRenderer*/]
 				);
+
+				$this->handledValidAction($carryRenderer);
+					
 			}
 
 			return [$carryRenderer];
 		}
 
 		/**
-		*	@return BaseRenderer[]
+		*	@return GeneratedUrlExecution[]
 		*/
-		private function handleCollectionNodes(CollectionNode $rawNode):array {
+		private function handleCollectionNodes(CollectionNode $builtNode):array {
 
-			if ($rawNode->deferExtraction())
+			if ($builtNode->deferExtraction())
 
 				$carryRenderer = null;
 
-			else $carryRenderer = $this->extractCollectionData($rawNode);
+			else $carryRenderer = $this->extractCollectionData($builtNode);
 
-			foreach ($rawNode->getActions() as $attribute => $value) {
+			foreach ($this->builtNodeActions($builtNode) as $attribute => $value) {
 
 				$handler = $this->collectionSubHandlers[$attribute];
 
 				$carryRenderer = call_user_func_array(
 					[$this, $handler],
 					
-					[$carryRenderer, $value, $rawNode]
+					[$carryRenderer, $value, $builtNode]
 				);
+
+				$this->handledValidAction($carryRenderer);
 			}
 
 			return $carryRenderer;
 		}
 
-		private function extractCollectionData(CollectionNode $rawNode):array {
+		private function handledValidAction ($carryRenderer):void {
+
+			if (is_null($carryRenderer))
+
+				throw new Exception("Overwriting operation result with invalid values");
+		}
+
+		private function builtNodeActions (UnitNode $builtNode):array {
+
+			$nodeActions = $builtNode->getActions();
+
+			if (empty($nodeActions))
+
+				throw new Exception("No action specified for given node");
+
+			return $nodeActions;
+		}
+
+		private function extractCollectionData (CollectionNode $rawNode):array {
 
 			$dataIndex = $rawNode->getLeafName();
 
-			return array_map(function ($valueObject) use ($dataIndex) { 
-				
-				return Arr::get($valueObject, $dataIndex);
-			}, $this->getNodeFromPrevious($rawNode));
+			$mapped = [];
+
+			foreach ($this->getNodeFromPrevious($rawNode) as $key => $valueObject)
+
+				$mapped[$key] = Arr::get($valueObject, $dataIndex);
+
+			return $mapped;
 		}
 
-		public function getNodeFromPrevious(UnitNode $rawNode):iterable {
+		/**
+		 * @param {rawNode}:mixed, where payload e.g. = ["data" => mixed]. Null where key doesn't exist
+		 */
+		public function getNodeFromPrevious (UnitNode $rawNode) {
 
-			return Arr::get($this->previousResponse, $rawNode->getNodeName());
+			if (Arr::has(
+
+				$this->previousResponse, $rawNode->getNodeName()
+			))
+				return Arr::get(
+
+					$this->previousResponse, $rawNode->getNodeName()
+				);
+
+			return null;
 		}
 
-		public function handleQuerySegmentAlter(array $nodeContent, string $newQueryHolder):?BaseRenderer {
+		/**
+		 * @return GeneratedUrlExecution. All SingleNode based handlers are expected to return this type, to maintain uniformity
+		*/
+		public function handleQuerySegmentAlter (string $valuePath):GeneratedUrlExecution {
 
-			$valuePath = $nodeContent[$newQueryHolder];
+			$queryPart = parse_url($valuePath, PHP_URL_QUERY);
 
-			if (!is_null($valuePath)) {
+			parse_str($queryPart, $queryArray); // we don't bother passing the path part since it is expected that it = $this->baseUrlPattern
 
-				$queryPart = parse_url($valuePath, PHP_URL_QUERY);
+			$generated = $this->updatePayloadStorage($queryArray)->executeGeneratedUrl();
 
-				parse_str($queryPart, $queryArray); // we don't bother passing the path part since it is expected that that is the flow anchor url
+			$generated->changeUrl($valuePath);
 
-				return $this->updateRequest($queryArray)
-				
-				->executeRequest();
-			}
+			return $generated;
 		}
 
-		protected function canProcessPath():bool {
+		public function canProcessPath():bool {
 
-			return $this->responseManager->bootCoodinatorManager()
+			return $this->rendererManager->bootCoodinatorManager()
 
 			->isValidRequest();
 		}
 
-		protected function updateRequest(array $updates):self {
+		protected function updatePlaceholders (array $updates):self {
 
 			$this->placeholderStorage->overwriteValues($updates);
+
+			return $this;
+		}
+
+		protected function updatePayloadStorage (array $updates):self {
+
+			$this->payloadStorage->mergePayload($updates);
 
 			return $this;
 		}
@@ -242,62 +270,86 @@
 		 * This runs the validation sequence for each single item in this stream just in case any of the ids in the list is invalid
 		 * @param {indexes} Array of ids
 		 * 
-		 * @return BaseRenderer[]
+		 * @return GeneratedUrlExecution[]. All collectionNode based handlers are expected to return this type, to maintain uniformity
 		*/
-		public function handlePipe(array $indexes, int $dummyValue, CollectionNode $rawNode):array {
+		public function handlePipe (array $indexes, int $dummyValue, CollectionNode $rawNode):array {
 
-			return array_map (function($value) {
+			$allUnits = array_map (function($value) use ($rawNode) {
 
-				return $this->updateRequest([
+				$generationUnit = $this->updatePlaceholders([
 
 					$rawNode->getLeafName() => $value
 				])
-				->executeRequest();
+				->executeGeneratedUrl();
+
+				return $generationUnit;
 			}, $indexes );
+
+			return $allUnits;
 		}
 
-		// @return executes underlying renderer and returns it
-		protected function executeRequest():?BaseRenderer {
+		public function executeGeneratedUrl ():?GeneratedUrlExecution {
 
-			if ($this->canProcessPath())
+			if (!$this->canProcessPath()) return null;
 
-				return $this->responseManager->handleValidRequest($this->requestDetails);
+			$originalRenderer = $this->rendererManager->handleValidRequest($this->payloadStorage);
+
+			$clonedRenderer = clone $originalRenderer; // since we're working with just one renderer for all those calls, without cloning, updates to one (by virtue of updating placeholderStorage) cascades to them all. By cloning, we're able to store the temporary state in memory as its own unique object
+
+			$requestPath = $this->placeholderStorage->getPathFromStack($this->baseUrlPattern);
+
+			return new GeneratedUrlExecution($requestPath, $clonedRenderer);
 		}
 
-		public function handleOneOf(array $indexes, string $requestProperty):BaseRenderer {
+		/**
+		 * @return GeneratedUrlExecution[]
+		*/
+		public function handleOneOf (array $indexes, string $requestProperty):array {
 
-			return $this->updateRequest([
+			$generatedContent = $this->updatePlaceholders([
 
 				$requestProperty => implode(",", $indexes)
 			])
-			->executeRequest();
+			->executeGeneratedUrl();
+
+			return [$generatedContent];
 		}
 
-		public function handleRange(iterable $indexes, RangeContext $context):BaseRenderer {
+		/**
+		 * @return GeneratedUrlExecution[]
+		*/
+		public function handleRange (iterable $indexes, RangeContext $context):array {
 
-			return $this->updateRequest([
+			$generatedContent = $this->updatePlaceholders([
 
 				$context->getParameterMax() => max($indexes),
 
 				$context->getParameterMin() => min($indexes)
 			])
-			->executeRequest();
+			->executeGeneratedUrl();
+
+			return [$generatedContent];
 		}
 
-		public function handleDateRange(array $indexes, RangeContext $context):BaseRenderer {
+		/**
+		 * @return GeneratedUrlExecution[]
+		*/
+		public function handleDateRange (array $indexes, RangeContext $context):array {
 
 			usort($indexes, function($a, $b) {
 
 				return strtotime($a) - strtotime($b); // asc
 			});
 
-			return $this->updateRequest([
+			$generatedContent = $this->updatePlaceholders([
 
 				$context->getParameterMin() => $indexes[0], // use `current` here instead?
 
 				$context->getParameterMax() => end($indexes)
 			])
-			->executeRequest();
+			->executeGeneratedUrl();
+
+			return [$generatedContent];
 		}
 
 		public function handleServiceSource($dummyPrevious, ServiceContext $context, CollectionNode $rawNode ):iterable {

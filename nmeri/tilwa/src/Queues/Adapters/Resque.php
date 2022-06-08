@@ -1,11 +1,18 @@
 <?php
 	namespace Tilwa\Queues\Adapters;
 
-	use Tilwa\Contracts\Queues\Adapter;
+	use Tilwa\Contracts\{Queues\Adapter, IO\EnvAccessor};
 
 	use Resque as ResqueLib;
 
 	class Resque implements Adapter {
+
+		private $envAccessor;
+
+		public function __construct (EnvAccessor $envAccessor) {
+
+			$this->envAccessor = $envAccessor;
+		}
 
 		public function pushAction (string $taskClass, array $payload):void {
 
@@ -24,7 +31,7 @@
 
 			foreach ($config as $name => $value)
 
-				setenv($name, $value);
+				$this->envAccessor->setField($name, $value);
 
 			include("bin/resque");
 		}

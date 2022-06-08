@@ -1,21 +1,29 @@
 <?php
 	namespace Tilwa\Testing\Proxies;
 
-	use Tilwa\Contracts\Presentation\BaseRenderer;
+	use Tilwa\Contracts\{Presentation\BaseRenderer, IO\Session};
 
-	use Illuminate\{Testing\TestResponse, Http\Response};
+	use Tilwa\IO\Session\InMemorySession;
+
+	use Tilwa\Testing\Proxies\Extensions\TestResponseBridge;
+
+	use Illuminate\Http\Response;
 
 	trait ExaminesHttpResponse {
 
-		protected function makeExaminable (BaseRenderer $renderer):TestResponse {
+		protected function makeExaminable (BaseRenderer $renderer):TestResponseBridge {
 
-			return TestResponse::fromBaseResponse(new Response(
-				$renderer->getRawResponse(),
+			$response = new Response(
 
-				$renderer->getStatusCode(),
+				$renderer->getRawResponse(), $renderer->getStatusCode(),
 				
 				$renderer->getHeaders()
-			));
+			);
+
+			return new TestResponseBridge(
+
+				$response, $this->getContainer()->getClass(Session::class)
+			);
 		}
 	}
 ?>

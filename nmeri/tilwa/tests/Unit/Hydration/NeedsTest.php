@@ -3,13 +3,18 @@
 
 	use Tilwa\Hydration\Container;
 
-	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
+	use Tilwa\Testing\{TestTypes\IsolatedComponentTest, Proxies\Extensions\CheckProvisionedClasses};
 
-	use Tilwa\Tests\Unit\Hydration\Extensions\CheckProvisionedClasses;
+	use Tilwa\Tests\Integration\Generic\CommonBinds;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\{ ARequiresBCounter, BCounter};
 
 	class NeedsTest extends IsolatedComponentTest {
+
+		use CommonBinds {
+
+			concreteBinds as commonConcretes;
+		}
 
 		private $ourB, $aRequires = ARequiresBCounter::class;
 
@@ -22,10 +27,10 @@
 
 		protected function concreteBinds ():array {
 
-			return [
+			return array_merge($this->commonConcretes(), [
 
 				BCounter::class => $this->ourB
-			];
+			]);
 		}
 
 		public function test_raw_class_correctly_uses_needs () {
@@ -59,7 +64,7 @@
 						Container::class // since we'll provide it later
 					])) return;
 
-					return $this->positiveDouble($subject, []);
+					return $this->positiveDouble($subject);
 				})
 			], [
 

@@ -1,11 +1,13 @@
 <?php
-	namespace Tilwa\Tests\Integration\Services;
-
-	use Tilwa\Testing\Condiments\{DirectHttpTest, MockFacilitator};
-
-	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
+	namespace Tilwa\Tests\Integration\Services\Search;
 
 	use Tilwa\Contracts\Database\OrmDialect;
+
+	use Tilwa\Request\PayloadStorage;
+
+	use Tilwa\Testing\{TestTypes\IsolatedComponentTest, Condiments\DirectHttpTest};
+
+	use Tilwa\Tests\Integration\Generic\CommonBinds;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\Services\Search\SimpleSearchService;
 
@@ -13,9 +15,11 @@
 
 	class SimpleSearchTest extends IsolatedComponentTest {
 
-		use DirectHttpTest, MockFacilitator;
+		use DirectHttpTest, CommonBinds;
 
-		private $ormDialect, $searchService, $baseUrl = "/search/?q=jobs&";
+		private $ormDialect, $searchService, $model,
+
+		$baseUrl = "/search/?q=jobs&";
 
 		public function setUp ():void {
 
@@ -23,19 +27,13 @@
 
 			$this->ormDialect = $this->negativeDouble(OrmDialect::class);
 
-			$this->searchService = $this->positiveDouble(SimpleSearchService::class);
-
-			$this->container->whenTypeAny()->needsAny([
-
-				OrmDialect::class => $this->ormDialect,
-
-				SimpleSearchService::class => $this->searchService
-			]);
+			
+			$this->model = new stdClass;
 		}
 
 		public function test_calls_class_methods_matching_queries () {
-			
-			$model = new stdClass;
+
+			$this->setHttpParams($this->baseUrl . "custom_filter=5"); // given
 			
 			// then
 			$this->mockCalls([
@@ -43,34 +41,30 @@
 				"addWhereClause" => [$this->never(), [$this->anything()]]
 			], $this->ormDialect);
 
-			$this->mockCalls([
+			$searchService = $this->getSearchService([
 
 				"custom_filter" => [1, [
 
-					$this->equalTo($model), 5
+					$this->equalTo($this->model), 5
 				]]
-			], $this->searchService);
+			]);
 
-			$this->setHttpParams($this->baseUrl . "custom_filter=5"); // given
-
-			$this->searchService->convertToQuery($model, "q"); // when
+			$searchService->convertToQuery($this->model, "q"); // when
 		}
 
 		public function test_skips_class_methods_not_matching_queries () {
-			
-			$model = new stdClass;
-
-			$this->mockCalls([
-
-				"custom_filter" => [$this->never(), [
-
-					$this->equalTo($model), 5
-				]]
-			], $this->searchService); // then
 
 			$this->setHttpParams($this->baseUrl . "database_column=foo"); // given
 
-			$this->searchService->convertToQuery($model, "q"); // when
+			$searchService = $this->getSearchService([
+
+				"custom_filter" => [$this->never(), [
+
+					$this->equalTo($this->model), 5
+				]]
+			]); // then
+
+			$searchService->convertToQuery($this->model, "q"); // when
 		}
 
 		public function test_calls_ormDialect_when_sees_custom_method () {
@@ -82,7 +76,17 @@
 
 			$this->setHttpParams($this->baseUrl . "database_column=foo"); // given
 
-			$this->searchService->convertToQuery($model, "q"); // when
+			$this->getSearchService()->convertToQuery($this->model, "q"); // when
+		}
+
+		private function getSearchService (array $mockMethods = []):SimpleSearchService {
+
+			return $this->replaceConstructorArguments(SimpleSearchService::class, [
+
+				"ormDialect" => $this->ormDialect,
+
+				"payloadStorage" => $this->container->getClass(PayloadStorage::class) // Without this instance, PHPUnit will not recursively wire in dependencies, thereby missing out on requestDetails
+			], [], $mockMethods);
 		}
 	}
 ?>

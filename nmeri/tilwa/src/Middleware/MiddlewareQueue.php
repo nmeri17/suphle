@@ -5,7 +5,7 @@
 
 	use Tilwa\Request\PayloadStorage;
 
-	use Tilwa\Contracts\Config\Router as RouterConfig;
+	use Tilwa\Contracts\{Presentation\BaseRenderer, Config\Router as RouterConfig};
 
 	class MiddlewareQueue {
 
@@ -44,16 +44,19 @@
 			$this->stack = array_unique($reduced);
 		}
 
-		// this should return ResponseInterface according to psr-15
-		public function runStack ():string {
+		public function runStack ():BaseRenderer {
 
 			$this->filterDuplicates();
 
-			$this->stack = [...$this->routerConfig->defaultMiddleware(), ...$this->stack];
+			$this->stack = array_merge( // any temporary ones attached to route precede the defaults
+				$this->stack,
+
+				$this->routerConfig->defaultMiddleware()
+			);
 
 			$this->hydrateMiddlewares();
 
-			$outermost = array_pop($this->stack);
+			$outermost = array_shift($this->stack);
 
 			return $outermost->process(
 				$this->payloadStorage,
@@ -63,15 +66,17 @@
 		}
 
 		/**
-		 *  convert each middleware to a request interface carrying the previous one so triggering each one creates a chain effect till the last one
+		 *  convert each middleware to a request interface carrying the next one so triggering each one creates a chain effect till the last one
 		 * @param {accumNexts} null for the final handler since there's none below it
 		 * @return null for the last handler in the chain
 		*/
 		private function getHandlerChain (array $middlewareList, MiddlewareNexts $accumNexts = null):?MiddlewareNexts {
 
 			if (empty($middlewareList)) return $accumNexts;
+			
+			$lastMiddleware = array_pop($middlewareList); // we're reading from behind so that last item on the list is what is passed to the caller, and thus, is first to be evaluated on our way down the rabbit hole
 
-			$nextHandler = new MiddlewareNexts(array_pop($middlewareList), $accumNexts);
+			$nextHandler = new MiddlewareNexts($lastMiddleware, $accumNexts);
 
 			// [1,2,4] => [4(2(1(cur, null), cur), cur)]
 			/* [1,2,4] => 1,[2,4]

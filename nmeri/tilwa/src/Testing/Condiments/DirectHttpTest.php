@@ -1,41 +1,55 @@
 <?php
 	namespace Tilwa\Testing\Condiments;
 
+	use Tilwa\Contracts\{Requests\StdInputReader, Auth\UserHydrator};
+
+	use Tilwa\Request\{RequestDetails, PayloadStorage};
+
 	trait DirectHttpTest {
 
-		private $JSON_HEADER_VALUE = "application/json";
+		use MockFacilitator;
 
-		private $HTML_HEADER_VALUE = "application/x-www-form-urlencoded";
+		private $HTML_HEADER_VALUE = "application/x-www-form-urlencoded",
 
-		private $CONTENT_TYPE_KEY = "Content-Type";
+		$jsonHeaders = [
+
+			PayloadStorage::CONTENT_TYPE_KEY => PayloadStorage::JSON_HEADER_VALUE
+		];
 
 		/**
 		 * Writes to the superglobals RequestDetails can read from but doesn't actually send any request. Use when we're invoking router/request handler directly
 		*/
-		protected function setHttpParams (string $requestPath, string $httpMethod = "get", ?string $payload = "", array $headers = []):void {
+		protected function setHttpParams (string $requestPath, string $httpMethod = "get", ?array $payload = [], array $headers = []):void {
 
-			$components = parse_url($requestPath);
+			$headers["REQUEST_METHOD"] = $httpMethod;
 
-			$_GET["tilwa_path"] = $components["path"];
+			$reader = ["getHeaders" => $headers];
 
-			$_GET = array_merge($_GET, $components["query"]);
+			$this->loadServerVariables($headers);
 
-			$_SERVER["REQUEST_METHOD"] = $httpMethod;
+			if (!empty($payload) && array_key_exists(PayloadStorage::CONTENT_TYPE_KEY, $headers))
 
-			$_SERVER = array_merge($_SERVER, $headers);
+				if ($headers[PayloadStorage::CONTENT_TYPE_KEY] != PayloadStorage::JSON_HEADER_VALUE)
 
-			if (!empty($payload) && array_key_exists($this->CONTENT_TYPE_KEY, $headers))
+					$_POST = $payload;
 
-				$this->writePayload($payload, $headers[$this->CONTENT_TYPE_KEY]);
+				else $reader["getPayload"] = $payload;
+
+			$this->massProvide([
+
+				StdInputReader::class => $this->positiveDouble(StdInputReader::class, $reader)
+			]);
+
+			$this->setRequestPath($requestPath);
 		}
+
+		abstract protected function setRequestPath (string $requestPath):void;
 
 		protected function setJsonParams (string $requestPath, array $payload, string $httpMethod = "post"):bool {
 
-			$headers = [$this->CONTENT_TYPE_KEY => $this->JSON_HEADER_VALUE];
-
 			if ($this->isValidPayloadType($httpMethod)) {
 
-				$this->setHttpParams($requestPath, $httpMethod, json_encode($payload), $headers);
+				$this->setHttpParams($requestPath, $httpMethod, $payload, $this->jsonHeaders);
 
 				return true;
 			}
@@ -45,11 +59,14 @@
 
 		protected function setHtmlForm (string $requestPath, array $payload, string $httpMethod = "post"):bool {
 
-			$headers = [$this->CONTENT_TYPE_KEY => $this->HTML_HEADER_VALUE];
+			$headers = [
+
+				PayloadStorage::CONTENT_TYPE_KEY => $this->HTML_HEADER_VALUE
+			];
 
 			if ($this->isValidPayloadType($httpMethod)) {
 
-				$this->setHttpParams($requestPath, $httpMethod, http_build_query($payload), $headers);
+				$this->setHttpParams($requestPath, $httpMethod, $payload, $headers);
 
 				return true;
 			}
@@ -62,13 +79,11 @@
 			return in_array($httpMethod, ["post", "put"]);
 		}
 
-		private function writePayload (string $payload, string $contentType):void {
+		private function loadServerVariables (array $headers):void {
 
-			if ($contentType != $this->JSON_HEADER_VALUE)
+			foreach ($headers as $name => $value)
 
-				$_POST = $payload;
-
-			else file_put_contents("php://output", $payload);
+				$_SERVER[$name] = $value;
 		}
 	}
 ?>

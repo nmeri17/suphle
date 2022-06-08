@@ -5,8 +5,6 @@
 
 	use Tilwa\Modules\ModuleHandlerIdentifier;
 
-	use Symfony\Component\Console\Application;
-
 	class CliRunner {
 
 		private $moduleHandler, $consoleClient, $allCommands = [];

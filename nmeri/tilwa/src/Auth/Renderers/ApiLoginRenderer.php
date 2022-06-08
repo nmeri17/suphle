@@ -3,7 +3,9 @@
 
 	use Tilwa\Contracts\Auth\{LoginRenderers, LoginActions};
 
-	use Tilwa\Response\Format\{AbstractRenderer, Json};
+	use Tilwa\Contracts\Presentation\BaseRenderer;
+
+	use Tilwa\Response\Format\{ Redirect, Reload};
 
 	use Tilwa\Auth\Repositories\ApiAuthRepo;
 
@@ -16,12 +18,12 @@
 			$this->authService = $authService;
 		}
 
-		public function successRenderer ():AbstractRenderer {
+		public function successRenderer ():BaseRenderer {
 
 			return new Json( "successLogin");
 		}
 
-		public function failedRenderer ():AbstractRenderer {
+		public function failedRenderer ():BaseRenderer {
 
 			return new Json( "failedLogin");
 		}

@@ -5,7 +5,7 @@
 
 	use Tilwa\Tests\Mocks\Models\Eloquent\Employer;
 
-	use Illuminate\Database\Eloquent\Factory;
+	use Illuminate\Database\Eloquent\Factories\Factory;
 
 	class EmployerFactory extends Factory {
 

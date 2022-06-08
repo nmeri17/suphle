@@ -1,6 +1,10 @@
 <?php
 	namespace Tilwa\Tests\Integration\Bridge\Laravel;
 
+	use Tilwa\Contracts\Config\Laravel;
+
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Config\LaravelMock;
+
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Bridge\Laravel\ConfigLinks\{AppConfig, NestedConfig};
 
 	/**
@@ -8,11 +12,21 @@
 	*/
 	class ConfigLoaderTest extends TestsConfig {
 
+		protected function simpleBinds ():array {
+
+			return array_merge(parent::simpleBinds(), [
+
+				Laravel::class => LaravelMock::class
+			]);
+		}
+
 		public function test_their_config_can_get_ours () {
 
 			$sut = $this->getUnderlyingConfig(); // when
 
-			$newName = (new AppConfig)->name();
+			$ourConfig = new AppConfig($sut->get("app"));
+
+			$newName = $ourConfig->name();
 
 			$this->assertSame($newName, $sut->get("app.name")); // then
 	    }
@@ -30,7 +44,7 @@
 
 			$sut = $this->getUnderlyingConfig(); // when
 
-			$value = $this->container->getClass(NestedConfig::class)->first_level()->second_level()["value"];
+			$value = $this->container->getClass(NestedConfig::class)->first_level()->second_level()->value();
 
 			$this->assertSame($value, $sut->get("nested.first_level.second_level.value")); // then
 	    }

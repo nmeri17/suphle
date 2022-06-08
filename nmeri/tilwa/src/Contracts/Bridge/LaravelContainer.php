@@ -17,9 +17,19 @@
 
 		public function instance($abstract, $instance);
 
-		public function defaultBindings ():array;
+		public function basePath($path = "");
 
-		public function injectBindings (array $bindings):void;
+		public function concreteBinds ():array;
+
+		public function simpleBinds ():array;
+
+		public function registerConcreteBindings (array $bindings):void;
+
+		public function registerSimpleBindings (array $bindings):void;
+
+		public function runContainerBootstrappers ():void;
+
+		public function createSandbox (callable $explosive);
 	}
 ?>
 

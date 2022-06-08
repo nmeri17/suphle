@@ -3,19 +3,23 @@
 
 	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Middlewares\AttemptsLoadingUser;
-
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Controllers\Selective\{BlankUpdatelessController, RandomConcreteController};
-
 	use Tilwa\Exception\Explosives\Generic\UnacceptableDependency;
 
+	use Tilwa\Tests\Integration\Generic\CommonBinds;
+
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Controllers\Selective\{BlankUpdatelessController, RandomConcreteController, ForbiddenDependencyController};
+
 	class SelectiveDependenciesTest extends IsolatedComponentTest {
+
+		use CommonBinds;
+
+		protected $usesRealDecorator = true;
 
 		public function test_rejected_type_throws_errors () {
 
 			$this->expectException(UnacceptableDependency::class); // then
 
-			$this->container->getClass(AttemptsLoadingUser::class); // when
+			$this->container->getClass(ForbiddenDependencyController::class); // when
 		}
 
 		public function test_unknown_type_throws_errors () {

@@ -1,19 +1,27 @@
 <?php
 	namespace Tilwa\Tests\Unit\Flows;
 
+	use Tilwa\Flows\FlowHydrator;
+
+	use Tilwa\Flows\Previous\{CollectionNode, SingleNode};
+
+	use Tilwa\Flows\Structures\{RouteUserNode, ServiceContext, GeneratedUrlExecution};
+
+	use Tilwa\Response\RoutedRendererManager;
+
+	use Tilwa\Contracts\Presentation\BaseRenderer;
+
 	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
-	use Tilwa\Testing\Condiments\MockFacilitator;
-
-	use Tilwa\Flows\{FlowHydrator, Structures\RouteUserNode, Previous\SingleNode};
-
-	use Tilwa\Response\ResponseManager;
+	use Tilwa\Tests\Integration\Generic\CommonBinds;
 
 	class FlowExecutionTest extends IsolatedComponentTest {
 
-	 	use MockFacilitator, FlowData;
+	 	use FlowData, CommonBinds;
 
-	 	private $responseManager = ResponseManager::class;
+	 	private $rendererManager = RoutedRendererManager::class,
+
+	 	$sutName = FlowHydrator::class;
 
 	 	public function setUp ():void {
 
@@ -22,24 +30,28 @@
 			$this->indexes = $this->getIndexes();
 		}
 		
-		public function test_executeRequest_triggers_controller () {
+		public function test_executeGeneratedUrl_triggers_controller () {
 
 			// given
 			$hydrator = $this->getHydratorForExecuteRequest(true);
 
-			$responseManager = $this->prophesize($this->responseManager);
+			$sut = $this->positiveDouble($this->rendererManager, [], [
 
-			$responseManager->handleValidRequest()->shouldBeCalled();
+				"handleValidRequest" => [1, []]
+			]);
  
  			// when
-			$hydrator->setDependencies($responseManager, [])
+			$hydrator->setDependencies($sut, [], "")
 
-			->executeRequest();
+			->executeGeneratedUrl();
 		}
 
 		private function getHydratorForExecuteRequest (bool $canProcessPath):FlowHydrator {
 
-			return $this->negativeDouble(FlowHydrator::class, compact("canProcessPath"));
+			return $this->replaceConstructorArguments(
+
+				$this->sutName, [], compact("canProcessPath")
+			);
 		}
 		
 		public function test_invalid_request_doesnt_trigger_controller () {
@@ -47,97 +59,166 @@
 			// given
 			$hydrator = $this->getHydratorForExecuteRequest(false);
 
-			$responseManager = $this->prophesize($this->responseManager);
+			$rendererManager = $this->positiveDouble($this->rendererManager, [], [
 
-			$responseManager->handleValidRequest()->shouldNotBeCalled();
+				"handleValidRequest" => [0, []]
+			]);
  
  			// when
-			$hydrator->setDependencies($responseManager, [])
+			$hydrator->setDependencies($rendererManager, [], "")
 
-			->executeRequest();
+			->executeGeneratedUrl();
 		}
 
 		public function test_getNodeFromPrevious() {
 
-			$hydrator = $this->container->getClass(FlowHydrator::class);
+			$hydrator = $this->container->getClass($this->sutName);
 
 			$models = $this->indexesToModels();
 
 			$unitNode = new SingleNode($this->payloadKey);
 
 			// given
-			$responseManager = $this->negativeDouble($this->responseManager);
+			$rendererManager = $this->negativeDouble($this->rendererManager);
 			
-			$hydrator->setDependencies($responseManager, [
+			$hydrator->setDependencies($rendererManager, [
 
 				$this->payloadKey => $models
-			]);
+			], "");
 
 			$content = $hydrator->getNodeFromPrevious($unitNode); // when
 
 			$this->assertSame($content, $models);
 		}
 		
-		/**
-		 * @dataProvider getCollectionNodes
-		*/
-		public function test_collection_triggers_underlying_format (CollectionNode $unitNode, string $handler, $value ) {
+		public function test_collection_triggers_underlying_handler () {
 
-			$sut = $this->getHydratorForRunNode($handler, $value);
+			$this->dataProvider([
 
-			$sut->runNodes($unitNode, "*"); // when
+				[$this, "getCollectionNodes"] // given
+			],/**
+			 * @param {value} Nullable since not all collection nodes take a value
+			*/
+			 function (CollectionNode $unitNode, string $handler, $value = null ) {
+
+				$this->getHydratorForRunNode($handler, $value ) // then
+
+				->runNodes($unitNode, "*"); // when
+			});
 		}
 
 		public function getCollectionNodes ():array {
 
-			$serviceContext = new ServiceContext("Foo", "bar");
-
 			return [
-				[$this->createCollectionNode()->pipeTo(), "handlePipe"],
+				[
+					$this->createCollectionNode()->pipeTo(), "handlePipe"
+				],
 
-				[$this->createCollectionNode()->oneOf(), "handleOneOf", "ids"],
+				[
+					$this->createCollectionNode()->oneOf(), "handleOneOf", "ids"
+				],
 
-				[$this->createCollectionNode()->oneOf("concat"), "handleOneOf", "concat"],
+				[
+					$this->createCollectionNode()->oneOf("concat"),
+
+					"handleOneOf", "concat"
+				],
 
 				[$this->createCollectionNode()->inRange(), "handleRange"], // too lazy to extract the context from getActions
 
-				[$this->createCollectionNode()->dateRange(), "handleDateRange"],
-
-				[$this->createCollectionNode()->setFromService($serviceContext), "handleServiceSource", $serviceContext]
+				[$this->createCollectionNode()->dateRange(), "handleDateRange"]
 			];
 		}
 
-		private function getHydratorForRunNode (string $handler, $value = null):FlowHydrator {
+		private function generatedResponse ():GeneratedUrlExecution {
+
+			return $this->positiveDouble(GeneratedUrlExecution::class, [
+				
+				"getRenderer" => $this->negativeDouble(BaseRenderer::class, [
+
+					"getRawResponse" => ["foo"]
+				])
+			]);
+		}
+
+		/**
+		 * @param {handlerMethod} Asserts that this was called with $calledWith
+		 * @param {leadingArgument} Most handlers accept the stripped down ids as first argument. Handlers that behave differently should use this argument
+		 * 
+		 * @return A double that stubs necessary properties that allow us test access to the underlying flow handling methods eg handlePipe etc
+		*/
+		public function getHydratorForRunNode (
+
+			string $handlerMethod, $additionalArgument = null,
+
+			$leadingArgument = null
+		):FlowHydrator {
+
+			$response = $this->generatedResponse();
+
+			return $this->replaceConstructorArguments($this->sutName, [], [
+
+				$handlerMethod => [$response]
+			], [
+				"rendererToStorable" => [1, []], // prevent trying to save
+
+				$handlerMethod => [1, [ // then
+
+					$leadingArgument ?? $this->indexes, // note that the main payload is then stripped down to ids nested in each model
+
+					$additionalArgument ?? $this->anything()
+				]]
+			])->setDependencies(
+
+				$this->positiveDouble($this->rendererManager),
+
+				$this->payloadFromPrevious(), // given
+
+				""
+			);
+		}
+
+		public function test_collection_triggers_deferred_handler () {
 
 			// given
-			$payload = $this->payloadFromPrevious();
+			$serviceContext = new ServiceContext("Foo", "bar");
 
-			$parameter = !is_null($value) ? $this->equalTo($value): $this->anything();
+			$unitNode = $this->createCollectionNode()->setFromService($serviceContext);
 
-			$hydrator = $this->positiveDouble(FlowHydrator::class, [
+			$this->getHydratorForRunNode(
 
-				"getNodeFromPrevious" => $payload,
+				"handleServiceSource", $serviceContext,
 
-				$handler => null
-			], [
-
-				$handler => [1, [$this->equalTo($payload), $parameter]]
-			]); // then
-
-			return $hydrator;
+				$this->equalTo(null)
+			) // then
+			->runNodes($unitNode, "*"); // when
 		}
 
 		public function test_single_triggers_underlying_format () {
 
-			$argument = "next_page_url";
+			$handlerMethod = "handleQuerySegmentAlter";
 
-			$unitNode = (new SingleNode($this->payloadKey))
+			$leafName = "next_page_url";
 
-			->altersQuery($argument);
+			$queryPart = "/hello?foo=bar";
 
-			$sut = $this->getHydratorForRunNode("handleQuerySegmentAlter", $argument);
+			$unitNode = (new SingleNode($leafName))->altersQuery();
 
-			$sut->runNodes($unitNode, "*"); // when
+			$sut = $this->replaceConstructorArguments($this->sutName, [], [
+
+				$handlerMethod => $this->generatedResponse()
+			], [
+				"rendererToStorable" => [1, []],
+
+				$handlerMethod => [1, [ $queryPart]]// then
+			])->setDependencies(
+
+				$this->positiveDouble($this->rendererManager),
+
+				[$leafName => $queryPart], // given
+
+				""
+			)->runNodes($unitNode, "*"); // when
 		}
 	}
 ?>

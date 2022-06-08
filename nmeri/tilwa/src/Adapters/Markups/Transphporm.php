@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Adapters\Markups;
 
-	use Tilwa\Contracts\HtmlParser;
+	use Tilwa\Contracts\Presentation\HtmlParser;
 
 	use Tilwa\Contracts\Config\{Transphporm as TConfig, ModuleFiles};
 

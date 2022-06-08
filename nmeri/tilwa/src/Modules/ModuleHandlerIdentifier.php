@@ -1,21 +1,25 @@
 <?php
 	namespace Tilwa\Modules;
 
+	use Tilwa\Hydration\Container;
+
 	use Tilwa\Flows\OuterFlowWrapper;
 
-	use Tilwa\Contracts\Auth\ModuleLoginHandler;
-
-	use Tilwa\Response\Format\AbstractRenderer;
+	use Tilwa\Contracts\{Modules\DescriptorInterface, Config\AuthContract, Auth\ModuleLoginHandler, Presentation\BaseRenderer};
 
 	use Tilwa\Events\ModuleLevelEvents;
 
 	use Tilwa\Exception\Explosives\{ValidationFailure, NotFoundException};
 
+	use Tilwa\Request\RequestDetails;
+
+	use Throwable;
+
 	abstract class ModuleHandlerIdentifier {
 
-		private $container, $identifiedHandler, $routedModule,
+		private $identifiedHandler, $routedModule, $authConfig;
 
-		$loginHandler;
+		protected $container;
 
 		public function __construct () {
 
@@ -30,7 +34,8 @@
 
 			(new ModulesBooter(
 				$this->getModules(), $this->getEventConnector()
-			))->boot();
+			))
+			->bootAll()->prepareFirstModule();
 		}
 
 		protected function getEventConnector ():ModuleLevelEvents {
@@ -38,36 +43,40 @@
 			return new ModuleLevelEvents($this->getModules());
 		}
 
+		public function setRequestPath (string $requestPath):void {
+
+			RequestDetails::fromModules($this->getModules(), $requestPath);
+		}
+
 		public function diffusedRequestResponse ():string {
 
-			$exceptionBridge = $this->freshExceptionBridge();
-
-			$exceptionBridge->epilogue();
+			$this->freshExceptionBridge()->epilogue();
 
 			try {
 
-				$content = $this->respondFromHandler();
+				$renderer = $this->respondFromHandler();
 			}
 			catch (Throwable $exception) {
 
-				$this->identifiedHandler = $exceptionBridge = $this->freshExceptionBridge();
-
-				$exceptionBridge->hydrateHandler($exception);
-
-				$content = $exceptionBridge->handlingRenderer()->render();
+				$renderer = $this->findExceptionRenderer($exception);
 			}
 
 			$this->transferHeaders();
 
-			return $content;
+			return $renderer->render();
+		}
+
+		private function freshExceptionBridge ():ModuleExceptionBridge {
+
+			return $this->getActiveContainer()->getClass(ModuleExceptionBridge::class);
 		}
 		
 		/**
 		 * Each of the request handlers should update this class with the underlying renderer they're pulling a response from
 		*/
-		protected function respondFromHandler ():string {
+		protected function respondFromHandler ():BaseRenderer {
 
-			if ( $this->loginHandler->isLoginRequest())
+			if ( $this->authConfig->isLoginRequest())
 
 				return $this->handleLoginRequest();
 
@@ -80,7 +89,27 @@
 			return $this->handleGenericRequest();
 		}
 
-		protected function handleGenericRequest ():string {
+		public function handleLoginRequest ():BaseRenderer {
+
+			$loginHandler = $this->getLoginHandler();
+
+			if (!$loginHandler->isValidRequest())
+
+				throw new ValidationFailure($loginHandler);
+
+			$this->identifiedHandler = $loginHandler;
+
+			$loginHandler->setResponseRenderer()->processLoginRequest();
+
+			return $loginHandler->handlingRenderer();
+		}
+
+		public function getLoginHandler ():ModuleLoginHandler {
+
+			return $this->container->getClass(ModuleLoginHandler::class);
+		}
+
+		protected function handleGenericRequest ():BaseRenderer {
 
 			$moduleRouter = $this->container->getClass(ModuleToRoute::class); // pulling from a container so tests can replace properties on the singleton
 
@@ -92,44 +121,48 @@
 
 				$this->routedModule = $moduleRouter->getActiveModule();
 
-				return $initializer->whenActive()->triggerRequest();
+				$initializer->whenActive()->fullRequestProtocols()
+
+				->setHandlingRenderer();
+
+				return $initializer->handlingRenderer();
 			}
 
 			throw new NotFoundException;
 		}
 
-		protected function flowRequestHandler(OuterFlowWrapper $wrapper):string {
+		public function flowRequestHandler (OuterFlowWrapper $wrapper):BaseRenderer {
 
 			$this->identifiedHandler = $wrapper;
 
-			$wrapper->setModules($this->getModules());
-
-			$response = $wrapper->getResponse();
+			$renderer = $wrapper->handlingRenderer();
 			
-			$wrapper->afterRender($response);
+			$wrapper->afterRender($renderer->render());
 
 			$wrapper->emptyFlow();
 
-			return $response;
+			return $renderer;
+		}
+
+		public function findExceptionRenderer (Throwable $exception):BaseRenderer {
+
+			$exceptionBridge = $this->identifiedHandler = $this->freshExceptionBridge(); // from currently active container after routing may have occured
+
+			$exceptionBridge->hydrateHandler($exception);
+
+			$renderer = $exceptionBridge->handlingRenderer();
+
+			$renderer->hydrateDependencies($this->container);
+
+			return $renderer;
 		}
 
 		public function extractFromContainer ():void {
 
-			$this->loginHandler = $this->container->getClass(ModuleLoginHandler::class);
+			$this->authConfig = $this->container->getClass(AuthContract::class);
 		}
 
-		public function handleLoginRequest ():string {
-
-			if (!$this->loginHandler->isValidRequest())
-
-				throw new ValidationFailure($this->loginHandler);
-
-			$this->identifiedHandler = $this->loginHandler;
-
-			return $this->loginHandler->getResponse();
-		}
-
-		public function underlyingRenderer ():AbstractRenderer {
+		public function underlyingRenderer ():BaseRenderer {
 
 			return $this->identifiedHandler->handlingRenderer();
 		}
@@ -145,15 +178,13 @@
 				header("$name: $value");
 		}
 
-		private function freshExceptionBridge ():ModuleExceptionBridge {
+		protected function getActiveContainer ():Container {
 
 			if (!is_null($this->routedModule))
 
-				$container = $this->routedModule->getContainer();
+				return $this->routedModule->getContainer();
 
-			$container = $this->container;
-
-			return $container->getClass(ModuleExceptionBridge::class);
+			return $this->container;
 		}
 	}
 ?>

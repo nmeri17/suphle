@@ -9,11 +9,9 @@
 
 	class VersioningTest extends TestsRouter {
 
-		protected function entityBindings ():void {
+		protected function concreteBinds ():array {
 
-			parent::entityBindings();
-
-			$this->container->whenTypeAny()->needsAny([
+			return array_merge(parent::concreteBinds(), [
 
 				IRouter::class => $this->positiveDouble(
 					RouterMock::class, [
@@ -35,12 +33,16 @@
 
 			$matchingRenderer = $this->fakeRequest("/api/v2/cascade"); // when
 
+			$this->assertNotNull($matchingRenderer);
+
 			$this->assertTrue($matchingRenderer->matchesHandler("secondCascade")); // then
 		}
 
 		public function test_no_version_returns_most_recent () {
 
 			$matchingRenderer = $this->fakeRequest("/api/cascade"); // when
+
+			$this->assertNotNull($matchingRenderer);
 
 			$this->assertTrue($matchingRenderer->matchesHandler("thirdCascade")); // then
 		}

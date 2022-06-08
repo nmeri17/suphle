@@ -1,17 +1,21 @@
 <?php
 	namespace Tilwa\Tests\Integration\Routing\Canaries;
 
+	use Tilwa\Contracts\Database\OrmDialect;
+
+	use Tilwa\Auth\Storage\TokenStorage;
+
+	use Tilwa\Adapters\Orms\Eloquent\Models\User as EloquentUser;
+
+	use Tilwa\Testing\{Condiments\BaseDatabasePopulator, Proxies\SecureUserAssertions};
+
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\CanaryRoutes;
 
 	use Tilwa\Tests\Integration\Routing\TestsRouter;
 
-	use Tilwa\Testing\{Condiments\PopulatesDatabaseTest, Proxies\SecureUserAssertions};
-
-	use Tilwa\Contracts\Auth\User;
-
 	class CanaryUserTest extends TestsRouter {
 
-		use PopulatesDatabaseTest, SecureUserAssertions;
+		use BaseDatabasePopulator, SecureUserAssertions;
 
 		protected function getEntryCollection ():string {
 
@@ -20,30 +24,24 @@
 
 		protected function getActiveEntity ():string {
 
-			return User::class;
+			return EloquentUser::class;
 		}
 
 		/**
-		 * This should be true since canary is evaluated before collection storage method is derived (which is done after all segments match)
-	     * @dataProvider getUserAndResult
+		 * This should be true since canaries use authStorge received from parent collection
 	     */
-		public function test_injecting_authStorage_uses_its_default_not_collection_auth (User $user, string $handlerName) {
+		public function test_canaries_use_collection_auth () {
 
-			$this->actingAs($user); // given
+			$model = $this->container->getClass(OrmDialect::class)->userModel();
+
+			// default = sessionStorage
+			$this->actingAs($model->find(5)); // given
 
 			$matchingRenderer = $this->fakeRequest("/special-foo/same-url"); // when
 
-			$this->assertTrue($matchingRenderer->matchesHandler($handlerName) ); // then
-		}
+			$this->assertNull($matchingRenderer);
 
-		protected function getUserAndResult ():array {
-
-			return [
-
-				[$this->container->getClass(User::class)->find(5), "user5Handler"],
-
-				[$this->container->getClass(User::class)->find(4), "fooHandler"]
-			];
+			$this->assertGuest(TokenStorage::class); // then
 		}
 	}
 ?>

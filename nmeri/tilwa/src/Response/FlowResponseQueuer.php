@@ -1,13 +1,11 @@
 <?php
 	namespace Tilwa\Response;
 
-	use Tilwa\Response\Format\AbstractRenderer;
-
-	use Tilwa\Contracts\Auth\AuthStorage;
+	use Tilwa\Contracts\{Auth\AuthStorage, Presentation\BaseRenderer};
 
 	use Tilwa\Queues\AdapterManager;
 
-	use Tilwa\Flows\Jobs\RouteBranches;
+	use Tilwa\Flows\{Jobs\RouteBranches, Structures\BranchesContext};
 
 	class FlowResponseQueuer {
 
@@ -20,15 +18,14 @@
 			$this->authStorage = $authStorage;
 		}
 
-		public function insert (AbstractRenderer $renderer, ResponseManager $responseManager):void {
+		public function saveSubBranches (BaseRenderer $renderer):void {
 
 			$this->queueManager->augmentArguments(RouteBranches::class, [
+				
 				"context" => new BranchesContext(
 					$renderer,
 
-					$this->authStorage->getUser(),
-
-					null, $responseManager
+					$this->authStorage->getUser()
 				)
 			]);
 		}

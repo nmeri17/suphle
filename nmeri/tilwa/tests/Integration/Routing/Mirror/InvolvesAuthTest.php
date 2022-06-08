@@ -1,17 +1,21 @@
 <?php
 	namespace Tilwa\Tests\Integration\Routing\Mirror;
 
-	use Tilwa\Testing\{Condiments\PopulatesDatabaseTest, TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
-
-	use Tilwa\Contracts\{Auth\User, Config\Router};
+	use Tilwa\Contracts\Config\Router;
 
 	use Tilwa\Auth\Storage\TokenStorage;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\{ModuleOneDescriptor, Routes\Auth\SecureBrowserCollection, Config\RouterMock};
+	use Tilwa\Adapters\Orms\Eloquent\Models\User as EloquentUser;
+
+	use Tilwa\Testing\{Condiments\BaseDatabasePopulator, TestTypes\ModuleLevelTest};
+
+	use Tilwa\Testing\Proxies\{WriteOnlyContainer, SecureUserAssertions};
+
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Routes\Auth\SecureBrowserCollection, Config\RouterMock};
 
 	class InvolvesAuthTest extends ModuleLevelTest {
 
-		use PopulatesDatabaseTest;
+		use BaseDatabasePopulator, SecureUserAssertions;
 
 		protected function getModules():array {
 
@@ -29,17 +33,19 @@
 
 		protected function getActiveEntity ():string {
 
-			return User::class;
+			return EloquentUser::class;
 		}
 
 		public function test_auth_storage_changes () {
 
 			$tokenClass = TokenStorage::class;
 
-			$this->actingAs($this->replicator->getRandomEntity(), $tokenClass); // given
+			$requestToken = $this->actingAs($this->replicator->getRandomEntity(), $tokenClass); // given
 
-			$this->get("/api/v1/segment") // when
+			$this->get("/api/v1/segment", [
 
+				TokenStorage::AUTHORIZATION_HEADER => "Bearer ". $requestToken
+			]) // when
 			->assertOk(); // then
 
 			$this->assertInstanceOf($tokenClass, $this->getAuthStorage());

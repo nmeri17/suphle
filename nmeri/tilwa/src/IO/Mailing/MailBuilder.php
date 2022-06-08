@@ -3,11 +3,22 @@
 
 	use Tilwa\Contracts\{Services\Decorators\OnlyLoadedBy, Queues\Task};
 
-	class MailBuilder implements OnlyLoadedBy {
+	abstract class MailBuilder implements OnlyLoadedBy {
+
+		protected $payload;
 
 		final public function allowedConsumers ():array {
 
 			return [Task::class];
 		}
+
+		public function setPayload ($data):self {
+
+			$this->payload = $data;
+
+			return $this;
+		}
+
+		abstract public function sendMessage ():void;
 	}
 ?>

@@ -4,8 +4,8 @@
 	class RouteManagerTest extends TestsRouter {
 
 		/**
-	     * @dataProvider pathsToHandler
-	     */
+		 * @dataProvider pathsToHandler
+		*/
 		public function test_route_matching ( string $handler, string $requestPath) {
 
 			$matchingRenderer = $this->fakeRequest($requestPath);

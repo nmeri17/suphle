@@ -1,9 +1,9 @@
 <?php
 	namespace Tilwa\Auth\Storage;
 
-	use Tilwa\Contracts\{Auth\UserHydrator, IO\Session};
+	use Tilwa\Contracts\IO\Session;
 
-	use Tilwa\Contracts\Config\Auth as AuthContract;
+	use Tilwa\Contracts\Config\AuthContract;
 
 	class SessionStorage extends BaseAuthStorage {
 
@@ -13,11 +13,7 @@
 
 		$isImpersonating, $sessionClient;
 
-		public function __construct (UserHydrator $userHydrator, AuthContract $authConfig, Session $sessionClient) {
-
-			$this->userHydrator = $userHydrator;
-
-			$this->authConfig = $authConfig;
+		public function __construct ( Session $sessionClient) {
 
 			$this->sessionClient = $sessionClient;
 		}
@@ -31,7 +27,9 @@
 				$this->sessionClient->startNew();
 			}
 
-			return $this->sessionClient->setValue($this->identifierKey, $value);
+			$this->sessionClient->setValue($this->identifierKey, $value);
+
+			return $value;
 		}
 
 		public function resumeSession ():void {
@@ -55,7 +53,7 @@
 				$this->sessionClient->setValue($this->previousUserKey, $this->identifier);
 		}
 
-		public function getPreviousUser ():string {
+		public function getPreviousUser ():?string {
 
 			return $this->sessionClient->getValue($this->previousUserKey);
 		}

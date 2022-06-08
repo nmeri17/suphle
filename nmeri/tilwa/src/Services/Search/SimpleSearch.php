@@ -5,17 +5,17 @@
 
 	use Tilwa\Request\PayloadStorage;
 
-	use Tilwa\Contracts\Database\Orm;
+	use Tilwa\Contracts\Database\OrmDialect;
 
 	class SimpleSearch extends UpdatelessService {
 
-		protected $payloadStorage, $orm;
+		protected $payloadStorage, $ormDialect;
 
-		public function __construct (PayloadStorage $payloadStorage, Orm $orm) {
+		public function __construct (PayloadStorage $payloadStorage, OrmDialect $ormDialect) {
 
 			$this->payloadStorage = $payloadStorage;
 
-			$this->orm = $orm;
+			$this->ormDialect = $ormDialect;
 		}
 
 		public function convertToQuery ($baseModel, string $queryField) {
@@ -26,7 +26,7 @@
 
 					$baseModel = $this->$parameter($baseModel, $value);
 
-				else $baseModel = $this->orm->addWhereClause($baseModel, [$parameter => $value]);
+				else $baseModel = $this->ormDialect->addWhereClause($baseModel, [$parameter => $value]);
 
 			return $baseModel;
 		}

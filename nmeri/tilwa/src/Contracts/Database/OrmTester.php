@@ -1,0 +1,8 @@
+<?php
+	namespace Tilwa\Contracts\Database;
+
+	interface OrmTester {
+
+		public function getConnection ($connection = null);
+	}
+?>

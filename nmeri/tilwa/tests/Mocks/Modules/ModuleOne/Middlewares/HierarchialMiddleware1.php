@@ -1,11 +1,15 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Middlewares;
 
-	use Tilwa\Middleware\BaseMiddleware;
+	use Tilwa\Contracts\{Presentation\BaseRenderer, Routing\Middleware};
 
-	class HierarchialMiddleware1 extends BaseMiddleware {
+	use Tilwa\Middleware\MiddlewareNexts;
 
-		public function process ($payloadStorage, $requestHandler) {
+	use Tilwa\Request\PayloadStorage;
+
+	class HierarchialMiddleware1 implements Middleware {
+
+		public function process (PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler):BaseRenderer {
 
 			$payloadStorage->mergePayload(["foo" => "bar"]);
 

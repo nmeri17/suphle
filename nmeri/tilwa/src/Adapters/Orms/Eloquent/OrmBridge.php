@@ -1,9 +1,13 @@
 <?php
 	namespace Tilwa\Adapters\Orms\Eloquent;
 
+	use Tilwa\Hydration\Container;
+
+	use Tilwa\Adapters\Orms\Eloquent\Models\User as EloquentUser;
+
 	use Tilwa\Contracts\{Database\OrmDialect, Config\Database, Bridge\LaravelContainer};
 
-	use Tilwa\Hydration\Container;
+	use Tilwa\Contracts\Auth\{UserHydrator as HydratorContract, AuthStorage, UserContract};
 
 	use Illuminate\Database\{DatabaseManager, Capsule\Manager as CapsuleManager, Connection};
 
@@ -11,44 +15,39 @@
 
 		private $credentials, $connection, $laravelContainer,
 
-		$authStorage, $nativeClient;
+		$nativeClient;
 
-		public function __construct (Database $config, Container $container, LaravelContainer $laravelContainer, AuthStorage $authStorage) {
+		public function __construct (Database $config, Container $container, LaravelContainer $laravelContainer) {
 
 			$this->credentials = $config->getCredentials();
 
 			$this->laravelContainer = $laravelContainer;
 
 			$this->container = $container;
-
-			$this->authStorage = $authStorage;
 		}
 
 		/**
-		 * @param {drivers} Assoc array with structure [credentials => [], name => ?string]
+		 * @param {drivers} Assoc array with shape [name => [username, password, driver, database]]
 		*/
 		public function setConnection (array $drivers = []):void {
 
-			$this->nativeClient = new CapsuleManager;
+			$nativeClient = $this->nativeClient = new CapsuleManager;
 
-			if (empty($drivers))
-
-				$connections = [
-					"credentials" => $this->credentials,
-
-					"name" => "mysql"
-				];
+			if (empty($drivers)) $connections = $this->credentials;
 
 			else $connections = $drivers;
 
-			foreach ($connections as $driver)
+			foreach ($connections as $name => $credentials)
 
-				$nativeClient->addConnection($driver["credentials"], @$driver["name"]);
+				$nativeClient->addConnection($credentials, $name);
 
 			$this->connection = $nativeClient->getConnection();
 		}
 
-		public function getConnection ():Connection {
+		/**
+		 * @return Connection
+		*/
+		public function getConnection ():object {
 
 			if (is_null($this->connection)) $this->setConnection();
 
@@ -85,19 +84,20 @@
 		/**
 		 * {@inheritdoc}
 		*/
-		public function registerObservers(array $observers):void {
+		public function registerObservers (array $observers, AuthStorage $authStorage):void {
 
 			if (empty($observers)) return;
 
-			$this->laravelContainer->instance(AuthStorage::class, $this->authStorage);// guards in those observers will be relying on this value
+			$this->laravelContainer->instance(AuthStorage::class, $authStorage); // guards in those observers will be relying on this contract
 
 			foreach ($observers as $model => $observer) {
 
-				$observerName = $model. "Authorization";
+				$this->laravelContainer->bind($observer, function ($app) use ($observer) {
 
-				$this->laravelContainer->instance($observerName, $this->container->getClass($observer)); // this works since this is the same container passed to the eventDispatcher for use in hydrating the listeners
+					return $this->container->getClass($observer); // just to be on the safe side in case observer has bound entities
+				});
 
-				$model::observe($observerName);
+				$model::observe($observer); // even if we hydrate an instance, they'll still flatten it, anyway
 			}
 		}
 
@@ -113,7 +113,21 @@
 
 		public function getNativeClient ():object {
 
-			return $this->nativeClient->getDatabaseManager();
+			return $this->nativeClient;
+		}
+
+		public function getUserHydrator ():HydratorContract {
+
+			$hydrator = $this->container->getClass(UserHydrator::class);
+
+			$hydrator->setUserModel($this->userModel());
+
+			return $hydrator;
+		}
+
+		public function userModel ():UserContract {
+
+			return $this->container->getClass(EloquentUser::class);
 		}
 	}
 ?>

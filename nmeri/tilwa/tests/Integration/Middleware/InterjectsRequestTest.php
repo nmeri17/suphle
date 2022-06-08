@@ -3,9 +3,9 @@
 
 	use Tilwa\Contracts\Config\Router;
 
-	use Tilwa\Middleware\FinalHandlerWrapper;
+	use Tilwa\Middleware\Handlers\FinalHandlerWrapper;
 
-	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\MockFacilitator, Proxies\WriteOnlyContainer};
+	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock};
 
@@ -15,7 +15,7 @@
 
 	class InterjectsRequestTest extends ModuleLevelTest {
 
-		use MockFacilitator;
+		private $sutName = HierarchialMiddleware2::class;
 		
 		protected function getModules ():array {
 
@@ -27,37 +27,36 @@
 						"defaultMiddleware" => [
 							HierarchialMiddleware1::class,
 
-							HierarchialMiddleware2::class,
+							$this->sutName,
 
 							FinalHandlerWrapper::class
 						]
-					]);
+					])
+					->replaceWithConcrete($this->sutName, $this->mockMiddleware2()); // then
 				})
 			];
 		}
 
-		public function test_default_middleware_executes_top_to_bottom () {
+		private function mockMiddleware2 ():HierarchialMiddleware2 {
 
-			// given => @see [getModules]
+			return $this->positiveDouble($this->sutName, [
 
-			$sutName = HierarchialMiddleware2::class;
+				"process" => $this->returnCallback(function($request, $requestHandler) {
 
-			// then
-			$hierarchial2 = $this->positiveDouble($sutName, [], [
+					return $requestHandler->handle($request);
+				})], [
 
-				"process" => [1, [$this->returnCallback(function($subject) {
+				"process" => [1, [$this->callback(function($subject) {
 
 					return $subject->hasKey("foo");
 
 				}), $this->anything()]]
 			]);
+		}
 
-			$this->getModuleFor(ModuleOne::class)->getContainer()
+		public function test_default_middleware_executes_top_to_bottom () {
 
-			->whenTypeAny()->needsAny([
-
-				$sutName => $hierarchial2
-			]);
+			// given => @see [getModules]
 
 			$this->get("/segment"); // when
 		}

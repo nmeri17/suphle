@@ -10,7 +10,7 @@
 		/**
 		 * If [INTEGRITY_COLUMN] is behind now, user is looking at a stale version
 		*/
-		public function includesEditIntegrity ():bool;
+		public function includesEditIntegrity (string $integrity):bool;
 
 		/**
 		 * Unset all integrities for this model

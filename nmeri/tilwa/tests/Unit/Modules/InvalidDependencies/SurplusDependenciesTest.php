@@ -5,7 +5,7 @@
 
 	use Tilwa\Exception\Explosives\Generic\UnexpectedModules;
 
-	use Tilwa\Tests\Integration\App\ModuleDescriptor\DescriptorCollection;
+	use Tilwa\Tests\Integration\Modules\ModuleDescriptor\DescriptorCollection;
 
 	use Tilwa\Tests\Mocks\Interactions\{ModuleThree, ModuleOne};
 
@@ -31,7 +31,7 @@
 
 			// given @see module creation
 
-			$this->moduleTwo->warmUp(); 
+			$this->moduleTwo->warmModuleContainer(); 
 
 			$this->moduleTwo->prepareToRun(); // when
 		}

@@ -51,9 +51,9 @@
 				[BlankMiddleware4::class]
 			)
 			->removeTag (
-				["FIRST__UNTAGh", "SECOND__UNTAGh"],
+				["FIRST__UNTAGh", "SECOND__UNTAGh"], // notice that given pattern exist on current collection. It's only activated if one of them is intersected in full request path
 
-				[ BlankMiddleware4::class]
+				[ BlankMiddleware4::class] // while middleware must have been tagged by a parent collection to have any effect
 			)
 			->removeTag (
 				["THIRD__UNTAGh"],

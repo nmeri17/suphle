@@ -3,35 +3,43 @@
 
 	use Tilwa\Contracts\Presentation\{HtmlParser, BaseRenderer};
 
+	use Tilwa\Hydration\Container;
+
 	use Tilwa\Flows\ControllerFlows;
 
-	class GenericRenderer implements BaseRenderer {
+	use Tilwa\Services\ServiceCoordinator;
 
-		private $controller, $rawResponse, $path, $flows, $routeMethod;
+	abstract class GenericRenderer implements BaseRenderer {
 
-		protected $handler, $statusCode, $headers = [];
+		private $controller, $path, $flows, $routeMethod;
 
-		public function setControllingClass (string $class):void {
+		protected $handler, $statusCode,
+
+		$rawResponse = [], $headers = [];
+
+		public function setControllingClass (ServiceCoordinator $controller):void {
 			
-			$this->controller = $controllerClass;
+			$this->controller = $controller;
 		}
 
-		protected function getDependencies ():array {
+		public function getDependencies ():array {
 
 			return [ "htmlParser" => HtmlParser::class];
 		}
 
-		public function invokeActionHandler (array $handlerParameters):self {
+		public function invokeActionHandler (array $handlerParameters):BaseRenderer {
 
-			$this->rawResponse = call_user_func_array([
+			$this->rawResponse = call_user_func_array(
 
-				$this->controller, $this->handler], $handlerParameters
+				[$this->getController(), $this->handler],
+
+				$handlerParameters
 			);
 
 			return $this;
 		}
 
-		public function getController():string {
+		public function getController ():ServiceCoordinator {
 			
 			return $this->controller;
 		}
@@ -48,24 +56,24 @@
 
 		public function hasBranches():bool {
 			
-			return !is_null($this->flows);
+			return !is_null($this->getFlow());
 		}
 
-		public function setRawResponse($response):self {
+		public function setRawResponse($response):BaseRenderer {
 			
 			$this->rawResponse = $response;
 
 			return $this;
 		}
 
-		public function setFlow(ControllerFlows $flow):self {
+		public function setFlow(ControllerFlows $flow):BaseRenderer {
 			
 			$this->flows = $flow;
 
 			return $this;
 		}
 
-		public function getFlow():ControllerFlows {
+		public function getFlow():?ControllerFlows {
 			
 			return $this->flows;
 		}
@@ -73,16 +81,6 @@
 		public function getRawResponse() {
 			
 			return $this->rawResponse;
-		}
-
-		public function getPath():string {
-			
-			return $this->path;
-		}
-
-		public function setPath(string $path):void {
-			
-			$this->path = $path;
 		}
 
 		public function getRouteMethod():string {

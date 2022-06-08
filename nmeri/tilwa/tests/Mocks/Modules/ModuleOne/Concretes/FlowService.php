@@ -3,12 +3,12 @@
 
 	class FlowService {
 
-		public function customHandlePrevious (iterable $models):iterable {
+		public function customHandlePrevious ( $payload):iterable {
 
 			return array_map(function ($model) {
 
 				return $model["id"] * 2;
-			}, $models);
+			}, $payload["data"]);
 		}
 	}
 ?>

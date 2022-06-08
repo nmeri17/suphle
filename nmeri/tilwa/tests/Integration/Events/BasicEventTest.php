@@ -11,7 +11,7 @@
 
 			$this->getModuleFor(ModuleOne::class)->noPayloadEvent(); // when
 
-			$this->assertFiredEvent(
+			$this->assertHandledEvent(
 				LocalSender::class, ModuleOne::EMPTY_PAYLOAD_EVENT
 			); // then
 		}

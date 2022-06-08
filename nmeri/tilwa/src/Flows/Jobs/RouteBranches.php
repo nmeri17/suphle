@@ -1,73 +1,80 @@
 <?php
 	namespace Tilwa\Flows\Jobs;
 
-	use Tilwa\Modules\ModuleToRoute;
+	use Tilwa\Modules\{ModuleToRoute, ModulesBooter};
 
-	use Tilwa\Flows\Structures\{BranchesContext, RouteUserNode};
+	use Tilwa\Flows\{FlowHydrator, Structures\BranchesContext, Previous\UnitNode};
 
-	use Tilwa\Flows\Previous\UnitNode;
+	use Tilwa\Response\RoutedRendererManager;
 
-	use Tilwa\Response\ResponseManager;
+	use Tilwa\Request\RequestDetails;
 
 	use Tilwa\Contracts\Queues\Task;
 
 	// for queueing the cached endpoint on hit and queuing sub-flows
 	class RouteBranches implements Task {
 
-		private $context, $moduleFinder, $hydrator;
+		private $context, $moduleFinder, $hydrator, $modules;
 
-		function __construct(BranchesContext $context, ModuleToRoute $moduleFinder, FlowHydrator $hydrator) {
+		public function __construct(
+			BranchesContext $context, ModuleToRoute $moduleFinder,
+
+			FlowHydrator $hydrator, ModulesBooter $modulesBooter
+		) {
 			
 			$this->context = $context;
 
 			$this->moduleFinder = $moduleFinder;
 
 			$this->hydrator = $hydrator;
+
+			$this->modules = $modulesBooter->getModules();
 		}
 
-		public function handle() {
+		public function handle ():void {
 
 			$outgoingRenderer = $this->context->getRenderer();
 
-			if ($outgoingRenderer->hasBranches())
+			if (!$outgoingRenderer->hasBranches()) return;
 			
-				$outgoingRenderer->getFlow()->eachBranch($this->eachFlowBranch);
-		}
+			$outgoingRenderer->getFlow()
 
-		private function eachFlowBranch(string $urlPattern, UnitNode $structure) {
+			->eachBranch(function ($urlPattern, $structure) {
 
-			$context = $this->context;
+				$manager = $this->findManagerForPattern( $urlPattern);
 
-			$modules = $context->getModules();
+				if (!$manager) return; // invalid url
 
-			if (!is_null($modules))
-
-				$manager = $this->getManagerFromModules($modules, $urlPattern);
-
-			else $manager = $context->getResponseManager();
-
-			if ($manager) {
-				
-				$previousPayload = $context->getRenderer()->getRawResponse();
-
-				$this->hydrator->setDependencies($manager, $previousPayload)
-				
-				->runNodes( $structure, $context->getUserId());
-			}
+				$this->executeFlowBranch($manager, $urlPattern, $structure);
+			});
 		}
 
 		/**
-		 * Transitions from non-flow to flow links won't cache the first link if it's outside the active module i.e. routes in moduleA controllers can't visit those in moduleB if the moduleA route wasn't loaded from cache
-		 * 
 		 * Given the origin path stored a flow pointing to "sub-path/id", this tries to uproot the responseManager in the module containing that path
 		*/
-		private function getManagerFromModules(array $modules, string $pattern):?ResponseManager {
+		private function findManagerForPattern (string $pattern):?RoutedRendererManager {
 
-			$moduleInitializer = $this->moduleFinder->findContext($modules, $pattern);
+			RequestDetails::fromModules($this->modules, $pattern);
 
-			if (!is_null($moduleInitializer))
+			$moduleInitializer = $this->moduleFinder->findContext($this->modules);
 
-				return $moduleInitializer->getResponseManager();
+			if (!is_null($moduleInitializer)) {
+
+				$moduleInitializer->whenActive()->setRendererManager();
+
+				return $moduleInitializer->getRoutedRendererManager();
+			}
+
+			return null;
+		}
+
+		private function executeFlowBranch (RoutedRendererManager $rendererManager, string $urlPattern, UnitNode $structure):void {
+
+			$previousPayload = $this->context->getRenderer()->getRawResponse();
+
+			$this->hydrator->setDependencies($rendererManager, $previousPayload, $urlPattern)
+			
+			->runNodes( $structure, $this->context->getUserId());
 		}
 	}
 ?>

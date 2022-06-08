@@ -3,17 +3,17 @@
 
 	use Tilwa\Hydration\{BaseInterfaceLoader, Container};
 
-	use Tilwa\Contracts\Config\Auth as AuthConfig;
+	use Tilwa\Contracts\Config\AuthContract;
 
 	class LoginHandlerInterfaceLoader extends BaseInterfaceLoader {
 
-		private $container, $authConfig;
+		private $container, $authContract;
 
-		public function __construct (Container $container, AuthConfig $authConfig) {
+		public function __construct (Container $container, AuthContract $authContract) {
 
 			$this->container = $container;
 
-			$this->authConfig = $authConfig;
+			$this->authContract = $authContract;
 		}
 
 		public function concrete ():string {
@@ -25,7 +25,7 @@
 
 			return [
 
-				"collection" => $this->container->getClass($this->authConfig->getLoginCollection())
+				"collection" => $this->container->getClass($this->authContract->getLoginCollection()) // passing collection as argument so the handler can receive a type-safe object
 			];
 		}
 	}

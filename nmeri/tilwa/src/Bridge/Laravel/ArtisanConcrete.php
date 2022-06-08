@@ -1,12 +1,20 @@
 <?php
 	namespace Tilwa\Bridge\Laravel;
 
-	use Illuminate\Console\Application;
+	use Tilwa\Contracts\Bridge\{LaravelArtisan, LaravelContainer};
 
-	use Tilwa\Contracts\Bridge\LaravelArtisan;
+	use Illuminate\{Console\Application, Events\Dispatcher};
 
 	class ArtisanConcrete extends Application implements LaravelArtisan {
 
-		//
+		public function __construct (LaravelContainer $laravelContainer, Dispatcher $events, string $version) {
+
+			parent::__construct($laravelContainer, $events, $version);
+		}
+
+		public function invokeCommand ($command, array $parameters = []):int {
+
+			return $this->call($command, $parameters);
+		}
 	}
 ?>

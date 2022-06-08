@@ -1,15 +1,19 @@
 <?php
 	namespace Tilwa\Tests\Integration\Routing\Crud;
 
-	use Tilwa\Testing\{Condiments\PopulatesDatabaseTest, TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
+	use Tilwa\Contracts\Config\Router;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\{ModuleOneDescriptor, Routes\Crud\AuthenticateCrudCollection, Config\RouterMock};
+	use Tilwa\Adapters\Orms\Eloquent\Models\User as EloquentUser;
 
-	use Tilwa\Contracts\{Auth\User, Config\Router};
+	use Tilwa\Testing\{Condiments\BaseDatabasePopulator, TestTypes\ModuleLevelTest};
+
+	use Tilwa\Testing\Proxies\{SecureUserAssertions, WriteOnlyContainer};
+
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Routes\Crud\AuthenticateCrudCollection, Config\RouterMock};
 
 	class AuthSecureTest extends ModuleLevelTest {
 
-		use PopulatesDatabaseTest;
+		use BaseDatabasePopulator, SecureUserAssertions;
 
 		protected function getModules():array {
 
@@ -27,7 +31,7 @@
 
 		protected function getActiveEntity ():string {
 
-			return User::class;
+			return EloquentUser::class;
 		}
 
 		public function test_no_authenticated_user_throws_error () {

@@ -5,14 +5,11 @@
 
 	use Tilwa\Testing\{Proxies\WriteOnlyContainer, Condiments\EmittedEventsCatcher};
 
-	use Tilwa\Tests\Integration\App\ModuleDescriptor\DescriptorCollection;
+	use Tilwa\Tests\Integration\Modules\ModuleDescriptor\DescriptorCollection;
 
 	class TestEventManager extends DescriptorCollection {
 
-		use EmittedEventsCatcher {
-
-			EmittedEventsCatcher::setUp as eventsSetup;
-		}
+		use EmittedEventsCatcher;
 
 		protected $payload = 5, $mockEventReceiver,
 
@@ -22,24 +19,9 @@
 
 			if (!is_null($this->eventReceiverName))
 
-				$this->mockEventReceiver = $this->prophesize($this->eventReceiverName);
+				$this->mockEventReceiver = $this->positiveDouble($this->eventReceiverName);
 
-			$this->setModuleOne();
-
-			$this->setModuleThree();
-
-			$this->setModuleTwo();
-
-			$this->eventsSetup();
-		}
-		
-		protected function getModules ():array {
-
-			return [
-				$this->moduleOne, $this->moduleTwo,
-
-				$this->moduleThree
-			];
+			parent::setUp();
 		}
 
 		/**
@@ -53,8 +35,16 @@
 
 			return $this->replicateModule($descriptorName, function(WriteOnlyContainer $container) {
 
-				$container->replaceWithConcrete($this->eventReceiverName, $this->mockEventReceiver->reveal());
+				$container->replaceWithConcrete($this->eventReceiverName, $this->mockEventReceiver);
 			});
+		}
+
+		protected function expectUpdatePayload ():void {
+
+			$this->mockCalls([
+
+				"updatePayload" => [1, [$this->payload]]
+			], $this->mockEventReceiver);
 		}
 	}
 ?>

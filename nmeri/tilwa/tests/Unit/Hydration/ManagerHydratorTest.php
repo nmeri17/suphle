@@ -7,9 +7,13 @@
 
 	use Tilwa\Contracts\Config\{Router, ModuleFiles};
 
+	use Tilwa\Config\AscendingHierarchy;
+
+	use Tilwa\File\FileSystemReader;
+
 	use Tilwa\Testing\TestTypes\TestVirginContainer;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Config\{ModuleFilesMock, RouterMock};
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Config\RouterMock;
 
 	class ManagerHydratorTest extends TestVirginContainer {
 
@@ -28,8 +32,6 @@
 
 					return array_merge(parent::getConfigs(), [
 
-						ModuleFiles::class => ModuleFilesMock::class,
-
 						Router::class => RouterMock::class
 					]);
 				}
@@ -41,6 +43,15 @@
 
 				LaravelProviderManager::class
 			]); // when // IMPORTANT: this is meant to run after the above
+
+			$systemReader = $container->getClass(FileSystemReader::class);
+
+			$anchorPath = $systemReader->pathFromLevels(__DIR__, "Mocks/Modules/ModuleOne/Config", 2);
+
+			$container->whenTypeAny()->needsAny([
+
+				ModuleFiles::class => new AscendingHierarchy($anchorPath, $systemReader)
+			]);
 
 			$container->setExternalContainerManager();
 

@@ -1,13 +1,15 @@
 <?php
 	namespace Tilwa\Exception\Diffusers;
 
-	use Tilwa\Contracts\Exception\ExceptionHandler;
+	use Tilwa\Contracts\{Exception\ExceptionHandler, Presentation\BaseRenderer};
 
-	use Tilwa\Routing\{RouteManager, RequestDetails};
+	use Tilwa\Routing\RouteManager;
 
-	use Tilwa\Response\Format\AbstractRenderer;
+	use Tilwa\Request\RequestDetails;
 
 	use Tilwa\Exception\Explosives\EditIntegrityException;
+
+	use Throwable;
 
 	class StaleEditDiffuser implements ExceptionHandler {
 
@@ -20,7 +22,10 @@
 			$this->router = $router;
 		}
 
-		public function setContextualData (EditIntegrityException $origin):void {
+		/**
+		 * @param {origin} EditIntegrityException
+		*/
+		public function setContextualData (Throwable $origin):void {
 
 			//
 		}
@@ -40,7 +45,7 @@
 			->setHeaders(400, []);
 		}
 
-		public function getRenderer ():AbstractRenderer {
+		public function getRenderer ():BaseRenderer {
 
 			return $this->renderer;
 		}

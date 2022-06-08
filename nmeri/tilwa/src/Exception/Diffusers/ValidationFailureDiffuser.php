@@ -1,13 +1,15 @@
 <?php
 	namespace Tilwa\Exception\Diffusers;
 
-	use Tilwa\Contracts\Exception\ExceptionHandler;
+	use Tilwa\Contracts\{Exception\ExceptionHandler, Presentation\BaseRenderer};
 
-	use Tilwa\Routing\{RouteManager, RequestDetails};
+	use Tilwa\Routing\RouteManager;
 
-	use Tilwa\Response\Format\AbstractRenderer;
+	use Tilwa\Request\RequestDetails;
 
 	use Tilwa\Exception\Explosives\ValidationFailure;
+
+	use Throwable;
 
 	class ValidationFailureDiffuser implements ExceptionHandler {
 
@@ -20,7 +22,10 @@
 			$this->router = $router;
 		}
 
-		public function setContextualData (ValidationFailure $origin):void {
+		/**
+		 * @param {origin} ValidationFailure
+		*/
+		public function setContextualData (Throwable $origin):void {
 
 			$this->validationEvaluator = $origin->getEvaluator();
 		}
@@ -33,11 +38,29 @@
 
 			else $this->renderer = $this->router->getActiveRenderer();
 
-			$this->renderer->setRawResponse(array_merge($this->renderer->getRawResponse(), [ // this means every route that can possibly fail validation should return an array
+			$this->renderer->setRawResponse(array_merge(
+
+				$this->getArrayResponse(), [
 
 				"errors" => $this->validationErrors()
 			]))
 			->setHeaders(422, []);
+		}
+
+		/**
+		* Insurance against routes that can possibly fail validation that don't return an array
+		*/
+		protected function getArrayResponse ():array {
+
+			$responseBody = $this->renderer->getRawResponse();
+
+			if (is_array($responseBody)) return $responseBody;
+
+			if (is_iterable($responseBody))
+
+				return json_decode(json_encode($responseBody), true);
+
+			return [$responseBody];
 		}
 
 		protected function validationErrors ():array {
@@ -45,7 +68,7 @@
 			return $this->validationEvaluator->getValidatorErrors();
 		}
 
-		public function getRenderer ():AbstractRenderer {
+		public function getRenderer ():BaseRenderer {
 
 			return $this->renderer;
 		}

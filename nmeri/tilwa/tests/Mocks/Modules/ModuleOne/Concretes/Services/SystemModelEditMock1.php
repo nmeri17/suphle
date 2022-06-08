@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\Services;
 
-	use Tilwa\Services\UpdatelessService;
+	use Tilwa\Services\{UpdatelessService, Structures\OptionalDTO};
 
 	use Tilwa\Contracts\Services\Decorators\SystemModelEdit;
 
@@ -23,5 +23,15 @@
 		}
 
 		public function unrelatedToUpdate () {}
+
+		public function rethrowAs ():array {
+
+			return [];
+		}
+
+		public function failureState (string $method):?OptionalDTO {
+
+			return null;
+		}
 	}
 ?>

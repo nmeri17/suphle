@@ -1,11 +1,11 @@
 <?php
 	namespace Tilwa\Config;
 
-	use Tilwa\Contracts\Config\Auth as AuthContract;
+	use Tilwa\Contracts\Config\AuthContract;
 
 	use Tilwa\Auth\Renderers\{BrowserLoginRenderer, ApiLoginRenderer};
 
-	use Tilwa\Routing\RequestDetails;
+	use Tilwa\Request\RequestDetails;
 
 	class Auth implements AuthContract {
 
@@ -27,33 +27,19 @@
 
 		public function getLoginCollection ():?string {
 
-			$rendererList = $this->getLoginPaths();
+			foreach ($this->getLoginPaths() as $key => $renderer) {
 
-			$path = $this->requestDetails->getPath();
+				if ($this->requestDetails->matchesPath($key))
 
-			if (array_key_exists($path, $rendererList))
+					return $renderer;
+			}
 
-				return $rendererList[$path];
+			return null;
 		}
 
 		public function isLoginRequest ():bool {
 
 			return $this->requestDetails->isPostRequest() && !is_null($this->getLoginCollection());
-		}
-
-		public function getTokenSecretKey ():string {
-
-			return getenv("APP_SECRET_KEY");
-		}
-
-		public function getTokenIssuer ():string {
-
-			return getenv("SITE_HOST");
-		}
-
-		public function getTokenTtl ():int {
-
-			return getenv("JWT_TTL");
 		}
 
 		public function getModelObservers ():array {

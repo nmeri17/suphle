@@ -1,32 +1,36 @@
 <?php
 	namespace Tilwa\Tests\Integration\Bridge\Laravel;
 
-	use Tilwa\Testing\TestTypes\CommandLineTest;
-
-	use Tilwa\Bridge\Laravel\Cli\ArtisanCli;
+	use Tilwa\Hydration\Container;
 
 	use Tilwa\Contracts\Bridge\LaravelContainer;
 
-	use Tilwa\Hydration\Container;
-
-	use Illuminate\Database\Migrations\Migrator;
-
-	use Symfony\Component\Console\Tester\CommandTester;
+	use Tilwa\Testing\{TestTypes\CommandLineTest, Proxies\WriteOnlyContainer, Condiments\FilesystemCleaner};
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
+	use Illuminate\Database\MigrationServiceProvider;
+
+	use Symfony\Component\Console\Tester\CommandTester;
+
 	class ArtisanBridgeTest extends CommandLineTest {
 
-		protected function getModules():array {
+		use FilesystemCleaner;
 
-			return [
-				new ModuleOneDescriptor ($this->providedContainer())
-			];
+		private $migrationFolder = "sample_migrations";
+
+		protected function getModules ():array {
+
+			return [new ModuleOneDescriptor(new Container) ];
 		}
 
 		public function test_can_create_migrations () {
 
-			// given => Artisan command is set in default command list
+			// given => migrator command is wired in during laravel booting in artisan environment
+
+			$migrationPath = $this->migrationPath();
+
+			$this->assertEmptyDirectory($migrationPath); // I would've liked to replace migrator instance injected in MigrationServiceProvider with a mock, but that replacement hasn't been possible
 
 			$command = $this->consoleRunner->findHandler("bridge:laravel");
 
@@ -34,30 +38,22 @@
 
 			$commandTester->execute([ // when
 
-				"to_forward" => "make:migration create_users_table --path=/Migrations",
+				"to_forward" => "make:migration create_users_table --path=" . $this->migrationFolder,
 			]);
 
-			// then 1
+			// then
 			$commandTester->assertCommandIsSuccessful(); // $commandTester::getDisplay can be used to extract console output as a string
 
-			// then 2 => see [providedContainer]
+			$this->assertNotEmptyDirectory($migrationPath);
+
+			$this->emptyDirectory($migrationPath);
 		}
 
-		private function providedContainer ():Container {
+		private function migrationPath ():string {
 
-			$container = new Container;
+			return $this->firstModuleContainer()->getClass(LaravelContainer::class)
 
-			$migrator = Migrator::class;
-
-			$container->getClass(LaravelContainer::class)
-			
-			->instance($migrator, $this->negativeDouble($migrator, [], [
-
-					"create" => [1, []]
-				])
-			);
-
-			return $container;
-		} 
+			->basePath() . DIRECTORY_SEPARATOR . $this->migrationFolder;
+		}
 	}
 ?>

@@ -5,15 +5,17 @@
 
 	use Tilwa\Events\Structures\HandlerPath;
 
+	use Tilwa\Contracts\Modules\DescriptorInterface;
+
 	use InvalidArgumentException;
 
 	abstract class EventManager {
 
-		private $emitters = ["local" => [], "external" => []];
+		private $activeHandlerPath, $module, $parentManager,
 
-		private $activeHandlerPath, $module, $parentManager;
+		$emitters = ["local" => [], "external" => []];
 
-		function __construct(ModuleDescriptor $module, ModuleLevelEvents $parentManager) {
+		function __construct(DescriptorInterface $module, ModuleLevelEvents $parentManager) {
 
 			$this->module = $module;
 
@@ -49,17 +51,19 @@
 		}
 
 		/**
-		 * @param {$emitter} inserting this without a proxy means a random class can trigger handlers listening on another event, which is not the best
+		 * @param {$emitter} inserting this without a proxy means a random class can trigger handlers listening on another event, which is not an entirely safe bet, but can come in handy when building dev-facing functionality @see OuterflowWrapper->emitEvents
 		 **/
 		public function emit(string $emitter, string $eventName, $payload = null) {
 
 			$localHandlers = $this->getLocalHandler($emitter);
 
-			$this->parentManager->triggerHandlers($localHandlers, $eventName, $payload)
+			$moduleIdentifier = $this->module->exportsImplements();
 
-			->gatherForeignSubscribers($this->module->exportsImplements()) // this means external listeners of this module can comfortably listen to the module exports interface rather than bothering about the specific entity emitting the event
+			$this->parentManager->triggerHandlers($emitter, $localHandlers, $eventName, $payload)
+
+			->gatherForeignSubscribers($moduleIdentifier) // this means external listeners of this module can comfortably listen to the module exports interface rather than bothering about the specific entity emitting the event
 			
-			->triggerExternalHandlers($eventName, $payload);
+			->triggerExternalHandlers($moduleIdentifier, $eventName, $payload);
 		}
 
 		/**
@@ -79,26 +83,30 @@
 				
 				->addUnit( trim($eventName), $handlingMethod);
 			}
+
+			return $this;
 		}
 
 		/**
 		 * For each module, [parentManager] will request handlers matching currently evaluated module from this guy
 		 *
 		 **/
-		public function getExternalHandlers(string $evaluatedModule):EventSubscription {
+		public function getExternalHandlers(string $evaluatedModule):?EventSubscription {
 
 			foreach ($this->emitters["external"] as $emitable => $context)
 
 				if ($emitable == $evaluatedModule)
 
 					return $context;
+
+			return null;
 		}
 
 		/**
 		 * we want to decouple the emitter from the interface consumers are subscribed to
 		 *
 		 **/
-		public function getLocalHandler(string $emitter):EventSubscription {
+		public function getLocalHandler(string $emitter):?EventSubscription {
 			
 			foreach ($this->emitters["local"] as $emitable => $details) {
 
@@ -108,6 +116,7 @@
 
 					return $details;
 			}
+			return null;
 		}
 
 		abstract public function registerListeners():void;

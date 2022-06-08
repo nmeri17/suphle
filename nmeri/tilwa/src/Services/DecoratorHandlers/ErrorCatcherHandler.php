@@ -1,24 +1,95 @@
 <?php
 	namespace Tilwa\Services\DecoratorHandlers;
 
-	use Tilwa\Services\Proxies\ErrorCloakBuilder;
+	use Tilwa\Contracts\Services\Decorators\ServiceErrorCatcher;
 
-	use Tilwa\Contracts\{Services\Decorators\ServiceErrorCatcher, Hydration\ScopeHandlers\ModifyInjected};
+	use Tilwa\Contracts\Config\DecoratorProxy;
 
-	class ErrorCatcherHandler implements ModifyInjected {
+	use Tilwa\Exception\DetectedExceptionManager;
 
-		private $cloakBuilder;
+	use Tilwa\Services\Structures\OptionalDTO;
 
-		public function __construct (ErrorCloakBuilder $cloakBuilder) {
+	use Tilwa\Hydration\Structures\ObjectDetails;
 
-			$this->cloakBuilder = $cloakBuilder;
+	use ProxyManager\Factory\NullObjectFactory;
+
+	use ReflectionClass, Throwable;
+
+	/**
+	 * Any decorator composed of this handler must extend ServiceErrorCatcher
+	*/
+	class ErrorCatcherHandler extends BaseDecoratorHandler {
+
+		private $exceptionDetector, $objectMeta;
+
+		public function __construct (
+			DetectedExceptionManager $exceptionDetector, ObjectDetails $objectMeta,
+			DecoratorProxy $proxyConfig) {
+
+			$this->exceptionDetector = $exceptionDetector;
+
+			$this->objectMeta = $objectMeta;
+
+			parent::__construct($proxyConfig);
 		}
 
-		public function proxifyInstance (ServiceErrorCatcher $concrete, string $caller) {
+		/**
+		 * {@inheritdoc}
+		*/
+		public function examineInstance (object $concrete, string $caller):object {
 
-			$this->cloakBuilder->setTarget($concrete);
+			return $this->allMethodAction($concrete,
 
-			return $this->cloakBuilder->buildClass();
+				[$this, "safeCallMethod"]
+			);
+		}
+
+		public function safeCallMethod (object $concrete, string $methodName, array $argumentList) {
+
+			try {
+
+				return $this->triggerOrigin($concrete, $methodName, $argumentList);
+			}
+			catch (Throwable $exception) {
+
+				return $this->attemptDiffuse($exception, $concrete, $methodName);
+			}
+		}
+
+		public function attemptDiffuse (Throwable $exception, ServiceErrorCatcher $concrete, string $method):OptionalDTO {
+
+			$this->exceptionDetector->detonateOrDiffuse($exception, $concrete);
+
+			$callerResponse = $concrete->failureState($method);
+
+			return $callerResponse ??
+
+			$this->buildFailureContent($concrete, $method);
+		}
+
+		private function buildFailureContent (ServiceErrorCatcher $concrete, string $method):OptionalDTO {
+
+			$objectMeta = $this->objectMeta;
+
+			$returnType = $objectMeta->methodReturnType(
+
+				get_class($concrete), $method
+			);
+
+			if (is_null($returnType))
+
+				return new OptionalDTO(null, false);
+			
+			if ( $objectMeta->returnsBuiltIn(get_class($concrete), $method))
+
+				$typeDummy = $objectMeta->getScalarValue($returnType);
+
+			else $typeDummy = (new NullObjectFactory(
+
+				$this->proxyConfig->getConfigClient()
+			))->createProxy($returnType);
+
+			return new OptionalDTO($typeDummy, false );
 		}
 	}
 ?>

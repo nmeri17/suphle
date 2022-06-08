@@ -1,17 +1,35 @@
 <?php
 	namespace Tilwa\Tests\Integration\Services\Proxies;
 
+	use Tilwa\Hydration\Container;
+
 	use Tilwa\Request\PayloadStorage;
-
-	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
-
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\Services\DatalessErrorThrower;
 
 	use Tilwa\Exception\Explosives\NotFoundException;
 
-	class ServiceErrorCatcherTest extends IsolatedComponentTest {
+	use Tilwa\Contracts\Modules\DescriptorInterface;
 
-		private $serviceName = DatalessErrorThrower::class;
+	use Tilwa\Testing\TestTypes\InvestigateSystemCrash;
+
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Concretes\Services\DatalessErrorThrower, Meta\ModuleOneDescriptor};
+
+	class ServiceErrorCatcherTest extends InvestigateSystemCrash {
+
+		private $serviceName = DatalessErrorThrower::class,
+
+		$container;
+
+		protected function setUp ():void {
+
+			parent::setUp();
+
+			$this->container = $this->getContainer();
+		}
+
+		protected function getModule ():DescriptorInterface {
+
+			return new ModuleOneDescriptor (new Container);
+		}
 
 		public function test_successful_call_returns_value () {
 
@@ -38,15 +56,19 @@
 		*/
 		public function test_failureState_replaces_error (string $methodName) {
 
-			$container = $this->container;
+			$this->assertWillCatchPayload( // then 1
 
-			$this->assertCaughtPayload($container->getClass(PayloadStorage::class)); // then 1
+				$this->container->getClass(PayloadStorage::class),
 
-			$sut = $container->getClass($this->serviceName);
+				function () use ($methodName) {
 
-			$result = call_user_func([$sut, $methodName]); // when
+					$sut = $this->container->getClass($this->serviceName);
 
-			$this->assertTrue($result->hasErrors()); // then 2
+					$result = call_user_func([$sut, $methodName]); // when
+
+					$this->assertTrue($result->hasErrors()); // then 2
+				}
+			);
 		}
 
 		public function failureStateMethods ():array {

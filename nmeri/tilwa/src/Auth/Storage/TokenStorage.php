@@ -1,67 +1,88 @@
 <?php
 	namespace Tilwa\Auth\Storage;
 
-	use Firebase\JWT\JWT;
-
-	use Tilwa\Contracts\{UserHydrator, Config\Auth as AuthContract};
-
-	use Throwable;
+	use Tilwa\Contracts\{Config\AuthContract, IO\EnvAccessor};
 
 	use Tilwa\Request\PayloadStorage;
 
+	use Firebase\JWT\{JWT, Key};
+
+	use Throwable;
+
 	class TokenStorage extends BaseAuthStorage {
 
-		private $payloadStorage, $identifierKey = "user_id";
+		const AUTHORIZATION_HEADER = "Authorization";
 
-		public function __construct (UserHydrator $userHydrator, AuthContract $authConfig, PayloadStorage $payloadStorage) {
+		private $payloadStorage, $envAccessor,
 
-			$this->userHydrator = $userHydrator;
+		$identifierKey = "user_id";
 
-			$this->authConfig = $authConfig;
+		public function __construct ( EnvAccessor $envAccessor, PayloadStorage $payloadStorage) {
+
+			$this->envAccessor = $envAccessor;
 
 			$this->payloadStorage = $payloadStorage;
 		}
 
 		public function resumeSession ():void {
 
-			$payloadStorage = $this->payloadStorage;
+			if (!$this->payloadStorage->hasHeader(self::AUTHORIZATION_HEADER))
 
-			$headerKey = "Authorization";
-
-			if (!$payloadStorage->hasHeader($headerKey)) return;
-
-			$incomingToken = explode(" ", $payloadStorage->getHeader($headerKey) )[1]; // the bearer part
+				return;
 
 			try {
-				$decoded = JWT::decode($incomingToken, $this->config->getTokenSecretKey(), ["HS256"]);
 
-				$this->identifier = $decoded["data"][$this->identifierKey];
-			}
-			catch(Throwable $e) { // why are we unable to decode token?
+				$incomingToken = explode(" ",
 
-				var_dump($e->getMessage()); die();
+					$this->payloadStorage->getHeader(self::AUTHORIZATION_HEADER)
+				)[1]; // the bearer part
+
+				$decoded = JWT::decode(
+
+					$incomingToken, new Key(
+
+						$this->envAccessor->getField("APP_SECRET_KEY"),
+
+						"HS256"
+					)
+				);
 			}
+			catch (Throwable $exception) {
+
+				var_dump("Unable to decode token",
+
+					$exception->getMessage(), get_class($exception)
+				);
+
+				return;
+			}
+
+			$this->identifier = $decoded->data->{$this->identifierKey};
 		}
 
 		public function startSession(string $value):string {
 			
 			$issuedAt = time();
 
-			$config = $this->config;
-			
-			$token = [
-				"iss" => $config->getTokenIssuer(),
+			$envAccessor = $this->envAccessor;
+
+			$tokenDetails = [
+				"iss" => $envAccessor->getField("SITE_HOST"),
 				// "aud" => $audience, // $audience
 				"iat" => $issuedAt,
 
-				"nbf" => $issuedAt + 10, // in seconds
+				//"nbf" => $issuedAt + 10, // in seconds
 
-				"exp" => $issuedAt + $config->getTokenTtl(),
+				"exp" => $issuedAt + $envAccessor->getField("JWT_TTL"),
 
 				"data" => [$this->identifierKey => $value]
 			];
 
-			return JWT::encode($token, $config->getTokenSecretKey());
+			$outgoingToken = JWT::encode(
+				$tokenDetails, $envAccessor->getField("APP_SECRET_KEY")
+			);
+
+			return $outgoingToken;
 		}
 	}
 ?>

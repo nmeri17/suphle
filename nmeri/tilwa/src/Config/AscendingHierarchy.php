@@ -3,28 +3,41 @@
 
 	use Tilwa\Contracts\Config\ModuleFiles;
 
+	use Tilwa\File\FileSystemReader;
+
+	/**
+	 * Note: Returned paths have trailing slashes
+	*/
 	class AscendingHierarchy implements ModuleFiles {
 
-		private $descriptorPath;
+		private $descriptorPath, $systemReader;
 
-		public function __construct (string $descriptorPath) {
+		public function __construct (string $descriptorPath, FileSystemReader $systemReader) {
 
 			$this->descriptorPath = $descriptorPath;
+
+			$this->systemReader = $systemReader;
 		}
 
 		public function getRootPath ():string {
 
-			return dirname($this->descriptorPath, 2) . DIRECTORY_SEPARATOR;
+			return $this->systemReader->pathFromLevels(
+
+				$this->descriptorPath, "", 2
+			);
 		}
 
 		public function activeModulePath ():string {
 
-			return dirname($this->descriptorPath, 1) . DIRECTORY_SEPARATOR;
+			return $this->systemReader->pathFromLevels(
+
+				$this->descriptorPath, "", 1
+			);
 		}
 
 		public function getViewPath ():string {
 
-			return $this->activeModulePath() . DIRECTORY_SEPARATOR . 'Markup';
+			return $this->activeModulePath() . DIRECTORY_SEPARATOR . "Markup" . DIRECTORY_SEPARATOR;
 		}
 
 		public function getImagePath ():string {

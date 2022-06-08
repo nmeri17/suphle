@@ -1,15 +1,21 @@
 <?php
 	namespace Tilwa\Tests\Integration\Flows\Jobs\RouteBranches;
 
+	use Tilwa\Flows\{FlowHydrator, Structures\BranchesContext};
+
+	use Tilwa\Modules\ModuleDescriptor;
+
+	use Tilwa\Contracts\{Config\Router, Presentation\BaseRenderer};
+
+	use Tilwa\Response\RoutedRendererManager;
+
 	use Tilwa\Testing\Proxies\WriteOnlyContainer;
 
-	use Prophecy\Argument\Token\AnyValuesToken;
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\FlowRoutes, Config\RouterMock};
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\FlowRoutes, ModuleOneDescriptor, Config\RouterMock};
+	use Tilwa\Tests\Mocks\Interactions\ModuleOne;
 
-	use Tilwa\Contracts\Config\Router;
-
-	use Tilwa\Flows\Structures\BranchesContext;
+	use Tilwa\Tests\Mocks\Modules\ModuleThree\Meta\ModuleThreeDescriptor;
 
 	class MultiModuleTest extends JobFactory {
 
@@ -17,66 +23,69 @@
 
 		$flowUrl = "posts/id"; // the name used here is determined by the pattern name at the target module
 
-		private $mockFlowHydrator;
-
-		public function setUp ():void {
-
-			parent::setUp();
-
-			$this->mockFlowHydrator = $this->prophesize(FlowHydrator::class);
-		}
-
 		protected function getModules():array {
 
 			return [
 
-				$this->getModuleOne(), $this->getModuleTwo()
+				$this->moduleOne, $this->moduleThree
 			];
 		}
 
-		private function getModuleOne ():ModuleDescriptor {
+		protected function setModuleThree ():void {
 
-			return $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+			$this->moduleThree = $this->replicateModule(
+				ModuleThreeDescriptor::class,
 
-				//
-			});
-		}
+				function (WriteOnlyContainer $container) {
 
-		private function getModuleTwo ():ModuleDescriptor {
+					$container->replaceWithMock(Router::class, RouterMock::class, [
 
-			return $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+						"browserEntryRoute" => FlowRoutes::class
+					]);
+				}
+			)->sendExpatriates([
 
-				$container->replaceWithMock(Router::class, RouterMock::class, [
-
-					"browserEntryRoute" => FlowRoutes::class
-				])
-				->replaceWithConcrete(FlowHydrator::class, $this->mockFlowHydrator->reveal());
-			});
+				ModuleOne::class => $this->moduleOne
+			]);
 		}
 		
+		// currently fails because jobs are being hydrated from first module. we can update container, but then test won't be useful. refactor to make actual requests
 		public function test_handle_flows_in_other_modules () {
 
-			// given => see module injection
+			$this->markTestIncomplete();
 
-			$this->makeJob(
-				new BranchesContext(
-					$this->getLoadedRenderer(),
+			/*	1) Give FlowRoutes to module 3
+				2) getPrecedingRenderer stubs a renderer containing one of the routes in FlowRoutes/module 3, meaning it should be handled by RouteBranches (ostensibly, at the end of the request)
+			*/
 
-					null, $this->getModules(), null
-				)
-			)->handle(); // when
+			$this->prepareAllModules();
 
-			$sut = $this->mockFlowHydrator;
+			$container = $this->moduleThree->getContainer();
 
-			// then
-			$sut->executeRequest()->shouldBeCalled();
+			$sutName = FlowHydrator::class;
 
-			$sut->setDependencies(
-				$this->getModuleTwo()->getContainer()->getClass(ResponseManager::class),
+			$container->whenTypeAny()->needsAny([
 
-				new AnyValuesToken
-			)
-			->shouldBeCalled();
+				$sutName => $this->replaceConstructorArguments($sutName, [], [
+
+					"updatePlaceholders" => $this->returnSelf()
+				], [ // then
+
+					"executeGeneratedUrl" => [1, []],
+
+					"setDependencies" => [1, [
+
+						$this->callback(function ($subject) {
+
+							return $subject instanceof RoutedRendererManager;
+						}),
+
+						$this->anything()
+					]]
+				])
+			]);
+
+			$this->handleDefaultBranchesContext(); // when
 		}
 	}
 ?>

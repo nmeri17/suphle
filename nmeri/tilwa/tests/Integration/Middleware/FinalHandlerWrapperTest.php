@@ -1,40 +1,45 @@
 <?php
 	namespace Tilwa\Tests\Integration\Middleware;
 
-	use Tilwa\Middleware\FinalHandlerWrapper;
+	use Tilwa\Middleware\Handlers\FinalHandlerWrapper;
 
 	use Tilwa\Request\PayloadStorage;
 
-	use Tilwa\Response\ResponseManager;
+	use Tilwa\Response\RoutedRendererManager;
 
 	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
-	use Prophecy\Argument;
+	use Tilwa\Tests\Integration\Generic\CommonBinds;
 
 	class FinalHandlerWrapperTest extends IsolatedComponentTest {
 
+		use CommonBinds;
+
 		public function test_extracts_from_response_manager () {
 
-			$sutName = ResponseManager::class;
+			$sutName = RoutedRendererManager::class;
 
-			$mockManager = $this->prophesize($sutName);
+			$mockManager = $this->positiveDouble($sutName, [], [ // then
 
-			// then
-			$mockManager->handleValidRequest(Argument::type(PayloadStorage::class))->shouldBeCalled();
+				"handleValidRequest" => [1, [$this->callback(function($subject) {
 
-			$mockManager->afterRender()->shouldBeCalled();
+					return $subject instanceof PayloadStorage;
+				})]],
 
-			$mockManager->getResponse()->shouldBeCalled();
+				"afterRender" => [1, []],
+
+				"responseRenderer" => [1, []]
+			]);
 
 			$this->container->whenTypeAny()->needsAny([
 
-				$sutName => $mockManager->reveal()
+				$sutName => $mockManager
 			]); // given
 
 			$this->container->getClass(FinalHandlerWrapper::class)
 
 			->process(
-				$this->prophesize(PayloadStorage::class)->reveal(),
+				$this->positiveDouble(PayloadStorage::class),
 				null
 			); // when
 		}

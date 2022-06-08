@@ -1,27 +1,60 @@
 <?php
 	namespace Tilwa\Services\DecoratorHandlers;
 
-	use Tilwa\Services\Proxies\SystemModelEditCloaker;
+	use Tilwa\Contracts\{Services\Decorators\SystemModelEdit, Database\OrmDialect, Config\DecoratorProxy};
 
-	use Tilwa\Contracts\{Services\Decorators\SystemModelEdit, Hydration\ScopeHandlers\ModifyInjected};
+	use Throwable;
 
-	class SystemModelEditHandler implements ModifyInjected {
+	class SystemModelEditHandler extends BaseDecoratorHandler {
 
-		private $cloakBuilder;
+		private $ormDialect, $errorDecoratorHandler;
 
-		public function __construct (SystemModelEditCloaker $cloakBuilder) {
+		public function __construct (
+			OrmDialect $ormDialect, ErrorCatcherHandler $errorDecoratorHandler,
 
-			$this->cloakBuilder = $cloakBuilder;
+			DecoratorProxy $proxyConfig
+		) {
+
+			$this->ormDialect = $ormDialect;
+
+			$this->errorDecoratorHandler = $errorDecoratorHandler;
+
+			parent::__construct($proxyConfig);
 		}
 
 		/**
 		 * @param {concrete} SystemModelEdit
 		*/
-		public function proxifyInstance ( $concrete, string $caller) {
+		public function examineInstance (object $concrete, string $caller):object {
 
-			$this->cloakBuilder->setTarget($concrete);
+			return $this->getProxy($concrete);
+		}
 
-			return $this->cloakBuilder->buildClass();
+		public function getMethodHooks ():array {
+
+			return [
+
+				"updateModels" => [$this, "wrapUpdateModels"]
+			];
+		}
+
+		public function wrapUpdateModels (SystemModelEdit $concrete, string $methodName, array $argumentList) {
+
+			try {
+
+				return $this->ormDialect->runTransaction(function () use ($concrete) {
+
+					return $concrete->updateModels();
+
+				}, $concrete->modelsToUpdate());
+			}
+			catch (Throwable $exception) {
+
+				return $this->errorDecoratorHandler->attemptDiffuse(
+
+					$exception, $concrete, $methodName
+				);
+			}
 		}
 	}
 ?>

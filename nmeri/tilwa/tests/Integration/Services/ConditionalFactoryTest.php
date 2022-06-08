@@ -3,11 +3,15 @@
 
 	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
+	use Tilwa\Tests\Integration\Generic\CommonBinds;
+
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\Services\ConditionalFactoryMock;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\Services\ConditionalHandlers\{FieldBGreater, FieldAGreater, LastLast};
 
 	class ConditionalFactoryTest extends IsolatedComponentTest {
+
+		use CommonBinds;
 
 		private $factory;
 

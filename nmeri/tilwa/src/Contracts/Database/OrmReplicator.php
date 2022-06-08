@@ -8,14 +8,21 @@
 		*/
 		public function seedDatabase ( int $amount):void;
 
-		public function getBeforeInsertion ( int $amount = 1, array $customizeFields = [], callable $customizeModel = null);
+		/**
+		 * Is expected to return saved models after modifying default factory structure
+		 * 
+		 * @return iterable
+		*/
+		public function modifyInsertion ( int $amount = 1, array $customizeFields = [], callable $customizeModel = null):iterable;
 
 		/**
 		 * @return concrete instance of given model
 		*/
-		public function getRandomEntity ();
+		public function getRandomEntity ():object;
 
-		public function getRandomEntities ( int $amount):array;
+		public function getRandomEntities ( int $amount):iterable;
+
+		public function getExistingEntities ( int $amount, array $constraints):iterable;
 
 		public function setActiveModelType (string $model):void;
 

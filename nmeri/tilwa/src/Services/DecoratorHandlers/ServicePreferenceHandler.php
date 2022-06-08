@@ -3,11 +3,20 @@
 
 	use Tilwa\Contracts\Hydration\ScopeHandlers\ModifiesArguments;
 
+	use Tilwa\Hydration\Structures\ObjectDetails;
+
 	use Tilwa\Exception\Explosives\Generic\UnacceptableDependency;
 
 	class ServicePreferenceHandler implements ModifiesArguments {
 
-		public function transformConstructor ($dummyInstance, array $injectedArguments):array {
+		private $objectMeta;
+
+		public function __construct ( ObjectDetails $objectMeta) {
+
+			$this->objectMeta = $objectMeta;
+		}
+
+		public function transformConstructor (object $dummyInstance, array $injectedArguments):array {
 
 			$permitted = $dummyInstance->getPermitted();
 
@@ -21,22 +30,40 @@
 
 				if ($stranger || $enemy)
 
-					throw new UnacceptableDependency (get_class($dummyInstance), get_class($service));
+					throw new UnacceptableDependency (
+
+						get_class($dummyInstance), get_class($service)
+					);
 			}
 			
 			return $injectedArguments;
 		}
 
-		public function transformMethods ($concreteInstance, array $arguments):array {
+		public function transformMethods (object $concreteInstance, array $arguments):array {
 
 			return $arguments;
 		}
 
+		/**
+		 * @param {dependency} mixed. Can be any type passed as argument
+		*/
 		private function containsParent (array $parentList, $dependency):bool {
 
-			foreach ($parentList as $type)
+			$dependencyType = $this->objectMeta->getValueType($dependency);
 
-				if ($dependency instanceof $type) return true;
+			foreach ($parentList as $typeToMatch) {
+
+				if (is_object($dependency)) {
+
+					if ($this->objectMeta->stringInClassTree(
+
+						$dependencyType, $typeToMatch
+					))
+					return true;
+				}
+
+				else if ($dependencyType == $typeToMatch) return true;
+			}
 
 			return false;
 		}

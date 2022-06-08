@@ -10,11 +10,13 @@
 	*/
 	abstract class ModellessPayload extends InterceptsExternalPayload {
 
-		protected $payloadStorage;
+		protected $payloadStorage, $pathPlaceholders;
 
-		public function __construct (PayloadStorage $payloadStorage) {
+		public function __construct (PayloadStorage $payloadStorage, PathPlaceholders $pathPlaceholders) {
 
 			$this->payloadStorage = $payloadStorage;
+
+			$this->pathPlaceholders = $pathPlaceholders;
 		}
 	}
 ?>

@@ -1,43 +1,54 @@
 <?php
 	namespace Tilwa\Tests\Integration\Modules;
 
-	use Tilwa\Testing\{TestTypes\ModuleLevelTest, Condiments\DirectHttpTest};
-
 	use Tilwa\Modules\ModuleToRoute;
 
 	use Tilwa\Hydration\Container;
 
-	use Tilwa\Tests\Mocks\Modules\{ModuleTwo\ModuleTwoDescriptor, ModuleOne\ModuleOneDescriptor};
+	use Tilwa\Testing\Condiments\DirectHttpTest;
 
-	class ModuleToRouteTest extends ModuleLevelTest {
+	use Tilwa\Tests\Integration\Modules\ModuleDescriptor\DescriptorCollection;
+
+	class ModuleToRouteTest extends DescriptorCollection {
 
 		use DirectHttpTest;
 
+		private $sut;
+
+		protected function setUp ():void {
+
+			parent::setUp();
+
+			$this->prepareAllModules();
+
+			$this->sut = $this->getContainer()->getClass(ModuleToRoute::class);
+		}
+
 		protected function getModules ():array {
 
-			return [
-				new ModuleOneDescriptor(new Container),
-
-				new ModuleTwoDescriptor(new Container)
-			];
+			return [ $this->moduleOne, $this->moduleTwo ];
 		}
 		
 		public function test_findContext() {
 
-			$$sut = new ModuleToRoute($this->getModules()); // given
-
 			$this->setHttpParams("/module-two/5"); // when
 
-			$this->assertNotNull($sut->findContext()); // then
+			$this->assertNotNull($this->sut->findContext(
+
+				$this->modules // given
+
+			)); // then
 		}
 		
 		public function test_none_will_be_found() {
 
-			$sut = new ModuleToRoute($this->getModules()); // given
-
 			$this->setHttpParams("/non-existent/32"); // when
 
-			$this->assertNull($sut->findContext());
+			$this->assertNull($this->sut->findContext(
+
+				$this->modules // given
+
+			)); // then
 		}
 	}
 ?>

@@ -25,16 +25,16 @@
 			$this->middlewareList = $middlewares;
 		}
 
-		/**
-		 * @param {toOmit} Middleware class name
-		*/
-		public function omitWherePresent (string $toOmit):void {
+		public function omitWherePresent (array $toOmit):void {
 
-			$index = array_search($toOmit, $this->middlewareList);
+			foreach ($toOmit as $middlewareName) {
 
-			if ($index !== false)
+				$index = array_search($middlewareName, $this->middlewareList);
 
-				unset($this->middlewareList[$index]);
+				if ($index !== false)
+
+					unset($this->middlewareList[$index]);
+			}
 		}
 	}
 ?>
