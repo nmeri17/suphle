@@ -13,7 +13,11 @@
 
 		$laravelContainer;
 
-		public function __construct (AuthContract $authContract, AuthStorage $authStorage, LaravelContainer $laravelContainer, Container $container) {
+		public function __construct (
+			AuthContract $authContract, AuthStorage $authStorage,
+
+			LaravelContainer $laravelContainer, Container $container
+		) {
 
 			$this->authContract = $authContract;
 

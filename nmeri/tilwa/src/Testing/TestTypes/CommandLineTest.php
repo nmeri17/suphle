@@ -34,6 +34,8 @@
 
 			$this->provideTestEquivalents();
 
+			$this->bootMockEntrance($this->entrance);
+
 			$this->consoleRunner->loadCommands();
 
 			$this->mufflerSetup();

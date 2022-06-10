@@ -1,7 +1,9 @@
 <?php
 	namespace Tilwa\Testing\TestTypes;
 
-	use Tilwa\Hydration\{Structures\BaseInterfaceCollection, DecoratorHydrator, InterfaceHydrator};
+	use Tilwa\Hydration\{DecoratorHydrator, InterfaceHydrator, Container};
+
+	use Tilwa\Hydration\Structures\{BaseInterfaceCollection, ContainerTelescope};
 
 	use Tilwa\Testing\Condiments\MockFacilitator;
 
@@ -13,7 +15,9 @@
 
 		use MockFacilitator;
 
-		protected function bootContainer ($container):void {
+		protected $containerTelescope, $monitorContainer = false;
+
+		protected function bootContainer (Container $container):void {
 
 			$container->initializeUniversalProvision();
 
@@ -30,7 +34,7 @@
 			]);
 		}
 
-		protected function withDefaultInterfaceCollection ($container):void {
+		protected function withDefaultInterfaceCollection (Container $container):void {
 
 			$container->setInterfaceHydrator(BaseInterfaceCollection::class);
 		}
@@ -79,6 +83,18 @@
 			];
 
 			return $newLine. implode($newLine, $messages). $newLine;
+		}
+
+		protected function mayMonitorContainer (Container $container):void {
+
+			if ($this->monitorContainer) {
+
+				if (is_null($this->containerTelescope))
+
+					$this->containerTelescope = new ContainerTelescope;
+
+				$container->setTelescope($this->containerTelescope);
+			}
 		}
 	}
 ?>

@@ -40,6 +40,8 @@
 
 			$this->maySetRealDecorator();
 
+			$this->mayMonitorContainer($this->container);
+
 			$this->mufflerSetup();
 		}
 

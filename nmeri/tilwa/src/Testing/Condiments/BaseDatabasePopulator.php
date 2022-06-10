@@ -34,6 +34,8 @@
 				/*static::$isFirstTest = false;
 			}*/
 
+			$this->preDatabaseFreeze();
+
 			$this->replicator->listenForQueries();
 		}
 
@@ -41,6 +43,11 @@
 
 			return 10;
 		}
+
+		/**
+		 * Any row inserts expected to exist after a connection reset (i.e. changing url and refreshing OrmDialect), should occur here, not inside the test
+		*/
+		protected function preDatabaseFreeze ():void {}
 
 		private function setReplicator ():void {
 

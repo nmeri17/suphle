@@ -124,7 +124,7 @@
 			http_response_code($statusCode);
 		}
 
-		public function protectRefreshPurge (string $purger):bool {
+		public function protectRefreshPurge ():bool {
 
 			return true; // in tests, this is provided before PayloadStorage, which is one of its dependencies
 		}

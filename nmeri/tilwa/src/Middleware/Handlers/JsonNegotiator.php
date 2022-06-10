@@ -7,7 +7,7 @@
 
 	use Tilwa\Response\Format\Markup;
 
-	use Tilwa\Contracts\Presentation\BaseRenderer;
+	use Tilwa\Contracts\{Presentation\BaseRenderer, Routing\Middleware};
 
 	class JsonNegotiator implements Middleware {
 

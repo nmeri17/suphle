@@ -9,7 +9,7 @@
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Interfaces\CInterface, Config\ServicesMock};
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\{NeedsSpace, CircularConstructor1, CircularConstructor2, ARequiresBCounter, BCounter, CConcrete, V1\RewriteSpaceImpl};
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\{NeedsSpace, CircularConstructor1, CircularConstructor2, ARequiresBCounter, BCounter, CConcrete, MethodCircularContainer, V1\RewriteSpaceImpl};
 
 	class ContainerTest extends IsolatedComponentTest {
 
@@ -144,8 +144,7 @@
 			$this->assertSame($result, $mock->getValue());
 		}
 
-		// This wasn't my original intention but that's just how the contextual binding works. By the time it reads the wrapped proxy of the circular, it doesn't use circular 2 as scope
-		public function test_cannot_provide_internal_class_in_circular_dependency () {
+		public function test_can_provide_internal_class_in_circular_dependency () {
 
 			$container = $this->container;
 
@@ -157,7 +156,7 @@
 
 			$result = @$container->getClass(CircularConstructor1::class)->getDependencyValue(); // when
 
-			$this->assertSame(0, $result); // then
+			$this->assertSame($count, $result); // then
 		}
 
 		public function test_unmuted_circular_dependencies_raises_warning () {
@@ -165,6 +164,27 @@
 			$this->expectWarning(); // then
 
 			$this->container->getClass(CircularConstructor1::class); // when
+		}
+
+		/**
+		 * This happens because $hydratingForStack stores both caller and target, in case it needs to return either
+		*/
+		public function test_circular_can_be_triggered_outside_ctor_explicit () {
+
+			$this->expectWarning(); // then
+
+			(new MethodCircularContainer($this->container))
+
+			->loadFromContainer(); // when
+		}
+
+		public function test_circular_can_be_triggered_outside_ctor_implicit () {
+
+			$this->expectWarning(); // then
+
+			$this->container->getClass(MethodCircularContainer::class)
+
+			->loadFromContainer(); // when
 		}
 	}
 ?>

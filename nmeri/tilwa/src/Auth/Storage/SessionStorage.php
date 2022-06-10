@@ -29,7 +29,7 @@
 
 			$this->sessionClient->setValue($this->identifierKey, $value);
 
-			return $value;
+			return $this->getId(); // trigger resumption
 		}
 
 		public function resumeSession ():void {

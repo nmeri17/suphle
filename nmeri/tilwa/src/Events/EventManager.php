@@ -15,7 +15,7 @@
 
 		$emitters = ["local" => [], "external" => []];
 
-		function __construct(DescriptorInterface $module, ModuleLevelEvents $parentManager) {
+		public function setDependencies (DescriptorInterface $module, ModuleLevelEvents $parentManager):void {
 
 			$this->module = $module;
 

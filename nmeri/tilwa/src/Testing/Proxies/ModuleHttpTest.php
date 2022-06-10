@@ -15,11 +15,11 @@
 
 		use DirectHttpTest, ExaminesHttpResponse;
 
-		private $JSON_HEADER_VALUE = "application/json";
+		private $JSON_HEADER_VALUE = "application/json",
 
-		private $CONTENT_TYPE_KEY = "Content-Type";
+		$CONTENT_TYPE_KEY = "Content-Type", $staticHeaders = [],
 
-		private $mockMiddlewareRegistry, $staticHeaders = [];
+		$mockMiddlewareRegistry;
 
 		public function withHeaders(array $headers):self {
 

@@ -63,6 +63,10 @@
 
 		protected function bootMockEntrance (ModuleHandlerIdentifier $entrance):void {
 
+			foreach ($this->modules as $descriptor)
+
+				$this->mayMonitorContainer($descriptor->getContainer());
+
 			$entrance->bootModules();
  
 			$entrance->extractFromContainer();

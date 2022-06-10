@@ -49,7 +49,7 @@
 			$this->executeRenderer();
 		}
 
-		public function setResponseRenderer ():self {
+		public function setResponseRenderer ():ModuleLoginHandler {
 
 			if ($this->loginService->compareCredentials())
 

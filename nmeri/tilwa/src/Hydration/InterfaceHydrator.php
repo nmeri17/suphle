@@ -65,10 +65,12 @@
 
 			$name = $loader->concrete();
 
+			$concreteArguments = $loader->bindArguments(); // call separately so it doesn't mess with the provision below
+
 			$this->container->whenType($name)
 
-			->needsArguments($loader->bindArguments());
-				
+			->needsArguments($concreteArguments);
+
 			$concrete = $this->container->instantiateConcrete($name);
 
 			$loader->afterBind($concrete);

@@ -3,6 +3,6 @@
 
 	interface ClassHydrationBehavior {
 
-		public function protectRefreshPurge (string $purger):bool;
+		public function protectRefreshPurge ():bool;
 	}
 ?>

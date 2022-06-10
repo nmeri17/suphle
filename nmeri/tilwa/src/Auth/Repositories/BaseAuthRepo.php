@@ -22,7 +22,7 @@
 			return [
 				"email" => "required|email",
 
-				"password" => "required|alphanumeric|min:5"
+				"password" => "required|alpha_num|min:5"
 			];
 		}
 	}

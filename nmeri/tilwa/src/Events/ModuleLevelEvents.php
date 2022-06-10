@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Events;
 
-	use Tilwa\Contracts\Config\Events;
+	use Tilwa\Contracts\{Config\Events, Modules\DescriptorInterface};
 
 	use Tilwa\Hydration\Container;
 
@@ -24,13 +24,15 @@
 
 				if ($config = $container->getClass(Events::class))
 
-					$this->moduleHasListeners($config, $container);
+					$this->moduleHasListeners($config, $descriptor, $container);
 			}
 		}
 
-		protected function moduleHasListeners (Events $config, Container $container):void {
+		protected function moduleHasListeners (Events $config, DescriptorInterface $descriptor, Container $container):void {
 
 			$manager = $container->getClass($config->getManager());
+
+			$manager->setDependencies($descriptor, $this);
 
 			$manager->registerListeners();
 

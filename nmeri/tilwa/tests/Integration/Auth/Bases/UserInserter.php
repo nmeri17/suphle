@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Tests\Integration\Auth;
+	namespace Tilwa\Tests\Integration\Auth\Bases;
 
 	use Tilwa\Testing\Condiments\DirectHttpTest;
 

@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Tests\Integration\Auth;
+	namespace Tilwa\Tests\Integration\Auth\Bases;
 
 	use Tilwa\Adapters\Orms\Eloquent\Models\User as EloquentUser;
 
@@ -51,7 +51,7 @@
 
 				$this->loginRendererName(), [
 
-					"authService" => $this->container->getClass($this->loginRepoService())
+					"authService" => $this->container->getClass($this->loginRepoService()) // injecting this since PHPUnit won't recursively hydrate dependencies and we need to evaluate the "comparer" property
 				], [], [
 
 					"successRenderer" => [$successCount, []],
