@@ -7,11 +7,11 @@
 
 	class EmploymentAuthorizer implements ModelAuthorities {
 
-		private $user;
+		private $authStorage;
 
 		public function __construct (AuthStorage $authStorage) {
 
-			$this->user = $authStorage->getUser();
+			$this->authStorage = $authStorage;
 		}
 
 		public function retrieved ($model):bool {
@@ -21,7 +21,7 @@
 
 		public function updating ($model):bool {
 
-			if ($this->user->getId() == $model->employer->user_id)
+			if ($this->authStorage->getId() == $model->employer->user_id) // you can only access id/user in the event method, not the constructor. At the time of creation, session hasn't been initialized and user id will be undefined
 
 				return true;
 

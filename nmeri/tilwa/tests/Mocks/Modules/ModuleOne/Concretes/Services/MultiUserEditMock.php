@@ -3,13 +3,15 @@
 
 	use Tilwa\Contracts\Services\{Decorators\MultiUserModelEdit, Models\IntegrityModel};
 
-	use Tilwa\Services\Structures\OptionalDTO;
+	use Tilwa\Services\Structures\BaseErrorCatcherService;
 
 	use Tilwa\Request\PayloadStorage;
 
 	use Tilwa\Tests\Mocks\Models\Eloquent\MultiEditProduct;
 
 	class MultiUserEditMock implements MultiUserModelEdit {
+
+		use BaseErrorCatcherService;
 
 		private $integrity, $payloadStorage, $model;
 
@@ -28,16 +30,6 @@
 		public function updateResource () {
 
 			//
-		}
-
-		public function rethrowAs ():array {
-
-			return [];
-		}
-
-		public function failureState (string $method):?OptionalDTO {
-
-			return null;
 		}
 	}
 ?>

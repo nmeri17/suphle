@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Tests\Unit\Services\CoodinatorManager;
+	namespace Tilwa\Tests\Integration\Services\CoodinatorManager;
 
 	use Tilwa\Hydration\Container;
 

@@ -177,6 +177,10 @@
 
 			$possibleRenderers = $collection->_getLastRegistered();
 
+			if (empty($possibleRenderers)) // url segments matched collection methods but no renderer was registered e.g. in a canary list where request satisfies none of the rules. Instead of throwing an error there to confirm to visitor that path exists, we allow it fail silently
+
+				return null;
+
 			if ($expectsCrud) {
 
 				$methodName = $this->findActiveCrud(array_keys($possibleRenderers), $remainder);

@@ -21,23 +21,11 @@
 			$this->fakeRequest("/load-default/same-url"); // when
 		}
 
-		/**
-	     * @dataProvider pathsToEmptyCanaries
-	     */
-		public function test_all_invalid_skips_pattern (string $url) {
+		public function test_no_matching_canary_will_return_404 () {
 
-			$matchingRenderer = $this->fakeRequest($url);
+			$matchingRenderer = $this->fakeRequest("/special-foo");
 
 			$this->assertNull($matchingRenderer);
-		}
-
-		public function pathsToEmptyCanaries ():array {
-
-			return [
-				["/none-passing"],
-
-				["/special-foo"]
-			];
 		}
 
 		public function test_can_hydrate_and_evaluate_dependencies () {

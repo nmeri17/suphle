@@ -11,7 +11,7 @@
 
 	use Tilwa\Tests\Mocks\Modules\ModuleTwo\Meta\ModuleTwoDescriptor;
 
-	class ExpectedDependenciesTest extends DescriptorCollection {
+	class UnexpectedDependenciesTest extends DescriptorCollection {
 
 		protected function setModuleTwo ():void {
 

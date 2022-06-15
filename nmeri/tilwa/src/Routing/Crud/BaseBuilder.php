@@ -80,9 +80,11 @@
 			];
 		}
 
-		public function disableHandlers(array $handlers):void {
+		public function disableHandlers (array $handlers):self {
 
 			$this->disabledHandlers = $handlers;
+
+			return $this;
 		}
 
 		public function replaceRenderer (string $setterName, BaseRenderer $renderer):self {

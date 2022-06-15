@@ -10,11 +10,11 @@
 			trigger_error("nonsensical", E_USER_ERROR);
 		}
 
-		public function failureState (string $method):?OptionalDTO {
+		public function failureState (string $method) {
 
 			if ($method == "updateResource")
 
-				return new OptionalDTO("boo!", false);
+				return "boo!";
 		}
 	}
 ?>

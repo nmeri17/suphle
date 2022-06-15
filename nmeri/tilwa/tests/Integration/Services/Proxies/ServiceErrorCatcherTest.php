@@ -17,13 +17,15 @@
 
 		private $serviceName = DatalessErrorThrower::class,
 
-		$container;
+		$container, $payloadStorage;
 
 		protected function setUp ():void {
 
 			parent::setUp();
 
 			$this->container = $this->getContainer();
+
+			$this->payloadStorage = $this->container->getClass(PayloadStorage::class);
 		}
 
 		protected function getModule ():DescriptorInterface {
@@ -31,44 +33,41 @@
 			return new ModuleOneDescriptor (new Container);
 		}
 
-		public function test_successful_call_returns_value () {
-
-			$value = 55;
-
-			$dto = $this->container->getClass($this->serviceName)
-
-			->setCorrectValue($value); // when
-
-			$this->assertSame($dto->operationValue(), $value); // then
-		}
-
 		public function test_failed_call_returns_default_type () {
 
-			$dto = $this->container->getClass($this->serviceName)
+			$default = 0;
+
+			$operationResult = $this->container->getClass($this->serviceName)
 
 			->notCaughtInternally(); // when
 
-			$this->assertSame($dto->operationValue(), 0); // then
+			$this->assertSame($default, $operationResult); // then
 		}
 
 		/**
 		 * @dataProvider failureStateMethods
 		*/
-		public function test_failureState_replaces_error (string $methodName) {
+		public function test_failureState_replaces_return_value_on_error (string $methodName) {
 
-			$this->assertWillCatchPayload( // then 1
+			$sut = $this->container->getClass($this->serviceName);
 
-				$this->container->getClass(PayloadStorage::class),
+			$result = $this->assertWontCatchPayload(
 
-				function () use ($methodName) {
+				$this->payloadStorage, [$sut, $methodName]
+			); // when
 
-					$sut = $this->container->getClass($this->serviceName);
+			// then
+			$this->assertSame($methodName, $result);
 
-					$result = call_user_func([$sut, $methodName]); // when
+			$this->assertTrue($sut->matchesErrorMethod($methodName));
+		}
 
-					$this->assertTrue($result->hasErrors()); // then 2
-				}
-			);
+		protected function broadcasterArguments ():array {
+
+			return [
+
+				"payloadStorage" => $this->payloadStorage
+			];
 		}
 
 		public function failureStateMethods ():array {

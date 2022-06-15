@@ -88,7 +88,7 @@
 
 			->updateResource(); // when
 
-			$this->assertInstanceOf(OptionalDTO::class, $result); // then
+			$this->assertSame("boo!", $result); // then
 		}
 	}
 ?>

@@ -68,7 +68,9 @@
 		*/
 		protected function registerConcreteBindings ():void {
 
-			$this->container->whenTypeAny()->needsAny($this->globalConcretes());
+			$bindings = $this->globalConcretes();
+
+			$this->container->whenTypeAny()->needsAny($bindings);
 		}
 
 		public function getContainer():Container {
@@ -112,9 +114,12 @@
 
 			foreach ($this->expatriates as $descriptor)
 
-				if (!$descriptor->expatriateHasPreparedExpatriates()) // prevent multiple boots
+				if (!$descriptor->expatriateHasPreparedExpatriates()) {// prevent multiple boots
+
+					$descriptor->warmModuleContainer();
 
 					$descriptor->prepareToRun();
+				}
 
 			return $this;
 		}
@@ -147,7 +152,7 @@
 		}
 
 		/**
-		 * This recursively boots all the lower dependencies
+		 * This recursively boots all the lower dependencies. It expects [warmModuleContainer] to have been called first. Both calls aren't coupled together cuz both processes can occur at different times
 		*/
 		public function prepareToRun ():self {
 

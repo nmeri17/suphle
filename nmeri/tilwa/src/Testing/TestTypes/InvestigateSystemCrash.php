@@ -3,7 +3,7 @@
 
 	use Tilwa\Contracts\{Presentation\BaseRenderer, Modules\DescriptorInterface};
 
-	use Tilwa\Hydration\Container;
+	use Tilwa\Hydration\{Container, Structures\ObjectDetails};
 
 	use Tilwa\Modules\ModuleExceptionBridge;
 
@@ -13,7 +13,7 @@
 
 	use Tilwa\Testing\Proxies\Extensions\FrontDoor;
 
-	use PHPUnit\Framework\MockObject\Stub\Stub;
+	use PHPUnit\Framework\{ ExpectationFailedException, MockObject\Stub\Stub};
 
 	use Throwable;
 
@@ -21,15 +21,21 @@
 
 		use BaseModuleInteractor, ModuleReplicator;
 
-		private $shockAbsorber;
+		private $shockAbsorber, $objectMeta,
 
-		protected $hideShame = false;
+		$bridgeName = ModuleExceptionBridge::class;
+
+		protected $softenDisgraceful = false;
 
 		protected function setUp ():void {
 
 			$this->entrance = new FrontDoor ($this->modules = [$this->getModule()]);
 
+			$this->provideTestEquivalents();
+
 			$this->bootMockEntrance($this->entrance);
+
+			$this->objectMeta = $this->getContainer()->getClass(ObjectDetails::class);
 		}
 
 		protected function getContainer ():Container {
@@ -39,46 +45,71 @@
 
 		abstract protected function getModule ():DescriptorInterface;
 
+		protected function assertWontCatchPayload ($payload, callable $flammable) {
+
+			return $this->executeHandlerDoubles(0, $payload, $flammable);
+		}
+
+		protected function assertWillCatchPayload ($payload, callable $flammable) {
+
+			return $this->executeHandlerDoubles(1, $payload, $flammable);
+		}
+
 		/**
-		 * Mocks the broadcast alerter
+		 * 
+		 * @return $flammable result
 		*/
-		protected function assertWillCatchPayload ($payload, callable $flammable):void {
+		private function executeHandlerDoubles (int $numTimes, $payload, callable $flammable) {
 
-			$this->mockAlerterManager([
+			$this->mockBroadcastAlerter($numTimes, [
 
-				$this->callback(function ($subject) {
-
-					return in_array(Throwable::class, class_implements($subject));
-				}),
-				$this->equalTo($payload)
+				$this->anything(), $this->equalTo($payload)
 			]);
 
-			if ($this->hideShame)
+			if ($this->softenDisgraceful)
 
 				$this->stubExceptionBridge();
 
-			$this->braceForImpact($flammable);
+			return $this->braceForImpact($flammable);
 		}
 
-		private function mockAlerterManager (array $argumentList):void {
+		/**
+		 * @param {argumentList}: Mock verifications for the alerter method
+		*/
+		private function mockBroadcastAlerter (int $numTimes, array $argumentList):void {
 
 			$broadcasterName = DetectedExceptionManager::class;
 
 			$this->getContainer()->whenTypeAny()->needsAny([
 
-				$broadcasterName => $this->replaceConstructorArguments($broadcasterName, [], [], [
+				$broadcasterName => $this->replaceConstructorArguments(
 
-					DetectedExceptionManager::ALERTER_METHOD => [1, $argumentList]
+					$broadcasterName, $this->broadcasterArguments(),
+
+					[], [
+
+					DetectedExceptionManager::ALERTER_METHOD => [$numTimes, $argumentList]
 				])
 			]);
 		}
 
-		private function braceForImpact (callable $action):void {
+		/**
+		 * @return Constructor arguments to use in creating double for DetectedExceptionManager
+		*/
+		protected function broadcasterArguments ():array {
+
+			return [];
+		}
+
+		/**
+		 * @return $action result
+		*/
+		private function braceForImpact (callable $action) {
 
 			try {
-				
-				$action();
-			} catch (Throwable $e) {
+
+				return $action();
+			} catch (Throwable $exception) {
 
 				$this->setShockAbsorber();
 
@@ -91,25 +122,23 @@
 		*/
 		protected function setShockAbsorber ():void {
 
-			$this->shockAbsorber = $this->getContainer()->getClass(ModuleExceptionBridge::class);
+			$this->shockAbsorber = $this->getContainer()->getClass($this->bridgeName);
 		}
 
 		/**
-		 * In order to trigger this, you'd have to violate alerter mock by not calling it, or throwing another error from [gracefulShutdown]
+		 * What this does is prevent [disgracefulShutdown] from running when [gracefulShutdown] fails. In order for it to be useful, you'd have to violate DetectedExceptionManager::ALERTER_METHOD by not calling it, or throwing another error from [gracefulShutdown]
 		*/
 		private function stubExceptionBridge ():void {
 
-			$bridgeName = ModuleExceptionBridge::class;
-
 			$container = $this->getContainer();
 
-			$parameters = $container->getMethodParameters(Container::CLASS_CONSTRUCTOR, $bridgeName);
+			$parameters = $container->getMethodParameters(Container::CLASS_CONSTRUCTOR, $this->bridgeName);
 
 			$container->whenTypeAny()->needsAny([
 
-				$bridgeName => $this->replaceConstructorArguments(
+				$this->bridgeName => $this->replaceConstructorArguments(
 
-					$bridgeName, $parameters, [
+					$this->bridgeName, $parameters, [
 
 					"disgracefulShutdown" => $this->returnCallback(function ($errorDetails, $latestException) {
 
@@ -123,16 +152,16 @@
 
 		protected function assertWillCatchException (string $exception, callable $flammable):void {
 
-			$this->mockAlerterManager([
+			$this->mockBroadcastAlerter(1, [
 
 				$this->callback(function ($subject) use ($exception) {
 
-					return $subject instanceof $exception;
+					return $this->objectMeta->implementsInterface(get_class($subject), $exception);
 				}),
 				$this->anything()
 			]);
 
-			if ($this->hideShame)
+			if ($this->softenDisgraceful)
 
 				$this->stubExceptionBridge();
 
@@ -141,7 +170,7 @@
 
 		protected function assertExceptionUsesRenderer (BaseRenderer $renderer, callable $flammable):void {
 
-			if ($this->hideShame)
+			if ($this->softenDisgraceful)
 
 				$this->stubExceptionBridge();
 

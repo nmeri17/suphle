@@ -3,6 +3,10 @@
 
 	use Tilwa\Contracts\{Services\Decorators\SystemModelEdit, Database\OrmDialect, Config\DecoratorProxy};
 
+	use Tilwa\Hydration\Structures\ObjectDetails;
+
+	use ProxyManager\Proxy\AccessInterceptorInterface;
+
 	use Throwable;
 
 	class SystemModelEditHandler extends BaseDecoratorHandler {
@@ -12,14 +16,14 @@
 		public function __construct (
 			OrmDialect $ormDialect, ErrorCatcherHandler $errorDecoratorHandler,
 
-			DecoratorProxy $proxyConfig
+			DecoratorProxy $proxyConfig, ObjectDetails $objectMeta
 		) {
 
 			$this->ormDialect = $ormDialect;
 
 			$this->errorDecoratorHandler = $errorDecoratorHandler;
 
-			parent::__construct($proxyConfig);
+			parent::__construct($proxyConfig, $objectMeta);
 		}
 
 		/**
@@ -38,7 +42,11 @@
 			];
 		}
 
-		public function wrapUpdateModels (SystemModelEdit $concrete, string $methodName, array $argumentList) {
+		public function wrapUpdateModels (
+			AccessInterceptorInterface $proxy, SystemModelEdit $concrete,
+
+			string $methodName, array $argumentList
+		) {
 
 			try {
 
@@ -52,7 +60,7 @@
 
 				return $this->errorDecoratorHandler->attemptDiffuse(
 
-					$exception, $concrete, $methodName
+					$exception, $proxy, $concrete, $methodName
 				);
 			}
 		}

@@ -3,13 +3,15 @@
 
 	use Tilwa\Contracts\Services\Decorators\ServiceErrorCatcher;
 
-	use Tilwa\Services\Structures\OptionalDTO;
+	use Tilwa\Services\Structures\BaseErrorCatcherService;
 
 	use Tilwa\Exception\Explosives\NotFoundException;
 
 	use Exception, InvalidArgumentException;
 
 	class DatalessErrorThrower implements ServiceErrorCatcher {
+
+		use BaseErrorCatcherService;
 
 		public function rethrowAs ():array {
 
@@ -18,16 +20,11 @@
 			];
 		}
 
-		public function failureState (string $method):?OptionalDTO {
+		public function failureState (string $method) {
 
 			if (in_array($method, [ "deliberateError", "deliberateException"]))
 
-				return new OptionalDTO($method, false);
-		}
-
-		public function setCorrectValue (int $value):OptionalDTO {
-
-			return new OptionalDTO ($value);
+				return $method;
 		}
 
 		public function notCaughtInternally ():int {

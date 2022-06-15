@@ -7,7 +7,11 @@
 
 	use Tilwa\Request\PayloadStorage;
 
+	use Tilwa\Hydration\Structures\ObjectDetails;
+
 	use Tilwa\Exception\Explosives\EditIntegrityException;
+
+	use ProxyManager\Proxy\AccessInterceptorInterface;
 
 	use Throwable, DateTime;
 
@@ -30,7 +34,7 @@
 
 			PayloadStorage $payloadStorage, ErrorCatcherHandler $errorDecoratorHandler,
 
-			DecoratorProxy $proxyConfig
+			DecoratorProxy $proxyConfig, ObjectDetails $objectMeta
 		) {
 
 			$this->ormDialect = $ormDialect;
@@ -41,7 +45,7 @@
 
 			$this->errorDecoratorHandler = $errorDecoratorHandler; // composing instead of extending to decouple constructor dependencies
 
-			parent::__construct($proxyConfig);
+			parent::__construct($proxyConfig, $objectMeta);
 		}
 
 		/**
@@ -65,7 +69,10 @@
 		 * 
 		 * @throws EditIntegrityException
 		*/
-		public function wrapUpdateResource (MultiUserModelEdit $concrete, string $methodName, array $argumentList) {
+		public function wrapUpdateResource (
+			AccessInterceptorInterface $proxy, MultiUserModelEdit $concrete,
+			string $methodName, array $argumentList
+		) {
 
 			if (!$this->payloadStorage->hasKey(self::INTEGRITY_KEY))
 
@@ -99,7 +106,7 @@
 
 				return $this->errorDecoratorHandler->attemptDiffuse(
 
-					$exception, $concrete, $methodName
+					$exception, $proxy, $concrete, $methodName
 				);
 			}
 		}

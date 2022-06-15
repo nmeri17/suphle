@@ -11,7 +11,7 @@
 
 	use Tilwa\Hydration\Structures\ObjectDetails;
 
-	use ProxyManager\Factory\NullObjectFactory;
+	use ProxyManager\{Factory\NullObjectFactory, Proxy\AccessInterceptorInterface};
 
 	use ReflectionClass, Throwable;
 
@@ -20,7 +20,7 @@
 	*/
 	class ErrorCatcherHandler extends BaseDecoratorHandler {
 
-		private $exceptionDetector, $objectMeta;
+		private $exceptionDetector;
 
 		public function __construct (
 			DetectedExceptionManager $exceptionDetector, ObjectDetails $objectMeta,
@@ -28,9 +28,7 @@
 
 			$this->exceptionDetector = $exceptionDetector;
 
-			$this->objectMeta = $objectMeta;
-
-			parent::__construct($proxyConfig);
+			parent::__construct($proxyConfig, $objectMeta);
 		}
 
 		/**
@@ -44,7 +42,14 @@
 			);
 		}
 
-		public function safeCallMethod (object $concrete, string $methodName, array $argumentList) {
+		/**
+		 * @param {proxy} Object received by the caller. Any changes that will be read at that end or mutation expected to be performed on the object should be done on this object. But under no circumstance should {methodName} be invoked on it as that will launch a recursive loop
+		*/
+		public function safeCallMethod (
+			AccessInterceptorInterface $proxy, object $concrete,
+
+			string $methodName, array $argumentList
+		) {
 
 			try {
 
@@ -52,13 +57,19 @@
 			}
 			catch (Throwable $exception) {
 
-				return $this->attemptDiffuse($exception, $concrete, $methodName);
+				return $this->attemptDiffuse($exception, $proxy, $concrete, $methodName);
 			}
 		}
 
-		public function attemptDiffuse (Throwable $exception, ServiceErrorCatcher $concrete, string $method):OptionalDTO {
+		public function attemptDiffuse (
+			Throwable $exception, AccessInterceptorInterface $proxy,
+
+			ServiceErrorCatcher $concrete, string $method
+		) {
 
 			$this->exceptionDetector->detonateOrDiffuse($exception, $concrete);
+
+			$proxy->didHaveErrors($method);
 
 			$callerResponse = $concrete->failureState($method);
 
@@ -67,7 +78,10 @@
 			$this->buildFailureContent($concrete, $method);
 		}
 
-		private function buildFailureContent (ServiceErrorCatcher $concrete, string $method):OptionalDTO {
+		/**
+		 * @return A base value matching return type of method in question
+		*/
+		private function buildFailureContent (ServiceErrorCatcher $concrete, string $method) {
 
 			$objectMeta = $this->objectMeta;
 
@@ -76,20 +90,16 @@
 				get_class($concrete), $method
 			);
 
-			if (is_null($returnType))
-
-				return new OptionalDTO(null, false);
+			if (is_null($returnType)) return null;
 			
 			if ( $objectMeta->returnsBuiltIn(get_class($concrete), $method))
 
-				$typeDummy = $objectMeta->getScalarValue($returnType);
+				return $objectMeta->getScalarValue($returnType);
 
-			else $typeDummy = (new NullObjectFactory(
+			return (new NullObjectFactory(
 
 				$this->proxyConfig->getConfigClient()
 			))->createProxy($returnType);
-
-			return new OptionalDTO($typeDummy, false );
 		}
 	}
 ?>

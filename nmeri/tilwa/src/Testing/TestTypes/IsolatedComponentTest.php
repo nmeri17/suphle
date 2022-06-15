@@ -1,22 +1,24 @@
 <?php
 	namespace Tilwa\Testing\TestTypes;
 
+	use Tilwa\Contracts\IO\{Session, CacheManager};
+
+	use Tilwa\Contracts\Queues\Adapter as QueueAdapter;
+
 	use Tilwa\Hydration\Container;
 
 	use Tilwa\IO\{Session\InMemorySession, Cache\InMemoryCache};
 
 	use Tilwa\Request\RequestDetails;
 
-	use Tilwa\Contracts\IO\{Session, CacheManager};
-
-	use Tilwa\Testing\Proxies\{GagsException, Extensions\CheckProvisionedClasses};
+	use Tilwa\Testing\Proxies\{GagsException, ExceptionBroadcasters};
 
 	/**
 	 * Used for tests that mostly require a Container. Boots and provides this container to them
 	*/
 	abstract class IsolatedComponentTest extends TestVirginContainer {
 
-		use GagsException {
+		use GagsException, ExceptionBroadcasters {
 
 			GagsException::setUp as mufflerSetup;
 		}
@@ -27,7 +29,7 @@
 
 			$this->container = $container = $this->positiveDouble(
 
-				CheckProvisionedClasses::class,
+				Container::class,
 
 				$this->getContainerStubs()
 			);
@@ -56,7 +58,7 @@
 
 			foreach ($this->simpleBinds() as $contract => $className) {
 
-				$concrete = $this->container->getClass($className); // for some funny reason, this provision doesn't work except it's first stored in a variable
+				$concrete = $this->container->getClass($className); // not safe to hydrate entity within a provision
 
 				$this->container->whenTypeAny()->needsAny([
 
@@ -77,7 +79,10 @@
 
 		protected function concreteBinds ():array {
 
-			return [];
+			return array_merge($this->getExceptionDoubles(), [
+
+				QueueAdapter::class => $this->positiveDouble(QueueAdapter::class)
+			]);
 		}
 
 		// used for normalizing traits that are applicable to both this and module level test

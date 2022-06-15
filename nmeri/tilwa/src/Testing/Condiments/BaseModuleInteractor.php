@@ -3,6 +3,8 @@
 
 	use Tilwa\Contracts\IO\{Session, CacheManager};
 
+	use Tilwa\Contracts\Queues\Adapter as QueueAdapter;
+
 	use Tilwa\Hydration\Container;
 
 	use Tilwa\Events\ModuleLevelEvents;
@@ -15,7 +17,11 @@
 
 	use Tilwa\IO\{Session\InMemorySession, Cache\InMemoryCache};
 
+	use Tilwa\Testing\Proxies\ExceptionBroadcasters;
+
 	trait BaseModuleInteractor {
+
+		use ExceptionBroadcasters;
 
 		protected $modules, // making this accessible for traits down the line that will need identical instances of the modules this base type is working with
 
@@ -79,12 +85,14 @@
 
 		protected function provideTestEquivalents ():void {
 
-			$this->massProvide([
+			$this->massProvide(array_merge([
 
 				CacheManager::class => new InMemoryCache,
 				
-				Session::class => new InMemorySession
-			]);
+				Session::class => new InMemorySession,
+
+				QueueAdapter::class => $this->positiveDouble(QueueAdapter::class)
+			], $this->getExceptionDoubles()));
 		}
 	}
 ?>

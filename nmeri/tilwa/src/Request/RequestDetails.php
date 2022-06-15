@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Request;
 
-	use Tilwa\Contracts\Config\Router;
+	use Tilwa\Contracts\{Config\Router, Requests\StdInputReader};
 
 	use Tilwa\Hydration\Container;
 
@@ -10,13 +10,17 @@
 	*/
 	class RequestDetails {
 
+		const HTTP_METHOD_KEY = "HTTP_METHOD";
+
 		private $config, $computedPath, $permanentPath, // readonly version of [computedPath]
 		
-		$versionPresent, $queryParameters = [];
+		$versionPresent, $stdInputReader, $queryParameters = [];
 
-		public function __construct (Router $config) {
+		public function __construct (Router $config, StdInputReader $stdInputReader) {
 
 			$this->config = $config;
+
+			$this->stdInputReader = $stdInputReader;
 		}
 
 		public function getPath ():?string {
@@ -73,19 +77,19 @@
 			return $this->permanentPath;
 		}
 
-		public function httpMethod ():string {
+		public function httpMethod ():string { // remember to set std in main
 
 			$hiddenField = "_method";
 
-			$serverField = "REQUEST_METHOD";
+			$headers = $this->stdInputReader->getHeaders();
 
 			if (array_key_exists($hiddenField, $_POST))
 
 				$methodName = $_POST[$hiddenField];
 
-			elseif (array_key_exists($serverField, $_SERVER))
+			elseif (array_key_exists(self::HTTP_METHOD_KEY, $headers))
 
-				$methodName = $_SERVER[$serverField];
+				$methodName = $headers[self::HTTP_METHOD_KEY];
 
 			else $methodName = "get";
 

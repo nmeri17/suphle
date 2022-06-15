@@ -8,7 +8,7 @@
 	// subject to how those guys make url available
 	// set as early as possible for the below calls
 	// set again inside the loop
-	$awesomeApp->setRequestPath($_GET["suphle_url"]);
+	$awesomeApp->setRequestPath($_GET["suphle_url"]); // this depends on stdInputReader, so it's assumed that headers are equally set, possibly from here
 
 	$awesomeApp->bootModules();
 

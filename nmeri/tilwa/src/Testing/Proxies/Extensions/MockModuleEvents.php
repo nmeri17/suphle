@@ -3,20 +3,20 @@
 
 	use Tilwa\Events\{ModuleLevelEvents, EventSubscription};
 
-	use Tilwa\Contracts\Config\Events;
+	use Tilwa\Contracts\{Config\Events, Modules\DescriptorInterface};
 
 	use Tilwa\Hydration\Container;
 
 	class MockModuleEvents extends ModuleLevelEvents {
 
-		protected function moduleHasListeners (Events $config, Container $container):void {
+		protected function moduleHasListeners (Events $config, DescriptorInterface $descriptor, Container $container):void {
 
 			$container->whenTypeAny()->needsAny([
 
 				ModuleLevelEvents::class => $this // provide self since managers import ModuleLevelEvents
 			]);
 
-			parent::moduleHasListeners($config, $container);
+			parent::moduleHasListeners($config, $descriptor, $container);
 		}
 	}
 ?>

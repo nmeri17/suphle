@@ -1,6 +1,8 @@
 <?php
 	namespace Tilwa\Tests\Integration\Routing\Crud;
 
+	use Tilwa\Exception\Explosives\IncompatibleHttpMethod;
+
 	use Tilwa\Tests\Integration\Routing\TestsRouter;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Routes\Crud\BasicRoutes;
@@ -47,9 +49,10 @@
 
 		public function test_can_disable_routes () {
 
-			$matchingRenderer = $this->fakeRequest("/disable-some/save", "post"); // when
+			$this->expectException(IncompatibleHttpMethod::class); // then
 
-			$this->assertNull($matchingRenderer); // then
+			// In the collection, we disabled explicit HTTP method "post";url "save", which would make this request be interpreted as HTTP method "get";url ".../id"
+			$this->fakeRequest("/disable-some/save", "post"); // when
 		}
 
 		public function test_can_override_routes () {

@@ -59,9 +59,16 @@
 
 			$type = $this->getReturnType($className, $method);
 
-			return $type ? "\\" . $type->getName() : // adding forward slash so it can be used in other contexts without escaping
+			if ($type) {
 
-			$type;
+				$typeName = $type->getName();
+
+				if ($type->isBuiltin()) return $typeName;
+
+				return "\\$typeName"; // adding forward slash so it can be used in other contexts without escaping
+			}
+
+			return null;
 		}
 
 		public function returnsBuiltIn (string $className, string $method):bool {
@@ -98,6 +105,27 @@
 		public function getValueType ($value):string {
 
 			return is_object($value)? get_class($value): gettype($value);
+		}
+
+		public function getPublicMethods (string $className):array {
+
+			$methods = array_filter(
+				get_class_methods($className),
+
+				function ($methodName) use ($className) {
+
+					return (new ReflectionMethod($className, $methodName))
+
+					->isPublic();
+				}
+			);
+
+			unset($methods[
+				
+				array_search(Container::CLASS_CONSTRUCTOR, $methods)
+			]);
+
+			return $methods;
 		}
 	}
 ?>

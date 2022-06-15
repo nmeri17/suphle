@@ -5,17 +5,19 @@
 
 	use Tilwa\Contracts\Config\DecoratorProxy;
 
-	use Tilwa\Hydration\Container;
+	use Tilwa\Hydration\{Container, Structures\ObjectDetails};
 
-	use ProxyManager\Factory\AccessInterceptorValueHolderFactory as AccessInterceptor;
+	use ProxyManager\{Factory\AccessInterceptorValueHolderFactory as AccessInterceptor, Proxy\AccessInterceptorInterface};
 
 	abstract class BaseDecoratorHandler implements ModifyInjected {
 
-		protected $methodHooks = [], $proxyConfig;
+		protected $methodHooks = [], $proxyConfig, $objectMeta;
 
-		public function __construct (DecoratorProxy $proxyConfig) {
+		public function __construct (DecoratorProxy $proxyConfig, ObjectDetails $objectMeta) {
 
 			$this->proxyConfig = $proxyConfig;
+
+			$this->objectMeta = $objectMeta;
 		}
 
 		public function getMethodHooks ():array {
@@ -26,27 +28,20 @@
 		/**
 		 * @return Object proxy
 		*/
-		protected function allMethodAction (object $concrete, callable $action):object {
+		protected function allMethodAction (object $concrete, callable $action):AccessInterceptorInterface {
 
-			foreach ($this->callableMethods($concrete) as $methodName)
+			foreach (
+				$this->objectMeta->getPublicMethods(get_class($concrete))
+
+				as $methodName
+			)
 
 				$this->methodHooks[$methodName] = $action;
 
 			return $this->getProxy($concrete);
 		}
 
-		protected function callableMethods (object $instance):array {
-
-			$methods = get_class_methods($instance);
-
-			unset($methods[
-				array_search(Container::CLASS_CONSTRUCTOR, $methods)
-			]);
-
-			return $methods;
-		}
-
-		protected function getProxy (object $concrete):object {
+		protected function getProxy (object $concrete):AccessInterceptorInterface {
 
 			return (new AccessInterceptor(
 
@@ -68,13 +63,15 @@
 
 			foreach ($baseActions as $hooker => $action) // handlers with same method won't clash since we're using unique proxies for each handler
 
-				$hookers[$hooker] = function ($proxy, $concrete, $calledMethod, $parameters, &$earlyReturn) use ($action) { // think hooker == calledMethod
+				$hookers[$hooker] = function ($proxy, $concrete, $calledMethod, $parameters, &$earlyReturn) use ($action) { // hooker == calledMethod
 
 					$earlyReturn = true; // since handlers want to take responsibility of calling underlying concrete, not this library
 
 					return call_user_func_array($action, [
 
-						$concrete, $calledMethod, $parameters
+						$proxy, $concrete,
+
+						$calledMethod, $parameters
 					]);
 				};
 

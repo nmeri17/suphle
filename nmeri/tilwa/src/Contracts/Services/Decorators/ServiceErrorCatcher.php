@@ -1,8 +1,6 @@
 <?php
 	namespace Tilwa\Contracts\Services\Decorators;
 
-	use Tilwa\Services\Structures\OptionalDTO;
-
 	interface ServiceErrorCatcher {
 
 		/**
@@ -19,6 +17,12 @@
 		 * 
 		 * @return Value to give the caller in cases were execution shouldn't terminate
 		*/
-		public function failureState (string $method):?OptionalDTO;
+		public function failureState (string $method);
+
+		public function lastErrorMethod ():?string;
+
+		public function matchesErrorMethod (string $method):bool;
+
+		public function didHaveErrors (string $method):void;
 	}
 ?>

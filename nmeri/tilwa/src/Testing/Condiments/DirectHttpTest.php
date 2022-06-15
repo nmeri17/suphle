@@ -21,11 +21,9 @@
 		*/
 		protected function setHttpParams (string $requestPath, string $httpMethod = "get", ?array $payload = [], array $headers = []):void {
 
-			$headers["REQUEST_METHOD"] = $httpMethod;
+			$headers[RequestDetails::HTTP_METHOD_KEY] = $httpMethod;
 
 			$reader = ["getHeaders" => $headers];
-
-			$this->loadServerVariables($headers);
 
 			if (!empty($payload) && array_key_exists(PayloadStorage::CONTENT_TYPE_KEY, $headers))
 
@@ -77,13 +75,6 @@
 		private function isValidPayloadType (string $httpMethod):bool {
 
 			return in_array($httpMethod, ["post", "put"]);
-		}
-
-		private function loadServerVariables (array $headers):void {
-
-			foreach ($headers as $name => $value)
-
-				$_SERVER[$name] = $value;
 		}
 	}
 ?>

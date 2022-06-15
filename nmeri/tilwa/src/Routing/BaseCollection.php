@@ -21,7 +21,7 @@
 
 		$canaryValidator, $authStorage, $parentPrefix;
 
-		private $crudPrefix, $prefixClass, $lastRegistered,
+		private $crudPrefix, $prefixClass, $lastRegistered = [],
 
 		$methodSorter;
 
@@ -103,7 +103,7 @@
 
 				get_class_methods($this),
 
-				get_class_methods($this->collectionParent)
+				get_class_methods($this->collectionParent) // using an explicit parent instead of automatically differentiating from parent methods to enable extension of route collections
 			);
 
 			return $this->methodSorter->descendingValues($this->prependPrefix($methods));

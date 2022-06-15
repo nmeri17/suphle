@@ -668,14 +668,17 @@
 				$providedValue = $callerProvision->getArgument($parameterName);
 
 			else if (is_null($parameterType)) return null;
-				
-			$typeName = $parameterType->getName();
 
-			if ($callerProvision->hasArgument($typeName)) {
+			else {
 
-				$this->setConsumer($typeName);
+				$typeName = $parameterType->getName();
 
-				$providedValue = $callerProvision->getArgument($typeName);
+				if ($callerProvision->hasArgument($typeName)) {
+
+					$this->setConsumer($typeName);
+
+					$providedValue = $callerProvision->getArgument($typeName);
+				}
 			}
 
 			if ( isset($providedValue)) {
