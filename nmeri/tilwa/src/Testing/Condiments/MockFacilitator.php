@@ -16,7 +16,7 @@
 		*/
 		protected function positiveDouble (string $target, array $stubs = [], array $mockMethods = [], ?array $constructorArguments = null):MockObject {
 
-			$builder = $this->getBuilder(
+			$builder = $this->createMockBuilder(
 				$target, $constructorArguments,
 
 				$this->computeMethodsToRetain($stubs, $mockMethods)
@@ -31,7 +31,7 @@
 
 		protected function positiveDoubleMany (string $target, array $stubs = [], array $mockMethods = [], ?array $constructorArguments = null) {
 
-			$builder = $this->getBuilder(
+			$builder = $this->createMockBuilder(
 				$target, $constructorArguments,
 
 				$this->computeMethodsToRetain($stubs, $mockMethods)
@@ -44,7 +44,10 @@
 			return $builder;
 		}
 
-		protected function mockCalls (array $calls, $builder):void {
+		/**
+		 * Raises warning "Trying to configure method ..." when we try to mock methods that weren't passed to [onlyMethods], possibly through [createMockBuilder]
+		*/
+		protected function mockCalls (array $calls, MockObject $builder):void {
 
 			foreach ($calls as $method => $behavior) {
 
@@ -59,7 +62,7 @@
 		 * 
 		 * @return InvocationMocker
 		*/
-		private function getCallCount ($builder, $count) {
+		private function getCallCount (MockObject $builder, $count) {
 
 			return $builder->expects(is_int($count) ? $this->exactly($count): $count);
 		}
@@ -71,7 +74,7 @@
 
 			$allMethods = get_class_methods($target);
 
-			$builder = $this->getBuilder( $target, $constructorArguments, $allMethods);
+			$builder = $this->createMockBuilder( $target, $constructorArguments, $allMethods);
 
 			$this->stubSingle($stubs, $builder);
 
@@ -117,7 +120,7 @@
 		 * @param {constructorArguments} when null, constructor will be skipped
 		 * @return MockObject version of given [target]
 		*/
-		private function getBuilder (string $target, ?array $constructorArguments, array $methodsToRetain):MockObject {
+		protected function createMockBuilder (string $target, ?array $constructorArguments, array $methodsToRetain):MockObject {
 
 			$builder = $this->getMockBuilder($target);
 

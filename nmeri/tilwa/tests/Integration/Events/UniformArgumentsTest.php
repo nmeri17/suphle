@@ -3,21 +3,25 @@
 
 	use Tilwa\Contracts\Config\Events;
 
+	use Tilwa\Testing\Proxies\WriteOnlyContainer;
+
+	use Tilwa\Tests\Integration\Events\BaseTypes\EventTestCreator;
+
 	use Tilwa\Tests\Mocks\Interactions\ModuleOne;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Events\EmitterAsListener};
-
-	use Tilwa\Testing\Proxies\WriteOnlyContainer;
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Events\EmitterAsListener, Config\EventsMock};
 
 	use InvalidArgumentException;
 
-	class UniformArgumentsTest extends TestEventManager {
+	class UniformArgumentsTest extends EventTestCreator {
+
+		public function setUp ():void {}
 
 		protected function setModuleOne ():void {
 
 			$this->moduleOne = $this->replicateModule(ModuleOneDescriptor::class, function(WriteOnlyContainer $container) {
 
-				$container->replaceWithMock(Events::class, [
+				$container->replaceWithMock(Events::class, EventsMock::class, [
 
 					"getManager" => EmitterAsListener::class
 				]);
@@ -30,9 +34,7 @@
 
 			$this->expectException(InvalidArgumentException::class);// then
 
-			$this->getModuleFor(ModuleOne::class)
-
-			->cascadeEntryEvent($this->payload); // when
+			parent::setUp(); // when
 		}
 	}
 ?>

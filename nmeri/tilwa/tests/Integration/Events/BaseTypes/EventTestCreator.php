@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Tests\Integration\Events;
+	namespace Tilwa\Tests\Integration\Events\BaseTypes;
 
 	use Tilwa\Modules\ModuleDescriptor;
 
@@ -7,21 +7,36 @@
 
 	use Tilwa\Tests\Integration\Modules\ModuleDescriptor\DescriptorCollection;
 
-	class TestEventManager extends DescriptorCollection {
+	class EventTestCreator extends DescriptorCollection {
 
 		use EmittedEventsCatcher;
 
 		protected $payload = 5, $mockEventReceiver,
 
-		$eventReceiverName;
+		$eventReceiverName, $mockReceiverMethods = ["updatePayload"];
 
 		public function setUp ():void {
 
 			if (!is_null($this->eventReceiverName))
 
-				$this->mockEventReceiver = $this->positiveDouble($this->eventReceiverName);
+				$this->mockEventReceiver = $this->createMockBuilder(
+
+					$this->eventReceiverName,
+
+					$this->receiverConstructorArguments(),
+
+					$this->mockReceiverMethods
+				);
 
 			parent::setUp();
+		}
+
+		/**
+		 * Arguments used for the construction of [mockEventReceiver]. Values returned from here can't be pulled from container since none has been created yet
+		*/
+		protected function receiverConstructorArguments ():array {
+
+			return [];
 		}
 
 		/**

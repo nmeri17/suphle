@@ -1,13 +1,17 @@
 <?php
 	namespace Tilwa\Tests\Integration\Events;
 
+	use Tilwa\Tests\Integration\Events\BaseTypes\EventTestCreator;
+
 	use Tilwa\Tests\Mocks\Interactions\ModuleOne;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleThree\{Meta\ModuleThreeDescriptor, Events\EventsHandler};
 
-	class CascadeExternalTest extends TestEventManager {
+	class CascadeExternalTest extends EventTestCreator {
 
-		protected $eventReceiverName = EventsHandler::class;
+		protected $eventReceiverName = EventsHandler::class,
+
+		$mockReceiverMethods = ["handleExternalRebound"];
 
 		protected function setModuleThree ():void {
 

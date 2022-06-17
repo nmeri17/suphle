@@ -55,24 +55,33 @@ test only and except from routeCollection
 		- indexing on model save/update
 		- converting from/to orm type during retrieval
 		- passing to collection type
-	- integrate cache library and remove the cache from moduleLevelTest->provideCriticalObjects and isolatedComponent->concreteBinds
-	- that place where you have laravel route finders, replace with insertable generics like for the container
+	- write and connect laravel cache adapter
+	- ModuleInitializer -> laravel route finders, replace with insertable generics like for the container
 
 
 
 what would be a really valuable test is visiting flows defined in 3 from 1 ie. full get
 	- MultiModuleTest->test_handle_flows_in_other_modules transfer flow routes in FlowRoutes to another module
 
+
 write tests for
-	- FlowHydrator->executeRequest sends request to where it can hit controller
-	- FetchAndEditTest->test_update_can_withstand_errors
 	- TransphpormTest
+	- RoutedRendererManager->handleValidRequest check whether it's necessary to inject updates from higher-ups (middleware) or if they'll receive it anyway (thanks to reference)
 
 create argument allowing us replace uploaded files and filesystem on the operator
 - multiEdit cloaker should complain on get if no authorization is found
 
 
-@see ServiceErrorCatcherTest->failureState
+Move methods on CheckProvisionedClasses to telescope
+
+is gagsException analogous to investigateSystemCrash? how do they relate
+
+correct resque adapter bin-include path
+
+
+
+why aren't we using midlewareManipulator
+
 
 /*$builder->disableProxyingToOriginalMethods()
 

@@ -74,7 +74,7 @@
 		/**
 		 * Each of the request handlers should update this class with the underlying renderer they're pulling a response from
 		*/
-		protected function respondFromHandler ():BaseRenderer {
+		public function respondFromHandler ():BaseRenderer {
 
 			if ( $this->authConfig->isLoginRequest())
 

@@ -1,13 +1,20 @@
 <?php
 	namespace Tilwa\Tests\Integration\Events;
 
+	use Tilwa\Tests\Integration\Events\BaseTypes\EventTestCreator;
+
 	use Tilwa\Tests\Mocks\Interactions\ModuleOne;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleThree\{Meta\ModuleThreeDescriptor, Events\EventsHandler};
 
-	class CoupledExternalTest extends TestEventManager {
+	class CoupledExternalTest extends EventTestCreator {
 
-		protected $eventReceiverName = EventsHandler::class;
+		protected $eventReceiverName = EventsHandler::class,
+
+		$mockReceiverMethods = [
+
+			"setExternalPayload", "handleImpossibleEmit"
+		];
 
 		protected function setModuleThree ():void {
 

@@ -3,85 +3,117 @@
 
 	use Tilwa\Modules\ModuleHandlerIdentifier;
 
-	use Tilwa\Hydration\Container; 
-
-	use Tilwa\Contracts\Auth\ModuleLoginHandler;
+	use Tilwa\Contracts\{Auth\ModuleLoginHandler, Presentation\BaseRenderer, Config\Router};
 
 	use Tilwa\Flows\OuterFlowWrapper;
 
-	use Tilwa\Testing\Condiments\DirectHttpTest;
+	use Tilwa\Testing\{Condiments\DirectHttpTest, Proxies\WriteOnlyContainer};
 
 	use Tilwa\Tests\Integration\Flows\Jobs\RouteBranches\JobFactory;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\OriginCollection, Meta\ModuleOneDescriptor, Config\RouterMock};
 
 	class ModuleHandlerIdentifierTest extends JobFactory {
 
 		use DirectHttpTest;
 
+		private $dummyRenderer;
+
+		protected function setUp ():void {
+
+			$this->dummyRenderer = $this->positiveDouble(BaseRenderer::class);
+
+			parent::setUp();
+		}
+
 		protected function getModules():array {
 
 			return [
 
-				new ModuleOneDescriptor(new Container)
+				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+
+					$container->replaceWithMock(Router::class, RouterMock::class, [
+
+						"browserEntryRoute" => OriginCollection::class
+					]);
+				})
 			];
 		}
 		
 		public function test_can_handle_login () {
 
-			$sut = $this->getIdentifier();
+			$this->setHttpParams("/login", "post", []); // given
 
-			$this->stubSingle([
+			$this->getIdentifier([
 
 				"getLoginHandler" => $this->mockLoginHandler() // then	
-			], $sut); // given
-
-			// when
-			$this->setHttpParams("/login", "post", []);
-
-			$sut->respondFromHandler();
+			])
+			->respondFromHandler(); // when
 		}
 
 		private function mockLoginHandler ():ModuleLoginHandler {
 
-			$handler = $this->negativeDouble(ModuleLoginHandler::class, ["isValidRequest" => true], [
+			return $this->positiveDouble(ModuleLoginHandler::class,
 
-				"processLoginRequest" => [
+				[
 
-					$this->atLeastOnce(), []
+					"isValidRequest" => true,
+
+					"handlingRenderer" => $this->dummyRenderer,
+
+					"setResponseRenderer" => $this->returnSelf()
+				], [
+
+					"processLoginRequest" => [
+
+						$this->atLeastOnce(), []
+					]
 				]
-			]);
-
-			return $handler;
+			);
 		}
 
 		public function test_saved_flow_triggers_flow_handler () {
 
-			$sut = $this->mockCalls([
+			$this->handleDefaultBranchesContext(); // given
 
-				"flowRequestHandler" => [$this->atLeastOnce(), [
+			//$this->assertHandledByFlow($this->userUrl);
+			
+			$this->setHttpParams($this->userUrl); // when
+
+			$this->getIdentifier([], [
+
+				"flowRequestHandler" => [$this->atLeastOnce(), [ // then
 
 					$this->callback(function($argument) {
 
 						return is_a($argument, OuterFlowWrapper::class);
 					})
 				]]
-			], $this->getIdentifier()); // then
-
-			$this->handleDefaultBranchesContext(); // given
-
-			// when
-			$this->setHttpParams($this->userUrl);
-
-			$sut->respondFromHandler();
+			])
+			->respondFromHandler();
 		}
 
-		private function getIdentifier ():ModuleHandlerIdentifier {
+		private function getIdentifier (array $stubMethods, array $mockMethods = []):ModuleHandlerIdentifier {
 
-			return $this->positiveDouble(ModuleHandlerIdentifier::class, [
+			$identifier = $this->replaceConstructorArguments(
 
-				"getModules" => $this->modules
-			]);
+				ModuleHandlerIdentifier::class, [],
+
+				array_merge([
+
+					"getModules" => $this->modules,
+
+					"handleGenericRequest" => $this->dummyRenderer
+				], $stubMethods),
+
+				$mockMethods,
+
+				true, true, true, true
+			);
+
+			$identifier->extractFromContainer();
+
+			return $identifier;
 		}
 	}
 ?>

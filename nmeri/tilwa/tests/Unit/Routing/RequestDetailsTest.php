@@ -28,6 +28,8 @@
 
 			$sut = $this->getRequestDetails("api/v2/first");
 
+			$sut->setIncomingVersion();
+			
 			$this->assertSame([
 
 				"v2" => "class2",
@@ -47,7 +49,9 @@
 
 		private function getRequestDetails (string $url):RequestDetails {
 
-			return RequestDetails::fromContainer($this->container, $url);
+			RequestDetails::fromContainer($this->container, $url);
+
+			return $this->container->getClass(RequestDetails::class);
 		}
 	}
 ?>

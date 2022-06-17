@@ -15,6 +15,9 @@
 
 		$emitters = ["local" => [], "external" => []];
 
+		/**
+		 * @param {module}: Descriptor for the module where this handler will be emitting from
+		*/
 		public function setDependencies (DescriptorInterface $module, ModuleLevelEvents $parentManager):void {
 
 			$this->module = $module;

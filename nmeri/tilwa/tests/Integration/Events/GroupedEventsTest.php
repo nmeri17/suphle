@@ -1,20 +1,11 @@
 <?php
 	namespace Tilwa\Tests\Integration\Events;
 
-	use Tilwa\Tests\Mocks\Interactions\ModuleOne;
+	use Tilwa\Tests\Integration\Events\BaseTypes\TestLocalReceiver;
 
-	use Tilwa\Testing\Proxies\WriteOnlyContainer;
+	class GroupedEventsTest extends TestLocalReceiver {
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Events\LocalReceiver};
-
-	class GroupedEventsTest extends TestEventManager {
-
-		protected $eventReceiverName = LocalReceiver::class;
-
-		protected function setModuleOne ():void {
-
-			$this->moduleOne = $this->replicatorProxy(ModuleOneDescriptor::class);
-		}
+		protected $mockReceiverMethods = ["doNothing", "unionHandler"];
 
 		public function test_space_delimited_event_names () {
 
@@ -27,7 +18,7 @@
 				"unionHandler" => [2, []]
 			], $this->mockEventReceiver);
 
-			$this->getModuleFor(ModuleOne::class)->sendConcatEvents($this->payload); // when
+			$this->getModuleOne()->sendConcatEvents($this->payload); // when
 		}
 	}
 ?>

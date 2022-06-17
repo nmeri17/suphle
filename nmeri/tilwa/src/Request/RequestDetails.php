@@ -138,8 +138,10 @@
 			$this->computedPath = $pathArray[1];
 		}
 
-		// given a request to api/v3/verb/noun, sets property to v3
-		private function setIncomingVersion ():void {
+		/**
+		 * Given a request to api/v3/verb/noun, sets property to v3
+		*/
+		public function setIncomingVersion ():void {
 			
 			$pattern = $this->regexApiPrefix() . "\/(.+?)\/";
 

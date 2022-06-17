@@ -68,6 +68,9 @@
 			parent::tearDown();
 		}
 
+		/**
+		 * @throws InvalidArgumentException if database connection was reset (e.g a refreshClass that wiped OrmDialect) without being restored in the current test, since the facades in the migrator will then try to use their factory to create an instance
+		*/
 		public static function tearDownAfterClass ():void {
 
 			static::$staticReplicator->dismantleSchema();

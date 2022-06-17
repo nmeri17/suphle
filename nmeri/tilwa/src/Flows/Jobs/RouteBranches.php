@@ -9,7 +9,7 @@
 
 	use Tilwa\Request\RequestDetails;
 
-	use Tilwa\Contracts\Queues\Task;
+	use Tilwa\Contracts\{Queues\Task, Database\OrmDialect};
 
 	// for queueing the cached endpoint on hit and queuing sub-flows
 	class RouteBranches implements Task {
@@ -65,7 +65,19 @@
 				return $moduleInitializer->getRoutedRendererManager();
 			}
 
+			$this->restoreConnections();
+
 			return null;
+		}
+
+		/**
+		 * Undo connection resetting action so underlying ORM client's subsequent calls aren't disrupted by trying to hydrate a blank connection instance
+		*/
+		private function restoreConnections ():void {
+
+			foreach ($this->modules as $descriptor)
+
+				$descriptor->getContainer()->getClass(OrmDialect::class);
 		}
 
 		private function executeFlowBranch (RoutedRendererManager $rendererManager, string $urlPattern, UnitNode $structure):void {

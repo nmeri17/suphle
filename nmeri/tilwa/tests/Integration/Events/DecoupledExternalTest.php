@@ -1,11 +1,13 @@
 <?php
 	namespace Tilwa\Tests\Integration\Events;
 
+	use Tilwa\Tests\Integration\Events\BaseTypes\EventTestCreator;
+
 	use Tilwa\Tests\Mocks\Interactions\{ModuleOne, ModuleTwo, ModuleThree};
 
 	use Tilwa\Tests\Mocks\Modules\ModuleTwo\{Meta\ModuleTwoDescriptor, Events\ExternalReactor};
 
-	class DecoupledExternalTest extends TestEventManager {
+	class DecoupledExternalTest extends EventTestCreator {
 
 		protected $eventReceiverName = ExternalReactor::class;
 
