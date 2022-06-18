@@ -15,9 +15,11 @@
 
 		use CommonBinds;
 
-		public function test_apiVersion_gets_all_below () {
+		protected function setUp ():void {
 
-			$this->stubConfig ([ "apiStack" => [
+			parent::setUp();
+
+			$this->stubConfig ([ "apiStack" => [ // given
 
 				"v3" => "class3",
 
@@ -25,17 +27,28 @@
 
 				"v1" => "class1"	
 			]]);
+		}
 
-			$sut = $this->getRequestDetails("api/v2/first");
+		public function test_apiVersion_gets_versions_below_given () {
 
-			$sut->setIncomingVersion();
-			
+			$sut = $this->getRequestDetails("api/v2/first"); // when
+
 			$this->assertSame([
 
 				"v2" => "class2",
 
 				"v1" => "class1"
-			], $sut->apiVersionClasses());
+			], $sut->apiVersionClasses()); // then
+		}
+
+		public function test_apiVersion_doesnt_get_versions_above_given () {
+
+			$sut = $this->getRequestDetails("api/v1/first"); // when
+
+			$this->assertSame([
+
+				"v1" => "class1"
+			], $sut->apiVersionClasses()); // then
 		}
 
 		private function stubConfig (array $stubMethods):void {
@@ -49,9 +62,11 @@
 
 		private function getRequestDetails (string $url):RequestDetails {
 
-			RequestDetails::fromContainer($this->container, $url);
+			$instance = RequestDetails::fromContainer($this->container, $url);
 
-			return $this->container->getClass(RequestDetails::class);
+			$instance->setIncomingVersion();
+
+			return $instance;
 		}
 	}
 ?>

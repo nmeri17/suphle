@@ -25,9 +25,7 @@
 
 				 Also, reading from getModules() with new ModuleDescriptor1 will return a new instance each time
 				*/
-				$this->modules = $this->getModules(),
-
-				$this->getEventParent()
+				$this->modules = $this->getModules()
 			);
 
 			$this->provideTestEquivalents();

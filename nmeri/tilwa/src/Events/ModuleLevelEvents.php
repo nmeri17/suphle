@@ -3,7 +3,7 @@
 
 	use Tilwa\Contracts\{Config\Events, Modules\DescriptorInterface};
 
-	use Tilwa\Hydration\Container;
+	use Tilwa\Hydration\{Container, Structures\ObjectDetails};
 
 	class ModuleLevelEvents {
 
@@ -17,6 +17,10 @@
 		}
 
 		public function bootReactiveLogger():void {
+
+			$objectMeta = current($this->modules)->getContainer()
+
+			->getClass(ObjectDetails::class);
 			
 			foreach ($this->modules as $descriptor) {
 
@@ -24,23 +28,32 @@
 
 				if ($config = $container->getClass(Events::class))
 
-					$this->moduleHasListeners($config, $descriptor, $container);
+					$this->moduleHasListeners(
+
+						$config, $descriptor, $container, $objectMeta
+					);
 			}
 		}
 
-		protected function moduleHasListeners (Events $config, DescriptorInterface $descriptor, Container $container):void {
+		protected function moduleHasListeners (
+
+			Events $config, DescriptorInterface $descriptor, Container $container,
+			ObjectDetails $objectMeta
+		):void {
 
 			$manager = $container->getClass($config->getManager());
 
-			$manager->setDependencies($descriptor, $this);
+			$manager->setDependencies($descriptor, $this, $objectMeta);
 
 			$manager->registerListeners();
 
 			$this->eventManagers[] = $manager;
 
-			$container->whenTypeAny()->needsAny([
+			$container->whenTypeAny()->needsAny([ // bind these for any consumer interested in them
 
-				EventManager::class => $manager
+				EventManager::class => $manager,
+
+				ModuleLevelEvents::class => $this
 			]);
 		}
 

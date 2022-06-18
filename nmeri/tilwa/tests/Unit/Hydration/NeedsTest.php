@@ -1,9 +1,9 @@
 <?php
 	namespace Tilwa\Tests\Unit\Hydration;
 
-	use Tilwa\Hydration\Container;
+	use Tilwa\Hydration\{Container, Structures\ContainerTelescope};
 
-	use Tilwa\Testing\{TestTypes\IsolatedComponentTest, Proxies\Extensions\CheckProvisionedClasses};
+	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
 	use Tilwa\Tests\Integration\Generic\CommonBinds;
 
@@ -96,28 +96,11 @@
 			// given @see [concreteBinds]
 
 			$this->assertSame( // then
-				$this->container->getClass($this->aRequires) // why doesnt this work anymore
-					->getInternalB($this->container), // when
+				$this->container->getClass($this->aRequires)
+				
+				->getInternalB($this->container), // when
 
 				$this->ourB
-			);
-		}
-
-		public function test_hydrated_class_with_getClass_uses_correct_context () {
-
-			// given
-			$container = $this->positiveDouble(CheckProvisionedClasses::class, [
-
-				"getDecorator" => $this->stubDecorator()
-			]);
-
-			$this->bootContainer($container);
-
-			$container->whenType($this->aRequires)->needsAny($this->concreteBinds());
-
-			// then
-			$this->assertTrue(
-				$container->matchesNeedsProvision($this->aRequires, $this->concreteBinds())
 			);
 		}
 	}

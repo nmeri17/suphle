@@ -7,7 +7,7 @@
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\Services\ConditionalFactoryMock;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\Services\ConditionalHandlers\{FieldBGreater, FieldAGreater, LastLast};
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\Services\ConditionalHandlers\{FieldBGreater, FieldAGreater, BothFieldsEqual};
 
 	class ConditionalFactoryTest extends IsolatedComponentTest {
 
@@ -38,9 +38,9 @@
 
 		public function test_runs_fieldC () {
 
-			$handler = $this->factory->retrieveConcrete(10, 2, 15); // when
+			$handler = $this->factory->retrieveConcrete(10, 10, 15); // when
 
-			$this->assertInstanceOf(LastLast::class, $handler); // then
+			$this->assertInstanceOf(BothFieldsEqual::class, $handler); // then
 		}
 	}
 ?>

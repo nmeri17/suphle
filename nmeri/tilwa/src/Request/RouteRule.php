@@ -5,11 +5,11 @@
 
 	abstract class RouteRule {
 
-		protected $authorizedUser;
+		protected $authStorage;
 
 		public function __construct (AuthStorage $authStorage) {
 
-			$this->authorizedUser = $authStorage->getUser();
+			$this->authStorage = $authStorage;
 		}
 
 		abstract public function permit ():bool;

@@ -1,6 +1,8 @@
 <?php
 	namespace Tilwa\Events;
 
+	use Tilwa\Hydration\Structures\ObjectDetails;
+
 	use Tilwa\Modules\ModuleDescriptor;
 
 	use Tilwa\Events\Structures\HandlerPath;
@@ -13,16 +15,20 @@
 
 		private $activeHandlerPath, $module, $parentManager,
 
+		$objectMeta,
+
 		$emitters = ["local" => [], "external" => []];
 
 		/**
 		 * @param {module}: Descriptor for the module where this handler will be emitting from
 		*/
-		public function setDependencies (DescriptorInterface $module, ModuleLevelEvents $parentManager):void {
+		public function setDependencies (DescriptorInterface $module, ModuleLevelEvents $parentManager, ObjectDetails $objectMeta):void {
 
 			$this->module = $module;
 
 			$this->parentManager = $parentManager;
+
+			$this->objectMeta = $objectMeta;
 		}
 
 		public function local(string $emittingEntity, string $handlingClass):self {
@@ -113,9 +119,10 @@
 			
 			foreach ($this->emitters["local"] as $emitable => $details) {
 
-				$parents = class_implements($emitter);
+				if ($this->objectMeta->stringInClassTree(
 
-				if (array_key_exists($emitable, $parents) || $emitable == $emitter)
+					$emitter, $emitable
+				))
 
 					return $details;
 			}

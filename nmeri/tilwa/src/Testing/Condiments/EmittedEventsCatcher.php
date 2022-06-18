@@ -9,14 +9,7 @@
 
 	trait EmittedEventsCatcher {
 
-		private $eventParent;
-
 		abstract protected function getModules ():array;
-
-		protected function getEventParent ():?ModuleLevelEvents {
-
-			return $this->eventParent = new MockModuleEvents($this->modules);
-		}
 
 		protected function assertFiredEvent (string $emitter):void {
 
@@ -73,7 +66,9 @@
 
 		private function getEventSubscription (string $sender):?EventSubscription {
 
-			$allSent = $this->eventParent->getFiredEvents();
+			$allSent = $this->getContainer()
+
+			->getClass(ModuleLevelEvents::class)->getFiredEvents();
 
 			if (array_key_exists($sender, $allSent)) {
 

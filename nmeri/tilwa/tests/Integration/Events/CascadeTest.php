@@ -9,9 +9,7 @@
 
 	class CascadeTest extends EventTestCreator {
 
-		protected $eventReceiverName = ReboundReceiver::class,
-
-		$mockReceiverMethods = ["ricochetReactor"];
+		protected $eventReceiverName = ReboundReceiver::class;
 
 		protected function setModuleOne ():void {
 
@@ -20,12 +18,12 @@
 
 		public function test_local_emit_cascades_to_local () {
 
-			// given => see module injection
-
-			$this->mockCalls([
+			$this->setMockEventReceiver([
 
 				"ricochetReactor" => [1, [$this->payload]]
-			], $this->mockEventReceiver); // then
+			], []); // then
+
+			$this->parentSetUp(); // given
 
 			$this->getModuleFor(ModuleOne::class)
 

@@ -113,6 +113,9 @@
 			);
 		}
 
+		/**
+		 * @param {nameValue} [parameterName, not the type => $instance]
+		*/
 		public function readArgumentFor (string $contentOwner, array $nameValue):bool {
 
 			return $this->didPopulate(
@@ -121,6 +124,9 @@
 			);
 		}
 
+		/**
+		 * @return a list of all concretes that while hydrating, read [argumentName] from a provision
+		*/
 		public function allReadArgument ( $argumentName):array {
 
 			$matchingOwners = [];
@@ -129,7 +135,7 @@
 
 				foreach ($valuePairList as $pair)
 
-					if ( current(array_keys($pair)) == $argumentName)
+					if ( current(array_keys($pair)) == $argumentName) // remember they're stored using argumentName => $value, so numeric indexes won't suffice
 				
 						$matchingOwners[] = $owner;
 

@@ -72,7 +72,7 @@
 			$this->assertSame($aConcrete->getInternalB($container), $ourB);
 		}
 
-		public function test_provided_caller_needs_constructor () {
+		public function test_needs_doesnt_use_provisions_from_needsArgument () {
 
 			$container = $this->container;
 
@@ -80,10 +80,9 @@
 
 			$ourB->setCount(5);
 
-			$container->whenType($this->aRequires)
-			->needs([
+			$container->whenType($this->aRequires)->needs([
 
-				BCounter::class => $ourB,
+				BCounter::class => $ourB
 			]);
 
 			$aConcrete = $container->getClass($this->aRequires);
@@ -95,7 +94,7 @@
 			);
 		}
 
-		public function test_provided_method_gets_argument () {
+		public function test_methods_can_read_needsArgument () {
 
 			$container = $this->container;
 

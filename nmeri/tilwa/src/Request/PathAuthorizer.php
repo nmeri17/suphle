@@ -5,7 +5,7 @@
 
 	class PathAuthorizer {
 
-		private $container, $allRules = [],
+		private $container, $allRules = [], // [ruleName => [taggedPatterns]]
 
 		$interactedPatterns = [], $excludeRules = [];
 
@@ -54,22 +54,7 @@
 
 		public function passesActiveRules ():bool {
 
-			$activeRules = array_filter($this->allRules, function ($patterns) {
-
-				if (empty(array_intersect($this->interactedPatterns, $patterns)))
-
-					return false;
-
-				foreach ($this->excludeRules as $middlewareName => $excludedPatterns)
-
-					if (!empty(array_intersect($excludedPatterns, $patterns)))
-
-						return false;
-				
-				return true;
-			});
-
-			foreach ($activeRules as $rule => $patterns) {
+			foreach ($this->getActiveRules() as $rule => $patterns) {
 
 				if (!$this->container->getClass($rule)->permit())
 
@@ -77,6 +62,40 @@
 			}
 
 			return true;
+		}
+
+		public function getActiveRules ():array {
+
+			$ruleAllPatterns = []; // all patterns active under each rule regardless whether they were tagged or not
+
+			foreach ($this->allRules as $ruleName => $patterns) {
+
+				$didInteract = !empty(array_intersect(
+
+					$this->interactedPatterns, $patterns
+				));
+
+				if ($didInteract)
+
+					$ruleAllPatterns[$ruleName] = array_merge($this->interactedPatterns, $patterns); // since not all interacted are explicitly tagged i.e. child patterns, if they're not merged, the exclusion loop will have no way of knowing whether or not to exclude an interacted pattern that wasn't tagged
+			}
+
+			$acceptedRules = [];
+
+			foreach ($ruleAllPatterns as $ruleHandler => $patterns) { // untag
+
+				if (
+					!array_key_exists($ruleHandler, $this->excludeRules) ||
+					empty(array_intersect(
+
+						$patterns, $this->excludeRules[$ruleHandler]
+					))
+				)
+
+					$acceptedRules[$ruleHandler] = $patterns;
+			}
+
+			return $acceptedRules;
 		}
 	}
 ?>

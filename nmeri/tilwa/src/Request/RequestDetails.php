@@ -50,7 +50,7 @@
 				static::fromContainer($descriptor->getContainer(), $requestPath);
 		}
 
-		public static function fromContainer (Container $container, string $requestPath):void {
+		public static function fromContainer (Container $container, string $requestPath):self {
 
 			$selfName = get_called_class();
 
@@ -70,6 +70,8 @@
 
 				$selfName => $instance
 			]);
+
+			return $instance;
 		}
 
 		public function getPermanentPath ():?string {
@@ -166,7 +168,7 @@
 					$versionKeys
 				);
 			}
-			else $startIndex = count($versionHandlers) - 1; // if there's no specific version, we will serve the most recent
+			else $startIndex = 0; // if there's no specific version, we will serve the most recent
 
 			$versionHandlers = array_slice($versionHandlers, $startIndex);
 

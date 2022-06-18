@@ -14,7 +14,9 @@
 			return "api";
 		}
 
-		// should be listed in descending order of the versions
+		/**
+		 * {@inheritdoc}
+		*/
 		public function apiStack ():array {
 
 			return [];

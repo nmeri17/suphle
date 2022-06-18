@@ -18,7 +18,7 @@
 				])
 				->getClass(ModuleInitializer::class);
 
-				$routeMatcher = $context->initialize()->assignRoute();
+				$routeMatcher = $context->prepareToFindRoute()->assignRoute();
 				
 				if ($routeMatcher->didFindRoute()) {
 

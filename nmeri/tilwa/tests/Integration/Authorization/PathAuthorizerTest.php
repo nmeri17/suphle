@@ -21,10 +21,7 @@
 
 		use SecureUserAssertions, BaseDatabasePopulator;
 
-		protected function getInitialCount ():int {
-
-			return 10;
-		}
+		private $authorizer;
 		
 		protected function getEntryCollection ():string {
 
@@ -44,7 +41,7 @@
 			]);
 		}
 
-		private function getUser67 (bool $makeAdmin = false):UserContract {
+		private function makeUser (bool $makeAdmin = false):UserContract {
 
 			return $this->replicator->modifyInsertion(1, [
 
@@ -52,14 +49,19 @@
 			])->first();
 		}
 
+		// can't move this to setUp since this object is updated after request is updated
+		private function getAuthorizer ():PathAuthorizer {
+
+			return $this->container->getClass(PathAuthorizer::class);
+		}
 		private function authorizationSuccess ():bool {
 
-			return $this->container->getClass(PathAuthorizer::class)->passesActiveRules();
+			return $this->getAuthorizer()->passesActiveRules();
 		}
 
 		public function test_present_authorization_succeeds () {
 
-			$this->actingAs($this->getUser67(true)); // given
+			$this->actingAs($this->makeUser(true)); // given
 
 			$this->fakeRequest("/admin-entry"); // when
 
@@ -68,7 +70,7 @@
 
 		public function test_absent_authorization_fails () {
 
-			$this->actingAs($this->getUser67()); // given
+			$this->actingAs($this->makeUser()); // given
 
 			$this->fakeRequest("/admin-entry"); // when
 
@@ -77,7 +79,7 @@
 
 		public function test_present_nested_authorization_succeeds () {
 
-			$this->actingAs($this->getUser67(true)); // given
+			$this->actingAs($this->makeUser(true)); // given
 
 			$this->fakeRequest("/admin/retain"); // when
 
@@ -86,7 +88,7 @@
 
 		public function test_absent_nested_authorization_fails () {
 
-			$this->actingAs($this->getUser67()); // given
+			$this->actingAs($this->makeUser()); // given
 
 			$this->fakeRequest("/admin/retain"); // when
 
@@ -95,21 +97,25 @@
 
 		public function test_nested_can_add_more_locks () {
 
-			// given
-			$this->actingAs($this->getUser67());
+			$admin = $this->makeUser(true); // must be an admin, otherwise the admin rule attached to the parent will cause it to fail
+
+			$this->actingAs($admin); // given
+
+			$model = new class {
+
+				public $creatorId;
+
+				public function getCreatorId ():int {
+
+					return $this->creatorId;
+				}
+			};
+
+			$model->creatorId = $admin->getId();
 
 			$this->container->whenType(ModelEditRule::class)
 
-			->needsArguments([
-
-				"modelService" => new class {
-
-					public function getCreatorId ():int {
-
-						return 67;
-					}
-				}
-			]);
+			->needsArguments([ "modelService" => $model ]);
 
 			$this->fakeRequest("/admin/additional-rule"); // when
 
@@ -119,7 +125,7 @@
 		public function test_nested_missing_all_rules_fails () {
 
 			// given
-			$this->actingAs($this->getUser67());
+			$this->actingAs($this->makeUser());
 
 			$this->container->whenType(ModelEditRule::class)
 
@@ -141,11 +147,22 @@
 
 		public function test_unlock_works () {
 
-			$this->actingAs($this->getUser67()); // given
+			$this->actingAs($this->makeUser()); // given
 
 			$this->fakeRequest("/admin/secede"); // when
 
 			$this->assertTrue($this->authorizationSuccess()); // then
+		}
+
+		public function test_unlock_returns_empty_rule_list () {
+
+			$this->actingAs($this->makeUser()); // given
+
+			$this->fakeRequest("/admin/secede"); // when
+
+			$result = $this->getAuthorizer()->getActiveRules();
+
+			$this->assertEmpty($result); // then
 		}
 	}
 ?>

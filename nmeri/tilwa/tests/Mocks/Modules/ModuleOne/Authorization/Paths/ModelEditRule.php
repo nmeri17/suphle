@@ -1,26 +1,26 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Authorization\Paths;
 
+	use Tilwa\Contracts\Auth\AuthStorage;
+
 	use Tilwa\Request\RouteRule;
 
 	class ModelEditRule extends RouteRule {
-
-		protected $authorizedUser;
 
 		private $modelService;
 
 		public function __construct (AuthStorage $authStorage, $modelService) {
 
-			$this->authorizedUser = $authStorage->getUser();
-
 			$this->modelService = $modelService;
+
+			parent::__construct($authStorage);
 		}
 
 		public function permit ():bool {
 
-			$user = $this->authorizedUser;
+			$user = $this->authStorage->getUser();
 
-			return $user->isAdmin() || $user->getId() == $modelService->getCreatorId();
+			return $user->isAdmin() || $user->getId() == $this->modelService->getCreatorId();
 		}
 	}
 ?>

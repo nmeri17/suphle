@@ -3,7 +3,7 @@
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Interfaces\GreaterFields;
 
-	class LastLast implements GreaterFields {
+	class BothFieldsEqual implements GreaterFields {
 
 		public function plow () {}
 	}

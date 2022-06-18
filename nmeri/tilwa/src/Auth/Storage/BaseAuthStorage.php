@@ -8,7 +8,7 @@
 	*/
 	abstract class BaseAuthStorage implements AuthStorage {
 
-		protected $hasResumed = false, $userHydrator, $user, $identifier;
+		protected $userHydrator, $user, $identifier;
 
 		public function setHydrator (UserHydrator $userHydrator):void {
 
@@ -35,19 +35,9 @@
 		
 		public function getId ():?string {
 
-			$this->ensureSessionResumption();
+			$this->resumeSession(); // this is supposed to be wrapped in a nonce preventing it from being called each time we try to read id, but that'll mean we can't switch between multiple users within tests e.g those using [dataProvider], where PHPUnit doesn't reset objects
 
 			return $this->identifier;
-		}
-
-		protected function ensureSessionResumption ():void {
-
-			if (!$this->hasResumed) {
-
-				$this->resumeSession();
-
-				$this->hasResumed = true;
-			}
 		}
 
 		/**

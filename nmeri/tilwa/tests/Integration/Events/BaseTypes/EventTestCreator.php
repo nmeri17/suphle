@@ -3,9 +3,15 @@
 
 	use Tilwa\Modules\ModuleDescriptor;
 
+	use Tilwa\Hydration\Structures\ObjectDetails;
+
+	use Tilwa\Events\{EventManager, ModuleLevelEvents};
+
 	use Tilwa\Testing\{Proxies\WriteOnlyContainer, Condiments\EmittedEventsCatcher};
 
 	use Tilwa\Tests\Integration\Modules\ModuleDescriptor\DescriptorCollection;
+
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
 	class EventTestCreator extends DescriptorCollection {
 
@@ -13,30 +19,32 @@
 
 		protected $payload = 5, $mockEventReceiver,
 
-		$eventReceiverName, $mockReceiverMethods = ["updatePayload"];
+		$eventReceiverName;
 
-		public function setUp ():void {
+		// since we intend to manually trigger it in extending classes
+		protected function setUp ():void {}
 
-			if (!is_null($this->eventReceiverName))
-
-				$this->mockEventReceiver = $this->createMockBuilder(
-
-					$this->eventReceiverName,
-
-					$this->receiverConstructorArguments(),
-
-					$this->mockReceiverMethods
-				);
+		protected function parentSetUp ():void {
 
 			parent::setUp();
 		}
 
-		/**
-		 * Arguments used for the construction of [mockEventReceiver]. Values returned from here can't be pulled from container since none has been created yet
-		*/
-		protected function receiverConstructorArguments ():array {
+		protected function doubleEventManager ():EventManager {
 
-			return [];
+			$manager = $this->positiveDouble(EventManager::class);
+
+			$dependencies = array_map(function ($argument) {
+
+				return $this->positiveDouble($argument);
+			}, [
+				ModuleOneDescriptor::class, ModuleLevelEvents::class,
+
+				ObjectDetails::class
+			]);
+
+			$manager->setDependencies(...$dependencies);
+
+			return $manager;
 		}
 
 		/**
@@ -54,12 +62,37 @@
 			});
 		}
 
-		protected function expectUpdatePayload ():void {
+		protected function defaultEventManagerConstructor ():array {
 
-			$this->mockCalls([
+			return [
+
+				"eventManager" => $this->doubleEventManager()
+			];
+		}
+
+		/**
+		 * Intended to be called before [setUp]
+		 * 
+		 * @param {constructorStubs} Uses [defaultEventManagerConstructor] when null instead of an empty array
+		*/
+		protected function setMockEventReceiver (array $mockMethods, array $constructorStubs = null):void {
+
+			$this->mockEventReceiver = $this->positiveDouble( // can't use [replaceConstructorArguments] since that requires container and that isn't available here
+
+				$this->eventReceiverName, [],
+
+				$mockMethods,
+
+				$constructorStubs ?? $this->defaultEventManagerConstructor()
+			);
+		}
+
+		protected function expectUpdatePayload ():array {
+
+			return [
 
 				"updatePayload" => [1, [$this->payload]]
-			], $this->mockEventReceiver);
+			];
 		}
 	}
 ?>

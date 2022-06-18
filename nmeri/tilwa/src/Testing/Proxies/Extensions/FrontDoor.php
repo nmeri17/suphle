@@ -5,17 +5,11 @@
 
 	use Tilwa\Hydration\Container;
 
-	use Tilwa\Events\ModuleLevelEvents;
-
 	class FrontDoor extends ModuleHandlerIdentifier {
 
-		private $eventParent;
-
-		public function __construct (array $descriptors, ModuleLevelEvents $eventParent = null) {
+		public function __construct (array $descriptors) {
 
 			$this->descriptors = $descriptors;
-
-			$this->eventParent = $eventParent;
 
 			parent::__construct();
 		}
@@ -28,11 +22,6 @@
 		public function firstContainer ():Container {
 
 			return $this->container;
-		}
-
-		protected function getEventConnector ():ModuleLevelEvents {
-
-			return $this->eventParent ?? parent::getEventConnector();
 		}
 
 		protected function transferHeaders ():void {

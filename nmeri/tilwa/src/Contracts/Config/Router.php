@@ -6,7 +6,9 @@
 
 		public function apiPrefix():string;
 
-		// should be listed in descending order of the versions
+		/**
+		 * Should be listed in descending order of the versions
+		*/
 		public function apiStack ():array;
 
 		// point to the entry collection

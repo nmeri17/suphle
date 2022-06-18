@@ -7,7 +7,7 @@
 
 		public function permit ():bool {
 
-			return $this->authorizedUser->isAdmin();
+			return $this->authStorage->getUser()->isAdmin();
 		}
 	}
 ?>

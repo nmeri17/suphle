@@ -9,6 +9,11 @@
 
 	class BasicEventTest extends EventTestCreator {
 
+		protected function setUp ():void {
+
+			$this->parentSetUp();
+		}
+
 		public function test_can_trap_events () {
 
 			$this->getModuleFor(ModuleOne::class)->noPayloadEvent(); // when

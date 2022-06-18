@@ -18,11 +18,11 @@
 
 						"apiStack" => [
 
-							"v1" => LowerMirror::class,
+							"v3" => ApiUpdate3Entry::class,
 
 							"v2" => ApiUpdate2Entry::class,
 
-							"v3" => ApiUpdate3Entry::class
+							"v1" => LowerMirror::class
 						]
 					]
 				)

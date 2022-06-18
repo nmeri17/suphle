@@ -112,42 +112,43 @@
 
 		public function test_successful_validation_initiates_middleware () {
 
-			$sutName = ModuleInitializer::class;
+			$sut = $this->getInitializer(); // given
 
-			$middlewareQueueName = MiddlewareQueue::class;
+			$this->injectInitializerDependencies($sut); // then
 
-			$rendererManager = RoutedRendererManager::class;
+			$sut->setHandlingRenderer(); // when
+		}
 
-			$container = $this->container;
+		private function getInitializer ():ModuleInitializer {
 
-			// given
-			$sut = $this->replaceConstructorArguments(
+			return $this->replaceConstructorArguments(
 
-				$sutName,
+				ModuleInitializer::class,
 				[
 					"descriptor" => $this->positiveDouble(DescriptorInterface::class, [
 
-						"getContainer" => $container
+						"getContainer" => $this->container
 					])
 				],
 				[
 					"isLaravelRoute" => false
 				]
 			);
+		}
 
-			$container->whenTypeAny()->needsAny([
+		private function injectInitializerDependencies (ModuleInitializer $initializer):void {
 
-				$rendererManager => $this->negativeDouble($rendererManager),
+			$middlewareQueueName = MiddlewareQueue::class;
+
+			$this->container->whenTypeAny()->needsAny([
 
 				$middlewareQueueName => $this->negativeDouble($middlewareQueueName, [], [
 
 					"runStack" => [1, []]
-				]), // then
+				]),
 
-				$sutName => $sut
+				ModuleInitializer::class => $initializer
 			]);
-
-			$sut->initialize()->fullRequestProtocols(); // when
 		}
 
 		public function test_failed_validation_reverts_renderer () {

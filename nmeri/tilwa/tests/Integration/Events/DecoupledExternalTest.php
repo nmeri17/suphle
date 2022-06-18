@@ -22,9 +22,9 @@
 
 		public function test_can_listen_to_unimported_external () {
 
-			// given => see module injection
+			$this->setMockEventReceiver($this->expectUpdatePayload(), []); // then
 
-			$this->expectUpdatePayload(); // then
+			$this->parentSetUp(); // given
 
 			$this->getModuleFor(ModuleOne::class)->payloadEvent($this->payload); // when
 		}

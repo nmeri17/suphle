@@ -9,12 +9,7 @@
 
 	class CoupledExternalTest extends EventTestCreator {
 
-		protected $eventReceiverName = EventsHandler::class,
-
-		$mockReceiverMethods = [
-
-			"setExternalPayload", "handleImpossibleEmit"
-		];
+		protected $eventReceiverName = EventsHandler::class;
 
 		protected function setModuleThree ():void {
 
@@ -27,24 +22,24 @@
 
 		public function test_can_listen_to_imported_external () {
 
-			// given => see module injection
-
-			$this->mockCalls([
+			$this->setMockEventReceiver([
 
 				"setExternalPayload" => [1, [$this->payload]]
-			], $this->mockEventReceiver); // then
+			]); // then
+
+			$this->parentSetUp(); // given
 
 			$this->getModuleFor(ModuleOne::class)->payloadEvent($this->payload); // when
 		}
 
 		public function test_local_bind_cant_react_to_external_emission () {
 
-			// given => see module injection
-
-			$this->mockCalls([
+			$this->setMockEventReceiver([
 
 				"handleImpossibleEmit" => [0, [$this->payload]]
-			], $this->mockEventReceiver); // then
+			]); // then
+
+			$this->parentSetUp(); // given
 
 			$this->getModuleFor(ModuleOne::class)->payloadEvent($this->payload); // when
 		}

@@ -22,26 +22,13 @@
 
 			$this->setHttpParams($activePath);
 
-			$container = $this->container;
+			$sut = $this->container->getClass(PathPlaceholders::class);
 
-			$sut = $container->getClass(PathPlaceholders::class);
+			$this->buildRouter($sut) // given
 
-			// given
-			$router = $this->replaceConstructorArguments (RouteManager::class, [ // pulling some dependencies from container so their constructors can run
+			->findRenderer(); // when
 
-				"placeholderStorage" => $sut,
-
-				"requestDetails" => $container->getClass(RequestDetails::class),
-
-				"patternIndicator" => $this->negativeDouble(PatternIndicator::class),
-
-				"urlReplacer" => $container->getClass(CollectionMethodToUrl::class)
-			], [
-
-				"entryRouteMap" => [BrowserNoPrefix::class]
-			]);
-
-			$router->findRenderer(); // when
+			$sut->exchangeTokenValues($activePath);
 
 			$this->assertSame(
 
@@ -58,6 +45,25 @@
 
 				["segment/5/segment/10", ["id" => "5", "id2" => "10"]]
 			];
+		}
+
+		private function buildRouter (PathPlaceholders $pathPlaceholders):RouteManager {
+
+			$container = $this->container;
+
+			return $this->replaceConstructorArguments (RouteManager::class, [ // pulling some dependencies from container so their constructors can run
+
+				"placeholderStorage" => $pathPlaceholders,
+
+				"requestDetails" => $container->getClass(RequestDetails::class),
+
+				"patternIndicator" => $this->negativeDouble(PatternIndicator::class),
+
+				"urlReplacer" => $container->getClass(CollectionMethodToUrl::class)
+			], [
+
+				"entryRouteMap" => [BrowserNoPrefix::class]
+			]);
 		}
 
 		public function test_can_extract_all_method_segments () {

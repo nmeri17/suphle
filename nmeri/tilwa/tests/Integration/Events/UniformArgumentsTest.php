@@ -15,8 +15,6 @@
 
 	class UniformArgumentsTest extends EventTestCreator {
 
-		public function setUp ():void {}
-
 		protected function setModuleOne ():void {
 
 			$this->moduleOne = $this->replicateModule(ModuleOneDescriptor::class, function(WriteOnlyContainer $container) {
@@ -34,7 +32,7 @@
 
 			$this->expectException(InvalidArgumentException::class);// then
 
-			parent::setUp(); // when
+			$this->parentSetUp(); // when
 		}
 	}
 ?>

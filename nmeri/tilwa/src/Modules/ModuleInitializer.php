@@ -117,7 +117,7 @@
 			return $this->rendererManager;
 		}
 
-		public function initialize ():self {
+		public function prepareToFindRoute ():self {
 
 			$this->router = $this->container->getClass (RouteManager::class);
 

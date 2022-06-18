@@ -1,11 +1,11 @@
 <?php
 	namespace Tilwa\Tests\Unit\Hydration;
 
-	use Tilwa\Hydration\Container;
+	use Tilwa\Hydration\{Container, Structures\ContainerTelescope};
 
 	use Tilwa\Contracts\Auth\UserContract;
 
-	use Tilwa\Testing\{TestTypes\TestVirginContainer, Proxies\Extensions\CheckProvisionedClasses};
+	use Tilwa\Testing\TestTypes\TestVirginContainer;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\{ ARequiresBCounter, BCounter};
 
@@ -20,6 +20,8 @@
 		protected function setUp ():void {
 
 			$this->container = new Container;
+
+			$this->container->setEssentials();
 		}
 
 		public function test_lastHydratedFor () {
@@ -39,16 +41,27 @@
 
 		public function test_can_provide_arguments () {
 
-			$container = new CheckProvisionedClasses;
+			$containerTelescope = new ContainerTelescope;
 
-			$provision = [
+			$container = $this->container;
 
-				BCounter::class => new BCounter
-			];
+			$container->setTelescope($containerTelescope);
 
-			$container->whenType($this->aRequires)->needsAny($provision);
+			$bCounter = new BCounter;
 
-			$this->assertTrue($container->matchesNeedsProvision($this->aRequires, $provision));
+			$container->whenType($this->aRequires)->needsAny([ // given
+
+				BCounter::class => $bCounter
+			])
+			->getClass($this->aRequires); // when
+
+			$this->assertTrue($containerTelescope->readArgumentFor(
+
+				$this->aRequires, [
+
+					"b1" => $bCounter
+				]
+			));
 		}
 
 		public function test_getClass_tries_returning_provided () {

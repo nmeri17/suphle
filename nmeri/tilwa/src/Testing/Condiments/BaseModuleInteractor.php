@@ -57,11 +57,6 @@
 			}
 		}
 
-		protected function getEventParent ():?ModuleLevelEvents {
-
-			return null;
-		}
-
 		protected function firstModuleContainer ():Container {
 
 			return $this->entrance->firstContainer();

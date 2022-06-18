@@ -5,7 +5,7 @@
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Interfaces\GreaterFields;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\Services\ConditionalHandlers\{FieldBGreater, FieldAGreater, LastLast};
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\Services\ConditionalHandlers\{FieldBGreater, FieldAGreater, BothFieldsEqual};
 
 	class ConditionalFactoryMock extends ConditionalFactory {
 
@@ -20,7 +20,7 @@
 
 			->whenCase([$this, "caseBCondition"], FieldBGreater::class, $fieldB, $fieldA)
 
-			->finally( LastLast::class, $fieldC);
+			->finally( BothFieldsEqual::class, $fieldC);
 		}
 
 		protected function getInterface ():string {

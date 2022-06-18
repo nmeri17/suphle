@@ -5,18 +5,16 @@
 
 	class GroupedEventsTest extends TestLocalReceiver {
 
-		protected $mockReceiverMethods = ["doNothing", "unionHandler"];
-
 		public function test_space_delimited_event_names () {
 
-			// given => see module injection
-
-			$this->mockCalls([ // then
+			$this->setMockEventReceiver([ // then
 
 				"doNothing" => [1, []],
 
 				"unionHandler" => [2, []]
-			], $this->mockEventReceiver);
+			]); // then
+
+			$this->parentSetUp(); // given
 
 			$this->getModuleOne()->sendConcatEvents($this->payload); // when
 		}

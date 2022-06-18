@@ -25,9 +25,8 @@
 			$this->consoleRunner = new CliRunner (
 
 				$this->entrance = new FrontDoor(
-					$this->modules = $this->getModules(),
-
-					$this->getEventParent()
+					
+					$this->modules = $this->getModules()
 				),
 				new SymfonyCli("SuphleTest", "v2")
 			);
