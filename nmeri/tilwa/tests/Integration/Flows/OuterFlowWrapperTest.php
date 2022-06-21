@@ -36,7 +36,7 @@
 
 			$this->flowUrl = "/initial-flow/id";
 
-			$this->handleDefaultBranchesContext(); // when
+			$this->handleDefaultPendingFlowDetails(); // when
 
 			$this->assertPushedToFlow("/flow-with-flow/5"); // then
 		}

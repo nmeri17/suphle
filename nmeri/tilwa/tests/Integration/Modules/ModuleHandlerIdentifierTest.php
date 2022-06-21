@@ -74,7 +74,7 @@
 
 		public function test_saved_flow_triggers_flow_handler () {
 
-			$this->handleDefaultBranchesContext(); // given
+			$this->handleDefaultPendingFlowDetails(); // given
 
 			//$this->assertHandledByFlow($this->userUrl);
 			

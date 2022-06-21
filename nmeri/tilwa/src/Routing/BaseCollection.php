@@ -19,7 +19,12 @@
 
 		$crudMode = false,
 
-		$canaryValidator, $authStorage, $parentPrefix;
+		$canaryValidator, $authStorage,
+
+		/**
+		 * this is set if this collection is used as prefix in another. Should be used while determining the prefix of that collection
+		*/
+		$parentPrefix;
 
 		private $crudPrefix, $prefixClass, $lastRegistered = [],
 
@@ -34,6 +39,9 @@
 			$this->methodSorter = $methodSorter;
 		}
 		
+		/**
+		 * The same rules that apply to method patterns apply here: uppercase for literals, underscores with "h" for compound names etc
+		*/
 		public function _prefixCurrent():string {
 			
 			return "";
@@ -117,7 +125,7 @@
 
 				if (!empty($prefix))
 
-					return strtoupper($prefix) . "_$name";
+					return $prefix . "_$name";
 
 				return $name;
 			}, $patterns);

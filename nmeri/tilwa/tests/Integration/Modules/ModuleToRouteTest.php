@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Integration\Modules;
 
-	use Tilwa\Modules\ModuleToRoute;
+	use Tilwa\Modules\{ModuleToRoute, ModulesBooter};
 
 	use Tilwa\Hydration\Container;
 
@@ -19,9 +19,11 @@
 
 			parent::setUp();
 
-			$this->prepareAllModules();
+			$container = $this->getContainer();
 
-			$this->sut = $this->getContainer()->getClass(ModuleToRoute::class);
+			$container->getClass(ModulesBooter::class)->prepareAllModules();
+
+			$this->sut = $container->getClass(ModuleToRoute::class);
 		}
 
 		protected function getModules ():array {
@@ -29,7 +31,7 @@
 			return [ $this->moduleOne, $this->moduleTwo ];
 		}
 		
-		public function test_findContext() {
+		public function test_can_find_in_module_other_than_first () {
 
 			$this->setHttpParams("/module-two/5"); // when
 

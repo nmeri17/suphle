@@ -7,13 +7,18 @@
 
 	use Tilwa\Request\PayloadStorage;
 
-	class HierarchialMiddleware1 implements Middleware {
+	class AltersPayloadStorage implements Middleware {
 
 		public function process (PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler):BaseRenderer {
 
-			$payloadStorage->mergePayload(["foo" => "bar"]);
+			$payloadStorage->mergePayload($this->payloadUpdates());
 
 			return $requestHandler->handle($payloadStorage);
+		}
+
+		public function payloadUpdates ():array {
+
+			return ["foo" => "bar"];
 		}
 	}
 ?>

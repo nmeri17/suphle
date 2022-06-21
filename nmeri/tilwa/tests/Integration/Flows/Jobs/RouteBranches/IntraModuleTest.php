@@ -3,7 +3,7 @@
 
 	use Tilwa\Flows\{UmbrellaSaver, Structures\RouteUmbrella};
 
-	use Tilwa\Flows\Structures\BranchesContext;
+	use Tilwa\Flows\Structures\PendingFlowDetails;
 
 	use Tilwa\Contracts\{IO\CacheManager, Config\Router, Presentation\BaseRenderer};
 
@@ -36,7 +36,7 @@
 			$this->dataProvider([
 
 				[$this, "contextParameters"]
-			], function (BranchesContext $context) {
+			], function (PendingFlowDetails $context) {
 
 				// given => see setup
 				$this->makeRouteBranches($context)->handle(); // When
@@ -64,15 +64,15 @@
 		 * The test this goes into doesn't do any auth related stuff. It is content with running the flow and expecting to find it in the cache
 		 * 
 		 * @return [
-			 * 	BranchesContext => configured to match what we expect an origin url to populate a task with
+			 * 	PendingFlowDetails => configured to match what we expect an origin url to populate a task with
 		 * ]
 		*/
 		public function contextParameters ():array {
 
 			return [
-				[$this->makeBranchesContext()],
+				[$this->makePendingFlowDetails()],
 
-				[$this->makeBranchesContext($this->makeUser(5))]
+				[$this->makePendingFlowDetails($this->makeUser(5))]
 			];
 		}
 
@@ -96,7 +96,7 @@
 			$this->dataProvider([
 
 				[$this, "contextParameters"]
-			], function (BranchesContext $context) {
+			], function (PendingFlowDetails $context) {
 
 				// given => see dataProvider
 				$this->makeRouteBranches($context)->handle(); // When

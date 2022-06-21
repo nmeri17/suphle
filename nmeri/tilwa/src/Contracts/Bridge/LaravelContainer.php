@@ -29,7 +29,7 @@
 
 		public function runContainerBootstrappers ():void;
 
-		public function createSandbox (callable $explosive);
+		public function ensureHasLoadedHelpers ():void;
 	}
 ?>
 

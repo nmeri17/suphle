@@ -16,7 +16,7 @@
 		
 		public function _prefixCurrent ():string {
 			
-			return empty($this->parentPrefix) ? "inner": "";
+			return empty($this->parentPrefix) ? "INNER": "";
 		}
 		
 		public function WITH () {

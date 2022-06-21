@@ -14,7 +14,7 @@
 		
 		public function _prefixCurrent() {
 			
-			"auth";
+			"AUTH";
 		}
 
 		public function _handlingClass ():string {

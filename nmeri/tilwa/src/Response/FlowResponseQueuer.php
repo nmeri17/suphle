@@ -5,7 +5,7 @@
 
 	use Tilwa\Queues\AdapterManager;
 
-	use Tilwa\Flows\{Jobs\RouteBranches, Structures\BranchesContext};
+	use Tilwa\Flows\{Jobs\RouteBranches, Structures\PendingFlowDetails};
 
 	class FlowResponseQueuer {
 
@@ -22,7 +22,7 @@
 
 			$this->queueManager->augmentArguments(RouteBranches::class, [
 				
-				"context" => new BranchesContext(
+				"flowDetails" => new PendingFlowDetails(
 					$renderer,
 
 					$this->authStorage->getUser()

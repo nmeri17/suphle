@@ -3,9 +3,12 @@
 
 	use Tilwa\Contracts\{Auth\UserContract, Presentation\BaseRenderer};
 
-	class BranchesContext {
+	/**
+	 * This is the what is received from the currently handled request. It is stored and during handling later, specifics of the flow are extracted and handled
+	*/
+	class PendingFlowDetails {
 
-		private $modules, $user, $renderer, $rendererManager;
+		private $user, $renderer;
 
 		/**
 		* @param {user} whether a sub-flow or transition from organic flow, all flow queueing is triggered by a user request. This argument is that user

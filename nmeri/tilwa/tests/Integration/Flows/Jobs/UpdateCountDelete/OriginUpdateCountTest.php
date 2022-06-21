@@ -28,7 +28,7 @@
 		public function test_clears_only_accessed_but_retains_others () {
 
 			// given
-			$this->handleDefaultBranchesContext(); // pretend to make original request that injects our flow urls
+			$this->handleDefaultPendingFlowDetails(); // pretend to make original request that injects our flow urls
 
 			// when
 			$this->get($this->userUrl); // get and remove 5

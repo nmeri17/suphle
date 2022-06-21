@@ -102,24 +102,18 @@
 				(new $bootstrapper)->bootstrap($this);
 		}
 
-		public function createSandbox (callable $explosive) {
+		public function ensureHasLoadedHelpers ():void {
+
+			if (self::$hasSetApp) return;
 
 			$this->requireHelpers();
 
-			if (!self::$hasSetApp) {
+			function app () { // override their definition
 
-				function app () { // override their definition
-
-					return $this;
-				}
-
-				self::$hasSetApp = true;
+				return $this;
 			}
 
-			$result = $explosive();
-
-			// use get_defined_functions() and possibly reflection to unset functions declared in those files
-			return $result;
+			self::$hasSetApp = true;
 		}
 
 		private function requireHelpers ():void {

@@ -9,6 +9,8 @@
 
 	use Tilwa\Response\RoutedRendererManager;
 
+	use Tilwa\Routing\PathPlaceholders;
+
 	use Tilwa\Contracts\Presentation\BaseRenderer;
 
 	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
@@ -21,13 +23,15 @@
 
 	 	private $rendererManager = RoutedRendererManager::class,
 
-	 	$sutName = FlowHydrator::class;
+	 	$sutName = FlowHydrator::class, $placeholderStorage;
 
 	 	public function setUp ():void {
 
 			parent::setUp();
 
 			$this->indexes = $this->getIndexes();
+
+			$this->placeholderStorage = $this->positiveDouble(PathPlaceholders::class);
 		}
 		
 		public function test_executeGeneratedUrl_triggers_controller () {
@@ -41,8 +45,10 @@
 			]);
  
  			// when
-			$hydrator->setDependencies($sut, [], "")
+			$hydrator->setDependencies(
 
+				$sut, $this->placeholderStorage, [], ""
+			)
 			->executeGeneratedUrl();
 		}
 
@@ -65,8 +71,10 @@
 			]);
  
  			// when
-			$hydrator->setDependencies($rendererManager, [], "")
+			$hydrator->setDependencies(
 
+				$rendererManager, $this->placeholderStorage, [], ""
+			)
 			->executeGeneratedUrl();
 		}
 
@@ -81,10 +89,13 @@
 			// given
 			$rendererManager = $this->negativeDouble($this->rendererManager);
 			
-			$hydrator->setDependencies($rendererManager, [
+			$hydrator->setDependencies($rendererManager,
 
-				$this->payloadKey => $models
-			], "");
+				$this->placeholderStorage, [
+
+					$this->payloadKey => $models
+				], ""
+			);
 
 			$content = $hydrator->getNodeFromPrevious($unitNode); // when
 
@@ -172,6 +183,8 @@
 
 				$this->positiveDouble($this->rendererManager),
 
+				$this->placeholderStorage,
+
 				$this->payloadFromPrevious(), // given
 
 				""
@@ -214,6 +227,8 @@
 			])->setDependencies(
 
 				$this->positiveDouble($this->rendererManager),
+
+				$this->placeholderStorage,
 
 				[$leafName => $queryPart], // given
 

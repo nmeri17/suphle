@@ -9,7 +9,7 @@
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock};
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Middlewares\{HierarchialMiddleware1, HierarchialMiddleware2};
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Middlewares\{AltersPayloadStorage, HierarchialMiddleware2};
 
 	use Tilwa\Tests\Mocks\Interactions\ModuleOne;
 
@@ -25,7 +25,7 @@
 					$container->replaceWithMock(Router::class, RouterMock::class, [
 
 						"defaultMiddleware" => [
-							HierarchialMiddleware1::class,
+							AltersPayloadStorage::class,
 
 							$this->sutName,
 

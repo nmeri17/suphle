@@ -41,12 +41,11 @@
 
 			$this->injectBindings($initialized); // required for below call
 
-			$initialized->createSandbox(function () use ($initialized) {
+			$initialized->ensureHasLoadedHelpers();
 
-				$this->attendToConfig($initialized);
+			$this->attendToConfig($initialized);
 
-				$initialized->runContainerBootstrappers();
-			});
+			$initialized->runContainerBootstrappers();
 		}
 
 		private function injectBindings (LaravelContainer $laravelContainer):void {

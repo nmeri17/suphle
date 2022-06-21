@@ -13,8 +13,13 @@
 
 			return BaseController::class;
 		}
+		
+		public function _prefixCurrent ():string {
+			
+			return "MODULE__THREEh";
+		}
 
-		public function MODULE__TWOh_id() {
+		public function id () {
 
 			$this->_get(new Json("checkPlaceholder"));
 		}

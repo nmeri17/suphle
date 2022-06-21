@@ -16,7 +16,7 @@
 
 		public function bootModule ():self {
 
-			$this->descriptor->warmUp();
+			$this->descriptor->warmModuleContainer();
 
 			$this->descriptor->prepareToRun();
 

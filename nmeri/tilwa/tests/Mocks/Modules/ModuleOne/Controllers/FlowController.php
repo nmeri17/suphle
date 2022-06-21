@@ -5,13 +5,17 @@
 
 	use Tilwa\Routing\PathPlaceholders;
 
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\Services\DummyModels;
+
 	class FlowController extends ServiceCoordinator {
 
-		private $pathPlaceholders;
+		private $pathPlaceholders, $dummyModels;
 
-		public function __construct (PathPlaceholders $pathPlaceholders) {
+		public function __construct (PathPlaceholders $pathPlaceholders, DummyModels $dummyModels) {
 
 			$this->pathPlaceholders = $pathPlaceholders;
+
+			$this->dummyModels = $dummyModels;
 		}
 
 		public function noFlowHandler () {}
@@ -52,11 +56,19 @@
 			return [];
 		}
 
-		public function readFlowPayload () {
+		public function readFlowPayload ():array {
 
 			return [
 
 				"id" => $this->pathPlaceholders->getSegmentValue("id")
+			];
+		}
+
+		public function getsTenModels ():array {
+
+			return [
+
+				"anchor" => $this->dummyModels->fetchModels()
 			];
 		}
 	}

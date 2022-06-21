@@ -25,21 +25,6 @@ sqlite
 Wrap:
 	- debug_backtrace
 
-==when doesn't work==
-	- crud:
-		- index: use "_index" instead of leaving it blank
-		- line 102
-			- doesn't this return a regex that should be escaped/normalized? if that be the case, match incoming path against that pattern and return the result to this guy
-
-	- flows:
-		- finding in cache after job runs, consider delegating path fetching to outerFlowWrapper->dataPath (although there's a chance that prefix wasn't even added in the hydrator, see line 84)
-		- [OuterFlowWrapperTest->test_empties_cache_entry_after_returning], write a sub test that checks the cache directly to confirm it was removed
-
-	- tests:
-		- mocks injected into modules => relevant test should create mock and manually trigger module booting before it runs. But first, check whether prophecy will work
-
-	- conditional factory
-		- [finally] => consider making factoryList a numeric array
 
 
 test only and except from routeCollection
@@ -60,19 +45,13 @@ test only and except from routeCollection
 
 
 
-what would be a really valuable test is visiting flows defined in 3 from 1 ie. full get
-	- MultiModuleTest->test_handle_flows_in_other_modules transfer flow routes in FlowRoutes to another module
-
-
 write tests for
 	- TransphpormTest
-	- RoutedRendererManager->handleValidRequest check whether it's necessary to inject updates from higher-ups (middleware) or if they'll receive it anyway (thanks to reference)
 
 create argument allowing us replace uploaded files and filesystem on the operator
 - multiEdit cloaker should complain on get if no authorization is found
 
 
-Move methods on CheckProvisionedClasses to telescope
 
 is gagsException analogous to investigateSystemCrash? how do they relate
 

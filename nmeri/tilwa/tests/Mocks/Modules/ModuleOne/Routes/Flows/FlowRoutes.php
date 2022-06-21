@@ -39,5 +39,19 @@
 
 			$this->_get(new Json("handleChildFlow"));
 		}
+
+		public function FLOW__TO__MODULE3h () {
+
+			$renderer = new Json("getsTenModels");
+
+			$flow = new ControllerFlows;
+
+			$flow->linksTo("module-three/id", $flow
+
+				->previousResponse()->collectionNode("anchor")->pipeTo()
+			);
+
+			$this->_get($renderer->setFlow($flow));
+		}
 	}
 ?>

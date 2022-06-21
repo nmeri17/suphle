@@ -3,56 +3,61 @@
 
 	use Tilwa\Modules\{ModuleToRoute, ModulesBooter};
 
-	use Tilwa\Flows\{FlowHydrator, Structures\BranchesContext, Previous\UnitNode};
+	use Tilwa\Flows\{FlowHydrator, Structures\PendingFlowDetails, Previous\UnitNode};
 
 	use Tilwa\Response\RoutedRendererManager;
 
 	use Tilwa\Request\RequestDetails;
 
+	use Tilwa\Routing\PathPlaceholders;
+
 	use Tilwa\Contracts\{Queues\Task, Database\OrmDialect};
 
-	// for queueing the cached endpoint on hit and queuing sub-flows
 	class RouteBranches implements Task {
 
-		private $context, $moduleFinder, $hydrator, $modules;
+		private $flowDetails, $moduleFinder, $hydrator, $modulesBooter,
+
+		$modules;
 
 		public function __construct(
-			BranchesContext $context, ModuleToRoute $moduleFinder,
+			PendingFlowDetails $flowDetails, ModuleToRoute $moduleFinder,
 
 			FlowHydrator $hydrator, ModulesBooter $modulesBooter
 		) {
 			
-			$this->context = $context;
+			$this->flowDetails = $flowDetails;
 
 			$this->moduleFinder = $moduleFinder;
 
 			$this->hydrator = $hydrator;
 
-			$this->modules = $modulesBooter->getModules();
+			$this->modulesBooter = $modulesBooter;
 		}
 
 		public function handle ():void {
 
-			$outgoingRenderer = $this->context->getRenderer();
+			$outgoingRenderer = $this->flowDetails->getRenderer();
 
 			if (!$outgoingRenderer->hasBranches()) return;
+
+			$this->modules = $this->modulesBooter->bootAllModules()
+
+			->prepareAllModules()->getModules();
 			
 			$outgoingRenderer->getFlow()
 
 			->eachBranch(function ($urlPattern, $structure) {
 
-				$manager = $this->findManagerForPattern( $urlPattern);
+				if (!$this->findManagerForPattern( $urlPattern)) return; // invalid url
 
-				if (!$manager) return; // invalid url
-
-				$this->executeFlowBranch($manager, $urlPattern, $structure);
+				$this->executeFlowBranch($urlPattern, $structure);
 			});
 		}
 
 		/**
 		 * Given the origin path stored a flow pointing to "sub-path/id", this tries to uproot the responseManager in the module containing that path
 		*/
-		private function findManagerForPattern (string $pattern):?RoutedRendererManager {
+		private function findManagerForPattern (string $pattern):bool {
 
 			RequestDetails::fromModules($this->modules, $pattern);
 
@@ -60,14 +65,14 @@
 
 			if (!is_null($moduleInitializer)) {
 
-				$moduleInitializer->whenActive()->setRendererManager();
+				$moduleInitializer->whenActive();
 
-				return $moduleInitializer->getRoutedRendererManager();
+				return true;
 			}
 
 			$this->restoreConnections();
 
-			return null;
+			return false;
 		}
 
 		/**
@@ -80,13 +85,24 @@
 				$descriptor->getContainer()->getClass(OrmDialect::class);
 		}
 
-		private function executeFlowBranch (RoutedRendererManager $rendererManager, string $urlPattern, UnitNode $structure):void {
+		private function executeFlowBranch ( string $urlPattern, UnitNode $structure):void {
 
-			$previousPayload = $this->context->getRenderer()->getRawResponse();
+			$previousPayload = $this->flowDetails->getRenderer()->getRawResponse();
 
-			$this->hydrator->setDependencies($rendererManager, $previousPayload, $urlPattern)
-			
-			->runNodes( $structure, $this->context->getUserId());
+			$container = $this->moduleFinder->getActiveModule()
+
+			->getContainer();
+
+			$rendererManager = $container->getClass(RoutedRendererManager::class);
+
+			$placeholderStorage = $container->getClass(PathPlaceholders::class);
+
+			$this->hydrator->setDependencies(
+				$rendererManager, $placeholderStorage,
+
+				$previousPayload, $urlPattern
+			)
+			->runNodes( $structure, $this->flowDetails->getUserId());
 		}
 	}
 ?>

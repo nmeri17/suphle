@@ -3,7 +3,7 @@
 
 	use Tilwa\Contracts\{Auth\UserContract, Config\Router};
 
-	use Tilwa\Flows\{OuterFlowWrapper, Structures\BranchesContext};
+	use Tilwa\Flows\{OuterFlowWrapper, Structures\PendingFlowDetails};
 
 	use Tilwa\Testing\Proxies\{WriteOnlyContainer, SecureUserAssertions};
 
@@ -36,7 +36,7 @@
 			$this->dataProvider([
 
 				[$this, "specializedUser"]
-			], function (BranchesContext $context, ?UserContract $visitor) {
+			], function (PendingFlowDetails $context, ?UserContract $visitor) {
 
 				$isGuest = is_null($visitor);
 
@@ -55,9 +55,9 @@
 
 			return [
 
-				[$this->makeBranchesContext($user), $user],
+				[$this->makePendingFlowDetails($user), $user],
 
-				[$this->makeBranchesContext(), null] // create content to be mass consumed. Visiting user 5's resource as nobody should access it
+				[$this->makePendingFlowDetails(), null] // create content to be mass consumed. Visiting user 5's resource as nobody should access it
 			];
 		}
 		
@@ -66,7 +66,7 @@
 			$this->dataProvider([
 
 				[$this, "strangeUsers"]
-			], function (BranchesContext $context, ?UserContract $visitor) {
+			], function (PendingFlowDetails $context, ?UserContract $visitor) {
 
 				if (!is_null($visitor))
 
@@ -84,9 +84,9 @@
 
 			return [
 
-				[$this->makeBranchesContext($owner5), $this->makeUser(3)], // create for user 5 and visit it as user 3; should see nothing
+				[$this->makePendingFlowDetails($owner5), $this->makeUser(3)], // create for user 5 and visit it as user 3; should see nothing
 
-				[$this->makeBranchesContext($owner5), null] // create content for user 5. Visiting as nobody should hit a brick wall
+				[$this->makePendingFlowDetails($owner5), null] // create content for user 5. Visiting as nobody should hit a brick wall
 			];
 		}
 		
@@ -95,13 +95,13 @@
 			$this->dataProvider([
 				[$this, "specializedUser"],
 				[$this, "strangeUsers"]
-			], function (BranchesContext $dummyContext, ?UserContract $visitor) {
+			], function (PendingFlowDetails $dummyContext, ?UserContract $visitor) {
 
 				if (!is_null($visitor))
 
 					$this->actingAs($visitor);
 
-				$this->handleDefaultBranchesContext(); // when
+				$this->handleDefaultPendingFlowDetails(); // when
 
 				// then
 				$this->assertHandledByFlow($this->userUrl);
@@ -132,7 +132,7 @@
 
 		public function test_will_emitEvent_after_returning_flow_request() {
 
-			$this->handleDefaultBranchesContext();
+			$this->handleDefaultPendingFlowDetails();
 
 			$this->get($this->userUrl); // when
 

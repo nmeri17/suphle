@@ -62,14 +62,12 @@
 
 			UmbrellaSaver $flowSaver, Container $randomContainer,
 
-			PathPlaceholders $placeholderStorage, PayloadStorage $payloadStorage
+			PayloadStorage $payloadStorage
 		) {
 
 			$this->flowSaver = $flowSaver;
 
 			$this->container = $randomContainer;
-
-			$this->placeholderStorage = $placeholderStorage;
 
 			$this->payloadStorage = $payloadStorage;
 		}
@@ -78,12 +76,20 @@
 		 * These dependencies are obtained after reading flow structure so they can't be injected in our constructor
 		 * 
 		 * @param {rendererManager} the manager designated to handle this request
+		 * @param {placeholderStorage} this shouldn't be a random instance but the one modified by routeManager for this module
 		*/
-		public function setDependencies(RoutedRendererManager $rendererManager, $previousResponse, string $urlPattern):self {
+		public function setDependencies (
+
+			RoutedRendererManager $rendererManager, PathPlaceholders $placeholderStorage,
+
+			$previousResponse, string $urlPattern
+		):self {
 
 			$this->previousResponse = $previousResponse;
 
 			$this->rendererManager = $rendererManager;
+
+			$this->placeholderStorage = $placeholderStorage;
 
 			$this->baseUrlPattern = $urlPattern;
 

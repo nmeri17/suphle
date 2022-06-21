@@ -59,8 +59,8 @@
 
 		protected function getDisgracefulShutdown ():Stub {
 
-			return $this->returnCallback(function ($argument) {
-var_dump($argument);
+			return $this->returnCallback(function ($originalError, $gracefulError) {
+var_dump($originalError, $gracefulError);
 				return "GagsException->getDisgracefulShutdown";
 			});
 		}
@@ -69,7 +69,7 @@ var_dump($argument);
 
 			return $this->returnCallback(function ($argument) {
 
-				return json_decode($argument, true);
+				return $argument; // just skip all the protocol of handling this nicely and return
 			});
 		}
 

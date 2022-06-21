@@ -42,7 +42,7 @@
 		}
 
 		/**
-		 * @return ProvidedServiceWrapper
+		 * @return Instance of {fullName}
 		*/
 		public function manageService (string $fullName) {
 
@@ -50,14 +50,11 @@
 
 			$this->setActiveProvider($providerName);
 
-			return $this->laravelContainer->createSandbox(function () {
+			$this->extractConcrete();
+		
+			$this->provider->boot();
 
-				$this->extractConcrete();
-			
-				$this->provider->boot();
-
-				return $this->wrapConcrete();
-			});
+			return $this->concrete;
 		}
 
 		private function extractConcrete ():void {
@@ -71,22 +68,6 @@
 			$latestKey = array_diff_key($currentBindings, $newBindings);
 
 			$this->concrete = $newBindings[current($latestKey)]["concrete"]();
-		}
-
-		private function wrapConcrete ():ProvidedServiceWrapper {
-
-			return $this->tilwaContainer
-
-			->genericFactory(
-				__DIR__ . DIRECTORY_SEPARATOR . "Templates" . DIRECTORY_SEPARATOR . "ProvidedServiceWrapper.php",
-
-				["target" => get_class($this->concrete)],
-
-				function ($types) {
-
-				    return new ProvidedServiceWrapper($this->concrete, $this);
-				}
-			);
 		}
 	}
 ?>

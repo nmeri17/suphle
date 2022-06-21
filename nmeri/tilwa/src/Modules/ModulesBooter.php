@@ -21,7 +21,7 @@
 			return $this->modules;
 		}
 
-		public function bootAll ():self {
+		public function bootAllModules ():self {
 
 			foreach ($this->modules as $descriptor) {
 
@@ -46,6 +46,23 @@
 		public function prepareFirstModule ():void {
 
 			current($this->modules)->prepareToRun();
+		}
+
+		/**
+		 * Organic behavior is for only module matching incoming request to be prepared. But occasionally, we may want to examine modular functionality without routing.
+		 * 
+		 * @param {skipFirst} Since the caller is likely to have prepared this in order to have access to getContainer
+		*/
+		public function prepareAllModules (bool $skipFirst = true):self {
+
+			foreach ($this->modules as $index => $descriptor) {
+
+				if ($index == 0 && $skipFirst) continue;
+
+				$descriptor->prepareToRun();
+			}
+
+			return $this;
 		}
 	}
 ?>

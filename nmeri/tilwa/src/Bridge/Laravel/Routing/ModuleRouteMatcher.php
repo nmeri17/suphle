@@ -59,13 +59,9 @@
 				
 				$concrete = $booter->getActiveProvider();
 
-				// we're using this instead of actually providing the service, to slightly speed up boot process since we don't know if this will be the eventual handler
-				$this->laravelContainer->createSandbox(function () use ($concrete) {
-
-					$concrete->register(); // idk how necessary this is since routes are registered in the boot method
-				
-					$concrete->boot();
-				});
+				$concrete->register(); // idk how necessary this is since routes are registered in the boot method
+			
+				$concrete->boot();
 			}
 		}
 		

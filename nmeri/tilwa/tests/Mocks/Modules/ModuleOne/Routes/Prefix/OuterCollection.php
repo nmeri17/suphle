@@ -14,7 +14,7 @@
 		
 		public function _prefixCurrent():string {
 			
-			return "outer";
+			return "OUTER";
 		}
 		
 		public function USE__METHODh () {

@@ -21,7 +21,7 @@
 
 		private $foundRoute = false, $router, $descriptor,
 
-		$rendererManager, $laravelMatcher, $container, $indicator,
+		$laravelMatcher, $container, $indicator,
 
 		$requestDetails, $finalRenderer;
 
@@ -67,19 +67,19 @@
 		}
 
 		/**
+		 * @param {rendererManager} this manager should come from currently active module
+		 * 
 		 * @throws UnauthorizedServiceAccess, Unauthenticated, ValidationFailure
 		*/
-		public function fullRequestProtocols ():self {
+		public function fullRequestProtocols (RoutedRendererManager $rendererManager):self {
 
 			if ($this->isLaravelRoute()) return $this;
 
 			$this->indicator = $this->router->getIndicator();
 
-			$this->setRendererManager();
-
 			$this->attemptAuthentication()->authorizeRequest();
 
-			$this->rendererManager->bootCoodinatorManager()
+			$rendererManager->bootCoodinatorManager()
 
 			->mayBeInvalid(); // throws no error if validation Passed
 
@@ -102,19 +102,9 @@
 			return $this->finalRenderer;
 		}
 
-		public function setRendererManager ():void {
-
-			$this->rendererManager = $this->container->getClass(RoutedRendererManager::class);
-		}
-
 		public function getRouter ():RouteManager {
 			
 			return $this->router;
-		}
-
-		public function getRoutedRendererManager ():RoutedRendererManager {
-			
-			return $this->rendererManager;
 		}
 
 		public function prepareToFindRoute ():self {

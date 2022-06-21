@@ -74,11 +74,6 @@
 
 				$this->router->setPreviousRenderer($renderer);
 
-			$this->container->whenTypeAny()->needsAny([
-
-				PayloadStorage::class => $payloadStorage
-			]);
-
 			return $renderer->invokeActionHandler($this->controllerManager->getHandlerParameters());
 		}
 

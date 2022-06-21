@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Integration\Flows\Jobs\RouteBranches;
 
-	use Tilwa\Flows\{ ControllerFlows, Jobs\RouteBranches, Structures\BranchesContext};
+	use Tilwa\Flows\{ ControllerFlows, Jobs\RouteBranches, Structures\PendingFlowDetails};
 
 	use Tilwa\Contracts\{Auth\UserContract, Presentation\BaseRenderer, Database\OrmDialect};
 
@@ -13,9 +13,7 @@
 
 	use Tilwa\Tests\Integration\Modules\ModuleDescriptor\DescriptorCollection;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Controllers\FlowController;
-
-	use Illuminate\Support\Collection;
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Controllers\FlowController, Concretes\Services\DummyModels};
 
 	abstract class JobFactory extends DescriptorCollection {
 
@@ -58,15 +56,11 @@
 		*/
 		protected function getPrecedingRenderer ():BaseRenderer {
 
-			$models = [];
-
-			for ($i=1; $i < 11; $i++) $models[] = ["id" => $i]; // the list the flow is gonna iterate over
-
 			return $this->positiveDouble (Json::class, [
 
 				"getRawResponse" => [
 
-					$this->originDataName => new Collection($models)
+					$this->originDataName => (new DummyModels)->fetchModels() // the list the flow is gonna iterate over
 				],
 
 				"getFlow" => $this->constructFlow(),
@@ -86,13 +80,13 @@
 			);
 		}
 
-		protected function makeRouteBranches (BranchesContext $context):RouteBranches {
+		protected function makeRouteBranches (PendingFlowDetails $context):RouteBranches {
 
 			$jobName = RouteBranches::class;
 
 			$jobInstance = $this->container->whenType($jobName)
 
-			->needsArguments([ BranchesContext::class => $context ])
+			->needsArguments([ PendingFlowDetails::class => $context ])
 
 			->getClass($jobName);
 
@@ -106,9 +100,9 @@
 			return $this->replicator->getExistingEntities(1, compact("id"))[0];
 		}
 
-		protected function makeBranchesContext (?UserContract $user = null):BranchesContext {
+		protected function makePendingFlowDetails (?UserContract $user = null):PendingFlowDetails {
 
-			return new BranchesContext(
+			return new PendingFlowDetails(
 
 				$this->getPrecedingRenderer(),
 
@@ -119,9 +113,9 @@
 		/**
 		 * Push in user-content/1-10
 		*/
-		protected function handleDefaultBranchesContext ():void {
+		protected function handleDefaultPendingFlowDetails ():void {
 
-			$this->makeRouteBranches($this->makeBranchesContext())->handle();
+			$this->makeRouteBranches($this->makePendingFlowDetails())->handle();
 		}
 	}
 ?>

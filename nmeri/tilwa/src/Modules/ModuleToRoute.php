@@ -1,6 +1,10 @@
 <?php
 	namespace Tilwa\Modules;
 
+	use Tilwa\Contracts\Modules\DescriptorInterface;
+
+	use Throwable;
+
 	/**
 	 * Manager/wrapper around [ModuleInitializer]
 	*/
@@ -12,23 +16,43 @@
 			
 			foreach ($descriptors as $descriptor) {
 
-				$context = $descriptor->getContainer()->whenTypeAny()->needsAny([
+				$context = $descriptor->getContainer()
 
-					DescriptorInterface::class => $descriptor
-				])
 				->getClass(ModuleInitializer::class);
 
-				$routeMatcher = $context->prepareToFindRoute()->assignRoute();
+				$this->safeSearchRoute($context, $descriptor);
 				
-				if ($routeMatcher->didFindRoute()) {
+				if ($context->didFindRoute()) {
 
 					$this->activeDescriptor = $descriptor;
 
-					return $routeMatcher;
+					return $context;
 				}
 			}
 
 			return null;
+		}
+
+		/**
+		 * @throws Throwable
+		*/
+		private function safeSearchRoute (
+
+			ModuleInitializer $initializer, DescriptorInterface $descriptor
+		):void {
+
+			try {
+
+				$initializer->prepareToFindRoute()->assignRoute();
+			}
+			catch (Throwable $exception) {
+
+				$message = "Error encountered while attempting for find route on descriptor ". get_class($descriptor);
+
+				echo $message;
+
+				throw $exception;
+			}
 		}
 		
 		public function getActiveModule ():?ModuleDescriptor {

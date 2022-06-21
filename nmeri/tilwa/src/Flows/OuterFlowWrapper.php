@@ -3,7 +3,7 @@
 
 	use Tilwa\Flows\Jobs\{RouteBranches, UpdateCountDelete};
 
-	use Tilwa\Flows\Structures\{RouteUserNode, RouteUmbrella,AccessContext, BranchesContext};
+	use Tilwa\Flows\Structures\{RouteUserNode, RouteUmbrella,AccessContext, PendingFlowDetails};
 
 	use Tilwa\Contracts\{Requests\BaseResponseManager, IO\CacheManager, Auth\AuthStorage, Modules\HighLevelRequestHandler, Presentation\BaseRenderer};
 
@@ -118,7 +118,7 @@
 		private function queueBranches():void {
 
 			$this->queueManager->augmentArguments(RouteBranches::class, [
-				"context" => new BranchesContext(
+				"context" => new PendingFlowDetails(
 					$this->responseRenderer(),
 
 					$this->authStorage->getUser()

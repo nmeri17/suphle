@@ -21,7 +21,11 @@
 				ConditionalFactory::class, // We're treating it as a type of service in itself
 				ControllerModule::class, // These are a service already. There's no need accessing them through another local proxy
 
-				BaseHttpRequest::class, UpdatefulService::class, PayloadStorage::class, UpdatelessService::class, ImageOptimizer::class
+				BaseHttpRequest::class, UpdatefulService::class,
+
+				PayloadStorage::class, UpdatelessService::class,
+
+				ImageOptimizer::class
 			];
 		}
 

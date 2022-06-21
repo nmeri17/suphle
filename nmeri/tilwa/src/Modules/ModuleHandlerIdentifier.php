@@ -13,6 +13,8 @@
 
 	use Tilwa\Request\RequestDetails;
 
+	use Tilwa\Response\RoutedRendererManager;
+
 	use Throwable;
 
 	abstract class ModuleHandlerIdentifier {
@@ -35,7 +37,7 @@
 			(new ModulesBooter(
 				$this->getModules(), $this->getEventConnector()
 			))
-			->bootAll()->prepareFirstModule();
+			->bootAllModules()->prepareFirstModule();
 		}
 
 		protected function getEventConnector ():ModuleLevelEvents {
@@ -121,7 +123,11 @@
 
 				$this->routedModule = $moduleRouter->getActiveModule();
 
-				$initializer->whenActive()->fullRequestProtocols()
+				$rendererManager = $this->routedModule->getContainer()->getClass(RoutedRendererManager::class);
+
+				$initializer->whenActive()
+
+				->fullRequestProtocols($rendererManager)
 
 				->setHandlingRenderer();
 
