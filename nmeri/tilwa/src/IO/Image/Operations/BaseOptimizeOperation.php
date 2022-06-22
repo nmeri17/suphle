@@ -3,7 +3,7 @@
 
 	use Tilwa\Contracts\IO\ImageOptimiseOperation;
 
-	class BaseOptimizeOperation implements ImageOptimiseOperation {
+	abstract class BaseOptimizeOperation implements ImageOptimiseOperation {
 
 		protected $files, $client, $imageLocator, $operationName,
 

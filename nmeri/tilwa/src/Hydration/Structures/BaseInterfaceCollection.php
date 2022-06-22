@@ -7,7 +7,7 @@
 
 	use Tilwa\Contracts\IO\{Session, MailClient, EnvAccessor};
 
-	use Tilwa\Contracts\Requests\{RequestValidator, StdInputReader};
+	use Tilwa\Contracts\Requests\{RequestValidator, StdInputReader, FileInputReader};
 
 	use Tilwa\Contracts\Database\{OrmDialect, OrmReplicator, OrmTester};
 
@@ -17,11 +17,13 @@
 
 	use Tilwa\Contracts\Config\{AuthContract, Database, DecoratorProxy, ExceptionInterceptor, Transphporm as TransphpormConfig, Laravel as LaravelConfig, Console as ConsoleContract, Flows as FlowConfig};
 
-	use Tilwa\Contracts\IO\Image\{ImageThumbnailContract, InferiorImageContract, ImageLocator};
+	use Tilwa\Contracts\IO\Image\{ImageThumbnailClient, InferiorImageClient, ImageLocator, InferiorOperationHandler, ThumbnailOperationHandler};
 
 	use Tilwa\IO\Image\InterfaceLoaders\{InferiorImageLoader, ImageThumbnailLoader};
 
 	use Tilwa\IO\Image\SaveClients\LocalSaver;
+
+	use Tilwa\IO\Image\Operations\{DefaultInferiorHandler, DefaultThumbnailHandler};
 
 	use Tilwa\IO\{Session\NativeSession, Mailing\MailClientLoader, Env\DatabaseEnvReader};
 
@@ -33,7 +35,7 @@
 
 	use Tilwa\Adapters\Markups\Transphporm as TransphpormAdapter;
 
-	use Tilwa\Request\{NativeInputReader, ValidatorLoader};
+	use Tilwa\Request\{NativeInputReader, ValidatorLoader, NativeFileReader};
 
 	use Tilwa\Config\{Auth, Transphporm, Laravel, ExceptionConfig, Console as CliConsole, PDOMysqlKeys, DefaultFlowConfig, ProxyManagerConfig};
 
@@ -45,13 +47,9 @@
 
 	use Tilwa\Exception\Jobs\MailShutdownAlert;
 
-	use Psr\Http\Client\ClientInterface;
-
-	use Psr\Http\Message\{ServerRequestFactoryInterface, RequestFactoryInterface};
+	use Psr\Http\{Client\ClientInterface as OutgoingRequest, Message\RequestFactoryInterface};
 
 	use GuzzleHttp\{Psr7\HttpFactory as GuzzleHttpFactory, Client as GuzzleClient};
-
-	use Laminas\Diactoros\ServerRequestFactory;
 
 	class BaseInterfaceCollection implements InterfaceCollection {
 
@@ -68,9 +66,9 @@
 
 				ModuleLoginHandler::class => LoginHandlerInterfaceLoader::class,
 
-				InferiorImageContract::class => InferiorImageLoader::class,
+				InferiorImageClient::class => InferiorImageLoader::class,
 
-				ImageThumbnailContract::class => ImageThumbnailLoader::class,
+				ImageThumbnailClient::class => ImageThumbnailLoader::class,
 
 				RequestValidator::class => ValidatorLoader::class,
 
@@ -82,35 +80,39 @@
 
 			return [
 
-				HtmlParser::class => TransphpormAdapter::class,
-
 				AuthStorage::class => SessionStorage::class,
-
-				QueueAdapter::class => Resque::class,
 
 				ControllerModule::class => ControllerModuleApi::class,
 
 				DecoratorChain::class => BaseDecorators::class,
 
-				RequestFactoryInterface::class => GuzzleHttpFactory::class,
+				EnvAccessor::class => DatabaseEnvReader::class,
 
-				ServerRequestFactoryInterface::class => ServerRequestFactory::class,
+				FatalShutdownAlert::class => MailShutdownAlert::class,
 
-				ClientInterface::class => GuzzleClient::class,
+				FileInputReader::class => NativeFileReader::class,
+
+				HtmlParser::class => TransphpormAdapter::class,
+
+				ImageLocator::class => LocalSaver::class,
+
+				InferiorOperationHandler::class => DefaultInferiorHandler::class,
+
+				ThumbnailOperationHandler::class => DefaultThumbnailHandler::class,
+
+				OutgoingRequest::class => GuzzleClient::class,
 
 				OrmReplicator::class => ModelReplicator::class,
 
 				OrmTester::class => EloquentTester::class,
 
-				ImageLocator::class => LocalSaver::class,
+				QueueAdapter::class => Resque::class,
+
+				RequestFactoryInterface::class => GuzzleHttpFactory::class,
 
 				Session::class => NativeSession::class,
 
-				StdInputReader::class => NativeInputReader::class,
-
-				FatalShutdownAlert::class => MailShutdownAlert::class,
-
-				EnvAccessor::class => DatabaseEnvReader::class
+				StdInputReader::class => NativeInputReader::class
 			];
 		}
 

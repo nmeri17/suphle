@@ -1,13 +1,13 @@
 <?php
 	namespace Tilwa\IO\Image\Operations;
 
-	use Tilwa\Contracts\IO\{ InferiorImageContract, ImageLocator};
+	use Tilwa\Contracts\IO\Image\{ InferiorImageClient, ImageLocator, InferiorOperationHandler};
 
-	class InferiorImage extends BaseOptimizeOperation {
+	class DefaultInferiorHandler extends BaseOptimizeOperation implements InferiorOperationHandler {
 
 		private $maxSize;
 
-		public function __construct (InferiorImageContract $client, ImageLocator $imageLocator) {
+		public function __construct (InferiorImageClient $client, ImageLocator $imageLocator) {
 
 			$this->client = $client;
 

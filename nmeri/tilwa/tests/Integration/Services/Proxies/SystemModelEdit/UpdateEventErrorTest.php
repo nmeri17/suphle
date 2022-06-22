@@ -26,7 +26,7 @@
 
 			->systemUpdateErrorEvent($payload); // when
 
-			$this->assertEquals($result->operationValue(), $payload); // then
+			$this->assertEquals($result, $payload); // then
 		}
 	}
 ?>

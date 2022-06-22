@@ -1,13 +1,13 @@
 <?php
 	namespace Tilwa\Adapters\Image\Optimizers;
 
-	use Tilwa\Contracts\IO\ImageThumbnailContract;
+	use Tilwa\Contracts\IO\ImageThumbnailClient;
 
 	use Imagine\Gd\Imagine;
 
 	use Imagine\Image\{ImageInterface, Box};
 
-	class ImagineClient implements ImageThumbnailContract {
+	class ImagineClient implements ImageThumbnailClient {
 
 		private $context, $mode, $size;
 

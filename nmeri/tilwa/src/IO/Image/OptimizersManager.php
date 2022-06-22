@@ -1,19 +1,20 @@
 <?php
 	namespace Tilwa\IO\Image;
 
-	use Tilwa\IO\Image\Operations\{ThumbnailImage, InferiorImage};
+	use Tilwa\Contracts\IO\Image\{ThumbnailOperationHandler, InferiorOperationHandler};
 
 	use Tilwa\IO\Image\Jobs\AsyncImageProcessor;
-
-	use Tilwa\Contracts\Services\Decorators\OnlyLoadedBy;
-
-	use Tilwa\Services\ServiceCoordinator;
 
 	use Tilwa\Queues\AdapterManager;
 
 	use Tilwa\Exception\Explosives\Generic\UnmodifiedImageException;
 
-	class ImageOptimizer implements OnlyLoadedBy {
+	use SplFileInfo;
+
+	/**
+	 * Doesn't implement an interface since we don't intend to replace it. Doing so means it can be replaced with an implementation that permits save without a operation
+	*/
+	class OptimizersManager {
 
 		private $operations = [], $queueManager,
 
@@ -21,7 +22,7 @@
 
 		$inferiorImage, $imageResourceName;
 
-		public function __construct (AdapterManager $queueManager, ThumbnailImage $thumbnailImage, InferiorImage $inferiorImage) {
+		public function __construct (AdapterManager $queueManager, ThumbnailOperationHandler $thumbnailImage, InferiorOperationHandler $inferiorImage) { // if the operations exceed 2, it may be more realistic to pull them from container
 
 			$this->queueManager = $queueManager;
 
@@ -30,15 +31,10 @@
 			$this->thumbnailImage = $thumbnailImage;
 		}
 
-		final public function allowedConsumers ():array {
-
-			return [ServiceCoordinator::class];
-		}
-
 		/**
 		 * @return [inferior => [img1.png]]
 		*/
-		public function getNames ():array {
+		public function savedImageNames ():array {
 
 			if (empty($this->operations))
 
@@ -74,7 +70,7 @@
 		}
 
 		/**
-		 * @param {images} UploadedFileInterface[]
+		 * @param {images} SplFileInfo[]
 		*/
 		public function setImages (array $images, string $resourceName):self {
 

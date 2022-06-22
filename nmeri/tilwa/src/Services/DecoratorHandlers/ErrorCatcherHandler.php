@@ -7,8 +7,6 @@
 
 	use Tilwa\Exception\DetectedExceptionManager;
 
-	use Tilwa\Services\Structures\OptionalDTO;
-
 	use Tilwa\Hydration\Structures\ObjectDetails;
 
 	use ProxyManager\{Factory\NullObjectFactory, Proxy\AccessInterceptorInterface};

@@ -167,11 +167,17 @@
 			return $this->json( "get", $url, null, $headers);
 		}
 
-		private function gatewayResponse (string $requestPath, string $httpMethod, ?string $payload, array $headers):TestResponseBridge {
+		private function gatewayResponse (
+			string $requestPath, string $httpMethod, ?string $payload,
+
+			array $headers, array $files = []
+		):TestResponseBridge {
 
 			$entrance = $this->entrance;
 
 			$this->setHttpParams($requestPath, $httpMethod, $payload, $headers);
+
+			$this->provideFileObjects($files, $httpMethod);
 
 			$entrance->diffusedRequestResponse();
 
@@ -180,28 +186,51 @@
 			return $this->makeExaminable($renderer);
 		}
 
-		public function post(string $url, array $payload = [], array $headers = []):TestResponseBridge {
+		public function post (
+			string $url, array $payload = [], array $headers = [],
+
+			array $files = []
+		):TestResponseBridge {
 
 			$newPayload = $this->payloadStringifier($payload, $headers);
 
-			return $this->gatewayResponse($url, __METHOD__, $newPayload, $headers);
+			return $this->gatewayResponse(
+
+				$url, __METHOD__, $newPayload, $headers, $files
+			);
 		}
 
-		public function postJson(string $url, array $payload = [], array $headers = []):TestResponseBridge {
+		public function postJson (
+			string $url, array $payload = [], array $headers = [],
 
-			return $this->json("post", $url, $payload, $headers);
+			array $files = []
+		):TestResponseBridge {
+
+			return $this->json("post", $url, $payload, $headers, $files);
 		}
 
-		public function put(string $url, array $payload = [], array $headers = []):TestResponseBridge {
+		public function put (
+			string $url, array $payload = [], array $headers = [],
+
+			array $files = []
+		):TestResponseBridge {
 
 			$newPayload = $this->payloadStringifier($payload, $headers);
 
-			return $this->gatewayResponse($url, __METHOD__, $newPayload, $headers);
+			return $this->gatewayResponse(
+
+				$url, __METHOD__, $newPayload, $headers, $files
+			);
 		}
 
-		public function putJson(string $url, array $payload = [], array $headers = []):TestResponseBridge {
+		public function putJson (
 
-			return $this->json("put", $url, $payload, $headers);
+			string $url, array $payload = [], array $headers = [],
+
+			array $files = []
+		):TestResponseBridge {
+
+			return $this->json("put", $url, $payload, $headers, $files);
 		}
 
 		public function delete(string $url, array $payload = [], array $headers = []):TestResponseBridge {
@@ -216,7 +245,11 @@
 			return $this->json("delete", $url, $payload, $headers);
 		}
 
-		public function json(string $httpMethod, string $url, array $payload = [], array $headers = []):TestResponseBridge {
+		public function json(
+			string $httpMethod, string $url, array $payload = [],
+
+			array $headers = [], array $files = []
+		):TestResponseBridge {
 
 			$converted = json_encode($payload);
 
@@ -228,7 +261,10 @@
 				"Accept" => $this->JSON_HEADER_VALUE
 			], $headers);
 
-			return $this->gatewayResponse($url, $httpMethod, $converted, $newHeaders);
+			return $this->gatewayResponse(
+
+				$url, $httpMethod, $converted, $newHeaders, $files
+			);
 		}
 
 		private function payloadStringifier (array $payload, array $headers):string {

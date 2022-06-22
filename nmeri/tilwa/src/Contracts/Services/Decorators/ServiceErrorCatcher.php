@@ -15,7 +15,7 @@
 		/**
 		 * Indicate to callers that operation failed
 		 * 
-		 * @return Value to give the caller in cases were execution shouldn't terminate
+		 * @return Value to give the caller in cases were execution shouldn't terminate; meaning it must correspond to method's return value
 		*/
 		public function failureState (string $method);
 

@@ -3,6 +3,8 @@
 
 	use Tilwa\Request\PayloadStorage;
 
+	use Tilwa\Routing\PathPlaceholders;
+
 	use Tilwa\Services\InterceptsExternalPayload;
 
 	/**

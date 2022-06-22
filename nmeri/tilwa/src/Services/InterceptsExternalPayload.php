@@ -1,32 +1,40 @@
 <?php
 	namespace Tilwa\Services;
 
-	use Tilwa\Services\Structures\OptionalDTO;
-
 	use Throwable;
 
 	abstract class InterceptsExternalPayload {
 
-		public function getDomainObject ():OptionalDTO {
+		protected $didHaveErrors = false;
+
+		/**
+		 * @return Nullable
+		*/
+		public function getDomainObject () {
 
 			try {
 				
-				return $this->translate();
+				return $this->convertToDTO();
 			}
-			catch (Throwable $e) {
+			catch (Throwable $exception) {
 				
-				return $this->translationFailure();
+				return $this->translationFailure($exception);
 			}
 		}
 
-		/**
-		 * @param {exception} This, coupled with contents of payload may guide us on what to set on OptionalDTO
-		*/
-		abstract protected function translationFailure (Throwable $exception):OptionalDTO;
+		public function hasErrors ():bool {
+
+			return $this->didHaveErrors;
+		}
+
+		protected function translationFailure (Throwable $exception):void {
+
+			$this->didHaveErrors = true;
+		}
 
 		/**
 		 * @throws Throwable, when it meets an unexpected/undesirable payload
 		*/
-		abstract protected function translate ():OptionalDTO;
+		abstract protected function convertToDTO ();
 	}
 ?>

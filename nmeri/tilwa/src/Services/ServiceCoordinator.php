@@ -7,7 +7,7 @@
 
 	use Tilwa\Contracts\Services\Decorators\{SecuresPostRequest, SelectiveDependencies};
 
-	use Tilwa\IO\{Http\BaseHttpRequest, Image\ImageOptimizer};
+	use Tilwa\IO\Http\BaseHttpRequest;
 
 	use Tilwa\Request\PayloadStorage;
 
@@ -23,9 +23,7 @@
 
 				BaseHttpRequest::class, UpdatefulService::class,
 
-				PayloadStorage::class, UpdatelessService::class,
-
-				ImageOptimizer::class
+				PayloadStorage::class, UpdatelessService::class
 			];
 		}
 

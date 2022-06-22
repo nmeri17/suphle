@@ -20,14 +20,25 @@
 
 			$imageName = uniqid(). session_id() . time();
 
-			$withExtension = $imageName. "." . $file->getClientMediaType();
+			$withExtension = $imageName. "." . $file->guessClientExtension();
 
-			return $this->storagePath . DIRECTORY_SEPARATOR . $resourceName . DIRECTORY_SEPARATOR . $operationName . DIRECTORY_SEPARATOR . $withExtension;
+			$segments = [
+
+				$this->storagePath, $resourceName, $operationName,
+
+				$withExtension
+			];
+
+			return implode(DIRECTORY_SEPARATOR, $segments);
 		}
 
 		public function temporarilyRelocate (UploadedFileInterface $image):string {
 
-			$dummyPath = $this->storagePath . DIRECTORY_SEPARATOR . $this->dummyFolder . DIRECTORY_SEPARATOR . $image->getClientFilename();
+			$dummyPath = $this->storagePath . DIRECTORY_SEPARATOR .
+
+			$this->dummyFolder . DIRECTORY_SEPARATOR .
+
+			$image->getClientFilename();
 
 			$image->moveTo($dummyPath);
 

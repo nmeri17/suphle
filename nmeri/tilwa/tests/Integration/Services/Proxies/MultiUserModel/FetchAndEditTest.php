@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Integration\Services\Proxies\MultiUserModel;
 
-	use Tilwa\Services\{ DecoratorHandlers\MultiUserEditHandler, Structures\OptionalDTO};
+	use Tilwa\Services\DecoratorHandlers\MultiUserEditHandler;
 
 	use Tilwa\Contracts\Services\Models\IntegrityModel;
 

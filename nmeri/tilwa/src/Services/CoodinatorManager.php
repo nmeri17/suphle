@@ -7,7 +7,7 @@
 
 	use Tilwa\Request\{ValidatorManager, RequestDetails};
 
-	use Tilwa\Services\Structures\{ModelfulPayload, ModellessPayload, ImagePicker};
+	use Tilwa\Services\Structures\{ModelfulPayload, ModellessPayload};
 
 	use Tilwa\Exception\Explosives\Generic\NoCompatibleValidator;
 
@@ -19,9 +19,7 @@
 
 		$actionInjectables = [
 
-			ModelfulPayload::class, ModellessPayload::class,
-
-			ImagePicker::class
+			ModelfulPayload::class, ModellessPayload::class
 		];
 
 		function __construct( Container $container, ValidatorManager $validatorManager, RequestDetails $requestDetails) {

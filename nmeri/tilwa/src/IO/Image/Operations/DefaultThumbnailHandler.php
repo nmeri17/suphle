@@ -1,13 +1,13 @@
 <?php
 	namespace Tilwa\IO\Image\Operations;
 
-	use Tilwa\Contracts\IO\{ ImageThumbnailContract, ImageLocator};
+	use Tilwa\Contracts\IO\Image\{ ImageThumbnailClient, ImageLocator, ThumbnailOperationHandler};
 
-	class ThumbnailImage extends BaseOptimizeOperation {
+	class DefaultThumbnailHandler extends BaseOptimizeOperation implements ThumbnailOperationHandler {
 
 		private $width, $height;
 
-		public function __construct (ImageThumbnailContract $client, ImageLocator $imageLocator) {
+		public function __construct (ImageThumbnailClient $client, ImageLocator $imageLocator) {
 
 			$this->client = $client;
 
@@ -20,7 +20,7 @@
 
 			$this->client->setDimensions($this->width, $this->height);
 
-			foreach ($this->files as $image)
+			foreach ($this->files as $file)
 
 				$savedNames[] = $this->client->miniature(
 					$this->imageLocator->temporarilyRelocate($file), // for us to get a file name

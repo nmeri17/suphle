@@ -1,9 +1,13 @@
 <?php
 	namespace Tilwa\Testing\Condiments;
 
-	use Tilwa\Contracts\{Requests\StdInputReader, Auth\UserHydrator};
+	use Tilwa\Contracts\Requests\{StdInputReader, FileInputReader};
+
+	use Tilwa\Contracts\Auth\UserHydrator;
 
 	use Tilwa\Request\{RequestDetails, PayloadStorage};
+
+	use Tilwa\Testing\Proxies\Extensions\InjectedUploadedFiles;
 
 	trait DirectHttpTest {
 
@@ -39,6 +43,19 @@
 			]);
 
 			$this->setRequestPath($requestPath);
+		}
+
+		/**
+		 * @param {files} SplFileInfo[]
+		*/
+		protected function provideFileObjects (array $files, string $httpMethod):void {
+
+			if (!$this->isValidPayloadType($httpMethod)) return;
+
+			$this->massProvide([
+
+				FileInputReader::class => new InjectedUploadedFiles($files)
+			]);
 		}
 
 		abstract protected function setRequestPath (string $requestPath):void;

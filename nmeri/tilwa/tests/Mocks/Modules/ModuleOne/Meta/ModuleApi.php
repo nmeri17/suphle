@@ -3,8 +3,6 @@
 
 	use Tilwa\Contracts\Services\Decorators\MultiUserModelEdit;
 
-	use Tilwa\Services\Structures\OptionalDTO;
-
 	use Tilwa\Tests\Mocks\Interactions\ModuleOne;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\{LocalSender, BCounter, SenderExtension };
@@ -81,7 +79,7 @@
 			return $this->editService;
 		}
 
-		public function systemUpdateErrorEvent (int $payload):OptionalDTO {
+		public function systemUpdateErrorEvent (int $payload):int {
 
 			$this->errorEditService->initializeUpdateModels($payload);
 

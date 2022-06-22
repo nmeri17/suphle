@@ -1,8 +1,6 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Interactions;
 
-	use Tilwa\Services\Structures\OptionalDTO;
-
 	use Tilwa\Contracts\Services\Decorators\MultiUserModelEdit;
 
 	interface ModuleOne {
@@ -31,6 +29,6 @@
 
 		public function getResourceEditor ():MultiUserModelEdit;
 
-		public function systemUpdateErrorEvent (int $payload):?OptionalDTO;
+		public function systemUpdateErrorEvent (int $payload):?int;
 	}
 ?>

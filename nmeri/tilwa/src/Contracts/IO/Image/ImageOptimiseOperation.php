@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Contracts\IO\Image;
 
-	use Psr\Http\Message\UploadedFileInterface;
+	use SplFileInfo;
 
 	interface ImageOptimiseOperation {
 
@@ -11,7 +11,7 @@
 		public function getTransformed (string $operationName, string $imageResourceName):array;
 
 		/**
-		 * @param {images} UploadedFileInterface[]
+		 * @param {images} SplFileInfo[]
 		*/
 		public function setFiles (array $images):void;
 

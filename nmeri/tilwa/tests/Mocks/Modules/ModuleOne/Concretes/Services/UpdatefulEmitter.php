@@ -3,8 +3,6 @@
 
 	use Tilwa\Events\EmitProxy;
 
-	use Tilwa\Services\Structures\OptionalDTO;
-
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Events\AssignListeners;
 
 	class UpdatefulEmitter extends SystemModelEditMock1 {
@@ -28,16 +26,16 @@
 			$this->payload = $payload;
 		}
 
-		public function updateModels ():OptionalDTO {
+		public function updateModels ():int {
 
 			$this->emitHelper (self::UPDATE_ERROR, $this->payload); // one of the handlers here is expected to rollback updates before it and prevent ours below from running
 
-			return new OptionalDTO($this->payload * 3); // since event listener doesn't implement ServiceErrorCatcher, this method should terminate and return value of [failureState]
+			return $this->payload * 3; // since event listener doesn't implement ServiceErrorCatcher, this method should terminate and return value of [failureState]
 		}
 
-		public function failureState (string $method):?OptionalDTO {
+		public function failureState (string $method) {
 
-			return new OptionalDTO($this->payload);
+			return $this->payload;
 		}
 	}
 ?>
