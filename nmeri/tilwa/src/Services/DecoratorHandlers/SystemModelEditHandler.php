@@ -9,7 +9,7 @@
 
 	use Throwable;
 
-	class SystemModelEditHandler extends BaseDecoratorHandler {
+	class SystemModelEditHandler extends BaseInjectionModifier {
 
 		private $ormDialect, $errorDecoratorHandler;
 

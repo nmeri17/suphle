@@ -9,7 +9,7 @@
 
 	use ProxyManager\{Factory\AccessInterceptorValueHolderFactory as AccessInterceptor, Proxy\AccessInterceptorInterface};
 
-	abstract class BaseDecoratorHandler implements ModifyInjected {
+	abstract class BaseInjectionModifier implements ModifyInjected {
 
 		protected $methodHooks = [], $proxyConfig, $objectMeta;
 

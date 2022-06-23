@@ -1,20 +1,9 @@
 <?php
 	namespace Tilwa\Services\DecoratorHandlers;
 
-	use Tilwa\Contracts\Hydration\ScopeHandlers\ModifiesArguments;
-
-	use Tilwa\Hydration\Structures\ObjectDetails;
-
 	use Tilwa\Exception\Explosives\Generic\UnacceptableDependency;
 
-	class ServicePreferenceHandler implements ModifiesArguments {
-
-		private $objectMeta;
-
-		public function __construct ( ObjectDetails $objectMeta) {
-
-			$this->objectMeta = $objectMeta;
-		}
+	class ServicePreferenceHandler extends BaseArgumentModifier {
 
 		public function transformConstructor (object $dummyInstance, array $injectedArguments):array {
 
@@ -24,9 +13,15 @@
 
 			foreach ($injectedArguments as $service) {
 				
-				$stranger = $hasFriends && !$this->containsParent($permitted, $service );
+				$stranger = $hasFriends && !$this->containsParent(
 
-				$enemy = !$hasFriends && $this->containsParent($dummyInstance->getRejected(), $service );
+					$permitted, $service
+				);
+
+				$enemy = !$hasFriends && $this->containsParent(
+
+					$dummyInstance->getRejected(), $service
+				);
 
 				if ($stranger || $enemy)
 
@@ -37,11 +32,6 @@
 			}
 			
 			return $injectedArguments;
-		}
-
-		public function transformMethods (object $concreteInstance, array $arguments):array {
-
-			return $arguments;
 		}
 
 		/**

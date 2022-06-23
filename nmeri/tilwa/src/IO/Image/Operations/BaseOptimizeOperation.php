@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\IO\Image\Operations;
 
-	use Tilwa\Contracts\IO\ImageOptimiseOperation;
+	use Tilwa\Contracts\IO\Image\ImageOptimiseOperation;
 
 	abstract class BaseOptimizeOperation implements ImageOptimiseOperation {
 

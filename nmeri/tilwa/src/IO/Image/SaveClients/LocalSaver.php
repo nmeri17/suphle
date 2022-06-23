@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\IO\Image\SaveClients;
 
-	use Tilwa\Contracts\{IO\ImageLocator, Config\ModuleFiles};
+	use Tilwa\Contracts\{IO\Image\ImageLocator, Config\ModuleFiles};
 
 	use Psr\Http\Message\UploadedFileInterface;
 
@@ -16,7 +16,7 @@
 			$this->storagePath = $fileConfig->getImagePath();
 		}
 
-		protected function resolveName (UploadedFileInterface $file, string $operationName, string $resourceName):?string {
+		public function resolveName (UploadedFileInterface $file, string $operationName, string $resourceName):string {
 
 			$imageName = uniqid(). session_id() . time();
 

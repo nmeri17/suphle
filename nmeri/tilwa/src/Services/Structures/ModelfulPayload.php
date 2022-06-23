@@ -31,7 +31,7 @@
 		abstract protected function getBaseCriteria ();
 
 		/**
-		 * This is the only method dev cares about
+		 * This is the only method caller cares about
 		*/
 		public function getBuilder () {
 

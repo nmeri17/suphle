@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Request;
 
-	use Tilwa\Contracts\Requests\RequestValidator;
+	use Tilwa\Contracts\Requests\{RequestValidator, FileInputReader};
 
 	use Tilwa\Routing\PathPlaceholders;
 
@@ -9,15 +9,22 @@
 
 		private $placeholderStorage, $validator, $payloadStorage,
 
-		$actionRules = [];
+		$fileInputReader, $actionRules = [];
 
-		public function __construct (RequestValidator $validator, PathPlaceholders $placeholderStorage, PayloadStorage $payloadStorage) {
+		public function __construct (
+
+			RequestValidator $validator, PathPlaceholders $placeholderStorage,
+
+			PayloadStorage $payloadStorage, FileInputReader $fileInputReader
+		) {
 
 			$this->validator = $validator;
 
 			$this->placeholderStorage = $placeholderStorage;
 
 			$this->payloadStorage = $payloadStorage;
+
+			$this->fileInputReader = $fileInputReader;
 		}
 
 		public function validationErrors ():iterable {
@@ -25,7 +32,9 @@
 			$mergedPayload = array_merge(
 				$this->placeholderStorage->getAllSegmentValues(),
 
-				$this->payloadStorage->fullPayload()
+				$this->payloadStorage->fullPayload(),
+
+				$this->fileInputReader->getFileObjects()
 			);
 
 			$this->validator->validate($mergedPayload, $this->actionRules);

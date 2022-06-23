@@ -19,7 +19,7 @@
 	 * The idea is that the last updater should invalidate whatever those with current copies of the page are both looking at or trying to update
 	*/
 
-	class MultiUserEditHandler extends BaseDecoratorHandler {
+	class MultiUserEditHandler extends BaseInjectionModifier {
 
 		const INTEGRITY_KEY = "_collision_protect", // submitted form/payload is expected to contain this key
 

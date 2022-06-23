@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Adapters\Image\Optimizers;
 
-	use Tilwa\Contracts\IO\ImageThumbnailClient;
+	use Tilwa\Contracts\IO\Image\ImageThumbnailClient;
 
 	use Imagine\Gd\Imagine;
 

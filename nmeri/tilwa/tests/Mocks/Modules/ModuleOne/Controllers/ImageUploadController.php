@@ -5,7 +5,7 @@
 
 	use Tilwa\Services\ImageStorageService;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\PayloadReaders\ImageServiceConsumer;
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{PayloadReaders\ImageServiceConsumer, Validators\ImageValidator};
 
 	class ImageUploadController extends ServiceCoordinator {
 
@@ -18,7 +18,7 @@
 
 		public function validatorCollection ():string {
 
-			return ""; // add this
+			return ImageValidator::class;
 		}
 
 		public function applyAllOptimizations (ImageServiceConsumer $payload):array {
@@ -33,11 +33,18 @@
 
 		public function applyNoOptimization (ImageServiceConsumer $payload):array {
 
-			$resourceName = $payload->getDomainObject();
-
-			return $this->imageService->getOptimizer( $resourceName)
+			return $this->imageService->getOptimizer($payload->getDomainObject())
 
 			->savedImageNames();
+		}
+
+		public function applyThumbnail (ImageServiceConsumer $payload):array {
+
+			return $this->imageService
+
+			->getOptimizer($payload->getDomainObject())
+
+			->thumbnail(15, 15)->savedImageNames();
 		}
 	}
 ?>

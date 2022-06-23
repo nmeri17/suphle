@@ -3,11 +3,9 @@
 
 	use Tilwa\Hydration\Container;
 
-	use Tilwa\Contracts\{Requests\ValidationEvaluator, Database\OrmDialect};
+	use Tilwa\Contracts\Requests\ValidationEvaluator;
 
 	use Tilwa\Request\{ValidatorManager, RequestDetails};
-
-	use Tilwa\Services\Structures\{ModelfulPayload, ModellessPayload};
 
 	use Tilwa\Exception\Explosives\Generic\NoCompatibleValidator;
 
@@ -15,12 +13,7 @@
 
 		private $controller, $container, $actionMethod,
 
-		$handlerParameters, $validatorManager, $requestDetails,
-
-		$actionInjectables = [
-
-			ModelfulPayload::class, ModellessPayload::class
-		];
+		$handlerParameters, $validatorManager, $requestDetails;
 
 		function __construct( Container $container, ValidatorManager $validatorManager, RequestDetails $requestDetails) {
 
@@ -54,7 +47,9 @@
 
 			$collectionName = $this->controller->validatorCollection ();
 
-			$hasNoValidator = empty($collectionName) || !method_exists($collectionName, $this->actionMethod);
+			$hasNoValidator = empty($collectionName) ||
+
+			!method_exists($collectionName, $this->actionMethod);
 
 			if ($hasNoValidator) {
 
@@ -68,54 +63,21 @@
 
 			$this->validatorManager->setActionRules(
 
-				call_user_func([$this->container->getClass($collectionName), $this->actionMethod])
+				call_user_func([
+
+					$this->container->getClass($collectionName),
+
+					$this->actionMethod
+				])
 			);
 		}
 
 		private function setHandlerParameters ():void {
 
-			$parameters = $this->container->getMethodParameters($this->actionMethod, get_class($this->controller));
+			$this->handlerParameters = $this->container->getMethodParameters(
 
-			$correctParameters = $this->validActionDependencies($parameters);
-
-			$this->handlerParameters = $correctParameters;
-		}
-
-		public function validActionDependencies (array $argumentList):array {
-
-			$newList = [];
-
-			foreach ($argumentList as $argument => $dependency) { // silently fail
-
-				foreach ($this->actionInjectables as $validType)
-
-					if ($dependency instanceof $validType) {
-
-						$newList[$argument] = $dependency;
-
-						break;
-					}
-			}
-
-			return $newList;
-		}
-
-		public function prepareActionModels (array $argumentList):void {
-
-			$orm = null;
-
-			foreach ($argumentList as $dependency) {
-
-				if (!($dependency instanceof ModelfulPayload))
-
-					continue;
-
-				if (is_null($orm))
-
-					$orm = $this->container->getClass(OrmDialect::class);
-
-				$dependency->setDependencies($orm);
-			}
+				$this->actionMethod, get_class($this->controller)
+			);
 		}
 
 		public function getHandlerParameters():array {

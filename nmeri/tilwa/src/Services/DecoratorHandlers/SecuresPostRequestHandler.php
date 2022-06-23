@@ -1,8 +1,6 @@
 <?php
 	namespace Tilwa\Services\DecoratorHandlers;
 
-	use Tilwa\Contracts\Hydration\ScopeHandlers\ModifiesArguments;
-
 	use Tilwa\Contracts\Services\Decorators\{SystemModelEdit, MultiUserModelEdit};
 
 	use Tilwa\Hydration\Structures\ObjectDetails;
@@ -11,20 +9,20 @@
 
 	use Tilwa\Exception\Explosives\Generic\MissingPostDecorator;
 
-	class SecuresPostRequestHandler implements ModifiesArguments {
+	class SecuresPostRequestHandler extends BaseArgumentModifier {
 
 		private $postDecorators = [
 
 			SystemModelEdit::class, MultiUserModelEdit::class
 		],
 
-		$requestDetails, $objectMeta;
+		$requestDetails;
 
 		public function __construct (RequestDetails $requestDetails, ObjectDetails $objectMeta) {
 
 			$this->requestDetails = $requestDetails;
 
-			$this->objectMeta = $objectMeta;
+			parent::__construct($objectMeta);
 		}
 
 		public function transformConstructor (object $dummyInstance, array $arguments):array {
@@ -48,11 +46,6 @@
 				}
 
 			throw new MissingPostDecorator(get_class($dummyInstance));
-		}
-
-		public function transformMethods (object $concreteInstance, array $arguments):array {
-
-			return $arguments;
 		}
 	}
 ?>

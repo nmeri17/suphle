@@ -27,7 +27,7 @@
 
 		public function getErrors ():iterable {
 
-			return $this->errorHolder->all();
+			return $this->errorHolder->messages();
 		}
 	}
 ?>

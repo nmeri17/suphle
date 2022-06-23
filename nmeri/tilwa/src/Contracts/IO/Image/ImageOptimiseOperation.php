@@ -8,7 +8,7 @@
 		/**
 		 * @return string[] of file names
 		*/
-		public function getTransformed (string $operationName, string $imageResourceName):array;
+		public function getTransformed ():array;
 
 		/**
 		 * @param {images} SplFileInfo[]
@@ -21,6 +21,6 @@
 
 		public function savesAsync ():bool;
 
-		public function getAsyncNames (string $operationName, string $imageResourceName):array
+		public function getAsyncNames (string $operationName, string $imageResourceName):array;
 	}
 ?>

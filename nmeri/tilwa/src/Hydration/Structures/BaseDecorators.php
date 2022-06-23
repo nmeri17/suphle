@@ -3,9 +3,9 @@
 
 	use Tilwa\Contracts\Hydration\DecoratorChain;
 
-	use Tilwa\Contracts\Services\Decorators\{SelectiveDependencies, OnlyLoadedBy, SystemModelEdit, ServiceErrorCatcher, SecuresPostRequest, MultiUserModelEdit};
+	use Tilwa\Contracts\Services\Decorators\{SelectiveDependencies, OnlyLoadedBy, SystemModelEdit, ServiceErrorCatcher, SecuresPostRequest, MultiUserModelEdit, ValidatesActionArguments};
 
-	use Tilwa\Services\DecoratorHandlers\{SystemModelEditHandler, ErrorCatcherHandler, SecuresPostRequestHandler, ServicePreferenceHandler, OnlyLoadedByHandler, MultiUserEditHandler};
+	use Tilwa\Services\DecoratorHandlers\{SystemModelEditHandler, ErrorCatcherHandler, SecuresPostRequestHandler, ServicePreferenceHandler, OnlyLoadedByHandler, MultiUserEditHandler, ActionDependenciesValidator};
 
 	class BaseDecorators implements DecoratorChain {
 
@@ -22,7 +22,9 @@
 
 				SecuresPostRequest::class => SecuresPostRequestHandler::class,
 
-				MultiUserModelEdit::class => MultiUserEditHandler::class
+				MultiUserModelEdit::class => MultiUserEditHandler::class,
+
+				ValidatesActionArguments::class => ActionDependenciesValidator::class
 			];
 		}
 	}

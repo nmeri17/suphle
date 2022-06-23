@@ -5,7 +5,7 @@
 
 	use Tilwa\Contracts\Modules\ControllerModule;
 
-	use Tilwa\Contracts\Services\Decorators\{SecuresPostRequest, SelectiveDependencies};
+	use Tilwa\Contracts\Services\Decorators\{SecuresPostRequest, SelectiveDependencies, ValidatesActionArguments};
 
 	use Tilwa\IO\Http\BaseHttpRequest;
 
@@ -13,7 +13,9 @@
 
 	use Tilwa\Hydration\Container;
 
-	class ServiceCoordinator implements SelectiveDependencies, SecuresPostRequest {
+	use Tilwa\Services\Structures\{ModelfulPayload, ModellessPayload};
+
+	class ServiceCoordinator implements SelectiveDependencies, SecuresPostRequest, ValidatesActionArguments {
 
 		final public function getPermitted ():array {
 
@@ -29,7 +31,20 @@
 
 		final public function getRejected ():array {
 
-			return [EventManager::class, Container::class, ServiceCoordinator::class];
+			return [
+
+				EventManager::class, Container::class,
+
+				ServiceCoordinator::class
+			];
+		}
+
+		final public function permittedArguments ():array {
+
+			return [
+
+				ModelfulPayload::class, ModellessPayload::class
+			];
 		}
 
 		public function validatorCollection ():?string {

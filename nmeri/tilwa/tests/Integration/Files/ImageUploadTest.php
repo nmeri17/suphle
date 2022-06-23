@@ -9,13 +9,17 @@
 
 	use Tilwa\Testing\Proxies\{WriteOnlyContainer, Extensions\TestResponseBridge};
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\ImageUploadCollection, Meta\ModuleOneDescriptor, Config\RouterMock};
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\ImageUploadCollection, Meta\ModuleOneDescriptor, Config\RouterMock};
 
 	use Illuminate\Http\Testing\FileFactory;
 
 	class ImageUploadTest extends ModuleLevelTest {
 
 		use FilesystemCleaner;
+
+		private $resourceOwner = "users";
+
+		protected $debugCaughtExceptions = true;
 
 		protected function getModules ():array {
 
@@ -40,32 +44,38 @@
 
 		public function test_can_save_multiple_operations () {
 
-			$this->sendUploadRequest("/apply-all");
+			$response = $this->sendUploadRequest("/apply-all");
+
+			$this->assertSavedFiles(["*.*"], $response);
 		}
 
 		private function sendUploadRequest (string $url):TestResponseBridge {
 
-			return $this->post($url, [
+			return $this->postJson("/api/v1/$url", [
 
-					"belonging_resource" => "users"
+					"belonging_resource" => $this->resourceOwner
 
 				], [], [
 
-				"profile_pic" => (new FileFactory)
+				"profile_pic" => (new FileFactory) // since file reading is generic, we aren't strictly concerned about key names. That should be enforced through the validator. We just lift anything that comes there since it doesn't make sense to post files without saving
 
 					->create("portait.png", 300)
 				]
 			);
 		}
 
-		public function test_can_save_single_operation () {
+		public function test_saves_with_correct_name_format () {
 
-			// can save one
+			$operation = "thumbnail";
 
-				// to setResourceName/setName
+			$imagePath = $this->sendUploadRequest("/apply-crop")
+
+			->getContent()[$operation][0];
+
+			$pattern = $this->resourceOwner ."\/$operation\/\w+\.";
+
+			$this->assertTrue(preg_match("/$pattern/", $imagePath));
 		}
-
-		// can save all
 
 		// test async version calls expected method
 	}

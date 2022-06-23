@@ -23,5 +23,10 @@
 
 			$this->_post(new Json("applyNoOptimization"));
 		}
+
+		public function APPLY__CROPh () {
+
+			$this->_post(new Json("applyThumbnail"));
+		}
 	}
 ?>

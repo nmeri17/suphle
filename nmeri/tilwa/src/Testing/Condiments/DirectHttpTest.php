@@ -29,14 +29,24 @@
 
 			$reader = ["getHeaders" => $headers];
 
-			if (!empty($payload) && array_key_exists(PayloadStorage::CONTENT_TYPE_KEY, $headers))
+			if (
+				!empty($payload) &&
 
-				if ($headers[PayloadStorage::CONTENT_TYPE_KEY] != PayloadStorage::JSON_HEADER_VALUE)
+				$this->isValidPayloadType($httpMethod)
+			) {
+
+				$hasHeader = array_key_exists(
+
+					PayloadStorage::CONTENT_TYPE_KEY, $headers
+				);
+
+				if ($hasHeader && $headers[PayloadStorage::CONTENT_TYPE_KEY] != PayloadStorage::JSON_HEADER_VALUE)
 
 					$_POST = $payload;
 
 				else $reader["getPayload"] = $payload;
-
+			}
+var_dump(39, $reader, $payload, $_POST);
 			$this->massProvide([
 
 				StdInputReader::class => $this->positiveDouble(StdInputReader::class, $reader)

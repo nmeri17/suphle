@@ -5,8 +5,6 @@
 
 	trait FilesystemCleaner {
 
-		private $currentIterator;
-
 		protected function assertEmptyDirectory (string $path):void {
 
 			$this->assertTrue($this->isEmptyDirectory($path), "Failed asserting that '$path' does not exist or is empty");
@@ -17,22 +15,18 @@
 			$this->assertFalse($this->isEmptyDirectory($path), "Failed asserting that '$path' is not empty");
 		}
 
+		/**
+		 * Expects a preceding operation to have confirmed that @param {path} exists
+		*/
 		private function inDirectory (string $path, array $fileNames, callable $onMatchAction) {
 
-			foreach ($this->currentIterator as $childEntry) {
+			foreach ($fileNames as $entry) {
 
-				if ($childEntry->isDot()) continue;
+				$onMatchAction(
+					$path, $entry,
 
-				foreach ($fileNames as $suspect) {
-
-					$sanitizedPath = str_replace("/", "\/", $suspect);
-
-					$onMatchAction(
-						$path, $suspect,
-
-						preg_match("/$sanitizedPath/", $childEntry->getFilename())
-					);
-				}
+					file_exists($path. DIRECTORY_SEPARATOR . $entry)
+				);
 			}
 		}
 
@@ -68,21 +62,29 @@
 
 		private function isEmptyDirectory (string $path):bool {
 
+			$iterator = $this->safeGetIterator($path);
+
+			return is_null($iterator) || !$iterator->valid();
+		}
+
+		private function safeGetIterator (string $path):?FilesystemIterator {
+
 			try {
 
-				$this->currentIterator = new FilesystemIterator($path);
-
-				return !$this->currentIterator->valid();
+				return new FilesystemIterator($path);
 			}
 			catch (UnexpectedValueException $exception) { // folder does not exist
 
-				return true;
+				return null;
 			}
 		}
 
+		/**
+		 * @see docblock on [inDirectory]
+		*/
 		protected function emptyDirectory (string $path):void {
 
-			foreach ($this->currentIterator as $childEntry) {
+			foreach ($this->safeGetIterator($path) as $childEntry) {
 
 				$entryName = $childEntry->getPathName();
 
@@ -94,6 +96,35 @@
 			}
 
 			rmdir($path);
+		}
+
+		/**
+		 * @param {indexes} Accepts wildcards
+		*/
+		protected function assertSavedFiles (array $indexes, TestResponseBridge $response):void {
+
+			foreach ($indexes as $index)
+
+				$this->assertSavedFileNames(data_get($index));
+		}
+
+		/**
+		 * Deletes file after verifying its presence
+		 * 
+		 * @param {names} One dimensional array of literal file names
+		*/
+		protected function assertSavedFileNames (array $names, TestResponseBridge $response):void {
+
+			foreach ($names as $index => $file) {
+
+				if (is_iterable($file))
+
+					$this->assertSavedFileNames($file, $response);
+
+				$this->assertTrue(file_exists($file));
+
+				unlink($file);
+			}
 		}
 	}
 ?>

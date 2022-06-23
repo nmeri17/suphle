@@ -16,7 +16,7 @@
 	/**
 	 * Any decorator composed of this handler must extend ServiceErrorCatcher
 	*/
-	class ErrorCatcherHandler extends BaseDecoratorHandler {
+	class ErrorCatcherHandler extends BaseInjectionModifier {
 
 		private $exceptionDetector;
 

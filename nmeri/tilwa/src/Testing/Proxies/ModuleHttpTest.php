@@ -168,7 +168,7 @@
 		}
 
 		private function gatewayResponse (
-			string $requestPath, string $httpMethod, ?string $payload,
+			string $requestPath, string $httpMethod, array $payload,
 
 			array $headers, array $files = []
 		):TestResponseBridge {
@@ -192,11 +192,9 @@
 			array $files = []
 		):TestResponseBridge {
 
-			$newPayload = $this->payloadStringifier($payload, $headers);
-
 			return $this->gatewayResponse(
 
-				$url, __METHOD__, $newPayload, $headers, $files
+				$url, __FUNCTION__, $payload, $headers, $files
 			);
 		}
 
@@ -215,11 +213,9 @@
 			array $files = []
 		):TestResponseBridge {
 
-			$newPayload = $this->payloadStringifier($payload, $headers);
-
 			return $this->gatewayResponse(
 
-				$url, __METHOD__, $newPayload, $headers, $files
+				$url, __FUNCTION__, $payload, $headers, $files
 			);
 		}
 
@@ -235,9 +231,7 @@
 
 		public function delete(string $url, array $payload = [], array $headers = []):TestResponseBridge {
 
-			$newPayload = $this->payloadStringifier($payload, $headers);
-
-			return $this->gatewayResponse($url, __METHOD__, $newPayload, $headers);
+			return $this->gatewayResponse($url, __FUNCTION__, $payload, $headers);
 		}
 
 		public function deleteJson(string $url, array $payload = [], array $headers = []):TestResponseBridge {
@@ -263,21 +257,8 @@
 
 			return $this->gatewayResponse(
 
-				$url, $httpMethod, $converted, $newHeaders, $files
+				$url, $httpMethod, $payload, $newHeaders, $files
 			);
-		}
-
-		private function payloadStringifier (array $payload, array $headers):string {
-
-			if (
-				array_key_exists(self::CONTENT_TYPE_KEY, $headers) &&
-
-				$headers[$this->CONTENT_TYPE_KEY] == $this->JSON_HEADER_VALUE
-			)
-
-				return json_encode($payload);
-
-			return http_build_query($payload);
 		}
 	}
 ?>
