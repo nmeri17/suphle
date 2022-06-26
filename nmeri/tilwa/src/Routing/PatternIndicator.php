@@ -11,7 +11,7 @@
 
 		private $patternAuthentication, $registry, $authorizer,
 
-		$defaultAuthenticator;
+		$providedAuthenticator;
 
 		public function __construct (MiddlewareRegistry $registry, PathAuthorizer $authorizer) {
 
@@ -29,9 +29,17 @@
 			$this->updatePermissions($collection, $pattern);
 		}
 
-		public function setDefaultAuthenticator (AuthStorage $mechanism):void {
+		/**
+		 * We use this to switch authenticator during mirroring. But the binding can't happen here since it's too early to know what module will eventually handle request
+		*/
+		public function provideAuthenticator (AuthStorage $mechanism):void {
 
-			$this->defaultAuthenticator = $mechanism;
+			$this->providedAuthenticator = $mechanism;
+		}
+
+		public function getProvidedAuthenticator ():?AuthStorage {
+
+			return $this->providedAuthenticator;
 		}
 
 		/**
@@ -45,13 +53,13 @@
 
 				if (in_array($pattern, $activePatterns)) // case-sensitive comparison
 
-					$this->patternAuthentication = $this->defaultAuthenticator ?? $collection->_getAuthenticator();
+					$this->patternAuthentication = $collection->_getAuthenticator();
 
 				else $this->patternAuthentication = null;
 			}
 		}
 
-		public function activeAuthStorage ():?AuthStorage {
+		public function routedAuthStorage ():?AuthStorage {
 
 			return $this->patternAuthentication;
 		}

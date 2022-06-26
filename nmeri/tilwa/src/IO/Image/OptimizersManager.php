@@ -9,7 +9,7 @@
 
 	use Tilwa\Exception\Explosives\Generic\UnmodifiedImageException;
 
-	use SplFileInfo;
+	use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 	/**
 	 * Doesn't implement an interface since we don't intend to replace it. Doing so means it can be replaced with an implementation that permits save without a operation
@@ -42,13 +42,13 @@
 
 			$newImageNames = [];
 
-			foreach ($this->operations as $operationName => $operation) {
+			foreach ($this->operations as $operation) {
 
 				$operation->setFiles($this->originalImages);
 
 				$operation->setResourceName ($this->imageResourceName);
 
-				$operation->setName($operationName);
+				$operationName = $operation->getOperationName();
 
 				if (!$operation->savesAsync())
 
@@ -70,7 +70,7 @@
 		}
 
 		/**
-		 * @param {images} SplFileInfo[]
+		 * @param {images} UploadedFile[]
 		*/
 		public function setImages (array $images, string $resourceName):self {
 
@@ -85,7 +85,7 @@
 
 			$this->inferiorImage->setMaxSize($maxSize);
 
-			$this->operations[__FUNCTION__] = $this->inferiorImage;
+			$this->operations[] = $this->inferiorImage;
 
 			return $this;
 		}
@@ -94,7 +94,7 @@
 
 			$this->thumbnailImage->setDimensions($width, $height);
 
-			$this->operations[__FUNCTION__] = $this->thumbnailImage;
+			$this->operations[] = $this->thumbnailImage;
 
 			return $this;
 		}

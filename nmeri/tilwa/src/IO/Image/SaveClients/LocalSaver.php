@@ -3,24 +3,26 @@
 
 	use Tilwa\Contracts\{IO\Image\ImageLocator, Config\ModuleFiles};
 
-	use Psr\Http\Message\UploadedFileInterface;
+	use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 	class LocalSaver implements ImageLocator {
 
 		private $storagePath;
-
-		protected $dummyFolder = "dummies";
 
 		public function __construct (ModuleFiles $fileConfig) {
 
 			$this->storagePath = $fileConfig->getImagePath();
 		}
 
-		public function resolveName (UploadedFileInterface $file, string $operationName, string $resourceName):string {
+		public function resolveName (
+			UploadedFile $file, string $operationName,
+
+			string $resourceName
+		):string {
 
 			$imageName = uniqid(). session_id() . time();
 
-			$withExtension = $imageName. "." . $file->guessClientExtension();
+			$withExtension = $imageName. "." . $file->guessExtension();
 
 			$segments = [
 
@@ -31,20 +33,5 @@
 
 			return implode(DIRECTORY_SEPARATOR, $segments);
 		}
-
-		public function temporarilyRelocate (UploadedFileInterface $image):string {
-
-			$dummyPath = $this->storagePath . DIRECTORY_SEPARATOR .
-
-			$this->dummyFolder . DIRECTORY_SEPARATOR .
-
-			$image->getClientFilename();
-
-			$image->moveTo($dummyPath);
-
-			return $dummyPath;
-		}
-
-		
 	}
 ?>

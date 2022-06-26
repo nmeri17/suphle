@@ -19,6 +19,9 @@
 			$this->systemReader = $systemReader;
 		}
 
+		/**
+		 * {@inheritdoc}
+		*/
 		public function getRootPath ():string {
 
 			return $this->systemReader->pathFromLevels(
@@ -27,6 +30,9 @@
 			);
 		}
 
+		/**
+		 * {@inheritdoc}
+		*/
 		public function activeModulePath ():string {
 
 			return $this->systemReader->pathFromLevels(
@@ -35,14 +41,20 @@
 			);
 		}
 
+		/**
+		 * {@inheritdoc}
+		*/
 		public function getViewPath ():string {
 
-			return $this->activeModulePath() . DIRECTORY_SEPARATOR . "Markup" . DIRECTORY_SEPARATOR;
+			return $this->activeModulePath(). "Markup";
 		}
 
+		/**
+		 * {@inheritdoc}
+		*/
 		public function getImagePath ():string {
 
-			return "images" . DIRECTORY_SEPARATOR;
+			return $this->activeModulePath(). "Images";
 		}
 	}
 ?>

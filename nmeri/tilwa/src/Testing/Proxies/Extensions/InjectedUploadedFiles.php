@@ -3,14 +3,14 @@
 
 	use Tilwa\Contracts\Requests\FileInputReader;
 
-	use SplFileInfo;
+	use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 	class InjectedUploadedFiles implements FileInputReader {
 
 		private $fileMap;
 
 		/**
-		 * @param {fileMap} SplFileInfo[]
+		 * @param {fileMap} UploadedFile[]
 		*/
 		public function __construct (array $fileMap) {
 

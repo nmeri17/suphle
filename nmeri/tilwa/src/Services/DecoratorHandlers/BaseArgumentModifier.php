@@ -7,16 +7,11 @@
 
 	abstract class BaseArgumentModifier implements ModifiesArguments {
 
-		protected $objectMeta, $calledMethod;
+		protected $objectMeta;
 
 		public function __construct ( ObjectDetails $objectMeta) {
 
 			$this->objectMeta = $objectMeta;
-		}
-
-		public function setCalledMethod (string $methodName):void {
-
-			$this->calledMethod = $methodName;
 		}
 
 		/**
@@ -30,7 +25,7 @@
 		/**
 		 * {@inheritdoc}
 		*/
-		public function transformMethods (object $concreteInstance, array $arguments):array {
+		public function transformMethods (object $concreteInstance, array $arguments, string $methodName):array {
 
 			return $arguments;
 		}

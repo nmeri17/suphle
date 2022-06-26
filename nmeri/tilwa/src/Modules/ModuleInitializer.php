@@ -135,18 +135,29 @@
 		*/
 		protected function attemptAuthentication ():self {
 
-			$authMethod = $this->indicator->activeAuthStorage();
+			$routedMechanism = $this->indicator->routedAuthStorage();
 
-			if (!is_null($authMethod)) {
+			$switchedMechanism = $this->indicator->getProvidedAuthenticator();
 
-				if ( is_null($authMethod->getId()))
+			if (!is_null($routedMechanism)) {
 
-					throw new Unauthenticated($authMethod);
+				if (!is_null($switchedMechanism))
+
+					$routedMechanism = $switchedMechanism;
+
+				if ( is_null($routedMechanism->getId()))
+
+					throw new Unauthenticated($routedMechanism);
+			}
+			elseif (!is_null($switchedMechanism))
+
+				$routedMechanism = $switchedMechanism;
+
+			if (!is_null($routedMechanism))
 
 				$this->container->whenTypeAny()
 
-				->needsAny([ AuthStorage::class => $authMethod]);
-			}
+				->needsAny([ AuthStorage::class => $routedMechanism]);
 
 			return $this;
 		}

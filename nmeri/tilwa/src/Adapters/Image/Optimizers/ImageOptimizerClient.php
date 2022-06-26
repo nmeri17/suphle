@@ -3,13 +3,20 @@
 
 	use Tilwa\Contracts\IO\Image\InferiorImageClient;
 
+	use Tilwa\File\FileSystemReader;
+
 	use ImageOptimizer\OptimizerFactory;
 
-	use Psr\Http\Message\UploadedFileInterface;
+	use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 	class ImageOptimizerClient implements InferiorImageClient {
 
-		private $client;
+		private $client, $fileSystemReader;
+
+		public function __construct (FileSystemReader $fileSystemReader) {
+
+			$this->fileSystemReader = $fileSystemReader;
+		}
 
 		public function setupClient ():void {
 
@@ -21,9 +28,12 @@
 			$this->client->optimize($currentPath);
 		}
 
-		public function moveDowngraded (UploadedFileInterface $image, ?string $newPath):string {
+		public function moveDowngraded (UploadedFile $image, ?string $newPath):string {
+var_dump(25, $newPath);
 
-			$image->moveTo($newPath );
+			$this->fileSystemReader->ensureDirectoryExists($newPath);
+
+			$image->move(dirname($newPath), $newPath );
 
 			return $newPath;
 		}

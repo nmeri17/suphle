@@ -51,16 +51,17 @@
 
 		private function sendUploadRequest (string $url):TestResponseBridge {
 
-			return $this->postJson("/api/v1/$url", [
+			$picture = (new FileFactory)->image("portait.png", 200, 450);
+
+			$picture->sizeToReport = 300 *1000;
+
+			return $this->postJson("/api/v1/$url", [ // using mirroring to bypass csrf errors
 
 					"belonging_resource" => $this->resourceOwner
 
-				], [], [
+				], [],
 
-				"profile_pic" => (new FileFactory) // since file reading is generic, we aren't strictly concerned about key names. That should be enforced through the validator. We just lift anything that comes there since it doesn't make sense to post files without saving
-
-					->create("portait.png", 300)
-				]
+				[ "profile_pic" => $picture ] // since file reading is generic, we aren't strictly concerned about key names. That should be enforced through the validator. We just lift anything that comes there since it doesn't make sense to post files without saving
 			);
 		}
 
@@ -68,13 +69,21 @@
 
 			$operation = "thumbnail";
 
-			$imagePath = $this->sendUploadRequest("/apply-crop")
+			$rawResponse = $this->sendUploadRequest("/apply-crop")
 
-			->getContent()[$operation][0];
+			->getContent();
 
-			$pattern = $this->resourceOwner ."\/$operation\/\w+\.";
+			$decoded = json_decode($rawResponse, true);
 
-			$this->assertTrue(preg_match("/$pattern/", $imagePath));
+			$imagePath = $decoded[$operation][0];
+
+			$pattern = $this->resourceOwner . "\\\\$operation\\\\".
+
+			"\w+\.";
+
+			$matchResult = preg_match("/$pattern/", $imagePath);
+
+			$this->assertSame(1, $matchResult);
 		}
 
 		// test async version calls expected method

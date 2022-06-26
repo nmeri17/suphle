@@ -5,6 +5,8 @@
 
 	class DefaultInferiorHandler extends BaseOptimizeOperation implements InferiorOperationHandler {
 
+		protected $operationName = InferiorOperationHandler::OPERATION_NAME;
+
 		private $maxSize;
 
 		public function __construct (InferiorImageClient $client, ImageLocator $imageLocator) {
@@ -21,22 +23,21 @@
 
 		public function getTransformed ():array {
 
-			$savedNames = [];
+			return array_map(function ($file) {
 
-			foreach ($this->files as $image) {
+				if ($file->getSize() >= $this->maxSize)
 
-				if ($image->getSize() >= $this->maxSize)
+					$this->client->downgrade($file->getPathname()); // assumes no prior operation has relocated file
 
-					$this->client->downgrade($this->imageLocator->temporarilyRelocate($image)); // using a dummy path since we have no way to determine and provide a path to this client. E.g. url => images/dummies/cat.png
+				return $this->client->moveDowngraded(
+					$file,
 
-				$savedNames[] = $this->client->moveDowngraded(
-					$image,
+					$this->imageLocator->resolveName(
 
-					$this->imageLocator->resolveName($image, $this->operationName, $this->resourceName)
+						$file, $this->operationName, $this->resourceName
+					)
 				);
-			}
-
-			return $savedNames;
+			}, $this->files);
 		}
 	}
 ?>

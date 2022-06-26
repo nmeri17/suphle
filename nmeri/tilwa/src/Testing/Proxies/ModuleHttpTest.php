@@ -168,7 +168,7 @@
 		}
 
 		private function gatewayResponse (
-			string $requestPath, string $httpMethod, array $payload,
+			string $requestPath, string $httpMethod, ?array $payload,
 
 			array $headers, array $files = []
 		):TestResponseBridge {

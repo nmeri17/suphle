@@ -1,12 +1,12 @@
 <?php
 	namespace Tilwa\Contracts\Requests;
 
-	use SplFileInfo;
+	use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 	interface FileInputReader {
 
 		/**
-		 * @return SplFileInfo[]
+		 * @return UploadedFile[]
 		*/
 		public function getFileObjects ():array;
 	}

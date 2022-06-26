@@ -265,7 +265,7 @@
 
 			if ( $this->isMirroring())
 
-				$this->patternIndicator->setDefaultAuthenticator(
+				$this->patternIndicator->provideAuthenticator(
 
 					$this->container->getClass(
 

@@ -9,6 +9,8 @@
 
 	use Tilwa\Testing\Proxies\Extensions\InjectedUploadedFiles;
 
+	use Symfony\Component\HttpFoundation\File\UploadedFile;
+
 	trait DirectHttpTest {
 
 		use MockFacilitator;
@@ -46,7 +48,7 @@
 
 				else $reader["getPayload"] = $payload;
 			}
-var_dump(39, $reader, $payload, $_POST);
+
 			$this->massProvide([
 
 				StdInputReader::class => $this->positiveDouble(StdInputReader::class, $reader)
@@ -56,7 +58,7 @@ var_dump(39, $reader, $payload, $_POST);
 		}
 
 		/**
-		 * @param {files} SplFileInfo[]
+		 * @param {files} UploadedFile[]
 		*/
 		protected function provideFileObjects (array $files, string $httpMethod):void {
 

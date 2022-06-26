@@ -5,15 +5,20 @@
 
 	abstract class BaseOptimizeOperation implements ImageOptimiseOperation {
 
-		protected $files, $client, $imageLocator, $operationName,
+		protected $files = [], $client, $imageLocator, $resourceName,
 
-		$resourceName;
+		$operationName // using a property instead of a constant since we can't formalise such as a contract
 
-		public function getAsyncNames (string $operationName, string $imageResourceName):array {
+		;
 
-			return array_map(function ($image) use ($operationName, $imageResourceName) {
+		public function getAsyncNames ( string $imageResourceName):array {
 
-				return $this->imageLocator->resolveName($image, $operationName, $resourceName);
+			return array_map(function ($image) use ( $imageResourceName) {
+
+				return $this->imageLocator->resolveName(
+
+					$image, $this->operationName, $resourceName
+				);
 			});
 		}
 
@@ -32,9 +37,9 @@
 			$this->resourceName = $name;
 		}
 
-		public function setName (string $name):void {
+		public function getOperationName ():string {
 
-			$this->operationName = $name;
+			return $this->operationName;
 		}
 	}
 ?>

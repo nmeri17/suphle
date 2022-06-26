@@ -3,6 +3,8 @@
 
 	interface ThumbnailOperationHandler extends ImageOptimiseOperation {
 
+		const OPERATION_NAME = "thumbnail";
+
 		public function setDimensions(int $width, int $height):void;
 	}
 ?>

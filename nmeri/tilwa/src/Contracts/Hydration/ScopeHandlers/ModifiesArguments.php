@@ -11,8 +11,6 @@
 		/**
 		 * @param {arguments} mixed[]. Method argument list
 		*/
-		public function transformMethods (object $concreteInstance, array $arguments):array;
-
-		public function setCalledMethod (string $methodName):void;
+		public function transformMethods (object $concreteInstance, array $arguments, string $methodName):array;
 	}
 ?>

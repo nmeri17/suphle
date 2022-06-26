@@ -30,20 +30,22 @@
 
 		public function process (PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler):BaseRenderer {
 
-			if ($this->requestDetails->isGetRequest() )
+			$notBrowser = $this->requestDetails->isApiRoute() &&
+
+			!$this->authStorage instanceof SessionStorage;
+
+			if (
+				$this->requestDetails->isGetRequest() ||
+
+				$notBrowser
+			)
 
 				return $requestHandler->handle($payloadStorage);
 
-			$isBrowserRoute = !$this->requestDetails->isApiRoute();
-
-			$usingSession = $this->authStorage instanceof SessionStorage;
-
-			$failedVerification = !$this->generator->isVerifiedToken(
+			if ( !$this->generator->isVerifiedToken(
 
 				$payloadStorage->getKey(CsrfGenerator::TOKEN_FIELD)
-			);
-
-			if ($isBrowserRoute && $usingSession && $failedVerification)
+			))
 
 				throw new CsrfException;
 

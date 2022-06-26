@@ -5,7 +5,7 @@
 
 	class DefaultThumbnailHandler extends BaseOptimizeOperation implements ThumbnailOperationHandler {
 
-		private $width, $height;
+		protected $operationName = ThumbnailOperationHandler::OPERATION_NAME;
 
 		public function __construct (ImageThumbnailClient $client, ImageLocator $imageLocator) {
 
@@ -16,26 +16,22 @@
 
 		public function getTransformed ():array {
 
-			$savedNames = [];
+			return array_map(function ($file) {
 
-			$this->client->setDimensions($this->width, $this->height);
+				return $this->client->miniature(
+					$file->getPathname(),
 
-			foreach ($this->files as $file)
+					$this->imageLocator->resolveName(
 
-				$savedNames[] = $this->client->miniature(
-					$this->imageLocator->temporarilyRelocate($file), // for us to get a file name
-
-					$this->imageLocator->resolveName($file, $this->operationName, $this->resourceName)
+						$file, $this->operationName, $this->resourceName
+					)
 				);
-
-			return $savedNames;
+			}, $this->files);
 		}
 
 		public function setDimensions(int $width, int $height):void {
 
-			$this->width = $width;
-
-			$this->height = $height;
+			$this->client->setDimensions($width, $height);
 		}
 	}
 ?>

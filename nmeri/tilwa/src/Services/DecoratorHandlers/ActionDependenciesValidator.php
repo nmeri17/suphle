@@ -5,7 +5,7 @@
 
 	class ActionDependenciesValidator extends BaseArgumentModifier {
 
-		public function transformMethods (object $concreteInstance, array $arguments):array {
+		public function transformMethods (object $concreteInstance, array $arguments, string $methodName):array {
 
 			$actionInjectables = $concreteInstance->permittedArguments();
 
@@ -32,16 +32,19 @@
 
 					throw new InvalidArgumentException(
 
-						$this->getErrorMessage($concreteInstance, $dependency)
+						$this->getErrorMessage(
+
+							$concreteInstance, $dependency, $methodName
+						)
 					);
 			}
 
 			return $arguments;
 		}
 
-		protected function getErrorMessage (object $concrete, string $dependency):string {
+		protected function getErrorMessage (object $concrete, string $dependency, string $methodName):string {
 
-			return get_class($concrete) . "::". $this->calledMethod .
+			return get_class($concrete) . "::". $methodName .
 
 			" is forbidden from depending on $dependency";
 		}

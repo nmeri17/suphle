@@ -62,13 +62,11 @@
 
 				$handler = $container->getClass($scope[$decorator]);
 
-				$handler->setCalledMethod($methodName);
-
 				if ($hasConstructor)
 
 					$argumentList = $handler->transformConstructor ($concrete, $argumentList);
 
-				else $argumentList = $handler->transformMethods($concrete, $argumentList);
+				else $argumentList = $handler->transformMethods($concrete, $argumentList, $methodName);
 			}
 
 			return $argumentList;

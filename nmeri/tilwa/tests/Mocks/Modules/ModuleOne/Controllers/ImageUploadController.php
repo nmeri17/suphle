@@ -27,8 +27,8 @@
 
 			return $this->imageService->getOptimizer($resourceName)
 
-			->inferior(50) // in the test, assert that resulting file is <= this size
-			->thumbnail(15, 15)->savedImageNames();
+			->inferior(150) // in the test, assert that resulting file is <= this size
+			->thumbnail(50, 50)->savedImageNames();
 		}
 
 		public function applyNoOptimization (ImageServiceConsumer $payload):array {
@@ -44,7 +44,7 @@
 
 			->getOptimizer($payload->getDomainObject())
 
-			->thumbnail(15, 15)->savedImageNames();
+			->thumbnail(50, 50)->savedImageNames();
 		}
 	}
 ?>
