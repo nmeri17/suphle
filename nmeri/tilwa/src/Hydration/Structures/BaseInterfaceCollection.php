@@ -19,7 +19,7 @@
 
 	use Tilwa\Contracts\IO\Image\{ImageThumbnailClient, InferiorImageClient, ImageLocator, InferiorOperationHandler, ThumbnailOperationHandler};
 
-	use Tilwa\IO\Image\InterfaceLoaders\{InferiorImageLoader, ImageThumbnailLoader};
+	use Tilwa\IO\Image\InterfaceLoaders\ImageThumbnailLoader;
 
 	use Tilwa\IO\Image\SaveClients\LocalSaver;
 
@@ -34,6 +34,8 @@
 	use Tilwa\Adapters\Orms\Eloquent\{ UserEntityLoader, ModelReplicator, OrmLoader, DatabaseTester as EloquentTester};
 
 	use Tilwa\Adapters\Markups\Transphporm as TransphpormAdapter;
+
+	use Tilwa\Adapters\Image\Optimizers\NativeReducerClient;
 
 	use Tilwa\Request\{NativeInputReader, ValidatorLoader, NativeFileReader};
 
@@ -66,8 +68,6 @@
 
 				ModuleLoginHandler::class => LoginHandlerInterfaceLoader::class,
 
-				InferiorImageClient::class => InferiorImageLoader::class,
-
 				ImageThumbnailClient::class => ImageThumbnailLoader::class,
 
 				RequestValidator::class => ValidatorLoader::class,
@@ -98,7 +98,7 @@
 
 				InferiorOperationHandler::class => DefaultInferiorHandler::class,
 
-				ThumbnailOperationHandler::class => DefaultThumbnailHandler::class,
+				InferiorImageClient::class => NativeReducerClient::class,
 
 				OutgoingRequest::class => GuzzleClient::class,
 
@@ -112,7 +112,9 @@
 
 				Session::class => NativeSession::class,
 
-				StdInputReader::class => NativeInputReader::class
+				StdInputReader::class => NativeInputReader::class,
+
+				ThumbnailOperationHandler::class => DefaultThumbnailHandler::class
 			];
 		}
 

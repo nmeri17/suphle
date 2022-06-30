@@ -1,6 +1,8 @@
 <?php
 	namespace Tilwa\Testing\Condiments;
 
+	use Symfony\Component\HttpFoundation\File\UploadedFile;
+
 	use FilesystemIterator, UnexpectedValueException;
 
 	trait FilesystemCleaner {
@@ -100,31 +102,89 @@
 
 		/**
 		 * @param {indexes} Accepts wildcards
+		 * @param {fileMap} Leaving this open to any iterable instead of tying it to TestResponseBridge to keep it agnostic to response types and more importantly, so services can be tested directly
 		*/
-		protected function assertSavedFiles (array $indexes, TestResponseBridge $response):void {
+		protected function assertSavedFiles (array $indexes, iterable $fileMap):void {
 
 			foreach ($indexes as $index)
 
-				$this->assertSavedFileNames(data_get($index));
+				$this->assertSavedFileNames(data_get($fileMap, $index));
 		}
 
 		/**
 		 * Deletes file after verifying its presence
 		 * 
-		 * @param {names} One dimensional array of literal file names
+		 * @param {files} One dimensional array of literal file names
 		*/
-		protected function assertSavedFileNames (array $names, TestResponseBridge $response):void {
+		protected function assertSavedFileNames (iterable $files):void {
 
-			foreach ($names as $index => $file) {
+			foreach ($files as $file) {
 
 				if (is_iterable($file))
 
-					$this->assertSavedFileNames($file, $response);
+					$this->assertSavedFileNames($file);
 
 				$this->assertTrue(file_exists($file));
 
 				unlink($file);
 			}
+		}
+
+		/**
+		 * @param {expectedSize} in kB
+		 */
+		protected function saveFakeImage (string $fileName, int $width, int $height, int $expectedSize = 100):UploadedFile {
+
+			$tempImageName = $this->getImageTemporaryPath($fileName, $width, $height);
+
+			$extension = pathinfo($fileName, PATHINFO_EXTENSION);
+
+			while (filesize($tempImageName)/1024 < $expectedSize) {
+
+				$loopTemp = $this->getImageTemporaryPath($fileName, $width, $height);
+
+				file_put_contents($tempImageName, file_get_contents($loopTemp), FILE_APPEND);
+
+				unlink($loopTemp);
+			}
+
+			return new UploadedFile($tempImageName, $fileName, $extension, null, true);
+		}
+
+		private function getImageTemporaryPath (string $extension, int $width, int $height):string {
+
+			$extension = in_array($extension, [
+
+				"jpeg", "png", "gif", "webp", "wbmp", "bmp"
+			]) ? strtolower($extension): "jpeg";
+
+            $imageResource = imagecreatetruecolor($width, $height);
+
+            $writeFunction = "image$extension";
+
+        	$imagePath = $this->getTempFilePath();
+
+            $writeFunction($imageResource, $imagePath);
+
+            imagedestroy($imageResource);
+
+            return $imagePath;
+		}
+
+		private function getTempFilePath ():string {
+
+			return tempnam(sys_get_temp_dir(), "php_file");
+		}
+
+		protected function saveFakeFile (string $fileName, string $fileType, int $expectedSize = 100):UploadedFile {
+
+			$instance = new UploadedFile($fileName, $this->getTempFilePath(), null, true);
+
+            $instance->sizeToReport = $expectedSize * 1024;
+
+            $instance->mimeTypeToReport = $fileType;
+
+            return $instance;
 		}
 	}
 ?>

@@ -1,25 +1,41 @@
 <?php
 	namespace Tilwa\IO\Image\Operations;
 
-	use Tilwa\Contracts\IO\Image\ImageOptimiseOperation;
+	use Tilwa\Contracts\IO\Image\{ImageOptimiseOperation, ImageLocator};
+
+	use Tilwa\File\FileSystemReader;
+
+	use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 	abstract class BaseOptimizeOperation implements ImageOptimiseOperation {
 
 		protected $files = [], $client, $imageLocator, $resourceName,
 
-		$operationName // using a property instead of a constant since we can't formalise such as a contract
+		$operationName, // using a property instead of a constant since we can't formalise such as a contract
 
-		;
+		$fileSystemReader;
 
-		public function getAsyncNames ( string $imageResourceName):array {
+		public function __construct (ImageLocator $imageLocator, FileSystemReader $fileSystemReader) {
 
-			return array_map(function ($image) use ( $imageResourceName) {
+			$this->imageLocator = $imageLocator;
 
-				return $this->imageLocator->resolveName(
+			$this->fileSystemReader = $fileSystemReader;
+		}
 
-					$image, $this->operationName, $resourceName
-				);
+		public function getAsyncNames ():array {
+
+			return array_map(function ($image) {
+
+				return $this->getImageNewName($image);
 			});
+		}
+
+		protected function getImageNewName (UploadedFile $image):string {
+
+			return $this->imageLocator->resolveName(
+
+				$image, $this->operationName, $this->resourceName
+			);
 		}
 
 		public function setFiles (array $images):void {
@@ -40,6 +56,17 @@
 		public function getOperationName ():string {
 
 			return $this->operationName;
+		}
+
+		protected function localFileCopy (UploadedFile $image):string {
+
+			$newPath = $this->getImageNewName($image);
+
+			$this->fileSystemReader->ensureDirectoryExists($newPath);
+
+			copy($image->getPathname(), $newPath);
+
+			return $newPath;
 		}
 	}
 ?>

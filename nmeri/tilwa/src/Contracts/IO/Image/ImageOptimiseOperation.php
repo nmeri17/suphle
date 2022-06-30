@@ -6,6 +6,7 @@
 	interface ImageOptimiseOperation {
 
 		/**
+		 * Moving the files is prohibited so it doesn't affect subsequent operations. Implementations should only transform their own copy
 		 * @return string[] of file names
 		*/
 		public function getTransformed ():array;
@@ -24,6 +25,6 @@
 
 		public function savesAsync ():bool;
 
-		public function getAsyncNames ( string $imageResourceName):array;
+		public function getAsyncNames ():array;
 	}
 ?>

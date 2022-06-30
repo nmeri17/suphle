@@ -44,24 +44,25 @@
 
 		public function test_can_save_multiple_operations () {
 
-			$response = $this->sendUploadRequest("/apply-all");
+			$response = $this->getDecodedResponse("/apply-all");
+
+			foreach (["thumbnail", "inferior"] as $operation)
+
+				$this->assertArrayHasKey($operation, $response);
 
 			$this->assertSavedFiles(["*.*"], $response);
 		}
 
 		private function sendUploadRequest (string $url):TestResponseBridge {
 
-			$picture = (new FileFactory)->image("portait.png", 200, 450);
-
-			$picture->sizeToReport = 300 *1000;
-
 			return $this->postJson("/api/v1/$url", [ // using mirroring to bypass csrf errors
 
 					"belonging_resource" => $this->resourceOwner
 
-				], [],
+				], [], [
 
-				[ "profile_pic" => $picture ] // since file reading is generic, we aren't strictly concerned about key names. That should be enforced through the validator. We just lift anything that comes there since it doesn't make sense to post files without saving
+					"profile_pic" => $this->saveFakeImage("portait.png", 450, 200, 300)
+				] // since file reading is generic, we aren't strictly concerned about key names. That should be enforced through the validator. We just lift anything that comes there since it doesn't make sense to post files without saving
 			);
 		}
 
@@ -69,13 +70,9 @@
 
 			$operation = "thumbnail";
 
-			$rawResponse = $this->sendUploadRequest("/apply-crop")
+			$decoded = $this->getDecodedResponse("/apply-crop");
 
-			->getContent();
-
-			$decoded = json_decode($rawResponse, true);
-
-			$imagePath = $decoded[$operation][0];
+			$imagePath = $decoded[$operation]["profile_pic"]; // spits given array but with names instead of files
 
 			$pattern = $this->resourceOwner . "\\\\$operation\\\\".
 
@@ -86,6 +83,11 @@
 			$this->assertSame(1, $matchResult);
 		}
 
-		// test async version calls expected method
+		private function getDecodedResponse (string $url):array {
+
+			$fullResponse = $this->sendUploadRequest($url);
+
+			return json_decode($fullResponse->getContent(), true);
+		}
 	}
 ?>

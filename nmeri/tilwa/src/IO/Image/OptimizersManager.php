@@ -64,9 +64,18 @@
 						compact("operation")
 					);
 				}
-
-				return $newImageNames;
 			}
+
+			$this->deleteTmpImages();
+
+			return $newImageNames;
+		}
+
+		protected function deleteTmpImages ():void {
+
+			foreach ($this->originalImages as $image)
+
+				unlink($image->getPathname());
 		}
 
 		/**

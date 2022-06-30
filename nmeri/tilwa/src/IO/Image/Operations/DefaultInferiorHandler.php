@@ -3,17 +3,19 @@
 
 	use Tilwa\Contracts\IO\Image\{ InferiorImageClient, ImageLocator, InferiorOperationHandler};
 
+	use Tilwa\File\FileSystemReader;
+
 	class DefaultInferiorHandler extends BaseOptimizeOperation implements InferiorOperationHandler {
 
 		protected $operationName = InferiorOperationHandler::OPERATION_NAME;
 
 		private $maxSize;
 
-		public function __construct (InferiorImageClient $client, ImageLocator $imageLocator) {
+		public function __construct (InferiorImageClient $client, ImageLocator $imageLocator, FileSystemReader $fileSystemReader) {
 
 			$this->client = $client;
 
-			$this->imageLocator = $imageLocator;
+			parent::__construct($imageLocator, $fileSystemReader);
 		}
 
 		public function setMaxSize (int $size):void {
@@ -25,17 +27,9 @@
 
 			return array_map(function ($file) {
 
-				if ($file->getSize() >= $this->maxSize)
-
-					$this->client->downgrade($file->getPathname()); // assumes no prior operation has relocated file
-
-				return $this->client->moveDowngraded(
-					$file,
-
-					$this->imageLocator->resolveName(
-
-						$file, $this->operationName, $this->resourceName
-					)
+				return $this->client->downgradeImage(
+					
+					$file, $this->localFileCopy($file), $this->maxSize
 				);
 			}, $this->files);
 		}

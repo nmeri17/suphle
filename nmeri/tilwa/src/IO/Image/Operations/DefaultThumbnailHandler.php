@@ -3,29 +3,24 @@
 
 	use Tilwa\Contracts\IO\Image\{ ImageThumbnailClient, ImageLocator, ThumbnailOperationHandler};
 
+	use Tilwa\File\FileSystemReader;
+
 	class DefaultThumbnailHandler extends BaseOptimizeOperation implements ThumbnailOperationHandler {
 
 		protected $operationName = ThumbnailOperationHandler::OPERATION_NAME;
 
-		public function __construct (ImageThumbnailClient $client, ImageLocator $imageLocator) {
+		public function __construct (ImageThumbnailClient $client, ImageLocator $imageLocator, FileSystemReader $fileSystemReader) {
 
 			$this->client = $client;
 
-			$this->imageLocator = $imageLocator;
+			parent::__construct($imageLocator, $fileSystemReader);
 		}
 
 		public function getTransformed ():array {
 
 			return array_map(function ($file) {
 
-				return $this->client->miniature(
-					$file->getPathname(),
-
-					$this->imageLocator->resolveName(
-
-						$file, $this->operationName, $this->resourceName
-					)
-				);
+				return $this->client->miniature($this->localFileCopy($file));
 			}, $this->files);
 		}
 

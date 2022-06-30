@@ -25,10 +25,12 @@
 
 			$resourceName = $payload->getDomainObject(); // since no computation happens, it's safe to use without checking for null
 
-			return $this->imageService->getOptimizer($resourceName)
+			$fileNames = $this->imageService->getOptimizer($resourceName)
 
 			->inferior(150) // in the test, assert that resulting file is <= this size
 			->thumbnail(50, 50)->savedImageNames();
+
+			return $fileNames;
 		}
 
 		public function applyNoOptimization (ImageServiceConsumer $payload):array {
