@@ -26,10 +26,5 @@
 
 			throw new UnacceptableDependency($caller, get_class($concrete));
 		}
-
-		public function getMethodHooks ():array {
-
-			return [];
-		}
 	}
 ?>

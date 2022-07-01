@@ -13,6 +13,7 @@
 
 		public function test_file_size_does_reduce () {
 
+			// given
 			$picture = $this->saveFakeImage("nmeri.jpg", 100, 100, 300);
 
 			$oldPath = $picture->getPathName();
@@ -23,15 +24,15 @@
 
 			$generatedPath = $this->container->getClass(NativeReducerClient::class)
 			
-			->downgradeImage ($picture, $newPath, 150);
+			->downgradeImage ($picture, $newPath, 150); // when
 
 			$sizeBefore = filesize($oldPath);
 
 			$sizeAfter = filesize($generatedPath);
 
-			$this->assertGreaterThan($sizeAfter, $sizeBefore);
+			$this->assertGreaterThan($sizeAfter, $sizeBefore); // then
 
-			foreach ([$oldPath, $generatedPath] as $path)
+			foreach ([$oldPath, $generatedPath] as $path) // cleanup
 
 				unlink($path);
 		}

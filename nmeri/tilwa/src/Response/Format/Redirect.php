@@ -51,9 +51,9 @@
 			return call_user_func_array($bound, $parameters);
 		}
 
-		public function getDependencies ():array {
+		public function dependencyNames ():array {
 
-			return array_merge(parent::getDependencies(), [
+			return array_merge(parent::dependencyNames(), [
 
 				"container" => Container::class
 			]);

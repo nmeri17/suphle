@@ -3,18 +3,21 @@
 
 	use Tilwa\Contracts\Hydration\DecoratorChain;
 
-	use Tilwa\Contracts\Services\Decorators\{SelectiveDependencies, OnlyLoadedBy, SystemModelEdit, ServiceErrorCatcher, SecuresPostRequest, MultiUserModelEdit, ValidatesActionArguments};
+	use Tilwa\Contracts\Services\Decorators\{SelectiveDependencies, OnlyLoadedBy, SystemModelEdit, ServiceErrorCatcher, SecuresPostRequest, MultiUserModelEdit, ValidatesActionArguments, VariableDependencies};
 
-	use Tilwa\Services\DecoratorHandlers\{SystemModelEditHandler, ErrorCatcherHandler, SecuresPostRequestHandler, ServicePreferenceHandler, OnlyLoadedByHandler, MultiUserEditHandler, ActionDependenciesValidator};
+	use Tilwa\Services\DecoratorHandlers\{SystemModelEditHandler, ErrorCatcherHandler, SecuresPostRequestHandler, ServicePreferenceHandler, OnlyLoadedByHandler, MultiUserEditHandler, ActionDependenciesValidator, VariableDependenciesHandler};
 
 	class BaseDecorators implements DecoratorChain {
 
 		public function allScopes ():array {
 
 			return [
-				SelectiveDependencies::class => ServicePreferenceHandler::class,
+
+				MultiUserModelEdit::class => MultiUserEditHandler::class,
 
 				OnlyLoadedBy::class => OnlyLoadedByHandler::class,
+
+				SelectiveDependencies::class => ServicePreferenceHandler::class,
 
 				SystemModelEdit::class => SystemModelEditHandler::class,
 
@@ -22,9 +25,9 @@
 
 				SecuresPostRequest::class => SecuresPostRequestHandler::class,
 
-				MultiUserModelEdit::class => MultiUserEditHandler::class,
+				ValidatesActionArguments::class => ActionDependenciesValidator::class,
 
-				ValidatesActionArguments::class => ActionDependenciesValidator::class
+				VariableDependencies::class => VariableDependenciesHandler::class
 			];
 		}
 	}

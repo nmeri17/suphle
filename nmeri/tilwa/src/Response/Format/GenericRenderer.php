@@ -3,17 +3,19 @@
 
 	use Tilwa\Contracts\Presentation\{HtmlParser, BaseRenderer};
 
+	use Tilwa\Contracts\Services\Decorators\VariableDependencies;
+
 	use Tilwa\Hydration\Container;
 
 	use Tilwa\Flows\ControllerFlows;
 
 	use Tilwa\Services\ServiceCoordinator;
 
-	abstract class GenericRenderer implements BaseRenderer {
+	abstract class GenericRenderer implements BaseRenderer, VariableDependencies {
 
 		private $controller, $path, $flows, $routeMethod;
 
-		protected $handler, $statusCode,
+		protected $handler, $statusCode, $htmlParser,
 
 		$rawResponse = [], $headers = [];
 
@@ -22,7 +24,7 @@
 			$this->controller = $controller;
 		}
 
-		public function getDependencies ():array {
+		public function dependencyNames ():array {
 
 			return [ "htmlParser" => HtmlParser::class];
 		}
@@ -49,7 +51,7 @@
 			return json_encode($this->rawResponse);
 		}
 
-		protected function renderHtml(...$arguments):string { // should return psr responseInterface instead
+		protected function renderHtml(...$arguments):string {
 			
 			return $this->htmlParser->parseAll(...$arguments);
 		}
@@ -118,18 +120,6 @@
 		public function getHeaders ():array {
 
 			return $this->headers;
-		}
-
-		public function hydrateDependencies( Container $container):void {
-
-			$classes = array_map(function (string $type) use ($container) {
-
-				return $container->getClass($type);
-			}, $this->getDependencies());
-
-			foreach ($classes as $property => $concrete)
-
-				$this->$property = $concrete;
 		}
 	}
 ?>

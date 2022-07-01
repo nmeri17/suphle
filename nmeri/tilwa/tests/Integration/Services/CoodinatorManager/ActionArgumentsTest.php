@@ -1,66 +1,33 @@
 <?php
 	namespace Tilwa\Tests\Integration\Services\CoodinatorManager;
 
-	use Tilwa\Hydration\Container;
-
-	use Tilwa\Contracts\Database\OrmDialect;
-
-	use Tilwa\Services\Structures\{ModelfulPayload, ModellessPayload};
-
 	use Tilwa\Services\CoodinatorManager;
 
-	use Tilwa\Testing\TestTypes\ModuleLevelTest;
+	use Tilwa\Testing\TestTypes\IsolatedComponentTest;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Controllers\BaseController};
 
-	use stdClass;
+	use Tilwa\Tests\Integration\Generic\CommonBinds;
 
-	class ActionArgumentsTest extends ModuleLevelTest {
+	use InvalidArgumentException;
 
-		private $moduleOne, $sut;
+	class ActionArgumentsTest extends IsolatedComponentTest {
 
-		protected function setUp ():void {
+		use CommonBinds;
 
-			$moduleOne = $this->moduleOne = new ModuleOneDescriptor(new Container);
+		protected $usesRealDecorator = true;
 
-			parent::setUp();
+		public function test_action_method_rejects_unwanted_dependencies () {
 
-			$this->sut = $moduleOne->getContainer()->getClass(CoodinatorManager::class);
-		}
+			$this->expectException(InvalidArgumentException::class); // then
 
-		protected function getModules ():array {
+			$controller = $this->positiveDouble(BaseController::class);
 
-			return [ $this->moduleOne ];
-		}
+			$this->container->getClass(CoodinatorManager::class)
 
-		public function test_rejects_unwanted_dependencies () {
+			->setDependencies ( $controller, "incorrectActionInjection") // given
 
-			// given
-			$correctParameters = [
-
-				$this->positiveDouble(ModelfulPayload::class),
-
-				$this->positiveDouble(ModellessPayload::class)
-			];
-
-			$incorrectParameters = [new stdClass];
-
-			$newList = $this->sut->validActionDependencies(array_merge($correctParameters, $incorrectParameters)); // when
-
-			$this->assertSame($newList, $correctParameters); // then
-		}
-
-		private function mockModelful ():ModelfulPayload {
-
-			return $this->positiveDouble(ModelfulPayload::class, [], [
-
-				"setDependencies" => [1, [
-					$this->callback(function($subject) {
-
-						return $subject instanceof OrmDialect;
-					})
-				]]
-			]);
+			->setHandlerParameters(); // when
 		}
 	}
 ?>

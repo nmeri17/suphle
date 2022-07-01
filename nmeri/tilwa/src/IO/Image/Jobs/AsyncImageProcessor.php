@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\IO\Image\Jobs;
 
-	use Tilwa\Contracts\{Queues\Task, IO\ImageOptimiseOperation, Exception\AlertAdapter};
+	use Tilwa\Contracts\{Queues\Task, IO\Image\ImageOptimiseOperation, Exception\AlertAdapter};
 
 	use Throwable;
 

@@ -14,9 +14,9 @@
 			$this->setHeaders(200, ["Content-Type" => "text/html"]); // or 205 Reset Content
 		}
 
-		public function getDependencies ():array {
+		public function dependencyNames ():array {
 
-			return array_merge(parent::getDependencies(), [
+			return array_merge(parent::dependencyNames(), [
 
 				"router" => RouteManager::class
 			]);

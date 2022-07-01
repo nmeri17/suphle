@@ -11,6 +11,8 @@
 
 	use Tilwa\Bridge\Laravel\Routing\ModuleRouteMatcher;
 
+	use Tilwa\Services\DecoratorHandlers\VariableDependenciesHandler;
+
 	use Tilwa\Contracts\{Auth\AuthStorage, Presentation\BaseRenderer};
 
 	use Tilwa\Contracts\Modules\{HighLevelRequestHandler, DescriptorInterface};
@@ -23,15 +25,21 @@
 
 		$laravelMatcher, $container, $indicator,
 
-		$requestDetails, $finalRenderer;
+		$requestDetails, $finalRenderer, $variableDecorator;
 
-		public function __construct (DescriptorInterface $descriptor, RequestDetails $requestDetails) {
+		public function __construct (
+			DescriptorInterface $descriptor, RequestDetails $requestDetails,
+
+			VariableDependenciesHandler $variableDecorator
+		) {
 
 			$this->descriptor = $descriptor;
 
 			$this->container = $descriptor->getContainer();
 
 			$this->requestDetails = $requestDetails;
+
+			$this->variableDecorator = $variableDecorator;
 		}
 
 		public function assignRoute ():self {
@@ -58,11 +66,16 @@
 
 			$this->router->getPlaceholderStorage()
 
-			->exchangeTokenValues($this->requestDetails->getPath()); // thanks to object references, this update affects the object stored in Container without explicitly rebinding;
+			->exchangeTokenValues($this->requestDetails->getPath()); // thanks to object references, this update affects the object stored in Container without explicitly rebinding
+
+			$renderer = $this->variableDecorator->examineInstance(
+
+				$this->router->getActiveRenderer(), ""
+			);
 
 			$this->container->whenTypeAny()->needsAny([
 
-				BaseRenderer::class => $this->router->getActiveRenderer() // any object using this expects its module to have routed to a renderer
+				BaseRenderer::class => $renderer // any object using this expects its module to have routed to a renderer
 			]);
 		}
 

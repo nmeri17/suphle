@@ -19,8 +19,6 @@
 
 		private $resourceOwner = "users";
 
-		protected $debugCaughtExceptions = true;
-
 		protected function getModules ():array {
 
 			return [
@@ -44,8 +42,9 @@
 
 		public function test_can_save_multiple_operations () {
 
-			$response = $this->getDecodedResponse("/apply-all");
+			$response = $this->getDecodedResponse("/apply-all"); // when
 
+			// then
 			foreach (["thumbnail", "inferior"] as $operation)
 
 				$this->assertArrayHasKey($operation, $response);
@@ -70,9 +69,9 @@
 
 			$operation = "thumbnail";
 
-			$decoded = $this->getDecodedResponse("/apply-crop");
+			$decoded = $this->getDecodedResponse("/apply-crop"); // when
 
-			$imagePath = $decoded[$operation]["profile_pic"]; // spits given array but with names instead of files
+			$imagePath = $decoded[$operation]["profile_pic"]; // spits given array back but with names instead of files
 
 			$pattern = $this->resourceOwner . "\\\\$operation\\\\".
 
@@ -80,7 +79,7 @@
 
 			$matchResult = preg_match("/$pattern/", $imagePath);
 
-			$this->assertSame(1, $matchResult);
+			$this->assertSame(1, $matchResult); // then
 		}
 
 		private function getDecodedResponse (string $url):array {

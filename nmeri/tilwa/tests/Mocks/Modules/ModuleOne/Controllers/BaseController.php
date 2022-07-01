@@ -3,6 +3,8 @@
 
 	use Tilwa\Services\ServiceCoordinator;
 
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{PayloadReaders\ImageServiceConsumer, Concretes\ARequiresBCounter};
+
 	class BaseController extends ServiceCoordinator {
 
 		public function indexHandler () {
@@ -33,6 +35,11 @@
 		public function optionalPlaceholder () {
 
 			//
+		}
+
+		public function incorrectActionInjection (ImageServiceConsumer $payload, ARequiresBCounter $aRequires):array {
+
+			return [];
 		}
 	}
 ?>

@@ -72,7 +72,7 @@
 			);
 		}
 
-		private function setHandlerParameters ():void {
+		public function setHandlerParameters ():void {
 
 			$this->handlerParameters = $this->container->getMethodParameters(
 

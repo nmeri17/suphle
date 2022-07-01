@@ -9,13 +9,18 @@
 
 	use Tilwa\Request\ValidatorManager;
 
+	use Tilwa\Services\DecoratorHandlers\VariableDependenciesHandler;
+
 	class LoginRequestHandler implements ModuleLoginHandler {
 
 		private $rendererCollection, $container, $responseRenderer,
 
-		$validatorManager;
+		$validatorManager, $variableDecorator;
 
-		public function __construct (LoginRenderers $collection, Container $container, ValidatorManager $validatorManager) {
+		public function __construct (
+			LoginRenderers $collection, Container $container,
+
+			ValidatorManager $validatorManager, VariableDependenciesHandler $variableDecorator) {
 
 			$this->rendererCollection = $collection;
 
@@ -24,6 +29,8 @@
 			$this->validatorManager = $validatorManager;
 
 			$this->loginService = $collection->getLoginService();
+
+			$this->variableDecorator = $variableDecorator;
 		}
 
 		public function isValidRequest ():bool {
@@ -43,8 +50,6 @@
 			$renderer = $this->responseRenderer;
 
 			$renderer->setControllingClass($this->loginService);
-			
-			$renderer->hydrateDependencies($this->container);
 
 			$this->executeRenderer();
 		}
@@ -53,9 +58,11 @@
 
 			if ($this->loginService->compareCredentials())
 
-				$this->responseRenderer = $this->rendererCollection->successRenderer();
+				$renderer = $this->rendererCollection->successRenderer();
 
-			else $this->responseRenderer = $this->rendererCollection->failedRenderer();
+			else $renderer = $this->rendererCollection->failedRenderer();
+
+			$this->responseRenderer = $this->variableDecorator->examineInstance($renderer, "");
 
 			return $this;
 		}

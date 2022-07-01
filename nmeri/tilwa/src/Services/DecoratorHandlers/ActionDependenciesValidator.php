@@ -34,7 +34,7 @@
 
 						$this->getErrorMessage(
 
-							$concreteInstance, $dependency, $methodName
+							$concreteInstance, $dependencyType, $methodName
 						)
 					);
 			}

@@ -5,6 +5,8 @@
 
 	use Tilwa\Request\PayloadStorage;
 
+	use Tilwa\Services\DecoratorHandlers\VariableDependenciesHandler;
+
 	use Tilwa\Exception\DetectedExceptionManager;
 
 	use Tilwa\Contracts\{Modules\HighLevelRequestHandler, Config\ExceptionInterceptor, Presentation\BaseRenderer, Exception\FatalShutdownAlert, Hydration\ClassHydrationBehavior};
@@ -17,7 +19,13 @@
 
 		$exceptionDetector;
 
-		public function __construct( Container $container, ExceptionInterceptor $config, PayloadStorage $payloadStorage, DetectedExceptionManager $exceptionDetector) {
+		public function __construct(
+			Container $container, ExceptionInterceptor $config,
+
+			PayloadStorage $payloadStorage, DetectedExceptionManager $exceptionDetector,
+
+			VariableDependenciesHandler $variableDecorator
+		) {
 
 			$this->container = $container;
 
@@ -26,9 +34,11 @@
 			$this->payloadStorage = $payloadStorage;
 
 			$this->exceptionDetector = $exceptionDetector;
+
+			$this->variableDecorator = $variableDecorator;
 		}
 
-		public function hydrateHandler (Throwable $exception) {
+		public function hydrateHandler (Throwable $exception):void {
 
 			$handlers = $this->config->getHandlers();
 
@@ -49,7 +59,10 @@
 
 			$this->handler->prepareRendererData();
 
-			return $this->handler->getRenderer();
+			return $this->variableDecorator->examineInstance(
+
+				$this->handler->getRenderer(), ""
+			);
 		}
 
 		public function epilogue ():void {
@@ -110,9 +123,10 @@
 
 			$this->exceptionDetector->queueAlertAdapter($exception, $this->payloadStorage);
 
-			$renderer = $this->handlingRenderer();
+			$renderer = $this->variableDecorator->examineInstance(
 
-			$renderer->hydrateDependencies($this->container);
+				$this->handlingRenderer(), ""
+			);
 
 			$this->writeStatusCode($renderer->getStatusCode());
 

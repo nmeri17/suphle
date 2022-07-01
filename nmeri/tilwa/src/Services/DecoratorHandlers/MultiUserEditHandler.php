@@ -5,7 +5,7 @@
 
 	use Tilwa\Queues\AdapterManager;
 
-	use Tilwa\Request\PayloadStorage;
+	use Tilwa\Request\{PayloadStorage, PathAuthorizer};
 
 	use Tilwa\Hydration\Structures\ObjectDetails;
 
@@ -27,14 +27,16 @@
 
 		private $ormDialect, $queueManager, $payloadStorage,
 
-		$errorDecoratorHandler;
+		$errorDecoratorHandler, $pathAuthorizer;
 
 		public function __construct (
 			OrmDialect $ormDialect, AdapterManager $queueManager,
 
 			PayloadStorage $payloadStorage, ErrorCatcherHandler $errorDecoratorHandler,
 
-			DecoratorProxy $proxyConfig, ObjectDetails $objectMeta
+			DecoratorProxy $proxyConfig, ObjectDetails $objectMeta,
+
+			PathAuthorizer $pathAuthorizer
 		) {
 
 			$this->ormDialect = $ormDialect;
@@ -44,6 +46,8 @@
 			$this->payloadStorage = $payloadStorage;
 
 			$this->errorDecoratorHandler = $errorDecoratorHandler; // composing instead of extending to decouple constructor dependencies
+
+			$this->pathAuthorizer = $pathAuthorizer;
 
 			parent::__construct($proxyConfig, $objectMeta);
 		}
@@ -58,9 +62,11 @@
 
 		public function getMethodHooks ():array {
 
-			return [ // we're not wrapping "getResource" since we want request rermination if getting editable resource failed; there's nothing to fallback on
+			return [
 
-				"updateResource" => [$this, "wrapUpdateResource"]
+				"updateResource" => [$this, "wrapUpdateResource"],
+
+				"getResource" => [$this, "wrapGetResource"]
 			];
 		}
 
@@ -109,6 +115,18 @@
 					$exception, $proxy, $concrete, $methodName
 				);
 			}
+		}
+
+		public function wrapGetResource (
+			AccessInterceptorInterface $proxy, MultiUserModelEdit $concrete,
+			string $methodName, array $argumentList
+		) {
+
+			if (empty($this->pathAuthorizer->getActiveRules()))
+
+				throw new EditIntegrityException;
+
+			return $concrete->getResource(); // we're not wrapping in error catcher since we want request termination if getting editable resource failed; there's nothing to fallback on
 		}
 	}
 ?>

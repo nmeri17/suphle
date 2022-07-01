@@ -9,6 +9,9 @@
 
 	use ProxyManager\{Factory\AccessInterceptorValueHolderFactory as AccessInterceptor, Proxy\AccessInterceptorInterface};
 
+	/**
+	 * Helper class for handlers that want to wrap some/all methods
+	*/
 	abstract class BaseInjectionModifier implements ModifyInjected {
 
 		protected $methodHooks = [], $proxyConfig, $objectMeta;

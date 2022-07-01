@@ -255,8 +255,6 @@
 
 				$container->getClass($collection->_handlingClass())
 			);
-			
-			$renderer->hydrateDependencies($container);
 
 			$this->placeholderStorage->setMethodSegments($this->visitedMethods);
 		}

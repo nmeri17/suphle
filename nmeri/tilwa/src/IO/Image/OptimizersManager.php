@@ -3,6 +3,8 @@
 
 	use Tilwa\Contracts\IO\Image\{ThumbnailOperationHandler, InferiorOperationHandler};
 
+	use Tilwa\Contracts\Services\Decorators\VariableDependencies;
+
 	use Tilwa\IO\Image\Jobs\AsyncImageProcessor;
 
 	use Tilwa\Queues\AdapterManager;
@@ -14,7 +16,7 @@
 	/**
 	 * Doesn't implement an interface since we don't intend to replace it. Doing so means it can be replaced with an implementation that permits save without a operation
 	*/
-	class OptimizersManager {
+	class OptimizersManager implements VariableDependencies {
 
 		private $operations = [], $queueManager,
 
@@ -22,13 +24,19 @@
 
 		$inferiorImage, $imageResourceName;
 
-		public function __construct (AdapterManager $queueManager, ThumbnailOperationHandler $thumbnailImage, InferiorOperationHandler $inferiorImage) { // if the operations exceed 2, it may be more realistic to pull them from container
+		public function __construct (AdapterManager $queueManager) {
 
 			$this->queueManager = $queueManager;
+		}
 
-			$this->inferiorImage = $inferiorImage;
+		public function dependencyNames ():array {
 
-			$this->thumbnailImage = $thumbnailImage;
+			return [
+
+				"thumbnailImage" => ThumbnailOperationHandler::class,
+
+				"inferiorImage" => InferiorOperationHandler::class
+			];
 		}
 
 		/**

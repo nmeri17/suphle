@@ -158,8 +158,6 @@
 
 			$renderer = $exceptionBridge->handlingRenderer();
 
-			$renderer->hydrateDependencies($this->container);
-
 			return $renderer;
 		}
 
