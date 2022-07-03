@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Models\Eloquent\Factories;
 
-	use Tilwa\Tests\Mocks\Models\Eloquent\MultiEditProduct;
+	use Tilwa\Tests\Mocks\Models\Eloquent\{MultiEditProduct, AdminableUser};
 
 	class MultiEditProductFactory extends NameModelFactory {
 
@@ -11,7 +11,9 @@
 
 			return array_merge(parent::definition(), [
 
-				"price" => $this->faker->numberBetween(500, 35000)
+				"price" => $this->faker->numberBetween(500, 35000),
+
+				"seller_id" => AdminableUser::factory()
 			]);
 		}
 	}

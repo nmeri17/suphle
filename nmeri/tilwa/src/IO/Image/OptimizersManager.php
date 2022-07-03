@@ -29,14 +29,19 @@
 			$this->queueManager = $queueManager;
 		}
 
-		public function dependencyNames ():array {
+		public function dependencyMethods ():array {
 
-			return [
+			return [ "setInferiorImage", "setThumbnailImage" ];
+		}
 
-				"thumbnailImage" => ThumbnailOperationHandler::class,
+		public function setThumbnailImage (ThumbnailOperationHandler $thumbnailImage):void {
 
-				"inferiorImage" => InferiorOperationHandler::class
-			];
+			$this->thumbnailImage = $thumbnailImage;
+		}
+
+		public function setInferiorImage (InferiorOperationHandler $inferiorImage):void {
+
+			$this->inferiorImage = $inferiorImage;
 		}
 
 		/**

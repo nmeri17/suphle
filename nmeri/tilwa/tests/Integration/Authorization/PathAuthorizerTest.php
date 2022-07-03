@@ -13,7 +13,7 @@
 
 	use Tilwa\Tests\Integration\Routing\TestsRouter;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Auth\AuthorizeRoutes, Authorization\Paths\ModelEditRule, Adapters\AdminableOrmBridge, InterfaceLoader\AdminableOrmLoader};
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Auth\AuthorizeRoutes, Authorization\Paths\ModelEditRule, InterfaceLoader\AdminableOrmLoader};
 
 	use Tilwa\Tests\Mocks\Models\Eloquent\AdminableUser;
 

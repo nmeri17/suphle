@@ -7,13 +7,13 @@
 
 	use Tilwa\Testing\Condiments\{ModuleReplicator, BaseModuleInteractor};
 
-	use Tilwa\Testing\Proxies\{ModuleHttpTest, GagsException, Extensions\FrontDoor};
+	use Tilwa\Testing\Proxies\{ModuleHttpTest, ConfigureExceptionBridge, Extensions\FrontDoor};
 
 	abstract class ModuleLevelTest extends TestVirginContainer {
 
-		use ModuleReplicator, GagsException, ModuleHttpTest, BaseModuleInteractor {
+		use ModuleReplicator, ConfigureExceptionBridge, ModuleHttpTest, BaseModuleInteractor {
 
-			GagsException::setUp as mufflerSetup;
+			ConfigureExceptionBridge::setUp as mufflerSetup;
 		}
 
 		protected function setUp ():void {

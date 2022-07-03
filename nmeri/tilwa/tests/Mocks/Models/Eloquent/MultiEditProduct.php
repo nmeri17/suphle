@@ -5,7 +5,7 @@
 
 	use Tilwa\Contracts\Services\Models\IntegrityModel;
 
-	use Tilwa\Tests\Mocks\Models\Eloquent\Factories\MultiEditProductFactory;
+	use Tilwa\Tests\Mocks\Models\Eloquent\{AdminableUser, Factories\MultiEditProductFactory};
 
 	use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -23,6 +23,11 @@
 		public static function migrationFolders ():array {
 
 			return [__DIR__ . DIRECTORY_SEPARATOR . "Migrations"];
+		}
+
+		public function seller () {
+
+			return $this->belongsTo(AdminableUser::class);
 		}
 	}
 ?>

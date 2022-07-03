@@ -4,22 +4,22 @@
 	interface ModuleFiles extends ConfigMarker {
 
 		/**
-		 * @return Path with trailing slash
+		 * @return Absolute path, with trailing slash
 		*/
 		public function getRootPath ():string;
 
 		/**
-		 * @return Path with trailing slash
+		 * @return Absolute path, with trailing slash
 		*/
 		public function activeModulePath ():string;
 
 		/**
-		 * @return Absolute path
+		 * @return Absolute path, with trailing slash
 		*/
 		public function getViewPath():string;
 
 		/**
-		 * @return Absolute path
+		 * @return Absolute path, with trailing slash
 		*/
 		public function getImagePath ():string;
 	}

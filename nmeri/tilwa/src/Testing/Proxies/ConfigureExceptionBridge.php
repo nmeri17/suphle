@@ -9,7 +9,10 @@
 
 	use PHPUnit\Framework\MockObject\Stub\Stub;
 
-	trait GagsException {
+	/**
+	 * Used to configure how shutdown methods react when they receive errors
+	*/
+	trait ConfigureExceptionBridge {
 
 		private $bridgeName = ModuleExceptionBridge::class;
 
@@ -48,6 +51,9 @@
 			]);
 		}
 
+		/**
+		 * This is the method user likely wants to override
+		*/
 		protected function exceptionBridgeStubs ():array {
 
 			return [
@@ -57,19 +63,27 @@
 			];
 		}
 
+		/**
+		 * Dumps error received if graceful fails
+		*/
 		protected function getDisgracefulShutdown ():Stub {
 
 			return $this->returnCallback(function ($originalError, $gracefulError) {
-var_dump($originalError, $gracefulError);
-				return "GagsException->getDisgracefulShutdown";
+
+				var_dump($originalError, $gracefulError);
+
+				return "ConfigureExceptionBridge->getDisgracefulShutdown";
 			});
 		}
 
+		/**
+		 * Returns a callback that skips all the protocols of handling this nicely and returns error received
+		*/
 		protected function getGracefulShutdown ():Stub {
 
 			return $this->returnCallback(function ($argument) {
 
-				return $argument; // just skip all the protocol of handling this nicely and return
+				return $argument;
 			});
 		}
 

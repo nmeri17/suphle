@@ -1,15 +1,13 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Interactions;
 
-	use Tilwa\Contracts\Services\Decorators\MultiUserModelEdit;
-
 	interface ModuleOne {
 
-		const DEFAULT_EVENT = "sample_event";
+		const DEFAULT_EVENT = "sample_event",
 
-		const EMPTY_PAYLOAD_EVENT = "no_payload";
+		EMPTY_PAYLOAD_EVENT = "no_payload",
 
-		const OUTSIDERS_REBOUND_EVENT = "outsiders_rebound";
+		OUTSIDERS_REBOUND_EVENT = "outsiders_rebound";
 
 		public function setBCounterValue (int $newCount):void;
 
@@ -26,8 +24,6 @@
 		public function sendExtendedEvent (int $value):void;
 
 		public function multiModuleCascadeEvent (bool $value);
-
-		public function getResourceEditor ():MultiUserModelEdit;
 
 		public function systemUpdateErrorEvent (int $payload):?int;
 	}

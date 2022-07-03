@@ -19,7 +19,7 @@
 
 	use DateTime, DateInterval;
 
-	class FetchAndEditTest extends IsolatedComponentTest {
+	class MultiEditUpdateTest extends IsolatedComponentTest {
 
 		use DirectHttpTest, BaseDatabasePopulator, CommonBinds;
 
@@ -58,7 +58,7 @@
 
 				MultiUserEditHandler::INTEGRITY_KEY => $threeMinutesAgo,
 
-				"name" => "nmeri",
+				"name" => "ujunwa",
 
 				"id" => $this->replicator->getRandomEntity()->id
 			], "put");
@@ -79,7 +79,7 @@
 
 				MultiUserEditHandler::INTEGRITY_KEY => $model->$columnName,
 
-				"name" => "nmeri",
+				"name" => "ujunwa",
 
 				"id" => $model->id
 			], "put");

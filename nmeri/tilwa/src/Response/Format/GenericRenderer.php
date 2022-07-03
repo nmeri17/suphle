@@ -24,9 +24,14 @@
 			$this->controller = $controller;
 		}
 
-		public function dependencyNames ():array {
+		public function dependencyMethods ():array {
 
-			return [ "htmlParser" => HtmlParser::class];
+			return [ "setHtmlParser"];
+		}
+
+		public function setHtmlParser (HtmlParser $parser):void {
+
+			$this->htmlParser = $parser;
 		}
 
 		public function invokeActionHandler (array $handlerParameters):BaseRenderer {

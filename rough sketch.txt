@@ -17,11 +17,6 @@ sqlite
 <server name="DB_CONNECTION" value="sqlite"/>
 <server name="DB_DATABASE" value=":memory:"/>
 
-
-	- Illuminate\Testing\TestResponse: overwrite these in our extension
-		- assertSee[x] (they need the `e` method)
-		- assertView[x] (needs to convert our view to their View and pass that as response to testResponseBridge)
-
 Wrap:
 	- debug_backtrace
 
@@ -35,28 +30,15 @@ test only and except from routeCollection
 		- auth, router, tss
 
 
-	- connect AlertAdapter/Bugsnag in interface loader
-	- typesense search adapter
-		- indexing on model save/update
-		- converting from/to orm type during retrieval
-		- passing to collection type
-	- write and connect laravel cache adapter
+	- write and connect adapters
+		- laravel cache
+		- bugsnag
 	- ModuleInitializer -> laravel route finders, replace with insertable generics like for the container
 
 
-
-write tests for
-	- TransphpormTest
-
-create argument allowing us replace uploaded files and filesystem on the operator
-- multiEdit cloaker should complain on get if no authorization is found
-
-
-
-is gagsException analogous to investigateSystemCrash? how do they relate
+merge user and adminable user. remove the loader for adminable
 
 correct resque adapter bin-include path
-
 
 
 why aren't we using midlewareManipulator

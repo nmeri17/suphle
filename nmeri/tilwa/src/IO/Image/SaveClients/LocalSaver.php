@@ -24,14 +24,10 @@
 
 			$withExtension = $imageName. "." . $file->guessExtension();
 
-			$segments = [
+			return $this->storagePath . implode(DIRECTORY_SEPARATOR, [
 
-				$this->storagePath, $resourceName, $operationName,
-
-				$withExtension
-			];
-
-			return implode(DIRECTORY_SEPARATOR, $segments);
+				$resourceName, $operationName, $withExtension
+			]);
 		}
 	}
 ?>

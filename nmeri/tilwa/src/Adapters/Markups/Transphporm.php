@@ -22,16 +22,20 @@
 
 			$viewConfig = $this->viewConfig;
 
-			[$markup, $viewModel, $data] = $arguments;
+			[$markup, $template, $data] = $arguments;
 
-			if (empty($viewModel) && $viewConfig->inferFromViewName())
+			$markup = trim($markup, "/");
 
-				$viewModel = $markup;
+			if (empty($template) && $viewConfig->inferFromViewName())
+
+				$template = $markup;
+
+			else $template = trim($template, "/");
 
 			return (new Builder(
 				$this->readFile($this->fileConfig->getViewPath() . $markup),
 
-				$this->readFile($viewConfig->getTssPath() . $viewModel)
+				$this->readFile($viewConfig->getTssPath() . $template)
 			))
 			->output($data)->body;
 		}

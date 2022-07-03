@@ -1,11 +1,11 @@
 <?php
 	namespace Tilwa\Contracts\Services\Decorators;
 
-	interface VariableDependencies extends ModifiesArguments {
+	interface VariableDependencies {
 
 		/**
-		 * @return [publicPropertyToSet => className]
+		 * @return [method names]
 		*/
-		public function dependencyNames ():array;
+		public function dependencyMethods ():array;
 	}
 ?>

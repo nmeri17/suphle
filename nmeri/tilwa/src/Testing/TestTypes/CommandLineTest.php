@@ -7,15 +7,15 @@
 
 	use Tilwa\Hydration\Container;
 
-	use Tilwa\Testing\Proxies\{Extensions\FrontDoor, GagsException};
+	use Tilwa\Testing\Proxies\{Extensions\FrontDoor, ConfigureExceptionBridge};
 
 	use Tilwa\Testing\Condiments\{ModuleReplicator, BaseModuleInteractor};
 
 	abstract class CommandLineTest extends TestVirginContainer {
 
-		use ModuleReplicator, BaseModuleInteractor, GagsException {
+		use ModuleReplicator, BaseModuleInteractor, ConfigureExceptionBridge {
 
-			GagsException::setUp as mufflerSetup;
+			ConfigureExceptionBridge::setUp as mufflerSetup;
 		}
 
 		protected $consoleRunner, $modules;

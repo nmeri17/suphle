@@ -46,7 +46,7 @@
 		*/
 		public function getViewPath ():string {
 
-			return $this->activeModulePath(). "Markup";
+			return $this->activeModulePath(). "Markup" . DIRECTORY_SEPARATOR;
 		}
 
 		/**
@@ -54,7 +54,7 @@
 		*/
 		public function getImagePath ():string {
 
-			return $this->activeModulePath(). "Images";
+			return $this->activeModulePath(). "Images" . DIRECTORY_SEPARATOR;
 		}
 	}
 ?>

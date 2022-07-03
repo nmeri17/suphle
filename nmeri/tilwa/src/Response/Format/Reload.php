@@ -14,12 +14,17 @@
 			$this->setHeaders(200, ["Content-Type" => "text/html"]); // or 205 Reset Content
 		}
 
-		public function dependencyNames ():array {
+		public function dependencyMethods ():array {
 
-			return array_merge(parent::dependencyNames(), [
+			return array_merge(parent::dependencyMethods(), [
 
-				"router" => RouteManager::class
+				"setRouter"
 			]);
+		}
+
+		public function setRouter (RouteManager $router):void {
+
+			$this->router = $router;
 		}
 
 		public function render ():string {

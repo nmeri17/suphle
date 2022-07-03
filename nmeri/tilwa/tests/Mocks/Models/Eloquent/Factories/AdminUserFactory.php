@@ -21,7 +21,7 @@
 
 				"email_verified_at" => new DateTime,
 
-				"is_admin" => false
+				"is_admin" => $this->faker->boolean()
 			];
 		}
 	}

@@ -1,8 +1,6 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Modules\ModuleOne\Meta;
 
-	use Tilwa\Contracts\Services\Decorators\MultiUserModelEdit;
-
 	use Tilwa\Tests\Mocks\Interactions\ModuleOne;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\{LocalSender, BCounter, SenderExtension };
@@ -13,19 +11,15 @@
 
 		private $localSender, $bCounter, $localSenderExtended,
 
-		$editService, // we're injecting a concrete rather than the interface here since this class is used a lot, and we don't wanna provide that concrete each time
-
 		$errorEditService;
 
-		public function __construct (LocalSender $localSender, BCounter $bCounter, SenderExtension $senderExtension, MultiUserEditMock $editService, UpdatefulEmitter $errorEditService) {
+		public function __construct (LocalSender $localSender, BCounter $bCounter, SenderExtension $senderExtension, UpdatefulEmitter $errorEditService) {
 
 			$this->localSender = $localSender;
 
 			$this->bCounter = $bCounter;
 
 			$this->localSenderExtended = $senderExtension;
-
-			$this->editService = $editService;
 
 			$this->errorEditService = $errorEditService;
 		}
@@ -70,13 +64,6 @@
 		public function multiModuleCascadeEvent (bool $value):void {
 
 			$this->localSender->beginExternalCascade($value);
-		}
-
-		public function getResourceEditor ():MultiUserModelEdit {
-
-			$this->editService->getResource();
-
-			return $this->editService;
 		}
 
 		public function systemUpdateErrorEvent (int $payload):int {

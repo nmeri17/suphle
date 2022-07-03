@@ -1,6 +1,8 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Models\Eloquent\Migrations;
 
+	use Tilwa\Tests\Mocks\Models\Eloquent\AdminableUser;
+
 	use Illuminate\Database\{Migrations\Migration, Schema\Blueprint};
 
 	use Illuminate\Support\Facades\Schema;
@@ -16,6 +18,8 @@
 				$table->string("name", 150);
 
 				$table->integer("price");
+
+				$table->foreignIdFor(AdminableUser::class, "seller_id");
 
 				$table->timestamps();
 			});

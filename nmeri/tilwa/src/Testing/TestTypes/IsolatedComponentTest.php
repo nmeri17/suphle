@@ -11,16 +11,16 @@
 
 	use Tilwa\Request\RequestDetails;
 
-	use Tilwa\Testing\Proxies\{GagsException, ExceptionBroadcasters};
+	use Tilwa\Testing\Proxies\{ConfigureExceptionBridge, ExceptionBroadcasters};
 
 	/**
 	 * Used for tests that mostly require a Container. Boots and provides this container to them
 	*/
 	abstract class IsolatedComponentTest extends TestVirginContainer {
 
-		use GagsException, ExceptionBroadcasters {
+		use ConfigureExceptionBridge, ExceptionBroadcasters {
 
-			GagsException::setUp as mufflerSetup;
+			ConfigureExceptionBridge::setUp as mufflerSetup;
 		}
 
 		protected $container, $usesRealDecorator = false;

@@ -5,11 +5,9 @@
 
 	use Tilwa\Request\PathAuthorizer;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Controllers\BaseController;
-
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Authorization\Paths\AdminRule;
-
 	use Tilwa\Response\Format\Json;
+
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Controllers\BaseController, Authorization\Paths\AdminRule};
 
 	class AuthorizeRoutes extends BaseCollection {
 

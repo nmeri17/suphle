@@ -7,7 +7,7 @@
 
 	use Tilwa\Tests\Integration\Generic\CommonBinds;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Controllers\GoodPutController;
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Controllers\SystemModelController;
 
 	class SystemEditOrmTest extends IsolatedComponentTest {
 
@@ -35,7 +35,7 @@
 				$this->ormDialect => $this->mockOrm($this->once()) // then
 			])
 
-			->getClass(GoodPutController::class)
+			->getClass(SystemModelController::class)
 
 			->handlePutRequest(); // when
 		}
@@ -49,7 +49,7 @@
 
 				$this->ormDialect => $this->mockOrm($this->never()) // then
 			])
-			->getClass(GoodPutController::class)
+			->getClass(SystemModelController::class)
 
 			->putOtherServiceMethod(); // when
 		}

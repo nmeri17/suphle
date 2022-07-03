@@ -51,12 +51,17 @@
 			return call_user_func_array($bound, $parameters);
 		}
 
-		public function dependencyNames ():array {
+		public function dependencyMethods ():array {
 
-			return array_merge(parent::dependencyNames(), [
+			return array_merge(parent::dependencyMethods(), [
 
-				"container" => Container::class
+				"setContainer"
 			]);
+		}
+
+		public function setContainer (Container $container):void {
+
+			$this->container = $container;
 		}
 	}
 ?>

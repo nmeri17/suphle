@@ -12,6 +12,9 @@
 			$this->fileConfig = $fileConfig;
 		}
 		
+		/**
+		 * {@inheritdoc}
+		*/
 		public function getTssPath ():string {
 
 			return $this->fileConfig->activeModulePath() . "Tss" . DIRECTORY_SEPARATOR;

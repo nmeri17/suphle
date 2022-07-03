@@ -11,7 +11,7 @@
 
 	use Tilwa\Testing\Condiments\{ BaseModuleInteractor, ModuleReplicator};
 
-	use Tilwa\Testing\Proxies\Extensions\FrontDoor;
+	use Tilwa\Testing\Proxies\{ModuleHttpTest, Extensions\FrontDoor};
 
 	use PHPUnit\Framework\{ ExpectationFailedException, MockObject\Stub\Stub};
 
@@ -19,13 +19,13 @@
 
 	abstract class InvestigateSystemCrash extends TestVirginContainer { // extending from this for sub classes to have access to [dataProvider]
 
-		use BaseModuleInteractor, ModuleReplicator;
+		use BaseModuleInteractor, ModuleReplicator, ModuleHttpTest;
 
 		private $shockAbsorber, $objectMeta,
 
 		$bridgeName = ModuleExceptionBridge::class;
 
-		protected $softenDisgraceful = false;
+		protected $softenDisgraceful = false; // prevents us from stubbing [bridgeName]; we'll use the real one i.e. so that disgracefulShutdown can run
 
 		protected function setUp ():void {
 

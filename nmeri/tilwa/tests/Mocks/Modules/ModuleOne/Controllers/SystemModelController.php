@@ -5,9 +5,9 @@
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\Validators\ValidatorOne;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\Services\{SystemModelEditMock1};
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\Concretes\Services\SystemModelEditMock1;
 
-	class GoodPutController extends ServiceCoordinator {
+	class SystemModelController extends ServiceCoordinator {
 
 		private $editService;
 
@@ -18,10 +18,10 @@
 
 		public function validatorCollection ():?string {
 
-			return ValidatorOne::class;
+			return ValidatorOne::class; // random validator since test doesn't require routing to this controller
 		}
 
-		public function handlePutRequest () { // supposed to send modefulPayload into editService->initializeUpdateModels. But for the purrpose, of this test, we'll return a predefined value
+		public function handlePutRequest () { // supposed to send modefulPayload into editService->initializeUpdateModels. But for the purpose of this test, we'll return a predefined value
 
 			if ($this->editService->updateModels())
 
