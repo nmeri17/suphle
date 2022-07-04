@@ -11,8 +11,6 @@
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\ImageUploadCollection, Meta\ModuleOneDescriptor, Config\RouterMock};
 
-	use Illuminate\Http\Testing\FileFactory;
-
 	class ImageUploadTest extends ModuleLevelTest {
 
 		use FilesystemCleaner;
@@ -29,7 +27,7 @@
 
 						"browserEntryRoute" => ImageUploadCollection::class
 					]);
-				})
+				}, false)
 			];
 		}
 

@@ -15,7 +15,7 @@
 
 	use PHPUnit\Framework\{ ExpectationFailedException, MockObject\Stub\Stub};
 
-	use Throwable;
+	use Throwable, Exception;
 
 	abstract class InvestigateSystemCrash extends TestVirginContainer { // extending from this for sub classes to have access to [dataProvider]
 
@@ -74,6 +74,8 @@
 		}
 
 		/**
+		 * We only want to mock this when we want to verify payload going to the broadcaster. It's not for exceptions since exceptions don't come as objects during shutdown
+		 * 
 		 * @param {argumentList}: Mock verifications for the alerter method
 		*/
 		private function mockBroadcastAlerter (int $numTimes, array $argumentList):void {
@@ -110,7 +112,7 @@
 
 				return $action();
 			} catch (Throwable $exception) {
-
+ 
 				$this->setShockAbsorber();
 
 				$this->shockAbsorber->shutdownRites();
@@ -118,7 +120,7 @@
 		}
 
 		/**
-		 * This should first be called if dev wants to directly test custom behavior defined in disgracefulShutdown
+		 * This should be called if dev wants to directly test [dis]gracefulShutdown i.e. without it being triggered by an action 
 		*/
 		protected function setShockAbsorber ():void {
 
@@ -128,46 +130,55 @@
 		/**
 		 * What this does is prevent [disgracefulShutdown] from running when [gracefulShutdown] fails. In order for it to be useful, you'd have to violate DetectedExceptionManager::ALERTER_METHOD by not calling it, or throwing another error from [gracefulShutdown]
 		*/
-		private function stubExceptionBridge ():void {
+		private function stubExceptionBridge (array $mockMethods = []):void {
 
-			$container = $this->getContainer();
+			$parameters = $this->getContainer()->getMethodParameters(Container::CLASS_CONSTRUCTOR, $this->bridgeName);
 
-			$parameters = $container->getMethodParameters(Container::CLASS_CONSTRUCTOR, $this->bridgeName);
+			$stubs = [
 
-			$container->whenTypeAny()->needsAny([
+				"disgracefulShutdown" => $this->returnCallback(function ($errorDetails, $latestException) {
+
+					throw $latestException;
+				}),
+				
+				"writeStatusCode" => null
+			];
+
+			$this->massProvide([
 
 				$this->bridgeName => $this->replaceConstructorArguments(
 
-					$this->bridgeName, $parameters, [
-
-					"disgracefulShutdown" => $this->returnCallback(function ($errorDetails, $latestException) {
-
-						throw $latestException;
-					}),
-					
-					"writeStatusCode" => null
-				])
+					$this->bridgeName, $parameters, $stubs, $mockMethods
+				)
 			]);
 		}
 
+		/**
+		 * @param {exception}: Should either be expected exception or its super class
+		*/
 		protected function assertWillCatchException (string $exception, callable $flammable):void {
 
-			$this->mockBroadcastAlerter(1, [
+			$this->stubExceptionBridge([
 
-				$this->callback(function ($subject) use ($exception) {
+				"hydrateHandler" => [1, [
 
-					return $this->objectMeta->implementsInterface(get_class($subject), $exception);
-				}),
-				$this->anything()
+					$this->callback(function ($subject) use ($exception) {
+
+						$receivedException = get_class($subject);
+
+						return $receivedException === $exception ||
+
+						$this->objectMeta->implementsInterface($exception, $receivedException); // we would've used assertInstanceOf here, but if that fails, it swallows context of the original error and throws the assertInstanceOf one, instead
+					})
+				]]
 			]);
-
-			if ($this->softenDisgraceful)
-
-				$this->stubExceptionBridge();
 
 			$this->braceForImpact($flammable);
 		}
 
+		/**
+		 * This can only run if exception was caught i.e. not during app shutdown
+		*/
 		protected function assertExceptionUsesRenderer (BaseRenderer $renderer, callable $flammable):void {
 
 			if ($this->softenDisgraceful)

@@ -17,13 +17,15 @@
 
 	use Tilwa\Testing\Condiments\BaseDatabasePopulator;
 
-	use Tilwa\Tests\Mocks\Models\Eloquent\MultiEditProduct;
+	use Tilwa\Tests\Mocks\Models\Eloquent\{MultiEditProduct, AdminableUser};
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Auth\AuthorizeRoutes, Meta\ModuleOneDescriptor, Config\RouterMock, InterfaceLoader\AdminableOrmLoader};
 
 	class MultiEditGetTest extends InvestigateSystemCrash {
 
 		use BaseDatabasePopulator, SecureUserAssertions;
+
+		//protected $softenDisgraceful = true;
 
 		protected function getModule ():DescriptorInterface {
 
@@ -32,13 +34,8 @@
 				$container->replaceWithMock(Router::class, RouterMock::class, [
 
 					"browserEntryRoute" => AuthorizeRoutes::class
-				])
-				->replaceWithConcrete(
-					OrmLoader::class,
-
-					$this->replaceConstructorArguments(AdminableOrmLoader::class) // for authorizer to read adminable users
-				);
-			});
+				]);
+			}, false);
 		}
 
 		protected function getActiveEntity ():string {
@@ -46,9 +43,21 @@
 			return MultiEditProduct::class;
 		}
 
+		private function provideConcretes ():void {
+
+			$this->massProvide([
+				OrmLoader::class =>
+
+				// replaceWithConcrete can't be combined with replaceConstructorArguments
+				$this->replaceConstructorArguments(AdminableOrmLoader::class, []) // for authorizer to read adminable users
+			]);
+		}
+
 		public function test_unauthorized_getter_throws_error () {
 
 			$this->assertWillCatchException(EditIntegrityException::class, function () { // then
+
+				$this->provideConcretes();
 
 				$this->get("admin/gmulti-edit-unauth"); // when
 			});
@@ -60,12 +69,14 @@
 
 				1, [], function ($builder) {
 
-					$builder->for(AdminableUser::factory()->state([
+					return $builder->for(AdminableUser::factory()->state([
 
 						"is_admin" => true
-					]));
+					]), "seller");
 				}
 			)->first();
+
+			$this->provideConcretes();
 // if this doesn't work, use predbfreeze
 			$this->actingAs($product->seller); // given
 

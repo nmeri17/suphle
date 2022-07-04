@@ -38,5 +38,7 @@
 		public function getStatusCode ():int;
 
 		public function getHeaders ():array;
+
+		public function dependencyMethods ():array; // even though this is an implementation detail unique to GenericRenderer, renderer callers manually pass the renderer to the decorator, who expects this method to be present
 	}
 ?>

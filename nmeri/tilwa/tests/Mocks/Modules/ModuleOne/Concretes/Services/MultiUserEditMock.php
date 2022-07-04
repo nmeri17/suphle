@@ -3,13 +3,13 @@
 
 	use Tilwa\Contracts\Services\{Decorators\MultiUserModelEdit, Models\IntegrityModel};
 
-	use Tilwa\Services\Structures\BaseErrorCatcherService;
+	use Tilwa\Services\{UpdatefulService, Structures\BaseErrorCatcherService};
 
 	use Tilwa\Request\PayloadStorage;
 
 	use Tilwa\Tests\Mocks\Models\Eloquent\MultiEditProduct;
 
-	class MultiUserEditMock implements MultiUserModelEdit {
+	class MultiUserEditMock extends UpdatefulService implements MultiUserModelEdit {
 
 		use BaseErrorCatcherService;
 

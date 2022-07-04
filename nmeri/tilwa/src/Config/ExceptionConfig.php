@@ -41,9 +41,12 @@
 			return $this->fileConfig->activeModulePath() . "shutdown-log.txt";
 		}
 
+		/**
+		 * {@inheritdoc}
+		*/
 		public function shutdownText ():string {
 
-			return "Unable to handle request right now";
+			return "Unable to handle this request :( But not to worry; our engineers are on top of the situation";
 		}
 	}
 ?>
