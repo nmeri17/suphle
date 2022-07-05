@@ -5,7 +5,7 @@
 
 	use Tilwa\Bridge\Laravel\LaravelAppConcrete;
 
-	use Tilwa\Adapters\Orms\Eloquent\OrmLoader;
+	use Tilwa\Adapters\Orms\Eloquent\{OrmLoader, Models\User as EloquentUser};
 
 	use Tilwa\Contracts\{Auth\UserContract, Database\OrmBridge};
 
@@ -14,8 +14,6 @@
 	use Tilwa\Tests\Integration\Routing\TestsRouter;
 
 	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Auth\AuthorizeRoutes, Authorization\Paths\ModelEditRule, InterfaceLoader\AdminableOrmLoader};
-
-	use Tilwa\Tests\Mocks\Models\Eloquent\AdminableUser;
 
 	class PathAuthorizerTest extends TestsRouter {
 
@@ -30,7 +28,7 @@
 
 		protected function getActiveEntity ():string {
 
-			return AdminableUser::class;
+			return EloquentUser::class;
 		}
 
 		protected function simpleBinds ():array {

@@ -55,7 +55,7 @@
 
 			$tokenizedUrl = $this->urlReplacer->replacePlaceholders(
 
-				implode("", $this->methodSegments),
+				implode("_", $this->methodSegments), // rebuild url for us to identify all placeholders present
 
 				CollectionMethodToUrl::REPLACEMENT_TYPE_PLACEHOLDER
 			)

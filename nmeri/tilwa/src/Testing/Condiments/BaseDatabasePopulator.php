@@ -15,6 +15,14 @@
 
 			parent::setUp();
 
+			$this->databaseSetup();
+		}
+
+		/**
+		 * Use when some objects database setup depends on should be bound
+		*/
+		protected function databaseSetup ():void {
+
 			$this->setReplicator();
 
 			$this->databaseApi = $this->getContainer()->getClass(OrmTester::class);

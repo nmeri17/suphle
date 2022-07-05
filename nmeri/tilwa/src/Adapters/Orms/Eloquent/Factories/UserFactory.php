@@ -19,7 +19,9 @@
 				
 				"password" => password_hash("nmeri", PASSWORD_DEFAULT),
 
-				"email_verified_at" => new DateTime
+				"email_verified_at" => new DateTime,
+
+				"is_admin" => $this->faker->boolean()
 			];
 		}
 	}

@@ -5,7 +5,7 @@
 
 	use Tilwa\Services\{UpdatefulService, Structures\BaseErrorCatcherService};
 
-	use Tilwa\Request\PayloadStorage;
+	use Tilwa\Routing\PathPlaceholders;
 
 	use Tilwa\Tests\Mocks\Models\Eloquent\MultiEditProduct;
 
@@ -13,18 +13,18 @@
 
 		use BaseErrorCatcherService;
 
-		private $integrity, $payloadStorage, $model;
+		private $integrity, $placeholderStorage, $model;
 
-		public function __construct (PayloadStorage $payloadStorage, MultiEditProduct $model) {
+		public function __construct (PathPlaceholders $placeholderStorage, MultiEditProduct $model) {
 
-			$this->payloadStorage = $payloadStorage;
+			$this->placeholderStorage = $placeholderStorage;
 
 			$this->model = $model;
 		}
 
 		public function getResource ():IntegrityModel {
 
-			return $this->model->find($this->payloadStorage->getKey("id"));
+			return $this->model->find($this->placeholderStorage->getSegmentValue("id"));
 		}
 
 		public function updateResource () {

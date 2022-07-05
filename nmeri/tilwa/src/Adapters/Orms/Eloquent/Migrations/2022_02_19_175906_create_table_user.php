@@ -19,6 +19,8 @@
 
 				$table->string("password", 90);
 
+				$table->boolean("is_admin")->default(false);
+
 				$table->timestampsTz();
 			});
 		}

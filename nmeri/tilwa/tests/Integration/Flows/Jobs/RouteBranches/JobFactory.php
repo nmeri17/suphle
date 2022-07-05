@@ -19,7 +19,7 @@
 
 		use QueueInterceptor, BaseDatabasePopulator {
 
-			BaseDatabasePopulator::setUp as databaseSetup;
+			BaseDatabasePopulator::setUp as databaseAllSetup;
 		}
 
 		protected $container,
@@ -34,7 +34,7 @@
 
 		protected function setUp ():void {
 
-			$this->databaseSetup();
+			$this->databaseAllSetup();
 
 			$this->catchQueuedTasks();
 

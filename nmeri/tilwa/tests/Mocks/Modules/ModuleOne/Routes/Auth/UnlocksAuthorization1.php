@@ -33,7 +33,7 @@
 			$this->_get(new Json("simpleResult"));
 		}
 
-		public function GMULTI__EDIT__AUTHh () {
+		public function GMULTI__EDITh_id () {
 
 			$this->_get(new Json("getEditableResource"));
 		}

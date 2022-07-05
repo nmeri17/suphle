@@ -1,6 +1,8 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Models\Eloquent\Migrations;
 
+	use Tilwa\Adapters\Orms\Eloquent\Models\User as EloquentUser;
+
 	use Tilwa\Tests\Mocks\Models\Eloquent\AdminableUser;
 
 	use Illuminate\Database\{Migrations\Migration, Schema\Blueprint};
@@ -19,7 +21,7 @@
 
 				$table->integer("price");
 
-				$table->foreignIdFor(AdminableUser::class, "seller_id");
+				$table->foreignIdFor(EloquentUser::class, "seller_id");
 
 				$table->timestamps();
 			});

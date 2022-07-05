@@ -1,7 +1,9 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Models\Eloquent\Factories;
 
-	use Tilwa\Tests\Mocks\Models\Eloquent\{MultiEditProduct, AdminableUser};
+	use Tilwa\Adapters\Orms\Eloquent\Models\User as EloquentUser;
+
+	use Tilwa\Tests\Mocks\Models\Eloquent\MultiEditProduct;
 
 	class MultiEditProductFactory extends NameModelFactory {
 
@@ -13,7 +15,7 @@
 
 				"price" => $this->faker->numberBetween(500, 35000),
 
-				"seller_id" => AdminableUser::factory()
+				"seller_id" => EloquentUser::factory()
 			]);
 		}
 	}

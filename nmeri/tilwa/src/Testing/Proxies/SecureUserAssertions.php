@@ -58,10 +58,7 @@
 
 			$identifier = $storage->startSession($user->getId());
 
-			$this->getContainer()->whenTypeAny()->needsAny([
-
-				$this->genericStorage => $storage
-			]);
+			$this->massProvide([ $this->genericStorage => $storage]);
 
 			return $identifier;
 		}

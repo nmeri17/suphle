@@ -1,11 +1,13 @@
 <?php
 	namespace Tilwa\Tests\Mocks\Models\Eloquent;
 
-	use Tilwa\Adapters\Orms\Eloquent\{Models\BaseModel, Condiments\EditIntegrity};
+	use Tilwa\Adapters\Orms\Eloquent\Models\{BaseModel, User as EloquentUser};
+
+	use Tilwa\Adapters\Orms\Eloquent\Condiments\EditIntegrity;
 
 	use Tilwa\Contracts\Services\Models\IntegrityModel;
 
-	use Tilwa\Tests\Mocks\Models\Eloquent\{AdminableUser, Factories\MultiEditProductFactory};
+	use Tilwa\Tests\Mocks\Models\Eloquent\Factories\MultiEditProductFactory;
 
 	use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -22,12 +24,16 @@
 
 		public static function migrationFolders ():array {
 
-			return [__DIR__ . DIRECTORY_SEPARATOR . "Migrations"];
+			return array_merge(
+				[__DIR__ . DIRECTORY_SEPARATOR . "Migrations"],
+
+				EloquentUser::migrationFolders()
+			);
 		}
 
 		public function seller () {
 
-			return $this->belongsTo(AdminableUser::class);
+			return $this->belongsTo(EloquentUser::class);
 		}
 	}
 ?>

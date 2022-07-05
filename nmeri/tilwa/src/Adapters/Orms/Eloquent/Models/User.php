@@ -33,6 +33,11 @@
 			return $this->password;
 		}
 
+		public function isAdmin ():bool {
+
+			return $this->is_admin;
+		}
+
 		public function find ($id, $columns = ['*']) {
 
 			return parent::find($id, $columns);

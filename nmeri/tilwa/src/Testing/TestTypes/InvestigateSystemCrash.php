@@ -111,7 +111,7 @@
 			try {
 
 				return $action();
-			} catch (Throwable $exception) {
+			} catch (Throwable $exception) { // PHPUnit complains if we try to clean buffer anywhere here, thereby trying to prevent page response from blurting out
  
 				$this->setShockAbsorber();
 
@@ -130,11 +130,11 @@
 		/**
 		 * What this does is prevent [disgracefulShutdown] from running when [gracefulShutdown] fails. In order for it to be useful, you'd have to violate DetectedExceptionManager::ALERTER_METHOD by not calling it, or throwing another error from [gracefulShutdown]
 		*/
-		private function stubExceptionBridge (array $mockMethods = []):void {
+		protected function stubExceptionBridge (array $stubMethods = [], array $mockMethods = []):void {
 
 			$parameters = $this->getContainer()->getMethodParameters(Container::CLASS_CONSTRUCTOR, $this->bridgeName);
 
-			$stubs = [
+			$defaultStubs = [
 
 				"disgracefulShutdown" => $this->returnCallback(function ($errorDetails, $latestException) {
 
@@ -148,17 +148,23 @@
 
 				$this->bridgeName => $this->replaceConstructorArguments(
 
-					$this->bridgeName, $parameters, $stubs, $mockMethods
+					$this->bridgeName, $parameters,
+
+					array_merge($defaultStubs, $stubMethods),
+
+					$mockMethods
 				)
 			]);
 		}
 
 		/**
+		 * The bridge stubbed here is the one used by entrance, since it only looks for that object when triggered by handling a request
+		 * 
 		 * @param {exception}: Should either be expected exception or its super class
 		*/
 		protected function assertWillCatchException (string $exception, callable $flammable):void {
 
-			$this->stubExceptionBridge([
+			$this->stubExceptionBridge([], [
 
 				"hydrateHandler" => [1, [
 
@@ -199,6 +205,17 @@
 					"Failed asserting that exception '". get_class($exception) . "' was handled with given renderer"
 				);
 			}
+		}
+
+		protected function debugCaughtException ():void {
+
+			$this->stubExceptionBridge([
+
+				"hydrateHandler" => $this->returnCallback(function ($subject) {
+
+					throw $subject;
+				})
+			]);
 		}
 	}
 ?>

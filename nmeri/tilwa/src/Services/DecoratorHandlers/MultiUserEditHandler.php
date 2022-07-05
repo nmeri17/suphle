@@ -122,7 +122,7 @@
 			string $methodName, array $argumentList
 		) {
 
-			if (empty($this->pathAuthorizer->getActiveRules()))
+			if (empty($this->pathAuthorizer->getActiveRules())) // doesn't confirm current route is authorized since there's no reference to route anywhere
 
 				throw new EditIntegrityException;
 
