@@ -13,7 +13,7 @@
 
 	use Tilwa\Tests\Integration\Routing\TestsRouter;
 
-	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Auth\AuthorizeRoutes, Authorization\Paths\ModelEditRule, InterfaceLoader\AdminableOrmLoader};
+	use Tilwa\Tests\Mocks\Modules\ModuleOne\{Routes\Auth\AuthorizeRoutes, Authorization\Paths\ModelEditRule};
 
 	class PathAuthorizerTest extends TestsRouter {
 
@@ -29,14 +29,6 @@
 		protected function getActiveEntity ():string {
 
 			return EloquentUser::class;
-		}
-
-		protected function simpleBinds ():array {
-
-			return array_merge(parent::simpleBinds(), [
-
-				OrmLoader::class => AdminableOrmLoader::class // can't inject User instead since OrmDialect won't have booted, and we can't do hydrating work here, since that would mean possibly missing out on [parent::simpleBinds()]
-			]);
 		}
 
 		private function makeUser (bool $makeAdmin = false):UserContract {

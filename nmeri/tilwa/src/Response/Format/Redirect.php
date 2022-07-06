@@ -12,7 +12,7 @@
 		protected $container;
 
 		/**
-		 * @param Since PDO instances can't be serialized, when using this renderer with PDO in scope, wrap this parameter in a curried/doubly wrapped function
+		 * @param {destination} Since PDO instances can't be serialized, when using this renderer with PDO in scope, wrap this parameter in a curried/doubly wrapped function
 		 
 		 Arguments for the eventual function is autowired and the return value is used as new request location
 

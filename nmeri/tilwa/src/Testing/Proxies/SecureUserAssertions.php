@@ -58,7 +58,10 @@
 
 			$identifier = $storage->startSession($user->getId());
 
-			$this->massProvide([ $this->genericStorage => $storage]);
+			$this->getContainer()->whenTypeAny()->needsAny([ // using this instead of massProvide so it doesn't wipe out any dependencies within a test
+
+				$this->genericStorage => $storage
+			]);
 
 			return $identifier;
 		}

@@ -17,6 +17,8 @@
 
 		private $resourceOwner = "users";
 
+		protected $debugCaughtExceptions = true; // it's important to leave this in, otherwise the test, test_giving_no_operation_throws_error, will swallow error, causing test to "fail"
+
 		protected function getModules ():array {
 
 			return [

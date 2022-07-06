@@ -3,6 +3,8 @@
 
 	use Tilwa\Services\DecoratorHandlers\MultiUserEditHandler;
 
+	use Tilwa\Routing\PathPlaceholders;
+
 	use Tilwa\Contracts\Services\Models\IntegrityModel;
 
 	use Tilwa\Exception\Explosives\EditIntegrityException;
@@ -54,14 +56,16 @@
 			->format(MultiUserEditHandler::DATE_FORMAT);
 
 			// given
+			$modelId = $this->replicator->getRandomEntity()->id;
+
 			$this->setJsonParams("/dummy", [
 
 				MultiUserEditHandler::INTEGRITY_KEY => $threeMinutesAgo,
 
-				"name" => "ujunwa",
-
-				"id" => $this->replicator->getRandomEntity()->id
+				"name" => "ujunwa", "id" => $modelId
 			], "put");
+
+			$this->stubPlaceholderStorage($modelId);
 
 			// when
 			$sut = $this->container->getClass($this->sutName); // to wrap in decorator
@@ -84,11 +88,26 @@
 				"id" => $model->id
 			], "put");
 
+			$this->stubPlaceholderStorage($model->id);
+
 			$result = $this->container->getClass(MultiUserEditError::class)
 
 			->updateResource(); // when
 
 			$this->assertSame("boo!", $result); // then
+		}
+
+		private function stubPlaceholderStorage (int $segmentValue):void {
+
+			$storageName = PathPlaceholders::class;
+
+			$this->massProvide([
+
+				$storageName => $this->positiveDouble($storageName, [
+
+					"getSegmentValue" => $segmentValue
+				])
+			]);
 		}
 	}
 ?>
