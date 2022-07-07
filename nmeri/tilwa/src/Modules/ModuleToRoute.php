@@ -43,7 +43,7 @@
 
 			try {
 
-				$initializer->prepareToFindRoute()->assignRoute();
+				$initializer->assignRoute();
 			}
 			catch (Throwable $exception) {
 

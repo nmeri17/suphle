@@ -3,7 +3,9 @@
 
 	use Tilwa\Contracts\Hydration\{InterfaceCollection, DecoratorChain};
 
-	use Tilwa\Contracts\{Presentation\HtmlParser, Queues\Adapter as QueueAdapter, Modules\ControllerModule, Exception\FatalShutdownAlert};
+	use Tilwa\Contracts\{Presentation\HtmlParser, Queues\Adapter as QueueAdapter, Modules\ControllerModule };
+
+	use Tilwa\Contracts\Exception\{FatalShutdownAlert, AlertAdapter};
 
 	use Tilwa\Contracts\IO\{Session, MailClient, EnvAccessor};
 
@@ -15,7 +17,7 @@
 
 	use Tilwa\Contracts\Auth\{AuthStorage, ModuleLoginHandler};
 
-	use Tilwa\Contracts\Config\{AuthContract, Database, DecoratorProxy, ExceptionInterceptor, Transphporm as TransphpormConfig, Laravel as LaravelConfig, Console as ConsoleContract, Flows as FlowConfig};
+	use Tilwa\Contracts\Config\{AuthContract, Database, DecoratorProxy, ExceptionInterceptor, Transphporm as TransphpormConfig, Laravel as LaravelConfig, Console as ConsoleContract, Flows as FlowConfig, ContainerConfig as IContainerConfig};
 
 	use Tilwa\Contracts\IO\Image\{ImageThumbnailClient, InferiorImageClient, ImageLocator, InferiorOperationHandler, ThumbnailOperationHandler};
 
@@ -36,6 +38,8 @@
 	use Tilwa\Adapters\Markups\Transphporm as TransphpormAdapter;
 
 	use Tilwa\Adapters\Image\Optimizers\NativeReducerClient;
+
+	use Tilwa\Adapters\Exception\Bugsnag;
 
 	use Tilwa\Request\{NativeInputReader, ValidatorLoader, NativeFileReader};
 
@@ -79,6 +83,8 @@
 		public function simpleBinds():array {
 
 			return [
+
+				AlertAdapter::class => Bugsnag::class,
 
 				AuthStorage::class => SessionStorage::class,
 
@@ -137,21 +143,23 @@
 			
 			return [
 
-				LaravelConfig::class => Laravel::class,
-
 				AuthContract::class => Auth::class,
-
-				TransphpormConfig::class => Transphporm::class,
-
-				ExceptionInterceptor::class => ExceptionConfig::class,
 
 				ConsoleContract::class => CliConsole::class,
 
+				IContainerConfig::class => ContainerConfig::class,
+
 				Database::class => PDOMysqlKeys::class,
+
+				DecoratorProxy::class => ProxyManagerConfig::class,
+
+				ExceptionInterceptor::class => ExceptionConfig::class,
 
 				FlowConfig::class => DefaultFlowConfig::class,
 
-				DecoratorProxy::class => ProxyManagerConfig::class
+				LaravelConfig::class => Laravel::class,
+
+				TransphpormConfig::class => Transphporm::class
 			];
 		}
 	}

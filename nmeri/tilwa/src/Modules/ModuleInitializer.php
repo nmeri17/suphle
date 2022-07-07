@@ -3,13 +3,11 @@
 
 	use Tilwa\Response\RoutedRendererManager;
 
-	use Tilwa\Routing\RouteManager;
+	use Tilwa\Routing\{RouteManager, ExternalRouteMatcher};
 
 	use Tilwa\Request\RequestDetails;
 
 	use Tilwa\Middleware\MiddlewareQueue;
-
-	use Tilwa\Bridge\Laravel\Routing\ModuleRouteMatcher;
 
 	use Tilwa\Services\DecoratorHandlers\VariableDependenciesHandler;
 
@@ -23,14 +21,16 @@
 
 		private $foundRoute = false, $router, $descriptor,
 
-		$laravelMatcher, $container, $indicator,
+		$container, $indicator, $requestDetails, $finalRenderer,
 
-		$requestDetails, $finalRenderer, $variableDecorator;
+		$variableDecorator, $externalRouters;
 
 		public function __construct (
 			DescriptorInterface $descriptor, RequestDetails $requestDetails,
 
-			VariableDependenciesHandler $variableDecorator
+			VariableDependenciesHandler $variableDecorator,
+
+			RouteManager $router, ExternalRouteMatcher $externalRouters
 		) {
 
 			$this->descriptor = $descriptor;
@@ -40,6 +40,10 @@
 			$this->requestDetails = $requestDetails;
 
 			$this->variableDecorator = $variableDecorator;
+
+			$this->router = $router;
+
+			$this->externalRouters = $externalRouters;
 		}
 
 		public function assignRoute ():self {
@@ -52,12 +56,8 @@
 
 				$this->bindRoutingSideEffects();
 			}
-			else {
-
-				$this->laravelMatcher = $this->container->getClass(ModuleRouteMatcher::class);
-
-				$this->foundRoute = $this->laravelMatcher->canHandleRequest(); // assumes module has booted
-			}
+			
+			else $this->foundRoute = $this->externalRouters->shouldDelegateRouting();
 
 			return $this;
 		}
@@ -86,7 +86,9 @@
 		*/
 		public function fullRequestProtocols (RoutedRendererManager $rendererManager):self {
 
-			if ($this->isLaravelRoute()) return $this;
+			if ($this->externalRouters->hasActiveHandler())
+
+				return $this;
 
 			$this->indicator = $this->router->getIndicator();
 
@@ -101,9 +103,9 @@
 
 		public function setHandlingRenderer ():void {
 
-			if ($this->isLaravelRoute())
+			if ($this->externalRouters->hasActiveHandler())
 
-				$this->finalRenderer = $this->laravelMatcher->convertToRenderer();
+				$this->finalRenderer = $this->externalRouters->getConvertedRenderer();
 
 			else $this->finalRenderer = $this->container->getClass (MiddlewareQueue::class)
 
@@ -120,13 +122,6 @@
 			return $this->router;
 		}
 
-		public function prepareToFindRoute ():self {
-
-			$this->router = $this->container->getClass (RouteManager::class);
-
-			return $this;
-		}
-
 		public function didFindRoute():bool {
 			
 			return $this->foundRoute;
@@ -134,7 +129,7 @@
 
 		public function whenActive ():self {
 
-			if (!$this->isLaravelRoute()) // not booting module for external routers since request won't be handled in the module but by a separate app
+			if (!$this->externalRouters->hasActiveHandler()) // not booting module for external routers since request won't be handled in the module but by a separate app
 
 				$this->descriptor->prepareToRun();
 
@@ -185,11 +180,6 @@
 				throw new UnauthorizedServiceAccess;
 
 			return $this;
-		}
-
-		public function isLaravelRoute ():bool {
-
-			return !is_null($this->laravelMatcher);
 		}
 	}
 ?>

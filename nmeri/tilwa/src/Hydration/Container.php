@@ -3,7 +3,7 @@
 	
 	use Tilwa\Hydration\Structures\{ProvisionUnit, NamespaceUnit, HydratedConcrete, ObjectDetails, ContainerTelescope};
 
-	use Tilwa\Contracts\Hydration\ClassHydrationBehavior;
+	use Tilwa\Contracts\{Hydration\ClassHydrationBehavior, Config\ContainerConfig as IContainerConfig};
 
 	use Tilwa\Exception\Explosives\Generic\{InvalidImplementor, HydrationException};
 
@@ -23,7 +23,7 @@
 
 		$hydratingArguments = false,
 
-		$externalHydrators = [], $externalContainerManager,
+		$config, $externalContainers,
 
 		$hydratedClassConsumers = [],
 
@@ -46,31 +46,18 @@
 
 			$this->provisionedClasses[self::UNIVERSAL_SELECTOR] = new ProvisionUnit(self::UNIVERSAL_SELECTOR);
 		}
-
-		/**
-		 * @param {externalHydrators} string<ExternalPackageManager>[]
-		*/
-		public function setExternalHydrators (array $externalHydrators):void {
-
-			$this->externalHydrators = $externalHydrators;
-		}
 	
 		/**
 		 * Should be called when preparing container for use i.e. before the very first user facing getClass
 		*/
-		public function setExternalContainerManager ():void {
+		public function setExternalContainerManager (ExternalPackageManagerHydrator $externalContainers):void {
 
-			if (!empty($this->externalHydrators)) {
+			$externalContainers->setManagers(
 
-				$this->externalContainerManager = new ExternalPackageManagerHydrator($this);
+				$this->config->getExternalHydrators()
+			);
 
-				$this->externalContainerManager->setManagers($this->externalHydrators);
-			}
-		}
-
-		public function getExternalContainerManager ():?ExternalPackageManagerHydrator {
-
-			return $this->externalContainerManager;
+			$this->externalContainers = $externalContainers;
 		}
 
 		public function setInterfaceHydrator (string $collection):void {
@@ -78,6 +65,8 @@
 			$concrete = $this->instantiateConcrete($collection);
 
 			$this->interfaceHydrator = new InterfaceHydrator($concrete, $this);
+
+			$this->config = $this->provideInterface(IContainerConfig::class); // setting config within the same method since it's impossible for config to be gotten if interface collection is absent
 		}
 
 		public function getInterfaceHydrator ():InterfaceHydrator {
@@ -114,7 +103,7 @@
 
 				return $parent;
 
-			$externalManager = $this->externalContainerManager;
+			$externalManager = $this->externalContainers;
 
 			if (
 				!is_null($externalManager) &&
@@ -452,7 +441,7 @@
 
 			$caller = $this->lastHydratedFor();
 
-			if ($this->hasRenamedSpace($caller)) {
+			if ($caller && $this->hasRenamedSpace($caller)) {
 
 				$newIdentity = $this->relocateSpace($interface, $caller);
 

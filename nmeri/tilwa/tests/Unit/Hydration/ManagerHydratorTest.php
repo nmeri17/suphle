@@ -3,8 +3,6 @@
 
 	use Tilwa\Hydration\{Container, ExternalPackageManagerHydrator, Structures\BaseInterfaceCollection};
 
-	use Tilwa\Bridge\Laravel\Package\LaravelProviderManager;
-
 	use Tilwa\Contracts\Config\{Router, ModuleFiles};
 
 	use Tilwa\Config\AscendingHierarchy;
@@ -39,11 +37,6 @@
 
 			$container->setInterfaceHydrator(get_class($newBindings));
 
-			$container->setExternalHydrators([
-
-				LaravelProviderManager::class
-			]); // when // IMPORTANT: this is meant to run after the above
-
 			$systemReader = $container->getClass(FileSystemReader::class);
 
 			$anchorPath = $systemReader->pathFromLevels(__DIR__, "Mocks/Modules/ModuleOne/Config", 2);
@@ -53,9 +46,9 @@
 				ModuleFiles::class => new AscendingHierarchy($anchorPath, $systemReader)
 			]);
 
-			$container->setExternalContainerManager();
+			$sut = new ExternalPackageManagerHydrator($container);
 
-			$sut = $container->getExternalContainerManager();
+			$container->setExternalContainerManager($sut); // when
 
 			$this->assertTrue($sut->hasManagers()); // then
 		}

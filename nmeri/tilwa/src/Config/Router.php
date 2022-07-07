@@ -7,6 +7,8 @@
 
 	use Tilwa\Auth\Storage\TokenStorage;
 
+	use Tilwa\Bridge\Laravel\Routing\ModuleRouteMatcher;
+
 	abstract class Router implements RouterConfig {
 
 		public function apiPrefix():string {
@@ -22,9 +24,14 @@
 			return [];
 		}
 
+		/**
+		 * {@inheritdoc}
+		*/
 		abstract public function browserEntryRoute ():string;
 
-		// list in ascending order of execution
+		/**
+		 * {@inheritdoc}
+		*/
 		public function defaultMiddleware():array {
 
 			return [
@@ -42,6 +49,14 @@
 		public function mirrorAuthenticator ():string {
 
 			return TokenStorage::class;
+		}
+
+		/**
+		 * {@inheritdoc}
+		*/
+		public function externalRouters ():array {
+
+			return [ModuleRouteMatcher::class];
 		}
 	}
 ?>

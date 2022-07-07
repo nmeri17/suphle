@@ -13,7 +13,7 @@
 
 	use Tilwa\Modules\ModuleInitializer;
 
-	use Tilwa\Routing\RouteManager;
+	use Tilwa\Routing\{RouteManager, ExternalRouteMatcher};
 
 	use Tilwa\Exception\Explosives\{Generic\NoCompatibleValidator, ValidationFailure};
 
@@ -123,15 +123,17 @@
 
 			return $this->replaceConstructorArguments(
 
-				ModuleInitializer::class,
-				[
+				ModuleInitializer::class, [
+				
 					"descriptor" => $this->positiveDouble(DescriptorInterface::class, [
 
 						"getContainer" => $this->container
+					]),
+
+					"externalRouters" => $this->positiveDouble(ExternalRouteMatcher::class, [
+
+						"shouldDelegateRouting" => false
 					])
-				],
-				[
-					"isLaravelRoute" => false
 				]
 			);
 		}

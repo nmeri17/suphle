@@ -3,9 +3,9 @@
 
 	use Tilwa\Contracts\Modules\{DescriptorInterface, ControllerModule};
 
-	use Tilwa\Hydration\InterfaceCollection;
+	use Tilwa\Contracts\Hydration\InterfaceCollection;
 
-	use Tilwa\Hydration\{Container, Structures\BaseInterfaceCollection};
+	use Tilwa\Hydration\{Container, ExternalPackageManagerHydrator, Structures\BaseInterfaceCollection};
 
 	use Tilwa\Exception\Explosives\Generic\UnexpectedModules;
 
@@ -156,9 +156,11 @@
 		*/
 		public function prepareToRun ():self {
 
-			$this->container->setExternalContainerManager();
+			$this->registerConcreteBindings(); // this has to come first, since it contains instances crucial to hydration of core objects
 
-			$this->registerConcreteBindings();
+			$manager = new ExternalPackageManagerHydrator($this->container);
+
+			$this->container->setExternalContainerManager($manager);
 
 			$this->hasPreparedExpatriates = true;
 

@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Bridge\Laravel\Routing;
 
-	use Tilwa\Contracts\{Config\Laravel as LaravelConfig, Bridge\LaravelContainer, Presentation\BaseRenderer};
+	use Tilwa\Contracts\{Config\Laravel as LaravelConfig, Bridge\LaravelContainer, Presentation\BaseRenderer, Routing\ExternalRouter};
 
 	use Tilwa\Response\Format\ExternallyEvaluatedRenderer;
 
@@ -13,7 +13,7 @@
 
 	use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-	class ModuleRouteMatcher {
+	class ModuleRouteMatcher implements ExternalRouter {
 
 		private $config, $laravelContainer, $router, $request,
 
