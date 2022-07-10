@@ -124,7 +124,7 @@
 
 					$this->assertSavedFileNames($file);
 
-				$this->assertTrue(file_exists($file));
+				$this->assertFileExists($file);
 
 				unlink($file);
 			}
@@ -158,17 +158,17 @@
 				"jpeg", "png", "gif", "webp", "wbmp", "bmp"
 			]) ? strtolower($extension): "jpeg";
 
-            $imageResource = imagecreatetruecolor($width, $height);
+			$imageResource = imagecreatetruecolor($width, $height);
 
-            $writeFunction = "image$extension";
+			$writeFunction = "image$extension";
 
-        	$imagePath = $this->getTempFilePath();
+			$imagePath = $this->getTempFilePath();
 
-            $writeFunction($imageResource, $imagePath);
+			$writeFunction($imageResource, $imagePath);
 
-            imagedestroy($imageResource);
+			imagedestroy($imageResource);
 
-            return $imagePath;
+			return $imagePath;
 		}
 
 		private function getTempFilePath ():string {
@@ -180,11 +180,11 @@
 
 			$instance = new UploadedFile($fileName, $this->getTempFilePath(), null, true);
 
-            $instance->sizeToReport = $expectedSize * 1024;
+			$instance->sizeToReport = $expectedSize * 1024;
 
-            $instance->mimeTypeToReport = $fileType;
+			$instance->mimeTypeToReport = $fileType;
 
-            return $instance;
+			return $instance;
 		}
 	}
 ?>

@@ -1,11 +1,11 @@
 <?php
-	namespace Tilwa\Queues\Adapters;
+	namespace Tilwa\Adapters\Queues;
 
 	use Tilwa\Contracts\Queues\Adapter;
 
 	use Qutee\{Task, Queue, Worker, Persistor\Redis};
 
-	use Exception;
+	use Throwable;
 
 	class QuTee implements Adapter {
 
@@ -23,7 +23,7 @@
 					
 					$worker->run();
 				}
-				catch (Exception $e) {
+				catch (Throwable $e) {
 					
 					echo $e->getMessage();
 				}

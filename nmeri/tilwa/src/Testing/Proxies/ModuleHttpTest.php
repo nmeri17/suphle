@@ -179,7 +179,7 @@
 
 			$this->provideFileObjects($files, $httpMethod);
 
-			$entrance->diffusedRequestResponse();
+			$entrance->diffuseSetResponse(false); // Writing anything to the real headers is redundant in test environment
 
 			$renderer = $entrance->underlyingRenderer();
 

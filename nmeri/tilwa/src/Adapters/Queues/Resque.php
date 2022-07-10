@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\Queues\Adapters;
+	namespace Tilwa\Adapters\Queues;
 
 	use Tilwa\Contracts\{Queues\Adapter, IO\EnvAccessor};
 
@@ -24,7 +24,7 @@
 			$config = [
 				"QUEUE" => "*", // all queues
 
-				"COUNT" => 5, // number fo forks to spawn
+				"COUNT" => 5, // number of forks to spawn
 
 				// "PREFIX" => "task_queue"
 			];
@@ -33,7 +33,10 @@
 
 				$this->envAccessor->setField($name, $value);
 
-			include("bin/resque");
+			include(
+				$this->envAccessor->getField("COMPOSER_RUNTIME_BIN_DIR") // composer sets this for us
+				. "resque"
+			);
 		}
 
 		public function configureNative ():void {

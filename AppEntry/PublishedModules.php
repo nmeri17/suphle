@@ -3,7 +3,7 @@
 
 	use Tilwa\Modules\ModuleHandlerIdentifier;
 
-	class MyApp extends ModuleHandlerIdentifier {
+	class PublishedModules extends ModuleHandlerIdentifier {
 		
 		//
 	}

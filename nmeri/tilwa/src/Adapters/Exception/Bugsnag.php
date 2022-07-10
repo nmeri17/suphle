@@ -5,6 +5,8 @@
 
 	use Bugsnag\Client as BugsnagClient;
 
+	use Throwable;
+
 	class Bugsnag implements AlertAdapter {
 
 		protected $client;

@@ -3,18 +3,16 @@
 
 	use Tilwa\Contracts\Requests\FileInputReader;
 
-	use Laminas\Diactoros\ServerRequestFactory;
-
-	use Symfony\Component\HttpFoundation\File\UploadedFile;
+	use Symfony\Component\HttpFoundation\{Request, File\UploadedFile};
 
 	class NativeFileReader implements FileInputReader {
 
 		/**
-		 * @return UploadedFile, Ensure that this matches what we create within file-upload tests
+		 * @return UploadedFile, Ensure that this matches what we create within file-upload tests. @see \Tilwa\Testing\Condiments\FilesystemCleaner
 		*/
 		public function getFileObjects ():array {
 
-			return ServerRequestFactory::fromGlobals()->getUploadedFiles();
+			return Request::createFromGlobals()->files->all();
 		}
 	}
 ?>

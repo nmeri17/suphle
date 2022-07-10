@@ -23,10 +23,5 @@
 
 			return $this->container;
 		}
-
-		protected function transferHeaders ():void {
-
-			// Writing anything to the real headers is redundant in test environment
-		}
 	}
 ?>

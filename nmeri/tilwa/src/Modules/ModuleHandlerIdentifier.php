@@ -50,22 +50,23 @@
 			RequestDetails::fromModules($this->getModules(), $requestPath);
 		}
 
-		public function diffusedRequestResponse ():string {
+		/**
+		 * @param {writeHeaders}:bool. When false, we assume response is not being outputted to browser or is piped to another process that will write them
+		*/
+		public function diffuseSetResponse (bool $writeHeaders = true):void {
 
 			$this->freshExceptionBridge()->epilogue();
 
 			try {
 
-				$renderer = $this->respondFromHandler();
+				$this->respondFromHandler();
 			}
 			catch (Throwable $exception) {
 
-				$renderer = $this->findExceptionRenderer($exception);
+				$this->findExceptionRenderer($exception);
 			}
 
-			$this->transferHeaders();
-
-			return $renderer->render();
+			if ($writeHeaders) $this->transferHeaders();
 		}
 
 		private function freshExceptionBridge ():ModuleExceptionBridge {

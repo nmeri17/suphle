@@ -29,8 +29,6 @@
 
 	use Tilwa\IO\{Session\NativeSession, Mailing\MailClientLoader, Env\DatabaseEnvReader};
 
-	use Tilwa\Queues\Adapters\Resque;
-
 	use Tilwa\Auth\{LoginHandlerInterfaceLoader, Storage\SessionStorage};
 
 	use Tilwa\Adapters\Orms\Eloquent\{ UserEntityLoader, ModelReplicator, OrmLoader, DatabaseTester as EloquentTester};
@@ -40,6 +38,8 @@
 	use Tilwa\Adapters\Image\Optimizers\NativeReducerClient;
 
 	use Tilwa\Adapters\Exception\Bugsnag;
+
+	use Tilwa\Adapters\Queues\Resque;
 
 	use Tilwa\Request\{NativeInputReader, ValidatorLoader, NativeFileReader};
 
