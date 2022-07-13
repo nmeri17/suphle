@@ -35,7 +35,9 @@
 
 	use Tilwa\Adapters\Image\Optimizers\NativeReducerClient;
 
-	use Tilwa\Adapters\{Exception\Bugsnag, Queues\AdapterLoader as QueueAdapterLoader, Session\NativeSession, Markups\Transphporm as TransphpormAdapter};
+	use Tilwa\Adapters\{Exception\Bugsnag, Session\NativeSession, Markups\Transphporm as TransphpormAdapter};
+
+	use Tilwa\Queues\AdapterLoader as QueueAdapterLoader;
 
 	use Tilwa\Request\{NativeInputReader, ValidatorLoader, NativeFileReader};
 

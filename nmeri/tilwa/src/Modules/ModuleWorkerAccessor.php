@@ -56,6 +56,8 @@
 					Worker::create(), $psrFactory, $psrFactory, $psrFactory
 				);
 			}
+
+			return $this;
 		}
 
 		public function buildIdentifier ():self {

@@ -63,7 +63,7 @@
 
 		protected function extractFromLoader (BaseInterfaceLoader $loader) {
 
-			$name = $loader->concrete();
+			$name = $loader->concreteName();
 
 			$concreteArguments = $loader->bindArguments(); // call separately so it doesn't mess with the provision below
 
