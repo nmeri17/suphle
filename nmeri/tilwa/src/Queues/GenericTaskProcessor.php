@@ -3,6 +3,11 @@
 
 	use Tilwa\Modules\ModuleDescriptor;
 
+	use Tilwa\Contracts\Queues\Adapter;
+
+	/**
+	 * Intended for use from the CLI, to be ran as a daemon for listening to and processing incoming tasks
+	*/
 	class GenericTaskProcessor {
 
 		private $descriptor, $container;
@@ -23,11 +28,9 @@
 			return $this;
 		}
 
-		public function proxyAdapterManager ():void {
+		public function beginProcessing ():void {
 
-			$this->container->getClass(AdapterManager::class)
-
-			->beginProcessing();
+			$this->container->getClass(Adapter::class)->processTasks();
 		}
 	}
 ?>

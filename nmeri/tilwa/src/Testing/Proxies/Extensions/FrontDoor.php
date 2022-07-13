@@ -18,10 +18,5 @@
 
 			return $this->descriptors;
 		}
-
-		public function firstContainer ():Container {
-
-			return $this->container;
-		}
 	}
 ?>

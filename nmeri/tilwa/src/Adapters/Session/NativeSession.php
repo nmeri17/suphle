@@ -1,5 +1,5 @@
 <?php
-	namespace Tilwa\IO\Session;
+	namespace Tilwa\Adapters\Session;
 
 	use Tilwa\Contracts\IO\{Session as SessionContract, EnvAccessor};
 

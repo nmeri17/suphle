@@ -32,7 +32,7 @@
 			];
 		}
 
-		public function concrete():string {
+		public function concreteName ():string {
 
 			return LaravelAppConcrete::class;
 		}

@@ -15,7 +15,7 @@
 
 	use Tilwa\Flows\OuterFlowWrapper;
 
-	use Tilwa\IO\{Session\InMemorySession, Cache\InMemoryCache};
+	use Tilwa\Adapters\{Session\InMemorySession, Cache\InMemoryCache};
 
 	use Tilwa\Testing\Proxies\ExceptionBroadcasters;
 

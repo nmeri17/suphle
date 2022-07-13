@@ -16,7 +16,7 @@
 			$this->authContract = $authContract;
 		}
 
-		public function concrete ():string {
+		public function concreteName ():string {
 
 			return LoginRequestHandler::class;
 		}

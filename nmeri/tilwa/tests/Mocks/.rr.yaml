@@ -1,7 +1,0 @@
-server:
-  command: "php suphle-test-worker.php"
-
-http:
-  address: 0.0.0.0:8080
-  pool:
-    num_workers: 4

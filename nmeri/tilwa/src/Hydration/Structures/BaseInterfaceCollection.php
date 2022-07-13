@@ -7,7 +7,7 @@
 
 	use Tilwa\Contracts\Exception\{FatalShutdownAlert, AlertAdapter};
 
-	use Tilwa\Contracts\IO\{Session, MailClient, EnvAccessor};
+	use Tilwa\Contracts\IO\{Session, MailClient, EnvAccessor, CacheManager};
 
 	use Tilwa\Contracts\Requests\{RequestValidator, StdInputReader, FileInputReader};
 
@@ -21,25 +21,21 @@
 
 	use Tilwa\Contracts\IO\Image\{ImageThumbnailClient, InferiorImageClient, ImageLocator, InferiorOperationHandler, ThumbnailOperationHandler};
 
-	use Tilwa\IO\Image\InterfaceLoaders\ImageThumbnailLoader;
-
-	use Tilwa\IO\Image\SaveClients\LocalSaver;
+	use Tilwa\IO\Image\{InterfaceLoaders\ImageThumbnailLoader, SaveClients\LocalSaver};
 
 	use Tilwa\IO\Image\Operations\{DefaultInferiorHandler, DefaultThumbnailHandler};
 
-	use Tilwa\IO\{Session\NativeSession, Mailing\MailClientLoader, Env\DatabaseEnvReader};
+	use Tilwa\IO\{Mailing\MailClientLoader, Env\DatabaseEnvReader};
+
+	use Tilwa\IO\Cache\AdapterLoader as CacheAdapterLoader;
 
 	use Tilwa\Auth\{LoginHandlerInterfaceLoader, Storage\SessionStorage};
 
 	use Tilwa\Adapters\Orms\Eloquent\{ UserEntityLoader, ModelReplicator, OrmLoader, DatabaseTester as EloquentTester};
 
-	use Tilwa\Adapters\Markups\Transphporm as TransphpormAdapter;
-
 	use Tilwa\Adapters\Image\Optimizers\NativeReducerClient;
 
-	use Tilwa\Adapters\Exception\Bugsnag;
-
-	use Tilwa\Adapters\Queues\Resque;
+	use Tilwa\Adapters\{Exception\Bugsnag, Queues\AdapterLoader as QueueAdapterLoader, Session\NativeSession, Markups\Transphporm as TransphpormAdapter};
 
 	use Tilwa\Request\{NativeInputReader, ValidatorLoader, NativeFileReader};
 
@@ -64,19 +60,24 @@
 		public function getLoaders():array {
 
 			return [
-				OrmDialect::class => OrmLoader::class,
+
+				CacheManager::class => CacheAdapterLoader::class,
+
+				ImageThumbnailClient::class => ImageThumbnailLoader::class,
 
 				LaravelContainer::class => LaravelAppLoader::class,
 
 				LaravelArtisan::class => ArtisanLoader::class,
 
+				MailClient::class => MailClientLoader::class,
+
 				ModuleLoginHandler::class => LoginHandlerInterfaceLoader::class,
+				
+				OrmDialect::class => OrmLoader::class,
 
-				ImageThumbnailClient::class => ImageThumbnailLoader::class,
+				QueueAdapter::class => QueueAdapterLoader::class,
 
-				RequestValidator::class => ValidatorLoader::class,
-
-				MailClient::class => MailClientLoader::class
+				RequestValidator::class => ValidatorLoader::class
 			];
 		}
 
@@ -111,8 +112,6 @@
 				OrmReplicator::class => ModelReplicator::class,
 
 				OrmTester::class => EloquentTester::class,
-
-				QueueAdapter::class => Resque::class,
 
 				RequestFactoryInterface::class => GuzzleHttpFactory::class,
 

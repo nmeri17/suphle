@@ -51,7 +51,7 @@
 			return new Factory( $translator, $this->laravelContainer);
 		}
 
-		public function concrete ():string {
+		public function concreteName ():string {
 
 			return LaravelValidator::class;
 		}

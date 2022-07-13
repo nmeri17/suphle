@@ -3,7 +3,7 @@
 
 	use Tilwa\Contracts\{Presentation\BaseRenderer, IO\Session};
 
-	use Tilwa\IO\Session\InMemorySession;
+	use Tilwa\Adapters\Session\InMemorySession;
 
 	use Tilwa\Testing\Proxies\Extensions\TestResponseBridge;
 

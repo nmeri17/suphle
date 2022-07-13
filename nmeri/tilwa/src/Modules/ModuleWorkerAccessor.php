@@ -1,9 +1,11 @@
 <?php
 	namespace Tilwa\Modules;
 
-	use Tilwa\Contracts\Presentation\BaseRenderer;
+	use Tilwa\Contracts\{Presentation\BaseRenderer, Queues\Adapter as QueueAdapter};
 
-	use Spiral\RoadRunner\{Worker, Http\PSR7Worker};
+	use Tilwa\Adapters\Queues\BoltDbQueue;
+
+	use Spiral\RoadRunner\{Worker, Http\PSR7Worker, Environment\Mode};
 
 	use Nyholm\Psr7\Factory\Psr17Factory;
 
@@ -15,23 +17,48 @@
 
 	use Throwable;
 
+	/**
+	 * RoadRunner will spin this up multiple times for each worker it has to create to service a request type
+	*/
 	class ModuleWorkerAccessor {
 
-		private $handlerIdentifier, $roadRunner;
+		private $handlerIdentifier, $httpWorker, $queueWorker, $mode;
 
 		public function __construct (ModuleHandlerIdentifier $handlerIdentifier) {
 
 			$this->handlerIdentifier = $handlerIdentifier;
-			
-			$psrFactory = new Psr17Factory;
-
-			$this->roadRunner = new PSR7Worker(
-
-				Worker::create(), $psrFactory, $psrFactory, $psrFactory
-			);
 		}
 
-		public function onStart ():self {
+		public function setWorkerMode (string $mode):void {
+
+			$this->mode = $mode;
+		}
+
+		protected function isTaskMode ():bool {
+
+			return $this->mode === Mode::MODE_JOBS;
+		}
+
+		public function setActiveWorker ():self {
+
+			if ($this->isTaskMode())
+
+				$this->queueWorker = $this->handlerIdentifier->firstContainer()
+
+				->getClass(QueueAdapter::class);
+
+			else {
+
+				$psrFactory = new Psr17Factory;
+
+				$this->httpWorker = new PSR7Worker(
+
+					Worker::create(), $psrFactory, $psrFactory, $psrFactory
+				);
+			}
+		}
+
+		public function buildIdentifier ():self {
 
 			$this->handlerIdentifier->bootModules();
 
@@ -40,9 +67,18 @@
 			return $this;
 		}
 
-		public function acceptRequests ():void {
+		public function openEventLoop ():void {
 
-			while ($newRequest = $this->roadRunner->waitRequest()) {
+			if ($this->isTaskMode())
+
+				$this->queueWorker->processTasks();
+
+			else $this->processHttpTasks();
+		}
+
+		protected function processHttpTasks ():void {
+
+			while ($newRequest = $this->httpWorker->waitRequest()) {
 
 				try {
 
@@ -50,7 +86,7 @@
 				}
 				catch (Throwable $exception) { // only roadRunner specific errors are expected here, since our own errors are fully handled internally
 
-					$this->roadRunner->getWorker()
+					$this->httpWorker->getWorker()
 
 					->error($exception->getMessage());
 				}
@@ -71,7 +107,7 @@
 				$this->handlerIdentifier->underlyingRenderer()
 			);
 
-			$this->roadRunner->respond($psrResponse);
+			$this->httpWorker->respond($psrResponse);
 		}
 
 		protected function getPsrResponse (BaseRenderer $renderer):ResponseInterface {

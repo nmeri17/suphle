@@ -1,7 +1,7 @@
 <?php
 	namespace Tilwa\Testing\Proxies\Extensions;
 
-	use Tilwa\IO\Session\InMemorySession;
+	use Tilwa\Contracts\IO\Session as SessionContract;
 
 	use Illuminate\{Testing\TestResponse, Http\Response};
 
@@ -9,7 +9,7 @@
 
 		private $sessionClient;
 
-		public function __construct (Response $response, InMemorySession $sessionClient) {
+		public function __construct (Response $response, SessionContract $sessionClient) {
 
 			$this->sessionClient = $sessionClient;
 

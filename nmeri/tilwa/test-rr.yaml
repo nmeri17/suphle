@@ -1,0 +1,144 @@
+version: "2.7"
+
+rpc:
+  # TCP address:port for listening.
+  #
+  # Default: "tcp://127.0.0.1:6001"
+  listen: tcp://127.0.0.1:6001
+
+server:
+  command: "php suphle-test-worker.php" # This file should be identical to dev-rr.yaml, with the exception of this line
+
+http:
+  address: 0.0.0.0:8080
+  pool:
+    num_workers: 4
+
+# Automatically detect PHP file changes and reload connected services (docs:
+# https://roadrunner.dev/docs/beep-beep-reload). Drop this section for this feature disabling.
+reload:
+  # Sync interval.
+  #
+  # Default: "1s"
+  interval: 1s
+
+  # Global patterns to sync.
+  #
+  # Default: [".php"]
+  patterns: [ ".php" ]
+
+  # List of included for sync services (this is a map, where key name is a plugin name).
+  #
+  # Default: <empty map>
+  services:
+    http:
+      # Directories to sync. If recursive is set to true, recursive sync will be applied only to the directories in
+      # "dirs" section. Dot (.) means "current working directory".
+      #
+      # Default: []
+      dirs: [ "." ]
+
+      # Recursive search for file patterns to add.
+      #
+      # Default: false
+      recursive: true
+
+      # Ignored folders.
+      #
+      # Default: []
+      ignore: [ "vendor" ]
+
+      # Service specific file pattens to sync.
+      #
+      # Default: []
+      patterns: [ ".php", ".go", ".md" ]
+
+# Any number of sections can be defined here.
+kv:
+  # User defined name of the section
+  #
+  # Default: none
+  boltdb-cache:
+    # Driver which should be used for the storage
+    #
+    # This option is required.
+    driver: boltdb
+    # Local configuration section
+    #
+    # This option is required to use local section, otherwise (boltdb-south) global configuration will be used.
+    config:
+      # File name for the DB
+      #
+      # Default: "rr.db"
+      file: "rr-cache.db"
+      # Access permission for the DB file.
+      #
+      # Default: "0777"
+      permissions: 0777
+      # TTL keys check interval in seconds. It's safe to use 1 second here, but can be a little costly to performance.
+      #
+      # Default: "60" seconds
+      interval: 40
+
+  # User defined name of the section
+  #
+  # Default: none
+
+jobs:
+  # Number of threads which will try to obtain the job from the priority queue
+  #
+  # Default: number of the logical CPU cores
+  num_pollers: 32
+
+  # Size of the internal priority queue
+  #
+  # Default: 1_000_000
+  pipeline_size: 100000
+
+  timeout: 60
+
+  # worker pool configuration
+  pool:
+    command: ""
+    max_jobs: 0
+    num_workers: 10
+    allocate_timeout: 60s
+    destroy_timeout: 60s
+
+  # List of broker pipelines associated with the drivers.
+  #
+  # This option is not required since you can declare pipelines in the runtime. Pipeline driver should exist.
+  pipelines:
+  # Pipeline name
+    #
+    # This option is required when defining pipelines via configuration.
+    boltdb-queue:
+      # Driver associated with the pipeline
+      #
+      # This option is required. Possible values: amqp, memory, sqs, beanstalk, boltdb
+      driver: boltdb
+
+      # Driver's configuration
+      #
+      # Should not be empty
+      config:
+        # BoldDB file to create or DB to use
+        #
+        # Default: "rr.db"
+        file: "rr-queues.db"
+
+        # Pipeline priority
+        #
+        # If the job has priority set to 0, it will inherit the pipeline's priority. Default: 10.
+        priority: 10
+
+        # Number of job to prefetch from the driver.
+        #
+        # Default: 100_000.
+        prefetch: 10000
+  # list of pipelines to be consumed by the server automatically at the start, keep empty if you want to start consuming manually
+  consume:
+    [
+        "boltdb-queue",
+        #"test-local-1",
+    ]

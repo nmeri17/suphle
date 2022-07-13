@@ -191,5 +191,10 @@
 
 			return $this->container;
 		}
+
+		public function firstContainer ():Container {
+
+			return $this->container;
+		}
 	}
 ?>

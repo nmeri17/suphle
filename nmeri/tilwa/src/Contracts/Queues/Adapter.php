@@ -8,5 +8,9 @@
 		public function processTasks ():void;
 
 		public function configureNative ():void;
+
+		public function setActiveQueue (string $queueName):void;
+
+		public function getNativeClient ();
 	}
 ?>

@@ -29,7 +29,7 @@
 			];
 		}
 
-		public function concrete ():string {
+		public function concreteName ():string {
 
 			return ArtisanConcrete::class;
 		}

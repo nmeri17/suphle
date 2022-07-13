@@ -1,0 +1,12 @@
+server:
+  #on_init:
+    # Command to execute before the main server's command
+    #
+    # This option is required if using on_init
+  #  command: "any php or script here"
+  command: "php suphle-worker.php"
+
+http:
+  address: 0.0.0.0:8080
+  pool:
+    num_workers: 4

@@ -1,11 +1,16 @@
 <?php
-	namespace Tilwa\IO\Cache;
+	namespace Tilwa\Adapters\Cache;
 
 	use Tilwa\Contracts\IO\CacheManager;
 
 	class InMemoryCache implements CacheManager {
 
-		private $store = [], $tags;
+		private $store = [], $tags = [];
+
+		public function setupClient ():void {
+
+			// error 404: no client to setup
+		}
 
 		public function getItem (string $key) {
 

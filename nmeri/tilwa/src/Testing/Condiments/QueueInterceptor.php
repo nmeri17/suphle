@@ -1,8 +1,6 @@
 <?php
 	namespace Tilwa\Testing\Condiments;
 
-	use Tilwa\Queues\AdapterManager;
-
 	use Tilwa\Testing\Proxies\StubbedQueueAdapter;
 
 	use Tilwa\Flows\{Jobs\RouteBranches, OuterFlowWrapper};
@@ -94,9 +92,9 @@
 
 		protected function processQueuedTasks ():void {
 
-			$this->getContainer()->getClass(AdapterManager::class)
+			$this->getContainer()->getClass(Adapter::class)
 
-			->beginProcessing();
+			->processTasks();
 		}
 	}
 ?>

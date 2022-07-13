@@ -1,13 +1,11 @@
 <?php
 	namespace Tilwa\Adapters\Queues;
 
-	use Tilwa\Contracts\Queues\Adapter;
-
 	use Qutee\{Task, Queue, Worker, Persistor\Redis};
 
 	use Throwable;
 
-	class QuTee implements Adapter {
+	class QuTee extends BaseQueueAdapter {
 
 		public function pushAction (string $taskClass, array $payload):void {
 
@@ -39,7 +37,9 @@
 				"host"  => "127.0.0.1", "port"  => 6379
 			]);
 
-			(new Queue)->setPersistor($queuePersistor);
+			$this->client = new Queue;
+
+			$this->client->setPersistor($queuePersistor);
 		}
 	}
 ?>

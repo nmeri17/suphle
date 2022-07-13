@@ -16,6 +16,6 @@
 		*/
 		public function afterBind($initialized):void {}
 
-		abstract public function concrete():string;
+		abstract public function concreteName ():string;
 	}
 ?>

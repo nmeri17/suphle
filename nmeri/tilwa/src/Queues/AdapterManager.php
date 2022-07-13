@@ -21,13 +21,6 @@
 			$this->adapter->pushAction($taskClass, $payload);
 		}
 
-		public function beginProcessing ():void {
-
-			$this->adapter->configureNative();
-
-			$this->adapter->processTasks();
-		}
-
 		public function augmentArguments (string $taskClass, array $deferredDependencies):void {
 
 			$parameters = $this->container->whenType($taskClass)->needsArguments($deferredDependencies)

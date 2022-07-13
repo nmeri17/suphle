@@ -7,7 +7,7 @@
 
 	use Tilwa\Hydration\Container;
 
-	use Tilwa\IO\{Session\InMemorySession, Cache\InMemoryCache};
+	use Tilwa\Adapters\{Session\InMemorySession, Cache\InMemoryCache};
 
 	use Tilwa\Request\RequestDetails;
 
