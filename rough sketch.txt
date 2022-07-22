@@ -26,6 +26,7 @@ test only and except from routeCollection
 4) pending tests:
 	- write and connect adapters
 		- boltdb cache, queue
+			- put DEFAULT_CACHE_NAME in env and write a new one instead of overwriting redis adapter
 	- replace with stubs and test disgraceful and co
 
 

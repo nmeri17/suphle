@@ -1,20 +1,68 @@
 {
-    "require": {
-        "nmeri/tilwa": "@dev"
-    },
-    "autoload": {
-        "psr-4": {
-            "AppEntry\\": "AppEntry/"
-        }
-    },
-
-    "repositories": [
-    	{
-    		"type": "path",
-	        "url": "nmeri/tilwa",
-	        "options": {
-	          "symlink": true
-	        }
-	    }
-    ]
+	"name": "nmeri/tilwa",
+	"type": "framework",
+	"description": "Opinionated PHP framework for building performant, extensible, and testable web applications",
+	"authors": [
+		{
+			"name": "Nmeri Alphonsus"
+		}
+	],
+	"autoload": {
+		"psr-4": {
+			"Suphle\\": "src/"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"Suphle\\Tests\\": "tests/"
+		}
+	},
+	"require": {
+		"php": "^7.4",
+		"vlucas/phpdotenv": "*",
+		"opis/closure": "^3.6",
+		"firebase/php-jwt": "^5.2",
+		"level-2/transphporm": "^1.5.1",
+		"anorgan/qutee": "dev-version-updates",
+		"psr/http-client": "^1.0",
+		"psr/http-message": "^1.0.1",
+		"nyholm/psr7": "^1.5",
+		"guzzlehttp/guzzle": "^7.4",
+		"imagine/imagine": "~0.5.0",
+		"illuminate/database": "^8.83",
+		"illuminate/validation": "^8.83",
+		"illuminate/container": "^8.83",
+		"illuminate/events": "^8.83",
+		"mcaskill/composer-exclude-files": "^2.1",
+		"symfony/mailer": "^5.4",
+		"symfony/psr-http-message-bridge": "^2.1",
+		"friendsofphp/proxy-manager-lts": "^1.0",
+		"bugsnag/bugsnag": "^3.0",
+		"spiral/roadrunner": "^2.10",
+		"spiral/roadrunner-jobs": "^2.3",
+		"spiral/roadrunner-kv": "^2.1"
+	},
+	"require-dev": {
+		"phpunit/phpunit": "^8.5",
+		"illuminate/testing": "^8.83",
+		"laravel/framework": "^8.83",
+		"fakerphp/faker": "^1.19"
+	},
+	"repositories": [{
+		"type": "vcs",
+		"url": "https://github.com/nmeri17/QuTee"
+	}],
+	"extra": {
+		"exclude-from-files": [
+			"laravel/framework/src/Illuminate/Collections/helpers.php",
+			"laravel/framework/src/Illuminate/Events/functions.php",
+			"laravel/framework/src/Illuminate/Foundation/helpers.php",
+			"laravel/framework/src/Illuminate/Support/helpers.php"
+		]
+	},
+	"config": {
+		"allow-plugins": {
+			"mcaskill/composer-exclude-files": true
+		}
+	}
 }

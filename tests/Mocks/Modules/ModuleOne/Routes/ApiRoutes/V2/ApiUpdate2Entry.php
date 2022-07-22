@@ -1,0 +1,27 @@
+<?php
+	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\ApiRoutes\V2;
+
+	use Suphle\Routing\BaseApiCollection;
+
+	use Suphle\Response\Format\Json;
+
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Controllers\Versions\V2\ApiUpdate2Controller;
+
+	class ApiUpdate2Entry extends BaseApiCollection {
+
+		public function _handlingClass ():string {
+
+			return ApiUpdate2Controller::class;
+		}
+
+		public function CASCADE () {
+
+			$this->_get(new Json("secondCascade"));
+		}
+
+		public function SEGMENT__IN__SECONDh () {
+
+			$this->_get(new Json("segmentInSecond"));
+		}
+	}
+?>

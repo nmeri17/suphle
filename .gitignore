@@ -1,3 +1,8 @@
-/vendor
-.vscode
-.idea
+vendor
+.phpunit.result.cache
+*.sublime-project
+*.sublime-workspace
+results.txt
+results2.txt
+rr-cache.db
+rr-queues.db
