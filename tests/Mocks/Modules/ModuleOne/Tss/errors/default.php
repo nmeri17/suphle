@@ -1,4 +1,4 @@
 #message {
 
-	content: data(message);
+	content: data(exception);
 }

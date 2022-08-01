@@ -35,7 +35,7 @@
 
 			$this->renderer->setRawResponse([
 
-				"message" => $this->origin->getTraceAsString() ?? get_class($this->origin)
+				"exception" => $this->origin
 			]);
 
 			$incomingCode = $this->origin->getCode();

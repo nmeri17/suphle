@@ -10,7 +10,7 @@ Url map generation
 	- if it's not the end of the thread (contains a _prefixFor), we create a sub to contain the patterns below it
 
 
-C:\wamp64\www\tilwa\nmeri\tilwa\vendor\bin>phpunit ../../tests/
+C:\wamp64\www\suphle\nmeri\suphle\vendor\bin>phpunit ../../tests/
 
 **
 sqlite
@@ -24,10 +24,10 @@ test only and except from routeCollection
 
 
 4) pending tests:
-	- write and connect adapters
-		- boltdb cache, queue
-			- put DEFAULT_CACHE_NAME in env and write a new one instead of overwriting redis adapter
 	- replace with stubs and test disgraceful and co
+5) pending tasks:
+	- convert module template to module
+	- eject package into module
 
 
 why aren't we using midlewareManipulator
@@ -36,3 +36,9 @@ why aren't we using midlewareManipulator
 /*$builder->disableProxyingToOriginalMethods()
 
 ->disableAutoReturnValueGeneration()*/;
+
+entryInterface defines an interface that's used to avoid hard-coding what paths to dump things
+
+
+
+stopped at the point where we were trying to debug why error wasn't picking correct view and printing everything to screen

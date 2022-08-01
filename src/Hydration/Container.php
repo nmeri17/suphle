@@ -407,6 +407,8 @@
 
 					return $execution[$caller];
 				}
+
+			return ""; // will be empty when container is called in isolation i.e. without being wrapped by the objects that precede user-land e.g. in the outermost index script handling requests
 		}
 
 		/**

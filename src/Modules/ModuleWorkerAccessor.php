@@ -3,9 +3,7 @@
 
 	use Suphle\Contracts\{Presentation\BaseRenderer, Queues\Adapter as QueueAdapter};
 
-	use Suphle\Adapters\Queues\BoltDbQueue;
-
-	use Spiral\RoadRunner\{Worker, Http\PSR7Worker, Environment\Mode};
+	use Spiral\RoadRunner\{Worker, Http\PSR7Worker};
 
 	use Nyholm\Psr7\Factory\Psr17Factory;
 
@@ -15,30 +13,22 @@
 
 	use Psr\Http\Message\{ServerRequestInterface, ResponseInterface};
 
-	use Throwable;
+	use Throwable, Exception;
 
 	/**
 	 * RoadRunner will spin this up multiple times for each worker it has to create to service a request type
 	*/
 	class ModuleWorkerAccessor {
 
-		private $handlerIdentifier, $httpWorker, $queueWorker, $mode,
+		private $handlerIdentifier, $httpWorker, $queueWorker,
 
-		$operationSuccess;
+		$operationSuccess, $isHttpMode;
 
-		public function __construct (ModuleHandlerIdentifier $handlerIdentifier) {
+		public function __construct (ModuleHandlerIdentifier $handlerIdentifier, bool $isHttpMode) {
 
 			$this->handlerIdentifier = $handlerIdentifier;
-		}
 
-		public function setWorkerMode (string $mode):void {
-
-			$this->mode = $mode;
-		}
-
-		protected function isHttpMode ():bool {
-
-			return $this->mode === Mode::MODE_HTTP;
+			$this->isHttpMode = $isHttpMode;
 		}
 
 		public function runInSandbox (callable $callback):void {
@@ -77,13 +67,11 @@
 
 		public function setActiveWorker ():self {
 
-			if ($this->isHttpMode())
+			if ($this->isHttpMode)
 
 				$this->httpWorker = $this->getHttpWorker();
 
-			else $this->queueWorker = $this->handlerIdentifier
-
-				->firstContainer()->getClass(QueueAdapter::class);
+			else $this->queueWorker = $this->getQueueWorker();
 
 			return $this;
 		}
@@ -98,12 +86,19 @@
 			);
 		}
 
+		public function getQueueWorker ():QueueAdapter {
+
+			return $this->handlerIdentifier
+
+			->firstContainer()->getClass(QueueAdapter::class);
+		}
+
 		/**
 		 * It's only safe to start outputing things from this point, after workers have been setup
 		*/
 		public function openEventLoop ():void {
 
-			if ($this->isHttpMode()) $this->processHttpTasks();
+			if ($this->isHttpMode) $this->processHttpTasks();
 
 			else $this->queueWorker->processTasks();
 		}
@@ -161,6 +156,25 @@
 			$psrHttpFactory = new PsrHttpFactory($psr17Factory, $psr17Factory, $psr17Factory, $psr17Factory);
 
 			return $psrHttpFactory->createResponse($symfonyResponse);
+		}
+
+		public function safeSetupWorker ():void {
+
+			$this->runInSandbox(function ($accessor) {
+
+				$this->buildIdentifier()->setActiveWorker();
+			});
+
+			if ($this->lastOperationSuccessful())
+
+				$this->openEventLoop();
+
+			$this->runInSandbox(function ($accessor) {
+var_dump(168, "failing worker alert");
+				$workerMode = $this->isHttpMode ? "http": "task";
+
+				throw new Exception("Unable to set $workerMode worker");
+			});
 		}
 	}
 ?>

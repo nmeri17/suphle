@@ -1,29 +1,21 @@
 <?php
+
+	/**
+	* The only thing difference between this file and the worker in the project starter is vendor location and published modules given
+	*/
 	use Suphle\Modules\ModuleWorkerAccessor;
 
-	use Spiral\RoadRunner\Environment;
+	use Spiral\RoadRunner\{Environment, Environment\Mode};
 
 	use Suphle\Tests\Mocks\PublishedTestModules;
 
-	use Exception;
-
 	require_once "vendor/autoload.php";
 
-	$accessor = new ModuleWorkerAccessor(new PublishedTestModules);
+	$publishedModules = new PublishedTestModules;
 
-	$currentMode = Environment::fromGlobals()->getMode();
+	$isHttpMode = Environment::fromGlobals()->getMode() === Mode::MODE_HTTP;
 
-	$accessor->setWorkerMode($currentMode);
+	(new ModuleWorkerAccessor($publishedModules, $isHttpMode))
 
-	$accessor->runInSandbox(function ($accessor) {
-
-		$accessor->buildIdentifier()->setActiveWorker();
-	});
-
-	if ($accessor->lastOperationSuccessful()) $accessor->openEventLoop();
-
-	$accessor->runInSandbox(function ($accessor) use ($currentMode) {
-var_dump(24);
-		throw new Exception("Unable to set active worker ". $currentMode);
-	});
+	->safeSetupWorker();
 ?>

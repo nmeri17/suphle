@@ -1,11 +1,20 @@
 <?php
 	namespace Suphle\Adapters\Queues;
 
+	use Suphle\Contracts\IO\EnvAccessor;
+
 	use Qutee\{Task, Queue, Worker, Persistor\Redis};
 
 	use Throwable;
 
 	class QuTee extends BaseQueueAdapter {
+
+		private $envAccessor;
+
+		public function __construct (EnvAccessor $envAccessor) {
+
+			$this->envAccessor = $envAccessor;
+		}
 
 		public function pushAction (string $taskClass, array $payload):void {
 
@@ -34,7 +43,9 @@
 
 			$queuePersistor->setOptions([
 
-				"host"  => "127.0.0.1", "port"  => 6379
+				"host"  => $this->envAccessor->getField("REDIS_HOST"),
+
+				"port"  => $this->envAccessor->getField("REDIS_PORT")
 			]);
 
 			$this->client = new Queue;

@@ -166,6 +166,8 @@
 
 			$renderer = $exceptionBridge->handlingRenderer();
 
+			$exceptionBridge->successfullyHandled();
+
 			return $renderer;
 		}
 

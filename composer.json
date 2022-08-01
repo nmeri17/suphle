@@ -19,34 +19,36 @@
 	},
 	"require": {
 		"php": "^7.4",
-		"vlucas/phpdotenv": "*",
-		"opis/closure": "^3.6",
-		"firebase/php-jwt": "^5.2",
-		"level-2/transphporm": "^1.5.1",
 		"anorgan/qutee": "dev-version-updates",
+		"bugsnag/bugsnag": "^3.0",
+		"firebase/php-jwt": "^5.2",
+		"friendsofphp/proxy-manager-lts": "^1.0",
+		"guzzlehttp/guzzle": "^7.4",
+		"illuminate/container": "^8.83",
+		"illuminate/database": "^8.83",
+		"illuminate/events": "^8.83",
+		"illuminate/validation": "^8.83",
+		"imagine/imagine": "~0.5.0",
+		"level-2/transphporm": "^1.5.1",
+		"mcaskill/composer-exclude-files": "^2.1",
+		"nyholm/psr7": "^1.5",
+		"opis/closure": "^3.6",
+		"predis/predis": "^2.0",
 		"psr/http-client": "^1.0",
 		"psr/http-message": "^1.0.1",
-		"nyholm/psr7": "^1.5",
-		"guzzlehttp/guzzle": "^7.4",
-		"imagine/imagine": "~0.5.0",
-		"illuminate/database": "^8.83",
-		"illuminate/validation": "^8.83",
-		"illuminate/container": "^8.83",
-		"illuminate/events": "^8.83",
-		"mcaskill/composer-exclude-files": "^2.1",
-		"symfony/mailer": "^5.4",
-		"symfony/psr-http-message-bridge": "^2.1",
-		"friendsofphp/proxy-manager-lts": "^1.0",
-		"bugsnag/bugsnag": "^3.0",
 		"spiral/roadrunner": "^2.10",
 		"spiral/roadrunner-jobs": "^2.3",
-		"spiral/roadrunner-kv": "^2.1"
+		"spiral/roadrunner-kv": "^2.1",
+		"symfony/mailer": "^5.4",
+		"symfony/psr-http-message-bridge": "^2.1",
+		"vlucas/phpdotenv": "*"
 	},
 	"require-dev": {
 		"phpunit/phpunit": "^8.5",
 		"illuminate/testing": "^8.83",
 		"laravel/framework": "^8.83",
-		"fakerphp/faker": "^1.19"
+		"fakerphp/faker": "^1.19",
+		"symfony/process": "^5.4"
 	},
 	"repositories": [{
 		"type": "vcs",
@@ -63,6 +65,7 @@
 	"config": {
 		"allow-plugins": {
 			"mcaskill/composer-exclude-files": true
-		}
+		},
+    	"sort-packages": true
 	}
 }

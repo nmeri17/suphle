@@ -9,8 +9,6 @@
 
 	use Suphle\Exception\Explosives\Generic\UnexpectedModules;
 
-	use Suphle\Request\PayloadStorage;
-
 	abstract class ModuleDescriptor implements DescriptorInterface {
 
 		protected $container, $expatriates = [],
@@ -105,7 +103,7 @@
 			return $this;
 		}
 
-		protected function expatriateHasPreparedExpatriates ():bool {
+		public function expatriateHasPreparedExpatriates ():bool {
 
 			return $this->hasPreparedExpatriates;
 		}

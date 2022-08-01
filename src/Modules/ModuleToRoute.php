@@ -16,11 +16,7 @@
 			
 			foreach ($descriptors as $descriptor) {
 
-				$context = $descriptor->getContainer()
-
-				->getClass(ModuleInitializer::class);
-
-				$this->safeSearchRoute($context, $descriptor);
+				$context = $this->safeSearchRoute( $descriptor);
 				
 				if ($context->didFindRoute()) {
 
@@ -36,14 +32,19 @@
 		/**
 		 * @throws Throwable
 		*/
-		private function safeSearchRoute (
-
-			ModuleInitializer $initializer, DescriptorInterface $descriptor
-		):void {
+		private function safeSearchRoute (DescriptorInterface $descriptor):ModuleInitializer {
 
 			try {
 
-				$initializer->assignRoute();
+				if (!$descriptor->expatriateHasPreparedExpatriates()) // avoid overwriting boted bindings
+
+					$descriptor->prepareToRun();
+
+				$initializer = $descriptor->getContainer()
+
+				->getClass(ModuleInitializer::class);
+
+				return $initializer->assignRoute();
 			}
 			catch (Throwable $exception) {
 

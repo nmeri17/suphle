@@ -17,7 +17,7 @@
 
 		private $container, $handler, $config, $payloadStorage,
 
-		$exceptionDetector;
+		$exceptionDetector, $handledExternally;
 
 		public function __construct(
 			Container $container, ExceptionInterceptor $config,
@@ -77,7 +77,7 @@
 
 			$lastError = error_get_last();
 
-			if ( is_null($lastError) )
+			if ( $this->isFalsePositive($lastError) || $this->handledExternally)
 
 				return null; // no error. Just end of request
 
@@ -91,6 +91,11 @@
 
 				return $this->disgracefulShutdown($stringifiedError, $exception);
 			}
+		}
+
+		protected function isFalsePositive (?array $errorDetails):bool {
+
+			return is_null($errorDetails) || $errorDetails["type"] == 8;
 		}
 
 		/**
@@ -141,6 +146,14 @@
 		public function protectRefreshPurge ():bool {
 
 			return true; // in tests, this is provided before PayloadStorage, which is one of its dependencies
+		}
+
+		/**
+		 * Causes it not to send out alerts except for uncatchable errors
+		*/
+		public function successfullyHandled ():void {
+
+			$this->handledExternally = true;
 		}
 	}
 ?>

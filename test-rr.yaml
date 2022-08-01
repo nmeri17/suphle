@@ -7,7 +7,7 @@ rpc:
   listen: tcp://127.0.0.1:6001
 
 server:
-  command: "php suphle-test-worker.php" # This file should be identical to dev-rr.yaml, with the exception of this line
+  command: "php test-worker.php" # This file should be identical to dev-rr.yaml, with the exception of this line
   env:
     - XDEBUG_SESSION: 1
 
@@ -63,37 +63,6 @@ reload:
       #
       # Default: []
       patterns: [ ".php", ".go", ".md" ]
-
-# # Any number of sections can be defined here.
-kv:
-  # User defined name of the section
-  #
-  # Default: none
-  boltdb-cache:
-    # Driver which should be used for the storage
-    #
-    # This option is required.
-    driver: boltdb
-    # Local configuration section
-    #
-    # This option is required to use local section, otherwise (boltdb-south) global configuration will be used.
-    config:
-      # File name for the DB
-      #
-      # Default: "rr.db"
-      file: "rr-cache.db"
-      # Access permission for the DB file.
-      #
-      # Default: "0777"
-      permissions: 0777
-      # TTL keys check interval in seconds. It's safe to use 1 second here, but can be a little costly to performance.
-      #
-      # Default: "60" seconds
-      interval: 40
-
-  # User defined name of the section
-  #
-  # Default: none
 
 jobs:
 #   # Number of threads which will try to obtain the job from the priority queue

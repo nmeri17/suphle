@@ -17,7 +17,7 @@
 
 	use Suphle\Contracts\Auth\{AuthStorage, ModuleLoginHandler};
 
-	use Suphle\Contracts\Config\{AuthContract, Database, DecoratorProxy, ExceptionInterceptor, Transphporm as TransphpormConfig, Laravel as LaravelConfig, Console as ConsoleContract, Flows as FlowConfig, ContainerConfig as IContainerConfig};
+	use Suphle\Contracts\Config\{AuthContract, Database, DecoratorProxy, ExceptionInterceptor, Transphporm as TransphpormConfig, Laravel as LaravelConfig, Console as ConsoleContract, Flows as FlowConfig, ContainerConfig as IContainerConfig, CacheClient as CacheConfig};
 
 	use Suphle\Contracts\IO\Image\{ImageThumbnailClient, InferiorImageClient, ImageLocator, InferiorOperationHandler, ThumbnailOperationHandler};
 
@@ -41,7 +41,7 @@
 
 	use Suphle\Request\{NativeInputReader, ValidatorLoader, NativeFileReader};
 
-	use Suphle\Config\{Auth, Transphporm, Laravel, ExceptionConfig, Console as CliConsole, PDOMysqlKeys, DefaultFlowConfig, ProxyManagerConfig};
+	use Suphle\Config\{Auth, Transphporm, Laravel, ExceptionConfig, Console as CliConsole, PDOMysqlKeys, DefaultFlowConfig, ProxyManagerConfig, DefaultCacheConfig};
 
 	use Suphle\Modules\ControllerModuleApi;
 
@@ -145,6 +145,8 @@
 			return [
 
 				AuthContract::class => Auth::class,
+
+				CacheConfig::class => DefaultCacheConfig::class,
 
 				ConsoleContract::class => CliConsole::class,
 

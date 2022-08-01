@@ -3,6 +3,13 @@
 
 	class FileSystemReader {
 
+		/**
+		 * Traverse {currentWorkingDirectory} backwards, for the number of levels given by dots in {relativePath}
+		 * 
+		 * @param {relativePath}: Expects a location relative to given absolute path 
+		 * @param {currentWorkingDirectory}: Absolute path to use as anchor for the operation
+		 * @return Normalized path to {relativePath}
+		*/
 		public function getAbsolutePath (string $currentWorkingDirectory, string $relativePath):string {
 
 			$allSegments = explode("../", $relativePath);
@@ -20,6 +27,9 @@
 			return $matches[1];
 		}
 
+		/**
+		 * Same as [getAbsolutePath], but the levels are given beforehand instead of being calculated
+		*/
 		public function pathFromLevels (string $currentWorkingDirectory, string $intendedPath, int $upLevels):string {
 
 			if ($upLevels > 0)
