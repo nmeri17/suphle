@@ -9,7 +9,7 @@
 
 		public function indexHandler () {
 
-			//
+			return ["message" => "Hello World!"];
 		}
 
 		public function plainSegment () {

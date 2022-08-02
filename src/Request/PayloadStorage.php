@@ -10,6 +10,8 @@
 	*/
 	class PayloadStorage {
 
+		use SanitizesIntegerInput;
+
 		const JSON_HEADER_VALUE = "application/json",
 
 		CONTENT_TYPE_KEY = "Content-Type";
@@ -91,6 +93,19 @@
 		public function getKey (string $property) {
 
 			return $this->payload[$property];
+		}
+
+		/**
+		 * Should be called before the readers start calling [getKey]
+		*/
+		public function allNumericToPositive ():void {
+
+			$this->payload = $this->allInputToPositive($this->payload);
+		}
+
+		public function getKeyForPositiveInt (string $key):int {
+
+			return $this->positiveIntValue($this->payload[$key]);
 		}
 
 		public function only (array $include):array {

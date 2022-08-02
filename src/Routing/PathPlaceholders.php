@@ -1,10 +1,14 @@
 <?php
 	namespace Suphle\Routing;
 
+	use Suphle\Request\SanitizesIntegerInput;
+
 	/**
 	 * Used by route finder during matching to compose and interpolate patterns read from collections and what is incoming in request
 	*/
 	class PathPlaceholders {
+
+		use SanitizesIntegerInput;
 
 		private $stack = [], $methodSegments = [], $urlReplacer;
 
@@ -72,6 +76,19 @@
 		public function getAllSegmentValues ():array {
 
 			return $this->stack;
+		}
+
+		/**
+		 * Should be called before the readers start calling [getSegmentValue]
+		*/
+		public function allNumericToPositive ():void {
+
+			$this->stack = $this->allInputToPositive($this->stack);
+		}
+
+		public function getKeyForPositiveInt (string $key):int {
+
+			return $this->positiveIntValue($this->stack[$key]);
 		}
 
 		public function overwriteValues (array $newStack):void {

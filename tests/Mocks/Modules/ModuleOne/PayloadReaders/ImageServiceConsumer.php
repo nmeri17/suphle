@@ -5,7 +5,7 @@
 
 	class ImageServiceConsumer extends ModellessPayload {
 
-		protected function convertToDTO () {
+		protected function convertToDomainObject () {
 
 			return $this->payloadStorage->getKey("belonging_resource");
 		}

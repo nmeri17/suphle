@@ -51,9 +51,9 @@
 
 	use Suphle\Exception\Jobs\MailShutdownAlert;
 
-	use Psr\Http\{Client\ClientInterface as OutgoingRequest, Message\RequestFactoryInterface};
+	use Psr\Http\Client\ClientInterface as OutgoingRequest;
 
-	use GuzzleHttp\{Psr7\HttpFactory as GuzzleHttpFactory, Client as GuzzleClient};
+	use GuzzleHttp\Client as GuzzleClient;
 
 	class BaseInterfaceCollection implements InterfaceCollection {
 
@@ -114,8 +114,6 @@
 				OrmReplicator::class => ModelReplicator::class,
 
 				OrmTester::class => EloquentTester::class,
-
-				RequestFactoryInterface::class => GuzzleHttpFactory::class,
 
 				Session::class => NativeSession::class,
 

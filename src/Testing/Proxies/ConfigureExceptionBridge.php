@@ -16,8 +16,14 @@
 
 		private $bridgeName = ModuleExceptionBridge::class;
 
+		/**
+		 * Set to false when debugging a construct that directly interacts with DetectedExceptionManager::ALERTER_METHOD
+		*/
 		protected $muffleExceptionBroadcast = true,
 
+		/**
+		 * Only applicable when making HTTP requests using get,post etc
+		*/
 		$debugCaughtExceptions = false;
 
 		protected function setUp () {
@@ -37,9 +43,19 @@
 
 				$stubs[DetectedExceptionManager::ALERTER_METHOD] = null;
 
-			$this->getContainer()->whenTypeAny()->needsAny([
+			$container = $this->getContainer();
 
-				$broadcasterName => $this->replaceConstructorArguments($broadcasterName, [], $stubs)
+			$parameters = $container->getMethodParameters(
+
+				Container::CLASS_CONSTRUCTOR, DetectedExceptionManager::class
+			);
+
+			$container->whenTypeAny()->needsAny([
+
+				$broadcasterName => $this->replaceConstructorArguments(
+
+					$broadcasterName, $parameters, $stubs
+				)
 			]);
 		}
 
