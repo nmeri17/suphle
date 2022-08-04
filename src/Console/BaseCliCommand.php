@@ -1,7 +1,9 @@
 <?php
 	namespace Suphle\Console;
 
-	use Suphle\Modules\ModuleDescriptor;
+	use Suphle\Contracts\Modules\DescriptorInterface;
+
+	use Suphle\Hydration\Container;
 
 	use Symfony\Component\Console\Input\{InputOption, InputInterface};
 
@@ -9,29 +11,47 @@
 
 	abstract class BaseCliCommand extends Command {
 
-		protected $moduleList;
+		protected $moduleList, $executionPath, $defaultContainer,
+
+		$withModuleOption = true;
+
+		protected const HYDRATOR_MODULE_OPTION = "hydrating_module";
 
 		public function __construct () {
 
 			parent::__construct(null); // overwriting their constructor to prevent container from sending us an empty string
 		}
 
-		public function setModules (array $moduleList) {
+		public function setModules (array $moduleList):void {
 
 			$this->moduleList = $moduleList;
 		}
 
+		public function setExecutionPath (string $path):void {
+
+			$this->executionPath = $path;
+		}
+
+		public function setDefaultContainer (Container $container):void {
+
+			$this->defaultContainer = $container;
+		}
+
 		/**
-		 * It's absolutely crucial that parent::configure() is called in all child classes
+		 * Child classes should either call parent::configure() or setName
 		*/
 		protected function configure ():void {
 
-			$this->setName($this->commandSignature())->addOption(
+			$this->setName($this->commandSignature());
 
-				"module", "m", InputOption::VALUE_OPTIONAL,
+			if ($this->withModuleOption)
 
-				"Module interface to use in hydrating dependencies"
-			);
+				$this->addOption(
+
+					self::HYDRATOR_MODULE_OPTION, "m", InputOption::VALUE_OPTIONAL,
+
+					"Module interface to use in hydrating dependencies"
+				);
 		}
 
 		/**
@@ -39,23 +59,30 @@
 		*/
 		abstract protected function commandSignature ():string;
 
-		protected function moduleToRun (InputInterface $input):ModuleDescriptor {
+		protected function getExecutionContainer (?string $moduleInterface):Container {
 
-			$givenModule = $input->getOption("module");
+			if ($moduleInterface)
 
-			if ($givenModule)
+				return $this->getActiveModule($moduleInterface)->getContainer();
 
-				foreach ($this->moduleList as $descriptor)
+			if (!empty($this->moduleList))
 
-					if (in_array(
-						$descriptor->exportsImplements(),
+				return current($this->moduleList)->getContainer();
 
-						class_implements($givenModule)
-					))
+			return $this->defaultContainer;
+		}
 
-						return $descriptor;
+		protected function getActiveModule (string $moduleInterface):DescriptorInterface {
 
-			return current($this->moduleList);
+			foreach ($this->moduleList as $descriptor)
+
+				if (in_array(
+					$descriptor->exportsImplements(),
+
+					class_implements($moduleInterface)
+				))
+
+					return $descriptor;
 		}
 	}
 ?>

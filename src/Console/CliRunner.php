@@ -3,45 +3,76 @@
 
 	use Suphle\Contracts\{ConsoleClient, Config\Console};
 
-	use Suphle\Modules\ModuleHandlerIdentifier;
+	use Suphle\Modules\{ModuleHandlerIdentifier, ModuleWorkerAccessor};
+
+	use Suphle\Hydration\Container;
+
+	use Suphle\Hydration\Structures\{BaseInterfaceCollection, ContainerBooter};
 
 	class CliRunner {
 
-		private $moduleHandler, $consoleClient, $allCommands = [];
+		private $moduleHandler, $consoleClient, $projectRootPath,
 
-		public function __construct (ModuleHandlerIdentifier $moduleHandler, ConsoleClient $consoleClient) {
+		$defaultContainer, $allCommands = [];
+
+		public function __construct (
+
+			ModuleHandlerIdentifier $moduleHandler,
+
+			ConsoleClient $consoleClient, string $projectRootPath
+		) {
 
 			$this->moduleHandler = $moduleHandler;
 
 			$this->consoleClient = $consoleClient;
+
+			$this->projectRootPath = $projectRootPath;
 		}
 
 		public function loadCommands ():void {
 
-			$this->moduleHandler->bootModules();
+			$allModules = $this->moduleHandler->getModules();
 
-			$this->moduleHandler->extractFromContainer();
+			if (!empty($allModules)) {
 
-			$this->extractCommands();
+				(new ModuleWorkerAccessor($this->moduleHandler, false))
+
+				->buildIdentifier();
+
+				$this->extractCommandsFromModules($allModules);
+			}
+			else {
+
+				$this->defaultContainer = new Container;
+
+				(new ContainerBooter($this->defaultContainer ))
+
+				->initializeContainer(BaseInterfaceCollection::class);
+
+				$this->extractCommandsFromContainer($this->defaultContainer);
+			}
 
 			$this->funnelToClient();
 		}
 
-		private function extractCommands ():void {
+		private function extractCommandsFromModules (array $modules):void {
 
-			foreach ($this->moduleHandler->getModules() as $module) {
+			foreach ($modules as $module)
 
-				$container = $module->getContainer();
+				$this->extractCommandsFromContainer($module->getContainer());
+		}
 
-				$commands = $container->getClass(Console::class)->commandsList();
+		private function extractCommandsFromContainer (Container $container):void {
 
-				$newCommands = array_map(function ($name) use ($container) {
+			$commands = $container->getClass(Console::class)->commandsList();
 
-					return $container->getClass($name);
-				}, $this->getUniqueCommands($commands));
+			$newCommands = array_map(function ($name) use ($container) {
 
-				$this->allCommands = array_merge($this->allCommands, $newCommands);
-			}
+				return $container->getClass($name);
+
+			}, $this->getUniqueCommands($commands));
+
+			$this->allCommands = array_merge($this->allCommands, $newCommands);
 		}
 
 		private function getUniqueCommands (array $commands):array {
@@ -54,6 +85,12 @@
 			foreach ($this->allCommands as $command) {
 
 				$command->setModules($this->moduleHandler->getModules());
+
+				$command->setExecutionPath($this->projectRootPath);
+
+				if (!is_null($this->defaultContainer))
+
+					$command->setDefaultContainer($this->defaultContainer);
 
 				$this->consoleClient->add($command);
 			}

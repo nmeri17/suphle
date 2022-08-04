@@ -1,6 +1,8 @@
 <?php
 	namespace Suphle\Testing\TestTypes;
 
+	use Suphle\Contracts\Config\ModuleFiles;
+
 	use Suphle\Adapters\Console\SymfonyCli;
 
 	use Suphle\Console\CliRunner;
@@ -22,18 +24,23 @@
 
 		protected function setUp ():void {
 
-			$this->consoleRunner = new CliRunner (
-
-				$this->entrance = new FrontDoor(
+			$this->entrance = new FrontDoor(
 					
-					$this->modules = $this->getModules()
-				),
-				new SymfonyCli("SuphleTest", "v2")
+				$this->modules = $this->getModules()
 			);
 
 			$this->provideTestEquivalents();
 
 			$this->bootMockEntrance($this->entrance);
+
+			$this->consoleRunner = new CliRunner (
+
+				$this->entrance, new SymfonyCli("SuphleTest", "v2"),
+
+				$this->getContainer()->getClass(ModuleFiles::class)
+
+				->getRootPath()
+			);
 
 			$this->consoleRunner->loadCommands();
 

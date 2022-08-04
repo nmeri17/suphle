@@ -5,12 +5,18 @@
 
 	use Suphle\Bridge\Laravel\Cli\ArtisanCli;
 
+	use Suphle\Modules\Commands\CloneModuleCommand;
+
+	use Suphle\ComponentTemplates\Commands\InstallComponentCommand;
+
 	class Console implements ConsoleContract {
 
 		public function commandsList ():array {
 
 			return [
-				ArtisanCli::class
+				ArtisanCli::class,
+
+				InstallComponentCommand::class, CloneModuleCommand::class
 			];
 		}
 	}

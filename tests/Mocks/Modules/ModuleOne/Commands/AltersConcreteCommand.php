@@ -7,7 +7,7 @@
 
 	use Symfony\Component\Console\{Output\OutputInterface, Command\Command};
 
-	use Symfony\Component\Console\Input\{InputInterface, InputOption, InputArgument};
+	use Symfony\Component\Console\Input\{InputInterface, InputArgument};
 
 	class AltersConcreteCommand extends BaseCliCommand {
 
@@ -27,7 +27,9 @@
 
 		public function execute (InputInterface $input, OutputInterface $output):int {
 
-			$this->moduleToRun($input)->getContainer()->getClass(BCounter::class)
+			$moduleInterface = $input->getOption(self::HYDRATOR_MODULE_OPTION);
+
+			$this->getExecutionContainer($moduleInterface)->getClass(BCounter::class)
 
 			->setCount($input->getArgument("new_value"));
 

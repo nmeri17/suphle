@@ -7,7 +7,7 @@
 
 	use Symfony\Component\Console\Output\OutputInterface;
 
-	use Symfony\Component\Console\Input\{InputInterface, InputOption, InputArgument};
+	use Symfony\Component\Console\Input\{InputInterface, InputArgument};
 
 	/**
 	 * All we want is for our ormBridge to run, hydrate and link our connection to the instance artisan works with
@@ -32,7 +32,9 @@
 
 		protected function execute (InputInterface $input, OutputInterface $output):int {
 
-			$exitCode = $this->moduleToRun($input)->getContainer()->getClass(LaravelArtisan::class)
+			$moduleInterface = $input->getOption(self::HYDRATOR_MODULE_OPTION);
+
+			$exitCode = $this->getExecutionContainer($moduleInterface)->getClass(LaravelArtisan::class)
 
 			->invokeCommand($input->getArgument("to_forward"));
 

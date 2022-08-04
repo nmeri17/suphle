@@ -3,7 +3,7 @@
 
 	use Suphle\Testing\Proxies\WriteOnlyContainer;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Commands\AltersConcreteCommand, Concretes\BCounter};
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\BCounter;
 
 	use Symfony\Component\Console\Command\Command;
 

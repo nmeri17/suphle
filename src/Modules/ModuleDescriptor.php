@@ -5,7 +5,9 @@
 
 	use Suphle\Contracts\Hydration\InterfaceCollection;
 
-	use Suphle\Hydration\{Container, ExternalPackageManagerHydrator, Structures\BaseInterfaceCollection};
+	use Suphle\Hydration\{Container, ExternalPackageManagerHydrator};
+
+	use Suphle\Hydration\Structures\{BaseInterfaceCollection, ContainerBooter};
 
 	use Suphle\Exception\Explosives\Generic\UnexpectedModules;
 
@@ -86,11 +88,9 @@
 
 		public function warmModuleContainer ():void {
 
-			$this->container->setEssentials();
+			(new ContainerBooter($this->container ))
 
-			$this->container->setInterfaceHydrator($this->interfaceCollection());
-
-			$this->container->interiorDecorate();
+			->initializeContainer($this->interfaceCollection());
 		}
 
 		// this should be on an [ExpatriateManager], but that'll make all the loaded descriptors create new instances of that class

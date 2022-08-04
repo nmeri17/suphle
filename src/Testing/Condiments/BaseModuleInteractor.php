@@ -9,7 +9,7 @@
 
 	use Suphle\Events\ModuleLevelEvents;
 
-	use Suphle\Modules\ModuleHandlerIdentifier;
+	use Suphle\Modules\{ModuleHandlerIdentifier, ModuleWorkerAccessor};
 
 	use Suphle\Request\RequestDetails;
 
@@ -53,9 +53,9 @@
 
 				$this->mayMonitorContainer($descriptor->getContainer());
 
-			$entrance->bootModules();
- 
-			$entrance->extractFromContainer();
+			(new ModuleWorkerAccessor($this->entrance, true))
+
+			->buildIdentifier();
 		}
 
 		protected function setRequestPath (string $requestPath):void {
