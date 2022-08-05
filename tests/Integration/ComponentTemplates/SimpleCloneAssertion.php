@@ -19,6 +19,8 @@
 
 		$sutName = CloneModuleCommand::class;
 
+		private $sutSignature = "modules:create";
+
 		protected function simpleCloneDependencies ():self {
 
 			$this->container = $this->getContainer();
@@ -28,26 +30,36 @@
 			return $this;
 		}
 
-		protected function assertClonedModule ():void {
+		protected function assertSimpleCloneModule (callable $onCloneSuccess = null):void {
 
-			$modulePath = $this->getModulePath();
+			$commandResult = $this->runSimpleCloneCommand( // given
 
-			$this->assertEmptyDirectory($modulePath); // given
+				$modulePath = $this->getModulePath()
+			);
 
-			$command = $this->consoleRunner->findHandler(self::SUT_SIGNATURE);
+			// then
+			$this->assertSame($commandResult, Command::SUCCESS );
+
+			if (!is_null($onCloneSuccess))
+
+				$onCloneSuccess($modulePath);
+
+			$this->assertNotEmptyDirectory($modulePath, true);
+		}
+
+		protected function runSimpleCloneCommand (string $modulePath):int {
+
+			$this->assertEmptyDirectory($modulePath);
+
+			$command = $this->consoleRunner->findHandler($this->sutSignature);
 
 			// when
-			$commandResult = (new CommandTester($command))->execute([
+			return (new CommandTester($command))->execute([
 
 				"template_folder" => $this->fileConfig->getRootPath() . "ModuleTemplate",
 
 				"new_module_name" => $this->newModuleName
 			]);
-
-			// then
-			$this->assertSame($commandResult, Command::SUCCESS );
-
-			$this->assertNotEmptyDirectory($modulePath, true);
 		}
 
 		protected function getModulePath ():string {

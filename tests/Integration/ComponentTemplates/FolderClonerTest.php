@@ -13,7 +13,12 @@
 
 		use SimpleCloneAssertion;
 
-		protected const SUT_SIGNATURE = "modules:create";
+		protected function setUp ():void {
+
+			parent::setUp();
+
+			$this->simpleCloneDependencies();
+		}
 
 		protected function getModules ():array {
 
@@ -22,17 +27,23 @@
 
 		public function test_can_transfer_files_to_current_location () {
 
-			$this->simpleCloneDependencies()->assertClonedModule();
+			$this->assertSimpleCloneModule();
 		}
 
 		public function test_correctly_changes_file_contents () {
 
-			//
+			$this->assertSimpleCloneModule(function ($modulePath) {
+
+				//
+			});
 		}
 
 		public function test_correctly_changes_file_folder_names () {
 
-			//
+			$this->assertSimpleCloneModule(function ($modulePath) {
+
+				//
+			});
 		}
 	}
 ?>

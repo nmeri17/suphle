@@ -13,11 +13,18 @@
 
 		use CommonBinds, SimpleCloneAssertions;
 
-		protected const SUT_SIGNATURE = "modules:create";
-
 		private $consoleRunner;
 
-		// initialize cliRunner with no module
+		public function test_can_clone_without_modules () {
+
+			$this->simpleCloneDependencies()->setConsoleRunner()
+
+			->assertSimpleCloneModule();
+		}
+
+		/**
+		 * Initialize cliRunner with no module
+		*/
 		protected function setConsoleRunner ():self {
 
 			$this->consoleRunner = new CliRunner (
@@ -30,13 +37,6 @@
 			$this->consoleRunner->loadCommands();
 
 			return $this;
-		}
-
-		public function test_can_clone_without_modules () {
-
-			$this->simpleCloneDependencies()->setConsoleRunner()
-
-			->assertClonedModule();
 		}
 	}
 ?>
