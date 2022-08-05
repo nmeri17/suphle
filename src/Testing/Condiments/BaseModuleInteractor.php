@@ -49,13 +49,18 @@
 
 		protected function bootMockEntrance (ModuleHandlerIdentifier $entrance):void {
 
+			$this->monitorModuleContainers();
+
+			(new ModuleWorkerAccessor($entrance, true))
+
+			->buildIdentifier();
+		}
+
+		protected function monitorModuleContainers ():void {
+
 			foreach ($this->modules as $descriptor)
 
 				$this->mayMonitorContainer($descriptor->getContainer());
-
-			(new ModuleWorkerAccessor($this->entrance, true))
-
-			->buildIdentifier();
 		}
 
 		protected function setRequestPath (string $requestPath):void {

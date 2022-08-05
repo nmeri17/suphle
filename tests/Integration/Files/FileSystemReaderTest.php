@@ -49,5 +49,24 @@
 				$this->sut->getAbsolutePath(__DIR__, $this->filePath)
 			);
 		}
+
+		/**
+		 * @dataProvider slashedAndUnslashed
+		*/
+		public function test_slash_trimming (string $givenPath, string $expectedPath) {
+
+			$this->assertSame($expectedPath, $givenPath);
+		}
+
+		public function slashedAndUnslashed ():array {
+
+			return [
+				["/foo/bar", "/foo/bar"],
+
+				["/foo/bar/", "/foo/bar"],
+
+				["\foo\ba\\", "\foo\bar"],
+			];
+		}
 	}
 ?>

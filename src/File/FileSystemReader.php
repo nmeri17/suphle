@@ -51,5 +51,15 @@
 
 				mkdir($newFolder, 0777, true); // 3rd argument = create parents if they don't exist
 		}
+
+		/**
+		 * Use for more robust handling of paths that can come from different sources
+		*/
+		public function noTrailingSlash (string $path):string {
+
+			preg_match("/(.+?)[\/\\]*$/", $path, $matches);
+
+			return $matches[1];
+		}
 	}
 ?>

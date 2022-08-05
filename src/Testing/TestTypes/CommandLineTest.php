@@ -31,7 +31,7 @@
 
 			$this->provideTestEquivalents();
 
-			$this->bootMockEntrance($this->entrance);
+			$this->monitorModuleContainers();
 
 			$this->consoleRunner = new CliRunner (
 

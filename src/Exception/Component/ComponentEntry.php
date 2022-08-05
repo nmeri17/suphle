@@ -21,6 +21,9 @@
 			return "errors";
 		}
 
+		/**
+		 * {@inheritdoc}
+		*/
 		protected function getSources ():array {
 
 			return [

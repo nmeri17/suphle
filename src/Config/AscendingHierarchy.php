@@ -26,7 +26,7 @@
 
 			return $this->systemReader->pathFromLevels(
 
-				$this->descriptorPath, "", 2
+				$this->descriptorPath, "", 3 // moduleContents/allModules/projectRoot
 			);
 		}
 

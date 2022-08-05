@@ -3,7 +3,7 @@
 
 	use Suphle\Console\BaseCliCommand;
 
-	use Suphle\File\FolderCloner;
+	use Suphle\File\{FolderCloner, FileSystemReader};
 
 	use Symfony\Component\Console\Output\OutputInterface;
 
@@ -13,7 +13,7 @@
 
 	class CloneModuleCommand extends BaseCliCommand {
 
-		protected $withModuleOption = false;
+		protected $container, $withModuleOption = false;
 
 		protected const SOURCE_ARGUMENT = "template_folder",
 
@@ -71,9 +71,9 @@
 
 			$moduleInterface = $input->getOption(self::HYDRATOR_MODULE_OPTION);
 
-			return $this->getExecutionContainer($moduleInterface)
+			$this->container = $this->getExecutionContainer($moduleInterface);
 
-			->getClass(FolderCloner::class)
+			return $this->container->getClass(FolderCloner::class)
 
 			->setEntryReplacements(
 
@@ -93,7 +93,9 @@
 
 		protected function getNewDestination (string $target, InputInterface $input):string {
 
-			return (
+			return $this->container->getClass(FileSystemReader::class)
+
+			->noTrailingSlash(
 				$input->getArgument(self::DESTINATION_ARGUMENT) ??
 
 				$this->executionPath

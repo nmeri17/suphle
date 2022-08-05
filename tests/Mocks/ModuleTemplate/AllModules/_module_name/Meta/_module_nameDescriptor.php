@@ -1,5 +1,5 @@
 <?php
-	namespace AllModules\_module_name\Meta;
+	namespace Suphle\Tests\Mocks\Modules\_module_name\Meta;
 
 	use Suphle\Modules\ModuleDescriptor;
 
@@ -9,7 +9,7 @@
 
 	use Suphle\File\FileSystemReader;
 
-	use ModuleInteractions\_module_name;
+	use Suphle\Tests\Mocks\Interactions\_module_name;
 
 	class _module_nameDescriptor extends ModuleDescriptor {
 

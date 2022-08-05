@@ -1,13 +1,13 @@
 <?php
-	namespace AllModules\_module_name\Meta;
+	namespace Suphle\Tests\Mocks\Modules\_module_name\Meta;
 
 	use Suphle\Hydration\BaseInterfaceCollection;
 
 	use Suphle\Contracts\Config\{ModuleFiles, Router};
 
-	use AllModules\_module_name\Config\{ModuleFilesMock, RouterMock};
+	use Suphle\Tests\Mocks\Modules\_module_name\Config\{ModuleFilesMock, RouterMock};
 
-	use ModuleInteractions\_module_name;
+	use ModulSuphle\Tests\Mocks\Interactions\_module_name;
 
 	class CustomInterfaceCollection extends BaseInterfaceCollection {
 

@@ -1,5 +1,5 @@
 <?php
-	namespace ModuleInteractions;
+	namespace Suphle\Tests\Mocks\Interactions;
 
 	interface _module_name {
 

@@ -33,7 +33,7 @@
 					$this->shouldOverride($component, $componentsToOverride)
 				)
 
-					$component->eject(); // the prefixing happens here
+					$component->eject();
 			}
 		}
 
