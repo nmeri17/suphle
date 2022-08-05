@@ -8,7 +8,7 @@
 		 * 
 		 * @param {relativePath}: Expects a location relative to given absolute path 
 		 * @param {currentWorkingDirectory}: Absolute path to use as anchor for the operation
-		 * @return Normalized path to {relativePath}
+		 * @return Normalized path to {relativePath} without trailing slash
 		*/
 		public function getAbsolutePath (string $currentWorkingDirectory, string $relativePath):string {
 

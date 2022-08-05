@@ -30,19 +30,18 @@
 			$this->assertSimpleCloneModule();
 		}
 
-		public function test_correctly_changes_file_contents () {
-
-			$this->assertSimpleCloneModule(function ($modulePath) {
-
-				//
-			});
-		}
-
 		public function test_correctly_changes_file_folder_names () {
 
 			$this->assertSimpleCloneModule(function ($modulePath) {
 
-				//
+				$descriptorFullName = "$modulePath\Meta\\" .$this->newModuleName. "Descriptor";
+var_dump(46, $descriptorFullName);
+				$instance = new $descriptorFullName(new Container);
+
+				// try to boot it
+				$instance->warmModuleContainer();
+
+				$instance->prepareToRun();
 			});
 		}
 	}

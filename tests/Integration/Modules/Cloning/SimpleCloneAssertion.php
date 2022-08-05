@@ -1,5 +1,5 @@
 <?php
-	namespace Suphle\Tests\Integration\ComponentTemplates;
+	namespace Suphle\Tests\Integration\Cloning;
 
 	use Suphle\Contracts\Config\ModuleFiles;
 
