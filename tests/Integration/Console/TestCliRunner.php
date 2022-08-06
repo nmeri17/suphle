@@ -5,7 +5,7 @@
 
 	use Suphle\Testing\{TestTypes\CommandLineTest, Proxies\WriteOnlyContainer};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Commands\AltersConcreteCommand};
+	use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Commands\AltersConcreteCommand, Concretes\BCounter};
 
 	use Suphle\Tests\Mocks\Modules\ModuleTwo\Meta\ModuleTwoDescriptor;
 
@@ -13,15 +13,31 @@
 
 	abstract class TestCliRunner extends CommandLineTest {
 
-		protected $sutName = AltersConcreteCommand::class;
+		protected $sutName = AltersConcreteCommand::class,
+
+		$bCounter = BCounter::class;
 
 		protected function runAltersConcrete ():int {
 
-			$command = $this->consoleRunner->findHandler("test:alters_concrete");
+			$command = $this->consoleRunner->findHandler(
+
+				AltersConcreteCommand::commandSignature()
+			);
 
 			$commandTester = new CommandTester($command);
 
-			return $commandTester->execute([ "new_value" => 8 ]);
+			return $commandTester->execute([
+
+				AltersConcreteCommand::NEW_VALUE_ARGUMENT => 8
+			]);
+		}
+
+		protected function mockBCounter (int $numTimes):BCounter {
+		
+			return $this->positiveDouble($this->bCounter, [], [
+
+				"setCount" => [$numTimes, [$this->anything()]]
+			]);
 		}
 	}
 ?>

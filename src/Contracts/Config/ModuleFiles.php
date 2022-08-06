@@ -16,11 +16,16 @@
 		/**
 		 * @return Absolute path, with trailing slash
 		*/
-		public function getViewPath():string;
+		public function defaultViewPath():string;
 
 		/**
 		 * @return Absolute path, with trailing slash
 		*/
 		public function getImagePath ():string;
+
+		/**
+		 * @return Absolute path, with trailing slash
+		*/
+		public function componentsPath ():string;
 	}
 ?>

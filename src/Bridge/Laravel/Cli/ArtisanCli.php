@@ -14,6 +14,8 @@
 	*/
 	class ArtisanCli extends BaseCliCommand {
 
+		public const TO_FORWARD_ARGUMENT = "to_forward";
+
 		protected static $defaultDescription = "Interface with artisan commands";
 
 		protected function configure ():void {
@@ -21,11 +23,12 @@
 			parent::configure();
 
 			$this->addArgument(
-				"to_forward", InputArgument::REQUIRED, "Commands to forward to artisan"
+				
+				self::TO_FORWARD_ARGUMENT, InputArgument::REQUIRED, "Commands to forward to artisan"
 			);
 		}
 
-		protected function commandSignature ():string {
+		static public function commandSignature ():string {
 
 			return "bridge:laravel";
 		}
@@ -36,7 +39,7 @@
 
 			$exitCode = $this->getExecutionContainer($moduleInterface)->getClass(LaravelArtisan::class)
 
-			->invokeCommand($input->getArgument("to_forward"));
+			->invokeCommand($input->getArgument(self::TO_FORWARD_ARGUMENT));
 
 			$output->writeln("Operation completed successfully");
 

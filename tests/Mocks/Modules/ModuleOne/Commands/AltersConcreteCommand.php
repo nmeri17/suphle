@@ -11,16 +11,19 @@
 
 	class AltersConcreteCommand extends BaseCliCommand {
 
+		public const NEW_VALUE_ARGUMENT = "new_value";
+
 		protected function configure ():void {
 
 			parent::configure();
 
 			$this->addArgument(
-				"new_value", InputArgument::REQUIRED, "Value to update concrete to"
+				
+				self::NEW_VALUE_ARGUMENT, InputArgument::REQUIRED, "Value to update concrete to"
 			);
 		}
 
-		protected function commandSignature ():string {
+		static public function commandSignature ():string {
 
 			return "test:alters_concrete";
 		}
@@ -31,7 +34,7 @@
 
 			$this->getExecutionContainer($moduleInterface)->getClass(BCounter::class)
 
-			->setCount($input->getArgument("new_value"));
+			->setCount($input->getArgument(self::NEW_VALUE_ARGUMENT));
 
 			$output->writeln("Operation completed successfully");
 

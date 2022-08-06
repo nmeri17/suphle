@@ -14,34 +14,34 @@
 
 		public function hasBeenEjected ():bool {
 
-			foreach ($this->getSources() as $destination)
+			return file_exists($this->userLandMirror());
+		}
 
-				if (file_exists(
+		/**
+		 * Destination to deposit template files
+		 * 
+		 * @return With trailing slash
+		*/
+		public function userLandMirror ():string {
 
-					$destination . DIRECTORY_SEPARATOR . $this->prefixName()
-				))
+			return implode(DIRECTORY_SEPARATOR, [
 
-					return true;
+				$this->fileConfig->activeModulePath(),
 
-			return false;
+				$this->fileConfig->componentsPath(),
+
+				get_called_class()
+			]) . DIRECTORY_SEPARATOR;
 		}
 
 		public function eject ():void {
 
-			foreach ($this->getSources() as $sourceFolder => $destination)
-
-				copy(
-					$sourceFolder,
-
-					$destination . DIRECTORY_SEPARATOR . $this->prefixName()
-				);
+			copy($this->templatesLocation(), $this->userLandMirror());
 		}
 
-		abstract protected function prefixName ():string;
+		protected function templatesLocation ():string {
 
-		/**
-		 * [prefixName] will be auto-appended for you
-		*/
-		abstract protected function getSources ():array;
+			return __DIR__ . DIRECTORY_SEPARATOR . "ComponentTemplates";
+		}
 	}
 ?>

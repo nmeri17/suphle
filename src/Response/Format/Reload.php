@@ -11,7 +11,7 @@
 
 			$this->handler = $handler;
 
-			$this->setHeaders(200, ["Content-Type" => "text/html"]); // or 205 Reset Content
+			$this->setHeaders(205, ["Content-Type" => "text/html"]); // Reset Content
 		}
 
 		public function dependencyMethods ():array {
@@ -33,9 +33,17 @@
 
 			// keys clashes between current and previous should prioritise contents of the current response
 			// assumes that response is an array
-			$this->rawResponse = array_merge($renderer->getRawResponse(), $this->rawResponse);
+			$this->rawResponse = array_merge(
+
+				$renderer->getRawResponse(), $this->rawResponse
+			);
 			
-			return $this->renderHtml($renderer->getViewName(), $renderer->getViewModelName(), $this->rawResponse);
+			return $this->renderHtml(
+
+				$renderer->getViewName(), $renderer->getViewModelName(),
+
+				$this->rawResponse
+			);
 		}
 	}
 ?>

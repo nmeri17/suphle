@@ -44,7 +44,7 @@
 		/**
 		 * {@inheritdoc}
 		*/
-		public function getViewPath ():string {
+		public function defaultViewPath ():string {
 
 			return $this->activeModulePath(). "Markup" . DIRECTORY_SEPARATOR;
 		}
@@ -55,6 +55,14 @@
 		public function getImagePath ():string {
 
 			return $this->activeModulePath(). "Images" . DIRECTORY_SEPARATOR;
+		}
+
+		/**
+		 * {@inheritdoc}
+		*/
+		public function componentsPath ():string {
+
+			return $this->activeModulePath(). "InstalledComponents" . DIRECTORY_SEPARATOR;
 		}
 	}
 ?>

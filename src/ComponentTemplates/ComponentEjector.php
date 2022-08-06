@@ -16,8 +16,6 @@
 			$this->componentList = $templateConfig->getTemplateEntries();
 		}
 
-		// remember to check for duplicates/existing before replacing
-		// must prefix
 		public function depositFiles (?array $componentsToOverride):bool {
 
 			$hydratedComponents = array_map(function ($component) {

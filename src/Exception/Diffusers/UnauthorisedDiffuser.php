@@ -7,17 +7,21 @@
 
 	use Suphle\Response\Format\{ Markup, Json};
 
-	use Suphle\Exception\Explosives\UnauthorizedServiceAccess;
+	use Suphle\Exception\{ComponentEntry, Explosives\UnauthorizedServiceAccess};
 
 	use Throwable;
 
 	class UnauthorisedDiffuser implements ExceptionHandler {
 
-		private $renderer, $requestDetails, $controllerAction = "imaginaryHandler";
+		private $renderer, $requestDetails, $componentEntry,
 
-		public function __construct (RequestDetails $requestDetails) {
+		$controllerAction = "imaginaryHandler";
+
+		public function __construct (RequestDetails $requestDetails, ComponentEntry $componentEntry) {
 
 			$this->requestDetails = $requestDetails;
+
+			$this->componentEntry = $componentEntry;
 		}
 
 		/**
@@ -53,7 +57,11 @@
 
 		protected function getMarkupRenderer ():Markup {
 
-			return new Markup($this->controllerAction, "errors/authorization-failure"); // tell user they shouldn't be here
+			$path = $this->componentEntry->userLandMirror();
+
+			return (new Markup($this->controllerAction, "authorization-failure"))
+			
+			->setFilePaths($path . "Markup", $path . "Tss");
 		}
 	}
 ?>

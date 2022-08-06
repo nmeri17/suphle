@@ -1,9 +1,5 @@
 install turbo
 
-We need CLI commands for:
-	- starting app in long running process
-		- index.php is a cli-invoked script takes the name of the main class, runs static checks, starts queue worker, calls [orchestrate on that main class] inside our event loop
-
 Named renderers for the purpose of portable links that don't break in transit
 	- only way this can work is by searching while building the full route tree
 Url map generation
@@ -20,14 +16,11 @@ sqlite
 Wrap:
 	- debug_backtrace
 
-test only and except from routeCollection
-
 
 4) pending tests:
 	- replace with stubs and test disgraceful and co
-5) pending tasks:
-	- convert module template to module
-	- eject package into module
+	- test_constructor_can_read_different_ids
+	- only and except from routeCollection?
 
 
 why aren't we using midlewareManipulator
@@ -37,8 +30,12 @@ why aren't we using midlewareManipulator
 
 ->disableAutoReturnValueGeneration()*/;
 
-entryInterface defines an interface that's used to avoid hard-coding what paths to dump things
+the exceptions should have an interface method to determine whether or not they'll be broadcasted. also make room for native exceptions not implementing this interface. Replace handledExternally with this
 
 
+predis tag
 
-stopped at the point where we were trying to debug why error wasn't picking correct view and printing everything to screen
+rr can work with bolt
+
+After correcting view file paths, correct the adapter usage. then return to the test
+the markup details should live on adapter. maybe give renderer to him

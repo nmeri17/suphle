@@ -19,8 +19,6 @@
 
 		$sutName = CloneModuleCommand::class;
 
-		private $sutSignature = "modules:create";
-
 		protected function simpleCloneDependencies ():self {
 
 			$this->container = $this->getContainer();
@@ -51,17 +49,23 @@
 
 			$this->assertEmptyDirectory($modulePath);
 
-			$command = $this->consoleRunner->findHandler($this->sutSignature);
+			$command = $this->consoleRunner->findHandler(
+
+				CloneModuleCommand::commandSignature()
+			);
 
 			// when
 			return (new CommandTester($command))->execute([
 
-				"template_folder" => $this->fileConfig->getRootPath() . "ModuleTemplate",
+				CloneModuleCommand::SOURCE_ARGUMENT => $this->fileConfig->getRootPath() . "ModuleTemplate",
 
-				"new_module_name" => $this->newModuleName
+				CloneModuleCommand::MODULE_NAME_ARGUMENT => $this->newModuleName
 			]);
 		}
-
+		
+		/**
+		 * Gets the path containing all modules
+		*/
 		protected function getModulePath ():string {
 
 			return $this->container->getClass(FileSystemReader::class)

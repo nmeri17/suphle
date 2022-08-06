@@ -5,6 +5,8 @@
 
 	use Suphle\Contracts\Bridge\LaravelContainer;
 
+	use Suphle\Bridge\Laravel\Cli\ArtisanCli;
+
 	use Suphle\Testing\{TestTypes\CommandLineTest, Proxies\WriteOnlyContainer, Condiments\FilesystemCleaner};
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
@@ -32,13 +34,13 @@
 
 			$this->assertEmptyDirectory($migrationPath); // I would've liked to replace migrator instance injected in MigrationServiceProvider with a mock, but that replacement hasn't been possible
 
-			$command = $this->consoleRunner->findHandler("bridge:laravel");
+			$command = $this->consoleRunner->findHandler(ArtisanCli::commandSignature());
 
 			$commandTester = new CommandTester($command);
 
 			$commandTester->execute([ // when
 
-				"to_forward" => "make:migration create_users_table --path=" . $this->migrationFolder,
+				ArtisanCli::TO_FORWARD_ARGUMENT => "make:migration create_users_table --path=" . $this->migrationFolder,
 			]);
 
 			// then

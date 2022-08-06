@@ -15,7 +15,7 @@
 
 		protected $container, $withModuleOption = false;
 
-		protected const SOURCE_ARGUMENT = "template_folder",
+		public const SOURCE_ARGUMENT = "template_folder",
 
 		DESTINATION_ARGUMENT = "project_root",
 
@@ -40,7 +40,7 @@
 			);
 		}
 
-		protected function commandSignature ():string {
+		static public function commandSignature ():string {
 
 			return "modules:create";
 		}

@@ -13,8 +13,6 @@
 
 	class BCounterCommandTest extends TestCliRunner {
 
-		private $bCounter = BCounter::class;
-
 		protected function getModules ():array {
 
 			return [
@@ -28,7 +26,7 @@
 						"commandsList" => [$this->sutName]
 					]);
 
-					$container->replaceWithConcrete($this->bCounter, $this->mockBCounter(1));
+					$container->replaceWithConcrete($this->bCounter, $this->mockBCounter(1)); // first match
 				}),
 
 				$this->replicateModule(ModuleTwoDescriptor::class, function (WriteOnlyContainer $container) {
@@ -43,14 +41,6 @@
 					$container->replaceWithConcrete($this->bCounter, $this->mockBCounter(0));
 				})
 			];
-		}
-
-		private function mockBCounter (int $numTimes):BCounter {
-		
-			return $this->positiveDouble($this->bCounter, [], [
-
-				"setCount" => [$numTimes, [$this->anything()]]
-			]);
 		}
 
 		public function test_command_only_runs_once () {

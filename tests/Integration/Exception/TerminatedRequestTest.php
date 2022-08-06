@@ -41,7 +41,7 @@
 
 			$this->assertExceptionUsesRenderer( // then
 			
-				new Markup("missingHandler", "errors/not-found"),
+				new Markup("missingHandler", ""),
 
 				function () {
 

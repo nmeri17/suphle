@@ -15,7 +15,7 @@
 
 		$withModuleOption = true;
 
-		protected const HYDRATOR_MODULE_OPTION = "hydrating_module";
+		public const HYDRATOR_MODULE_OPTION = "hydrating_module";
 
 		public function __construct () {
 
@@ -42,7 +42,7 @@
 		*/
 		protected function configure ():void {
 
-			$this->setName($this->commandSignature());
+			$this->setName(self::commandSignature());
 
 			if ($this->withModuleOption)
 
@@ -57,7 +57,7 @@
 		/**
 		 * Using this instead of static::$defaultName since their console runner has the funny logic that ignores the property when defined on a parent class, which means commands can't be replaced by their doubles in a test
 		*/
-		abstract protected function commandSignature ():string;
+		abstract static public function commandSignature ():string;
 
 		protected function getExecutionContainer (?string $moduleInterface):Container {
 

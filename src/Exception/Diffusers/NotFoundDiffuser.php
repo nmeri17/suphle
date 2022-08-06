@@ -7,19 +7,21 @@
 
 	use Suphle\Response\Format\{ Markup, Json};
 
-	use Suphle\Exception\Explosives\NotFoundException;
+	use Suphle\Exception\{ComponentEntry, Explosives\NotFoundException};
 
 	use Throwable;
 
 	class NotFoundDiffuser implements ExceptionHandler {
 
-		private $renderer, $requestDetails,
+		private $renderer, $requestDetails, $componentEntry,
 
 		$controllerAction = "missingHandler";
 
-		public function __construct (RequestDetails $requestDetails) {
+		public function __construct (RequestDetails $requestDetails, ComponentEntry $componentEntry) {
 
 			$this->requestDetails = $requestDetails;
+
+			$this->componentEntry = $componentEntry;
 		}
 
 		/**
@@ -50,12 +52,20 @@
 
 			return (new Json($this->controllerAction))
 
-			->setRawResponse([ "message" => "Not Found" ]);
+			->setRawResponse([
+
+				"message" => $this->requestDetails->getPath() . " Not Found"
+			]);
 		}
 
 		protected function getMarkupRenderer ():Markup {
 
-			return (new Markup($this->controllerAction, "errors/not-found"))
+			$path = $this->componentEntry->userLandMirror();
+
+			return (new Markup($this->controllerAction, "not-found"))
+			
+			->setFilePaths($path . "Markup", $path . "Tss")
+			
 			->setRawResponse([
 
 				"url" => $this->requestDetails->getPath()

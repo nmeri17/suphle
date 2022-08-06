@@ -11,18 +11,18 @@
 
 	class InstallComponentCommand extends BaseCliCommand {
 
-		protected const OVERWRITE_OPTION = "overwrite";
+		public const OVERWRITE_OPTION = "overwrite";
 
 		protected static $defaultDescription = "Extract templates registered for given module";
 
-		protected function commandSignature ():string {
+		static public function commandSignature ():string {
 
 			return "templates:install";
 		}
 
 		protected function configure ():void {
 
-			$this->setName($this->commandSignature());
+			$this->setName(self::commandSignature());
 
 			$this->addArgument(
 

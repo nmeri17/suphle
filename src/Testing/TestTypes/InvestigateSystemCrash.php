@@ -183,6 +183,7 @@
 		}
 
 		/**
+		 * Compares renderer handlers
 		 * This can only run if exception was caught i.e. not during app shutdown
 		*/
 		protected function assertExceptionUsesRenderer (BaseRenderer $renderer, callable $flammable):void {
