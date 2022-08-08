@@ -101,7 +101,7 @@
 			}
 		}
 
-		public function selectFields ($builder, array $filters) {
+		public function selectFields ($builder, array $filters):object {
 
 			return $builder->select($filters);
 		}

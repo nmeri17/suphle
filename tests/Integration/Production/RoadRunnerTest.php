@@ -1,19 +1,31 @@
 <?php
 	namespace Suphle\Tests\Integration\Production;
 
+	use Suphle\Hydration\Container;
+
+	use Suphle\Tests\Mocks\Modules\ModuleOne\OutgoingRequests\VisitSegment;
+
 	use Symfony\Component\Process\Process;
 
 	use GuzzleHttp\Exception\RequestException;
-
-	use Suphle\Tests\Mocks\Modules\ModuleOne\OutgoingRequests\VisitSegment;
 
 	use Psr\Http\Message\ResponseInterface;
 
 	use Throwable;
 
 	class RoadRunnerTest extends BaseTestProduction {
+
+		private $requestSender = VisitSegment::class;
 		
-		public function test_can_visit_urls_after_server_setup () {
+		/**
+		 * @dataProvider modulesUrls
+		*/
+		public function test_can_visit_urls_after_server_setup (string $url, string $expectedOutput) {
+
+			$this->sendRequestToProcess($url, $expectedOutput);
+		}
+
+		protected function sendRequestToProcess (string $url, string $expectedOutput):void {
 
 			$this->ensureExecutableRuns();
 
@@ -42,7 +54,17 @@
 						$this->processFullOutput($serverProcess)
 					);
 
-				$httpService = $this->getContainer()->getClass(VisitSegment::class);
+				$parameters = $this->getContainer()
+
+				->getMethodParameters(Container::CLASS_CONSTRUCTOR, $this->requestSender);
+
+				$httpService = $this->replaceConstructorArguments(
+
+					$this->requestSender, $parameters, [
+
+						"getRequestUrl" => $url
+					]
+				);
 
 				$response = $httpService->getDomainObject();
 
@@ -64,7 +86,7 @@
 
 				$this->assertSame(
 
-					$this->modulesUrls()[1][1],
+					$expectedOutput,
 
 					$this->getResponseBody($response)
 				);
@@ -109,6 +131,14 @@
 			return $process->getOutput() . "\n".
 
 			$process->getErrorOutput();
+		}
+
+		/**
+		 * @dataProvider moduleThreeUrls
+		*/
+		public function test_controller_action_can_read_different_ids (string $url, string $expectedOutput) {
+
+			$this->sendRequestToProcess($url, $expectedOutput);
 		}
 	}
 ?>

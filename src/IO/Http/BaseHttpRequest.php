@@ -53,6 +53,11 @@
 		*/
 		abstract protected function getHttpResponse ():ResponseInterface;
 
+		/**
+		 * Extra layer of abstraction for it to be replaceable in tests
+		*/
+		abstract public function getRequestUrl ():string;
+
 		public function translationFailure ():void {
 
 			$this->exceptionManager->queueAlertAdapter(

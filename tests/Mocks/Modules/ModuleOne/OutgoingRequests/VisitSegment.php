@@ -7,13 +7,16 @@
 
 	class VisitSegment extends BaseHttpRequest {
 
-		protected function getHttpResponse ():ResponseInterface {
+		public function getRequestUrl ():string {
 
-			$baseAddress = "http://localhost:8080"; // must match what's in rr.yaml
+			return "http://localhost:8080/segment"; // baseAddress must match what's in rr.yaml
+		}
+
+		protected function getHttpResponse ():ResponseInterface {
 
 			return $this->requestClient->request(
 			
-				"get", $baseAddress ."/segment"/*, $options*/
+				"get", $this->getRequestUrl()/*, $options*/
 			);
 		}
 

@@ -23,9 +23,11 @@
 				ConditionalFactory::class, // We're treating it as a type of service in itself
 				ControllerModule::class, // These are a service already. There's no need accessing them through another local proxy
 
+				PayloadStorage::class, // there may be items we don't want to pass to the builder but to a service?
+
 				BaseHttpRequest::class, UpdatefulService::class,
 
-				PayloadStorage::class, UpdatelessService::class
+				UpdatelessService::class
 			];
 		}
 

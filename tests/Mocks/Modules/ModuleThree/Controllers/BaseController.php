@@ -3,16 +3,15 @@
 
 	use Suphle\Services\ServiceCoordinator;
 
+	use Suphle\Tests\Mocks\Modules\ModuleThree\PayloadReaders\ReadsId;
+
 	class BaseController extends ServiceCoordinator {
 
-		public function __construct () {
-		}
-
-		public function checkPlaceholder ():array {
+		public function checkPlaceholder (ReadsId $payloadReader):array {
 
 			return [
 
-				//"id" => $this->pathPlaceholders->getSegmentValue("id") // in real life, this will be read and handled by the modelfulPayload
+				"id" => $payloadReader->convertToDomainObject()
 			];
 		}
 	}

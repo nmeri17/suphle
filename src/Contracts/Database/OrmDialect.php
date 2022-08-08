@@ -14,7 +14,7 @@
 		/**
 		 * @return A builder/query object, with the filters applied
 		*/
-		public function selectFields ($builder, array $filters);
+		public function selectFields ($builder, array $filters):object;
 
 		public function hardLock( $model):void;
 

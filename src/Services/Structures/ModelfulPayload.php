@@ -28,12 +28,12 @@
 		/**
 		 * @return a query builder after interacting with [payloadStorage]
 		*/
-		abstract protected function getBaseCriteria ();
+		abstract protected function getBaseCriteria ():object;
 
 		/**
 		 * This is the only method caller cares about
 		*/
-		public function getBuilder () {
+		public function getBuilder ():object {
 
 			return $this->orm->selectFields($this->getBaseCriteria(), $this->onlyFields());
 		}
