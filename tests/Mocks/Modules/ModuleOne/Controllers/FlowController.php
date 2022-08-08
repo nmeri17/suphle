@@ -18,18 +18,30 @@
 			$this->dummyModels = $dummyModels;
 		}
 
-		public function noFlowHandler () {}
+		public function noFlowHandler () {
+
+			return [];
+		}
 
 		public function getPostDetails () {
 
 			return [];
 		}
 
-		public function preloaded () {}
+		public function preloaded () {
 
-		public function parentFlow () {}
+			return [];
+		}
 
-		public function handleChildFlow () {}
+		public function parentFlow () {
+
+			return [];
+		}
+
+		public function handleChildFlow () {
+
+			return [];
+		}
 
 		public function handleCombined () {
 

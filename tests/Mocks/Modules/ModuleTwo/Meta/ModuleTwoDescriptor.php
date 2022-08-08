@@ -37,7 +37,7 @@
 
 				ModuleFiles::class => new AscendingHierarchy(
 					
-					__DIR__, _NAMESPACE__,
+					__DIR__, __NAMESPACE__,
 
 					$this->container->getClass(FileSystemReader::class)
 				)

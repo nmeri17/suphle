@@ -1,5 +1,5 @@
 <?php
-	namespace Suphle\Tests\Integration\Cloning;
+	namespace Suphle\Tests\Integration\Modules\Cloning;
 
 	use Suphle\Contracts\Config\ModuleFiles;
 
@@ -11,7 +11,7 @@
 
 	use Symfony\Component\Console\{Command\Command, Tester\CommandTester};
 
-	trait SimpleCloneAssertion {
+	trait SimpleCloneAssertions {
 
 		use FilesystemCleaner;
 

@@ -29,9 +29,17 @@
 
 		public function __construct () {
 
-			$this->container = current($this->getModules())->getContainer();
+			$this->bootTitularContainer();
+		}
 
-			$this->container->provideSelf();
+		protected function bootTitularContainer ():void {
+
+			if ($titular = current($this->getModules())) { // on project initialization, no modules will exist yet
+
+				$this->container = $titular->getContainer();
+
+				$this->container->provideSelf();
+			}
 		}
 		
 		abstract protected function getModules():array;

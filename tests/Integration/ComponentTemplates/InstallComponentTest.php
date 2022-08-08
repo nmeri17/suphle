@@ -1,15 +1,19 @@
 <?php
 	namespace Suphle\Tests\Integration\ComponentTemplates;
 
+	use Suphle\Hydration\Container;
+
 	use Suphle\ComponentTemplates\ComponentEjector;
 
-	use Suphle\Modules\Commands\InstallComponentCommand;
+	use Suphle\ComponentTemplates\Commands\InstallComponentCommand;
 
 	use Suphle\Contracts\Config\ModuleFiles;
 
 	use Suphle\Exception\ComponentEntry as ExceptionComponentEntry;
 
 	use Suphle\Testing\{Condiments\FilesystemCleaner, TestTypes\CommandLineTest};
+
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
 	use Symfony\Component\Console\{Command\Command, Tester\CommandTester};
 
@@ -18,6 +22,8 @@
 		protected const SUT_NAME = ExceptionComponentEntry::class;
 
 		private $fileConfig, $container;
+
+		use FilesystemCleaner;
 
 		protected function setUp ():void {
 

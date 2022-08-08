@@ -1,5 +1,5 @@
 <?php
-	namespace Suphle\Tests\Integration\Cloning;
+	namespace Suphle\Tests\Integration\Modules\Cloning;
 
 	use Suphle\Hydration\Container;
 
@@ -11,7 +11,7 @@
 
 	class FolderClonerTest extends CommandLineTest {
 
-		use SimpleCloneAssertion;
+		use SimpleCloneAssertions;
 
 		protected function setUp ():void {
 

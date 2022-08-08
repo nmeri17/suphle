@@ -9,6 +9,8 @@
 
 	use Symfony\Component\Console\Input\{InputInterface, InputArgument};
 
+	use Symfony\Component\Console\Command\Command;
+
 	use Throwable;
 
 	class CloneModuleCommand extends BaseCliCommand {
@@ -32,15 +34,15 @@
 			);
 
 			$this->addArgument(
-				self::DESTINATION_ARGUMENT, InputArgument::OPTIONAL, "Destination folder to write to"
+				self::MODULE_NAME_ARGUMENT, InputArgument::REQUIRED, "Module to create"
 			);
 
 			$this->addArgument(
-				self::MODULE_NAME_ARGUMENT, InputArgument::REQUIRED, "Module to create"
-			);
+				self::DESTINATION_ARGUMENT, InputArgument::OPTIONAL, "Destination folder to write to"
+			); // note argument ordering: options can't come before arguments
 		}
 
-		static public function commandSignature ():string {
+		public static function commandSignature ():string {
 
 			return "modules:create";
 		}

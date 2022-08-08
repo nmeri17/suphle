@@ -5,7 +5,7 @@
 
 		public function getTemplatePath ():string;
 
-		public function getRawResponse ():array;
+		public function getRawResponse ():iterable;
 
 		public function setFilePaths (string $markupPath, string $templatePath):self;
 	}

@@ -35,14 +35,17 @@
 
 			$this->consoleRunner = new CliRunner (
 
-				$this->entrance, new SymfonyCli("SuphleTest", "v2"),
+				$this->entrance, new SymfonyCli("SuphleTest", "v2")
+			);
 
+			$this->consoleRunner->extractAvailableCommands()
+			
+			->setRootPath( // can't pass this into the constructor since as evident here, we can't have access to any dynamic paths until containers have booted
 				$this->getContainer()->getClass(ModuleFiles::class)
 
 				->getRootPath()
-			);
-
-			$this->consoleRunner->loadCommands();
+			)
+			->funnelToClient();
 
 			$this->mufflerSetup();
 		}

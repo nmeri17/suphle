@@ -1,5 +1,5 @@
 <?php
-	namespace Suphle\Tests\Integration\Cloning;
+	namespace Suphle\Tests\Integration\Modules\Cloning;
 
 	use Suphle\Adapters\Console\SymfonyCli;
 
@@ -29,12 +29,14 @@
 
 			$this->consoleRunner = new CliRunner (
 
-				new FrontDoor([]), new SymfonyCli("SuphleTest", "v2"),
-
-				$this->fileConfig->getRootPath()
+				new FrontDoor([]), new SymfonyCli("SuphleTest", "v2")
 			);
 
-			$this->consoleRunner->loadCommands();
+			$this->consoleRunner->extractAvailableCommands()
+
+			->setRootPath($this->fileConfig->getRootPath())
+
+			->funnelToClient();
 
 			return $this;
 		}

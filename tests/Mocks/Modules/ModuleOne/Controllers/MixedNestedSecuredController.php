@@ -7,12 +7,12 @@
 
 		public function handleUnlinked() {
 
-			//
+			return [];
 		}
 
 		public function handleRetained () {
 
-			//
+			return [];
 		}
 	}
 ?>

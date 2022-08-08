@@ -43,7 +43,7 @@
 
 			$container->whenTypeAny()->needsAny([
 
-				ModuleFiles::class => new AscendingHierarchy($anchorPath, $systemReader)
+				ModuleFiles::class => new AscendingHierarchy($anchorPath, "\Suphle\Tests\Mocks\Modules\ModuleOne\\", $systemReader)
 			]);
 
 			$sut = new ExternalPackageManagerHydrator($container);

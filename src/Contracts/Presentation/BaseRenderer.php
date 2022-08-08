@@ -29,7 +29,7 @@
 
 		public function getFlow ():?ControllerFlows;
 
-		public function getRawResponse();
+		public function getRawResponse():iterable;
 
 		public function getRouteMethod ():string;
 

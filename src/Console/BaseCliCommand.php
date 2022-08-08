@@ -42,7 +42,7 @@
 		*/
 		protected function configure ():void {
 
-			$this->setName(self::commandSignature());
+			$this->setName(static::commandSignature()); // child version, not self
 
 			if ($this->withModuleOption)
 
@@ -57,7 +57,7 @@
 		/**
 		 * Using this instead of static::$defaultName since their console runner has the funny logic that ignores the property when defined on a parent class, which means commands can't be replaced by their doubles in a test
 		*/
-		abstract static public function commandSignature ():string;
+		abstract public static function commandSignature ():string;
 
 		protected function getExecutionContainer (?string $moduleInterface):Container {
 

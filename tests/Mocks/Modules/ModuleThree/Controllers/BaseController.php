@@ -11,7 +11,7 @@
 
 			return [
 
-				"id" => $payloadReader->convertToDomainObject()
+				"id" => $payloadReader->getDomainObject()
 			];
 		}
 	}

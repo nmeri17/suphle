@@ -34,7 +34,7 @@
 
 			$anchorPath = $systemReader->pathFromLevels(__DIR__,
 
-				"/Mocks/Modules/". $this->fileConfigModuleName() . "/Config", // "config" so that back tracking by levels will land us at module root. Can be any folder there
+				"Mocks/Modules/". $this->fileConfigModuleName() . "/Config", // "config" so that back tracking by levels will land us at module root. Can be any folder there
 			2);
 
 			return array_merge(parent::concreteBinds(), [

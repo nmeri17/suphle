@@ -32,7 +32,7 @@
 			$renderer = (new Markup(self::HANDLER_NAME, self::MARKUP_NAME, null))
 
 			->setConfigs(
-				$this->negativeDouble(ModuleFiles::class, [])
+				$this->negativeDouble(ModuleFiles::class, []),
 				
 				$this->positiveDouble(ViewConfig::class, [
 
@@ -53,7 +53,7 @@
 			$renderer = (new Markup(self::HANDLER_NAME, self::MARKUP_NAME, null))
 
 			->setConfigs(
-				$this->negativeDouble(ModuleFiles::class, [])
+				$this->negativeDouble(ModuleFiles::class, []),
 				
 				$this->positiveDouble(ViewConfig::class, [
 
@@ -71,31 +71,28 @@
 
 			$markupName = "generic/default";
 
+			$anchorPath = $this->container->getClass(ModuleFiles::class)
+
+			->defaultViewPath();
+
+			$templatePath = $this->container->getClass(ViewConfig::class)
+
+			->getTssPath();
+
 			$renderer = $this->positiveDouble(TransphpormRenderer::class, [
 
-				"getMarkupPath" => $markupName,
+				"getMarkupPath" => $anchorPath . $markupName,
 
-				"getTemplatePath" => $markupName,
+				"getTemplatePath" => $templatePath . $markupName,
 
-				compact("message")
+				"getRawResponse" => compact("message")
 			]);
 
 			$result = $this->container->getClass($this->sutName)
 
 			->parseAll($renderer); // when
 
-			$this->container->getClass(OrmDialect::class); // their examiner requires a helper to convert markup responses to a special, testable type. So, we use this instead of directly requiring helper file
-
-			$this->makeExaminable($this->makeRenderer($result))
-
-			->assertSee($message); // then
-		}
-
-		private function makeRenderer (string $content):Markup {
-
-			return (new Markup(self::HANDLER_NAME, self::MARKUP_NAME))
-
-			->setRawResponse($content);
+			$this->assertStringContainsString($message, $result);
 		}
 	}
 ?>

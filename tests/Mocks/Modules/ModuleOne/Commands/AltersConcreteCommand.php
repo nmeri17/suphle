@@ -23,7 +23,7 @@
 			);
 		}
 
-		static public function commandSignature ():string {
+		public static function commandSignature ():string {
 
 			return "test:alters_concrete";
 		}

@@ -72,12 +72,12 @@
 
 					$exception = $httpService->getException();
 
-					var_dump(
+					var_dump($this->processFullOutput($serverProcess));
 
-						$this->getResponseBody($exception->getResponse()),
+					var_dump($this->getResponseBody( // comes after the above so even if this fails, we can have an idea of what went wrong
 
-						$this->processFullOutput($serverProcess)
-					);
+						$exception->getResponse()
+					));
 
 					$this->fail($exception);
 				}

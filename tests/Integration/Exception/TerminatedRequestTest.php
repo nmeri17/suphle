@@ -54,7 +54,7 @@
 
 			$this->assertExceptionUsesRenderer( // then
 			
-				new Markup("genericHandler", "/errors/default"),
+				new Markup("genericHandler", "errors/default"),
 
 				function () {
 

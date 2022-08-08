@@ -28,7 +28,7 @@
 			);
 		}
 
-		static public function commandSignature ():string {
+		public static function commandSignature ():string {
 
 			return "bridge:laravel";
 		}

@@ -19,17 +19,22 @@
 
 			ModuleHandlerIdentifier $moduleHandler,
 
-			ConsoleClient $consoleClient, string $projectRootPath
+			ConsoleClient $consoleClient
 		) {
 
 			$this->moduleHandler = $moduleHandler;
 
 			$this->consoleClient = $consoleClient;
-
-			$this->projectRootPath = $projectRootPath;
 		}
 
-		public function loadCommands ():void {
+		public function setRootPath (string $projectRootPath):self {
+
+			$this->projectRootPath = $projectRootPath;
+
+			return $this;
+		}
+
+		public function extractAvailableCommands ():self {
 
 			$allModules = $this->moduleHandler->getModules();
 
@@ -52,7 +57,7 @@
 				$this->extractCommandsFromContainer($this->defaultContainer);
 			}
 
-			$this->funnelToClient();
+			return $this;
 		}
 
 		private function extractCommandsFromModules (array $modules):void {
@@ -80,7 +85,7 @@
 			return array_diff ($commands, array_map("get_class", $this->allCommands) );
 		}
 
-		private function funnelToClient ():void {
+		public function funnelToClient ():void {
 
 			foreach ($this->allCommands as $command) {
 
@@ -96,6 +101,9 @@
 			}
 		}
 
+		/**
+		 * Not necessary to be called in test env
+		*/
 		public function awaitCommands ():void {
 
 			$this->consoleClient->run();

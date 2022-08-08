@@ -7,17 +7,17 @@
 
 		public function noInner () {
 
-			//
+			return [];
 		}
 
 		public function hasInner () {
 
-			//
+			return [];
 		}
 
 		public function thirdSegmentHandler () {
 
-			//
+			return [];
 		}
 	}
 ?>

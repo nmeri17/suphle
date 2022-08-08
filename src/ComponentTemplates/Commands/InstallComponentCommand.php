@@ -1,5 +1,5 @@
 <?php
-	namespace Suphle\Modules\Commands;
+	namespace Suphle\ComponentTemplates\Commands;
 
 	use Suphle\Console\BaseCliCommand;
 
@@ -15,7 +15,7 @@
 
 		protected static $defaultDescription = "Extract templates registered for given module";
 
-		static public function commandSignature ():string {
+		public static function commandSignature ():string {
 
 			return "templates:install";
 		}
@@ -26,7 +26,7 @@
 
 			$this->addArgument(
 
-				self::HYDRATOR_MODULE_OPTION, "m", InputArgument::REQUIRED,
+				self::HYDRATOR_MODULE_OPTION, InputArgument::REQUIRED,
 
 				"Module interface where templates are to be ejected"
 			);
@@ -34,7 +34,7 @@
 			$this->addOption(
 				self::OVERWRITE_OPTION, "o",
 
-				InputOption::OPTIONAL | InputOption::IS_ARRAY,
+				InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY,
 
 				"List of entries to override or empty to overwrite all",
 

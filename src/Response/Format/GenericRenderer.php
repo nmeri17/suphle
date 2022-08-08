@@ -80,7 +80,7 @@
 			return $this->flows;
 		}
 
-		public function getRawResponse() {
+		public function getRawResponse():iterable {
 			
 			return $this->rawResponse;
 		}

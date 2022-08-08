@@ -55,7 +55,7 @@
 
 		protected function getMarkupRenderer ():BaseRenderer {
 
-			return new Markup($this->controllerAction, "/errors/default");
+			return new Markup($this->controllerAction, "errors/default");
 		}
 	}
 ?>

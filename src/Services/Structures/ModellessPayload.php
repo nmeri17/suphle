@@ -5,7 +5,7 @@
 
 	use Suphle\Routing\PathPlaceholders;
 
-	use Suphle\Services\InterceptsExternalPayload;
+	use Suphle\Services\IndicatesCaughtException;
 
 	use Throwable;
 

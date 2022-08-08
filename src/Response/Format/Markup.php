@@ -7,6 +7,9 @@
 
 		private $wantsJson;
 
+		/**
+		 * @param {markupName}: It's not necessary to prefix with a slash
+		*/
 		public function __construct(string $handler, string $markupName, string $templateName = null) {
 
 			$this->handler = $handler;
