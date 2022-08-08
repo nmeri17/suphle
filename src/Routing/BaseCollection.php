@@ -60,11 +60,11 @@
 		/**
 		 * `save` must be called in the invoking method
 		*/
-		public function _crud (string $viewPath, string $viewModelPath = null):CrudBuilder {
+		public function _crud (string $markupPath, string $templatePath = null):CrudBuilder {
 
 			$this->crudMode = true;
 
-			return new BrowserBuilder($this, $viewPath, $viewModelPath );
+			return new BrowserBuilder($this, $markupPath, $templatePath );
 		}
 
 		public function __call ($method, $args) {

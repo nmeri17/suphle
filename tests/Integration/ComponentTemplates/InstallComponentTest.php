@@ -1,11 +1,13 @@
 <?php
 	namespace Suphle\Tests\Integration\ComponentTemplates;
 
+	use Suphle\ComponentTemplates\ComponentEjector;
+
 	use Suphle\Modules\Commands\InstallComponentCommand;
 
 	use Suphle\Contracts\Config\ModuleFiles;
 
-	use Suphle\File\FileSystemReader;
+	use Suphle\Exception\ComponentEntry as ExceptionComponentEntry;
 
 	use Suphle\Testing\{Condiments\FilesystemCleaner, TestTypes\CommandLineTest};
 
@@ -13,13 +15,17 @@
 
 	class InstallComponentTest extends CommandLineTest {
 
-		private $fileConfig;
+		protected const SUT_NAME = ExceptionComponentEntry::class;
+
+		private $fileConfig, $container;
 
 		protected function setUp ():void {
 
 			parent::setUp();
 
-			$this->fileConfig = $this->getContainer()->getClass(ModuleFiles::class);
+			$container = $this->container = $this->getContainer();
+
+			$this->fileConfig = $container->getClass(ModuleFiles::class);
 		}
 
 		protected function getModules ():array {
@@ -29,31 +35,33 @@
 
 		public function test_can_install_component () {
 
-			$this->assertInstalledComponent([]);
+			$this->assertInstalledComponent(
+
+				$this->getComponentPath(), [], true
+			);
 		}
 
-		protected function assertInstalledComponent (array $commandOptions, callable $onInstallSuccess = null):void {
+		protected function assertInstalledComponent (
+
+			string $componentPath, array $commandOptions,
+
+			bool $wipeWhenTrue
+		):void {
+
+			$this->assertEmptyDirectory($componentPath);
 
 			$commandResult = $this->runInstallComponent(
-				$componentPath = $this->fileConfig->activeModulePath().
-
-				DIRECTORY_SEPARATOR ., // still pending
-				$commandOptions
-			); // given
+				
+				$componentPath, $commandOptions // given
+			); // when
 
 			// then
 			$this->assertSame($commandResult, Command::SUCCESS );
 
-			if (!is_null($onInstallSuccess))
-
-				$onInstallSuccess($componentPath);
-
-			$this->assertNotEmptyDirectory($componentPath, true);
+			$this->assertNotEmptyDirectory($componentPath, $wipeWhenTrue);
 		}
 
 		protected function runInstallComponent (string $componentPath, array $commandOptions):int {
-
-			$this->assertEmptyDirectory($componentPath);
 
 			$command = $this->consoleRunner->findHandler(
 
@@ -68,23 +76,73 @@
 			], $commandOptions));
 		}
 
+		protected function getComponentPath ():string {
+
+			return $this->container->getClass(self::SUT_NAME)
+
+			->userLandMirror();
+		}
+
 		public function test_will_not_override_existing () {
 
-			$this->assertInstalledComponent([
+			$componentPath = $this->getComponentPath(); // given
 
-			//	InstallComponentCommand::OVERWRITE_OPTION
+			$this->assertInstalledComponent($componentPath, [], false);
+
+			$this->massProvide([
+
+				self::SUT_NAME => $this->positiveDouble(self::SUT_NAME, [], [
+
+					"eject" => [0, []] // then
+				])
 			]);
-			// confirm it's not on the list
+
+			$this->runInstallComponent($componentPath, []); // when
+
+			$this->assertNotEmptyDirectory($componentPath, true);
 		}
 
-		public function test_can_override_existing__all () {
+		/**
+		 * @dataProvider overrideOptions
+		*/
+		public function test_override_option_unserializes_properly (array $commandOptions, ?array $depositArguments) {
 
-			// duplicate folder. copy to same folder with different name and work with that
+			$methodName = "depositFiles";
+
+			$ejectorName = ComponentEjector::class;
+
+			$this->container->whenTypeAny()->needsAny([
+
+				$ejectorName => $this->replaceConstructorArguments(
+					$ejectorName, [], [
+						$methodName => true
+				], [
+
+					$methodName => [1, [$depositArguments]]
+				])
+			]);
+
+			$this->assertInstalledComponent(
+
+				$this->getComponentPath(), $commandOptions, false
+			);
 		}
 
-		public function test_can_override_existing__some () {
+		public function overrideOptions ():array {
 
-			//
+			return [
+				[[], []],
+				[
+
+					[InstallComponentCommand::OVERWRITE_OPTION], null
+				],
+				[
+
+					[
+						InstallComponentCommand::OVERWRITE_OPTION => self::SUT_NAME
+					], [self::SUT_NAME]
+				]
+			];
 		}
 	}
 ?>

@@ -12,7 +12,7 @@
 	*/
 	class BrowserBuilder extends BaseBuilder {
 
-		private $viewPath, $viewModelPath;
+		private $markupPath, $templatePath;
 
 		protected $validActions = [
 
@@ -23,13 +23,13 @@
 			self::SHOW_SEARCH, self::SHOW_EDIT
 		];
 		
-		public function __construct(RouteCollection $collection, string $viewPath, string $viewModelPath = null) {
+		public function __construct(RouteCollection $collection, string $markupPath, string $templatePath = null) {
 
 			$this->collection = $collection;
 
-			$this->viewPath = $viewPath . DIRECTORY_SEPARATOR;
+			$this->markupPath = $markupPath . DIRECTORY_SEPARATOR;
 
-			$this->viewModelPath = $viewModelPath ? $viewModelPath . DIRECTORY_SEPARATOR : $this->viewPath;
+			$this->templatePath = $templatePath ? $templatePath . DIRECTORY_SEPARATOR : $this->markupPath;
 		}
 
 		protected function showCreateForm ():BaseRenderer {
@@ -93,9 +93,9 @@
 		private function getMarkupRenderer (string $handler, string $fileName):Markup {
 
 			return new Markup(
-				$handler, $this->viewPath . $fileName,
+				$handler, $this->markupPath . $fileName,
 
-				$this->viewModelPath . $fileName
+				$this->templatePath . $fileName
 			);
 		}
 	}

@@ -7,7 +7,9 @@
 
 	use Suphle\File\FileSystemReader;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Config\{RouterMock};
+	use Suphle\Hydration\Container;
+
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Config\RouterMock;
 
 	trait CommonBinds {
 
@@ -26,7 +28,9 @@
 
 		protected function concreteBinds ():array {
 
-			$systemReader = $this->getContainer()->getClass(FileSystemReader::class);
+			$container = $this->getContainer();
+
+			$systemReader = $container->getClass(FileSystemReader::class);
 
 			$anchorPath = $systemReader->pathFromLevels(__DIR__,
 
@@ -35,8 +39,18 @@
 
 			return array_merge(parent::concreteBinds(), [
 
-				ModuleFiles::class => new AscendingHierarchy($anchorPath, $systemReader)
+				ModuleFiles::class => new AscendingHierarchy(
+
+					$anchorPath, $this->getNamespace($container),
+
+					$systemReader
+				)
 			]);
+		}
+
+		protected function getNamespace (Container $container):string {
+
+			return "\Suphle\Tests\Mocks\Modules\\". $this->fileConfigModuleName();
 		}
 	}
 ?>

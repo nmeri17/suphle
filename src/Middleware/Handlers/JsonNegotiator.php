@@ -5,9 +5,9 @@
 
 	use Suphle\Request\PayloadStorage;
 
-	use Suphle\Response\Format\Markup;
+	use Suphle\Contracts\Presentation\{MirrorableRenderer, BaseRenderer};
 
-	use Suphle\Contracts\{Presentation\BaseRenderer, Routing\Middleware};
+	use Suphle\Contracts\Routing\Middleware;
 
 	class JsonNegotiator implements Middleware {
 
@@ -20,7 +20,7 @@
 
 		public function process (PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler):BaseRenderer {
 
-			if ($this->activeRenderer instanceof Markup && $payloadStorage->acceptsJson())
+			if ($this->activeRenderer instanceof MirrorableRenderer && $payloadStorage->acceptsJson())
 
 				$this->activeRenderer->setWantsJson();
 

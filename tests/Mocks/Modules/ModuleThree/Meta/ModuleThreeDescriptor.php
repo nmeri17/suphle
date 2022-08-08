@@ -35,7 +35,7 @@
 
 			return array_merge(parent::globalConcretes(), [
 
-				ModuleFiles::class => new AscendingHierarchy(__DIR__,
+				ModuleFiles::class => new AscendingHierarchy(__DIR__, _NAMESPACE__,
 
 					$this->container->getClass(FileSystemReader::class)
 				)

@@ -1,7 +1,9 @@
 <?php
 	namespace Suphle\Tests\Integration\Templating;
 
-	use Suphle\Contracts\Database\OrmDialect;
+	use Suphle\Contracts\{Database\OrmDialect, Presentation\TransphpormRenderer};
+
+	use Suphle\Contracts\Config\{Transphporm as ViewConfig, ModuleFiles};
 
 	use Suphle\Hydration\Container;
 
@@ -13,29 +15,53 @@
 
 	use Suphle\Tests\Integration\Generic\CommonBinds;
 
+	use Throwable;
+
 	class TransphpormTest extends IsolatedComponentTest {
 
 		use CommonBinds, ExaminesHttpResponse;
 
+		protected const MARKUP_NAME = "profile",
+
+		HANDLER_NAME = "genericHandler";
+
 		private $sutName = Transphporm::class;
 
-		public function test_can_infer_view_model_name () {
+		public function test_will_infer_template_name () {
 
-			$markupName = "profile";
+			$renderer = (new Markup(self::HANDLER_NAME, self::MARKUP_NAME, null))
 
-			$parameters = $this->container->getMethodParameters(
+			->setConfigs(
+				$this->negativeDouble(ModuleFiles::class, [])
+				
+				$this->positiveDouble(ViewConfig::class, [
 
-				Container::CLASS_CONSTRUCTOR, $this->sutName
+					"inferFromViewName" => true // given
+				])
 			);
 
-			$this->replaceConstructorArguments($this->sutName, $parameters, [], [
+			$this->assertSame(
 
-				"readFile" => [2, [$this->callback(function ($subject) use ($markupName) { // then
+				self::MARKUP_NAME, $renderer->safeGetTemplateName() // when
+			); // then
+		}
 
-					return str_contains($subject, $markupName);
-				})]]
-			])
-			->parseAll($markupName, null, []); // when
+		public function test_cant_if_infer_and_template_are_off () {
+
+			$this->expectException(Throwable::class); // then
+
+			$renderer = (new Markup(self::HANDLER_NAME, self::MARKUP_NAME, null))
+
+			->setConfigs(
+				$this->negativeDouble(ModuleFiles::class, [])
+				
+				$this->positiveDouble(ViewConfig::class, [
+
+					"inferFromViewName" => false // given
+				])
+			);
+
+			$renderer->safeGetTemplateName(); // when
 		}
 
 		public function test_can_render_data () {
@@ -43,11 +69,20 @@
 			// given
 			$message = "Joy, Alexis, and Gloria";
 
-			$viewName = "generic/default";
+			$markupName = "generic/default";
+
+			$renderer = $this->positiveDouble(TransphpormRenderer::class, [
+
+				"getMarkupPath" => $markupName,
+
+				"getTemplatePath" => $markupName,
+
+				compact("message")
+			]);
 
 			$result = $this->container->getClass($this->sutName)
 
-			->parseAll($viewName, $viewName, compact("message")); // when
+			->parseAll($renderer); // when
 
 			$this->container->getClass(OrmDialect::class); // their examiner requires a helper to convert markup responses to a special, testable type. So, we use this instead of directly requiring helper file
 
@@ -58,7 +93,7 @@
 
 		private function makeRenderer (string $content):Markup {
 
-			return (new Markup("genericHandler", "viewName"))
+			return (new Markup(self::HANDLER_NAME, self::MARKUP_NAME))
 
 			->setRawResponse($content);
 		}

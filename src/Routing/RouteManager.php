@@ -5,9 +5,9 @@
 
 	use Suphle\Hydration\Container;
 
-	use Suphle\Contracts\{ Config\Router as RouterConfig, Routing\RouteCollection, Presentation\BaseRenderer, IO\Session};
+	use Suphle\Contracts\{ Config\Router as RouterConfig, Routing\RouteCollection, IO\Session};
 
-	use Suphle\Response\Format\Markup;
+	use Suphle\Contracts\Presentation\{MirrorableRenderer, BaseRenderer};
 
 	use Suphle\Request\RequestDetails;
 
@@ -245,7 +245,7 @@
 
 			$this->indicatorProxy($collection, $pattern);
 
-			if ($this->isMirroring() && $renderer instanceof Markup)
+			if ($this->isMirroring() && $renderer instanceof MirrorableRenderer)
 
 				$renderer->setWantsJson();
 

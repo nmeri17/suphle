@@ -27,5 +27,10 @@
 		 * @return Absolute path, with trailing slash
 		*/
 		public function componentsPath ():string;
+
+		/**
+		 * For use when ejecting classes
+		*/
+		public function componentsNamespace ():string;
 	}
 ?>

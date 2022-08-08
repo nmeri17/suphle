@@ -30,7 +30,9 @@
 
 			return array_merge(parent::globalConcretes(), [
 
-				ModuleFiles::class => new AscendingHierarchy(__DIR__, $this->container->getClass(FileSystemReader::class))
+				ModuleFiles::class => new AscendingHierarchy(__DIR__, _NAMESPACE__,
+
+					$this->container->getClass(FileSystemReader::class))
 			]);
 		}
 

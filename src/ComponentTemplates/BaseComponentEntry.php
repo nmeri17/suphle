@@ -30,9 +30,14 @@
 
 				$this->fileConfig->componentsPath(),
 
-				get_called_class()
+				$this->uniqueName()
 			]) . DIRECTORY_SEPARATOR;
 		}
+
+		/**
+		 * Can use the pattern, Vendor_Component, to guarantee uniqueness
+		*/
+		abstract public function uniqueName ():string;
 
 		public function eject ():void {
 

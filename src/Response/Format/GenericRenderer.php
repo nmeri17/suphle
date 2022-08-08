@@ -56,11 +56,6 @@
 			return json_encode($this->rawResponse);
 		}
 
-		protected function renderHtml(...$arguments):string {
-			
-			return $this->htmlParser->parseAll(...$arguments);
-		}
-
 		public function hasBranches():bool {
 			
 			return !is_null($this->getFlow());

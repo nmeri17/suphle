@@ -3,6 +3,6 @@
 
 	interface HtmlParser {
 
-		public function parseAll(...$arguments):string;
+		public function parseAll (RendersMarkup $renderer):string;
 	}
 ?>

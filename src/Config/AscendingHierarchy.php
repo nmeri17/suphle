@@ -6,17 +6,19 @@
 	use Suphle\File\FileSystemReader;
 
 	/**
-	 * Note: Returned paths have trailing slashes
+	 * Returned paths have trailing slashes
 	*/
 	class AscendingHierarchy implements ModuleFiles {
 
-		private $descriptorPath, $systemReader;
+		private $descriptorPath, $systemReader, $descriptorNamespace;
 
-		public function __construct (string $descriptorPath, FileSystemReader $systemReader) {
+		public function __construct (string $descriptorPath, string $descriptorNamespace, FileSystemReader $systemReader) {
 
 			$this->descriptorPath = $descriptorPath;
 
 			$this->systemReader = $systemReader;
+
+			$this->descriptorNamespace = $descriptorNamespace;
 		}
 
 		/**
@@ -63,6 +65,18 @@
 		public function componentsPath ():string {
 
 			return $this->activeModulePath(). "InstalledComponents" . DIRECTORY_SEPARATOR;
+		}
+
+		/**
+		 * {@inheritdoc}
+		*/
+		public function componentsNamespace ():string {
+
+			$segments = explode("\\", $this->descriptorNamespace);
+
+			array_pop($segments);
+
+			return implode("\\", $segments). "\InstalledComponents";
 		}
 	}
 ?>

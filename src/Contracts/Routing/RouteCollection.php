@@ -33,7 +33,7 @@
 
 		public function _expectsCrud ():bool;
 
-		public function _crud (string $viewPath, string $viewModelPath = null):CrudBuilder;
+		public function _crud (string $markupPath, string $templatePath = null):CrudBuilder;
 
 		public function _getLastRegistered ():array;
 
