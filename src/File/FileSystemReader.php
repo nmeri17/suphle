@@ -1,6 +1,8 @@
 <?php
 	namespace Suphle\File;
 
+	use FilesystemIterator, UnexpectedValueException;
+
 	class FileSystemReader {
 
 		/**
@@ -43,9 +45,11 @@
 			$intendedPath;
 		}
 
-		public function ensureDirectoryExists (string $fullPath):void {
+		public function ensureDirectoryExists (string $fullPath, bool $isFile = true):void {
 
-			$newFolder = dirname($fullPath);
+			if ($isFile) $newFolder = dirname($fullPath);
+
+			else $newFolder = $fullPath;
 
 			if (!file_exists($newFolder))
 
@@ -60,6 +64,70 @@
 			preg_match("/(.+?)[\/\\]*$/", $path, $matches);
 
 			return $matches[1];
+		}
+
+		public function safeGetIterator (string $path):?FilesystemIterator {
+
+			try {
+
+				return new FilesystemIterator($path);
+			}
+			catch (UnexpectedValueException $exception) { // folder does not exist
+
+				return null;
+			}
+		}
+
+		public function iterateDirectory (
+
+			string $path, callable $onDirectory, callable $onFile,
+
+			callable $onCompletion = null
+		):void {
+
+			foreach ($this->safeGetIterator($path) as $childEntry) {
+
+				$fullPath = $childEntry->getPathName();
+
+				$entryName = $childEntry->getBaseName();
+
+				if ($childEntry->isDir())
+
+					$onDirectory($fullPath, $entryName);
+
+				if ($childEntry->isFile())
+
+					$onFile($fullPath, $entryName);
+			}
+
+			if (!is_null($onCompletion))
+
+				$onCompletion($path);
+		}
+
+		public function deepCopy (string $sourceFolder, string $currentDestination):void {
+
+			$this->iterateDirectory(
+
+				$sourceFolder,
+
+				function ($sourcePath, $sourceName) use ($currentDestination) {
+
+					$newDestination = $currentDestination . DIRECTORY_SEPARATOR . $sourceName;
+
+					$this->ensureDirectoryExists($newDestination, false);
+
+					$this->deepCopy($sourcePath, $newDestination); // correct other usages
+				},
+				function ($filePath, $fileName) use ($currentDestination) {
+
+					copy(
+						$filePath,
+
+						$currentDestination . DIRECTORY_SEPARATOR . $fileName
+					);
+				}
+			);
 		}
 	}
 ?>

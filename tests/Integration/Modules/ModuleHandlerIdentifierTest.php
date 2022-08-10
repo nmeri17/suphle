@@ -1,9 +1,7 @@
 <?php
 	namespace Suphle\Tests\Integration\Modules;
 
-	use Suphle\Modules\ModuleHandlerIdentifier;
-
-	use Suphle\Contracts\{Auth\ModuleLoginHandler, Presentation\BaseRenderer, Config\Router};
+	use Suphle\Contracts\{Auth\ModuleLoginHandler, Config\Router};
 
 	use Suphle\Flows\OuterFlowWrapper;
 
@@ -15,13 +13,11 @@
 
 	class ModuleHandlerIdentifierTest extends JobFactory {
 
-		use DirectHttpTest;
-
-		private $dummyRenderer;
+		use DirectHttpTest, DoublesHandlerIdentifier;
 
 		protected function setUp ():void {
 
-			$this->dummyRenderer = $this->positiveDouble(BaseRenderer::class);
+			$this->setDummyRenderer();
 
 			parent::setUp();
 		}
@@ -44,7 +40,7 @@
 
 			$this->setHttpParams("/login", "post", []); // given
 
-			$this->getIdentifier([
+			$this->getHandlerIdentifier([
 
 				"getLoginHandler" => $this->mockLoginHandler() // then	
 			])
@@ -80,7 +76,7 @@
 			
 			$this->setHttpParams($this->userUrl); // when
 
-			$this->getIdentifier([], [
+			$this->getHandlerIdentifier([], [
 
 				"flowRequestHandler" => [$this->atLeastOnce(), [ // then
 
@@ -91,29 +87,6 @@
 				]]
 			])
 			->respondFromHandler();
-		}
-
-		private function getIdentifier (array $stubMethods, array $mockMethods = []):ModuleHandlerIdentifier {
-
-			$identifier = $this->replaceConstructorArguments(
-
-				ModuleHandlerIdentifier::class, [],
-
-				array_merge([
-
-					"getModules" => $this->modules,
-
-					"handleGenericRequest" => $this->dummyRenderer
-				], $stubMethods),
-
-				$mockMethods,
-
-				true, true, true, true
-			);
-
-			$identifier->extractFromContainer();
-
-			return $identifier;
 		}
 	}
 ?>

@@ -9,6 +9,8 @@
 
 	use Symfony\Component\Console\Input\{InputInterface, InputArgument, InputOption};
 
+	use Symfony\Component\Console\Command\Command;
+
 	class InstallComponentCommand extends BaseCliCommand {
 
 		public const OVERWRITE_OPTION = "overwrite";
@@ -50,7 +52,7 @@
 
 			->getClass(ComponentEjector::class)
 
-			->depositFiles($input->getArgument(self::OVERWRITE_OPTION));
+			->depositFiles($input->getOption(self::OVERWRITE_OPTION));
 
 			if ($result) {
 

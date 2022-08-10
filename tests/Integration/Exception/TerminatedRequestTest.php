@@ -19,19 +19,6 @@
 
 	class TerminatedRequestTest extends InvestigateSystemCrash {
 
-		private $exceptionConfig, $payloadStorage;
-
-		protected function setUp ():void {
-
-			parent::setUp();
-
-			$container = $this->getContainer();
-
-			$this->exceptionConfig = $container->getClass(ExceptionInterceptor::class);
-
-			$this->payloadStorage = $container->getClass(PayloadStorage::class);
-		}
-
 		protected function getModule ():DescriptorInterface {
 
 			return new ModuleOneDescriptor(new Container);
@@ -61,24 +48,6 @@
 					throw new Exception; // when
 				}
 			);
-		}
-
-		public function test_fatal_exception_shutsdown_gracefully () {
-
-			$this->assertWillCatchPayload(
-
-				$this->payloadStorage,
-
-				function () {
-
-					throw new Exception; // when
-				}
-			); // then
-		}
-
-		protected function broadcasterArguments ():array {
-
-			return ["payloadStorage" => $this->payloadStorage];
 		}
 	}
 ?>

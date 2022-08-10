@@ -21,11 +21,13 @@
 
 		use BaseModuleInteractor, ModuleReplicator, ModuleHttpTest;
 
-		private $shockAbsorber, $objectMeta,
+		protected const BRIDGE_NAME = ModuleExceptionBridge::class,
 
-		$bridgeName = ModuleExceptionBridge::class;
+		BROADCASTER_NAME = DetectedExceptionManager::class;
 
-		protected $softenDisgraceful = false; // prevents us from stubbing [bridgeName]; we'll use the real one i.e. so that disgracefulShutdown can run
+		private $shockAbsorber, $objectMeta;
+
+		protected $softenDisgraceful = false; // prevents us from stubbing [BRIDGE_NAME]; we'll use the real one i.e. so that disgracefulShutdown can run
 
 		protected function setUp ():void {
 
@@ -45,53 +47,60 @@
 
 		abstract protected function getModule ():DescriptorInterface;
 
-		protected function assertWontCatchPayload ($payload, callable $flammable) {
+		protected function assertWontBroadcast ( callable $flammable) {
 
-			return $this->executeHandlerDoubles(0, $payload, $flammable);
+			return $this->executeHandlerDoubles(0, $flammable);
 		}
 
-		protected function assertWillCatchPayload ($payload, callable $flammable) {
+		/**
+		 * For this to run during a request, all exception handling has to fail
+		*/
+		protected function assertWillBroadcast ( callable $flammable) {
 
-			return $this->executeHandlerDoubles(1, $payload, $flammable);
+			return $this->executeHandlerDoubles(1, $flammable);
 		}
 
 		/**
 		 * 
 		 * @return $flammable result
 		*/
-		private function executeHandlerDoubles (int $numTimes, $payload, callable $flammable) {
+		private function executeHandlerDoubles (int $numTimes, callable $flammable) {
 
-			$this->mockBroadcastAlerter($numTimes, [
+			$this->bindBroadcastAlerter($numTimes, [
 
-				$this->anything(), $this->equalTo($payload)
+				$this->anything(), $this->anything() // consider removing
 			]);
 
 			if ($this->softenDisgraceful)
 
 				$this->stubExceptionBridge();
 
-			return $this->braceForImpact($flammable);
+			return $flammable();
 		}
 
 		/**
-		 * We only want to mock this when we want to verify payload going to the broadcaster. It's not for exceptions since exceptions don't come as objects during shutdown
-		 * 
-		 * @param {argumentList}: Mock verifications for the alerter method
+		 * We only want to bind this when we want to verify payload going to the broadcaster. It's not for exceptions since exceptions don't come as objects during shutdown
 		*/
-		private function mockBroadcastAlerter (int $numTimes, array $argumentList):void {
-
-			$broadcasterName = DetectedExceptionManager::class;
+		protected function bindBroadcastAlerter (int $numTimes, array $argumentList):void {
 
 			$this->getContainer()->whenTypeAny()->needsAny([
 
-				$broadcasterName => $this->replaceConstructorArguments(
+				self::BROADCASTER_NAME => $this->mockBroadcastAlerter($numTimes, $argumentList)
+			]);
+		}
 
-					$broadcasterName, $this->broadcasterArguments(),
+		/**
+		 * @param {argumentList}: Mock verifications for the alerter method
+		*/
+		protected function mockBroadcastAlerter (int $numTimes, array $argumentList):DetectedExceptionManager {
 
-					[], [
+			return $this->replaceConstructorArguments(
 
-					DetectedExceptionManager::ALERTER_METHOD => [$numTimes, $argumentList]
-				])
+				self::BROADCASTER_NAME, $this->broadcasterArguments(),
+
+				[], [
+
+				DetectedExceptionManager::ALERTER_METHOD => [$numTimes, $argumentList]
 			]);
 		}
 
@@ -104,35 +113,14 @@
 		}
 
 		/**
-		 * @return $action result
-		*/
-		private function braceForImpact (callable $action) {
-
-			try {
-
-				return $action();
-			} catch (Throwable $exception) { // PHPUnit complains if we try to clean buffer anywhere here, thereby trying to prevent page response from blurting out
- 
-				$this->setShockAbsorber();
-
-				$this->shockAbsorber->shutdownRites();
-			}
-		}
-
-		/**
-		 * This should be called if dev wants to directly test [dis]gracefulShutdown i.e. without it being triggered by an action 
-		*/
-		protected function setShockAbsorber ():void {
-
-			$this->shockAbsorber = $this->getContainer()->getClass($this->bridgeName);
-		}
-
-		/**
-		 * What this does is prevent [disgracefulShutdown] from running when [gracefulShutdown] fails. In order for it to be useful, you'd have to violate DetectedExceptionManager::ALERTER_METHOD by not calling it, or throwing another error from [gracefulShutdown]
+		 * What this does is prevent [disgracefulShutdown] from running when [gracefulShutdown] fails. In order for it to be useful, you'd have to violate DetectedExceptionManager::ALERTER_METHOD by not calling it (mocked before we got here), or throwing another error from [gracefulShutdown]
 		*/
 		protected function stubExceptionBridge (array $stubMethods = [], array $mockMethods = []):void {
 
-			$parameters = $this->getContainer()->getMethodParameters(Container::CLASS_CONSTRUCTOR, $this->bridgeName);
+			$parameters = $this->getContainer()->getMethodParameters(
+
+				Container::CLASS_CONSTRUCTOR, self::BRIDGE_NAME
+			);
 
 			$defaultStubs = [
 
@@ -146,9 +134,9 @@
 
 			$this->massProvide([
 
-				$this->bridgeName => $this->replaceConstructorArguments(
+				self::BRIDGE_NAME => $this->replaceConstructorArguments(
 
-					$this->bridgeName, $parameters,
+					self::BRIDGE_NAME, $parameters,
 
 					array_merge($defaultStubs, $stubMethods),
 
@@ -179,7 +167,7 @@
 				]]
 			]);
 
-			$this->braceForImpact($flammable);
+			$flammable();
 		}
 
 		/**

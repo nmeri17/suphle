@@ -3,13 +3,17 @@
 
 	use Suphle\Contracts\Config\ModuleFiles;
 
+	use Suphle\File\FileSystemReader;
+
 	abstract class BaseComponentEntry {
 
-		protected $fileConfig;
+		protected $fileConfig, $fileSystemReader;
 
-		public function __construct (ModuleFiles $fileConfig) {
+		public function __construct (ModuleFiles $fileConfig, FileSystemReader $fileSystemReader) {
 
 			$this->fileConfig = $fileConfig;
+
+			$this->fileSystemReader = $fileSystemReader;
 		}
 
 		public function hasBeenEjected ():bool {
@@ -24,14 +28,7 @@
 		*/
 		public function userLandMirror ():string {
 
-			return implode(DIRECTORY_SEPARATOR, [
-
-				$this->fileConfig->activeModulePath(),
-
-				$this->fileConfig->componentsPath(),
-
-				$this->uniqueName()
-			]) . DIRECTORY_SEPARATOR;
+			return $this->fileConfig->componentsPath() . $this->uniqueName();
 		}
 
 		/**
@@ -39,14 +36,17 @@
 		*/
 		abstract public function uniqueName ():string;
 
+		/**
+		 * @return Absolute path
+		*/
+		abstract protected function templatesLocation ():string;
+
 		public function eject ():void {
 
-			copy($this->templatesLocation(), $this->userLandMirror());
-		}
+			$this->fileSystemReader->deepCopy(
 
-		protected function templatesLocation ():string {
-
-			return __DIR__ . DIRECTORY_SEPARATOR . "ComponentTemplates";
+				$this->templatesLocation(), $this->userLandMirror()
+			);
 		}
 	}
 ?>

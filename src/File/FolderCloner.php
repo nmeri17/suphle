@@ -7,7 +7,12 @@
 
 		private $fileReplacements, $folderReplacements,
 
-		$contentsReplacement;
+		$contentsReplacement, $fileSystemReader;
+
+		public function __construct (FileSystemReader $fileSystemReader) {
+
+			$this->fileSystemReader = $fileSystemReader;
+		}
 
 		public function setEntryReplacements (
 			array $fileReplacements, array $folderReplacements,
@@ -26,34 +31,34 @@
 
 		public function transferFolder (string $sourceFolder, string $newDestination):bool {
 
-			copy( $sourceFolder, $newDestination );
+			$this->fileSystemReader->deepCopy( $sourceFolder, $newDestination );
 
-			$this->walkDirectories($newDestination);
+			$this->nameContentChange($newDestination);
 
 			return true;
 		}
 
-		protected function walkDirectories (string $path):void {
+		protected function nameContentChange (string $path):void {
 
-			$iterator = new FilesystemIterator($path);
+			$this->fileSystemReader->iterateDirectory(
 
-			foreach ($iterator as $childEntry) {
+				$path, function ($directoryPath, $directoryName) {
 
-				$entryName = $childEntry->getPathName();
+					$this->nameContentChange($directoryPath);
+				},
 
-				if ($childEntry->isDir())
+				function ($filePath, $fileName) {
 
-					$this->walkDirectories($entryName);
+					$this->replaceFileContents($filePath);
 
-				if ($childEntry->isFile()) {
+					$this->renameEntry($filePath, true);
+				},
 
-					$this->replaceFileContents($entryName);
+				function ($path) {
 
-					$this->renameEntry($entryName, true);
+					$this->renameEntry($path, false);
 				}
-			}
-
-			$this->renameEntry($path, false);
+			);
 		}
 
 		protected function replaceFileContents (string $fileName):void {

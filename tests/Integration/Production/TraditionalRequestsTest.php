@@ -16,7 +16,7 @@
 		*/
 		public function test_can_visit_urls_in_traditional_env (string $url, string $output) {
 
-			$_GET["suphle_path"] = $url; // given
+			$_GET["suphle_path"] = "/$url"; // given
 
 			$indexPath = $this->fileSystemReader->getAbsolutePath(
 

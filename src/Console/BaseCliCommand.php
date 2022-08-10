@@ -76,11 +76,7 @@
 
 			foreach ($this->moduleList as $descriptor)
 
-				if (in_array(
-					$descriptor->exportsImplements(),
-
-					class_implements($moduleInterface)
-				))
+				if ($moduleInterface == $descriptor->exportsImplements())
 
 					return $descriptor;
 		}

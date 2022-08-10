@@ -23,7 +23,7 @@
 		public function modulesUrls ():array {
 
 			return [ $this->moduleThreeUrls()[0], [
-					"/segment", json_encode([
+					"segment", json_encode([
 
 						"message" => "plain Segment"
 					])
@@ -36,12 +36,12 @@
 			return [
 
 				[
-					"/module-three/4", json_encode([
+					"module-three/4", json_encode([
 
 						"id" => 4
 					])
 				], [
-					"/module-three/8", json_encode([
+					"module-three/8", json_encode([
 
 						"id" => 8
 					])

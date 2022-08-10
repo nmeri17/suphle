@@ -1,11 +1,13 @@
 <?php
 	namespace Suphle\Testing\Condiments;
 
+	use Suphle\File\FileSystemReader;
+
 	use Symfony\Component\HttpFoundation\File\UploadedFile;
 
-	use FilesystemIterator, UnexpectedValueException;
-
 	trait FilesystemCleaner {
+
+		private $fileSystemReader;
 
 		protected function assertEmptyDirectory (string $path):void {
 
@@ -68,21 +70,9 @@
 
 		private function isEmptyDirectory (string $path):bool {
 
-			$iterator = $this->safeGetIterator($path);
+			$iterator = $this->getFilesystemReader()->safeGetIterator($path);
 
 			return is_null($iterator) || !$iterator->valid();
-		}
-
-		private function safeGetIterator (string $path):?FilesystemIterator {
-
-			try {
-
-				return new FilesystemIterator($path);
-			}
-			catch (UnexpectedValueException $exception) { // folder does not exist
-
-				return null;
-			}
 		}
 
 		/**
@@ -90,18 +80,29 @@
 		*/
 		protected function emptyDirectory (string $path):void {
 
-			foreach ($this->safeGetIterator($path) as $childEntry) {
+			$this->getFilesystemReader()->iterateDirectory(
 
-				$entryName = $childEntry->getPathName();
+				$path, function ($directoryPath, $directoryName) {
 
-				if ($childEntry->isDir())
+					$this->emptyDirectory($directoryPath);
+				},
 
-					$this->emptyDirectory($entryName);
+				function ($fullPath, $fileName) {
 
-				if ($childEntry->isFile()) unlink($entryName);
-			}
+					unlink($fullPath);
+				},
 
-			rmdir($path);
+				"rmdir"
+			);
+		}
+
+		protected function getFilesystemReader ():FileSystemReader {
+
+			if (is_null($this->fileSystemReader))
+
+				$this->fileSystemReader = $this->getContainer()->getClass(FileSystemReader::class);
+
+			return $this->fileSystemReader;
 		}
 
 		/**

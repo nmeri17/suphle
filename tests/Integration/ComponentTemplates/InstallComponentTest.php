@@ -15,6 +15,8 @@
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
+	use Suphle\Tests\Mocks\Interactions\ModuleOne;
+
 	use Symfony\Component\Console\{Command\Command, Tester\CommandTester};
 
 	class InstallComponentTest extends CommandLineTest {
@@ -95,9 +97,16 @@
 
 			$this->assertInstalledComponent($componentPath, [], false);
 
+			$parameters = $this->container->getMethodParameters(
+
+				Container::CLASS_CONSTRUCTOR, self::SUT_NAME
+			);
+
 			$this->massProvide([
 
-				self::SUT_NAME => $this->positiveDouble(self::SUT_NAME, [], [
+				self::SUT_NAME => $this->replaceConstructorArguments(
+
+					self::SUT_NAME, $parameters, [], [
 
 					"eject" => [0, []] // then
 				])

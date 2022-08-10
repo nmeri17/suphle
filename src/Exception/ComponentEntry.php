@@ -9,5 +9,10 @@
 
 			return "SuphleErrorTemplates";
 		}
+
+		protected function templatesLocation ():string {
+
+			return __DIR__ . DIRECTORY_SEPARATOR . "ComponentTemplates";
+		}
 	}
 ?>

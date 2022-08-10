@@ -33,6 +33,8 @@
 
 					$component->eject();
 			}
+
+			return true;
 		}
 
 		protected function shouldOverride (BaseComponentEntry $component, ?array $componentsToOverride):bool {
