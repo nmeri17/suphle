@@ -1,6 +1,8 @@
 <?php
 	namespace Suphle\Tests\Integration\ComponentTemplates;
 
+	use Suphle\Hydration\Container;
+
 	use Suphle\ComponentTemplates\{ComponentEjector, BaseComponentEntry};
 
 	use Suphle\Exception\ComponentEntry as ExceptionComponentEntry;
@@ -10,6 +12,8 @@
 	use Suphle\Testing\TestTypes\IsolatedComponentTest;
 
 	use Suphle\Tests\Integration\Generic\CommonBinds;
+
+	use PHPUnit\Framework\MockObject\MockObject;
 
 	class InstallComponentFilterTest extends IsolatedComponentTest {
 
@@ -31,18 +35,26 @@
 				"templateConfig" => $this->getTemplateConfig() // given
 			])
 			// when
-			->depositFiles(null); // called with just the option
+			->depositFiles([]); // called with just the option
 		}
 
 		protected function addTemplateEntry (bool $hasEjected, int $willEject):string {
 
-			$entry = $this->positiveDouble(BaseComponentEntry::class, [
+			$stubMethods = [
 
 				"hasBeenEjected" => $hasEjected
-			], [
+			];
+
+			$mockMethods = [
 
 				"eject" => [$willEject, []]
-			]);
+			];
+
+			$entry = $this->doubleAbstractEntry($stubMethods, $mockMethods);
+
+			$this->stubSingle($stubMethods, $entry);
+
+			$this->mockCalls($mockMethods, $entry);
 
 			$this->container->whenTypeAny()->needsAny([
 
@@ -52,6 +64,25 @@
 			$this->templateEntries[] = $entry;
 
 			return get_class($entry);
+		}
+
+		protected function doubleAbstractEntry (array $stubMethods, array $mockMethods):MockObject {
+
+			$sutName = BaseComponentEntry::class;
+
+			$builder = $this->getMockBuilder($sutName);
+
+			$parameters = $this->container->getMethodParameters(Container::CLASS_CONSTRUCTOR, $sutName);
+
+			$builder->setConstructorArgs($parameters);
+
+			$builder->onlyMethods(array_merge(array_keys($stubMethods), array_keys($mockMethods)));
+
+			$builder->disableArgumentCloning()
+
+			->setMockClassName("ComponentEntry". count($this->templateEntries)); // without this, phpunit returns same name for all doubles extending this classes. When it gets bound to the container or lifted using autoload, the first created double gets overwritten
+
+			return $builder->getMockForAbstractClass();
 		}
 
 		protected function getTemplateConfig ():ComponentTemplates {
@@ -74,7 +105,7 @@
 				"templateConfig" => $this->getTemplateConfig() // given
 			])
 			// when
-			->depositFiles([]); // called without the option
+			->depositFiles(null); // called without the option
 		}
 
 		public function test_can_override_existing__some () {

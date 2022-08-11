@@ -39,7 +39,9 @@
 
 		protected function shouldOverride (BaseComponentEntry $component, ?array $componentsToOverride):bool {
 
-			if (is_null($componentsToOverride)) return true;
+			if (is_null($componentsToOverride)) return false;
+
+			if (empty($componentsToOverride)) return true;
 
 			return in_array(get_class($component), $componentsToOverride);
 		}

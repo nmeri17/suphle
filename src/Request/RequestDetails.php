@@ -5,6 +5,8 @@
 
 	use Suphle\Hydration\Container;
 
+	use InvalidArgumentException;
+
 	/**
 	 * Our closest adaptation of the PSR\RequestInterface
 	*/
@@ -60,7 +62,13 @@
 
 			$components = parse_url($requestPath);
 
-			$instance->setPath($components["path"]);
+			$pathComponent = @$components["path"];
+
+			if (is_null($pathComponent))
+
+				return $instance;
+
+			$instance->setPath($pathComponent);
 
 			parse_str($components["query"] ?? "", $queryParameters);
 

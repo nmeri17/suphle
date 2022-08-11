@@ -3,9 +3,7 @@
 
 	use Suphle\Hydration\Container;
 
-	use Suphle\ComponentTemplates\ComponentEjector;
-
-	use Suphle\ComponentTemplates\Commands\InstallComponentCommand;
+	use Suphle\ComponentTemplates\{ComponentEjector, Commands\InstallComponentCommand};
 
 	use Suphle\Contracts\Config\ModuleFiles;
 
@@ -23,7 +21,7 @@
 
 		protected const SUT_NAME = ExceptionComponentEntry::class;
 
-		private $fileConfig, $container;
+		private $container;
 
 		use FilesystemCleaner;
 
@@ -32,8 +30,6 @@
 			parent::setUp();
 
 			$container = $this->container = $this->getContainer();
-
-			$this->fileConfig = $container->getClass(ModuleFiles::class);
 		}
 
 		protected function getModules ():array {
@@ -45,7 +41,7 @@
 
 			$this->assertInstalledComponent(
 
-				$this->getComponentPath(), [], true
+				$this->getComponentPath(), []
 			);
 		}
 
@@ -53,10 +49,12 @@
 
 			string $componentPath, array $commandOptions,
 
-			bool $wipeWhenTrue
+			bool $doubledInstaller = false
 		):void {
 
-			$this->assertEmptyDirectory($componentPath);
+			if (file_exists($componentPath))
+
+				$this->emptyDirectory($componentPath);
 
 			$commandResult = $this->runInstallComponent(
 				
@@ -66,7 +64,9 @@
 			// then
 			$this->assertSame($commandResult, Command::SUCCESS );
 
-			$this->assertNotEmptyDirectory($componentPath, $wipeWhenTrue);
+			if (!$doubledInstaller)
+
+				$this->assertNotEmptyDirectory($componentPath);
 		}
 
 		protected function runInstallComponent (string $componentPath, array $commandOptions):int {
@@ -95,7 +95,7 @@
 
 			$componentPath = $this->getComponentPath(); // given
 
-			$this->assertInstalledComponent($componentPath, [], false);
+			$this->assertInstalledComponent($componentPath, []);
 
 			$parameters = $this->container->getMethodParameters(
 
@@ -113,8 +113,6 @@
 			]);
 
 			$this->runInstallComponent($componentPath, []); // when
-
-			$this->assertNotEmptyDirectory($componentPath, true);
 		}
 
 		/**
@@ -139,22 +137,26 @@
 
 			$this->assertInstalledComponent(
 
-				$this->getComponentPath(), $commandOptions, false
+				$this->getComponentPath(), $commandOptions, true
 			);
+
+			$this->container->refreshClass($ejectorName);
+
+			$this->runInstallComponent($this->getComponentPath(), $commandOptions); // reset the files there since the previous command didn't write anything to disk
 		}
 
 		public function overrideOptions ():array {
 
 			return [
-				[[], []],
+				[[], null],
 				[
 
-					[InstallComponentCommand::OVERWRITE_OPTION], null
+					["--" .InstallComponentCommand::OVERWRITE_OPTION], null
 				],
 				[
 
 					[
-						InstallComponentCommand::OVERWRITE_OPTION => self::SUT_NAME
+						"--" .InstallComponentCommand::OVERWRITE_OPTION => [self::SUT_NAME]
 					], [self::SUT_NAME]
 				]
 			];

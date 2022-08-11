@@ -65,6 +65,9 @@
 			);
 		}
 
+		/**
+		 * That this works correctly is untestable (after ModuleHandlerIdentifier::findExceptionRenderer fails)
+		*/
 		public function epilogue ():void {
 
 			register_shutdown_function(function () {
@@ -95,7 +98,9 @@
 
 		protected function isFalsePositive (?array $errorDetails):bool {
 
-			return is_null($errorDetails) || $errorDetails["type"] == 8;
+			return is_null($errorDetails) ||
+
+			in_array($errorDetails["type"], [E_NOTICE, E_USER_NOTICE]);
 		}
 
 		/**

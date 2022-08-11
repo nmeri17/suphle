@@ -7,17 +7,21 @@
 
 	use Suphle\Response\Format\{ Markup, Json};
 
+	use Suphle\Exception\ComponentEntry;
+
 	use Throwable;
 
 	class GenericDiffuser implements ExceptionHandler {
 
-		private $renderer, $requestDetails,
+		private $renderer, $requestDetails, $componentEntry,
 
 		$origin, $controllerAction = "genericHandler";
 
-		public function __construct (RequestDetails $requestDetails) {
+		public function __construct (RequestDetails $requestDetails, ComponentEntry $componentEntry) {
 
 			$this->requestDetails = $requestDetails;
+
+			$this->componentEntry = $componentEntry;
 		}
 
 		public function setContextualData (Throwable $origin):void {
@@ -55,7 +59,15 @@
 
 		protected function getMarkupRenderer ():BaseRenderer {
 
-			return new Markup($this->controllerAction, "errors/default");
+			$path = $this->componentEntry->userLandMirror();
+
+			return (new Markup($this->controllerAction, "default"))
+			
+			->setFilePaths(
+				$path . "Markup". DIRECTORY_SEPARATOR,
+
+				$path . "Tss". DIRECTORY_SEPARATOR
+			);
 		}
 	}
 ?>

@@ -28,7 +28,7 @@
 		*/
 		public function userLandMirror ():string {
 
-			return $this->fileConfig->componentsPath() . $this->uniqueName();
+			return $this->fileConfig->componentsPath() . $this->uniqueName() . DIRECTORY_SEPARATOR;
 		}
 
 		/**

@@ -7,6 +7,9 @@
 
 		public function getRawResponse ():iterable;
 
+		/**
+		 * @param {markupPath}: Both should have trailing slashes
+		*/
 		public function setFilePaths (string $markupPath, string $templatePath):self;
 	}
 ?>

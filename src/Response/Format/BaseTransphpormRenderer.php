@@ -28,6 +28,9 @@
 			return $this;
 		}
 
+		/**
+		 * {@inheritdoc}
+		*/
 		public function setFilePaths (string $markupPath, string $templatePath):self {
 
 			$this->markupPath = $markupPath;

@@ -40,7 +40,7 @@
 
 				"List of entries to override or empty to overwrite all",
 
-				[] // default value. Means option wasn't passed. When value null, option is present but has no value aka "all"
+				[] // default value. Means option wasn't passed. When value = [null], option is present but has no value aka "all"
 			);
 		}
 
@@ -52,7 +52,7 @@
 
 			->getClass(ComponentEjector::class)
 
-			->depositFiles($input->getOption(self::OVERWRITE_OPTION));
+			->depositFiles($this->getOverwriteOption($input));
 
 			if ($result) {
 
@@ -62,6 +62,23 @@
 			}
 
 			return Command::FAILURE;
+		}
+
+		/**
+		 * @see option definition for legend
+		*/
+		protected function getOverwriteOption (InputInterface $input):?array {
+
+			$givenValue = $input->getOption(self::OVERWRITE_OPTION);
+
+			if (is_array($givenValue) ) {
+
+				if ( empty($givenValue)) return null;
+
+				return array_filter($givenValue); // empty string or no value will populate this with nulls
+			}
+
+			return $givenValue; // will never get here since option is declared as an array
 		}
 	}
 ?>

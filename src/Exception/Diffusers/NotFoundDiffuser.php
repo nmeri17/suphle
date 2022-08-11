@@ -64,8 +64,11 @@
 
 			return (new Markup($this->controllerAction, "not-found"))
 			
-			->setFilePaths($path . "Markup", $path . "Tss")
-			
+			->setFilePaths(
+				$path . "Markup". DIRECTORY_SEPARATOR,
+
+				$path . "Tss". DIRECTORY_SEPARATOR
+			)
 			->setRawResponse([
 
 				"url" => $this->requestDetails->getPath()
