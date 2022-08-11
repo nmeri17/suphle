@@ -62,7 +62,7 @@
 
 					$this->requestSender, $parameters, [
 
-						"getRequestUrl" => $url
+						"getRequestUrl" => "localhost:8080/$url"
 					]
 				);
 
