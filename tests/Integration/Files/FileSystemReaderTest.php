@@ -55,7 +55,7 @@
 		*/
 		public function test_slash_trimming (string $givenPath, string $expectedPath) {
 
-			$this->assertSame($expectedPath, $givenPath);
+			$this->assertSame($expectedPath, $this->sut->noTrailingSlash($givenPath));
 		}
 
 		public function slashedAndUnslashed ():array {
@@ -65,7 +65,7 @@
 
 				["/foo/bar/", "/foo/bar"],
 
-				["\foo\ba\\", "\foo\bar"],
+				["\\foo\\bar\\", "\\foo\\bar"],
 			];
 		}
 	}

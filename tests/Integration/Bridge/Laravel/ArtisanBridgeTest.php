@@ -48,7 +48,7 @@
 
 			$this->assertNotEmptyDirectory($migrationPath);
 
-			$this->emptyDirectory($migrationPath);
+			$this->getFilesystemReader()->emptyDirectory($migrationPath);
 		}
 
 		private function migrationPath ():string {

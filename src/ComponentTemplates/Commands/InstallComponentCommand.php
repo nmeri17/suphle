@@ -17,6 +17,8 @@
 
 		protected static $defaultDescription = "Extract templates registered for given module";
 
+		protected $withModuleOption = false;
+
 		public static function commandSignature ():string {
 
 			return "templates:install";
@@ -24,7 +26,7 @@
 
 		protected function configure ():void {
 
-			$this->setName(self::commandSignature());
+			parent::configure();
 
 			$this->addArgument(
 

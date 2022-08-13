@@ -15,7 +15,7 @@
 
 	class CloneModuleCommand extends BaseCliCommand {
 
-		protected $container, $withModuleOption = false;
+		protected $container, $fileSystemReader;
 
 		public const SOURCE_ARGUMENT = "template_folder",
 
@@ -63,6 +63,8 @@
 			}
 			catch (Throwable $exception) {
 
+				// var_dump("Failed to create module $moduleName: \n". $exception); // leaving this in since writeln doesn't work in tests
+				
 				$output->writeln("Failed to create module $moduleName: \n". $exception);
 
 				return Command::INVALID;
@@ -71,9 +73,10 @@
 
 		protected function getOperationResult (string $moduleName, InputInterface $input):bool {
 
-			$moduleInterface = $input->getOption(self::HYDRATOR_MODULE_OPTION);
-
-			$this->container = $this->getExecutionContainer($moduleInterface);
+			$this->setEssentials(
+			
+				$input->getOption(self::HYDRATOR_MODULE_OPTION)
+			);
 
 			return $this->container->getClass(FolderCloner::class)
 
@@ -89,34 +92,42 @@
 
 				$input->getArgument(self::SOURCE_ARGUMENT),
 
-				$this->getNewDestination($moduleName, $input)
+				$this->getDestination($moduleName, $input)
 			);
 		}
 
-		protected function getNewDestination (string $target, InputInterface $input):string {
+		protected function setEssentials (?string $moduleInterface):void {
 
-			return $this->container->getClass(FileSystemReader::class)
+			$this->container = $this->getExecutionContainer($moduleInterface);
 
-			->noTrailingSlash(
+			$this->fileSystemReader = $this->container->getClass(FileSystemReader::class);
+		}
+
+		protected function getDestination (string $target, InputInterface $input):string {
+
+			$destination = $this->fileSystemReader->noTrailingSlash(
+
 				$input->getArgument(self::DESTINATION_ARGUMENT) ??
 
 				$this->executionPath
 			). DIRECTORY_SEPARATOR . $target;
+
+			return $this->fileSystemReader->pathFromLevels($destination, "", 1); // since we expect to modify even the root folder itself, not only the children
 		}
 
 		protected function getFileReplacements (string $moduleName):array {
 
-			return ["module_name" => $moduleName];
+			return ["_module_name" => $moduleName];
 		}
 
 		protected function getFolderReplacements (string $moduleName):array {
 
-			return ["module_name" => $moduleName];
+			return ["_module_name" => $moduleName];
 		}
 
 		protected function getContentReplacements (string $moduleName):array {
 
-			return ["module_name" => $moduleName];
+			return ["_module_name" => $moduleName];
 		}
 	}
 ?>

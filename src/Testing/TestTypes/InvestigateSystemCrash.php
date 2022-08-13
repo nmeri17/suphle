@@ -149,10 +149,18 @@
 		 * The bridge stubbed here is the one used by entrance, since it only looks for that object when triggered by handling a request
 		 * 
 		 * @param {exception}: Should either be expected exception or its super class
+		 * 
+		 * @param {flammable}: If exception is indeed thrown, and this callback contains an HTTP request, renderer returned will be a dummy one since we'll be unable to evaluate a real one
 		*/
 		protected function assertWillCatchException (string $exception, callable $flammable):void {
 
-			$this->stubExceptionBridge([], [
+			$this->stubExceptionBridge([
+
+				"handlingRenderer" => $this->positiveDouble(BaseRenderer::class, [
+
+					"getRawResponse" => [], "getStatusCode" => 500
+				])
+			], [
 
 				"hydrateHandler" => [1, [
 

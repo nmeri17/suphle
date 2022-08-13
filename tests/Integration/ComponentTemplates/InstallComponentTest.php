@@ -54,7 +54,7 @@
 
 			if (file_exists($componentPath))
 
-				$this->emptyDirectory($componentPath);
+				$this->getFilesystemReader()->emptyDirectory($componentPath);
 
 			$commandResult = $this->runInstallComponent(
 				

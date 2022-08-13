@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\File;
 
-	use FilesystemIterator;
+	use FilesystemIterator, Throwable, Exception;
 
 	class FolderCloner {
 
@@ -31,9 +31,13 @@
 
 		public function transferFolder (string $sourceFolder, string $newDestination):bool {
 
-			$this->fileSystemReader->deepCopy( $sourceFolder, $newDestination );
+			$temporaryModulePath = dirname($sourceFolder). DIRECTORY_SEPARATOR . "temp_dir"; // using this so we don't iterate existing files at that destination
 
-			$this->nameContentChange($newDestination);
+			$this->fileSystemReader->deepCopy( $sourceFolder, $temporaryModulePath );
+
+			$this->nameContentChange($temporaryModulePath);
+
+			$this->renameEntryOnDisk($temporaryModulePath, $newDestination); // since we copied instead of moved, we have do the actual moving from temp to permanent
 
 			return true;
 		}
@@ -51,12 +55,12 @@
 
 					$this->replaceFileContents($filePath);
 
-					$this->renameEntry($filePath, true);
+					$this->setEntryName($filePath, true);
 				},
 
 				function ($path) {
 
-					$this->renameEntry($path, false);
+					$this->setEntryName($path, false);
 				}
 			);
 		}
@@ -72,21 +76,42 @@
 			file_put_contents($fileName, $contents);
 		}
 
-		protected function renameEntry (string $entryName, bool $isFile):void {
+		/**
+		 * Builds the new name for the entry and renames it at the temporary location*/
+		protected function setEntryName (string $entryPath, bool $isFile):void {
 
-			if ($isFile)
-
-				$keywords = $this->fileReplacements;
+			if ($isFile) $keywords = $this->fileReplacements;
 
 			else $keywords = $this->folderReplacements;
 
-			$newName = $entryName;
+			$newName = basename($entryPath); // change only this entry since the preceding/parent paths haven't been renamed on disk yet/don't exist
 
 			foreach ($keywords as $keyword => $replacement)
 
 				$newName = str_replace($keyword, $replacement, $newName);
+			
+			$this->renameEntryOnDisk(
 
-			rename($entryName, $newName);
+				$entryPath,
+
+				dirname($entryPath) . DIRECTORY_SEPARATOR .$newName
+			);
+		}
+
+		protected function renameEntryOnDisk (string $sourceFolder, string $newDestination):void {
+
+			try {
+
+				if (!rename($sourceFolder, $newDestination)) // this doesn't work at the final destination due to permission issues (we didn't create that folder)
+					throw new Exception;
+					
+			}
+			catch (Throwable $exception) {
+
+				$this->fileSystemReader->deepCopy($sourceFolder, $newDestination);
+				
+				$this->fileSystemReader->emptyDirectory($sourceFolder);
+			}
 		}
 	}
 ?>

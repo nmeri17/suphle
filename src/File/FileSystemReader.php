@@ -61,7 +61,7 @@
 		*/
 		public function noTrailingSlash (string $path):string {
 
-			preg_match("/(.+?)[\/\\]*$/", $path, $matches);
+			preg_match("/(.+?)[\\/\\\\]*$/", $path, $matches); // actually => \/\\ i.e. any back or forward slash
 
 			return $matches[1];
 		}
@@ -127,6 +127,24 @@
 						$currentDestination . DIRECTORY_SEPARATOR . $fileName
 					);
 				}
+			);
+		}
+
+		public function emptyDirectory (string $path):void {
+
+			$this->iterateDirectory(
+
+				$path, function ($directoryPath, $directoryName) {
+
+					$this->emptyDirectory($directoryPath);
+				},
+
+				function ($fullPath, $fileName) {
+
+					unlink($fullPath);
+				},
+
+				"rmdir"
 			);
 		}
 	}

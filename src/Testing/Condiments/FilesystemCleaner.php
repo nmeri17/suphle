@@ -20,7 +20,7 @@
 
 			if ($wipeWhenTrue)
 
-				$this->emptyDirectory($path);
+				$this->getFilesystemReader()->emptyDirectory($path);
 		}
 
 		/**
@@ -73,27 +73,6 @@
 			$iterator = $this->getFilesystemReader()->safeGetIterator($path);
 
 			return is_null($iterator) || !$iterator->valid();
-		}
-
-		/**
-		 * @see docblock on [inDirectory]
-		*/
-		protected function emptyDirectory (string $path):void {
-
-			$this->getFilesystemReader()->iterateDirectory(
-
-				$path, function ($directoryPath, $directoryName) {
-
-					$this->emptyDirectory($directoryPath);
-				},
-
-				function ($fullPath, $fileName) {
-
-					unlink($fullPath);
-				},
-
-				"rmdir"
-			);
 		}
 
 		protected function getFilesystemReader ():FileSystemReader {
