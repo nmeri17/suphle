@@ -9,13 +9,13 @@
 
 	use Suphle\Services\CoodinatorManager;
 
-	use Suphle\Contracts\{Requests\BaseResponseManager, Presentation\BaseRenderer};
+	use Suphle\Contracts\{Requests\BaseResponseManager, Presentation\BaseRenderer, Services\Decorators\BindsAsSingleton};
 
 	use Suphle\Request\{ValidatorManager, PayloadStorage, RequestDetails};
 
 	use Suphle\Exception\Explosives\ValidationFailure;
 
-	class RoutedRendererManager implements BaseResponseManager {
+	class RoutedRendererManager implements BaseResponseManager, BindsAsSingleton {
 
 		private $container, $router, $renderer, $requestDetails,
 

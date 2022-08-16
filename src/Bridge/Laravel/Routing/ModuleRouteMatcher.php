@@ -30,11 +30,7 @@
 
 		public function canHandleRequest ():bool {
 
-			$routeProviders = $this->config->registersRoutes();
-
-			if (empty($routeProviders)) return false;
-
-			$this->activateProviders($routeProviders);
+			if (!$this->config->registersRoutes()) return false;
 
 			$this->router = $this->laravelContainer->make(Router::class);
 
@@ -46,22 +42,6 @@
 			} catch (NotFoundHttpException $e) {
 			
 				return false;	
-			}
-		}
-
-		private function activateProviders (array $providers):void {
-
-			$booter = $this->providerBooter;
-
-			foreach ($providers as $providerName) {
-
-				$booter->setActiveProvider($providerName);
-				
-				$concrete = $booter->getActiveProvider();
-
-				$concrete->register(); // idk how necessary this is since routes are registered in the boot method
-			
-				$concrete->boot();
 			}
 		}
 		

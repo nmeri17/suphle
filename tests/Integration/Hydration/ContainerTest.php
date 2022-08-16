@@ -87,10 +87,11 @@
 
 			$aConcrete = $container->getClass($this->aRequires);
 
+			// lesser on the LHS
 			$this->assertGreaterThan(
-				$aConcrete->getInternalB($container)->getCount(),
+				$aConcrete->getConstructorB()->getCount(),
 
-				$aConcrete->getConstructorB()->getCount()
+				$aConcrete->getInternalB($container)->getCount()
 			);
 		}
 

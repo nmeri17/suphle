@@ -34,8 +34,13 @@
 
 			$this->assertSimpleCloneModule(function ($modulePath) {
 
-				$descriptorFullName = "$modulePath\Meta\\" .$this->newModuleName. "Descriptor";
-var_dump(46, $descriptorFullName);
+				$descriptorFullName = implode("\\", [
+
+					"\Suphle\Tests\Mocks\Modules", $this->newModuleName,
+
+					"Meta", $this->newModuleName . "Descriptor"
+				]);
+
 				$instance = new $descriptorFullName(new Container);
 
 				// try to boot it

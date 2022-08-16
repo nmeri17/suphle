@@ -3,10 +3,12 @@
 
 	use Suphle\Request\SanitizesIntegerInput;
 
+	use Suphle\Contracts\Services\Decorators\BindsAsSingleton;
+
 	/**
 	 * Used by route finder during matching to compose and interpolate patterns read from collections and what is incoming in request
 	*/
-	class PathPlaceholders {
+	class PathPlaceholders implements BindsAsSingleton {
 
 		use SanitizesIntegerInput;
 

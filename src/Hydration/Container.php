@@ -130,6 +130,8 @@
 
 		public function decorateProvidedConcrete (string $fullName) {
 
+			if ($this->hydratingArguments) return;
+
 			$freshlyCreated = $this->initializeHydratingForAction($fullName, function ($className) {
 
 				return new HydratedConcrete(
@@ -225,19 +227,21 @@
 		}
 
 		/**
-		 * This tells us the class we are hydrating arguments for
+		 * This tells us the class we are hydrating arguments for. This method along with ordering population of hydratingForStack (initializeHydratingFor) is the cradle of contextual binding
+		* 
+		* If we're hydrating class A -> B, we want to get provisions for A, otherwise, we'll be looking through B's provisions instead of A. For the same reason, if A directly wants B using getClass, use A's provisions
+		* 
+		* So we always set who we intend to be read from the list to -1 i.e. default index as penultimate.
 		*/
-		public function lastHydratedFor ():?string {
+		public function lastHydratedFor (?int $index = null):?string {
 
 			$stack = $this->hydratingForStack;
 
 			if(empty($stack) ) return null;
 
-			$index = $this->hydratingArguments ? 2: 1; // If we're hydrating class A -> B -> C, we want to get provisions for B (who, at this point, is indexed -2 while C is -1). otherwise, we'll be looking through C's provisions instead of B
-
 			$length = count($stack);
 
-			return $stack[$length - $index];
+			return $stack[$length - ($index ?? 1)];
 		}
 
 		/**
@@ -374,25 +378,32 @@
 		}
 
 		/**
-		 * Decides who to hydrate arguments for
+		 * We use hydratingForStack primarily to pull penultimate item and attempt to use its context for hydrating dependencies, depending on the context the caller wants class in.
 		 * 
-		 * @return its decision, so it can be used for popping after performing desired actions
+		 * @return Array of items pushed
 		*/
 		protected function initializeHydratingFor (string $fullName):array {
+
+			$toPop = [];
 
 			$dependent = $this->lastHydratedFor();
 
 			$isFirstCall = is_null($dependent);
 
-			if ( $isFirstCall) $hydrateFor = $this->lastCaller();
+			$this->pushHydratingFor($fullName);
 
-			else $hydrateFor = $dependent;
+			$toPop[] = $fullName;
 
-			$this->pushHydratingFor($hydrateFor);
+			if ( $isFirstCall && !$this->hydratingArguments) { // should strictly work for getClass/service location. We don't want to push calls to getMethodParameter
 
-			$this->pushHydratingFor($fullName); // pushing both caller and class being hydrated so lastHydratedFor can read from either if need be
+				$hydrateFor = $this->lastCaller();
 
-			return [$hydrateFor, $fullName];
+				$this->pushHydratingFor($hydrateFor); // come last for -1
+
+				$toPop[] = $hydrateFor;
+			}
+
+			return $toPop;
 		}
 
 		private function lastCaller ():string {
@@ -441,7 +452,10 @@
 		*/
 		protected function provideInterface (string $interface) {
 
-			$caller = $this->lastHydratedFor();
+			$caller = $this->lastHydratedFor(
+
+				$this->hydratingArguments ? 2: null // setting as 2 since initializeHydratingFor() pushed $interface as penultimate and what we really want is the caller
+			);
 
 			if ($caller && $this->hasRenamedSpace($caller)) {
 
@@ -588,9 +602,12 @@
 
 				$reflectedCallable = new ReflectionMethod($anchorClass, $callable);
 
-				if (!$this->hydratingInternally($anchorClass))
+				if (!$this->hydratingInternally($anchorClass)) {
+
+					$this->hydratingArguments = true; // required for below call. Will be unset accordingly after hydrating arguments
 
 					$pushedItems = $this->initializeHydratingFor($anchorClass);
+				}
 
 				$context = $this->getRecursionContext();
 			}
@@ -654,9 +671,15 @@
 		*/
 		private function hydrateProvidedParameter (ProvisionUnit $callerProvision, ?ReflectionType $parameterType, string $parameterName, bool $callerIsClosure) {
 
+			$universalProvision = $this->provisionedClasses[self::UNIVERSAL_SELECTOR];
+
 			if ($callerProvision->hasArgument($parameterName))
 
 				$providedValue = $callerProvision->getArgument($parameterName);
+
+			elseif ($universalProvision->hasArgument($parameterName))
+
+				$providedValue = $universalProvision->getArgument($parameterName);
 
 			else if (is_null($parameterType)) return null;
 
@@ -669,6 +692,13 @@
 					$this->setConsumer($typeName);
 
 					$providedValue = $callerProvision->getArgument($typeName);
+				}
+
+				else if ($universalProvision->hasArgument($typeName)) {
+
+					$this->setConsumer($typeName);
+
+					$providedValue = $universalProvision->getArgument($typeName);
 				}
 			}
 
@@ -756,6 +786,18 @@
 			); // A requests B and vice versa. If A makes the first call, we're returning a proxied/fake A to the B instance we pass to the real A
 		}
 
+		/**
+		 * Since we can't var_dump while rr server is running
+		*/
+		private function inProcessFileLogger (array $fields):void {
+
+			file_put_contents(
+				"container-log.txt",
+
+				implode("\n", $fields) . "\n\n", FILE_APPEND
+			);
+		}
+
 		public function whenType (string $toProvision):self {
 
 			if (!array_key_exists($toProvision, $this->provisionedClasses))
@@ -772,6 +814,9 @@
 			return $this->whenType(self::UNIVERSAL_SELECTOR);
 		}
 
+		/**
+		 * For service location
+		*/
 		public function needs (array $dependencyList):self {
 
 			if (is_null ($this->provisionContext))
@@ -888,12 +933,11 @@
 
 			foreach ($this->provisionedClasses as $provisionContext) {
 
-				if (!$provisionContext->hasAnywhere($className) ||
+				$cantRefreshForContext = !$provisionContext->hasAnywhere($className) ||
 
-					!$this->canClearClass($className)
-				)
+				!$this->canClearClass($className);
 
-					continue;
+				if ($cantRefreshForContext) continue;
 
 				if (!is_null($this->telescope))
 

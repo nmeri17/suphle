@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Tests\Mocks\Modules\_module_name\Meta;
 
-	use Suphle\Hydration\BaseInterfaceCollection;
+	use Suphle\Hydration\Structures\BaseInterfaceCollection;
 
 	use Suphle\Contracts\Config\{ModuleFiles, Router};
 
@@ -21,7 +21,7 @@
 			]);
 		}
 
-		protected function simpleBinds ():string {
+		public function simpleBinds ():array {
 
 			return array_merge(parent::simpleBinds(), [
 

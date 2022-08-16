@@ -15,7 +15,7 @@
 
 	class RoadRunnerTest extends BaseTestProduction {
 
-		private $requestSender = VisitSegment::class;
+		protected const REQUEST_SENDER = VisitSegment::class;
 		
 		/**
 		 * @dataProvider modulesUrls
@@ -56,11 +56,11 @@
 
 				$parameters = $this->getContainer()
 
-				->getMethodParameters(Container::CLASS_CONSTRUCTOR, $this->requestSender);
+				->getMethodParameters(Container::CLASS_CONSTRUCTOR, self::REQUEST_SENDER);
 
 				$httpService = $this->replaceConstructorArguments(
 
-					$this->requestSender, $parameters, [
+					self::REQUEST_SENDER, $parameters, [
 
 						"getRequestUrl" => "localhost:8080/$url"
 					]
@@ -139,6 +139,84 @@
 		public function test_controller_action_can_read_different_ids (string $url, string $expectedOutput) {
 
 			$this->sendRequestToProcess($url, $expectedOutput);
+		}
+
+		public function test_single_process_can_handle_multiple_requests () {
+
+			$configPath = $this->fileSystemReader->getAbsolutePath(
+
+				$this->binDir, "../../test-rr.yaml"
+			);
+
+			$serverProcess = new Process([
+
+				$this->binDir ."rr", "serve", "-c", $configPath
+			]);
+
+			$serverProcess->setTimeout(20_000);
+
+			try {
+
+				$serverProcess->start();
+
+				if (!$this->serverIsReady($serverProcess))
+
+					$this->fail(
+
+						"Unable to start server:". "\n".
+
+						$this->processFullOutput($serverProcess)
+					);
+
+				$parameters = $this->getContainer()
+
+				->getMethodParameters(Container::CLASS_CONSTRUCTOR, self::REQUEST_SENDER);
+
+				foreach ($this->modulesUrls() as $dataSet) {
+
+					$url = $dataSet[0];
+
+					$expectedOutput = $dataSet[1];
+
+					var_dump(205, $url/*, $responseBody, $expectedOutput*/);
+
+					$httpService = $this->replaceConstructorArguments(
+
+						self::REQUEST_SENDER, $parameters, [
+
+							"getRequestUrl" => "localhost:8080/$url"
+						]
+					);
+
+					$response = $httpService->getDomainObject();
+
+					if ($httpService->hasErrors()) {
+
+						$exception = $httpService->getException();
+
+						var_dump($this->processFullOutput($serverProcess));
+
+						var_dump($this->getResponseBody(
+
+							$exception->getResponse()
+						));
+
+						$this->fail($exception);
+					}
+
+					$responseBody = $this->getResponseBody($response);
+
+					if ($expectedOutput != $responseBody)
+
+						var_dump($this->processFullOutput($serverProcess));
+
+					$this->assertSame($expectedOutput, $responseBody);
+				}
+			}
+			finally {
+
+				$serverProcess->stop();
+			}
 		}
 	}
 ?>

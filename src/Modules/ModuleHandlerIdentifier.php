@@ -139,11 +139,9 @@
 
 				$this->routedModule = $moduleRouter->getActiveModule();
 
-				$rendererManager = $this->routedModule->getContainer()->getClass(RoutedRendererManager::class);
-
 				$initializer->whenActive()
 
-				->fullRequestProtocols($rendererManager)
+				->fullRequestProtocols($this->getRendererManager())
 
 				->setHandlingRenderer();
 
@@ -151,6 +149,13 @@
 			}
 
 			throw new NotFoundException;
+		}
+
+		protected function getRendererManager ():RoutedRendererManager {
+
+			return $this->routedModule->getContainer()
+
+			->getClass(RoutedRendererManager::class);
 		}
 
 		public function flowRequestHandler (OuterFlowWrapper $wrapper):BaseRenderer {

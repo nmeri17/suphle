@@ -15,7 +15,12 @@
 
 		private $fileConfig, $laravelConfig, $configLoader;
 
-		public function __construct (ModuleFiles $fileConfig, LaravelConfig $laravelConfig, ConfigLoader $configLoader) {
+		public function __construct (
+
+			ModuleFiles $fileConfig, LaravelConfig $laravelConfig,
+
+			ConfigLoader $configLoader
+		) {
 
 			$this->fileConfig = $fileConfig;
 
@@ -68,12 +73,14 @@
 
 			foreach ($finder->getConfigNames($laravelContainer) as $fileName)
 
-				$this->configLoader->get($fileName);
+				$this->configLoader->get($fileName); // using this to trigger whatever class overrides are available
 		}
 
 		protected function getBasePath ():string {
 
-			return $this->fileConfig->activeModulePath() . $this->laravelConfig->frameworkDirectory();
+			return $this->fileConfig->activeModulePath() .
+
+			$this->laravelConfig->frameworkDirectory();
 		}
 	}
 ?>

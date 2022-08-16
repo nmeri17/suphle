@@ -13,10 +13,7 @@
 		*/
 		public function getProviders ():array;
 
-		/**
-		 * @return names of providers that register routes
-		*/
-		public function registersRoutes ():array;
+		public function registersRoutes ():bool;
 
 		public function usesPackages ():bool;
 

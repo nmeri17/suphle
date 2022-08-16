@@ -47,7 +47,9 @@
 
 		protected function runSimpleCloneCommand (string $modulePath):int {
 
-			$this->assertEmptyDirectory($modulePath);
+			if (file_exists($modulePath))
+
+				$this->getFilesystemReader()->emptyDirectory($modulePath);
 
 			$command = $this->consoleRunner->findHandler(
 
@@ -68,9 +70,7 @@
 		*/
 		protected function getModulePath ():string {
 
-			return $this->container->getClass(FileSystemReader::class)
-
-			->getAbsolutePath(
+			return $this->getFilesystemReader()->getAbsolutePath(
 
 				$this->fileConfig->activeModulePath(),
 

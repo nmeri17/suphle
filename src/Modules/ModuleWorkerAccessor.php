@@ -31,17 +31,21 @@
 			$this->isHttpMode = $isHttpMode;
 		}
 
-		public function runInSandbox (callable $callback):void {
+		public function runInSandbox (callable $serverAction, callable $onServerError = null):void {
 
 			try {
 
 				$this->operationSuccess = false;
 
-				$callback($this);
+				$serverAction($this);
 
 				$this->operationSuccess = true;
 			}
 			catch (Throwable $exception) {
+
+				if (!is_null($onServerError))
+
+					$onServerError($exception);
 
 				$worker = $this->getHttpWorker();
 
@@ -167,14 +171,17 @@
 
 			if ($this->lastOperationSuccessful())
 
-				$this->openEventLoop();
+				$this->runInSandbox(function ($accessor) {
 
-			$this->runInSandbox(function ($accessor) {
-var_dump(168, "failing worker alert");
-				$workerMode = $this->isHttpMode ? "http": "task";
+					$this->openEventLoop();
+				}, function ($exception) {
+					
+					var_dump("Failing worker alert", $exception); // if we get here, it means loop terminated/request failed and rr is restarting another one for us
+					
+					$workerMode = $this->isHttpMode ? "http": "task";
 
-				throw new Exception("Unable to set $workerMode worker");
-			});
+					throw new Exception("Unable to set $workerMode worker");
+				});
 		}
 	}
 ?>

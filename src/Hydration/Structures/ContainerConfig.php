@@ -12,7 +12,10 @@
 		*/
 		public function getExternalHydrators ():array {
 
-			return [LaravelProviderManager::class];
+			return [
+
+				// LaravelProviderManager::class // commenting this out since it requires the bridge in freshly created modules
+			];
 		}
 	}
 ?>

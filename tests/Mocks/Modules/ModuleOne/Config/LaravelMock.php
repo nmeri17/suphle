@@ -40,12 +40,9 @@
 		/**
 		 * {@inheritdoc}
 		*/
-		public function registersRoutes ():array {
+		public function registersRoutes ():bool {
 
-			return [
-
-				RegistersRouteProvider::class
-			];
+			return true;
 		} 
 
 		/**

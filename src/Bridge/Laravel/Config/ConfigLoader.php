@@ -3,14 +3,17 @@
 
 	use Suphle\Hydration\Container;
 
-	use Suphle\Contracts\Config\Laravel;
+	use Suphle\Contracts\{Config\Laravel, Services\Decorators\BindsAsSingleton};
 
 	use Illuminate\Config\Repository;
 
-	class ConfigLoader extends Repository {
+	class ConfigLoader extends Repository implements BindsAsSingleton {
 
 		private $laravelConfig, $container, $pathSegments = [];
 
+		/**
+		 * Even though we don't receive $this->items in the constructor like the parent, LaravelAppLoader manually triggers the process by injecting/setting each config
+		*/
 	    public function __construct(Laravel $laravelConfig, Container $container) {
 
 	        $this->laravelConfig = $laravelConfig;

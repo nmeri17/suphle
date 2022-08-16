@@ -24,9 +24,9 @@
 		/**
 		 * {@inheritdoc}
 		*/
-		public function registersRoutes ():array {
+		public function registersRoutes ():bool {
 
-			return [];
+			return false;
 		} 
 
 		/**
