@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\File;
 
-	use FilesystemIterator, UnexpectedValueException;
+	use FilesystemIterator, Throwable;
 
 	class FileSystemReader {
 
@@ -66,18 +66,6 @@
 			return $matches[1];
 		}
 
-		public function safeGetIterator (string $path):?FilesystemIterator {
-
-			try {
-
-				return new FilesystemIterator($path);
-			}
-			catch (UnexpectedValueException $exception) { // folder does not exist
-
-				return null;
-			}
-		}
-
 		public function iterateDirectory (
 
 			string $path, callable $onDirectory, callable $onFile,
@@ -85,7 +73,7 @@
 			callable $onCompletion = null
 		):void {
 
-			foreach ($this->safeGetIterator($path) as $childEntry) {
+			foreach (new FilesystemIterator($path) as $childEntry) {
 
 				$fullPath = $childEntry->getPathName();
 
@@ -144,8 +132,33 @@
 					unlink($fullPath);
 				},
 
-				"rmdir"
+				function ($fullPath) {
+
+					$this->safeDeleteDirectory($fullPath);
+				}
 			);
+		}
+
+		protected function safeDeleteDirectory (string $directoryPath):void {
+
+			try {
+
+				if (file_exists($directoryPath)) // it's possible for it to have been renamed or deleted by a preceding operation
+
+					rmdir($directoryPath);
+
+				else trigger_error("Attempt to delete non-existent folder: $directoryPath", E_USER_WARNING);
+			}
+			catch (Throwable $exception) {
+
+				if (stripos($exception->getMessage(), "directory not empty") === false)
+
+					throw $exception;
+
+				var_dump(151, "retrying folder delete $directoryPath");
+
+				$this->emptyDirectory($directoryPath); // maybe names have been changed. Keep emptying until path doesn't exist
+			}
 		}
 	}
 ?>

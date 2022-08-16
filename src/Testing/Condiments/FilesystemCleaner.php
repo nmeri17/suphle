@@ -5,6 +5,8 @@
 
 	use Symfony\Component\HttpFoundation\File\UploadedFile;
 
+	use FilesystemIterator, UnexpectedValueException;
+
 	trait FilesystemCleaner {
 
 		private $fileSystemReader;
@@ -70,9 +72,21 @@
 
 		private function isEmptyDirectory (string $path):bool {
 
-			$iterator = $this->getFilesystemReader()->safeGetIterator($path);
+			$iterator = $this->safeGetIterator($path);
 
 			return is_null($iterator) || !$iterator->valid();
+		}
+
+		protected function safeGetIterator (string $path):?FilesystemIterator {
+
+			try {
+
+				return new FilesystemIterator($path);
+			}
+			catch (UnexpectedValueException $exception) { // folder does not exist
+
+				return null;
+			}
 		}
 
 		protected function getFilesystemReader ():FileSystemReader {

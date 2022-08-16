@@ -63,7 +63,7 @@
 			}
 			catch (Throwable $exception) {
 
-				// var_dump("Failed to create module $moduleName: \n". $exception); // leaving this in since writeln doesn't work in tests
+				var_dump("Failed to create module $moduleName: \n". $exception); // leaving this in since writeln doesn't work in tests
 				
 				$output->writeln("Failed to create module $moduleName: \n". $exception);
 

@@ -32,7 +32,9 @@
 
 			$commandResult = $this->runSimpleCloneCommand( // given
 
-				$modulePath = $this->getModulePath()
+				$modulePath = $this->getModulePath(),
+
+				$interfacePath = $this->moduleInterfacePath()
 			);
 
 			// then
@@ -42,14 +44,20 @@
 
 				$onCloneSuccess($modulePath);
 
-			$this->assertNotEmptyDirectory($modulePath, true);
+			$this->assertNotEmptyDirectory($modulePath, true); // this inexplicably fails on random occassions
+
+			$this->assertSavedFileNames([$interfacePath]);
 		}
 
-		protected function runSimpleCloneCommand (string $modulePath):int {
+		protected function runSimpleCloneCommand (string $modulePath, string $interfacePath):int {
 
 			if (file_exists($modulePath))
 
 				$this->getFilesystemReader()->emptyDirectory($modulePath);
+			
+			if (file_exists($interfacePath))
+
+				unlink($interfacePath);
 
 			$command = $this->consoleRunner->findHandler(
 
@@ -66,7 +74,7 @@
 		}
 		
 		/**
-		 * Gets the path containing all modules
+		 * Gets the path to potential new module
 		*/
 		protected function getModulePath ():string {
 
@@ -76,6 +84,18 @@
 
 				"../" .$this->newModuleName
 			);
+		}
+		
+		protected function moduleInterfacePath ():string {
+
+			return implode("", [
+
+				$this->fileConfig->getRootPath(),
+
+				"Interactions", DIRECTORY_SEPARATOR,
+
+				$this->newModuleName, ".php"
+			]);
 		}
 	}
 ?>

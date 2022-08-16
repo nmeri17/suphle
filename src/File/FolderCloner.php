@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\File;
 
-	use FilesystemIterator, Throwable, Exception;
+	use FilesystemIterator, Throwable;
 
 	class FolderCloner {
 
@@ -102,11 +102,17 @@
 
 			try {
 
-				if (!rename($sourceFolder, $newDestination)) // this doesn't work at the final destination due to permission issues (we didn't create that folder)
-					throw new Exception;
-					
+				if (file_exists($sourceFolder))
+
+					rename($sourceFolder, $newDestination);
+
+				else trigger_error("Attempt to rename non-existent folder", E_USER_WARNING);
 			}
 			catch (Throwable $exception) {
+
+				if (stripos($exception->getMessage(), "access is denied") === false) // Will fail at the final destination due to permission issues (we didn't create that folder)
+
+					throw $exception;
 
 				$this->fileSystemReader->deepCopy($sourceFolder, $newDestination);
 				

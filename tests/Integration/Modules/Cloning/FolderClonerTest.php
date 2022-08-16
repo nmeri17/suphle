@@ -41,6 +41,15 @@
 					"Meta", $this->newModuleName . "Descriptor"
 				]);
 
+				$descriptorPath = implode(DIRECTORY_SEPARATOR, [
+
+					$modulePath, "Meta",
+
+					$this->newModuleName . "Descriptor.php"
+				]);
+
+				$this->assertFileExists($descriptorPath);
+
 				$instance = new $descriptorFullName(new Container);
 
 				// try to boot it
