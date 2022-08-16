@@ -3,11 +3,13 @@
 
 	use Suphle\Hydration\{Container, ExternalPackageManagerHydrator, Structures\BaseInterfaceCollection};
 
-	use Suphle\Contracts\Config\{Router, ModuleFiles};
+	use Suphle\Contracts\Config\{Router, ModuleFiles, ContainerConfig};
 
 	use Suphle\Config\AscendingHierarchy;
 
 	use Suphle\File\FileSystemReader;
+
+	use Suphle\Bridge\Laravel\Package\LaravelProviderManager;
 
 	use Suphle\Testing\TestTypes\TestVirginContainer;
 
@@ -15,7 +17,7 @@
 
 	class ManagerHydratorTest extends TestVirginContainer {
 
-		public function test_can_set_bridge_package_manager () {
+		protected function getContainer ():Container {
 
 			$container = $this->positiveDouble(Container::class, [
 
@@ -24,7 +26,12 @@
 
 			$this->bootContainer($container);
 
-			$newBindings = new class extends BaseInterfaceCollection {
+			return $container;
+		}
+
+		protected function getConfigBindings ():BaseInterfaceCollection {
+
+			return new class extends BaseInterfaceCollection {
 
 				public function getConfigs ():array {
 
@@ -34,8 +41,9 @@
 					]);
 				}
 			};
+		}
 
-			$container->setInterfaceHydrator(get_class($newBindings));
+		protected function injectBindings (Container $container):void {
 
 			$systemReader = $container->getClass(FileSystemReader::class);
 
@@ -43,8 +51,29 @@
 
 			$container->whenTypeAny()->needsAny([
 
+				ContainerConfig::class => $this->positiveDouble(ContainerConfig::class, [
+
+					"getExternalHydrators" => [
+
+						LaravelProviderManager::class
+					]
+				]),
+
 				ModuleFiles::class => new AscendingHierarchy($anchorPath, "\Suphle\Tests\Mocks\Modules\ModuleOne\\", $systemReader)
 			]);
+		}
+
+		public function test_can_set_bridge_package_manager () {
+
+			$container = $this->getContainer();
+
+			// given
+			$this->injectBindings($container);
+
+			$container->setInterfaceHydrator(
+
+				get_class($this->getConfigBindings())
+			);
 
 			$sut = new ExternalPackageManagerHydrator($container);
 

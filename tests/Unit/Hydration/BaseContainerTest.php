@@ -127,25 +127,6 @@
 			], $otherOverrides));
 		}
 
-		public function test_isolated_hydration_reports_given_class_as_caller () {
-
-			// given
-			$sut = $this->withArgumentsForARequires();
-
-			$freshlyCreated = $sut->initializeHydratingForAction(
-				$this->aRequires,
-
-				function ($name) use ($sut) {
-
-					return $sut->hydrateConcreteForCaller($name);
-			}); // when
-
-			// then
-			$this->assertInstanceOf($this->aRequires, $freshlyCreated->getConcrete());
-
-			$this->assertSame($freshlyCreated->getCreatedFor(), $this->aRequires);
-		}
-
 		public function test_can_hydrate_method_parameters_without_interface () {
 
 			$sut = $this->positiveDouble(Container::class, [

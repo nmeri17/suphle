@@ -66,7 +66,12 @@
 
 			$this->interfaceHydrator = new InterfaceHydrator($concrete, $this);
 
-			$this->config = $this->provideInterface(IContainerConfig::class); // setting config within the same method since it's impossible for config to be gotten if interface collection is absent
+			/**
+			 * Setting config within the same method since it's impossible for config to be gotten if interface collection is absent
+			 * 
+			 * Using getClass instead of provideInterface to enable replacement of the config in tests
+			*/
+			$this->config = $this->getClass(IContainerConfig::class);
 		}
 
 		public function getInterfaceHydrator ():InterfaceHydrator {
