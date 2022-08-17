@@ -13,29 +13,26 @@ sqlite
 <server name="DB_CONNECTION" value="sqlite"/>
 <server name="DB_DATABASE" value=":memory:"/>
 
-Wrap:
-	- debug_backtrace
-
 
 4) pending tests:
 	- replace with stubs and test disgraceful and co
-	- test_constructor_can_read_different_ids
 	- only and except from routeCollection?
 
 
 why aren't we using midlewareManipulator
 
 
-/*$builder->disableProxyingToOriginalMethods()
-
-->disableAutoReturnValueGeneration()*/;
-
-the exceptions should have an interface method to determine whether or not they'll be broadcasted. also make room for native exceptions not implementing this interface. Replace handledExternally with this
-
-
 predis tag
 
 rr can work with bolt
 
-After correcting view file paths, correct the adapter usage. then return to the test
-the markup details should live on adapter. maybe give renderer to him
+change usage of >|$sutName to self::SUT_NAME
+
+
+
+for LaravelProviderManager to work:
+	- we need to change the bridge to be read from installed components so we can eject config/app, database
+	- a command test that after ejecting, lpm can be added to containerConfig array. use module2 for this to avoid overwriting contents of current
+
+
+project init => create module, eject error templates, optional user migrations, start server

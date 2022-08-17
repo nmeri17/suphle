@@ -106,7 +106,7 @@
 
 					rename($sourceFolder, $newDestination);
 
-				else trigger_error("Attempt to rename non-existent folder", E_USER_WARNING);
+				else trigger_error("Attempt to rename non-existent folder");
 			}
 			catch (Throwable $exception) {
 
