@@ -3,14 +3,16 @@
 
 	use Suphle\Request\RequestDetails;
 
-	use Suphle\Contracts\Requests\StdInputReader;
+	use Suphle\Contracts\{Requests\StdInputReader, Services\Decorators\BindsAsSingleton};
+
+	use Suphle\Hydration\Structures\BaseSingletonBind;
 
 	/**
 	 * Our closest adaptation of PSR\MessageInterface
 	*/
-	class PayloadStorage {
+	class PayloadStorage implements BindsAsSingleton {
 
-		use SanitizesIntegerInput;
+		use SanitizesIntegerInput, BaseSingletonBind;
 
 		const JSON_HEADER_VALUE = "application/json",
 

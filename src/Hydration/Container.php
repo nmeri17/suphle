@@ -142,21 +142,20 @@
 				return new HydratedConcrete(
 					$this->getProvidedConcrete($className),
 
-					$this->lastHydratedFor()
+					$this->lastHydratedFor() // can't read this outside callback cuz it would've been unset by then
 				);
 			});
 
 			$concrete = $freshlyCreated->getConcrete();
 
-			if (!is_null($concrete)) {
+			if (is_null($concrete)) return;
 
-				$decorator = $this->getDecorator();
+			$decorator = $this->getDecorator();
 
-				return $decorator ? $decorator->scopeInjecting( // decorator runs on each fetch (rather than only once), since different callers result in different behavior
-					
-					$concrete, $freshlyCreated->getCreatedFor()
-				): $concrete;
-			}
+			return $decorator ? $decorator->scopeInjecting( // decorator runs on each fetch (rather than only once), since different callers result in different behavior
+				
+				$concrete, $freshlyCreated->getCreatedFor()
+			): $concrete;
 		}
 
 		public function getProvidedConcrete (string $fullName):?object {
@@ -523,16 +522,22 @@
 
 			$freshlyCreated = $this->initializeHydratingForAction ($fullName, function ($className) use ($decorator) { // we need this double coating since we intend to read arguments later, and [lastHydratedFor] is expected to see a list of at least 2 items during argument reading
 
-				if (!method_exists($className, self::CLASS_CONSTRUCTOR)) { // note that this throws a fatal, uncatchable error when class is in an unparseable state like missing abstract method or contract implementation
+				if (method_exists($className, self::CLASS_CONSTRUCTOR)) // note that this throws a fatal, uncatchable error when class is in an unparseable state like missing abstract method or contract implementation
+
+					$concrete = $this->hydrateConcreteForCaller($className);
+				else {
 
 					if (!is_null($decorator))
 
 						$decorator->scopeArguments( $className, [], self::CLASS_CONSTRUCTOR);
 
-					return new HydratedConcrete(new $className, $this->lastHydratedFor() );
+					$concrete = new $className;
 				}
 
-				return $this->hydrateConcreteForCaller($className);
+				return new HydratedConcrete ($concrete, $this->lastHydratedFor(
+
+					$this->hydratingArguments? 3: null // going by ordering in $this->initializeHydratingFor(), caller should live on -2. If it's read outside initializeHydratingForAction, value will be on -2. We read hydratingForStack in here since this is where it's at its most up to date. However, due to the extra coating of $this->initializeHydratingForAction(), caller gets pushed to -3
+				));
 			});
 
 			$concrete = $freshlyCreated->getConcrete();
@@ -545,7 +550,7 @@
 			): $concrete;
 		}
 
-		public function hydrateConcreteForCaller (string $className):HydratedConcrete {
+		public function hydrateConcreteForCaller (string $className):object {
 
 			$currentArgumentState = $this->hydratingArguments;
 			
@@ -558,11 +563,7 @@
 
 			$this->hydratingArguments = $currentArgumentState;
 
-			return new HydratedConcrete(
-				new $className (...$dependencies),
-
-				$this->lastHydratedFor()
-			);
+			return new $className (...$dependencies);
 		}
 
 		public function internalMethodGetParameters (string $className, callable $action) {
@@ -621,11 +622,14 @@
 
 			if (is_null($anchorClass)) return $dependencies;
 
-			elseif (!$this->hydratingInternally($anchorClass))
+			elseif (!$this->hydratingInternally($anchorClass)) {
+
+				$this->hydratingArguments = false;
 
 				foreach ($pushedItems as $entity)
 
 					$this->popHydratingFor($entity);
+			}
 
 			$decorator = $this->getDecorator();
 
@@ -740,8 +744,7 @@
 
 				return $this->objectMeta->getScalarValue($typeName);
 
-			if (!in_array($typeName, $this->hydratingForStack)
-			) {
+			if (!in_array($typeName, $this->hydratingForStack) ) {
 
 				if (!$callerIsClosure )
 

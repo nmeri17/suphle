@@ -1,7 +1,7 @@
 <?php
 
 	/**
-	* The only thing difference between this file and the worker in the project starter is vendor location and published modules given
+	* The only difference between this file and the worker in the project starter is vendor location and published modules given
 	*/
 	use Suphle\Modules\ModuleWorkerAccessor;
 

@@ -1,17 +1,19 @@
 <?php
 	namespace Suphle\Events;
 
-	use Suphle\Hydration\Structures\ObjectDetails;
+	use Suphle\Hydration\Structures\{ObjectDetails, BaseSingletonBind};
 
 	use Suphle\Modules\ModuleDescriptor;
 
 	use Suphle\Events\Structures\HandlerPath;
 
-	use Suphle\Contracts\Modules\DescriptorInterface;
+	use Suphle\Contracts\{Modules\DescriptorInterface, Services\Decorators\BindsAsSingleton};
 
 	use InvalidArgumentException;
 
-	abstract class EventManager {
+	abstract class EventManager implements BindsAsSingleton {
+
+		use BaseSingletonBind;
 
 		private $activeHandlerPath, $module, $parentManager,
 
@@ -31,7 +33,7 @@
 			$this->objectMeta = $objectMeta;
 		}
 
-		public function local(string $emittingEntity, string $handlingClass):self {
+		public function local (string $emittingEntity, string $handlingClass):self {
 			
 			$this->initializeHandlingScope("local", $emittingEntity, $handlingClass);
 
@@ -62,7 +64,7 @@
 		/**
 		 * @param {$emitter} inserting this without a proxy means a random class can trigger handlers listening on another event, which is not an entirely safe bet, but can come in handy when building dev-facing functionality @see OuterflowWrapper->emitEvents
 		 **/
-		public function emit(string $emitter, string $eventName, $payload = null) {
+		public function emit(string $emitter, string $eventName, $payload = null):void {
 
 			$localHandlers = $this->getLocalHandler($emitter);
 

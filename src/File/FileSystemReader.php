@@ -155,7 +155,7 @@
 
 					throw $exception;
 
-				var_dump(151, "retrying folder delete $directoryPath");
+				// var_dump(151, "retrying folder delete $directoryPath");
 
 				$this->emptyDirectory($directoryPath); // maybe names have been changed. Keep emptying until path doesn't exist
 			}

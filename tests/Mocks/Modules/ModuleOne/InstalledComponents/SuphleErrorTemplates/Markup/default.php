@@ -5,7 +5,7 @@
 	<title>Error</title>
 </head>
 <body>
-	<!-- Dev-level error page that outputs whatever happened -->
+<!-- Dev-level error page that outputs whatever happened -->
 	<div id="message"></div>
 </body>
 </html>

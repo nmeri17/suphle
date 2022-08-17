@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Bridge\Laravel;
 
-	use Suphle\Contracts\{Config\Laravel, Bridge\LaravelContainer};
+	use Suphle\Contracts\{Config\Laravel, Bridge\LaravelContainer, Services\Decorators\BindsAsSingleton};
 
 	use Suphle\Bridge\Laravel\{DefaultExceptionHandler, Config\ConfigLoader};
 
@@ -17,7 +17,7 @@
 
 	use ReflectionClass;
 
-	class LaravelAppConcrete extends Application implements LaravelContainer {
+	class LaravelAppConcrete extends Application implements LaravelContainer, BindsAsSingleton {
 
 		private $requestDetails, $configLoader, // these bindings are stored here rather than on the config in order to avoid circular dependencies between that config and configLoader
 
@@ -47,6 +47,11 @@
 			$this->payloadStorage = $payloadStorage;
 
 			parent::__construct($basePath);
+		}
+
+		public function entityIdentity ():string {
+
+			return LaravelContainer::class;
 		}
 
 		public function concreteBinds ():array {

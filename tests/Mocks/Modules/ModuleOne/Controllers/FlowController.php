@@ -3,17 +3,13 @@
 
 	use Suphle\Services\ServiceCoordinator;
 
-	use Suphle\Routing\PathPlaceholders;
-
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\DummyModels;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\{Concretes\Services\DummyModels, PayloadReaders\ReadsId};
 
 	class FlowController extends ServiceCoordinator {
 
-		private $pathPlaceholders, $dummyModels;
+		private $dummyModels;
 
-		public function __construct (PathPlaceholders $pathPlaceholders, DummyModels $dummyModels) {
-
-			$this->pathPlaceholders = $pathPlaceholders;
+		public function __construct (DummyModels $dummyModels) {
 
 			$this->dummyModels = $dummyModels;
 		}
@@ -68,11 +64,11 @@
 			return [];
 		}
 
-		public function readFlowPayload ():array {
+		public function readFlowPayload (ReadsId $payloadReader):array {
 
 			return [
 
-				"id" => $this->pathPlaceholders->getSegmentValue("id")
+				"id" => $payloadReader->getDomainObject()
 			];
 		}
 

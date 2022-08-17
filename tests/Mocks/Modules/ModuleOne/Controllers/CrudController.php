@@ -3,7 +3,16 @@
 
 	use Suphle\Services\ServiceCoordinator;
 
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\SystemModelEditMock1;
+
 	class CrudController extends ServiceCoordinator {
+
+		private $editService;
+
+		public function __construct (SystemModelEditMock1 $editService) {
+
+			$this->editService = $editService;
+		}
 
 		public function showCreateForm() {
 

@@ -29,7 +29,7 @@
 
 						"browserEntryRoute" => ImageUploadCollection::class
 					]);
-				}, false)
+				})
 			];
 		}
 

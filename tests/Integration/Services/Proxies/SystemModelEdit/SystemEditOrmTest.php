@@ -15,8 +15,6 @@
 
 		private $ormDialect = OrmDialect::class;
 
-		protected $usesRealDecorator = true;
-
 		private function mockOrm ($numTimes) {
 
 			return $this->positiveDouble($this->ormDialect, [], [

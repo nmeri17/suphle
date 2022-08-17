@@ -5,12 +5,14 @@
 
 	use Suphle\Contracts\Services\Decorators\BindsAsSingleton;
 
+	use Suphle\Hydration\Structures\BaseSingletonBind;
+
 	/**
 	 * Used by route finder during matching to compose and interpolate patterns read from collections and what is incoming in request
 	*/
 	class PathPlaceholders implements BindsAsSingleton {
 
-		use SanitizesIntegerInput;
+		use SanitizesIntegerInput, BaseSingletonBind;
 
 		private $stack = [], $methodSegments = [], $urlReplacer;
 

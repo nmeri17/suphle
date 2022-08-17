@@ -1,7 +1,13 @@
 <?php
 	namespace Suphle\Middleware;
 
-	class MiddlewareRegistry {
+	use Suphle\Contracts\Services\Decorators\BindsAsSingleton;
+
+	use Suphle\Hydration\Structures\BaseSingletonBind;
+
+	class MiddlewareRegistry implements BindsAsSingleton {
+
+		use BaseSingletonBind;
 
 		private $registry = [], // [patternName => PatternMiddleware]
 

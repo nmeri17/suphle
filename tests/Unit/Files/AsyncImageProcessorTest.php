@@ -17,8 +17,6 @@
 
 		use QueueInterceptor, CommonBinds;
 
-		protected $usesRealDecorator = true;
-
 		public function test_task_calls_image_modifier () {
 
 			$this->replaceConstructorArguments(AsyncImageProcessor::class, [

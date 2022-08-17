@@ -48,7 +48,7 @@
 			}
 			catch (Throwable $exception) {
 
-				$message = "Error encountered while attempting for find route on descriptor ". get_class($descriptor);
+				$message = "Error encountered during attempt to find route on descriptor ". get_class($descriptor);
 
 				echo $message;
 

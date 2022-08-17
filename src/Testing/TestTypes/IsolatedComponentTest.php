@@ -23,7 +23,7 @@
 			ConfigureExceptionBridge::setUp as mufflerSetup;
 		}
 
-		protected $container, $usesRealDecorator = false;
+		protected $container, $usesRealDecorator = true;
 
 		protected function setUp ():void {
 

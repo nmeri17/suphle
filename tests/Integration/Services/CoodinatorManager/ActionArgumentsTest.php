@@ -15,8 +15,6 @@
 
 		use CommonBinds;
 
-		protected $usesRealDecorator = true;
-
 		public function test_action_method_rejects_unwanted_dependencies () {
 
 			$this->expectException(InvalidArgumentException::class); // then

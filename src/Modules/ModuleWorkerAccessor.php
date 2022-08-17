@@ -13,7 +13,7 @@
 
 	use Psr\Http\Message\{ServerRequestInterface, ResponseInterface};
 
-	use Throwable, Exception;
+	use Throwable;
 
 	/**
 	 * RoadRunner will spin this up multiple times for each worker it has to create to service a request type
@@ -22,7 +22,7 @@
 
 		private $handlerIdentifier, $httpWorker, $queueWorker,
 
-		$operationSuccess, $isHttpMode;
+		$isHttpMode;
 
 		public function __construct (ModuleHandlerIdentifier $handlerIdentifier, bool $isHttpMode) {
 
@@ -35,11 +35,7 @@
 
 			try {
 
-				$this->operationSuccess = false;
-
 				$serverAction($this);
-
-				$this->operationSuccess = true;
 			}
 			catch (Throwable $exception) {
 
@@ -53,11 +49,6 @@
 
 				$worker->getWorker()->error($exception->getMessage());
 			}
-		}
-
-		public function lastOperationSuccessful ():bool {
-
-			return $this->operationSuccess;
 		}
 
 		public function buildIdentifier ():self {
@@ -166,22 +157,15 @@
 
 			$this->runInSandbox(function ($accessor) {
 
-				$this->buildIdentifier()->setActiveWorker();
+				$this->buildIdentifier()->setActiveWorker()
+
+				->openEventLoop();
+			}, function (Throwable $exception) {
+					
+				var_dump("Failing worker alert", $exception); // if we get here, it means loop terminated/request failed and rr is restarting another one for us
+
+				throw $exception;
 			});
-
-			if ($this->lastOperationSuccessful())
-
-				$this->runInSandbox(function ($accessor) {
-
-					$this->openEventLoop();
-				}, function ($exception) {
-					
-					var_dump("Failing worker alert", $exception); // if we get here, it means loop terminated/request failed and rr is restarting another one for us
-					
-					$workerMode = $this->isHttpMode ? "http": "task";
-
-					throw new Exception("Unable to set $workerMode worker");
-				});
 		}
 	}
 ?>

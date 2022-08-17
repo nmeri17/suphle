@@ -3,7 +3,7 @@
 
 	use Suphle\Modules\ModuleDescriptor;
 
-	use Suphle\Hydration\Container;
+	use Suphle\Hydration\{Container, Structures\BaseSingletonBind};
 
 	use Suphle\Routing\RouteManager;
 
@@ -16,6 +16,8 @@
 	use Suphle\Exception\Explosives\ValidationFailure;
 
 	class RoutedRendererManager implements BaseResponseManager, BindsAsSingleton {
+
+		use BaseSingletonBind;
 
 		private $container, $router, $renderer, $requestDetails,
 

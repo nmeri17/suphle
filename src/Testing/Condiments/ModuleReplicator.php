@@ -12,7 +12,7 @@
 		/**
 		 * Is only usable on test types extending TestVirginContainer
 		*/
-		protected function replicateModule(string $descriptor, callable $customizer, bool $stubsDecorator = true):ModuleDescriptor {
+		protected function replicateModule(string $descriptor, callable $customizer, bool $stubsDecorator = false):ModuleDescriptor {
 
 			if ($stubsDecorator)
 

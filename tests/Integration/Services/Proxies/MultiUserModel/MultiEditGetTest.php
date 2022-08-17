@@ -31,7 +31,7 @@
 
 					"browserEntryRoute" => AuthorizeRoutes::class
 				]);
-			}, false);
+			});
 		}
 
 		protected function getActiveEntity ():string {

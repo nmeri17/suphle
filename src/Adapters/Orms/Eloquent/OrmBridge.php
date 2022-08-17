@@ -5,13 +5,13 @@
 
 	use Suphle\Adapters\Orms\Eloquent\Models\User as EloquentUser;
 
-	use Suphle\Contracts\{Database\OrmDialect, Config\Database, Bridge\LaravelContainer};
+	use Suphle\Contracts\{Database\OrmDialect, Config\Database, Bridge\LaravelContainer, Services\Decorators\BindsAsSingleton};
 
 	use Suphle\Contracts\Auth\{UserHydrator as HydratorContract, AuthStorage, UserContract};
 
 	use Illuminate\Database\{DatabaseManager, Capsule\Manager as CapsuleManager, Connection};
 
-	class OrmBridge implements OrmDialect {
+	class OrmBridge implements OrmDialect, BindsAsSingleton {
 
 		private $credentials, $connection, $laravelContainer,
 
@@ -24,6 +24,11 @@
 			$this->laravelContainer = $laravelContainer;
 
 			$this->container = $container;
+		}
+
+		public function entityIdentity ():string {
+
+			return OrmDialect::class;
 		}
 
 		/**

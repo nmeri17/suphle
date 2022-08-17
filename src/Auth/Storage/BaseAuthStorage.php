@@ -19,14 +19,9 @@
 
 			$userId = $this->getId();
 
-			if (is_null($userId)
+			if (is_null($userId)) return null;
 
-				// || is_null($this->userHydrator) // fail loudly in the absence of a hydrator?
-			)
-
-				return null;
-
-			if ( is_null($this->user)) // when accessed for the first time
+			if ( is_null($this->user))
 
 				$this->user = $this->userHydrator->findById( $userId );
 

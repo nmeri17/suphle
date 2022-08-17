@@ -13,8 +13,6 @@
 
 		use CommonBinds;
 
-		protected $usesRealDecorator = true;
-
 		public function test_rejected_type_throws_errors () {
 
 			$this->expectException(UnacceptableDependency::class); // then

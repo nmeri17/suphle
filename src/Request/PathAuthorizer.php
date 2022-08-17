@@ -1,9 +1,13 @@
 <?php
 	namespace Suphle\Request;
 
-	use Suphle\Hydration\Container;
+	use Suphle\Hydration\{Container, Structures\BaseSingletonBind};
 
-	class PathAuthorizer {
+	use Suphle\Contracts\Services\Decorators\BindsAsSingleton;
+
+	class PathAuthorizer implements BindsAsSingleton {
+
+		use BaseSingletonBind;
 
 		private $container, $allRules = [], // [ruleName => [taggedPatterns]]
 

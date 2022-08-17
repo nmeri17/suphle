@@ -1,13 +1,15 @@
 <?php
 	namespace Suphle\Bridge\Laravel\Config;
 
-	use Suphle\Hydration\Container;
+	use Suphle\Hydration\{Container, Structures\BaseSingletonBind};
 
 	use Suphle\Contracts\{Config\Laravel, Services\Decorators\BindsAsSingleton};
 
 	use Illuminate\Config\Repository;
 
 	class ConfigLoader extends Repository implements BindsAsSingleton {
+
+		use BaseSingletonBind;
 
 		private $laravelConfig, $container, $pathSegments = [];
 

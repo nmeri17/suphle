@@ -29,8 +29,6 @@
 
 		$sutName = MultiUserEditMock::class;
 
-		protected $usesRealDecorator = true;
-
 		public function test_missing_key_on_update_throws_error () {
 
 			$this->expectException(EditIntegrityException::class); // then
