@@ -1,0 +1,4 @@
+#message {
+
+	content: data(message);
+}

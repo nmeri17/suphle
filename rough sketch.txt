@@ -1,16 +1,12 @@
 install turbo
 
-We need CLI commands for:
-	- starting app in long running process
-		- index.php is a cli-invoked script takes the name of the main class, runs static checks, starts queue worker, calls [orchestrate on that main class] inside our event loop
-
 Named renderers for the purpose of portable links that don't break in transit
 	- only way this can work is by searching while building the full route tree
 Url map generation
 	- if it's not the end of the thread (contains a _prefixFor), we create a sub to contain the patterns below it
 
 
-C:\wamp64\www\tilwa\nmeri\tilwa\vendor\bin>phpunit ../../tests/
+C:\wamp64\www\suphle\nmeri\suphle\vendor\bin>phpunit ../../tests/
 
 **
 sqlite
@@ -18,62 +14,14 @@ sqlite
 <server name="DB_DATABASE" value=":memory:"/>
 
 
-	- Illuminate\Testing\TestResponse: overwrite these in our extension
-		- assertSee[x] (they need the `e` method)
-		- assertView[x] (needs to convert our view to their View and pass that as response to testResponseBridge)
-
-Wrap:
-	- debug_backtrace
-
-==when doesn't work==
-	- crud:
-		- index: use "_index" instead of leaving it blank
-		- line 102
-			- doesn't this return a regex that should be escaped/normalized? if that be the case, match incoming path against that pattern and return the result to this guy
-
-	- flows:
-		- finding in cache after job runs, consider delegating path fetching to outerFlowWrapper->dataPath (although there's a chance that prefix wasn't even added in the hydrator, see line 84)
-		- [OuterFlowWrapperTest->test_empties_cache_entry_after_returning], write a sub test that checks the cache directly to confirm it was removed
-
-	- tests:
-		- mocks injected into modules => relevant test should create mock and manually trigger module booting before it runs. But first, check whether prophecy will work
-
-	- conditional factory
-		- [finally] => consider making factoryList a numeric array
-
-
-test only and except from routeCollection
-
-
 4) pending tests:
-	- contracts\config
-		- auth, router, tss
+	- replace with stubs and test disgraceful and co
+	- only and except from routeCollection?
 
 
-	- connect AlertAdapter/Bugsnag in interface loader
-	- typesense search adapter
-		- indexing on model save/update
-		- converting from/to orm type during retrieval
-		- passing to collection type
-	- integrate cache library and remove the cache from moduleLevelTest->provideCriticalObjects and isolatedComponent->concreteBinds
-	- that place where you have laravel route finders, replace with insertable generics like for the container
+rr can work with bolt
+
+change usage of >|$sutName to self::SUT_NAME
 
 
-
-what would be a really valuable test is visiting flows defined in 3 from 1 ie. full get
-	- MultiModuleTest->test_handle_flows_in_other_modules transfer flow routes in FlowRoutes to another module
-
-write tests for
-	- FlowHydrator->executeRequest sends request to where it can hit controller
-	- FetchAndEditTest->test_update_can_withstand_errors
-	- TransphpormTest
-
-create argument allowing us replace uploaded files and filesystem on the operator
-- multiEdit cloaker should complain on get if no authorization is found
-
-
-@see ServiceErrorCatcherTest->failureState
-
-/*$builder->disableProxyingToOriginalMethods()
-
-->disableAutoReturnValueGeneration()*/;
+project init => create module, eject error templates, optional user migrations, start server
