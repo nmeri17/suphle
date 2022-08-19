@@ -1,4 +1,4 @@
-Documentation in progress over at https://github.com/nmeri17/suphple-docs/.
+Documentation in progress over at https://github.com/nmeri17/suphle-docs/.
 
 Interested in contributing? 
 Please check https://github.com/nmeri17/Suphle/labels/help%20wanted.
