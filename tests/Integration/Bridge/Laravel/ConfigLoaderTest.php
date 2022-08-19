@@ -5,7 +5,7 @@
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Config\LaravelMock;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Bridge\Laravel\ConfigLinks\{AppConfig, NestedConfig};
+	use Suphle\Tests\Mocks\Modules\ModuleOne\InstalledComponents\SuphleLaravelTemplates\ConfigLinks\{AppConfig, NestedConfig};
 
 	/**
 	 * The idea demonstrated here is to compare results from the [RepositoryContract] given to laravel, and the one gotten after hydrating the object paired to that config i.e. [app => appOOP], we compare the results of [RepositoryContract] with directly calling [appOOP]

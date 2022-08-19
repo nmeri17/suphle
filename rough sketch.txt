@@ -19,11 +19,6 @@ sqlite
 	- only and except from routeCollection?
 
 
-why aren't we using midlewareManipulator
-
-
-predis tag
-
 rr can work with bolt
 
 change usage of >|$sutName to self::SUT_NAME
