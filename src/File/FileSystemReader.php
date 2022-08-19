@@ -53,7 +53,7 @@
 
 			if (!file_exists($newFolder))
 
-				mkdir($newFolder, 0777, true); // 3rd argument = create parents if they don't exist
+				mkdir($newFolder, 0755, true); // 3rd argument = create parents if they don't exist
 		}
 
 		/**

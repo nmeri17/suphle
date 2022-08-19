@@ -730,6 +730,8 @@
 					$callerProvision->getOwner(), $parameterName
 				);
 
+			if (is_null($parameterType)) return null;
+
 			return $this->hydrateUnprovidedParameter($parameterType, $callerIsClosure);
 		}
 

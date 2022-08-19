@@ -29,10 +29,4 @@ rr can work with bolt
 change usage of >|$sutName to self::SUT_NAME
 
 
-
-for LaravelProviderManager to work:
-	- we need to change the bridge to be read from installed components so we can eject config/app, database
-	- a command test that after ejecting, lpm can be added to containerConfig array. use module2 for this to avoid overwriting contents of current
-
-
 project init => create module, eject error templates, optional user migrations, start server

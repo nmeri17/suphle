@@ -66,6 +66,8 @@
 				$fileSystemReader->emptyDirectory($componentPath);
 			}
 
+			$this->container->refreshClass(LaravelContainer::class); // prevent the influence of any instance that was loaded during module booting
+
 			try {
 
 				$this->container->getClass(LaravelContainer::class);
@@ -85,6 +87,12 @@
 
 					$this->container->getClass(LaravelContainer::class)
 				);
+			}
+			finally {
+
+				foreach ([$componentPath, $backupPath] as $path)
+
+					if (!file_exists($path)) return;
 
 				if ($isAlreadyInstalled) {
 	
