@@ -15,17 +15,13 @@
 
 	class ModuleRouteMatcher implements ExternalRouter {
 
-		private $config, $laravelContainer, $router, $request,
+		private $config, $laravelContainer, $router, $request;
 
-		$providerBooter;
-
-		public function __construct (LaravelConfig $config, LaravelContainer $laravelContainer, LaravelProviderManager $providerBooter) {
+		public function __construct (LaravelConfig $config, LaravelContainer $laravelContainer) {
 
 			$this->config = $config;
 
 			$this->laravelContainer = $laravelContainer;
-
-			$this->providerBooter = $providerBooter;
 		}
 
 		public function canHandleRequest ():bool {

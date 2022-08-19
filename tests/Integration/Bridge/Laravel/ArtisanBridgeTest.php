@@ -7,7 +7,7 @@
 
 	use Suphle\Bridge\Laravel\Cli\ArtisanCli;
 
-	use Suphle\Testing\{TestTypes\CommandLineTest, Proxies\WriteOnlyContainer, Condiments\FilesystemCleaner};
+	use Suphle\Testing\{TestTypes\CommandLineTest, Condiments\FilesystemCleaner};
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
@@ -19,7 +19,7 @@
 
 		use FilesystemCleaner;
 
-		private $migrationFolder = "sample_migrations";
+		protected const MIGRATION_FOLDER = "sample_migrations";
 
 		protected function getModules ():array {
 
@@ -40,22 +40,20 @@
 
 			$commandTester->execute([ // when
 
-				ArtisanCli::TO_FORWARD_ARGUMENT => "make:migration create_users_table --path=" . $this->migrationFolder,
+				ArtisanCli::TO_FORWARD_ARGUMENT => "make:migration create_users_table --path=" . self::MIGRATION_FOLDER,
 			]);
 
 			// then
 			$commandTester->assertCommandIsSuccessful(); // $commandTester::getDisplay can be used to extract console output as a string
 
-			$this->assertNotEmptyDirectory($migrationPath);
-
-			$this->getFilesystemReader()->emptyDirectory($migrationPath);
+			$this->assertNotEmptyDirectory($migrationPath, true);
 		}
 
 		private function migrationPath ():string {
 
 			return $this->firstModuleContainer()->getClass(LaravelContainer::class)
 
-			->basePath() . DIRECTORY_SEPARATOR . $this->migrationFolder;
+			->basePath() . DIRECTORY_SEPARATOR . self::MIGRATION_FOLDER;
 		}
 	}
 ?>

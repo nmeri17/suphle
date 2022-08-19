@@ -3,11 +3,7 @@
 
 	use Suphle\Config\Laravel as ParentConfig;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Bridge\Laravel\ConfigLinks\{AppConfig, NestedConfig};
-
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Bridge\Laravel\ServiceProviders\{RegistersRouteProvider, ConfigInternalProvider};
-
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Bridge\Laravel\ServiceProviders\Exports\{ConfigInternal, ConfigConstructor};
+	use Suphle\Tests\Mocks\Modules\ModuleOne\InstalledComponents\SuphleLaravelTemplates\ConfigLinks\{AppConfig, NestedConfig};
 
 	class LaravelMock extends ParentConfig {
 
@@ -27,30 +23,9 @@
 		/**
 		 * {@inheritdoc}
 		*/
-		public function getProviders ():array {
-
-			return [
-
-				ConfigConstructor::class => RegistersRouteProvider::class,
-
-				ConfigInternal::class => ConfigInternalProvider::class
-			];
-		}
-
-		/**
-		 * {@inheritdoc}
-		*/
 		public function registersRoutes ():bool {
 
 			return true;
-		} 
-
-		/**
-		 * {@inheritdoc}
-		*/
-		public function usesPackages ():bool {
-
-			return false;
 		}
 	}
 ?>

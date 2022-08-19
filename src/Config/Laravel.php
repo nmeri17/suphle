@@ -16,30 +16,9 @@
 		/**
 		 * {@inheritdoc}
 		*/
-		public function getProviders ():array {
-
-			return [];
-		}
-
-		/**
-		 * {@inheritdoc}
-		*/
 		public function registersRoutes ():bool {
 
 			return false;
-		} 
-
-		/**
-		 * {@inheritdoc}
-		*/
-		public function usesPackages ():bool {
-
-			return false;
-		}
-
-		public function frameworkDirectory ():string {
-
-			return  "Bridge/Laravel";
 		}
 	}
 ?>

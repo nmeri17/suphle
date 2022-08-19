@@ -5,11 +5,17 @@
 
 	use Suphle\Exception\ComponentEntry as ExceptionComponentEntry;
 
+	use Suphle\Bridge\Laravel\ComponentEntry as LaravelComponentEntry;
+
 	class DefaultTemplateConfig implements ComponentTemplates {
 
 		public function getTemplateEntries ():array {
 
-			return [ExceptionComponentEntry::class];
+			return [
+				ExceptionComponentEntry::class,
+
+				LaravelComponentEntry::class
+			];
 		}
 	}
 ?>

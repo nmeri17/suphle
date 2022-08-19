@@ -95,6 +95,8 @@
 
 		public function deepCopy (string $sourceFolder, string $currentDestination):void {
 
+			$currentDestination = $this->noTrailingSlash($currentDestination);
+
 			$this->iterateDirectory(
 
 				$sourceFolder,
@@ -105,15 +107,15 @@
 
 					$this->ensureDirectoryExists($newDestination, false);
 
-					$this->deepCopy($sourcePath, $newDestination); // correct other usages
+					$this->deepCopy($sourcePath, $newDestination);
 				},
 				function ($filePath, $fileName) use ($currentDestination) {
 
-					copy(
-						$filePath,
+					$newDestination = $currentDestination . DIRECTORY_SEPARATOR . $fileName; // in a folder containing folders and files, the files will be read first, which means destination path is expected to exist otherwise copy won't work
 
-						$currentDestination . DIRECTORY_SEPARATOR . $fileName
-					);
+					$this->ensureDirectoryExists($newDestination, true);
+
+					copy($filePath, $newDestination);
 				}
 			);
 		}

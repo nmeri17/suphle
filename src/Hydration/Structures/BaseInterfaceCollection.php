@@ -41,7 +41,7 @@
 
 	use Suphle\Request\{NativeInputReader, ValidatorLoader, NativeFileReader};
 
-	use Suphle\Config\{Auth, Transphporm, Laravel, ExceptionConfig, Console as CliConsole, PDOMysqlKeys, DefaultFlowConfig, ProxyManagerConfig, DefaultCacheConfig, DefaultTemplateConfig};
+	use Suphle\Config\{Auth, Transphporm, Laravel, ExceptionConfig, Console as CliConsole, PDOMysqlKeys, DefaultFlowConfig, ProxyManagerConfig, DefaultCacheConfig, DefaultTemplateConfig, ContainerConfig};
 
 	use Suphle\Modules\ControllerModuleApi;
 

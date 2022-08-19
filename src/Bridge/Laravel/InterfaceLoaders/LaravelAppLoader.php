@@ -3,28 +3,19 @@
 
 	use Suphle\Hydration\BaseInterfaceLoader;
 
-	use Suphle\Bridge\Laravel\LaravelAppConcrete;
+	use Suphle\Bridge\Laravel\{LaravelAppConcrete, ComponentEntry};
 
 	use Suphle\Bridge\Laravel\Config\{ConfigLoader, ConfigFileFinder};
 
-	use Suphle\Contracts\Config\{ModuleFiles, Laravel as LaravelConfig};
-
-	use Suphle\Contracts\Bridge\LaravelContainer;
+	use Suphle\Contracts\{Config\Laravel as LaravelConfig, Bridge\LaravelContainer};
 
 	class LaravelAppLoader extends BaseInterfaceLoader {
 
-		private $fileConfig, $laravelConfig, $configLoader;
+		private $componentEntry, $configLoader;
 
-		public function __construct (
+		public function __construct (ConfigLoader $configLoader, ComponentEntry $componentEntry ) {
 
-			ModuleFiles $fileConfig, LaravelConfig $laravelConfig,
-
-			ConfigLoader $configLoader
-		) {
-
-			$this->fileConfig = $fileConfig;
-
-			$this->laravelConfig = $laravelConfig;
+			$this->componentEntry = $componentEntry;
 
 			$this->configLoader = $configLoader;
 		}
@@ -78,9 +69,7 @@
 
 		protected function getBasePath ():string {
 
-			return $this->fileConfig->activeModulePath() .
-
-			$this->laravelConfig->frameworkDirectory();
+			return $this->componentEntry->userLandMirror();
 		}
 	}
 ?>
