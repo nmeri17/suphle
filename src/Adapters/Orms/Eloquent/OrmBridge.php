@@ -15,7 +15,7 @@
 
 		private $credentials, $connection, $laravelContainer,
 
-		$nativeClient;
+		$nativeClient, $container;
 
 		public function __construct (Database $config, Container $container, LaravelContainer $laravelContainer) {
 

@@ -5,7 +5,7 @@
 
 	use Illuminate\Database\Eloquent\Factories\Factory;
 
-	class EditHistory extends BaseModel {
+	abstract class EditHistory extends BaseModel {
 
 		protected static function newFactory ():Factory {
 

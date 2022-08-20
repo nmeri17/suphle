@@ -15,7 +15,7 @@
 
 		private $rendererCollection, $container, $responseRenderer,
 
-		$validatorManager, $variableDecorator;
+		$validatorManager, $variableDecorator, $loginService;
 
 		public function __construct (
 			LoginRenderers $collection, Container $container,

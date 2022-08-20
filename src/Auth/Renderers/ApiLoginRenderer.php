@@ -5,7 +5,7 @@
 
 	use Suphle\Contracts\Presentation\BaseRenderer;
 
-	use Suphle\Response\Format\{ Redirect, Reload};
+	use Suphle\Response\Format\Json;
 
 	use Suphle\Auth\Repositories\ApiAuthRepo;
 
