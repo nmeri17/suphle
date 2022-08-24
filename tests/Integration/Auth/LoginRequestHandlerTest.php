@@ -57,8 +57,6 @@
 				ModuleLoginHandler::class => $this->buildLoginHandler() // then
 			]);
 
-			$this->entrance->extractFromContainer();
-
 			$this->entrance->handleLoginRequest(); // when
 		}
 

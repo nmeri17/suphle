@@ -55,8 +55,6 @@
 
 			$this->handlerIdentifier->bootModules();
 
-			$this->handlerIdentifier->extractFromContainer();
-
 			return $this;
 		}
 

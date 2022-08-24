@@ -41,8 +41,6 @@
 				])
 			]);
 
-			$this->entrance->extractFromContainer(); // refresh for above [given]
-
 			$this->entrance->handleLoginRequest(); // when
 		}
 	}

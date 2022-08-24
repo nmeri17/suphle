@@ -21,9 +21,7 @@
 
 	abstract class ModuleHandlerIdentifier {
 
-		private $identifiedHandler, $routedModule, $authConfig,
-
-		$flowConfig;
+		private $identifiedHandler, $routedModule;
 
 		protected $container;
 
@@ -34,12 +32,13 @@
 
 		protected function bootTitularContainer ():void {
 
-			if ($titular = current($this->getModules())) { // on project initialization, no modules will exist yet
+			if (($titular = current($this->getModules())) === false) 
 
-				$this->container = $titular->getContainer();
+				return; // on project initialization, no modules will exist yet
 
-				$this->container->provideSelf();
-			}
+			$this->container = $titular->getContainer();
+
+			$this->container->provideSelf();
 		}
 		
 		abstract protected function getModules():array;
@@ -91,20 +90,26 @@
 		*/
 		public function respondFromHandler ():BaseRenderer {
 
-			if ( $this->authConfig->isLoginRequest())
+			$container = $this->container;
 
-				return $this->handleLoginRequest();
+			if ($container->getClass(FlowConfig::class)->isEnabled()) {
 
-			if ($this->flowConfig->isEnabled()) {
-
-				$wrapper = $this->container->getClass(OuterFlowWrapper::class);
+				$wrapper = $container->getClass(OuterFlowWrapper::class);
 
 				if ($wrapper->canHandle())
 
 					return $this->flowRequestHandler($wrapper);
 			}
 
-			return $this->handleGenericRequest();
+			if ($routedRenderer = $this->handleGenericRequest())
+
+				return $routedRenderer;
+
+			if ( $container->getClass(AuthContract::class)->isLoginRequest())
+
+				return $this->handleLoginRequest();
+
+			throw new NotFoundException;
 		}
 
 		public function handleLoginRequest ():BaseRenderer {
@@ -127,35 +132,27 @@
 			return $this->container->getClass(ModuleLoginHandler::class);
 		}
 
-		protected function handleGenericRequest ():BaseRenderer {
+		protected function handleGenericRequest ():?BaseRenderer {
 
 			$moduleRouter = $this->container->getClass(ModuleToRoute::class); // pulling from a container so tests can replace properties on the singleton
 
 			$initializer = $moduleRouter->findContext($this->getModules());
 
-			if ($initializer) {
+			if (!$initializer) return null;
 
-				$this->identifiedHandler = $initializer;
+			$this->identifiedHandler = $initializer;
 
-				$this->routedModule = $moduleRouter->getActiveModule();
+			$this->routedModule = $moduleRouter->getActiveModule();
 
-				$initializer->whenActive()
+			$initializer->whenActive()->fullRequestProtocols(
 
-				->fullRequestProtocols($this->getRendererManager())
+				$this->getActiveContainer()->getClass(
+				
+					RoutedRendererManager::class
+				)
+			)->setHandlingRenderer();
 
-				->setHandlingRenderer();
-
-				return $initializer->handlingRenderer();
-			}
-
-			throw new NotFoundException;
-		}
-
-		protected function getRendererManager ():RoutedRendererManager {
-
-			return $this->routedModule->getContainer()
-
-			->getClass(RoutedRendererManager::class);
+			return $initializer->handlingRenderer();
 		}
 
 		public function flowRequestHandler (OuterFlowWrapper $wrapper):BaseRenderer {
@@ -182,13 +179,6 @@
 			$exceptionBridge->successfullyHandled();
 
 			return $renderer;
-		}
-
-		public function extractFromContainer ():void {
-
-			$this->authConfig = $this->container->getClass(AuthContract::class);
-
-			$this->flowConfig = $this->container->getClass(FlowConfig::class);
 		}
 
 		public function underlyingRenderer ():BaseRenderer {

@@ -32,8 +32,6 @@
 				true, true, true, true
 			);
 
-			$identifier->extractFromContainer();
-
 			return $identifier;
 		}
 	}
