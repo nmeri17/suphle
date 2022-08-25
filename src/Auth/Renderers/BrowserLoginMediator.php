@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Auth\Renderers;
 
-	use Suphle\Contracts\Auth\{LoginRenderers, LoginActions};
+	use Suphle\Contracts\Auth\{LoginFlowMediator, LoginActions};
 
 	use Suphle\Contracts\Presentation\BaseRenderer;
 
@@ -11,7 +11,7 @@
 
 	use Suphle\Request\PayloadStorage;
 
-	class BrowserLoginRenderer implements LoginRenderers {
+	class BrowserLoginMediator implements LoginFlowMediator {
 
 		private $authService;
 

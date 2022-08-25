@@ -5,7 +5,7 @@
 
 	use Suphle\Contracts\{ Modules\HighLevelRequestHandler, Presentation\BaseRenderer};
 
-	use Suphle\Contracts\Auth\{LoginRenderers, ModuleLoginHandler};
+	use Suphle\Contracts\Auth\{LoginFlowMediator, ModuleLoginHandler};
 
 	use Suphle\Request\ValidatorManager;
 
@@ -18,7 +18,7 @@
 		$validatorManager, $variableDecorator, $loginService;
 
 		public function __construct (
-			LoginRenderers $collection, Container $container,
+			LoginFlowMediator $collection, Container $container,
 
 			ValidatorManager $validatorManager, VariableDependenciesHandler $variableDecorator) {
 

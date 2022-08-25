@@ -7,7 +7,7 @@
 
 	use Suphle\Exception\Explosives\ValidationFailure;
 
-	use Suphle\Contracts\Auth\{ModuleLoginHandler, LoginRenderers};
+	use Suphle\Contracts\Auth\{ModuleLoginHandler, LoginFlowMediator};
 
 	use Suphle\Contracts\Config\AuthContract;
 
@@ -37,7 +37,7 @@
 
 				AuthContract::class => $this->positiveDouble(AuthContract::class, [
 
-					"getLoginCollection" => $this->negativeDouble(LoginRenderers::class)
+					"getLoginCollection" => $this->negativeDouble(LoginFlowMediator::class)
 				])
 			]);
 
