@@ -9,7 +9,7 @@
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Controllers\MultiEditController;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Authorization\Paths\{ModelEditRule, AdminRule};
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Authorization\Paths\{EmploymentEditRule, AdminRule};
 
 	class UnlocksAuthorization1 extends BaseCollection {
 
@@ -47,7 +47,7 @@
 
 			$pathAuthorizer->addRule (
 
-				[ "ADDITIONAL__RULEh"], ModelEditRule::class
+				[ "GMULTI__EDITh_id"], EmploymentEditRule::class
 			)
 			->forgetRule([
 

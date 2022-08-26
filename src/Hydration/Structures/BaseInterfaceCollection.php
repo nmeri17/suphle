@@ -15,7 +15,7 @@
 
 	use Suphle\Contracts\Bridge\{LaravelContainer, LaravelArtisan};
 
-	use Suphle\Contracts\Auth\{AuthStorage, ModuleLoginHandler};
+	use Suphle\Contracts\Auth\{AuthStorage, ModuleLoginHandler, ColumnPayloadComparer};
 
 	use Suphle\Contracts\Config\{AuthContract, Database, DecoratorProxy, ExceptionInterceptor, Transphporm as TransphpormConfig, Laravel as LaravelConfig, Console as ConsoleContract, Flows as FlowConfig, ContainerConfig as IContainerConfig, CacheClient as CacheConfig, ComponentTemplates};
 
@@ -29,7 +29,7 @@
 
 	use Suphle\IO\Cache\AdapterLoader as CacheAdapterLoader;
 
-	use Suphle\Auth\{LoginHandlerInterfaceLoader, Storage\SessionStorage};
+	use Suphle\Auth\{LoginHandlerInterfaceLoader, EmailPasswordComparer, Storage\SessionStorage};
 
 	use Suphle\Adapters\Orms\Eloquent\{ UserEntityLoader, ModelReplicator, OrmLoader, DatabaseTester as EloquentTester};
 
@@ -90,6 +90,8 @@
 				AlertAdapter::class => Bugsnag::class,
 
 				AuthStorage::class => SessionStorage::class,
+
+				ColumnPayloadComparer::class => EmailPasswordComparer::class,
 
 				ControllerModule::class => ControllerModuleApi::class,
 

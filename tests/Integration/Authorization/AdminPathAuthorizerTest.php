@@ -1,8 +1,6 @@
 <?php
 	namespace Suphle\Tests\Integration\Authorization;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Authorization\Paths\ModelEditRule;
-
 	class AdminPathAuthorizerTest extends TestPathAuthorizer {
 
 		private $user;
@@ -26,33 +24,6 @@
 			$this->actingAs($this->user); // given
 
 			$this->fakeRequest("/admin/retain"); // when
-
-			$this->assertTrue($this->authorizationSuccess()); // then
-		}
-
-		public function test_nested_can_add_more_locks () {
-
-			$admin = $this->user; // must be an admin, otherwise the admin rule attached to the parent will cause it to fail
-
-			$this->actingAs($admin); // given
-
-			$model = new class {
-
-				public $creatorId;
-
-				public function getCreatorId ():int {
-
-					return $this->creatorId;
-				}
-			};
-
-			$model->creatorId = $admin->getId();
-
-			$this->container->whenType(ModelEditRule::class)
-
-			->needsArguments([ "modelService" => $model ]);
-
-			$this->fakeRequest("/admin/additional-rule"); // when
 
 			$this->assertTrue($this->authorizationSuccess()); // then
 		}
