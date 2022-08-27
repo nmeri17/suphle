@@ -11,7 +11,7 @@
 
 	use Suphle\Tests\Integration\Generic\CommonBinds;
 
-	trait TestLoginRenderer {
+	trait TestLoginMediator {
 
 		use BaseDatabasePopulator, UserInserter, CommonBinds, SecureUserAssertions {
 
@@ -45,7 +45,7 @@
 			$this->container->getClass(ModuleLoginHandler::class)->setResponseRenderer();
 		}
 
-		protected function injectLoginRenderer (int $successCount, int $failureCount):void {
+		protected function injectLoginMediator (int $successCount, int $failureCount):void {
 
 			$localLoginManager = $this->replaceConstructorArguments(
 

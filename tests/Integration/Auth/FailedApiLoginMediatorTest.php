@@ -1,9 +1,9 @@
 <?php
 	namespace Suphle\Tests\Integration\Auth;
 
-	use Suphle\Tests\Integration\Auth\Bases\BaseTestApiLoginRenderer;
+	use Suphle\Tests\Integration\Auth\Bases\BaseTestApiLoginMediator;
 
-	class FailedApiLoginRendererTest extends BaseTestApiLoginRenderer {
+	class FailedApiLoginMediatorTest extends BaseTestApiLoginMediator {
 
 		protected function preDatabaseFreeze ():void {
 
@@ -12,7 +12,7 @@
 
 		public function test_failedLogin () {
 
-			$this->injectLoginRenderer(0, 1); // then
+			$this->injectLoginMediator(0, 1); // then
 
 			$this->evaluateLoginStatus(); // when
 		}

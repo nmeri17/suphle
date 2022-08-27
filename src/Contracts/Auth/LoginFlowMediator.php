@@ -3,7 +3,7 @@
 
 	use Suphle\Contracts\Presentation\BaseRenderer;
 
-	interface LoginRenderers {
+	interface LoginFlowMediator {
 
 		public function successRenderer ():BaseRenderer;
 
