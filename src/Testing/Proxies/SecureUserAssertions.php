@@ -9,7 +9,7 @@
 
 	trait SecureUserAssertions {
 
-		private const GENERIC_STORAGE = AuthStorage::class;
+		private $GENERIC_STORAGE = AuthStorage::class; // since traits can't have constants
 
 		protected $hasHydratedOrmDialect = false;
 
@@ -22,7 +22,7 @@
 
 			if (is_null($storageName))
 
-				$storageName = self::GENERIC_STORAGE;
+				$storageName = $this->GENERIC_STORAGE;
 
 			$container = $this->getContainer();
 
@@ -34,7 +34,7 @@
 
 			$authStorage = $container->getClass($storageName);
 
-			$isNotDefault = $storageName != self::GENERIC_STORAGE &&
+			$isNotDefault = $storageName != $this->GENERIC_STORAGE &&
 
 			get_class($authStorage) != $storageName;
 
@@ -58,7 +58,7 @@
 
 			$this->getContainer()->whenTypeAny()->needsAny([ // using this instead of massProvide so it doesn't wipe out any dependencies within a test
 
-				self::GENERIC_STORAGE => $storage
+				$this->GENERIC_STORAGE => $storage
 			]);
 
 			return $identifier;

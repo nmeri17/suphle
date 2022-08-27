@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services;
 
-	class MultiUserEditError extends MultiUserEditMock {
+	class EmploymentEditError extends EmploymentEditMock {
 
 		public function updateResource () {
 

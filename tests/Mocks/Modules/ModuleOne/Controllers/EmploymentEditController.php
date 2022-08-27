@@ -3,13 +3,13 @@
 
 	use Suphle\Services\ServiceCoordinator;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\MultiUserEditMock;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\EmploymentEditMock;
 
-	class MultiEditController extends ServiceCoordinator {
+	class EmploymentEditController extends ServiceCoordinator {
 
 		private $editService;
 
-		public function __construct (MultiUserEditMock $editService) {
+		public function __construct (EmploymentEditMock $editService) {
 
 			$this->editService = $editService;
 		}

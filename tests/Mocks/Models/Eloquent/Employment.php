@@ -1,13 +1,19 @@
 <?php
 	namespace Suphle\Tests\Mocks\Models\Eloquent;
 
+	use Suphle\Contracts\Services\Models\IntegrityModel;
+
 	use Suphle\Adapters\Orms\Eloquent\Models\{BaseModel, User};
+
+	use Suphle\Adapters\Orms\Eloquent\Condiments\EditIntegrity;
 
 	use Suphle\Tests\Mocks\Models\Eloquent\Factories\EmploymentFactory;
 
 	use Illuminate\Database\Eloquent\Factories\Factory;
 
-	class Employment extends BaseModel {
+	class Employment extends BaseModel implements IntegrityModel {
+
+		use EditIntegrity;
 
 		protected $table = "employment";
 

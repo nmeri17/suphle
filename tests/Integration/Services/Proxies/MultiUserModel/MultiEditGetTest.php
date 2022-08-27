@@ -7,13 +7,15 @@
 
 	use Suphle\Exception\Explosives\EditIntegrityException;
 
+	use Suphle\Services\DecoratorHandlers\MultiUserEditHandler;
+
 	use Suphle\Adapters\Orms\Eloquent\Models\User as EloquentUser;
 
 	use Suphle\Testing\{TestTypes\InvestigateSystemCrash, Condiments\BaseDatabasePopulator};
 
 	use Suphle\Testing\Proxies\{WriteOnlyContainer, SecureUserAssertions};
 
-	use Suphle\Tests\Mocks\Models\Eloquent\MultiEditProduct;
+	use Suphle\Tests\Mocks\Models\Eloquent\{Employment, Employer};
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Auth\AuthorizeRoutes, Meta\ModuleOneDescriptor, Config\RouterMock};
 
@@ -21,7 +23,7 @@
 
 		use BaseDatabasePopulator, SecureUserAssertions;
 
-		protected $softenDisgraceful = true, $product;
+		protected $softenDisgraceful = true, $employment;
 
 		protected function getModule ():DescriptorInterface {
 
@@ -36,7 +38,7 @@
 
 		protected function getActiveEntity ():string {
 
-			return MultiEditProduct::class;
+			return Employment::class;
 		}
 
 		public function test_unauthorized_getter_throws_error () {
@@ -44,32 +46,34 @@
 			$this->assertWillCatchException(EditIntegrityException::class, function () { // then
 
 				$this->get("admin/gmulti-edit-unauth"); // when
-			});
+			}, MultiUserEditHandler::NO_AUTHORIZER);
 		}
 
 		protected function preDatabaseFreeze ():void {
 
-			$this->product = $this->replicator->modifyInsertion(
+			$this->employment = $this->replicator->modifyInsertion(
 
 				1, [], function ($builder) {
 
-					return $builder->for(EloquentUser::factory()->state([
+					$employer = Employer::factory()
+
+					->for(EloquentUser::factory()->state([
 
 						"is_admin" => true
-					]), "seller");
+					]))->create();
+
+					return $builder->for($employer);
 				}
 			)->first();
 		}
 
-		public function test_authorized_getter_is_successful () {
+		public function test_authorized_getter_is_successful () { // analogous to above test
 
-			$this->actingAs($this->product->seller); // given
+			$this->actingAs($this->employment->employer->user); // given
 
 			// $this->debugCaughtException();
 
-			$randomProduct = $this->replicator->getRandomEntity();
-
-			$this->get("/admin/gmulti-edit/". $randomProduct->id) // when
+			$this->get("/admin/gmulti-edit/". $this->employment->id) // when
 
 			->assertOk(); // then
 		}

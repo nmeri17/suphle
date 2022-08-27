@@ -9,7 +9,7 @@
 
 	use Suphle\Testing\Proxies\{WriteOnlyContainer, SecureUserAssertions};
 
-	use Suphle\Tests\Mocks\Models\Eloquent\Employment;
+	use Suphle\Tests\Mocks\Models\Eloquent\{Employment, Employer};
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Auth\AuthorizeRoutes, Meta\ModuleOneDescriptor, Config\RouterMock};
 
@@ -45,14 +45,18 @@
 
 				1, [], function ($builder) {
 
-					return $builder->for(EloquentUser::factory()->state([
+					$employer = Employer::factory()
+
+					->for(EloquentUser::factory()->state([
 
 						"is_admin" => true
-					]), "employer.user");
+					]))->create();
+
+					return $builder->for($employer);
 				}
 			)->first();
 
-			$this->admin = $this->employment->employer()->user();
+			$this->admin = $this->employment->employer->user;
 		}
 
 		public function test_nested_can_add_more_locks () {
@@ -75,7 +79,7 @@
 
 		private function randomEmploymentId ():int {
 
-			$id = $this->replicator->getRandomEntity();
+			$id = $this->replicator->getRandomEntity()->id;
 
 			if ($id != $this->employment->id) return $id;
 

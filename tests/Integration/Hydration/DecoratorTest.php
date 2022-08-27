@@ -9,7 +9,7 @@
 
 	use Suphle\Tests\Integration\Generic\CommonBinds;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\{ThrowsException, Services\MultiUserEditMock};
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\{ThrowsException, Services\EmploymentEditMock};
 
 	use ProxyManager\Factory\AccessInterceptorValueHolderFactory as AccessInterceptor;
 
@@ -23,7 +23,7 @@
 
 		$superDecorator = ServiceErrorCatcher::class,
 
-		$decoratedClass = MultiUserEditMock::class, $hydrator;
+		$decoratedClass = EmploymentEditMock::class, $hydrator;
 
 		protected function setUp ():void {
 
@@ -52,7 +52,7 @@
 			$this->assertSame([$this->subDecorator], $result);
 		}
 
-		public function test_catches_error () {
+		public function test_catches_error () { // proof of concept
 
 			$awesomeClass = new ThrowsException;
 
@@ -76,7 +76,7 @@
 
 				"awesomeMethod" => function ($proxy, $concrete, $method, $parameters, $result, &$earlyReturn) {
 					
-					var_dump(47, $concrete, $result);
+					var_dump(47, $concrete, $result); // early return means this won't run
 
 					$earlyReturn = true;
 
