@@ -9,6 +9,8 @@
 
 	class Auth implements AuthContract {
 
+		public const API_LOGIN_PATH = "api/v1/login";
+
 		private $requestDetails;
 
 		public function __construct (RequestDetails $requestDetails) {
@@ -21,7 +23,7 @@
 			return [
 				$this->markupRedirect() => BrowserLoginMediator::class,
 
-				"api/v1/login" => ApiLoginMediator::class
+				self::API_LOGIN_PATH => ApiLoginMediator::class
 			];
 		}
 

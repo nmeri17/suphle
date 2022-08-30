@@ -48,9 +48,11 @@
 			}
 			catch (Throwable $exception) {
 
-				$message = "Error encountered during attempt to find route on descriptor ". get_class($descriptor);
+				echo implode("\n", [
+					"Error encountered during attempt to find route on descriptor ". get_class($descriptor),
 
-				echo $message;
+					$exception
+				]);
 
 				throw $exception;
 			}

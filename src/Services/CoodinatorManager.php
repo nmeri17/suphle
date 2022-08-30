@@ -3,9 +3,11 @@
 
 	use Suphle\Hydration\Container;
 
-	use Suphle\Contracts\Requests\ValidationEvaluator;
+	use Suphle\Contracts\{Requests\ValidationEvaluator, Presentation\BaseRenderer};
 
 	use Suphle\Request\{ValidatorManager, RequestDetails};
+
+	use Suphle\Routing\RouteManager;
 
 	use Suphle\Exception\Explosives\Generic\NoCompatibleValidator;
 
@@ -13,15 +15,19 @@
 
 		private $controller, $container, $actionMethod,
 
-		$handlerParameters, $validatorManager, $requestDetails;
+		$handlerParameters, $validatorManager, $requestDetails,
 
-		function __construct( Container $container, ValidatorManager $validatorManager, RequestDetails $requestDetails) {
+		$router;
+
+		function __construct( Container $container, ValidatorManager $validatorManager, RequestDetails $requestDetails, RouteManager $router) {
 
 			$this->container = $container;
 
 			$this->validatorManager = $validatorManager;
 
 			$this->requestDetails = $requestDetails;
+
+			$this->router = $router;
 		}
 
 		public function setDependencies (ServiceCoordinator $controller, string $actionMethod):self {
@@ -93,6 +99,15 @@
 		public function getValidatorErrors ():array {
 
 			return $this->validatorManager->validationErrors();
+		}
+
+		public function validationRenderer ():BaseRenderer {
+
+			if (!$this->requestDetails->isApiRoute())
+
+				return $this->router->getPreviousRenderer();
+
+			return $this->router->getActiveRenderer();
 		}
 	}
 ?>

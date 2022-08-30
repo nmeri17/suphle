@@ -11,7 +11,12 @@
 
 		protected function setDummyRenderer ():void {
 
-			$this->dummyRenderer = $this->positiveDouble(BaseRenderer::class);
+			$this->dummyRenderer = $this->positiveDouble(BaseRenderer::class, [
+
+				"getRawResponse" => [],
+
+				"getStatusCode" => 200
+			]);
 		}
 
 		protected function getHandlerIdentifier (array $stubMethods, array $mockMethods = []):ModuleHandlerIdentifier {

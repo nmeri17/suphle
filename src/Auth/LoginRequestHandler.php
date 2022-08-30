@@ -45,6 +45,11 @@
 			return $this->validatorManager->validationErrors();
 		}
 
+		public function validationRenderer ():BaseRenderer {
+
+			return $this->rendererCollection->failedRenderer(); // browser renderer uses Reload to connect to the get for us, while json returns a plain array as usual
+		}
+
 		public function processLoginRequest ():void {
 
 			$renderer = $this->responseRenderer;

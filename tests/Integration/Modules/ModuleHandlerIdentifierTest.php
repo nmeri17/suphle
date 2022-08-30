@@ -1,9 +1,17 @@
 <?php
 	namespace Suphle\Tests\Integration\Modules;
 
-	use Suphle\Contracts\{Auth\ModuleLoginHandler, Config\Router};
+	use Suphle\Contracts\Auth\{ModuleLoginHandler, LoginFlowMediator};
+
+	use Suphle\Contracts\Config\{Router, AuthContract};
+
+	use Suphle\Contracts\Database\OrmDialect;
 
 	use Suphle\Flows\OuterFlowWrapper;
+
+	use Suphle\Exception\Explosives\ValidationFailure;
+
+	use Suphle\Config\Auth;
 
 	use Suphle\Testing\{Condiments\DirectHttpTest, Proxies\WriteOnlyContainer};
 
@@ -22,6 +30,9 @@
 			parent::setUp();
 		}
 
+		// no need to create these. We're not interested in using any
+		protected function setAllDescriptors ():void {}
+
 		protected function getModules():array {
 
 			return [
@@ -38,13 +49,19 @@
 		
 		public function test_can_handle_login () {
 
-			$this->setHttpParams("/login", "post", []); // given
+			$this->massProvide([
 
-			$this->getHandlerIdentifier([
+				ModuleLoginHandler::class => $this->mockLoginHandler() // then
+			]);
 
-				"getLoginHandler" => $this->mockLoginHandler() // then	
-			])
-			->respondFromHandler(); // when
+			$this->post(
+
+				Auth::API_LOGIN_PATH // given
+			); // when
+
+			$this->container->getClass(OrmDialect::class)
+
+			->restoreConnections($this->modules);
 		}
 
 		private function mockLoginHandler ():ModuleLoginHandler {
@@ -60,10 +77,7 @@
 					"setResponseRenderer" => $this->returnSelf()
 				], [
 
-					"processLoginRequest" => [
-
-						$this->atLeastOnce(), []
-					]
+					"processLoginRequest" => [1, []]
 				]
 			);
 		}
@@ -87,6 +101,28 @@
 				]]
 			])
 			->respondFromHandler();
+		}
+		
+		public function test_validation_failure_on_login_will_terminate () {
+
+			$this->expectException(ValidationFailure::class); // then
+
+			$sutName = ModuleLoginHandler::class;
+
+			$this->massProvide([
+
+				$sutName => $this->negativeDouble($sutName, [
+
+					"isValidRequest" => false // given
+				]),
+
+				AuthContract::class => $this->positiveDouble(AuthContract::class, [
+
+					"getLoginCollection" => $this->negativeDouble(LoginFlowMediator::class)
+				])
+			]);
+
+			$this->entrance->handleLoginRequest(); // when
 		}
 	}
 ?>

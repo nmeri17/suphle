@@ -32,11 +32,7 @@
 
 		public function prepareRendererData ():void {
 
-			if (!$this->requestDetails->isApiRoute())
-
-				$this->renderer = $this->router->getPreviousRenderer();
-
-			else $this->renderer = $this->router->getActiveRenderer();
+			$this->renderer = $this->validationEvaluator->validationRenderer();
 
 			$this->renderer->setRawResponse(array_merge(
 
