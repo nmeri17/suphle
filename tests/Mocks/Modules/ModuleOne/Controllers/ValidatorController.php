@@ -14,7 +14,10 @@
 
 		public function handleGet () {
 
-			//
+			return [
+
+				"message" => "mercy"
+			];
 		}
 
 		public function postNoValidator () {
