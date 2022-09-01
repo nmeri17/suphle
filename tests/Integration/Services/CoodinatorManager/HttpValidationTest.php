@@ -38,7 +38,7 @@
 			$response = $this->post("/post-with"); // when
 
 			// then
-			$response->assertStatus(422)
+			$response->assertUnprocessable()
 
 			->assertJsonFragment(["message" => "mercy"])
 

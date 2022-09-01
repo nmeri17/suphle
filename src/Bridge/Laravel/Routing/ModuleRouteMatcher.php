@@ -5,8 +5,6 @@
 
 	use Suphle\Response\Format\ExternallyEvaluatedRenderer;
 
-	use Suphle\Bridge\Laravel\Package\LaravelProviderManager;
-
 	use Illuminate\Routing\{Router, Route};
 
 	use Illuminate\Http\Request;

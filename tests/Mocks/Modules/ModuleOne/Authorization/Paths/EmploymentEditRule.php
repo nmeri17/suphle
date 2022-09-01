@@ -24,9 +24,7 @@
 
 		public function permit ():bool {
 
-			$user = $this->authStorage->getUser();
-
-			return /*$user->isAdmin() ||*/ $user->getId() == $this->getCreatorId(); // not necessary cuz of the preceding rule combined with this
+			return /*$user->isAdmin() &&*/ $this->authStorage->getId() == $this->getCreatorId(); // not necessary cuz of the preceding rule combined with this, unless we want to replace "&&" with "||"
 		}
 
 		protected function getCreatorId ():int {
