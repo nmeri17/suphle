@@ -44,10 +44,11 @@
 		"vlucas/phpdotenv": "*"
 	},
 	"require-dev": {
-		"phpunit/phpunit": "^8.5",
+		"fakerphp/faker": "^1.19",
 		"illuminate/testing": "^8.83",
 		"laravel/framework": "^8.83",
-		"fakerphp/faker": "^1.19",
+		"phpstan/phpstan": "^1.8",
+		"phpunit/phpunit": "^8.5",
 		"symfony/process": "^5.4"
 	},
 	"repositories": [{

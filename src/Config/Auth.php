@@ -3,11 +3,13 @@
 
 	use Suphle\Contracts\Config\AuthContract;
 
-	use Suphle\Auth\Renderers\{BrowserLoginRenderer, ApiLoginRenderer};
+	use Suphle\Auth\Renderers\{BrowserLoginMediator, ApiLoginMediator};
 
 	use Suphle\Request\RequestDetails;
 
 	class Auth implements AuthContract {
+
+		public const API_LOGIN_PATH = "api/v1/login";
 
 		private $requestDetails;
 
@@ -19,9 +21,9 @@
 		protected function getLoginPaths ():array {
 
 			return [
-				$this->markupRedirect() => BrowserLoginRenderer::class,
+				$this->markupRedirect() => BrowserLoginMediator::class,
 
-				"api/v1/login" => ApiLoginRenderer::class
+				self::API_LOGIN_PATH => ApiLoginMediator::class
 			];
 		}
 

@@ -9,6 +9,8 @@
 
 	use Symfony\Component\Console\Command\Command;
 
+	use Exception;
+
 	abstract class BaseCliCommand extends Command {
 
 		protected $moduleList, $executionPath, $defaultContainer,
@@ -79,6 +81,8 @@
 				if ($moduleInterface == $descriptor->exportsImplements())
 
 					return $descriptor;
+
+			throw new Exception("No matching module for $moduleInterface");
 		}
 	}
 ?>

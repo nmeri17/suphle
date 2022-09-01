@@ -7,11 +7,9 @@
 
 	use Suphle\Contracts\Database\OrmDialect;
 
-	use ReflectionClass, Exception;
-
 	trait SecureUserAssertions {
 
-		private $genericStorage = AuthStorage::class;
+		private $GENERIC_STORAGE = AuthStorage::class; // since traits can't have constants
 
 		protected $hasHydratedOrmDialect = false;
 
@@ -24,7 +22,7 @@
 
 			if (is_null($storageName))
 
-				$storageName = $this->genericStorage;
+				$storageName = $this->GENERIC_STORAGE;
 
 			$container = $this->getContainer();
 
@@ -36,7 +34,7 @@
 
 			$authStorage = $container->getClass($storageName);
 
-			$isNotDefault = $storageName != $this->genericStorage &&
+			$isNotDefault = $storageName != $this->GENERIC_STORAGE &&
 
 			get_class($authStorage) != $storageName;
 
@@ -60,7 +58,7 @@
 
 			$this->getContainer()->whenTypeAny()->needsAny([ // using this instead of massProvide so it doesn't wipe out any dependencies within a test
 
-				$this->genericStorage => $storage
+				$this->GENERIC_STORAGE => $storage
 			]);
 
 			return $identifier;

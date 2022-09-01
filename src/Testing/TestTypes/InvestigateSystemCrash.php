@@ -152,7 +152,7 @@
 		 * 
 		 * @param {flammable}: If exception is indeed thrown, and this callback contains an HTTP request, renderer returned will be a dummy one since we'll be unable to evaluate a real one
 		*/
-		protected function assertWillCatchException (string $exception, callable $flammable):void {
+		protected function assertWillCatchException (string $exceptionName, callable $flammable, string $exceptionMessage = null):void {
 
 			$this->stubExceptionBridge([
 
@@ -164,13 +164,19 @@
 
 				"hydrateHandler" => [1, [
 
-					$this->callback(function ($subject) use ($exception) {
+					$this->callback(function ($subject) use ($exceptionName, $exceptionMessage) {
 
 						$receivedException = get_class($subject);
 
-						return $receivedException === $exception ||
+						$matchesException = $receivedException === $exceptionName ||
 
-						$this->objectMeta->implementsInterface($exception, $receivedException); // we would've used assertInstanceOf here, but if that fails, it swallows context of the original error and throws the assertInstanceOf one, instead
+						$this->objectMeta->implementsInterface($exceptionName, $receivedException); // we would've used assertInstanceOf here, but if that fails, it swallows context of the original error and throws the assertInstanceOf one, instead
+
+						$matchesMessage = !$exceptionMessage ? true:
+
+						preg_match("/$exceptionMessage/i", $subject);
+
+						return $matchesException && $matchesMessage;
 					})
 				]]
 			]);

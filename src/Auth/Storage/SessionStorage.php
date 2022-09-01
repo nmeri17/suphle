@@ -18,6 +18,9 @@
 			$this->sessionClient = $sessionClient;
 		}
 
+		/**
+		 * {@inheritdoc}
+		*/
 		public function startSession (string $value):string {
 
 			if (!$this->isImpersonating) { // protection against session fixation
@@ -32,11 +35,17 @@
 			return $this->getId(); // trigger resumption
 		}
 
+		/**
+		 * {@inheritdoc}
+		*/
 		public function resumeSession ():void {
 
 			$this->identifier = $this->sessionClient->getValue($this->identifierKey);
 		}
 
+		/**
+		 * {@inheritdoc}
+		*/
 		public function imitate (string $value):string {
 
 			$this->setPreviousUser();

@@ -5,7 +5,7 @@
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\{LocalSender, BCounter, SenderExtension };
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\{MultiUserEditMock, UpdatefulEmitter};
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\UpdatefulEmitter;
 
 	class ModuleApi implements ModuleOne {
 

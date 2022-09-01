@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Auth\Repositories;
 
-	use Suphle\Auth\EmailPasswordComparer;
+	use Suphle\Contracts\Auth\ColumnPayloadComparer;
 
 	use Suphle\Auth\Storage\SessionStorage;
 
@@ -9,7 +9,7 @@
 
 		private $authStorage;
 
-		public function __construct (EmailPasswordComparer $comparer, SessionStorage $authStorage) { 
+		public function __construct (ColumnPayloadComparer $comparer, SessionStorage $authStorage) { 
 			
 			$this->comparer = $comparer;
 

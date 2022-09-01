@@ -1,12 +1,12 @@
 <?php
 	namespace Suphle\Contracts\Config;
 
-	use Suphle\Contracts\Auth\LoginRenderers;
+	use Suphle\Contracts\Auth\LoginFlowMediator;
 
 	interface AuthContract extends ConfigMarker {
 
 		/**
-		 * @return LoginRenderer that should handle incoming login request
+		 * @return LoginMediator that should handle incoming login request
 		*/
 		public function getLoginCollection ():?string;
 

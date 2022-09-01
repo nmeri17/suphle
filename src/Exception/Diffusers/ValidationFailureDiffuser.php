@@ -3,24 +3,13 @@
 
 	use Suphle\Contracts\{Exception\ExceptionHandler, Presentation\BaseRenderer};
 
-	use Suphle\Routing\RouteManager;
-
-	use Suphle\Request\RequestDetails;
-
 	use Suphle\Exception\Explosives\ValidationFailure;
 
 	use Throwable;
 
 	class ValidationFailureDiffuser implements ExceptionHandler {
 
-		private $renderer, $requestDetails, $router, $validationEvaluator;
-
-		public function __construct (RequestDetails $requestDetails, RouteManager $router) {
-
-			$this->requestDetails = $requestDetails;
-
-			$this->router = $router;
-		}
+		private $renderer, $validationEvaluator;
 
 		/**
 		 * @param {origin} ValidationFailure
@@ -32,11 +21,7 @@
 
 		public function prepareRendererData ():void {
 
-			if (!$this->requestDetails->isApiRoute())
-
-				$this->renderer = $this->router->getPreviousRenderer();
-
-			else $this->renderer = $this->router->getActiveRenderer();
+			$this->renderer = $this->validationEvaluator->validationRenderer();
 
 			$this->renderer->setRawResponse(array_merge(
 

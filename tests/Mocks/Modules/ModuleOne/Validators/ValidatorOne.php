@@ -5,7 +5,7 @@
 
 		public function postWithValidator () {
 
-			return ["foo" => "bar"];
+			return ["foo" => "required"];
 		}
 	}
 ?>

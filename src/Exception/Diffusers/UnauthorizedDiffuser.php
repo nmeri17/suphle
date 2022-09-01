@@ -11,7 +11,7 @@
 
 	use Throwable;
 
-	class UnauthorisedDiffuser implements ExceptionHandler {
+	class UnauthorizedDiffuser implements ExceptionHandler {
 
 		private $renderer, $requestDetails, $componentEntry,
 

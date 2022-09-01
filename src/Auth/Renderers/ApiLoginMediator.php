@@ -1,15 +1,15 @@
 <?php
 	namespace Suphle\Auth\Renderers;
 
-	use Suphle\Contracts\Auth\{LoginRenderers, LoginActions};
+	use Suphle\Contracts\Auth\{LoginFlowMediator, LoginActions};
 
 	use Suphle\Contracts\Presentation\BaseRenderer;
 
-	use Suphle\Response\Format\{ Redirect, Reload};
+	use Suphle\Response\Format\Json;
 
 	use Suphle\Auth\Repositories\ApiAuthRepo;
 
-	class ApiLoginRenderer implements LoginRenderers {
+	class ApiLoginMediator implements LoginFlowMediator {
 
 		private $authService;
 

@@ -15,9 +15,9 @@
 
 	use Suphle\Tests\Integration\Generic\CommonBinds;
 
-	use Suphle\Tests\Mocks\Models\Eloquent\MultiEditProduct;
+	use Suphle\Tests\Mocks\Models\Eloquent\Employment;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\{MultiUserEditMock, MultiUserEditError};
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\{EmploymentEditMock, EmploymentEditError};
 
 	use DateTime, DateInterval;
 
@@ -25,9 +25,9 @@
 
 		use DirectHttpTest, BaseDatabasePopulator, CommonBinds;
 
-		private $modelName = MultiEditProduct::class,
+		private $modelName = Employment::class,
 
-		$sutName = MultiUserEditMock::class;
+		$sutName = EmploymentEditMock::class;
 
 		public function test_missing_key_on_update_throws_error () {
 
@@ -88,7 +88,7 @@
 
 			$this->stubPlaceholderStorage($model->id);
 
-			$result = $this->container->getClass(MultiUserEditError::class)
+			$result = $this->container->getClass(EmploymentEditError::class)
 
 			->updateResource(); // when
 

@@ -15,6 +15,9 @@
 			$this->userHydrator = $userHydrator;
 		}
 
+		/**
+		 * {@inheritdoc}
+		*/
 		public function getUser ():?UserContract {
 
 			$userId = $this->getId();
@@ -36,8 +39,7 @@
 		}
 
 		/**
-		 * @param {value}: target user identifier
-		 * @return newly minted token for that id or simply returns same value for session-based mechanism
+		 * {@inheritdoc}
 		*/
 		public function imitate (string $value):string {
 

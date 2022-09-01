@@ -3,11 +3,13 @@
 
 	use Suphle\Auth\Storage\TokenStorage;
 
-	use Suphle\Auth\EmailPasswordComparer;
+	use Suphle\Contracts\Auth\ColumnPayloadComparer;
 
 	class ApiAuthRepo extends BaseAuthRepo {
 
-		public function __construct (EmailPasswordComparer $comparer, TokenStorage $authStorage) { 
+		private $authStorage;
+
+		public function __construct (ColumnPayloadComparer $comparer, TokenStorage $authStorage) { 
 			
 			$this->comparer = $comparer;
 

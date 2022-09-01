@@ -3,11 +3,11 @@
 
 	use Suphle\Hydration\Container;
 
-	use Suphle\Contracts\Auth\{ModuleLoginHandler, LoginRenderers};
+	use Suphle\Contracts\Auth\{ModuleLoginHandler, LoginFlowMediator};
 
 	use Suphle\Contracts\Presentation\BaseRenderer;
 
-	use Suphle\Auth\{LoginRequestHandler, Renderers\BrowserLoginRenderer};
+	use Suphle\Auth\{LoginRequestHandler, Renderers\BrowserLoginMediator};
 
 	use Suphle\Exception\Explosives\ValidationFailure;
 
@@ -57,8 +57,6 @@
 				ModuleLoginHandler::class => $this->buildLoginHandler() // then
 			]);
 
-			$this->entrance->extractFromContainer();
-
 			$this->entrance->handleLoginRequest(); // when
 		}
 
@@ -68,13 +66,13 @@
 
 			$container = $this->getContainer();
 
-			$renderer = $container->getClass(BrowserLoginRenderer::class);
+			$renderer = $container->getClass(BrowserLoginMediator::class);
 
 			$arguments = $container->whenType($concreteName)
 
 			->needsArguments([
 
-				LoginRenderers::class => $renderer
+				LoginFlowMediator::class => $renderer
 			])->getMethodParameters(
 
 				Container::CLASS_CONSTRUCTOR, $concreteName

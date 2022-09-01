@@ -7,15 +7,15 @@
 
 	use Suphle\Response\Format\Json;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Controllers\MultiEditController;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Controllers\EmploymentEditController;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Authorization\Paths\{ModelEditRule, AdminRule};
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Authorization\Paths\{EmploymentEditRule, AdminRule};
 
 	class UnlocksAuthorization1 extends BaseCollection {
 
 		public function _handlingClass ():string {
 
-			return MultiEditController::class;
+			return EmploymentEditController::class;
 		}
 
 		public function RETAIN () {
@@ -47,7 +47,7 @@
 
 			$pathAuthorizer->addRule (
 
-				[ "ADDITIONAL__RULEh"], ModelEditRule::class
+				[ "GMULTI__EDITh_id"], EmploymentEditRule::class
 			)
 			->forgetRule([
 

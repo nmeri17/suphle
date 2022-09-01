@@ -11,11 +11,11 @@
 
 	class TokenStorage extends BaseAuthStorage {
 
-		const AUTHORIZATION_HEADER = "Authorization";
+		public const AUTHORIZATION_HEADER = "Authorization";
 
-		private $payloadStorage, $envAccessor,
+		private const IDENTIFIER_KEY = "user_id";
 
-		$identifierKey = "user_id";
+		private $payloadStorage, $envAccesso;
 
 		public function __construct ( EnvAccessor $envAccessor, PayloadStorage $payloadStorage) {
 
@@ -24,6 +24,9 @@
 			$this->payloadStorage = $payloadStorage;
 		}
 
+		/**
+		 * {@inheritdoc}
+		*/
 		public function resumeSession ():void {
 
 			if (!$this->payloadStorage->hasHeader(self::AUTHORIZATION_HEADER))
@@ -57,9 +60,12 @@
 				return;
 			}
 
-			$this->identifier = $decoded->data->{$this->identifierKey};
+			$this->identifier = $decoded->data->{self::IDENTIFIER_KEY};
 		}
 
+		/**
+		 * {@inheritdoc}
+		*/
 		public function startSession(string $value):string {
 			
 			$issuedAt = time();
@@ -75,7 +81,7 @@
 
 				"exp" => $issuedAt + $envAccessor->getField("JWT_TTL"),
 
-				"data" => [$this->identifierKey => $value]
+				"data" => [self::IDENTIFIER_KEY => $value]
 			];
 
 			$outgoingToken = JWT::encode(

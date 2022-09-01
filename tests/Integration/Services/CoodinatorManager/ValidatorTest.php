@@ -152,37 +152,5 @@
 				ModuleInitializer::class => $initializer
 			]);
 		}
-
-		public function test_failed_validation_reverts_renderer () {
-
-			$this->setHttpParams("/dummy"); // given
-
-			$router = $this->negativeDouble(RouteManager::class, [
-
-				"getPreviousRenderer" => $this->negativeDouble(BaseRenderer::class, [], [
-
-					"setRawResponse" => [
-
-						1, [$this->callback(function($subject) {
-
-							return array_key_exists("errors", $subject); // if getPreviousRenderer is not called, our mock won't run-- 2 verifications for the price of 1
-						})] // then
-					]
-				]
-			)]);
-
-			$diffuser = $this->container->whenTypeAny()->needsAny([
-
-				RouteManager::class => $router
-			])
-			->getClass(ValidationFailureDiffuser::class);
-
-			$diffuser->setContextualData(
-
-				new ValidationFailure ($this->positiveDouble(ValidationEvaluator::class))
-			);
-
-			$diffuser->prepareRendererData(); // when
-		}
 	}
 ?>

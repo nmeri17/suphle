@@ -15,7 +15,7 @@
 
 		private $credentials, $connection, $laravelContainer,
 
-		$nativeClient;
+		$nativeClient, $container;
 
 		public function __construct (Database $config, Container $container, LaravelContainer $laravelContainer) {
 
@@ -133,6 +133,16 @@
 		public function userModel ():UserContract {
 
 			return $this->container->getClass(EloquentUser::class);
+		}
+
+		/**
+		 * {@inheritdoc}
+		*/
+		public function restoreConnections (array $modules):void {
+
+			foreach ($modules as $descriptor)
+
+				$descriptor->getContainer()->getClass(OrmDialect::class);
 		}
 	}
 ?>

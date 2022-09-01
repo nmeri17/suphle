@@ -7,15 +7,15 @@
 
 	use Suphle\Routing\PathPlaceholders;
 
-	use Suphle\Tests\Mocks\Models\Eloquent\MultiEditProduct;
+	use Suphle\Tests\Mocks\Models\Eloquent\Employment;
 
-	class MultiUserEditMock extends UpdatefulService implements MultiUserModelEdit {
+	class EmploymentEditMock extends UpdatefulService implements MultiUserModelEdit {
 
 		use BaseErrorCatcherService;
 
 		private $integrity, $placeholderStorage, $model;
 
-		public function __construct (PathPlaceholders $placeholderStorage, MultiEditProduct $model) {
+		public function __construct (PathPlaceholders $placeholderStorage, Employment $model) {
 
 			$this->placeholderStorage = $placeholderStorage;
 

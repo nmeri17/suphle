@@ -70,19 +70,13 @@
 				return true;
 			}
 
-			$this->restoreConnections();
+			current($this->modules)->getContainer()
+
+			->getClass(OrmDialect::class)
+
+			->restoreConnections($this->modules);
 
 			return false;
-		}
-
-		/**
-		 * Undo connection resetting action so underlying ORM client's subsequent calls aren't disrupted by trying to hydrate a blank connection instance
-		*/
-		private function restoreConnections ():void {
-
-			foreach ($this->modules as $descriptor)
-
-				$descriptor->getContainer()->getClass(OrmDialect::class);
 		}
 
 		private function executeFlowBranch ( string $urlPattern, UnitNode $structure):void {

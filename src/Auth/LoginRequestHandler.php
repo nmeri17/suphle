@@ -5,7 +5,7 @@
 
 	use Suphle\Contracts\{ Modules\HighLevelRequestHandler, Presentation\BaseRenderer};
 
-	use Suphle\Contracts\Auth\{LoginRenderers, ModuleLoginHandler};
+	use Suphle\Contracts\Auth\{LoginFlowMediator, ModuleLoginHandler};
 
 	use Suphle\Request\ValidatorManager;
 
@@ -15,10 +15,10 @@
 
 		private $rendererCollection, $container, $responseRenderer,
 
-		$validatorManager, $variableDecorator;
+		$validatorManager, $variableDecorator, $loginService;
 
 		public function __construct (
-			LoginRenderers $collection, Container $container,
+			LoginFlowMediator $collection, Container $container,
 
 			ValidatorManager $validatorManager, VariableDependenciesHandler $variableDecorator) {
 
@@ -43,6 +43,11 @@
 		public function getValidatorErrors ():array {
 
 			return $this->validatorManager->validationErrors();
+		}
+
+		public function validationRenderer ():BaseRenderer {
+
+			return $this->rendererCollection->failedRenderer(); // browser renderer uses Reload to connect to the get for us, while json returns a plain array as usual
 		}
 
 		public function processLoginRequest ():void {

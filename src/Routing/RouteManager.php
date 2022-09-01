@@ -13,6 +13,9 @@
 
 	use Suphle\Exception\Explosives\IncompatibleHttpMethod;
 
+	/**
+	 * Can't replace this with a double in a http test cuz it'll get overriden when path is received. Anything exceeding capabilities of this class should be tested high level/behavior-wise rather than relying on specifics
+	*/
 	class RouteManager {
 
 		const PREV_RENDERER = "prv_rdr",

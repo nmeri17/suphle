@@ -7,14 +7,7 @@
 
 	class UserHydrator implements HydratorContract {
 
-		private $payloadStorage, $model,
-
-		$loginColumnIdentifier = "email";
-
-		public function __construct ( PayloadStorage $payloadStorage) {
-
-			$this->payloadStorage = $payloadStorage;
-		}
+		private $model;
 
 		public function setUserModel (UserContract $model):void {
 
@@ -29,12 +22,9 @@
 		/**
 		 *  {@inheritdoc}
 		*/
-		public function findAtLogin ():?UserContract {
+		public function findAtLogin (array $criteria):?UserContract {
 
-			return $this->model->where([
-
-				$this->loginColumnIdentifier => $this->payloadStorage->getKey($this->loginColumnIdentifier)
-			])->first();
+			return $this->model->where($criteria)->first();
 		}
 	}
 ?>
