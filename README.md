@@ -81,4 +81,9 @@ If you discover a security vulnerability, kindly send an e-mail to Nmeri Alphons
 
 The most important thing for me at the moment is indication of interest from the community. Please, please, I'm not asking for donations yet. Just help by starring the repo and sharing it with your friends
 
-## Installation
+<!-- ## Installation-->
+## Testing
+Clone project. Run `composer install && cd vendor/bin && phpunit ../tests`
+It requires an active mysql connection
+
+The complementary user-facing project can be found at https://github.com/nmeri17/suphle-starter. It requires unarchiving the roadrunner binary and running with the in-folder configuration 
