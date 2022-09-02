@@ -68,7 +68,16 @@ Thankfully, not. Matter of fact, There's an appendix in the docs that go into de
 
 Ha! I think you mean "take all my existing and future codebases". <!-- So, head straight over to the documentation at [suphle.com](docs/v1/quick-start). However, if you mean what you said, you can donate to support continuous development of the project through these channels -->
 
+Documentation in progress over at https://github.com/nmeri17/suphle-docs/.
+
+Interested in contributing? 
+Please check https://github.com/nmeri17/Suphle/labels/help%20wanted.
+
+I haven't defined a formal set of contribution rules yet using csfixer and editor-config since no one has expressed interest yet. Let me know if you need that
+
+
 ## Security
+If you discover a security vulnerability, kindly send an e-mail to Nmeri Alphonsus via vainglories17@gmail.com. All security vulnerabilities will be promptly addressed.
 
 The most important thing for me at the moment is indication of interest from the community. Please, please, I'm not asking for donations yet. Just help by starring the repo and sharing it with your friends
 
