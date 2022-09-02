@@ -61,13 +61,15 @@ Yes, it's brand new, but it doesn't lack any more libraries than laravel. The br
 Thankfully, not. Matter of fact, There's an appendix in the docs that go into detail about the ins and outs of automating your tests, especially intended for those who don't know how to, tried and failed to wrap their heads /workflow around TDD, or who don't really think testing is important – that demographic of developers. It even includes articles for progressive development and inclusion of new features, replacing old ones etc.
 
 "..."
+
 "..."
+
 ![shut-up-and-take-my-money](shut-up-take-my-money.gif)
 
-Ha! I think you mean "take all my existing and future codebases". So, head straight over to the documentation at suphle.com (quick start page, not another intro/landing page). However, if you mean what you said, you can donate to support continuous development of the project through these channels
+Ha! I think you mean "take all my existing and future codebases". <!-- So, head straight over to the documentation at [suphle.com](docs/v1/quick-start). However, if you mean what you said, you can donate to support continuous development of the project through these channels -->
 
 ## Security
 
-* help star repo and share with your friends
+The most important thing for me at the moment is indication of interest from the community. Please, please, I'm not asking for donations yet. Just help by starring the repo and sharing it with your friends
 
 ## Installation
