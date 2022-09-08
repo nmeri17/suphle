@@ -70,15 +70,11 @@ Ha! I think you mean "take all my existing and future codebases". <!-- So, head 
 
 Documentation in progress over at https://github.com/nmeri17/suphle-docs/.
 
-Interested in contributing? 
-Please check https://github.com/nmeri17/Suphle/labels/help%20wanted.
-
-I haven't defined a formal set of contribution rules yet using csfixer and editor-config since no one has expressed interest yet. Let me know if you need that
-
+I haven't defined a formal set of contribution rules yet using csfixer and editor-config since no one has expressed interest yet. Let me know if the prevalent coding style isn't glaring.
 
 ## Security
 
-[Security Policy](security.md).
+[Security Policy](SECURITY.md).
 
 The most important thing for me at the moment is indication of interest from the community. Just help by starring the repo and sharing it with your friends
 
