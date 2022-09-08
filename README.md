@@ -77,13 +77,14 @@ I haven't defined a formal set of contribution rules yet using csfixer and edito
 
 
 ## Security
-If you discover a security vulnerability, kindly send an e-mail to Nmeri Alphonsus via vainglories17@gmail.com. All security vulnerabilities will be promptly addressed.
 
-The most important thing for me at the moment is indication of interest from the community. Please, please, I'm not asking for donations yet. Just help by starring the repo and sharing it with your friends
+[Security Policy](security.md).
+
+The most important thing for me at the moment is indication of interest from the community. Just help by starring the repo and sharing it with your friends
 
 <!-- ## Installation-->
 ## Testing
-Clone project. Run `composer install && cd vendor/bin && phpunit ../tests`
+Clone project. Run `composer install && cd vendor/bin && phpunit ../../tests`
 It requires an active mysql connection
 
-The complementary user-facing project can be found at https://github.com/nmeri17/suphle-starter. It requires unarchiving the roadrunner binary and running with the in-folder configuration 
+This is the dev-facing project intended for contribution of Suphle itself. The user-facing project can be found at https://github.com/nmeri17/suphle-starter. It requires unarchiving the roadrunner binary and running with the in-folder configuration 
