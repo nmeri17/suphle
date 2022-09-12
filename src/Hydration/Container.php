@@ -150,12 +150,21 @@
 
 			if (is_null($concrete)) return;
 
+			return $this->decorateWhenInjecting(
+
+				$concrete, $freshlyCreated->getCreatedFor()
+			);
+		}
+
+		private function decorateWhenInjecting (object $concrete, string $caller) {
+
 			$decorator = $this->getDecorator();
 
-			return $decorator ? $decorator->scopeInjecting( // decorator runs on each fetch (rather than only once), since different callers result in different behavior
-				
-				$concrete, $freshlyCreated->getCreatedFor()
-			): $concrete;
+			return $decorator ?
+
+				$decorator->scopeInjecting($concrete, $caller): // decorator runs on each fetch (rather than only once), since different callers result in different behavior
+					
+				$concrete;
 		}
 
 		public function getProvidedConcrete (string $fullName):?object {
@@ -313,33 +322,39 @@
 		}
 
 		/**
-		 * Not explicitly decorating objects from here since it calls [getClass]
+		 * Use caller's parent to hydrate dependency
+		 * 
+		 * @return First provided parent of requested class or null
 		*/
-		private function hydrateChildsParent (string $fullName) {
+		private function hydrateChildsParent (string $requestedClass) {
 
-			$providedParent = $this->getProvidedParent($fullName);
+			return $this->initializeHydratingForAction($requestedClass, function ($className) {
 
-			if (!is_null($providedParent))
+				$caller = $this->lastHydratedFor();
 
-				return $this->getClass($providedParent);
-		}
+				$allSuperiors = array_keys($this->provisionedClasses);
 
-		/**
-		 * @return the first provided parent of the given class
-		*/
-		private function getProvidedParent (string $class):?string {
+				$classSuperiors = array_merge(
+					class_parents($caller, true),
 
-			$allSuperiors = array_keys($this->provisionedClasses);
+					class_implements($caller, true)
+				);
 
-			$classSuperiors = array_merge(
-				class_parents($class, true),
+				$matchingProvisions = array_intersect($classSuperiors, $allSuperiors);
 
-				class_implements($class, true)
-			);
+				if (empty($matchingProvisions) ) return null;
 
-			return current(
-				array_intersect($classSuperiors, $allSuperiors)
-			);
+				$activeProvision = $this->provisionedClasses[
+
+					current($matchingProvisions)
+				];
+
+				if (!$activeProvision->hasConcrete($className)) return;
+
+				$concrete = $activeProvision->getConcrete($className);
+
+				return $this->decorateWhenInjecting($concrete, $caller);
+			});
 		}
 
 		private function saveWhenImplements (string $interface, $concrete):void {
@@ -518,14 +533,14 @@
 		*/
 		public function instantiateConcrete (string $fullName):object {
 
-			$decorator = $this->getDecorator();
-
-			$freshlyCreated = $this->initializeHydratingForAction ($fullName, function ($className) use ($decorator) { // we need this double coating since we intend to read arguments later, and [lastHydratedFor] is expected to see a list of at least 2 items during argument reading
+			$freshlyCreated = $this->initializeHydratingForAction ($fullName, function ($className) { // we need this double coating since we intend to read arguments later, and [lastHydratedFor] is expected to see a list of at least 2 items during argument reading
 
 				if (method_exists($className, self::CLASS_CONSTRUCTOR)) // note that this throws a fatal, uncatchable error when class is in an unparseable state like missing abstract method or contract implementation
 
 					$concrete = $this->hydrateConcreteForCaller($className);
 				else {
+
+					$decorator = $this->getDecorator();
 
 					if (!is_null($decorator))
 
@@ -544,10 +559,10 @@
 
 			$this->storeConcrete($fullName, $concrete);
 
-			return $decorator ? $decorator->scopeInjecting(
-				
+			return $this->decorateWhenInjecting(
+
 				$concrete, $freshlyCreated->getCreatedFor()
-			): $concrete;
+			);
 		}
 
 		public function hydrateConcreteForCaller (string $className):object {
@@ -633,7 +648,10 @@
 
 			$decorator = $this->getDecorator();
 
-			return $decorator ? $decorator->scopeArguments( $anchorClass, $dependencies, $callable): $dependencies;
+			return $decorator ? $decorator->scopeArguments(
+
+				$anchorClass, $dependencies, $callable
+			): $dependencies;
 		}
 
 		private function hydratingInternally (string $fullName):bool {

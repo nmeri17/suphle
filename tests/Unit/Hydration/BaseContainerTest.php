@@ -24,11 +24,6 @@
 			$this->container->setEssentials();
 		}
 
-		public function test_lastHydratedFor () {
-
-			$this->assertNull($this->container->lastHydratedFor());
-		}
-
 		public function test_decorateProvidedConcrete_doesnt_overflow_memory () {
 
 			$sut = $this->positiveDouble(Container::class, [], [

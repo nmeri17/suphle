@@ -66,6 +66,8 @@
 
 		/**
 		 * For use as dataProvider
+		 * 
+		 * @return Each installation state along with argument expected to be received by the ejector, ComponentEjector, not the individual entries
 		*/
 		public function overrideOptions ():array {
 

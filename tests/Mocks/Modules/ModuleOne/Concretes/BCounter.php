@@ -3,7 +3,7 @@
 
 	class BCounter {
 
-		private $count = 0;
+		protected $count = 0;
 
 		public function getCount ():int {
 

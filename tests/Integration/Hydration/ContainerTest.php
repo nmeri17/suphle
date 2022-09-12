@@ -11,6 +11,8 @@
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\{NeedsSpace, CircularConstructor1, CircularConstructor2, ARequiresBCounter, BCounter, CConcrete, MethodCircularContainer, V1\RewriteSpaceImpl};
 
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\SubServiceLocation\{HydratorConsumer, UnknownUserLandHydrator};
+
 	class ContainerTest extends IsolatedComponentTest {
 
 		use CommonBinds {
@@ -185,6 +187,43 @@
 			$this->container->getClass(MethodCircularContainer::class)
 
 			->loadFromContainer(); // when
+		}
+
+		public function test_sub_can_see_parent_provision () {
+
+			$value = 10;
+
+			$this->assertSame(
+
+				$value, $this->provideParentCounter($value)
+
+				->getParentsBCounter()->getCount()
+			);
+		}
+
+		protected function provideParentCounter (int $counterValue):HydratorConsumer {
+
+			$clientInstance = new BCounter;
+
+			$clientInstance->setCount($counterValue);
+
+			return $this->container->whenType(HydratorConsumer::class)
+
+			->needs([BCounter::class => $clientInstance])
+
+			->getClass(UnknownUserLandHydrator::class);
+		}
+
+		public function test_sub_has_no_personal_provision () { // inverse to confirm test_sub_can_see_parent_provision doesn't work without that parameter
+
+			$value = 10;
+
+			$this->assertNotSame(
+
+				$value, $this->provideParentCounter($value)
+			
+				->getSelfBCounter()->getCount()
+			);
 		}
 	}
 ?>
