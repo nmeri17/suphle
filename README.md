@@ -68,8 +68,19 @@ Thankfully, not. Matter of fact, There's an appendix in the docs that go into de
 
 Ha! I think you mean "take all my existing and future codebases". <!-- So, head straight over to the documentation at [suphle.com](docs/v1/quick-start). However, if you mean what you said, you can donate to support continuous development of the project through these channels -->
 
+Documentation in progress over at https://github.com/nmeri17/suphle-docs/.
+
+I haven't defined a formal set of contribution rules yet using csfixer and editor-config since no one has expressed interest yet. Let me know if the prevalent coding style isn't glaring.
+
 ## Security
 
-The most important thing for me at the moment is indication of interest from the community. Please, please, I'm not asking for donations yet. Just help by starring the repo and sharing it with your friends
+[Security Policy](SECURITY.md).
 
-## Installation
+The most important thing for me at the moment is indication of interest from the community. Just help by starring the repo and sharing it with your friends
+
+<!-- ## Installation-->
+## Testing
+Clone project. Run `composer install && cd vendor/bin && phpunit ../../tests`
+It requires an active mysql connection
+
+This is the dev-facing project intended for contribution of Suphle itself. The user-facing project can be found at https://github.com/nmeri17/suphle-starter. It requires unarchiving the roadrunner binary and running with the in-folder configuration 
