@@ -5,6 +5,8 @@
 
 	interface ContainerConfig extends ConfigMarker {
 
+		public function containerLogFile ():string;
+
 		/**
 		 * @return string<ExternalPackageManager>[]
 		*/

@@ -58,7 +58,7 @@
 		}
 
 		/**
-		 * @param {baseActions} [method => function (object $concrete, string $methodName, array $argumentList)]
+		 * @param {baseActions} [method => function ($proxy, object $concrete, string $methodName, array $argumentList)]
 		*/
 		private function convertActionsToHook (array $baseActions):array {
 

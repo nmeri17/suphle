@@ -5,6 +5,11 @@
 
 	class ContainerConfig implements IContainerConfig {
 
+		public function containerLogFile ():string {
+
+			return "container-log.txt";
+		}
+
 		/**
 		 * {@inheritdoc}
 		*/

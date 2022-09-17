@@ -6,7 +6,7 @@
 		public function canProvide (string $fullName):bool;
 
 		/**
-		 * @return Object, wrapped proxy of underlying service being provided
+		 * @return Instance of requested argument
 		*/
 		public function manageService (string $fullName);
 	}

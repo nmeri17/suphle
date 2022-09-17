@@ -156,7 +156,7 @@
 
 			return $this->didPopulate(
 
-				$this->writtenArguments, $contentOwner, $className
+				$this->writtenConcretes, $contentOwner, $className
 			);
 		}
 

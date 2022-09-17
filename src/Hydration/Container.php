@@ -108,12 +108,10 @@
 
 				return $parent;
 
-			$externalManager = $this->externalContainers;
-
 			if (
-				!is_null($externalManager) &&
+				!empty($this->config->getExternalHydrators()) &&
 
-				$concrete = $externalManager->findInManagers($fullName)
+				$concrete = $this->externalContainers->findInManagers($fullName)
 			) {
 
 				$this->saveWhenImplements($fullName, $concrete);
@@ -820,7 +818,7 @@
 		private function inProcessFileLogger (array $fields):void {
 
 			file_put_contents(
-				"container-log.txt",
+				$this->config->containerLogFile(),
 
 				implode("\n", $fields) . "\n\n", FILE_APPEND
 			);
