@@ -50,6 +50,8 @@ The main takeaway here is to repurpose those known components toward these goals
 - Corrupted data when operations separated by logic, that should've been inserted together gets broken in between
 - Gnarly merge conflicts among just a handful contributors 
 
+If you or your team are struggling with any of these, you're in luck! They are some of the problems Suphle was built to solve
+
 **"Haha! I am howling right now. Tbh, giving it a try is really tempting at this point, but I'm a little sceptical given its young age and obvious lack of libraries. Might check back, later?"**
 
 ![judge-me-by-my-size](judge-me-by-my-size-do-you.jpg)
