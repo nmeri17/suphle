@@ -1,3 +1,13 @@
+The most important thing for me at the moment is indication of interest from the community. Just help by starring/watching the repo, opening an issue, or sharing it with your friends
+
+<!-- ## Installation-->
+
+## Testing
+Clone project. Run `composer install && cd vendor/bin && phpunit ../../tests`
+It requires an active mysql connection
+
+This is the dev-facing project intended for contribution of Suphle itself. The user-facing project can be found at https://github.com/nmeri17/suphle-starter. It requires unarchiving the roadrunner binary and running with the in-folder configuration 
+
 ## Introduction
 
 **"What exactly is this?"**
@@ -76,13 +86,4 @@ I haven't defined a formal set of contribution rules yet using csfixer and edito
 
 ## Security
 
-[Security Policy](SECURITY.md).
-
-The most important thing for me at the moment is indication of interest from the community. Just help by starring the repo and sharing it with your friends
-
-<!-- ## Installation-->
-## Testing
-Clone project. Run `composer install && cd vendor/bin && phpunit ../../tests`
-It requires an active mysql connection
-
-This is the dev-facing project intended for contribution of Suphle itself. The user-facing project can be found at https://github.com/nmeri17/suphle-starter. It requires unarchiving the roadrunner binary and running with the in-folder configuration 
+[Security Policy](SECURITY.md)
