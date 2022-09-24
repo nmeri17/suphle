@@ -3,7 +3,7 @@
 
 	use Suphle\Services\ServiceCoordinator;
 
-	class BaseController extends ServiceCoordinator {
+	class BaseCoordinator extends ServiceCoordinator {
 
 		public function checkPlaceholder () {
 

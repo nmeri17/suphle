@@ -5,7 +5,7 @@
 
 	use Suphle\Tests\Mocks\Modules\ModuleThree\PayloadReaders\ReadsId;
 
-	class BaseController extends ServiceCoordinator {
+	class BaseCoordinator extends ServiceCoordinator {
 
 		public function checkPlaceholder (ReadsId $payloadReader):array {
 

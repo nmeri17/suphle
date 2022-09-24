@@ -3,7 +3,7 @@
 
 	use Suphle\Routing\BaseCollection;
 
-	use Suphle\Tests\Mocks\Modules\ModuleTwo\Controllers\BaseController;
+	use Suphle\Tests\Mocks\Modules\ModuleTwo\Controllers\BaseCoordinator;
 
 	use Suphle\Response\Format\Json;
 
@@ -11,7 +11,7 @@
 
 		public function _handlingClass ():string {
 
-			return BaseController::class;
+			return BaseCoordinator::class;
 		}
 
 		public function MODULE__TWOh_id() {

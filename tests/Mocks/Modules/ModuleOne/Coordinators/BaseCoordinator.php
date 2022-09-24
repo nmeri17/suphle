@@ -5,7 +5,7 @@
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\{PayloadReaders\ImageServiceConsumer, Concretes\ARequiresBCounter};
 
-	class BaseController extends ServiceCoordinator {
+	class BaseCoordinator extends ServiceCoordinator {
 
 		public function indexHandler () {
 
