@@ -5,7 +5,7 @@
 
 	use Suphle\Testing\TestTypes\IsolatedComponentTest;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Controllers\BaseController};
+	use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Coordinators\BaseCoordinator};
 
 	use Suphle\Tests\Integration\Generic\CommonBinds;
 
@@ -19,7 +19,7 @@
 
 			$this->expectException(InvalidArgumentException::class); // then
 
-			$controller = $this->positiveDouble(BaseController::class);
+			$controller = $this->positiveDouble(BaseCoordinator::class);
 
 			$this->container->getClass(CoodinatorManager::class)
 
