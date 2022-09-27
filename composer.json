@@ -48,7 +48,7 @@
 		"illuminate/testing": "^8.83",
 		"laravel/framework": "^8.83",
 		"phpstan/phpstan": "^1.8",
-		"phpunit/phpunit": "^8.5",
+		"phpunit/phpunit": "8.5.27",
 		"symfony/process": "^5.4"
 	},
 	"repositories": [{
