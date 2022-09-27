@@ -5,7 +5,7 @@
 
 	use Suphle\Response\Format\Json;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Controllers\MixedNestedSecuredController;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\MixedNestedSecuredController;
 
 	class UnchainParentSecurity extends BaseCollection {
 

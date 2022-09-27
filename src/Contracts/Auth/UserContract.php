@@ -10,10 +10,8 @@
 		public function getPassword ();
 
 		/**
-		 * Find a model by its primary key.
-		 * 
-		 * @return Preferably, self
+		 * @return Entity. Maybe self
 		*/
-		public function find($id, $columns = ['*']);
+		public function findByPrimaryKey($key, $columns = ['*']);
 	}
 ?>

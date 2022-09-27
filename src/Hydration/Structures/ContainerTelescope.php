@@ -61,6 +61,9 @@
 			in_array($value, $context[$key]);
 		}
 
+		/**
+		 * Find all in $context matching $value
+		*/
 		public function allMatchingValue (array $context, $value):array {
 
 			$matchingKeys = [];

@@ -1,11 +1,11 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Controllers;
+	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
 	use Suphle\Services\ServiceCoordinator;
 
 	use Suphle\Request\PayloadStorage;
 
-	class ReadsPayloadController extends ServiceCoordinator {
+	class ReadsPayloadCoordinator extends ServiceCoordinator {
 
 		private $payloadStorage;
 

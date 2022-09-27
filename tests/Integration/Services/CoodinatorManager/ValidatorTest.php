@@ -23,7 +23,7 @@
 
 	use Suphle\Tests\Integration\Routing\TestsRouter;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Controllers\ValidatorController, Validators\ValidatorOne};
+	use Suphle\Tests\Mocks\Modules\ModuleOne\{Coordinators\ValidatorController, Validators\ValidatorOne};
 
 	class ValidatorTest extends TestsRouter {
 

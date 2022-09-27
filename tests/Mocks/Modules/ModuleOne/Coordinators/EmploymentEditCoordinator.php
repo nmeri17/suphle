@@ -1,11 +1,11 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Controllers;
+	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
 	use Suphle\Services\ServiceCoordinator;
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\EmploymentEditMock;
 
-	class EmploymentEditController extends ServiceCoordinator {
+	class EmploymentEditCoordinator extends ServiceCoordinator {
 
 		private $editService;
 

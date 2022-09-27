@@ -111,7 +111,7 @@
 
 		public function findHandler (string $command):BaseCliCommand {
 
-			return $this->consoleClient->find($command);
+			return $this->consoleClient->findCommand($command);
 		}
 	}
 ?>

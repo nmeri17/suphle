@@ -13,5 +13,10 @@
 
 			$this->add ($command);
 		}
+
+		public function findCommand (string $name) {
+
+			return $this->find($name);
+		}
 	}
 ?>

@@ -3,7 +3,7 @@
 
 	use Suphle\Routing\BaseCollection;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Controllers\ReadsPayloadController;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\ReadsPayloadCoordinator;
 
 	use Suphle\Response\Format\Json;
 
@@ -11,7 +11,7 @@
 
 		public function _handlingClass ():string {
 
-			return ReadsPayloadController::class;
+			return ReadsPayloadCoordinator::class;
 		}
 
 		public function ALL__PAYLOADh () {

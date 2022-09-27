@@ -7,7 +7,7 @@
 
 	use Suphle\Response\Format\Json;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Controllers\EmploymentEditController;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\EmploymentEditCoordinator;
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Authorization\Paths\{EmploymentEditRule, AdminRule};
 
@@ -15,7 +15,7 @@
 
 		public function _handlingClass ():string {
 
-			return EmploymentEditController::class;
+			return EmploymentEditCoordinator::class;
 		}
 
 		public function RETAIN () {

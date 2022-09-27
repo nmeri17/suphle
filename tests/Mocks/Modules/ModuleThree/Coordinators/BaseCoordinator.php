@@ -1,5 +1,5 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleThree\Controllers;
+	namespace Suphle\Tests\Mocks\Modules\ModuleThree\Coordinators;
 
 	use Suphle\Services\ServiceCoordinator;
 

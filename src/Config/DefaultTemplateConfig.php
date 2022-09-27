@@ -7,6 +7,8 @@
 
 	use Suphle\Bridge\Laravel\ComponentEntry as LaravelComponentEntry;
 
+	use Suphle\Adapters\Orms\Eloquent\ComponentEntry as EloquentComponentEntry;
+
 	class DefaultTemplateConfig implements ComponentTemplates {
 
 		public function getTemplateEntries ():array {
@@ -14,7 +16,9 @@
 			return [
 				ExceptionComponentEntry::class,
 
-				LaravelComponentEntry::class
+				LaravelComponentEntry::class,
+
+				EloquentComponentEntry::class
 			];
 		}
 	}

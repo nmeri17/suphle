@@ -3,7 +3,7 @@
 
 	use Suphle\Routing\BaseCollection;
 
-	use Suphle\Tests\Mocks\Modules\ModuleTwo\Controllers\BaseCoordinator;
+	use Suphle\Tests\Mocks\Modules\ModuleTwo\Coordinators\BaseCoordinator;
 
 	use Suphle\Response\Format\Json;
 

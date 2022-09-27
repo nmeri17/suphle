@@ -5,7 +5,7 @@
 
 	use Suphle\Response\Format\Json;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Controllers\ApiEntryController;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\ApiEntryController;
 
 	class LowerMirror extends BaseApiCollection {
 

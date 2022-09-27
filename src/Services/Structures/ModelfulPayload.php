@@ -1,21 +1,37 @@
 <?php
 	namespace Suphle\Services\Structures;
 
-	use Suphle\Contracts\Database\OrmDialect;
+	use Suphle\Contracts\{Database\OrmDialect, Services\Decorators\VariableDependencies};
 
 	use Suphle\Request\PayloadStorage;
 
 	use Suphle\Routing\PathPlaceholders;
 
-	abstract class ModelfulPayload {
+	abstract class ModelfulPayload implements VariableDependencies {
 
 		protected $payloadStorage, $ormDialect, $pathPlaceholders;
 
-		public function __construct (PayloadStorage $payloadStorage, PathPlaceholders $pathPlaceholders, OrmDialect $ormDialect) {
+		public function dependencyMethods ():array {
+
+			return [
+
+				"setPayloadStorage", "setPlaceholderStorage",
+
+				"setOrmDialect"
+			];
+		}
+
+		public function setPayloadStorage (PayloadStorage $payloadStorage):void {
 
 			$this->payloadStorage = $payloadStorage;
+		}
+
+		public function setPlaceholderStorage (PathPlaceholders $pathPlaceholders):void {
 
 			$this->pathPlaceholders = $pathPlaceholders;
+		}
+
+		public function setOrmDialect (OrmDialect $ormDialect):void {
 
 			$this->ormDialect = $ormDialect;
 		}
@@ -33,9 +49,12 @@
 		/**
 		 * This is the only method caller cares about
 		*/
-		public function getBuilder ():object {
+		final public function getBuilder ():object {
 
-			return $this->orm->selectFields($this->getBaseCriteria(), $this->onlyFields());
+			return $this->orm->selectFields(
+
+				$this->getBaseCriteria(), $this->onlyFields()
+			);
 		}
 	}
 ?>

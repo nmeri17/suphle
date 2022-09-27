@@ -5,7 +5,7 @@
 
 	use Suphle\Middleware\MiddlewareRegistry;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Controllers\BaseController;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\BaseCoordinator;
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares\{BlankMiddleware, BlankMiddleware2, BlankMiddleware3, BlankMiddleware4};
 
@@ -15,7 +15,7 @@
 
 		public function _handlingClass ():string {
 
-			return BaseController::class;
+			return BaseCoordinator::class;
 		}
 
 		public function FIRST__UNTAGh () {

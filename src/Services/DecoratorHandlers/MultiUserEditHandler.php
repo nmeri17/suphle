@@ -23,13 +23,7 @@
 
 		public const INTEGRITY_KEY = "_collision_protect", // submitted form/payload is expected to contain this key
 
-		DATE_FORMAT = "Y-m-d H:i:s",
-
-		NO_AUTHORIZER = "No path authorizer found",
-
-		KEY_MISMATCH = "Mismatching update integrity key",
-
-		MISSING_KEY = "No update integrity key found";
+		DATE_FORMAT = "Y-m-d H:i:s";
 
 		private $ormDialect, $queueManager, $payloadStorage,
 
@@ -88,7 +82,7 @@
 
 			if (!$this->payloadStorage->hasKey(self::INTEGRITY_KEY))
 
-				throw new EditIntegrityException(self::MISSING_KEY);
+				throw new EditIntegrityException(EditIntegrityException::MISSING_KEY);
 
 			$currentVersion = $concrete->getResource();
 
@@ -97,7 +91,7 @@
 				$this->payloadStorage->getKey(self::INTEGRITY_KEY)
 			)) // this is the heart of the entire decoration
 
-				throw new EditIntegrityException(self::KEY_MISMATCH);
+				throw new EditIntegrityException(EditIntegrityException::KEY_MISMATCH);
 
 			try {
 
@@ -130,7 +124,7 @@
 
 			if (empty($this->pathAuthorizer->getActiveRules())) // doesn't confirm current route is authorized since there's no reference to route anywhere
 
-				throw new EditIntegrityException(self::NO_AUTHORIZER);
+				throw new EditIntegrityException(EditIntegrityException::NO_AUTHORIZER);
 
 			return $concrete->getResource(); // we're not wrapping in error catcher since we want request termination if getting editable resource failed; there's nothing to fallback on
 		}

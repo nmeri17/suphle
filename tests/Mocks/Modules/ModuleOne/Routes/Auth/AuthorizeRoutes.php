@@ -7,13 +7,13 @@
 
 	use Suphle\Response\Format\Json;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Controllers\BaseController, Authorization\Paths\AdminRule};
+	use Suphle\Tests\Mocks\Modules\ModuleOne\{Coordinators\BaseCoordinator, Authorization\Paths\AdminRule};
 
 	class AuthorizeRoutes extends BaseCollection {
 
 		public function _handlingClass ():string {
 
-			return BaseController::class;
+			return BaseCoordinator::class;
 		}
 
 		public function ADMIN__ENTRYh () {

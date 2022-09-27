@@ -3,7 +3,7 @@
 
 	use Suphle\Routing\BaseCollection;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Controllers\CanaryController;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\CanaryController;
 
 	use Suphle\Response\Format\Json;
 

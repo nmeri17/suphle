@@ -5,7 +5,7 @@
 
 	use Suphle\Response\Format\Json;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Controllers\ValidatorController;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\ValidatorController;
 
 	class ValidatorCollection extends BaseCollection {
 

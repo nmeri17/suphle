@@ -46,7 +46,7 @@
 			$this->assertWillCatchException(EditIntegrityException::class, function () { // then
 
 				$this->get("admin/gmulti-edit-unauth"); // when
-			}, MultiUserEditHandler::NO_AUTHORIZER);
+			}, EditIntegrityException::NO_AUTHORIZER);
 		}
 
 		protected function preDatabaseFreeze ():void {

@@ -1,13 +1,15 @@
 <?php
 	namespace Suphle\Adapters\Orms\Eloquent\Models;
 
-	use Suphle\Adapters\Orms\Eloquent\Factories\UserFactory;
+	use Suphle\Adapters\Orms\Eloquent\{Condiments\MigrationLocation, Factories\UserFactory};
 
-	use Suphle\Contracts\Auth\UserContract;
+	use Suphle\Contracts\{Auth\UserContract, Services\Decorators\VariableDependencies};
 
 	use Illuminate\Database\Eloquent\Factories\Factory;
 
-	class User extends BaseModel implements UserContract {
+	class User extends BaseModel implements UserContract, VariableDependencies {
+
+		use MigrationLocation;
 
 		protected $hidden = ["password"], $table = "users",
 
@@ -38,14 +40,9 @@
 			return $this->is_admin;
 		}
 
-		public function find ($id, $columns = ['*']) {
+		public function findByPrimaryKey ($id, $columns = ['*']) {
 
-			return parent::find($id, $columns);
-		}
-
-		public static function migrationFolders ():array {
-
-			return [dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . "Migrations"];
+			return $this->find($id, $columns);
 		}
 	}
 ?>

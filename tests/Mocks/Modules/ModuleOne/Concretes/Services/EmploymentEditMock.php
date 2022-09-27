@@ -7,29 +7,40 @@
 
 	use Suphle\Routing\PathPlaceholders;
 
+	use Suphle\Request\PayloadStorage;
+
 	use Suphle\Tests\Mocks\Models\Eloquent\Employment;
 
 	class EmploymentEditMock extends UpdatefulService implements MultiUserModelEdit {
 
 		use BaseErrorCatcherService;
 
-		private $integrity, $placeholderStorage, $model;
+		private $payloadStorage, $placeholderStorage, $blankModel;
 
-		public function __construct (PathPlaceholders $placeholderStorage, Employment $model) {
+		public function __construct (PathPlaceholders $placeholderStorage, PayloadStorage $payloadStorage, Employment $blankModel) {
 
 			$this->placeholderStorage = $placeholderStorage;
 
-			$this->model = $model;
+			$this->payloadStorage = $payloadStorage;
+
+			$this->blankModel = $blankModel;
 		}
 
 		public function getResource ():IntegrityModel {
 
-			return $this->model->find($this->placeholderStorage->getSegmentValue("id"));
+			return $this->blankModel->find(
+
+				$this->placeholderStorage->getSegmentValue("id")
+			);
 		}
 
 		public function updateResource () {
 
-			//
+			$this->model->where([
+
+				"id" => $this->payloadStorage->getKey("id")
+			])
+			->update($this->payloadStorage->only(["salary"]));
 		}
 	}
 ?>

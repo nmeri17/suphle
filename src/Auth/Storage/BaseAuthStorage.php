@@ -26,7 +26,7 @@
 
 			if ( is_null($this->user))
 
-				$this->user = $this->userHydrator->findById( $userId );
+				$this->user = $this->userHydrator->getUserById( $userId );
 
 			return $this->user;
 		}

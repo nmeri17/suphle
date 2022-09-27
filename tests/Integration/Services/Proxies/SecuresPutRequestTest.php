@@ -7,7 +7,7 @@
 
 	use Suphle\Tests\Integration\Generic\CommonBinds;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Controllers\ValidatorController;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\ValidatorController;
 
 	class SecuresPutRequestTest extends IsolatedComponentTest {
 

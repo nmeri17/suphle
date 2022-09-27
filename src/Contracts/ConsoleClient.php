@@ -18,6 +18,6 @@
 		/**
 		 * @return BaseCliCommand
 		*/
-		public function find (string $name);
+		public function findCommand (string $name);
 	}
 ?>

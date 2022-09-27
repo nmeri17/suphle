@@ -5,7 +5,7 @@
 
 	use Suphle\Response\Format\Markup;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Controllers\CrudController;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\CrudController;
 
 	class BasicRoutes extends BaseCollection {
 

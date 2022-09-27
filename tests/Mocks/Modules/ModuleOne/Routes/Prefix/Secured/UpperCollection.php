@@ -3,13 +3,13 @@
 
 	use Suphle\Routing\BaseCollection;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Prefix\UnchainParentSecurity, Controllers\BaseController};
+	use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Prefix\UnchainParentSecurity, Coordinators\BaseCoordinator};
 
 	class UpperCollection extends BaseCollection {
 
 		public function _handlingClass ():string {
 
-			BaseController::class;
+			BaseCoordinator::class;
 		}
 
 		public function _authenticatedPaths():array {

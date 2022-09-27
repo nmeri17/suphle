@@ -7,7 +7,7 @@
 
 	use Suphle\Tests\Integration\Generic\CommonBinds;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Controllers\SystemModelController;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\SystemModelController;
 
 	class SystemEditOrmTest extends IsolatedComponentTest {
 

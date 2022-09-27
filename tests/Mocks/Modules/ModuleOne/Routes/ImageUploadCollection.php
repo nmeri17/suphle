@@ -5,7 +5,7 @@
 
 	use Suphle\Response\Format\Json;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Controllers\ImageUploadController;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\ImageUploadController;
 
 	class ImageUploadCollection extends BaseCollection {
 

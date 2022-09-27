@@ -13,7 +13,7 @@
 
 	use Suphle\Tests\Integration\Modules\ModuleDescriptor\DescriptorCollection;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Controllers\FlowController, Concretes\Services\DummyModels};
+	use Suphle\Tests\Mocks\Modules\ModuleOne\{Coordinators\FlowController, Concretes\Services\DummyModels};
 
 	abstract class JobFactory extends DescriptorCollection {
 

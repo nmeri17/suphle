@@ -3,7 +3,7 @@
 
 	interface UserHydrator {
 
-		public function findById (string $id):?UserContract;
+		public function getUserById (string $id):?UserContract;
 
 		/**
 		 * @param {criteria}:array pair of email/username/any field you are interested in hydrating user with

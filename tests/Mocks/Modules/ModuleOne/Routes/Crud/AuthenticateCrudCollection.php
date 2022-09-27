@@ -3,7 +3,7 @@
 
 	use Suphle\Routing\BaseCollection;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Controllers\CrudController;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\CrudController;
 
 	class AuthenticateCrudCollection extends BaseCollection {
 

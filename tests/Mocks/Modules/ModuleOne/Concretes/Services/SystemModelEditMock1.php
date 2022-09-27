@@ -1,11 +1,11 @@
 <?php
 	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services;
 
-	use Suphle\Services\{UpdatelessService, Structures\BaseErrorCatcherService};
+	use Suphle\Services\{UpdatefulService, Structures\BaseErrorCatcherService};
 
 	use Suphle\Contracts\Services\Decorators\SystemModelEdit;
 
-	class SystemModelEditMock1 extends UpdatelessService implements SystemModelEdit {
+	class SystemModelEditMock1 extends UpdatefulService implements SystemModelEdit {
 
 		use BaseErrorCatcherService;
 

@@ -14,9 +14,9 @@
 			$this->model = $model;
 		}
 
-		public function findById (string $id):?UserContract {
+		public function getUserById (string $id):?UserContract {
 
-			return $this->model->find($id);
+			return $this->model->findByPrimaryKey($id);
 		}
 
 		/**

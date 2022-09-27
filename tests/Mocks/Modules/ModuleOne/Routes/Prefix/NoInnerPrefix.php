@@ -3,7 +3,7 @@
 
 	use Suphle\Routing\BaseCollection;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Controllers\NestedController;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\NestedController;
 
 	use Suphle\Response\Format\Json;
 

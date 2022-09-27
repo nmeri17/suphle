@@ -7,7 +7,7 @@
 
 	use Suphle\Tests\Integration\Generic\CommonBinds;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Controllers\Selective\{BlankUpdatelessController, RandomConcreteController, ForbiddenDependencyController};
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\Selective\{BlankUpdatelessController, RandomConcreteController, ForbiddenDependencyController};
 
 	class SelectiveDependenciesTest extends IsolatedComponentTest {
 

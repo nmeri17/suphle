@@ -7,7 +7,7 @@
 
 	use Suphle\Flows\{ControllerFlows, Structures\ServiceContext};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Controllers\FlowController;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\FlowController;
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\FlowService;
 

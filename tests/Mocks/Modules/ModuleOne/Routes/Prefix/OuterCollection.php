@@ -3,7 +3,7 @@
 
 	use Suphle\Routing\BaseCollection;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Controllers\BlankController;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\BlankController;
 
 	class OuterCollection extends BaseCollection {
 

@@ -35,7 +35,7 @@
 			$model = $this->container->getClass(OrmDialect::class)->userModel();
 
 			// default = sessionStorage
-			$this->actingAs($model->find(5)); // given
+			$this->actingAs($model->findByPrimaryKey(5)); // given
 
 			$matchingRenderer = $this->fakeRequest("/special-foo/same-url"); // when
 

@@ -108,8 +108,12 @@
 
 				return $parent;
 
+			$config = $this->config;
+
 			if (
-				!empty($this->config->getExternalHydrators()) &&
+				!is_null($config) && // will be null when trying to hydrate config itself
+
+				!empty($config->getExternalHydrators()) &&
 
 				$concrete = $this->externalContainers->findInManagers($fullName)
 			) {

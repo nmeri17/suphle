@@ -5,7 +5,7 @@
 
 	use Suphle\Response\Format\Json;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Controllers\Versions\V2\ApiUpdate2Controller;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\Versions\V2\ApiUpdate2Controller;
 
 	class ApiUpdate2Entry extends BaseApiCollection {
 

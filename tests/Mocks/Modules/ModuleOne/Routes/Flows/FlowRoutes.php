@@ -7,7 +7,7 @@
 
 	use Suphle\Response\Format\Json;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Controllers\FlowController;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\FlowController;
 
 	class FlowRoutes extends BaseCollection {
 
