@@ -3,7 +3,7 @@ The most important thing for me at the moment is indication of interest from the
 <!-- ## Installation-->
 
 ## Testing
-Clone project. Run `composer install && cd vendor/bin && phpunit ../../tests`
+Clone project. Run `composer install && cd vendor/bin && rr get-binary && phpunit ../../tests`
 It requires an active mysql connection
 
 This is the dev-facing project intended for contribution of Suphle itself. The user-facing project can be found at https://github.com/nmeri17/suphle-starter. It requires unarchiving the roadrunner binary and running with the in-folder configuration 
