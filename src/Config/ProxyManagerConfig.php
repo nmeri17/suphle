@@ -1,25 +1,26 @@
 <?php
 	namespace Suphle\Config;
 
-	use Suphle\Contracts\Config\{DecoratorProxy, ModuleFiles};
+	use Suphle\Contracts\Config\DecoratorProxy;
+
+	use Suphle\Services\ComponentEntry;
 
 	use ProxyManager\{Configuration, FileLocator\FileLocator, GeneratorStrategy\FileWriterGeneratorStrategy as FileStrategy};
 
 	class ProxyManagerConfig implements DecoratorProxy {
 
-		protected $fileConfig;
+		protected $componentEntry;
 
-		public function __construct (ModuleFiles $fileConfig) {
+		public function __construct (ComponentEntry $componentEntry) {
 
-			$this->fileConfig = $fileConfig;
+			$this->componentEntry = $componentEntry;
 		}
 
-		/**
-		 * Choose a unique name that won't affect another name somewhere when used in .gitignore
-		*/
-		public function generatedClassesLocation ():string {
+		protected function generatedClassesLocation ():string {
 
-			return $this->fileConfig->activeModulePath() . "generated-proxies";
+			return $this->componentEntry->userLandMirror() .
+
+			".generated-proxies"; // user will have no need to rename this, so we've taken the liberty of creating a folder with this name to be copied to user-land
 		}
 
 		public function getConfigClient ():object {

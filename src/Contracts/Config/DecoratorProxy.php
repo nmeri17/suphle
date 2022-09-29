@@ -3,8 +3,6 @@
 
 	interface DecoratorProxy extends ConfigMarker {
 
-		public function generatedClassesLocation ():string;
-
 		public function getConfigClient ():object;
 	}
 ?>

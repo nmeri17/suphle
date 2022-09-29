@@ -108,12 +108,10 @@
 
 				return $parent;
 
-			$config = $this->config;
+			if ( // container in augmentation mode?
+				isset($this->config, $this->externalContainers) && // will be null when trying to hydrate these objects themselves
 
-			if (
-				!is_null($config) && // will be null when trying to hydrate config itself
-
-				!empty($config->getExternalHydrators()) &&
+				!empty($this->config->getExternalHydrators()) &&
 
 				$concrete = $this->externalContainers->findInManagers($fullName)
 			) {

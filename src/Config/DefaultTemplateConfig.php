@@ -9,6 +9,8 @@
 
 	use Suphle\Adapters\Orms\Eloquent\ComponentEntry as EloquentComponentEntry;
 
+	use Suphle\Services\ComponentEntry as ServicesComponentEntry;
+
 	class DefaultTemplateConfig implements ComponentTemplates {
 
 		public function getTemplateEntries ():array {
@@ -18,7 +20,9 @@
 
 				LaravelComponentEntry::class,
 
-				EloquentComponentEntry::class
+				EloquentComponentEntry::class,
+
+				ServicesComponentEntry::class
 			];
 		}
 	}
