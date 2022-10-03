@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Request;
 
-	use Suphle\Contracts\{Config\Router, Requests\StdInputReader};
+	use Suphle\Contracts\{Config\Router, Requests\StdInputReader, Services\Decorators\BindsAsSingleton};
 
 	use Suphle\Hydration\Container;
 
@@ -10,7 +10,7 @@
 	/**
 	 * Our closest adaptation of the PSR\RequestInterface
 	*/
-	class RequestDetails {
+	class RequestDetails implements BindsAsSingleton {
 
 		const HTTP_METHOD_KEY = "HTTP_METHOD";
 
@@ -45,41 +45,46 @@
 			return $this->queryParameters;
 		}
 
-		public static function fromModules (array $descriptors, string $requestPath):void {
+		/**
+		 * @return Container[]
+		*/
+		public static function fromModules (array $descriptors, string $requestPath):array {
+
+			$clonedContainers = [];
 
 			foreach ($descriptors as $descriptor)
 
-				static::fromContainer($descriptor->getContainer(), $requestPath);
+				$clonedContainers[] = static::fromContainer($descriptor->getContainer(), $requestPath);
+
+			return $clonedContainers;
 		}
 
-		public static function fromContainer (Container $container, string $requestPath):self {
+		public static function fromContainer (Container $container, string $requestPath):Container { // modify usages
 
 			$selfName = get_called_class();
 
-			$container->refreshClass($selfName);
+			$scopedContainer = $container->newMemoryScope();
 
-			$instance = $container->getClass($selfName);
+			$requestInstance = $scopedContainer->getClass($selfName);
 
 			$components = parse_url($requestPath);
 
 			$pathComponent = @$components["path"];
 
-			if (is_null($pathComponent))
+			if (is_null($pathComponent)) return $scopedContainer;
 
-				return $instance;
-
-			$instance->setPath($pathComponent);
+			$requestInstance->setPath($pathComponent);
 
 			parse_str($components["query"] ?? "", $queryParameters);
 
-			$instance->setQueries($queryParameters);
+			$requestInstance->setQueries($queryParameters);
 
-			$container->whenTypeAny()->needsAny([
+			/*$scopedContainer->whenTypeAny()->needsAny([
 
-				$selfName => $instance
-			]);
+				$selfName => $requestInstance // not sure this is necessary
+			]);*/
 
-			return $instance;
+			return $scopedContainer;
 		}
 
 		public function getPermanentPath ():?string {

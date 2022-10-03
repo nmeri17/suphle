@@ -3,13 +3,15 @@
 	
 	use Suphle\Hydration\Structures\{ProvisionUnit, NamespaceUnit, HydratedConcrete, ObjectDetails, ContainerTelescope};
 
-	use Suphle\Contracts\{Hydration\ClassHydrationBehavior, Config\ContainerConfig as IContainerConfig};
+	use Suphle\Contracts\Hydration\{ClassHydrationBehavior, ParentContainerScope};
+
+	use Suphle\Contracts\Config\ContainerConfig as IContainerConfig;
 
 	use Suphle\Exception\Explosives\Generic\{InvalidImplementor, HydrationException};
 
 	use ReflectionMethod, ReflectionFunction, ReflectionType, ReflectionFunctionAbstract, ReflectionException;
 
-	class Container implements ClassHydrationBehavior {
+	class Container implements ClassHydrationBehavior, ParentContainerScope {
 
 		const UNIVERSAL_SELECTOR = "*",
 
@@ -1000,6 +1002,14 @@
 			foreach ($classes as $className)
 
 				$this->refreshClass($className);
+		}
+
+		public function newMemoryScope ():self {
+
+			return (clone $this)->whenTypeAny()->needsAny([
+
+				ParentContainerScope::class => $this
+			]);
 		}
 	}
 ?>
