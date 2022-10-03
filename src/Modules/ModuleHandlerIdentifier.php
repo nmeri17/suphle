@@ -21,22 +21,24 @@
 
 	abstract class ModuleHandlerIdentifier {
 
-		private $identifiedHandler, $routedModule;
+		private $identifiedHandler, $routedModule,
+
+		$requestScopedContainers;
 
 		protected $container;
 
 		public function __construct () {
 
-			$this->bootTitularContainer();
+			$this->setTitularContainer();
 		}
 
-		protected function bootTitularContainer ():void {
+		protected function setTitularContainer ():void {
 
-			if (($titular = current($this->getModules())) === false) 
+			$descriptors = $this->getModules();
 
-				return; // on project initialization, no modules will exist yet
+			if (empty($descriptors)) return; // on project initialization, no modules will exist yet
 
-			$this->container = $titular->getContainer();
+			$this->container = current($descriptors)->getContainer();
 
 			$this->container->provideSelf();
 		}
@@ -58,7 +60,9 @@
 
 		public function setRequestPath (string $requestPath):void {
 
-			RequestDetails::fromModules($this->getModules(), $requestPath);
+			$this->requestScopedContainers = RequestDetails::fromModules($this->getModules(), $requestPath);
+
+			$this->container = current($this->requestScopedContainers);
 		}
 
 		/**
@@ -136,7 +140,7 @@
 
 			$moduleRouter = $this->container->getClass(ModuleToRoute::class); // pulling from a container so tests can replace properties on the singleton
 
-			$initializer = $moduleRouter->findContext($this->getModules());
+			$initializer = $moduleRouter->findContext($this->requestScopedContainers); // requires modules not containers
 
 			if (!$initializer) return null;
 

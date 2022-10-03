@@ -46,6 +46,8 @@
 		}
 
 		/**
+		 * This doesn't modify original descriptors but returns a new set of containers to work with
+		 * 
 		 * @return Container[]
 		*/
 		public static function fromModules (array $descriptors, string $requestPath):array {
@@ -61,28 +63,21 @@
 
 		public static function fromContainer (Container $container, string $requestPath):Container { // modify usages
 
-			$selfName = get_called_class();
-
-			$scopedContainer = $container->newMemoryScope();
-
-			$requestInstance = $scopedContainer->getClass($selfName);
-
 			$components = parse_url($requestPath);
 
 			$pathComponent = @$components["path"];
 
+			$scopedContainer = $container->newMemoryScope();
+
 			if (is_null($pathComponent)) return $scopedContainer;
+
+			$requestInstance = $scopedContainer->getClass(get_called_class());
 
 			$requestInstance->setPath($pathComponent);
 
 			parse_str($components["query"] ?? "", $queryParameters);
 
 			$requestInstance->setQueries($queryParameters);
-
-			/*$scopedContainer->whenTypeAny()->needsAny([
-
-				$selfName => $requestInstance // not sure this is necessary
-			]);*/
 
 			return $scopedContainer;
 		}
