@@ -7,7 +7,7 @@
 
 	use Illuminate\Database\Eloquent\Factories\Factory;
 
-	class User extends BaseModel implements UserContract, VariableDependencies {
+	class User extends BaseModel implements UserContract, VariableDependencies { // not a component template since it should be extended rather than overwritten
 
 		use MigrationLocation;
 

@@ -13,6 +13,8 @@
 
 	class ConfigDownloader extends BaseHttpRequest {
 
+		public const ENV_CONFIG_URL = "LARAVEL_CONFIG_URL";
+
 		private $saveInLocation, $envAccessor;
 
 		public function __construct (
@@ -29,11 +31,12 @@
 
 		public function getRequestUrl ():string {
 
-			$envUrl = $this->envAccessor->getField("LARAVEL_CONFIG_URL");
+			return $this->envAccessor->getField(
 
-			return !empty($envUrl) ? $envUrl:
+				self::ENV_CONFIG_URL,
 
-			"https://raw.githubusercontent.com/laravel/laravel/8.x/config/app.php";
+				"https://raw.githubusercontent.com/laravel/laravel/8.x/config/app.php"
+			);
 		}
 
 		public function setFilePath (string $path):self {

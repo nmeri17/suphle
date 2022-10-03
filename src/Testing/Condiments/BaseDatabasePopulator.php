@@ -47,7 +47,7 @@
 			$this->replicator->listenForQueries();
 		}
 
-		protected function getInitialCount ():int {
+		protected function getInitialCount ():int { // Using a method for this since consumers can't overwrite trait properties without the poor DX of renaming
 
 			return 10;
 		}

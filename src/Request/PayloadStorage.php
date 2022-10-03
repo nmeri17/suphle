@@ -92,6 +92,13 @@
 			return array_key_exists($property, $this->payload);
 		}
 
+		public function keyHasContent (string $property):bool {
+
+			return $this->hasKey($property) &&
+
+			!empty($this->getKey($property));
+		}
+
 		public function getKey (string $property) {
 
 			return $this->payload[$property];

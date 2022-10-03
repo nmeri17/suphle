@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Contracts\Database;
 
-	use Suphle\Contracts\Auth\{AuthStorage, UserHydrator, UserContract};
+	use Suphle\Contracts\Auth\{AuthStorage, UserHydrator};
 
 	interface OrmDialect {
 
@@ -34,8 +34,6 @@
 		 * Lives here to guarantee user can only be hydrated when orm is ready
 		*/
 		public function getUserHydrator ():UserHydrator;
-
-		public function userModel ():UserContract;
 
 		/**
 		 * Undo connection resetting action so underlying ORM client's subsequent calls aren't disrupted by trying to hydrate a blank connection instance

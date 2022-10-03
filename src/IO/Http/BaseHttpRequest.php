@@ -58,7 +58,7 @@
 		*/
 		abstract public function getRequestUrl ():string;
 
-		public function translationFailure ():void {
+		protected function translationFailure ():void {
 
 			$this->exceptionManager->queueAlertAdapter(
 

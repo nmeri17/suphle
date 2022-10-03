@@ -49,7 +49,7 @@
 				]]
 			]);
 
-			$searchService->convertToQuery($this->model, "q"); // when
+			$searchService->convertToQuery($this->model, ["q"]); // when
 		}
 
 		public function test_skips_class_methods_not_matching_queries () {
@@ -64,7 +64,7 @@
 				]]
 			]); // then
 
-			$searchService->convertToQuery($this->model, "q"); // when
+			$searchService->convertToQuery($this->model, ["q"]); // when
 		}
 
 		public function test_calls_ormDialect_when_sees_custom_method () {
@@ -76,7 +76,7 @@
 
 			$this->setHttpParams($this->baseUrl . "database_column=foo"); // given
 
-			$this->getSearchService()->convertToQuery($this->model, "q"); // when
+			$this->getSearchService()->convertToQuery($this->model, ["q"]); // when
 		}
 
 		private function getSearchService (array $mockMethods = []):SimpleSearchService {

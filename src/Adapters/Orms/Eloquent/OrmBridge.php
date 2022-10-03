@@ -3,8 +3,6 @@
 
 	use Suphle\Hydration\Container;
 
-	use Suphle\Adapters\Orms\Eloquent\Models\User as EloquentUser;
-
 	use Suphle\Contracts\{Database\OrmDialect, Config\Database, Bridge\LaravelContainer, Services\Decorators\BindsAsSingleton};
 
 	use Suphle\Contracts\Auth\{UserHydrator as HydratorContract, AuthStorage, UserContract};
@@ -125,14 +123,12 @@
 
 			$hydrator = $this->container->getClass(UserHydrator::class);
 
-			$hydrator->setUserModel($this->userModel());
+			$hydrator->setUserModel(
+
+				$this->container->getClass(UserContract::class)
+			);
 
 			return $hydrator;
-		}
-
-		public function userModel ():UserContract {
-
-			return $this->container->getClass(EloquentUser::class);
 		}
 
 		/**

@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Tests\Integration\Routing\Canaries;
 
-	use Suphle\Contracts\Database\OrmDialect;
+	use Suphle\Contracts\Auth\UserContract;
 
 	use Suphle\Auth\Storage\TokenStorage;
 
@@ -32,7 +32,7 @@
 	     */
 		public function test_canaries_use_collection_auth () {
 
-			$model = $this->container->getClass(OrmDialect::class)->userModel();
+			$model = $this->container->getClass(UserContract::class);
 
 			// default = sessionStorage
 			$this->actingAs($model->findByPrimaryKey(5)); // given
