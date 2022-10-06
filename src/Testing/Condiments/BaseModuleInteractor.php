@@ -65,7 +65,7 @@
 
 		protected function setRequestPath (string $requestPath):void {
 
-			RequestDetails::fromModules( $this->modules, $requestPath);
+			$this->entrance->setRequestPath($requestPath);
 		}
 
 		protected function provideTestEquivalents ():void {

@@ -3,6 +3,8 @@
 
 	use Suphle\Hydration\Container;
 
+	use Suphle\Modules\Structures\ActiveDescriptors;
+
 	use Suphle\Flows\OuterFlowWrapper;
 
 	use Suphle\Contracts\Config\{AuthContract, Flows as FlowConfig};
@@ -23,42 +25,42 @@
 
 		private $identifiedHandler, $routedModule;
 
-		protected $container;
+		protected $container, $descriptorInstances;
 
 		public function __construct () {
 
-			$this->bootTitularContainer();
+			$this->setTitularContainer();
 		}
 
-		protected function bootTitularContainer ():void {
+		protected function setTitularContainer ():void {
 
-			if (($titular = current($this->getModules())) === false) 
+			$this->descriptorInstances = $this->getModules();
 
-				return; // on project initialization, no modules will exist yet
+			if (empty($this->descriptorInstances)) return; // on project initialization, no modules will exist yet
 
-			$this->container = $titular->getContainer();
+			$this->container = current($this->descriptorInstances)->getContainer();
 
-			$this->container->provideSelf();
+			$this->container->whenTypeAny()->needsAny([ // for the `bootModules` call
+
+				ActiveDescriptors::class => new ActiveDescriptors($this->descriptorInstances)
+			])->setEssentials();
 		}
 		
 		abstract protected function getModules():array;
 
 		public function bootModules ():void {
 
-			(new ModulesBooter(
-				$this->getModules(), $this->getEventConnector()
-			))
+			$this->container->getClass(ModulesBooter::class)
+
 			->bootAllModules()->prepareFirstModule();
-		}
-
-		protected function getEventConnector ():ModuleLevelEvents {
-
-			return new ModuleLevelEvents($this->getModules());
 		}
 
 		public function setRequestPath (string $requestPath):void {
 
-			RequestDetails::fromModules($this->getModules(), $requestPath);
+			RequestDetails::fromModules(
+
+				$this->descriptorInstances, $requestPath
+			);
 		}
 
 		/**
@@ -136,7 +138,7 @@
 
 			$moduleRouter = $this->container->getClass(ModuleToRoute::class); // pulling from a container so tests can replace properties on the singleton
 
-			$initializer = $moduleRouter->findContext($this->getModules());
+			$initializer = $moduleRouter->findContext($this->descriptorInstances);
 
 			if (!$initializer) return null;
 

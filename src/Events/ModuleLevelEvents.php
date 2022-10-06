@@ -5,15 +5,17 @@
 
 	use Suphle\Hydration\{Container, Structures\ObjectDetails};
 
+	use Suphle\Modules\Structures\ActiveDescriptors;
+
 	class ModuleLevelEvents {
 
 		private $modules, $subscriberLog = [], // this is where subscribers to the immediate last fired external event reside
 
 		$eventManagers = [], $firedEvents = [];
 
-		public function __construct (array $modules) {
+		public function __construct (ActiveDescriptors $descriptorsHolder) {
 
-			$this->modules = $modules;
+			$this->modules = $descriptorsHolder->getDescriptors();
 		}
 
 		public function bootReactiveLogger():void {

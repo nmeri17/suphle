@@ -81,12 +81,13 @@
 
 		private function getSearchService (array $mockMethods = []):SimpleSearchService {
 
-			return $this->replaceConstructorArguments(SimpleSearchService::class, [
+			$sut = $this->positiveDouble(SimpleSearchService::class, [], $mockMethods);
 
-				"ormDialect" => $this->ormDialect,
+			$sut->setPayloadStorage($this->container->getClass(PayloadStorage::class)); // Without this instance, PHPUnit will not recursively wire in dependencies, thereby missing out on requestDetails
 
-				"payloadStorage" => $this->container->getClass(PayloadStorage::class) // Without this instance, PHPUnit will not recursively wire in dependencies, thereby missing out on requestDetails
-			], [], $mockMethods);
+			$sut->setOrmDialect($this->ormDialect);
+
+			return $sut;
 		}
 	}
 ?>

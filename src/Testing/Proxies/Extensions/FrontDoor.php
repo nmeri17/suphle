@@ -9,14 +9,14 @@
 
 		public function __construct (array $descriptors) {
 
-			$this->descriptors = $descriptors;
+			$this->descriptorInstances = $descriptors;
 
 			parent::__construct();
 		}
 		
 		public function getModules ():array {
 
-			return $this->descriptors;
+			return $this->descriptorInstances;
 		}
 	}
 ?>

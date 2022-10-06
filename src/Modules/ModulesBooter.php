@@ -1,17 +1,23 @@
 <?php
 	namespace Suphle\Modules;
 
+	use Suphle\Modules\Structures\ActiveDescriptors;
+
 	use Suphle\Events\ModuleLevelEvents;
 
-	use Suphle\Contracts\Modules\DescriptorInterface;
+	use Suphle\Contracts\{Modules\DescriptorInterface, Services\Decorators\BindsAsSingleton};
 
-	class ModulesBooter {
+	use Suphle\Hydration\Structures\BaseSingletonBind;
+
+	class ModulesBooter implements BindsAsSingleton {
+
+		use BaseSingletonBind;
 
 		private $modules, $eventManager;
 
-		public function __construct (array $modules, ModuleLevelEvents $eventManager) {
+		public function __construct (ActiveDescriptors $descriptorsHolder, ModuleLevelEvents $eventManager) {
 
-			$this->modules = $modules;
+			$this->modules = $descriptorsHolder->getDescriptors();
 
 			$this->eventManager = $eventManager;
 		}
@@ -29,9 +35,7 @@
 
 				$descriptor->getContainer()->whenTypeAny()->needsAny([
 
-					DescriptorInterface::class => $descriptor,
-
-					get_called_class() => $this
+					DescriptorInterface::class => $descriptor
 				]);
 			}
 

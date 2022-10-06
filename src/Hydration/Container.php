@@ -930,14 +930,9 @@
 
 		public function setEssentials ():void {
 
-			$this->provideSelf();
+			$this->whenTypeAny()->needsAny([get_class() => $this]);
 
 			$this->objectMeta = new ObjectDetails($this);
-		}
-
-		public function provideSelf ():void {
-
-			$this->whenTypeAny()->needsAny([get_class() => $this]);
 		}
 
 		public function interiorDecorate ():void {

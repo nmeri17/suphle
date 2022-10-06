@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Request;
 
-	use Suphle\Contracts\{Config\Router, Requests\StdInputReader};
+	use Suphle\Contracts\{Config\Router, Requests\StdInputReader, Services\Decorators\BindsAsSingleton};
 
 	use Suphle\Hydration\Container;
 
@@ -10,7 +10,7 @@
 	/**
 	 * Our closest adaptation of the PSR\RequestInterface
 	*/
-	class RequestDetails {
+	class RequestDetails implements BindsAsSingleton {
 
 		const HTTP_METHOD_KEY = "HTTP_METHOD";
 
@@ -45,6 +45,11 @@
 			return $this->queryParameters;
 		}
 
+		public function entityIdentity ():string {
+
+			return self::class;
+		}
+
 		public static function fromModules (array $descriptors, string $requestPath):void {
 
 			foreach ($descriptors as $descriptor)
@@ -52,32 +57,25 @@
 				static::fromContainer($descriptor->getContainer(), $requestPath);
 		}
 
-		public static function fromContainer (Container $container, string $requestPath):self {
-
-			$selfName = get_called_class();
-
-			$container->refreshClass($selfName);
-
-			$instance = $container->getClass($selfName);
+		public static function fromContainer (Container $container, string $requestPath):?self {
 
 			$components = parse_url($requestPath);
 
 			$pathComponent = @$components["path"];
 
-			if (is_null($pathComponent))
+			if (is_null($pathComponent)) return null;
 
-				return $instance;
+			$selfName = get_class();
+
+			$container->refreshClass($selfName);
+
+			$instance = $container->getClass($selfName);
 
 			$instance->setPath($pathComponent);
 
 			parse_str($components["query"] ?? "", $queryParameters);
 
 			$instance->setQueries($queryParameters);
-
-			$container->whenTypeAny()->needsAny([
-
-				$selfName => $instance
-			]);
 
 			return $instance;
 		}
