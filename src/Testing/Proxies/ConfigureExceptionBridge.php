@@ -50,12 +50,14 @@
 				Container::CLASS_CONSTRUCTOR, DetectedExceptionManager::class
 			);
 
+			$broadcasterInstance = $this->replaceConstructorArguments(
+
+				$broadcasterName, $parameters, $stubs
+			);
+
 			$container->whenTypeAny()->needsAny([
 
-				$broadcasterName => $this->replaceConstructorArguments(
-
-					$broadcasterName, $parameters, $stubs
-				)
+				$broadcasterName => $broadcasterInstance
 			]);
 		}
 

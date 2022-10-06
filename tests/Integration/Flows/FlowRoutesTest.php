@@ -45,8 +45,12 @@
 				// this guy makes the internal requests for us i.e. to locate renderer for each flow, provided it exists on active route collection
 				$this->makeRouteBranches($context)->handle(); // when
 
+				// this instates itself as new container due to the internal setRequest call. Thankfully, dataProvider handles backup and restore for us
 				$this->assertHandledByFlow($this->userUrl); // then
-			});
+			
+var_dump(42, spl_object_hash($this->getContainer()->getClass(\Suphle\Routing\PathPlaceholders::class)));});
+
+			var_dump("after", spl_object_hash($this->getContainer()));
 		}
 
 		public function specializedUser ():array {

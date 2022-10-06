@@ -43,6 +43,16 @@
 			$this->modules = $this->modulesBooter->bootAllModules()
 
 			->prepareAllModules()->getModules();
+
+			$container = $this->modules[0]->getContainer();
+
+			var_dump(
+				"mb's container, pp",
+
+				spl_object_hash($container),
+
+				//spl_object_hash($container->getClass(\Suphle\Routing\PathPlaceholders::class)) // this monstrous bastard never changes
+			);
 			
 			$outgoingRenderer->getFlow()
 
@@ -59,9 +69,9 @@
 		*/
 		private function findManagerForPattern (string $pattern):bool {
 
-			RequestDetails::fromModules($this->modules, $pattern);
+			$scopedDescriptors = RequestDetails::fromModules($this->modules, $pattern);
 
-			$moduleInitializer = $this->moduleFinder->findContext($this->modules);
+			$moduleInitializer = $this->moduleFinder->findContext($scopedDescriptors);
 
 			if (!is_null($moduleInitializer)) {
 
@@ -70,11 +80,11 @@
 				return true;
 			}
 
-			current($this->modules)->getContainer()
+			/*current($this->modules)->getContainer()
 
 			->getClass(OrmDialect::class)
 
-			->restoreConnections($this->modules);
+			->restoreConnections($this->modules);*/
 
 			return false;
 		}

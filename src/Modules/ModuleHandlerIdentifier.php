@@ -3,6 +3,8 @@
 
 	use Suphle\Hydration\Container;
 
+	use Suphle\Modules\Structures\ActiveDescriptors;
+
 	use Suphle\Flows\OuterFlowWrapper;
 
 	use Suphle\Contracts\Config\{AuthContract, Flows as FlowConfig};
@@ -21,11 +23,9 @@
 
 	abstract class ModuleHandlerIdentifier {
 
-		private $identifiedHandler, $routedModule,
+		private $identifiedHandler, $routedModule;
 
-		$requestScopedContainers;
-
-		protected $container;
+		protected $container, $scopedDescriptors, $descriptorInstances;
 
 		public function __construct () {
 
@@ -34,35 +34,42 @@
 
 		protected function setTitularContainer ():void {
 
-			$descriptors = $this->getModules();
+			$this->descriptorInstances = $this->getModules();
 
-			if (empty($descriptors)) return; // on project initialization, no modules will exist yet
+			if (empty($this->descriptorInstances)) return; // on project initialization, no modules will exist yet
 
-			$this->container = current($descriptors)->getContainer();
+			$this->container = current($this->descriptorInstances)->getContainer();
 
-			$this->container->provideSelf();
+			$this->container->whenTypeAny()->needsAny([ // for the bootModules call
+
+				ActiveDescriptors::class => new ActiveDescriptors($this->descriptorInstances)
+			])->setEssentials();
 		}
 		
 		abstract protected function getModules():array;
 
 		public function bootModules ():void {
 
-			(new ModulesBooter(
-				$this->getModules(), $this->getEventConnector()
-			))
+			$this->container->getClass(ModulesBooter::class)
+
 			->bootAllModules()->prepareFirstModule();
-		}
-
-		protected function getEventConnector ():ModuleLevelEvents {
-
-			return new ModuleLevelEvents($this->getModules());
 		}
 
 		public function setRequestPath (string $requestPath):void {
 
-			$this->requestScopedContainers = RequestDetails::fromModules($this->getModules(), $requestPath);
+			$this->container->refreshClass(ModulesBooter::class); // remove the copy added on [bootModules] with now stale descriptors
 
-			$this->container = current($this->requestScopedContainers);
+			$this->scopedDescriptors = RequestDetails::fromModules(
+
+				$this->descriptorInstances, $requestPath
+			);
+
+			$this->container = $this->scopedDescriptors[0]->getContainer()
+
+			->whenTypeAny()->needsAny([
+
+				ActiveDescriptors::class => new ActiveDescriptors($this->scopedDescriptors)
+			]);
 		}
 
 		/**
@@ -140,7 +147,7 @@
 
 			$moduleRouter = $this->container->getClass(ModuleToRoute::class); // pulling from a container so tests can replace properties on the singleton
 
-			$initializer = $moduleRouter->findContext($this->requestScopedContainers); // requires modules not containers
+			$initializer = $moduleRouter->findContext($this->scopedDescriptors);
 
 			if (!$initializer) return null;
 

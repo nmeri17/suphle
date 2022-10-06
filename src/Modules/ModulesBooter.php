@@ -1,22 +1,33 @@
 <?php
 	namespace Suphle\Modules;
 
+	use Suphle\Modules\Structures\ActiveDescriptors;
+
 	use Suphle\Events\ModuleLevelEvents;
 
-	use Suphle\Contracts\Modules\DescriptorInterface;
+	use Suphle\Contracts\{Modules\DescriptorInterface, Services\Decorators\BindsAsSingleton};
 
-	class ModulesBooter {
+	use Suphle\Hydration\Structures\BaseSingletonBind;
+
+	class ModulesBooter implements BindsAsSingleton {
+
+		use BaseSingletonBind;
 
 		private $modules, $eventManager;
 
-		public function __construct (array $modules, ModuleLevelEvents $eventManager) {
+		public function __construct (ActiveDescriptors $descriptorsHolder, ModuleLevelEvents $eventManager) {
 
-			$this->modules = $modules;
+			$this->modules = $descriptorsHolder->getDescriptors();
 
 			$this->eventManager = $eventManager;
+
+			var_dump("starting mb");
+
+			// if (\Suphle\Tests\Integration\Flows\FlowRoutesTest::$shouldThrow) throw new \Exception("Error Processing Request", 1);
+			
 		}
 		
-		public function getModules ():array {
+		public function getModules ():array { // replace this with  direct calls to new class
 
 			return $this->modules;
 		}
@@ -29,9 +40,7 @@
 
 				$descriptor->getContainer()->whenTypeAny()->needsAny([
 
-					DescriptorInterface::class => $descriptor,
-
-					get_called_class() => $this
+					DescriptorInterface::class => $descriptor
 				]);
 			}
 

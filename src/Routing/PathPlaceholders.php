@@ -17,6 +17,10 @@
 		private $stack = [], $methodSegments = [], $urlReplacer;
 
 		public function __construct (CollectionMethodToUrl $urlReplacer) {
+		var_dump("creating pp");
+
+		// throw new \Exception("Error Processing Request", 1);
+		
 
 			$this->urlReplacer = $urlReplacer;
 		}

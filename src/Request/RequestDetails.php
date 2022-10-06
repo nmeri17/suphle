@@ -5,6 +5,8 @@
 
 	use Suphle\Hydration\Container;
 
+	use DeepCopy\DeepCopy;
+
 	use InvalidArgumentException;
 
 	/**
@@ -45,33 +47,46 @@
 			return $this->queryParameters;
 		}
 
+		public function entityIdentity ():string {
+
+			return self::class;
+		}
+
 		/**
-		 * This doesn't modify original descriptors but returns a new set of containers to work with
+		 * This doesn't modify original descriptors but returns a new set to work with
 		 * 
-		 * @return Container[]
+		 * @return ModuleDescriptor[]
 		*/
 		public static function fromModules (array $descriptors, string $requestPath):array {
 
-			$clonedContainers = [];
+			return array_map(function ($descriptor) use ($requestPath) {
 
-			foreach ($descriptors as $descriptor)
+				$outgoingContainer = $descriptor->getContainer();
 
-				$clonedContainers[] = static::fromContainer($descriptor->getContainer(), $requestPath);
+				$mintedDescriptor = (new DeepCopy)->copy($descriptor); // this enables us replace its container as many times as necessary without affecting the original
 
-			return $clonedContainers;
+				$mintedContainer = $mintedDescriptor->getContainer();
+
+				RequestDetails::fromContainer(
+
+					$mintedContainer, $requestPath
+				);
+
+				$mintedContainer->setMemoryScope($outgoingContainer);
+
+				return $mintedDescriptor;
+			}, $descriptors);
 		}
 
-		public static function fromContainer (Container $container, string $requestPath):Container { // modify usages
+		public static function fromContainer (Container $container, string $requestPath):?self { // modify usages
 
 			$components = parse_url($requestPath);
 
 			$pathComponent = @$components["path"];
+$container->lynx = 12; // only the double should get here
+			if (is_null($pathComponent)) return null;
 
-			$scopedContainer = $container->newMemoryScope();
-
-			if (is_null($pathComponent)) return $scopedContainer;
-
-			$requestInstance = $scopedContainer->getClass(get_called_class());
+			$requestInstance = $container->getClass(get_called_class());
 
 			$requestInstance->setPath($pathComponent);
 
@@ -79,7 +94,7 @@
 
 			$requestInstance->setQueries($queryParameters);
 
-			return $scopedContainer;
+			return $requestInstance;
 		}
 
 		public function getPermanentPath ():?string {

@@ -17,9 +17,9 @@
 
 		private $JSON_HEADER_VALUE = "application/json",
 
-		$CONTENT_TYPE_KEY = "Content-Type", $staticHeaders = [],
+		$CONTENT_TYPE_KEY = "Content-Type", $HAS_ROUTED = ModuleToRoute::class,
 
-		$mockMiddlewareRegistry;
+		$staticHeaders = [], $mockMiddlewareRegistry;
 
 		public function withHeaders(array $headers):self {
 
@@ -35,29 +35,36 @@
 			return $this;
 		}
 
-		protected function getInitializerWrapper ():ModuleToRoute {
-
-			return $this->firstModuleContainer()->getClass(ModuleToRoute::class);
-		}
-
 		protected function activeModuleContainer ():Container {
 
-			$activeModule = $this->getInitializerWrapper()->getActiveModule();
+			$defaultContainer = $this->firstModuleContainer();
+
+			if (is_null(
+
+				$defaultContainer->decorateProvidedConcrete($this->HAS_ROUTED)
+			))
+
+				return $defaultContainer; // don't contaminate original until actual routing occurs
+var_dump(48, spl_object_hash($defaultContainer)); // this guy != prelim
+			$activeModule = $defaultContainer->getClass($this->HAS_ROUTED)
+
+			->getActiveModule(); // this is where the problem is. it always returns the old one
+			var_dump(52, is_null($activeModule));// is prelim free of mtr? this should be true until routing occurs
 
 			if (!is_null($activeModule)) // if [gatewayResponse] has not been called
 
 				return $activeModule->getContainer();
 
-			return $this->firstModuleContainer();
+			return $defaultContainer;
 		}
 
 		public function from (string $url):self {
 
 			$this->setHttpParams($url);
 
-			$initializer = $this->getInitializerWrapper()
+			$initializer = $this->firstModuleContainer()
 
-			->findContext($this->getModules());
+			->getClass($this->HAS_ROUTED)->findContext($this->getModules());
 
 			if (!$initializer)
 

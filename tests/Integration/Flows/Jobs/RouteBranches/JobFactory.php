@@ -84,15 +84,11 @@
 
 			$jobName = RouteBranches::class;
 
-			$jobInstance = $this->container->whenType($jobName)
+			return $this->getContainer()->whenType($jobName)
 
 			->needsArguments([ PendingFlowDetails::class => $context ])
 
 			->getClass($jobName);
-
-			$this->container->refreshClass($jobName);
-
-			return $jobInstance;
 		}
 
 		protected function makeUser (int $id):UserContract {

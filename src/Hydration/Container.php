@@ -37,6 +37,8 @@
 
 		$telescope;
 
+		public $lynx; // temporary property used to differentiate changes on the parent instance from a possible sub/clone
+
 		protected $provisionedClasses = []; // ProvisionUnit[]
 
 		public function __construct () {
@@ -932,14 +934,9 @@
 
 		public function setEssentials ():void {
 
-			$this->provideSelf();
+			$this->whenTypeAny()->needsAny([get_class() => $this]);
 
 			$this->objectMeta = new ObjectDetails($this);
-		}
-
-		public function provideSelf ():void {
-
-			$this->whenTypeAny()->needsAny([get_class() => $this]);
 		}
 
 		public function interiorDecorate ():void {
@@ -1004,11 +1001,11 @@
 				$this->refreshClass($className);
 		}
 
-		public function newMemoryScope ():self {
+		public function setMemoryScope (self $parentContainer):void {
 
-			return (clone $this)->whenTypeAny()->needsAny([
+			$this->whenTypeAny()->needsAny([
 
-				ParentContainerScope::class => $this
+				ParentContainerScope::class => $parentContainer
 			]);
 		}
 	}

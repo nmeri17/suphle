@@ -24,4 +24,4 @@ rr can work with bolt
 change usage of >|$sutName to self::SUT_NAME
 
 
-project init => create module, eject error templates, optional user migrations, start server
+review the need for OrmDialect::restoreConnections after memory scopes are implemented

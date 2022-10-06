@@ -9,14 +9,30 @@
 
 		public function __construct (array $descriptors) {
 
-			$this->descriptors = $descriptors;
+			$this->descriptorInstances = $descriptors;
 
 			parent::__construct();
 		}
 		
 		public function getModules ():array {
 
-			return $this->descriptors;
+			return $this->descriptorInstances;
+		}
+		
+		public function setModules (array $descriptors, bool $isSecond = false):void {
+
+			$this->descriptorInstances = $descriptors;
+
+			$this->container = $descriptors[0]->getContainer();
+			if ($isSecond)
+
+				var_dump(27, spl_object_hash($this->container), spl_object_hash($this->firstContainer())
+			);
+		}
+		
+		public function getScopedDescriptors ():array {
+
+			return $this->scopedDescriptors;
 		}
 	}
 ?>

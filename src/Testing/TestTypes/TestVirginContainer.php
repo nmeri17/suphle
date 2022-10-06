@@ -51,33 +51,70 @@
 		}
 
 		/**
-		 * @param {callables} Expects them all to be methods, not closures or anonymous methods
+		 * @param {callables} Expects them all to be methods, not closures or anonymous methods. Structure:
+		 * 
+		 * [$this, method]. Each method
+		 * 
+		 * [[foo, bar], [foobar, nmeri]]
 		*/
 		protected function dataProvider (array $callables, callable $testBody):void {
 
-			foreach ($callables as $provider) {
+			$this->beforeAllMethods();
 
-				foreach ($provider() as $index => $dataFixture)
+			foreach ($callables as $methodIndex => $method) { // between here
 
-					try { $testBody(...$dataFixture); }
+				$this->beforeEachMethod($methodIndex);
+
+				foreach ($method() as $fixtureIndex => $dataFixture) {
+
+					try { // and here, don't backup against original to avoid overwriting provider modifications
+
+						$this->beforeEachFixture($fixtureIndex);
+
+						$testBody(...$dataFixture);
+
+						$this->afterEachFixture($fixtureIndex);
+					}
 
 					catch (Throwable $exception) { // test failures throw ExpectationFailedException, but without catching errors, error message will appear as if all providers and data sets failed
 
-						echo $this->providerExceptionMessage($provider, $index, $dataFixture);
+						echo $this->providerExceptionMessage(
+
+							$method, $fixtureIndex, $dataFixture
+						);
 
 						throw $exception;
 					}
+				}
 			}
+
+			$this->afterAllMethods();
 		}
 
-		private function providerExceptionMessage (array $providerCallable, int $errorIndex, array $dataRow):string {
+		protected function beforeAllMethods ():void {}
+
+		/**
+		 * Restore original modules' state
+		*/
+		protected function beforeEachMethod (int $methodIndex):void {}
+
+		/**
+		 * Restore preliminary state
+		*/
+		protected function beforeEachFixture (int $fixtureIndex):void {}
+
+		protected function afterEachFixture (int $fixtureIndex):void {}
+
+		protected function afterAllMethods ():void {}
+
+		private function providerExceptionMessage (array $methodCallable, int $errorIndex, array $dataRow):string {
 
 			$newLine = "\n";
 
-			$providerName = get_class($providerCallable[0]) . "::". $providerCallable[1];
+			$methodName = get_class($methodCallable[0]) . "::". $methodCallable[1];
 
 			$messages = [
-				"$providerName with data set #$errorIndex:",
+				"$methodName with data set #$errorIndex:",
 
 				json_encode($dataRow, JSON_PRETTY_PRINT)
 			];
