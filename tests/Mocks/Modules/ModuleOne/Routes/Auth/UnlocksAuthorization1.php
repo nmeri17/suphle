@@ -35,12 +35,17 @@
 
 		public function GMULTI__EDITh_id () {
 
-			$this->_get(new Json("getEditableResource"));
+			$this->_get(new Json("getEmploymentDetails"));
 		}
 
 		public function GMULTI__EDIT__UNAUTHh () {
 
-			$this->_get(new Json("getEditableResource"));
+			$this->_get(new Json("getEmploymentDetails"));
+		}
+
+		public function PMULTI__EDITh_id () {
+
+			$this->_put(new Json("updateEmploymentDetails"));
 		}
 
 		public function _authorizePaths (PathAuthorizer $pathAuthorizer):void {

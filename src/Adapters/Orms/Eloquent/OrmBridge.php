@@ -64,24 +64,27 @@
 
 			return $this->connection->transaction(function () use ($lockModels, $hardLock, $queries) {
 
-				foreach ($lockModels as $model)
-
-					if ($hardLock) $this->hardLock($model);
-
-					else $this->softLock($model);
+				$this->applyLock($lockModels, $hardLock);
 
 				return $queries();
 			});
 		}
 
-		public function hardLock( $model):void {
+		public function applyLock(array $models, bool $isHard):void {
 
-			$model->lockForUpdate()->get();
-		}
+			$modelName = get_class(current($models));
 
-		public function softLock( $model):void {
+			$primaryField = $this->getKeyName();
 
-			$model->sharedLock()->get();
+			$lockingMethod = $isHard ? "lockForUpdate": "sharedLock";
+
+			(new $modelName)->$lockingMethod()->whereIn(
+
+				$primaryField, array_map(function ($model) use ($primaryField) {
+
+					return $model->$primaryField;
+				}, $models)
+			)->get(); // combine user query state into special locking builder
 		}
 
 		/**

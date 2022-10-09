@@ -7,24 +7,20 @@
 
 	use Suphle\Exception\Jobs\DeferExceptionAlert;
 
-	use Suphle\Request\PayloadStorage;
-
 	use Throwable;
 
 	class DetectedExceptionManager {
 
 		const ALERTER_METHOD = "queueAlertAdapter";
 
-		private $queueManager, $payloadStorage;
+		private $queueManager;
 
-		public function __construct (AdapterManager $queueManager, PayloadStorage $payloadStorage) {
+		public function __construct (AdapterManager $queueManager) {
 
 			$this->queueManager = $queueManager;
-
-			$this->payloadStorage = $payloadStorage;
 		}
 
-		public function detonateOrDiffuse (Throwable $exception, ServiceErrorCatcher $thrower):void {
+		public function detonateOrDiffuse (Throwable $exception, ServiceErrorCatcher $thrower, $payload):void {
 
 			$rebounds = $thrower->rethrowAs();
 
@@ -34,7 +30,7 @@
 
 				throw new $rebounds[$exceptionName];
 
-			$this->queueAlertAdapter($exception, $this->payloadStorage);
+			$this->queueAlertAdapter($exception, $thrower->getDebugDetails());
 		}
 
 		public function queueAlertAdapter (Throwable $exception, $payload):void {

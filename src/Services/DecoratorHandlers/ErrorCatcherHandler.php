@@ -1,9 +1,7 @@
 <?php
 	namespace Suphle\Services\DecoratorHandlers;
 
-	use Suphle\Contracts\Services\Decorators\ServiceErrorCatcher;
-
-	use Suphle\Contracts\Config\DecoratorProxy;
+	use Suphle\Contracts\{Services\Decorators\ServiceErrorCatcher, Config\DecoratorProxy};
 
 	use Suphle\Exception\DetectedExceptionManager;
 
@@ -65,7 +63,10 @@
 			ServiceErrorCatcher $concrete, string $method
 		) {
 
-			$this->exceptionDetector->detonateOrDiffuse($exception, $concrete);
+			$this->exceptionDetector->detonateOrDiffuse(
+
+				$exception, $concrete, $concrete->getDebugDetails()
+			);
 
 			$proxy->didHaveErrors($method);
 

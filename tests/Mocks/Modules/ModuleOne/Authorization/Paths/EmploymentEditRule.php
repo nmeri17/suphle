@@ -29,10 +29,12 @@
 
 		protected function getCreatorId ():int {
 
-			return $this->model->find(
+			$employment = $this->model->find(
 			
 				$this->pathPlaceholders->getSegmentValue("id")
-			)->employer->user_id;
+			);
+
+			return $employment->employer->user_id;
 		}
 	}
 ?>

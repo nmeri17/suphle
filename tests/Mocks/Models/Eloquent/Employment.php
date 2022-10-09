@@ -15,7 +15,12 @@
 
 		use EditIntegrity;
 
-		protected $table = "employment";
+		protected $table = "employment",
+
+		$casts = [
+
+			IntegrityModel::INTEGRITY_COLUMN => "datetime:Y-m-d H:i:s"
+		];
 
 		public function employer () {
 

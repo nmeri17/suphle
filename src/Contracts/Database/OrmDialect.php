@@ -16,9 +16,7 @@
 		*/
 		public function selectFields ($builder, array $filters):object;
 
-		public function hardLock( $model):void;
-
-		public function softLock( $model):void;
+		public function applyLock(array $models, bool $isHard):void;
 
 		/**
 		 * @return Modified [model]

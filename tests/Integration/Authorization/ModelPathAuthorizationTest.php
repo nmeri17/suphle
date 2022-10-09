@@ -19,7 +19,7 @@
 
 		protected const EDIT_PATH = "/admin/gmulti-edit/";
 
-		private $employment, $admin;
+		private $employment, $admin, $randomEmploymentId;
 
 		protected function getModules ():array {
 
@@ -40,6 +40,10 @@
 		}
 
 		protected function preDatabaseFreeze ():void {
+
+			$this->replicator->modifyInsertion(10); // using this since the seeded ones will be cleared by the time request is sent
+
+			$this->randomEmploymentId = $this->replicator->getRandomEntity()->id;
 
 			$this->employment = $this->replicator->modifyInsertion( // User must be an admin, otherwise the admin rule attached to the outer prefix will cause requests to fail
 
@@ -72,18 +76,9 @@
 
 			$this->actingAs($this->admin); // given
 
-			$this->get(self::EDIT_PATH . $this->randomEmploymentId()) // when
+			$this->get(self::EDIT_PATH . $this->randomEmploymentId) // when
 
 			->assertForbidden(); // then
-		}
-
-		private function randomEmploymentId ():int {
-
-			$id = $this->replicator->getRandomEntity()->id;
-
-			if ($id != $this->employment->id) return $id;
-
-			return $this->randomEmploymentId();
 		}
 	}
 ?>

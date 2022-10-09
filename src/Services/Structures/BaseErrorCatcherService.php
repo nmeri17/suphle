@@ -1,9 +1,16 @@
 <?php
 	namespace Suphle\Services\Structures;
 
+	use Suphle\Routing\PathPlaceholders;
+
+	use Suphle\Request\PayloadStorage;
+
+	/**
+	 * @requires VariableDependencies
+	*/
 	trait BaseErrorCatcherService {
 
-		protected $erroneousMethod;
+		protected $erroneousMethod, $payloadStorage, $placeholderStorage;
 
 		public function rethrowAs ():array {
 
@@ -28,6 +35,29 @@
 		public function matchesErrorMethod (string $method):bool {
 
 			return $method == $this->erroneousMethod;
+		}
+
+		public function getDebugDetails () {
+
+			return $this->payloadStorage;
+		}
+
+		public function dependencyMethods ():array {
+
+			return [
+
+				"setPayloadStorage", "setPlaceholderStorage"
+			];
+		}
+
+		public function setPayloadStorage (PayloadStorage $payloadStorage):void {
+
+			$this->payloadStorage = $payloadStorage;
+		}
+
+		public function setPlaceholderStorage (PathPlaceholders $pathPlaceholders):void {
+
+			$this->pathPlaceholders = $pathPlaceholders;
 		}
 	}
 ?>

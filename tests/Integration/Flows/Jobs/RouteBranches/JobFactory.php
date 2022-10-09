@@ -95,9 +95,14 @@
 			return $jobInstance;
 		}
 
-		protected function makeUser (int $id):UserContract {
+		protected function preDatabaseFreeze ():void {
 
-			return $this->replicator->getExistingEntities(1, compact("id"))[0];
+			$this->replicator->modifyInsertion(10); // we'll visit one of them after connection resets
+		}
+
+		protected function makeUser ():UserContract {
+
+			return $this->replicator->getRandomEntity();
 		}
 
 		protected function makePendingFlowDetails (?UserContract $user = null):PendingFlowDetails {

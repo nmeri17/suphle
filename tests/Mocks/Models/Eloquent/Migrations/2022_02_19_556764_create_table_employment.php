@@ -19,6 +19,8 @@
 
 				$table->foreignIdFor(Employer::class);
 
+				$table->integer("salary");
+
 				$table->timestamps();
 			});
 		}

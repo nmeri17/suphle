@@ -15,7 +15,9 @@
 
 				"status" => "available",
 
-				"employer_id" => Employer::factory()
+				"employer_id" => Employer::factory(),
+
+				"salary" => 150_000
 			];
 		}
 	}

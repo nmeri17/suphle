@@ -37,14 +37,14 @@
 
 				$this->replicator->setupSchema();
 
-				$this->replicator->seedDatabase($this->getInitialCount());
-
 				/*static::$isFirstTest = false;
 			}*/
 
-			$this->preDatabaseFreeze();
+			$this->preDatabaseFreeze(); // placing this here so if connection resets, the new one established will resume with this content
 
 			$this->replicator->listenForQueries();
+
+			$this->replicator->seedDatabase($this->getInitialCount());
 		}
 
 		protected function getInitialCount ():int { // Using a method for this since consumers can't overwrite trait properties without the poor DX of renaming

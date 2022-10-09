@@ -1,27 +1,21 @@
 <?php
 	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services;
 
-	use Suphle\Contracts\Services\{Decorators\MultiUserModelEdit, Models\IntegrityModel};
+	use Suphle\Contracts\Services\Decorators\{MultiUserModelEdit, VariableDependencies};
+
+	use Suphle\Contracts\Services\Models\IntegrityModel;
 
 	use Suphle\Services\{UpdatefulService, Structures\BaseErrorCatcherService};
 
-	use Suphle\Routing\PathPlaceholders;
-
-	use Suphle\Request\PayloadStorage;
-
 	use Suphle\Tests\Mocks\Models\Eloquent\Employment;
 
-	class EmploymentEditMock extends UpdatefulService implements MultiUserModelEdit {
+	class EmploymentEditMock extends UpdatefulService implements MultiUserModelEdit, VariableDependencies {
 
 		use BaseErrorCatcherService;
 
-		private $payloadStorage, $placeholderStorage, $blankModel;
+		private $blankModel;
 
-		public function __construct (PathPlaceholders $placeholderStorage, PayloadStorage $payloadStorage, Employment $blankModel) {
-
-			$this->placeholderStorage = $placeholderStorage;
-
-			$this->payloadStorage = $payloadStorage;
+		public function __construct ( Employment $blankModel) {
 
 			$this->blankModel = $blankModel;
 		}
@@ -36,9 +30,9 @@
 
 		public function updateResource () {
 
-			$this->model->where([
+			$this->blankModel->where([
 
-				"id" => $this->payloadStorage->getKey("id")
+				"id" => $this->placeholderStorage->getSegmentValue("id")
 			])
 			->update($this->payloadStorage->only(["salary"]));
 		}

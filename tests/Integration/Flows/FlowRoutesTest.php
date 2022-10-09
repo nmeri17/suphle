@@ -36,7 +36,7 @@
 			$this->dataProvider([
 
 				[$this, "specializedUser"]
-			], function (PendingFlowDetails $context, ?UserContract $visitor) {
+			], function (PendingFlowDetails $context, ?UserContract $visitor, int $userId) {
 
 				$isGuest = is_null($visitor);
 
@@ -45,19 +45,19 @@
 				// this guy makes the internal requests for us i.e. to locate renderer for each flow, provided it exists on active route collection
 				$this->makeRouteBranches($context)->handle(); // when
 
-				$this->assertHandledByFlow($this->userUrl); // then
+				$this->assertHandledByFlow("/user-content/$userId"); // then
 			});
 		}
 
 		public function specializedUser ():array {
 
-			$user = $this->makeUser(5);
+			$contentOwner = $this->makeUser();
 
 			return [
 
-				[$this->makePendingFlowDetails($user), $user],
+				[$this->makePendingFlowDetails($contentOwner), $contentOwner, $contentOwner->id],
 
-				[$this->makePendingFlowDetails(), null] // create content to be mass consumed. Visiting user 5's resource as nobody should access it
+				[$this->makePendingFlowDetails(), null, $contentOwner->id] // create content to be mass consumed. Visiting user 5's resource as nobody should access it
 			];
 		}
 		
@@ -66,7 +66,7 @@
 			$this->dataProvider([
 
 				[$this, "strangeUsers"]
-			], function (PendingFlowDetails $context, ?UserContract $visitor) {
+			], function (PendingFlowDetails $context, ?UserContract $visitor, int $userId) {
 
 				if (!is_null($visitor))
 
@@ -74,19 +74,27 @@
 
 				$this->makeRouteBranches($context)->handle(); // when
 
-				$this->assertNotHandledByFlow($this->userUrl); // then
+				$this->assertNotHandledByFlow("/user-content/$userId"); // then
 			});
 		}
 
 		public function strangeUsers ():array {
 
-			$owner5 = $this->makeUser(5);
+			$contentOwner = $this->makeUser();
+
+			$contentVisitor = $this->makeUser();
 
 			return [
 
-				[$this->makePendingFlowDetails($owner5), $this->makeUser(3)], // create for user 5 and visit it as user 3; should see nothing
+				[
 
-				[$this->makePendingFlowDetails($owner5), null] // create content for user 5. Visiting as nobody should hit a brick wall
+					$this->makePendingFlowDetails($contentOwner), $contentVisitor, $contentOwner->id
+				], // create for user 5 and visit it as user 3; should see nothing
+
+				[
+
+					$this->makePendingFlowDetails($contentOwner), null, $contentOwner->id
+				] // create content for user 5. Visiting as nobody should hit a brick wall
 			];
 		}
 		
@@ -95,7 +103,7 @@
 			$this->dataProvider([
 				[$this, "specializedUser"],
 				[$this, "strangeUsers"]
-			], function (PendingFlowDetails $dummyContext, ?UserContract $visitor) {
+			], function (PendingFlowDetails $dummyContext, ?UserContract $visitor, int $userId) {
 
 				if (!is_null($visitor))
 
@@ -104,7 +112,7 @@
 				$this->handleDefaultPendingFlowDetails(); // when
 
 				// then
-				$this->assertHandledByFlow($this->userUrl);
+				$this->assertHandledByFlow("/user-content/$userId");
 
 				$this->assertHandledByFlow("/user-content/3");
 			});

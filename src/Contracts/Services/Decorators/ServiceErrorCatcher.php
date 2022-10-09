@@ -24,5 +24,7 @@
 		public function matchesErrorMethod (string $method):bool;
 
 		public function didHaveErrors (string $method):void;
+
+		public function getDebugDetails ();
 	}
 ?>
