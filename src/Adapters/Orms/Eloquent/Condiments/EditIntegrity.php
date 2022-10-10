@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Adapters\Orms\Eloquent\Condiments;
 
-	use Suphle\Contracts\Services\Models\IntegrityModel;
+	use Suphle\Contracts\{Services\Models\IntegrityModel, Auth\AuthStorage};
 
 	use Suphle\Adapters\Orms\Eloquent\Models\EditHistory;
 
@@ -47,8 +47,6 @@
 
 				IntegrityModel::INTEGRITY_COLUMN => $integrity
 			]);
-
-			if ($this->enableAudit()) $this->makeHistory();
 		}
 
 		public function enableAudit ():bool {
@@ -56,15 +54,15 @@
 			return true;
 		}
 
-		public function makeHistory ():void {
+		public function makeHistory (AuthStorage $authStorage, $payload):void {
 
-			$user = $this->authStorage->getUser();
+			$user = $authStorage->getUser();
 
 			$this->edit_history()->create([
 
-				"payload" => json_encode($this->payloadStorage->fullPayload()),
+				"payload" => json_encode($payload),
 
-				"user_id" => !is_null($user) ? $user->getId(): null
+				"user_id" => $user->getId() // changes can't be associated with guests
 			]);
 		}
 	}

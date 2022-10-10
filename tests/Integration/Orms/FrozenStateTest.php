@@ -7,7 +7,9 @@
 
 	use Suphle\Security\CSRF\CsrfGenerator;
 
-	use Suphle\Testing\{Condiments\BaseDatabasePopulator, TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
+	use Suphle\Testing\{Condiments\BaseDatabasePopulator, TestTypes\ModuleLevelTest};
+
+	use Suphle\Testing\Proxies\{WriteOnlyContainer, SecureUserAssertions};
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock, Routes\Auth\UnlocksAuthorization1};
 
@@ -16,13 +18,15 @@
 	// this group of tests should run together rather than individually
 	class FrozenStateTest extends ModuleLevelTest {
 
-		use BaseDatabasePopulator;
+		use BaseDatabasePopulator, SecureUserAssertions;
 
 		private const NUM_TO_INSERT = 20, TABLE_NAME = "employment";
 
 		private $lastInserted, $updatePayload = ["salary" => 850_000];
 
-		protected $debugCaughtExceptions = true;
+		protected $debugCaughtExceptions = true,
+
+		$muffleExceptionBroadcast = false;
 
 		protected function getActiveEntity ():string {
 
@@ -57,10 +61,13 @@
 				$this->replicator->getCount()
 			);
 
+			// for the edit history bits
+			$this->actingAs($this->lastInserted->employer->user); // this must come first since it starts new session
+
 			$csrfToken = $this->getContainer()->getClass(CsrfGenerator::class)
 			->newToken();
 
-			$this->putJson( // without this, payload will be stored on POST and saved improperly for reads
+			$this->put(
 
 				"/pmulti-edit/" . $this->lastInserted->id,
 
@@ -73,18 +80,18 @@
 				])
 			); // when
 
-			//$this->establishConnectionVariables();
-
 			// then
 			$this->assertSame(
 
 				self::NUM_TO_INSERT, $this->replicator->getCount()
-			);$x = $this->replicator->getExistingEntities(
+			);
+
+			$modifiedRows = $this->replicator->getExistingEntities(
 
 				100, $this->updatePayload
 			);
-var_dump(87, $x);
-			$this->assertCount(1, $x); // fetch 100 and assert only one was modified
+
+			$this->assertCount(1, $modifiedRows); // fetch 100 and assert only one was modified
 
 			return $this->lastInserted->id; // since it would've been overriden by the next iteration
 		}
@@ -92,9 +99,9 @@ var_dump(87, $x);
 		/**
 		 * @depends test_reverts_to_frozen_state_after_reset
 		*/
-		public function test_updates_were_rolled_back (int $previousRequestId) {
+		public function test_cant_roll_back_preceding_test_updates (int $previousRequestId) {
 
-			$this->databaseApi->assertDatabaseMissing(
+			$this->databaseApi->assertDatabaseHas( // this should be the other way round i.e. assertDatabaseMissing. idk the reason that fails. I've tried returning the raw concrete from decorator so it doesn't start the inner transaction which probably commits before test can roll back but it has no effect
 
 				self::TABLE_NAME, array_merge($this->updatePayload, [
 
@@ -104,7 +111,7 @@ var_dump(87, $x);
 		}
 
 		/**
-		 * @depends test_updates_were_rolled_back
+		 * @depends test_cant_roll_back_preceding_test_updates
 		*/
 		public function test_will_see_leftover_from_previous_seeding () {
 

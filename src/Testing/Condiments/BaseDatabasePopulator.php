@@ -37,10 +37,10 @@
 
 				$this->replicator->setupSchema();
 
+				$this->preDatabaseFreeze(); // placing this here so if connection resets, the new one established will resume with this content
+
 				/*static::$isFirstTest = false;
 			}*/
-
-			$this->preDatabaseFreeze(); // placing this here so if connection resets, the new one established will resume with this content
 
 			$this->replicator->listenForQueries();
 

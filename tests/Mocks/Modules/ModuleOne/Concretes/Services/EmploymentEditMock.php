@@ -24,15 +24,15 @@
 
 			return $this->blankModel->find(
 
-				$this->placeholderStorage->getSegmentValue("id")
+				$this->pathPlaceholders->getSegmentValue("id")
 			);
 		}
 
 		public function updateResource () {
 
-			$this->blankModel->where([
+			return $this->blankModel->where([
 
-				"id" => $this->placeholderStorage->getSegmentValue("id")
+				"id" => $this->pathPlaceholders->getSegmentValue("id")
 			])
 			->update($this->payloadStorage->only(["salary"]));
 		}

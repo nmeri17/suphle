@@ -43,6 +43,11 @@
 
 				$stubs[DetectedExceptionManager::ALERTER_METHOD] = null;
 
+			else $stubs[DetectedExceptionManager::ALERTER_METHOD] = $this->returnCallback(function ($exception) {
+
+				throw $exception;
+			});
+
 			$container = $this->getContainer();
 
 			$parameters = $container->getMethodParameters(

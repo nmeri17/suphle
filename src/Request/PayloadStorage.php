@@ -119,15 +119,15 @@
 
 		public function only (array $include):array {
 
-			return array_filter($this->payload, function ($key) use ($include) {
+			return array_filter($this->fullPayload(), function ($key) use ($include) {
 
-				return array_key_exists($key, $include);
+				return in_array($key, $include);
 			}, ARRAY_FILTER_USE_KEY);
 		}
 
 		public function except (array $exclude):array {
 
-			return array_filter($this->payload, function ($key) use ($exclude) {
+			return array_filter($this->fullPayload(), function ($key) use ($exclude) {
 
 				return !in_array($key, $exclude);
 			}, ARRAY_FILTER_USE_KEY);

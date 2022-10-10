@@ -1,6 +1,8 @@
 <?php
 	namespace Suphle\Contracts\Services\Models;
 
+	use Suphle\Contracts\Auth\AuthStorage;
+
 	use DateTime;
 
 	interface IntegrityModel {
@@ -19,6 +21,6 @@
 
 		public function enableAudit ():bool;
 
-		public function makeHistory ():void;
+		public function makeHistory (AuthStorage $authStorage, $payload):void;
 	}
 ?>

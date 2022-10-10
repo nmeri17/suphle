@@ -42,11 +42,13 @@
 					PayloadStorage::CONTENT_TYPE_KEY, $headers
 				);
 
-				if ($hasHeader && $headers[PayloadStorage::CONTENT_TYPE_KEY] != PayloadStorage::JSON_HEADER_VALUE)
+				$hasJsonHeader = $hasHeader && $headers[PayloadStorage::CONTENT_TYPE_KEY] == PayloadStorage::JSON_HEADER_VALUE;
 
-					$_POST = $payload;
+				if ($hasJsonHeader)
 
-				else $reader["getPayload"] = $payload;
+					$reader["getPayload"] = $payload;
+
+				else $_POST = $payload;
 			}
 
 			$this->massProvide([

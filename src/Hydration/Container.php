@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Hydration;
 	
-	use Suphle\Hydration\Structures\{ProvisionUnit, NamespaceUnit, HydratedConcrete, ObjectDetails, ContainerTelescope};
+	use Suphle\Hydration\Structures\{ProvisionUnit, NamespaceUnit, HydratedConcrete, ObjectDetails, ContainerTelescope, ArrayDetails};
 
 	use Suphle\Contracts\{Hydration\ClassHydrationBehavior, Config\ContainerConfig as IContainerConfig};
 
@@ -33,7 +33,7 @@
 
 		$provisionSpace, // same as above, but for namespaces
 
-		$telescope;
+		$telescope, $arrayMeta;
 
 		protected $provisionedClasses = []; // ProvisionUnit[]
 
@@ -254,7 +254,9 @@
 
 			$length = count($stack);
 
-			return $stack[$length - ($index ?? 1)];
+			$activeIndex = $length - ($index ?? 1);
+
+			return $stack[$activeIndex];
 		}
 
 		/**
@@ -454,14 +456,10 @@
 		*/
 		private function popHydratingFor (string $completedHydration):void {
 
-			$index = array_search($completedHydration, $this->hydratingForStack);
+			$this->hydratingForStack = $this->arrayMeta->removeAtIndex(
 
-			if (isset($this->hydratingForStack[$index])) {
-
-				unset($this->hydratingForStack[$index]);
-
-				$this->hydratingForStack = array_values($this->hydratingForStack);
-			}
+				$this->hydratingForStack, $completedHydration
+			);
 		}
 
 		/**
@@ -603,13 +601,19 @@
 		*	Fetch appropriate dependencies for a callable's arguments
 		* 
 		* @param {callable}:string|Closure
-		* @param {anchorClass} the class the given method belongs to
+		* @param {anchorClass}:string. The class the given method belongs to
+		* @param {skipDecoration}:array. To be used by argument-based decorators to break an inevitable recursive loop
 		* 
 		* @return {Array} associative. Contains hydrated parameters to invoke given callable with
 		* 
 		* @throws ReflectionException if method doesn't exist on class
 		*/ 
-		public function getMethodParameters ( $callable, string $anchorClass = null):array {
+		public function getMethodParameters (
+
+			$callable, string $anchorClass = null,
+
+			array $skipDecoration = [] // We're using a parameter rather than property for this to avoid disabling decorators throughout
+		):array {
 
 			$context = null;
 
@@ -645,6 +649,10 @@
 
 					$this->popHydratingFor($entity);
 			}
+
+			if (in_array($anchorClass, $skipDecoration))
+
+				return $dependencies;
 
 			$decorator = $this->getDecorator();
 
@@ -933,6 +941,8 @@
 			$this->whenTypeAny()->needsAny([get_class() => $this]);
 
 			$this->objectMeta = new ObjectDetails($this);
+
+			$this->arrayMeta = new ArrayDetails;
 		}
 
 		public function interiorDecorate ():void {

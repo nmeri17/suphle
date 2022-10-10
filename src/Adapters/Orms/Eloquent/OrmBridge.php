@@ -72,19 +72,21 @@
 
 		public function applyLock(array $models, bool $isHard):void {
 
-			$modelName = get_class(current($models));
+			$firstModel = current($models);
 
-			$primaryField = $this->getKeyName();
+			$modelName = get_class($firstModel);
+
+			$primaryField = $firstModel->getKeyName();
 
 			$lockingMethod = $isHard ? "lockForUpdate": "sharedLock";
 
-			(new $modelName)->$lockingMethod()->whereIn(
+			(new $modelName)->$lockingMethod()->whereIn( // combine user query state into special locking builder to avoid applying update to all rows
 
 				$primaryField, array_map(function ($model) use ($primaryField) {
 
 					return $model->$primaryField;
 				}, $models)
-			)->get(); // combine user query state into special locking builder
+			)->get();
 		}
 
 		/**

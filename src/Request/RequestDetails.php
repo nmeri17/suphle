@@ -85,7 +85,7 @@
 			return $this->permanentPath;
 		}
 
-		public function httpMethod ():string { // remember to set std in main
+		public function httpMethod ():string {
 
 			$hiddenField = "_method";
 
@@ -104,14 +104,19 @@
 			return strtolower($methodName);
 		}
 
+		public function matchesMethod (string $method):bool {
+
+			return preg_match("/" . $this->httpMethod() . "/i", $method);
+		}
+
 		public function isGetRequest ():bool {
 
-			return $this->httpMethod() == "get";
+			return $this->matchesMethod("get");
 		}
 
 		public function isPostRequest ():bool {
 
-			return $this->httpMethod() == "post";
+			return $this->matchesMethod("post");
 		}
 
 		private function regexApiPrefix ():string {
@@ -181,11 +186,6 @@
 			$versionKeys = array_slice($versionKeys, $startIndex);
 
 			return array_combine($versionKeys, $versionHandlers);
-		}
-
-		public function matchesMethod (string $method):bool {
-
-			return $this->httpMethod() == $method;
 		}
 
 		public function matchesPath (string $path):bool {

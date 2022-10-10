@@ -7,9 +7,11 @@
 
 	use Illuminate\Database\Eloquent\Factories\Factory;
 
-	abstract class EditHistory extends BaseModel implements VariableDependencies {
+	class EditHistory extends BaseModel implements VariableDependencies {
 
 		use MigrationLocation;
+
+		protected $table = "edit_history";
 
 		protected static function newFactory ():Factory {
 

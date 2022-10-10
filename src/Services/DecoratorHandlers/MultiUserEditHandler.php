@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Services\DecoratorHandlers;
 
-	use Suphle\Contracts\{Services\Decorators\MultiUserModelEdit, Database\OrmDialect, Config\DecoratorProxy};
+	use Suphle\Contracts\{Services\Decorators\MultiUserModelEdit, Database\OrmDialect, Config\DecoratorProxy, Auth\AuthStorage};
 
 	use Suphle\Queues\AdapterManager;
 
@@ -27,7 +27,7 @@
 
 		private $ormDialect, $queueManager, $payloadStorage,
 
-		$errorDecoratorHandler, $pathAuthorizer;
+		$errorDecoratorHandler, $pathAuthorizer, $authStorage;
 
 		public function __construct (
 			OrmDialect $ormDialect, AdapterManager $queueManager,
@@ -36,7 +36,7 @@
 
 			DecoratorProxy $proxyConfig, ObjectDetails $objectMeta,
 
-			PathAuthorizer $pathAuthorizer
+			PathAuthorizer $pathAuthorizer, AuthStorage $authStorage
 		) {
 
 			$this->ormDialect = $ormDialect;
@@ -48,6 +48,8 @@
 			$this->errorDecoratorHandler = $errorDecoratorHandler; // composing instead of extending to decouple constructor dependencies
 
 			$this->pathAuthorizer = $pathAuthorizer;
+
+			$this->authStorage = $authStorage;
 
 			parent::__construct($proxyConfig, $objectMeta);
 		}
@@ -86,23 +88,29 @@
 
 			$currentVersion = $concrete->getResource();
 
-			if (!$currentVersion->includesEditIntegrity(
+			$integrityValue = $this->payloadStorage->getKey(self::INTEGRITY_KEY);
 
-				$this->payloadStorage->getKey(self::INTEGRITY_KEY)
-			)) // this is the heart of the entire decoration
+			if (!$currentVersion->includesEditIntegrity($integrityValue)) // this is the heart of the entire decoration
 
 				throw new EditIntegrityException(EditIntegrityException::KEY_MISMATCH);
 
 			try {
 
-				return $this->ormDialect->runTransaction(function () use ($currentVersion, $concrete) {
+				return $this->ormDialect->runTransaction(function () use ($currentVersion, $concrete, $integrityValue) {
 
 					$result = $concrete->updateResource(); // user's incoming changes
 
 					$currentVersion->nullifyEditIntegrity(
 
-						new DateTime(self::DATE_FORMAT)
+						new DateTime($integrityValue)
 					);
+
+					if ($currentVersion->enableAudit())
+
+						$currentVersion->makeHistory(
+
+							$this->authStorage, $this->payloadStorage->fullPayload()
+						);
 
 					return $result;
 
