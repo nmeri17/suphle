@@ -39,7 +39,7 @@
 				$this->binDir ."rr", "serve", "-c", $configPath
 			]);
 
-			$serverProcess->setTimeout(20_000);
+			$serverProcess->setTimeout(20); // stop process if unable to start server after 20 seconds
 
 			try {
 

@@ -30,6 +30,17 @@
 			$this->assertSame($currentCount + 1, $this->replicator->getCount()); // then
 		}
 
+		/**
+		 * @depends test_insertion_before_read_is_visible
+		*/
+		public function test_inserted_data_is_rolled_back_between_tests () {
+
+			$this->assertSame(
+
+				$this->getInitialCount(), $this->replicator->getCount()
+			);
+		}
+
 		public function test_insertion_before_reset_is_lost () {
 
 			$currentCount = $this->getInitialCount();

@@ -22,7 +22,7 @@
 			BaseDatabasePopulator::setUp as databaseAllSetup;
 		}
 
-		protected $container,
+		protected $container, $contentOwner, $contentVisitor,
 
 		$userUrl = "/user-content/5", // corresponds to the content generated after using [flowUrl] to create a context
 
@@ -98,11 +98,10 @@
 		protected function preDatabaseFreeze ():void {
 
 			$this->replicator->modifyInsertion(10); // we'll visit as one of them after connection resets
-		}
 
-		protected function makeUser ():UserContract {
+			[$this->contentOwner, $this->contentVisitor] = $this
 
-			return $this->replicator->getRandomEntity();
+			->replicator->getRandomEntities(2);
 		}
 
 		protected function makePendingFlowDetails (?UserContract $user = null):PendingFlowDetails {

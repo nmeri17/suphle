@@ -40,6 +40,8 @@
 
 			$this->setHttpParams("/dummy/5", "put"); // given
 
+			$this->stubPlaceholderStorage(5);
+
 			$sut = $this->container->getClass($this->sutName);
 
 			$sut->updateResource(); // when

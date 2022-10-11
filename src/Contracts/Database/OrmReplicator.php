@@ -22,7 +22,9 @@
 
 		public function getRandomEntities ( int $amount):iterable;
 
-		public function getExistingEntities ( int $amount, array $constraints):iterable;
+		public function getSpecificEntities ( int $amount, array $constraints):iterable;
+
+		public function getCount ():int;
 
 		public function setActiveModelType (string $model):void;
 

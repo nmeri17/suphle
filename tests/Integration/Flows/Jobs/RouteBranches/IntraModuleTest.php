@@ -69,12 +69,14 @@
 		*/
 		public function contextParameters ():array {
 
-			$contentOwner = $this->makeUser();
-
 			return [
 				[$this->makePendingFlowDetails()],
 
-				[$this->makePendingFlowDetails($contentOwner), $contentOwner]
+				[
+					$this->makePendingFlowDetails($this->contentOwner),
+
+					$this->contentOwner
+				]
 			];
 		}
 

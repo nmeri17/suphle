@@ -53,11 +53,13 @@
 
 		public function specializedUser ():array {
 
-			$contentOwner = $this->makeUser();
-
 			return [
 
-				[$this->makePendingFlowDetails($contentOwner), $contentOwner],
+				[
+					$this->makePendingFlowDetails($this->contentOwner),
+
+					$this->contentOwner
+				],
 
 				[$this->makePendingFlowDetails(), null] // create content to be mass consumed. Visiting user 5's resource as nobody should access it
 			];
@@ -84,20 +86,18 @@
 
 		public function strangeUsers ():array {
 
-			$contentOwner = $this->makeUser();
-
-			$contentVisitor = $this->makeUser();
-
 			return [
 
 				[
 
-					$this->makePendingFlowDetails($contentOwner), $contentVisitor
+					$this->makePendingFlowDetails($this->contentOwner),
+
+					$this->contentVisitor
 				], // create for user 5 and visit it as user 3; should see nothing
 
 				[
 
-					$this->makePendingFlowDetails($contentOwner), null
+					$this->makePendingFlowDetails($this->contentOwner), null
 				] // create content for user 5. Visiting as nobody should hit a brick wall
 			];
 		}

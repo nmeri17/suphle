@@ -74,7 +74,7 @@
 			return $this->activeModel->inRandomOrder()->limit($amount)->get();
 		}
 
-		public function getExistingEntities ( int $amount, array $constraints):iterable {
+		public function getSpecificEntities ( int $amount, array $constraints):iterable {
 
 			return $this->activeModel->limit($amount)->where($constraints)->get();
 		}

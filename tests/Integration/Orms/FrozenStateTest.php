@@ -86,7 +86,7 @@
 				self::NUM_TO_INSERT, $this->replicator->getCount()
 			);
 
-			$modifiedRows = $this->replicator->getExistingEntities(
+			$modifiedRows = $this->replicator->getSpecificEntities(
 
 				100, $this->updatePayload
 			);
@@ -101,7 +101,7 @@
 		*/
 		public function test_cant_roll_back_preceding_test_updates (int $previousRequestId) {
 
-			$this->databaseApi->assertDatabaseHas( // this should be the other way round i.e. assertDatabaseMissing. idk the reason that fails. I've tried returning the raw concrete from decorator so it doesn't start the inner transaction which probably commits before test can roll back but it has no effect
+			$this->databaseApi->assertDatabaseHas( // this works this way since http action reset the connection carrying transaction that should've reset this
 
 				self::TABLE_NAME, array_merge($this->updatePayload, [
 
