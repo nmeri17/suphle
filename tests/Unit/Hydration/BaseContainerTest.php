@@ -31,6 +31,8 @@
 				"getProvidedConcrete" => [1, [$this->anything()]]
 			]); // then
 
+			$sut->setEssentials();
+
 			$sut->decorateProvidedConcrete($this->aRequires); // when
 		}
 

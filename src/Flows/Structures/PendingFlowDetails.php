@@ -4,7 +4,7 @@
 	use Suphle\Contracts\{Auth\UserContract, Presentation\BaseRenderer};
 
 	/**
-	 * This is the what is received from the currently handled request. It is stored and during handling later, specifics of the flow are extracted and handled
+	 * This is what is received from the currently handled request. It is stored and during handling later, specifics of the flow are extracted and handled
 	*/
 	class PendingFlowDetails {
 

@@ -24,4 +24,7 @@ rr can work with bolt
 change usage of >|$sutName to self::SUT_NAME
 
 
-project init => create module, eject error templates, optional user migrations, start server
+project init => create module, templates:install (requires internet for laravel), optional user migrations, rr get-binary, start server (hello world path and test)
+
+complete contributing.md => cs rules, link to discussions and help-wanted issues
+

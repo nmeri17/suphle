@@ -3,9 +3,9 @@
 
 	use Suphle\Services\{UpdatefulService, Structures\BaseErrorCatcherService};
 
-	use Suphle\Contracts\Services\Decorators\SystemModelEdit;
+	use Suphle\Contracts\Services\Decorators\{SystemModelEdit, VariableDependencies};
 
-	class SystemModelEditMock1 extends UpdatefulService implements SystemModelEdit {
+	class SystemModelEditMock1 extends UpdatefulService implements SystemModelEdit, VariableDependencies {
 
 		use BaseErrorCatcherService;
 

@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services;
 
-	use Suphle\Contracts\Services\Decorators\ServiceErrorCatcher;
+	use Suphle\Contracts\Services\Decorators\{ServiceErrorCatcher, VariableDependencies};
 
 	use Suphle\Services\Structures\BaseErrorCatcherService;
 
@@ -9,7 +9,7 @@
 
 	use Exception, InvalidArgumentException;
 
-	class DatalessErrorThrower implements ServiceErrorCatcher {
+	class DatalessErrorThrower implements ServiceErrorCatcher, VariableDependencies {
 
 		use BaseErrorCatcherService;
 

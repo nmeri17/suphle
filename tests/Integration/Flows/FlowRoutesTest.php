@@ -36,7 +36,7 @@
 			$this->dataProvider([
 
 				[$this, "specializedUser"]
-			], function (PendingFlowDetails $context, ?UserContract $visitor, int $userId) {
+			], function (PendingFlowDetails $context, ?UserContract $visitor) {
 
 				$isGuest = is_null($visitor);
 
@@ -45,7 +45,9 @@
 				// this guy makes the internal requests for us i.e. to locate renderer for each flow, provided it exists on active route collection
 				$this->makeRouteBranches($context)->handle(); // when
 
-				$this->assertHandledByFlow("/user-content/$userId"); // then
+				$resourceId = $this->expectedSavedResource($context);
+
+				$this->assertHandledByFlow("/user-content/$resourceId"); // then
 			});
 		}
 
@@ -55,9 +57,9 @@
 
 			return [
 
-				[$this->makePendingFlowDetails($contentOwner), $contentOwner, $contentOwner->id],
+				[$this->makePendingFlowDetails($contentOwner), $contentOwner],
 
-				[$this->makePendingFlowDetails(), null, $contentOwner->id] // create content to be mass consumed. Visiting user 5's resource as nobody should access it
+				[$this->makePendingFlowDetails(), null] // create content to be mass consumed. Visiting user 5's resource as nobody should access it
 			];
 		}
 		
@@ -66,7 +68,7 @@
 			$this->dataProvider([
 
 				[$this, "strangeUsers"]
-			], function (PendingFlowDetails $context, ?UserContract $visitor, int $userId) {
+			], function (PendingFlowDetails $context, ?UserContract $visitor) {
 
 				if (!is_null($visitor))
 
@@ -74,7 +76,9 @@
 
 				$this->makeRouteBranches($context)->handle(); // when
 
-				$this->assertNotHandledByFlow("/user-content/$userId"); // then
+				$resourceId = $this->expectedSavedResource($context);
+
+				$this->assertNotHandledByFlow("/user-content/$resourceId"); // then
 			});
 		}
 
@@ -88,12 +92,12 @@
 
 				[
 
-					$this->makePendingFlowDetails($contentOwner), $contentVisitor, $contentOwner->id
+					$this->makePendingFlowDetails($contentOwner), $contentVisitor
 				], // create for user 5 and visit it as user 3; should see nothing
 
 				[
 
-					$this->makePendingFlowDetails($contentOwner), null, $contentOwner->id
+					$this->makePendingFlowDetails($contentOwner), null
 				] // create content for user 5. Visiting as nobody should hit a brick wall
 			];
 		}
@@ -103,19 +107,26 @@
 			$this->dataProvider([
 				[$this, "specializedUser"],
 				[$this, "strangeUsers"]
-			], function (PendingFlowDetails $dummyContext, ?UserContract $visitor, int $userId) {
+			], function (PendingFlowDetails $context, ?UserContract $visitor) {
 
 				if (!is_null($visitor))
 
 					$this->actingAs($visitor);
 
-				$this->handleDefaultPendingFlowDetails(); // when
+				$this->makeRouteBranches($context)->handle(); // when
+
+				$resourceId = $this->expectedSavedResource($context);
 
 				// then
-				$this->assertHandledByFlow("/user-content/$userId");
-
-				$this->assertHandledByFlow("/user-content/3");
+				$this->assertHandledByFlow("/user-content/$resourceId");
 			});
+		}
+
+		protected function expectedSavedResource (PendingFlowDetails $context):int {
+
+			$payload = $context->getRenderer()->getRawResponse();
+
+			return $payload[$this->originDataName]->random()["id"];
 		}
 
 		/**
@@ -140,9 +151,9 @@
 
 		public function test_will_emitEvent_after_returning_flow_request() {
 
-			$this->handleDefaultPendingFlowDetails();
+			$context = $this->handleDefaultPendingFlowDetails();
 
-			$this->get($this->userUrl); // when
+			$this->get("/user-content/" . $this->expectedSavedResource($context)); // when
 
 			// OuterFlowWrapper::HIT_EVENT
 			$this->assertFiredEvent ($this->rendererController); // then

@@ -97,7 +97,7 @@
 
 		protected function preDatabaseFreeze ():void {
 
-			$this->replicator->modifyInsertion(10); // we'll visit one of them after connection resets
+			$this->replicator->modifyInsertion(10); // we'll visit as one of them after connection resets
 		}
 
 		protected function makeUser ():UserContract {
@@ -116,11 +116,15 @@
 		}
 
 		/**
-		 * Push in user-content/1-10
+		 * Push in user-content/1-10, the amount returned from previous payload
 		*/
-		protected function handleDefaultPendingFlowDetails ():void {
+		protected function handleDefaultPendingFlowDetails ():PendingFlowDetails {
 
-			$this->makeRouteBranches($this->makePendingFlowDetails())->handle();
+			$context = $this->makePendingFlowDetails();
+
+			$this->makeRouteBranches($context)->handle();
+
+			return $context;
 		}
 	}
 ?>

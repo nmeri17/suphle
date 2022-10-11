@@ -25,15 +25,20 @@
 
 		use DirectHttpTest, BaseDatabasePopulator, CommonBinds;
 
-		private $modelName = Employment::class,
+		private $lastInserted, $modelName = Employment::class,
 
 		$sutName = EmploymentEditMock::class;
+
+		protected function preDatabaseFreeze ():void {
+
+			$this->lastInserted = $this->replicator->modifyInsertion(10)[0]; // we'll visit one of them after connection resets
+		}
 
 		public function test_missing_key_on_update_throws_error () {
 
 			$this->expectException(EditIntegrityException::class); // then
 
-			$this->setHttpParams("/dummy", "put"); // given
+			$this->setHttpParams("/dummy/5", "put"); // given
 
 			$sut = $this->container->getClass($this->sutName);
 
@@ -73,20 +78,20 @@
 
 		public function test_update_can_withstand_errors () {
 
-			$model = $this->replicator->getRandomEntity();
-
 			$columnName = IntegrityModel::INTEGRITY_COLUMN;
+
+			$modelId = $this->lastInserted->id;
 
 			$this->setJsonParams("/dummy", [
 
-				MultiUserEditHandler::INTEGRITY_KEY => $model->$columnName,
+				MultiUserEditHandler::INTEGRITY_KEY => $this->lastInserted->$columnName,
 
 				"name" => "ujunwa",
 
-				"id" => $model->id
+				"id" => $modelId
 			], "put");
 
-			$this->stubPlaceholderStorage($model->id);
+			$this->stubPlaceholderStorage($modelId);
 
 			$result = $this->container->getClass(EmploymentEditError::class)
 
