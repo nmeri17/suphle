@@ -11,8 +11,6 @@
 
 		const CASCADE_REBOUND_EVENT = "rebounding";
 
-		private $eventManager;
-
 		public function __construct (EventManager $eventManager) {
 
 			$this->eventManager = $eventManager;

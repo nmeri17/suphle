@@ -29,10 +29,10 @@
 			$defaultValue;
 		}
 
-		public function setField (string $name, $value):void {
+		/*public function setField (string $name, $value):void {
 
 			$_ENV[$name] = $value;
-		}
+		}*/
 
 		/**
 		 * Make use of [client]

@@ -1,6 +1,8 @@
 <?php
 	namespace Suphle\Tests\Integration\Events;
 
+	use Suphle\Testing\Condiments\EmittedEventsCatcher;
+
 	use Suphle\Tests\Integration\Events\BaseTypes\EventTestCreator;
 
 	use Suphle\Tests\Mocks\Interactions\ModuleOne;
@@ -8,6 +10,8 @@
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\LocalSender;
 
 	class BasicEventTest extends EventTestCreator {
+
+		use EmittedEventsCatcher;
 
 		protected function setUp ():void {
 

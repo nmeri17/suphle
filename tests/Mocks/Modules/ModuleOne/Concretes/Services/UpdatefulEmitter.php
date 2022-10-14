@@ -11,8 +11,6 @@
 
 		const UPDATE_ERROR = "update_error";
 
-		private $eventManager;
-
 		public function __construct (AssignListeners $eventManager) {
 
 			$this->eventManager = $eventManager;

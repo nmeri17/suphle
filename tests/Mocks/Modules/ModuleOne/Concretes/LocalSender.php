@@ -17,8 +17,6 @@
 
 		EMPTY_PAYLOAD_EVENT = "no_payload";
 
-		private $eventManager;
-
 		public function __construct (AssignListeners $eventManager) {
 
 			$this->eventManager = $eventManager;

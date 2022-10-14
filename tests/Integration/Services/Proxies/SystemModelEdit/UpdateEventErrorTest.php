@@ -1,17 +1,15 @@
 <?php
 	namespace Suphle\Tests\Integration\Services\Proxies\SystemModelEdit;
 
-	use Suphle\Testing\{TestTypes\ModuleLevelTest, Condiments\EmittedEventsCatcher};
-
 	use Suphle\Hydration\Container;
+
+	use Suphle\Testing\TestTypes\ModuleLevelTest;
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
 	use Suphle\Tests\Mocks\Interactions\ModuleOne;
 
 	class UpdateEventErrorTest extends ModuleLevelTest {
-
-		use EmittedEventsCatcher;
 		
 		protected function getModules():array {
 

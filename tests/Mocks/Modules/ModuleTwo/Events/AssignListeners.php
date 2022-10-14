@@ -12,8 +12,8 @@
 		public function registerListeners():void {
 			
 			$this->external(ModuleOne::class, ExternalReactor::class)
-	        
-	        ->on(ModuleOne::DEFAULT_EVENT, "updatePayload");
+			
+			->on(ModuleOne::DEFAULT_EVENT, "updatePayload");
 		}
 	}
 ?>

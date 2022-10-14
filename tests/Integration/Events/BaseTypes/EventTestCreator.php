@@ -7,7 +7,7 @@
 
 	use Suphle\Events\{EventManager, ModuleLevelEvents};
 
-	use Suphle\Testing\{Proxies\WriteOnlyContainer, Condiments\EmittedEventsCatcher};
+	use Suphle\Testing\Proxies\WriteOnlyContainer;
 
 	use Suphle\Tests\Integration\Modules\ModuleDescriptor\DescriptorCollection;
 
@@ -15,13 +15,11 @@
 
 	class EventTestCreator extends DescriptorCollection {
 
-		use EmittedEventsCatcher;
-
 		protected $payload = 5, $mockEventReceiver,
 
 		$eventReceiverName;
 
-		// since we intend to manually trigger it in extending classes
+		// since we intend to manually trigger it in extending tests
 		protected function setUp ():void {}
 
 		protected function parentSetUp ():void {

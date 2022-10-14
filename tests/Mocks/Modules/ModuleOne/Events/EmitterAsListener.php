@@ -10,8 +10,8 @@
 		public function registerListeners ():void {
 			
 			$this->local(LocalReceiver::class, LocalReceiver::class)
-	        
-	        ->on(LocalReceiver::CASCADE_REBOUND_EVENT, "updatePayload");
+			
+			->on(LocalReceiver::CASCADE_REBOUND_EVENT, "updatePayload");
 		}
 	}
 ?>

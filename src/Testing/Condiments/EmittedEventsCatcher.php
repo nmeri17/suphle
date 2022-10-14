@@ -11,16 +11,10 @@
 
 		abstract protected function getModules ():array;
 
-		protected function assertFiredEvent (string $emitter):void {
+		protected function assertHandledEvent (
 
-			$this->assertNotNull(
-				$this->getEventSubscription($emitter),
-
-				"Failed to assert that '$emitter' fired any event"
-			);
-		}
-
-		protected function assertHandledEvent (string $emitter, string $eventName):void {
+			string $emitter, string $eventName = null
+		):void {
 
 			$subscription = $this->getEventSubscription($emitter);
 
@@ -28,21 +22,13 @@
 
 				"Failed to assert that '$emitter' fired any event"
 			);
+
+			if (is_null($eventName)) return;
 			
 			$this->assertNotEmpty(
 				$subscription->getMatchingUnits($eventName),
 
 				"Failed to assert that '$emitter' emitted an event named '$eventName'"
-			);
-		}
-
-		protected function assertNotFiredEvent (string $emitter):void {
-
-			$this->assertNull(
-
-				$this->getEventSubscription($emitter),
-
-				"Did not expect '$emitter' to fire event"
 			);
 		}
 

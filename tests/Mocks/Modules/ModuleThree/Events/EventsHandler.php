@@ -9,7 +9,7 @@
 
 		const EXTERNAL_LOCAL_REBOUND = "local_external_local";
 
-		private $payload, $eventManager;
+		private $payload;
 
 		public function __construct (EventManager $eventManager) {
 

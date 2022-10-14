@@ -156,7 +156,7 @@
 			$this->get("/user-content/" . $this->expectedSavedResource($context)); // when
 
 			// OuterFlowWrapper::HIT_EVENT
-			$this->assertFiredEvent ($this->rendererController); // then
+			$this->assertHandledEvent ($this->rendererController); // then
 		}
 	}
 ?>
