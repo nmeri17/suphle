@@ -17,8 +17,6 @@
 
 	use Suphle\Exception\Explosives\{Generic\NoCompatibleValidator, ValidationFailure};
 
-	use Suphle\Exception\Diffusers\ValidationFailureDiffuser;
-
 	use Suphle\Testing\Condiments\DirectHttpTest;
 
 	use Suphle\Tests\Integration\Routing\TestsRouter;

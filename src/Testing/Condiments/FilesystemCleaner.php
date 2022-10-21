@@ -13,12 +13,22 @@
 
 		protected function assertEmptyDirectory (string $path):void {
 
-			$this->assertTrue($this->isEmptyDirectory($path), "Failed asserting that '$path' does not exist or is empty");
+			$this->assertTrue(
+
+				$this->isEmptyDirectory($path),
+
+				"Failed asserting that '$path' does not exist or is empty"
+			);
 		}
 
 		protected function assertNotEmptyDirectory (string $path, bool $wipeWhenTrue = false):void {
 
-			$this->assertFalse($this->isEmptyDirectory($path), "Failed asserting that '$path' is not empty");
+			$this->assertFalse(
+
+				$this->isEmptyDirectory($path),
+
+				"Failed asserting that '$path' is not empty"
+			);
 
 			if ($wipeWhenTrue)
 

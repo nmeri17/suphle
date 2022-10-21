@@ -25,7 +25,7 @@
 
 		BROADCASTER_NAME = DetectedExceptionManager::class;
 
-		private $shockAbsorber, $objectMeta;
+		private $objectMeta;
 
 		protected $softenDisgraceful = false; // prevents us from stubbing [BRIDGE_NAME]; we'll use the real one i.e. so that disgracefulShutdown can run
 
