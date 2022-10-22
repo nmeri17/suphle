@@ -3,18 +3,9 @@
 
 	use Suphle\Services\ServiceCoordinator;
 
-	use Suphle\Services\ImageStorageService;
-
 	use Suphle\Tests\Mocks\Modules\ModuleOne\{PayloadReaders\ImageServiceConsumer, Validators\ImageValidator};
 
-	class ImageUploadController extends ServiceCoordinator {
-
-		private $imageService;
-
-		public function __construct (ImageStorageService $imageService) {
-
-			$this->imageService = $imageService;
-		}
+	class ImageUploadCoordinator extends ServiceCoordinator {
 
 		public function validatorCollection ():string {
 
@@ -23,9 +14,7 @@
 
 		public function applyAllOptimizations (ImageServiceConsumer $payload):array {
 
-			$resourceName = $payload->getDomainObject(); // since no computation happens, it's safe to use without checking for null
-
-			$fileNames = $this->imageService->getOptimizer($resourceName)
+			$fileNames = $payload->getDomainObject() // since no computation happens, it's safe to use without checking for null
 
 			->inferior(150) // in the test, assert that resulting file is <= this size
 			->thumbnail(50, 50)->savedImageNames();
@@ -35,18 +24,14 @@
 
 		public function applyNoOptimization (ImageServiceConsumer $payload):array {
 
-			return $this->imageService->getOptimizer($payload->getDomainObject())
-
-			->savedImageNames();
+			return $payload->getDomainObject()->savedImageNames();
 		}
 
 		public function applyThumbnail (ImageServiceConsumer $payload):array {
 
-			return $this->imageService
+			return $payload->getDomainObject()->thumbnail(50, 50)
 
-			->getOptimizer($payload->getDomainObject())
-
-			->thumbnail(50, 50)->savedImageNames();
+			->savedImageNames();
 		}
 	}
 ?>

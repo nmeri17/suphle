@@ -61,7 +61,7 @@
 			->format(MultiUserEditHandler::DATE_FORMAT);
 
 			// given
-			$modelId = $this->replicator->getRandomEntity()->id;
+			$modelId = $this->lastInserted->id;
 
 			$this->setJsonParams("/dummy", [
 

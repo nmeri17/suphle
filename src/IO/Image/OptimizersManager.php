@@ -29,6 +29,7 @@
 			$this->queueManager = $queueManager;
 		}
 
+		// this method is the reason class isn't `final`
 		public function dependencyMethods ():array {
 
 			return [ "setInferiorImage", "setThumbnailImage" ];

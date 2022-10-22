@@ -5,13 +5,13 @@
 
 	use Suphle\Response\Format\Json;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\ImageUploadController;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\ImageUploadCoordinator;
 
 	class ImageUploadCollection extends BaseCollection {
 
 		public function _handlingClass ():string {
 
-			return ImageUploadController::class;
+			return ImageUploadCoordinator::class;
 		}
 
 		public function APPLY__ALLh () {
