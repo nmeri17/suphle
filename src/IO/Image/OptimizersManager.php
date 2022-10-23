@@ -48,7 +48,7 @@
 		/**
 		 * @return [inferior => [img1.png]]
 		*/
-		public function savedImageNames ():array {
+		final public function savedImageNames ():array {
 
 			if (empty($this->operations))
 

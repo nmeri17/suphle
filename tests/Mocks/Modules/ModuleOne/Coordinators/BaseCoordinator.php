@@ -3,7 +3,7 @@
 
 	use Suphle\Services\ServiceCoordinator;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{PayloadReaders\ImageServiceConsumer, Concretes\ARequiresBCounter};
+	use Suphle\Tests\Mocks\Modules\ModuleOne\{PayloadReaders\ImagePayloadReader, Concretes\ARequiresBCounter};
 
 	class BaseCoordinator extends ServiceCoordinator {
 
@@ -37,7 +37,7 @@
 			//
 		}
 
-		public function incorrectActionInjection (ImageServiceConsumer $payload, ARequiresBCounter $aRequires):array {
+		public function incorrectActionInjection (ImagePayloadReader $payload, ARequiresBCounter $aRequires):array {
 
 			return [];
 		}

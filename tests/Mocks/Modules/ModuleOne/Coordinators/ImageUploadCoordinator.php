@@ -3,7 +3,7 @@
 
 	use Suphle\Services\ServiceCoordinator;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{PayloadReaders\ImageServiceConsumer, Validators\ImageValidator};
+	use Suphle\Tests\Mocks\Modules\ModuleOne\{PayloadReaders\ImagePayloadReader, Validators\ImageValidator};
 
 	class ImageUploadCoordinator extends ServiceCoordinator {
 
@@ -12,7 +12,7 @@
 			return ImageValidator::class;
 		}
 
-		public function applyAllOptimizations (ImageServiceConsumer $payload):array {
+		public function applyAllOptimizations (ImagePayloadReader $payload):array {
 
 			$fileNames = $payload->getDomainObject() // since no computation happens, it's safe to use without checking for null
 
@@ -22,12 +22,12 @@
 			return $fileNames;
 		}
 
-		public function applyNoOptimization (ImageServiceConsumer $payload):array {
+		public function applyNoOptimization (ImagePayloadReader $payload):array {
 
 			return $payload->getDomainObject()->savedImageNames();
 		}
 
-		public function applyThumbnail (ImageServiceConsumer $payload):array {
+		public function applyThumbnail (ImagePayloadReader $payload):array {
 
 			return $payload->getDomainObject()->thumbnail(50, 50)
 

@@ -23,7 +23,7 @@
 			$this->maxSize = $size;
 		}
 
-		public function getTransformed ():array {
+		public function getTransformed ():?array {
 
 			return array_map(function ($file) {
 

@@ -11,6 +11,8 @@
 
 	use Suphle\Contracts\{Modules\HighLevelRequestHandler, Config\ExceptionInterceptor, Presentation\BaseRenderer, Exception\FatalShutdownAlert, Hydration\ClassHydrationBehavior};
 
+	use Wyrihaximus\throwable_encode;
+
 	use Throwable, Exception;
 
 	class ModuleExceptionBridge implements HighLevelRequestHandler, ClassHydrationBehavior {
@@ -108,7 +110,7 @@
 		*/
 		public function disgracefulShutdown (string $errorDetails, Throwable $exception):string {
 
-			$errorDetails .= json_encode($exception, JSON_PRETTY_PRINT);
+			$errorDetails .= throwable_encode($exception); // regular json_encode can't serialize throwables
 
 			file_put_contents($this->config->shutdownLog(), $errorDetails, FILE_APPEND);
 

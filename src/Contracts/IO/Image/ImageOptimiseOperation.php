@@ -7,9 +7,9 @@
 
 		/**
 		 * Moving the files is prohibited so it doesn't affect subsequent operations. Implementations should only transform their own copy
-		 * @return string[] of file names
+		 * @return string[] of file names on synchronous operations
 		*/
-		public function getTransformed ():array;
+		public function getTransformed ():?array;
 
 		/**
 		 * @param {images} UploadedFile[]

@@ -9,7 +9,9 @@
 
 	abstract class BaseOptimizeOperation implements ImageOptimiseOperation {
 
-		protected $files = [], $client, $imageLocator, $resourceName,
+		protected $imageObjects = [], $generatedFileNames = [], // only required for async operations
+
+		$client, $imageLocator, $resourceName,
 
 		$operationName, // using a property instead of a constant since we can't formalise such as a contract
 
@@ -24,10 +26,10 @@
 
 		public function getAsyncNames ():array {
 
-			return array_map(function ($image) {
+			return $this->generatedFileNames = array_map(function ($image) {
 
 				return $this->getImageNewName($image);
-			});
+			}, $this->imageObjects);
 		}
 
 		protected function getImageNewName (UploadedFile $image):string {
@@ -40,7 +42,7 @@
 
 		public function setFiles (array $images):void {
 
-			$this->files = $images;
+			$this->imageObjects = $images;
 		}
 
 		public function savesAsync ():bool {

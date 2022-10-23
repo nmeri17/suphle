@@ -16,7 +16,7 @@
 			parent::__construct($imageLocator, $fileSystemReader);
 		}
 
-		public function getTransformed ():array {
+		public function getTransformed ():?array {
 
 			return array_map(function ($file) {
 

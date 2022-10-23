@@ -3,7 +3,7 @@
 
 	use Suphle\Services\Structures\ImagefulPayload;
 
-	class ImageServiceConsumer extends ImagefulPayload {
+	class ImagePayloadReader extends ImagefulPayload {
 
 		protected function convertToDomainObject () {
 

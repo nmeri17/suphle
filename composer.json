@@ -41,7 +41,8 @@
 		"spiral/roadrunner-kv": "^2.1",
 		"symfony/mailer": "^5.4",
 		"symfony/psr-http-message-bridge": "^2.1",
-		"vlucas/phpdotenv": "*"
+		"vlucas/phpdotenv": "*",
+		"wyrihaximus/json-throwable": "^4.1"
 	},
 	"require-dev": {
 		"fakerphp/faker": "^1.19",
