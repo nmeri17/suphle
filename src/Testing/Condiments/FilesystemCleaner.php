@@ -3,6 +3,8 @@
 
 	use Suphle\File\FileSystemReader;
 
+	use Suphle\Testing\Proxies\Extensions\DummyUpload;
+
 	use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 	use FilesystemIterator, UnexpectedValueException;
@@ -122,7 +124,7 @@
 		/**
 		 * Deletes file after verifying its presence
 		 * 
-		 * @param {files} One dimensional array of literal file names
+		 * @param {files} Iterable of literal file names
 		*/
 		protected function assertSavedFileNames (iterable $files):void {
 
@@ -184,13 +186,14 @@
 			return tempnam(sys_get_temp_dir(), "php_file");
 		}
 
-		protected function saveFakeFile (string $fileName, string $fileType, int $expectedSize = 100):UploadedFile {
+		protected function saveFakeFile (string $fileName, int $expectedSize = 100):DummyUpload {
 
-			$instance = new UploadedFile($fileName, $this->getTempFilePath(), null, true);
+			$instance = new DummyUpload(
 
-			$instance->sizeToReport = $expectedSize * 1024;
+				$this->getTempFilePath(), $fileName, null, true
+			);
 
-			$instance->mimeTypeToReport = $fileType;
+			$instance->setSize($expectedSize);
 
 			return $instance;
 		}

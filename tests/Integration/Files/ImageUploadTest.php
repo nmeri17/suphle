@@ -3,6 +3,8 @@
 
 	use Suphle\Contracts\Config\Router;
 
+	use Suphle\Contracts\IO\Image\{InferiorOperationHandler, ThumbnailOperationHandler};
+
 	use Suphle\Exception\Explosives\Generic\UnmodifiedImageException;
 
 	use Suphle\Testing\{TestTypes\ModuleLevelTest, Condiments\FilesystemCleaner};
@@ -45,7 +47,12 @@
 			$response = $this->getDecodedResponse("/apply-all"); // when
 
 			// then
-			foreach (["thumbnail", "inferior"] as $operation)
+			foreach ([
+
+				InferiorOperationHandler::OPERATION_NAME,
+
+				ThumbnailOperationHandler::OPERATION_NAME
+			] as $operation)
 
 				$this->assertArrayHasKey($operation, $response);
 
