@@ -41,7 +41,7 @@
 
 			CollectionNode::DATE_RANGE => "handleDateRange",
 
-			CollectionNode::ONE_OF => "handleOneOf",
+			CollectionNode::AS_ONE => "handleAsOne",
 
 			CollectionNode::FROM_SERVICE =>	"handleServiceSource"
 		],
@@ -310,7 +310,7 @@
 		/**
 		 * @return GeneratedUrlExecution[]
 		*/
-		public function handleOneOf (array $indexes, string $requestProperty):array {
+		public function handleAsOne (array $indexes, string $requestProperty):array {
 
 			$generatedContent = $this->updatePlaceholders([
 

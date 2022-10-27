@@ -7,13 +7,13 @@
 
 	use Suphle\Response\Format\Json;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\FlowController;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\FlowCoordinator;
 
 	class FlowRoutes extends BaseCollection {
 
 		public function _handlingClass ():string {
 
-			return FlowController::class;
+			return FlowCoordinator::class;
 		}
 
 		public function POSTS_id () {

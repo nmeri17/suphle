@@ -23,7 +23,7 @@
 		*/
 		public function isEnabled ():bool {
 
-			return true;
+			return false;
 		}
 	}
 ?>

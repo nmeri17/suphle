@@ -99,17 +99,21 @@
 
 		private function dataPath ():string {
 
-			return $this->flowSaver->getPatternLocation($this->requestDetails->getPath());
+			return $this->flowSaver->getPatternLocation(
+
+				$this->requestDetails->getPath()
+			);
 		}
 
-		// it is safest for listeners to listen "external" on the target controller (why?)
 		private function emitEvents($cachedResponse):void {
 
-			$controller = $this->responseRenderer()->getController();
+			$renderer = $this->responseRenderer();
 
 			$this->eventManager->emit(
 
-				get_class($controller), self::HIT_EVENT,
+				get_class($renderer->getController()),
+
+				$renderer->getHandler(),
 
 				$cachedResponse // event handler can then inject payloadStorage/pathPlaceholders
 			);

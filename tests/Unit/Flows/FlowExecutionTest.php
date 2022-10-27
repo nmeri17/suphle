@@ -126,13 +126,7 @@
 				],
 
 				[
-					$this->createCollectionNode()->oneOf(), "handleOneOf", "ids"
-				],
-
-				[
-					$this->createCollectionNode()->oneOf("concat"),
-
-					"handleOneOf", "concat"
+					$this->createCollectionNode()->asOne(), "handleOneOf", "ids"
 				],
 
 				[$this->createCollectionNode()->inRange(), "handleRange"], // too lazy to extract the context from getActions

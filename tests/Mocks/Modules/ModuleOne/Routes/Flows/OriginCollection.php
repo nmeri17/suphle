@@ -7,7 +7,7 @@
 
 	use Suphle\Flows\{ControllerFlows, Structures\ServiceContext};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\FlowController;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\FlowCoordinator;
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\FlowService;
 
@@ -17,7 +17,7 @@
 
 		public function _handlingClass ():string {
 
-			return FlowController::class;
+			return FlowCoordinator::class;
 		}
 
 		public function COMBINE__FLOWSh() {
@@ -101,7 +101,7 @@
 
 			$flow->linksTo("store/id", $flow->previousResponse()->collectionNode("data", "product_name")
 
-				->oneOf() // has a parameterised variant
+				->asOne()
 			);
 			
 			$this->_get($renderer->setFlow($flow));

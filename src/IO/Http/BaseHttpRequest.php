@@ -49,7 +49,7 @@
 		abstract protected function convertToDomainObject (ResponseInterface $response);
 
 		/**
-		 * return $this->client->request(GET, $url, $options)
+		 * return $this->requestClient->request(GET, $url, $options)
 		*/
 		abstract protected function getHttpResponse ():ResponseInterface;
 

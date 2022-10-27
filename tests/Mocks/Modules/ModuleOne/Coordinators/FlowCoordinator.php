@@ -5,7 +5,7 @@
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\{Concretes\Services\DummyModels, PayloadReaders\ReadsId};
 
-	class FlowController extends ServiceCoordinator {
+	class FlowCoordinator extends ServiceCoordinator {
 
 		private $dummyModels;
 

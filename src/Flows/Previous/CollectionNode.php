@@ -7,7 +7,7 @@
 
 		private $leafName;
 
-		const PIPE_TO = 12, IN_RANGE = 13, DATE_RANGE = 14, ONE_OF = 15,
+		const PIPE_TO = 12, IN_RANGE = 13, DATE_RANGE = 14, AS_ONE = 15,
 
 		FROM_SERVICE = 16;
 
@@ -30,11 +30,10 @@
 		
 		/**
 		*	same as [pipeTo], but is sent in bulk to the service rather than one after the other. service is expected to do a `whereIn`
-		*	@param {parameterId} property name on the handling request to set the ids to
 		*/
-		public function oneOf(string $parameterId = "ids"):self {
+		public function asOne ():self {
 
-			$this->actions[self::ONE_OF] = $parameterId;
+			$this->actions[self::AS_ONE] = $this->leafName . "s";
 
 			return $this;
 		}

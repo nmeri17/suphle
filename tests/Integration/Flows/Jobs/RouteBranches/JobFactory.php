@@ -13,7 +13,7 @@
 
 	use Suphle\Tests\Integration\Modules\ModuleDescriptor\DescriptorCollection;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Coordinators\FlowController, Concretes\Services\DummyModels};
+	use Suphle\Tests\Mocks\Modules\ModuleOne\{Coordinators\FlowCoordinator, Concretes\Services\DummyModels};
 
 	abstract class JobFactory extends DescriptorCollection {
 
@@ -30,7 +30,7 @@
 
 		$originDataName = "all_users",
 
-		$rendererController = FlowController::class;
+		$rendererController = FlowCoordinator::class;
 
 		protected function setUp ():void {
 
