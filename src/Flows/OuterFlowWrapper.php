@@ -15,19 +15,22 @@
 
 	use Suphle\Request\RequestDetails;
 
+	use Suphle\Hydration\Container;
+
 	class OuterFlowWrapper implements BaseResponseManager, HighLevelRequestHandler {
 
-		const ALL_USERS = "*", HIT_EVENT = "flow_hit";
+		public const ALL_USERS = "*";
 
 		private $requestDetails, $queueManager, $modules,
 
-		$flowSaver, $authStorage, $routeUmbrella,
+		$flowSaver, $container, $routeUmbrella,
 
 		$activeUser, $eventManager, $routeUserNode;
 
 		public function __construct(
 			RequestDetails $requestDetails, AdapterManager $queueManager,
-			UmbrellaSaver $flowSaver, AuthStorage $authStorage,
+			
+			UmbrellaSaver $flowSaver, Container $container,
 
 			EventManager $eventManager, ModulesBooter $modulesBooter
 		) {
@@ -38,7 +41,7 @@
 
 			$this->flowSaver = $flowSaver;
 
-			$this->authStorage = $authStorage;
+			$this->container = $container;
 
 			$this->eventManager = $eventManager;
 
@@ -71,9 +74,9 @@
 			return $userPayload;
 		}
 
-		private function getUserId ():string { 
+		private function getUserId ():string { // continue by using container to extract auth mech
 
-			$user = $this->authStorage->getUser();
+			$user = $this->container->getUser();
 
 			return is_null($user) ? self::ALL_USERS: strval($user->getId());
 		}
@@ -125,7 +128,7 @@
 				"context" => new PendingFlowDetails(
 					$this->responseRenderer(),
 
-					$this->authStorage->getUser()
+					$this->container->getUser()
 				)
 			]);
 		}

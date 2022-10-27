@@ -96,7 +96,7 @@
 
 				$previousPayload, $urlPattern
 			)
-			->runNodes( $structure, $this->flowDetails->getUserId());
+			->runNodes( $structure, $this->flowDetails);
 		}
 	}
 ?>

@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Flows;
 
-	use Suphle\Flows\Structures\{RouteUserNode, RangeContext, ServiceContext, GeneratedUrlExecution};
+	use Suphle\Flows\Structures\{RouteUserNode, RangeContext, ServiceContext, GeneratedUrlExecution, PendingFlowDetails};
 
 	use Suphle\Flows\Previous\{ SingleNode, CollectionNode, UnitNode};
 
@@ -101,14 +101,14 @@
 		*
 		*	@param {flowStructure} $flow->previousResponse()->handler()
 		*/
-		public function runNodes(UnitNode $flowStructure, string $userId):void {
+		public function runNodes(UnitNode $flowStructure, PendingFlowDetails $originatingFlowDetails):void {
 
 			$parentHandler = $this->parentHandlers[get_class($flowStructure)];
 
 			$this->rendererToStorable(
 				$this->$parentHandler($flowStructure),
 
-				$flowStructure, $userId
+				$flowStructure, $originatingFlowDetails
 			);
 		}
 
@@ -116,7 +116,7 @@
 		 * @param {generatedRenderers} GeneratedUrlExecution[]
 		 * @param {flowStructure} the original one given
 		*/
-		public function rendererToStorable (array $generatedRenderers, UnitNode $flowStructure, string $userId):void {
+		public function rendererToStorable (array $generatedRenderers, UnitNode $flowStructure, string $originatingFlowDetails):void {
 
 			foreach ($generatedRenderers as $generationUnit) {
 
@@ -129,7 +129,7 @@
 				$this->flowSaver->saveNewUmbrella(
 					$generationUnit->getRequestPath(),
 
-					$unitPayload, $userId
+					$unitPayload, $originatingFlowDetails
 				);
 			}
 		}
