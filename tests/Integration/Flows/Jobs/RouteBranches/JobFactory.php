@@ -15,6 +15,9 @@
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\{Coordinators\FlowCoordinator, Concretes\Services\DummyModels};
 
+	/**
+	 * This doesn't send the originating requests. It helps for mocking the task of an originated flow, executing that task, then verifying its behavior under certain conditions
+	*/
 	abstract class JobFactory extends DescriptorCollection {
 
 		use QueueInterceptor, BaseDatabasePopulator {
