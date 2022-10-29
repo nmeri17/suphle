@@ -31,7 +31,7 @@
 					
 					$file, $this->localFileCopy($file), $this->maxSize
 				);
-			}, $this->files);
+			}, $this->imageObjects);
 		}
 	}
 ?>

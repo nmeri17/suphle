@@ -144,10 +144,10 @@
 		private function queueBranches():void {
 
 			$this->queueManager->augmentArguments(RouteBranches::class, [
+				
 				"context" => new PendingFlowDetails(
-					$this->responseRenderer(),
-
-					$this->authStorage->getUser()
+					
+					$this->responseRenderer(), $this->authStorage
 				)
 			]);
 		}

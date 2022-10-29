@@ -78,23 +78,23 @@
 			];
 		}
 
-		protected function setContainer (Container $container):void {
+		public function setContainer (Container $container):void {
 
 			$this->container = $container;
 		}
 
-		protected function setPayloadStorage (PayloadStorage $payloadStorage):void {
+		public function setPayloadStorage (PayloadStorage $payloadStorage):void {
 
 			$this->payloadStorage = $payloadStorage;
 		}
 
-		protected function setPlaceholderStorage (PathPlaceholders $placeholderStorage):void {
+		public function setPlaceholderStorage (PathPlaceholders $placeholderStorage):void {
 
 			$this->placeholderStorage = $placeholderStorage;
 		}
 
 		// manager designated to handle this request
-		protected function setRendererManager (RoutedRendererManager $rendererManager):void {
+		public function setRendererManager (RoutedRendererManager $rendererManager):void {
 
 			$this->rendererManager = $rendererManager;
 		}
@@ -139,7 +139,12 @@
 		 * @param {generatedRenderers} GeneratedUrlExecution[]
 		 * @param {flowStructure} the original one given
 		*/
-		public function rendererToStorable (array $generatedRenderers, UnitNode $flowStructure, string $originatingFlowDetails):void {
+		public function rendererToStorable (
+
+			array $generatedRenderers, UnitNode $flowStructure,
+
+			PendingFlowDetails $originatingFlowDetails
+		):void {
 
 			foreach ($generatedRenderers as $generationUnit) {
 

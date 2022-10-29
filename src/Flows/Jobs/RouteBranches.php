@@ -54,7 +54,7 @@
 
 				$mechanismPath = $this->getMechanismPath($urlPattern);
 
-				if ($this->patternMatchesMechanism($mechanismPath))
+				if (!$this->patternMatchesMechanism($mechanismPath))
 
 					return;
 

@@ -21,7 +21,7 @@
 			return array_map(function ($file) {
 
 				return $this->client->miniature($this->localFileCopy($file));
-			}, $this->files);
+			}, $this->imageObjects);
 		}
 
 		public function setDimensions(int $width, int $height):void {
