@@ -9,7 +9,7 @@
 
 	class UmbrellaSaver {
 
-		const FLOW_PREFIX = "tilwa_flow";
+		public const FLOW_PREFIX = "completed_flow";
 
 		private $cacheManager, $flowConfig, $objectMeta;
 
@@ -33,9 +33,9 @@
 			
 			$existing = $this->getExistingUmbrella($location);
 
-			if (!$existing) {
+			if (is_null($existing)) {
 
-				$existing = new RouteUmbrella($location);
+				$existing = new RouteUmbrella($location, $this->objectMeta);
 
 				$existing->setAuthMechanism(
 

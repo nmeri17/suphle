@@ -7,6 +7,8 @@
 
 	use Suphle\Flows\Structures\{AccessContext, RouteUserNode, RouteUmbrella};
 
+	use Suphle\Hydration\Structures\ObjectDetails;
+
 	use Suphle\Response\Format\Json;
 
 	use Suphle\Services\ServiceCoordinator;
@@ -81,7 +83,7 @@
 			return new AccessContext(
 				$this->resourceUrl, $unitPayload,
 
-				new RouteUmbrella ($this->resourceUrl),
+				new RouteUmbrella ($this->resourceUrl, new ObjectDetails),
 
 				OuterFlowWrapper::ALL_USERS
 			); 

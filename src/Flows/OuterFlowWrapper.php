@@ -3,7 +3,7 @@
 
 	use Suphle\Flows\Jobs\{RouteBranches, UpdateCountDelete};
 
-	use Suphle\Flows\Structures\{RouteUserNode, RouteUmbrella,AccessContext, PendingFlowDetails};
+	use Suphle\Flows\Structures\{RouteUserNode, AccessContext, PendingFlowDetails};
 
 	use Suphle\Contracts\{Requests\BaseResponseManager, IO\CacheManager, Auth\AuthStorage, Modules\HighLevelRequestHandler, Presentation\BaseRenderer};
 
@@ -25,7 +25,9 @@
 
 		$flowSaver, $container, $routeUmbrella,
 
-		$activeUser, $eventManager, $routeUserNode;
+		$activeUser, $eventManager, $routeUserNode,
+
+		$authStorage;
 
 		public function __construct(
 			RequestDetails $requestDetails, AdapterManager $queueManager,
@@ -54,9 +56,26 @@
 
 			if (is_null($this->routeUmbrella)) return false;
 
+			$this->setAuthFromStored();
+
 			$this->routeUserNode = $this->getActiveFlow($this->getUserId() );
 
 			return !is_null($this->routeUserNode);
+		}
+
+		protected function setAuthFromStored ():void {
+
+			$genericStorage = AuthStorage::class;
+
+			$this->authStorage = $this->container->getClass(
+
+				$this->routeUmbrella->getAuthStorage()
+			);
+
+			$this->container->whenTypeAny()->needsAny([
+
+				$genericStorage => $this->authStorage
+			]);
 		}
 
 		private function getActiveFlow (string $userId):?RouteUserNode {
@@ -74,9 +93,9 @@
 			return $userPayload;
 		}
 
-		private function getUserId ():string { // continue by using container to extract auth mech
+		private function getUserId ():string {
 
-			$user = $this->container->getUser();
+			$user = $this->authStorage->getUser();
 
 			return is_null($user) ? self::ALL_USERS: strval($user->getId());
 		}
@@ -128,7 +147,7 @@
 				"context" => new PendingFlowDetails(
 					$this->responseRenderer(),
 
-					$this->container->getUser()
+					$this->authStorage->getUser()
 				)
 			]);
 		}
