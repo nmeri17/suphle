@@ -18,7 +18,7 @@
 		}
 	},
 	"require": {
-		"php": "^8.0",
+		"php": "^8.1",
 		"anorgan/qutee": "dev-version-updates",
 		"bugsnag/bugsnag": "^3.0",
 		"firebase/php-jwt": "^5.2",
