@@ -50,7 +50,7 @@
 
 		public function getAuthStorage ():string {
 
-			return get_class($this->authStorage);
+			return $this->authStorage::class;
 		}
 	}
 ?>

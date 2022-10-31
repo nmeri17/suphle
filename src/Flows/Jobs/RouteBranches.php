@@ -13,7 +13,7 @@
 
 	class RouteBranches implements Task {
 
-		public const FLOW_MECHANISMS = "flow_wildcards";
+		final public const FLOW_MECHANISMS = "flow_wildcards";
 
 		private $flowDetails, $moduleFinder, $hydrator, $modulesBooter,
 
@@ -140,7 +140,7 @@ var_dump(56, $mechanismPath, $this->patternMatchesMechanism($mechanismPath)); //
 
 			->getClass(VariableDependenciesHandler::class)
 
-			->examineInstance($this->hydrator, get_class());
+			->examineInstance($this->hydrator, self::class);
 		}
 	}
 ?>

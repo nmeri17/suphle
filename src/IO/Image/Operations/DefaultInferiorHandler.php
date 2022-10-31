@@ -25,13 +25,10 @@
 
 		public function getTransformed ():?array {
 
-			return array_map(function ($file) {
-
-				return $this->client->downgradeImage(
+			return array_map(fn($file) => $this->client->downgradeImage(
 					
 					$file, $this->localFileCopy($file), $this->maxSize
-				);
-			}, $this->imageObjects);
+				), $this->imageObjects);
 		}
 	}
 ?>

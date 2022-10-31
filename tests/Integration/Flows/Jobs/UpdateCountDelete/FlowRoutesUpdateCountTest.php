@@ -86,10 +86,7 @@
 
 			$routeUmbrella = new RouteUmbrella ($this->resourceUrl, $objectMeta);
 
-			$routeUmbrella->setAuthMechanism(get_class(
-
-				$container->getClass(AuthStorage::class)
-			));
+			$routeUmbrella->setAuthMechanism($container->getClass(AuthStorage::class)::class);
 
 			return new AccessContext(
 				$this->resourceUrl, $unitPayload,

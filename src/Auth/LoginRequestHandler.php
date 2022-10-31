@@ -69,7 +69,7 @@
 
 			$this->responseRenderer = $this->variableDecorator
 
-			->examineInstance($renderer, get_class());
+			->examineInstance($renderer, self::class);
 
 			return $this;
 		}

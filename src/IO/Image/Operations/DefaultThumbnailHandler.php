@@ -18,10 +18,7 @@
 
 		public function getTransformed ():?array {
 
-			return array_map(function ($file) {
-
-				return $this->client->miniature($this->localFileCopy($file));
-			}, $this->imageObjects);
+			return array_map(fn($file) => $this->client->miniature($this->localFileCopy($file)), $this->imageObjects);
 		}
 
 		public function setDimensions(int $width, int $height):void {

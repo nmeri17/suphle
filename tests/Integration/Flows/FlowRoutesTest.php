@@ -173,7 +173,7 @@
 
 			$this->dataProvider([
 
-				[$this, "userDatabase"]
+				$this->userDatabase(...)
 			], function (UserContract $visitor) {
 
 				$initializingContext = $this->makePendingFlowDetails($visitor);

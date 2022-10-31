@@ -70,7 +70,7 @@
 
 			$renderer = $this->variableDecorator->examineInstance(
 
-				$this->router->getActiveRenderer(), get_class()
+				$this->router->getActiveRenderer(), self::class
 			);
 
 			$this->container->whenTypeAny()->needsAny([
