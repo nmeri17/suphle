@@ -1,23 +1,29 @@
 <?php
 	namespace Suphle\Flows\Structures;
 
-	use Suphle\Contracts\{Auth\UserContract, Presentation\BaseRenderer};
+	use Suphle\Contracts\{Auth\AuthStorage, Presentation\BaseRenderer};
+
+	use Suphle\Flows\OuterFlowWrapper;
 
 	/**
 	 * This is what is received from the currently handled request. It is stored and during handling later, specifics of the flow are extracted and handled
 	*/
 	class PendingFlowDetails {
 
-		private $user, $renderer;
+		private $authStorage, $renderer, $userId;
 
-		/**
-		* @param {user} whether a sub-flow or transition from organic flow, all flow queueing is triggered by a user request. This argument is that user
-		*/
-		public function __construct(BaseRenderer $renderer, ?UserContract $user = null) {
+		public function __construct(BaseRenderer $renderer, AuthStorage $authStorage) {
 
 			$this->renderer = $renderer;
 
-			$this->user = $user;
+			$this->authStorage = $authStorage;
+
+			$this->getUserId(); // trigger property storage before task serialization
+		}
+
+		public function getStoredUserId ():string {
+
+			return $this->userId;
 		}
 
 		public function getRenderer ():BaseRenderer {
@@ -25,9 +31,26 @@
 			return $this->renderer;
 		}
 
+		/**
+		* Whether a sub-flow or transition from organic flow, all flow queueing is triggered by a user request. This argument is that user
+		*/
 		public function getUserId ():string {
-			
-			return $this->user ? strval($this->user->getId()) : "*";
+
+			if (is_null($this->userId)) {
+
+				$user = $this->authStorage->getUser();
+				
+				$this->userId = !is_null($user) ? strval($user->getId()) :
+
+				OuterFlowWrapper::ALL_USERS;
+			}
+
+			return $this->userId;
+		}
+
+		public function getAuthStorage ():string {
+
+			return get_class($this->authStorage);
 		}
 	}
 ?>

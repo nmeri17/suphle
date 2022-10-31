@@ -3,7 +3,7 @@
 
 	use Suphle\Flows\Jobs\{RouteBranches, UpdateCountDelete};
 
-	use Suphle\Flows\Structures\{RouteUserNode, RouteUmbrella,AccessContext, PendingFlowDetails};
+	use Suphle\Flows\Structures\{RouteUserNode, AccessContext, PendingFlowDetails};
 
 	use Suphle\Contracts\{Requests\BaseResponseManager, IO\CacheManager, Auth\AuthStorage, Modules\HighLevelRequestHandler, Presentation\BaseRenderer};
 
@@ -15,19 +15,24 @@
 
 	use Suphle\Request\RequestDetails;
 
+	use Suphle\Hydration\Container;
+
 	class OuterFlowWrapper implements BaseResponseManager, HighLevelRequestHandler {
 
-		final const ALL_USERS = "*", HIT_EVENT = "flow_hit";
+		final public const ALL_USERS = "*";
 
 		private $requestDetails, $queueManager, $modules,
 
-		$flowSaver, $authStorage, $routeUmbrella,
+		$flowSaver, $container, $routeUmbrella,
 
-		$activeUser, $eventManager, $routeUserNode;
+		$activeUser, $eventManager, $routeUserNode,
+
+		$authStorage;
 
 		public function __construct(
 			RequestDetails $requestDetails, AdapterManager $queueManager,
-			UmbrellaSaver $flowSaver, AuthStorage $authStorage,
+			
+			UmbrellaSaver $flowSaver, Container $container,
 
 			EventManager $eventManager, ModulesBooter $modulesBooter
 		) {
@@ -38,7 +43,7 @@
 
 			$this->flowSaver = $flowSaver;
 
-			$this->authStorage = $authStorage;
+			$this->container = $container;
 
 			$this->eventManager = $eventManager;
 
@@ -51,9 +56,26 @@
 
 			if (is_null($this->routeUmbrella)) return false;
 
+			$this->setAuthFromStored();
+
 			$this->routeUserNode = $this->getActiveFlow($this->getUserId() );
 
 			return !is_null($this->routeUserNode);
+		}
+
+		protected function setAuthFromStored ():void {
+
+			$genericStorage = AuthStorage::class;
+
+			$this->authStorage = $this->container->getClass(
+
+				$this->routeUmbrella->getAuthStorage()
+			);
+
+			$this->container->whenTypeAny()->needsAny([
+
+				$genericStorage => $this->authStorage
+			]);
 		}
 
 		private function getActiveFlow (string $userId):?RouteUserNode {
@@ -71,7 +93,7 @@
 			return $userPayload;
 		}
 
-		private function getUserId ():string { 
+		private function getUserId ():string {
 
 			$user = $this->authStorage->getUser();
 
@@ -122,10 +144,10 @@
 		private function queueBranches():void {
 
 			$this->queueManager->augmentArguments(RouteBranches::class, [
+				
 				"context" => new PendingFlowDetails(
-					$this->responseRenderer(),
-
-					$this->authStorage->getUser()
+					
+					$this->responseRenderer(), $this->authStorage
 				)
 			]);
 		}

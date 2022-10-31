@@ -1,18 +1,44 @@
 <?php
 	namespace Suphle\Flows\Structures;
 
-	use DateTime;
+	use Suphle\Hydration\Structures\ObjectDetails;
 
-	// this is the object value for each route key in the cache i.e. cache = ["path-x" => RouteUmbrella]
+	use DateTime, Exception;
+
+	/**
+	 * This is the object value for each route key in the cache i.e. cache = ["path-x" => RouteUmbrella]
+	 * 
+	 * Using this instead of [user-x => [stored, resources]] since URL lookup/fail fast is faster than user hydration first
+	 */
 	class RouteUmbrella {
 
-		private $users = [], $routeName;
+		private $users = [], $routeName, $authStorageName,
+
+		$objectMeta;
 
 		//private $nodeTags; // should give us a bird's eye view of the path to each model [collection] i.e. [Cows => "user35,foo", "user*,bar"]
 
-		public function __construct(string $routeName) {
+		/**
+		 * */
+		public function __construct(string $routeName, ObjectDetails $objectMeta) {
 			
 			$this->routeName = $routeName;
+
+			$this->objectMeta = $objectMeta;
+		}
+
+		public function setAuthMechanism (string $storageName):void {
+
+			if ($this->objectMeta->isInterface($storageName))
+
+				throw new Exception("Storage mechanism must be a class", 500);
+
+			$this->authStorageName = $storageName;
+		}
+
+		public function getAuthStorage ():string {
+
+			return $this->authStorageName;
 		}
 
 		public function addUser (string $userId, RouteUserNode $unitPayload):void {

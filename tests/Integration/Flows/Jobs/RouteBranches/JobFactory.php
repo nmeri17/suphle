@@ -11,6 +11,8 @@
 
 	use Suphle\Testing\Condiments\{QueueInterceptor, BaseDatabasePopulator};
 
+	use Suphle\Testing\Proxies\SecureUserAssertions;
+
 	use Suphle\Tests\Integration\Modules\ModuleDescriptor\DescriptorCollection;
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\{Coordinators\FlowCoordinator, Concretes\Services\DummyModels};
@@ -20,7 +22,7 @@
 	*/
 	abstract class JobFactory extends DescriptorCollection {
 
-		use QueueInterceptor, BaseDatabasePopulator {
+		use QueueInterceptor, BaseDatabasePopulator, SecureUserAssertions {
 
 			BaseDatabasePopulator::setUp as databaseAllSetup;
 		}
@@ -107,13 +109,20 @@
 			->replicator->getRandomEntities(2);
 		}
 
-		protected function makePendingFlowDetails (?UserContract $user = null):PendingFlowDetails {
+		protected function makePendingFlowDetails (?UserContract $user = null, string $storageName = null):PendingFlowDetails {
+
+			$storage = $this->getAuthStorage($storageName);
+
+			if (!is_null($user))
+
+				$storage->startSession($user->getId()); // creates a collection of 10 models in preceding renderer, then assigns the given user as their owner in the flow we are going to make
+			else $storage->logout();
 
 			return new PendingFlowDetails(
 
 				$this->getPrecedingRenderer(),
 
-				$user // creates a collection of 10 models in preceding renderer, then assigns the given user as their owner in the flow we are going to make
+				$storage
 			);
 		}
 

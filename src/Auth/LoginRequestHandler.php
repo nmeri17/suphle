@@ -67,7 +67,9 @@
 
 			else $renderer = $this->rendererCollection->failedRenderer();
 
-			$this->responseRenderer = $this->variableDecorator->examineInstance($renderer, "");
+			$this->responseRenderer = $this->variableDecorator
+
+			->examineInstance($renderer, get_class());
 
 			return $this;
 		}

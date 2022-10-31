@@ -5,24 +5,26 @@
 
 	use Suphle\Flows\{FlowHydrator, Structures\PendingFlowDetails, Previous\UnitNode};
 
-	use Suphle\Response\RoutedRendererManager;
-
 	use Suphle\Request\RequestDetails;
 
-	use Suphle\Routing\PathPlaceholders;
+	use Suphle\Services\DecoratorHandlers\VariableDependenciesHandler;
 
-	use Suphle\Contracts\{Queues\Task, Database\OrmDialect};
+	use Suphle\Contracts\{Queues\Task, Database\OrmDialect, IO\CacheManager};
 
 	class RouteBranches implements Task {
 
+		public const FLOW_MECHANISMS = "flow_wildcards";
+
 		private $flowDetails, $moduleFinder, $hydrator, $modulesBooter,
 
-		$modules;
+		$modules, $cacheManager, $wildcardNotExist = false;
 
 		public function __construct(
 			PendingFlowDetails $flowDetails, ModuleToRoute $moduleFinder,
 
-			FlowHydrator $hydrator, ModulesBooter $modulesBooter
+			FlowHydrator $hydrator, ModulesBooter $modulesBooter,
+
+			CacheManager $cacheManager
 		) {
 			
 			$this->flowDetails = $flowDetails;
@@ -32,6 +34,8 @@
 			$this->hydrator = $hydrator;
 
 			$this->modulesBooter = $modulesBooter;
+
+			$this->cacheManager = $cacheManager;
 		}
 
 		public function handle ():void {
@@ -48,10 +52,45 @@
 
 			->eachBranch(function ($urlPattern, $structure) {
 
+				$mechanismPath = $this->getMechanismPath($urlPattern);
+var_dump(56, $mechanismPath, $this->patternMatchesMechanism($mechanismPath)); // use unit test if possible or find out why the 2nd one who returned false suddenly logs
+				if (!$this->patternMatchesMechanism($mechanismPath))
+
+					return;
+
+				elseif ($this->wildcardNotExist)
+
+					$this->setMechanismPath($mechanismPath);
+
 				if (!$this->findManagerForPattern( $urlPattern)) return; // invalid url
 
 				$this->executeFlowBranch($urlPattern, $structure);
 			});
+		}
+
+		// Each pattern can only have one mechanism. If it's saved without this consideration, attempting to read it later on will fail
+		protected function patternMatchesMechanism (string $mechanismPath):bool {
+
+			$patternMechanism = $this->cacheManager->getItem($mechanismPath);
+
+			if (is_null($patternMechanism))
+
+				return $this->wildcardNotExist = true;
+
+			return $patternMechanism == $this->flowDetails->getAuthStorage();
+		}
+
+		protected function getMechanismPath (string $urlPattern):string {
+
+			return self::FLOW_MECHANISMS . "/" . trim($urlPattern, "/");
+		}
+
+		protected function setMechanismPath (string $mechanismPath):void {
+
+			$this->cacheManager->saveItem(
+
+				$mechanismPath, $this->flowDetails->getAuthStorage()
+			);
 		}
 
 		/**
@@ -81,22 +120,27 @@
 
 		private function executeFlowBranch ( string $urlPattern, UnitNode $structure):void {
 
-			$previousPayload = $this->flowDetails->getRenderer()->getRawResponse();
+			$previousPayload = $this->flowDetails->getRenderer()
 
-			$container = $this->moduleFinder->getActiveModule()
+			->getRawResponse();
 
-			->getContainer();
-
-			$rendererManager = $container->getClass(RoutedRendererManager::class);
-
-			$placeholderStorage = $container->getClass(PathPlaceholders::class);
-
-			$this->hydrator->setDependencies(
-				$rendererManager, $placeholderStorage,
+			$this->hydrator->setRequestDetails(
 
 				$previousPayload, $urlPattern
-			)
-			->runNodes( $structure, $this->flowDetails->getUserId());
+			);
+
+			$this->setHydratorDependencies();
+
+			$this->hydrator->runNodes( $structure, $this->flowDetails);
+		}
+
+		private function setHydratorDependencies ():void {
+
+			$this->moduleFinder->getActiveModule()->getContainer()
+
+			->getClass(VariableDependenciesHandler::class)
+
+			->examineInstance($this->hydrator, get_class());
 		}
 	}
 ?>

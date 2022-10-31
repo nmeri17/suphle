@@ -23,9 +23,8 @@
 			$this->queueManager->augmentArguments(RouteBranches::class, [
 				
 				"flowDetails" => new PendingFlowDetails(
-					$renderer,
-
-					$this->authStorage->getUser()
+					
+					$renderer, $this->authStorage
 				)
 			]);
 		}

@@ -1,21 +1,26 @@
 <?php
 	namespace Suphle\Tests\Integration\Flows;
 
-	use Suphle\Contracts\{Auth\UserContract, Config\Router};
+	use Suphle\Contracts\Auth\{UserContract, AuthStorage};
 
-	use Suphle\Flows\{OuterFlowWrapper, Structures\PendingFlowDetails};
+	use Suphle\Contracts\Config\Router;
 
-	use Suphle\Testing\Proxies\{WriteOnlyContainer, SecureUserAssertions};
+	use Suphle\Auth\Storage\TokenStorage;
 
-	use Suphle\Testing\Condiments\EmittedEventsCatcher;
+	use Suphle\Flows\{FlowHydrator, Structures\PendingFlowDetails};
+
+	use Suphle\Testing\{Proxies\WriteOnlyContainer, Condiments\EmittedEventsCatcher};
 
 	use Suphle\Tests\Integration\Flows\Jobs\RouteBranches\JobFactory;
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\OriginCollection, Meta\ModuleOneDescriptor, Config\RouterMock};
 
+	/**
+	 * These are low-level tests probably redundant now. But during those early times, I think they offered granular access to Flow task creation
+	*/
 	class FlowRoutesTest extends JobFactory {
 
-		use SecureUserAssertions, EmittedEventsCatcher;
+		use EmittedEventsCatcher;
 
 		protected function getModules():array {
 
@@ -38,14 +43,12 @@
 				$this->specializedUser(...)
 			], function (PendingFlowDetails $context, ?UserContract $visitor) {
 
-				$isGuest = is_null($visitor);
-
-				if (!$isGuest) $this->actingAs($visitor); // given
-
 				// this guy makes the internal requests for us i.e. to locate renderer for each flow, provided it exists on active route collection
 				$this->makeRouteBranches($context)->handle(); // when
 
 				$resourceId = $this->expectedSavedResource($context);
+
+				$this->setRequestVisitor($visitor); // given
 
 				$this->assertHandledByFlow("/user-content/$resourceId"); // then
 			});
@@ -64,6 +67,15 @@
 				[$this->makePendingFlowDetails(), null] // create content to be mass consumed. Visiting user 5's resource as nobody should access it
 			];
 		}
+
+		protected function setRequestVisitor (?UserContract $visitor):void {
+
+			$isGuest = is_null($visitor);
+
+			if (!$isGuest) $this->actingAs($visitor); // remove any user from preceding provider run
+
+			else $this->getAuthStorage()->logout();
+		}
 		
 		public function test_other_users_cant_access_specialized_user_content () {
 
@@ -72,13 +84,11 @@
 				$this->strangeUsers(...)
 			], function (PendingFlowDetails $context, ?UserContract $visitor) {
 
-				if (!is_null($visitor))
-
-					$this->actingAs($visitor); // given
-
 				$this->makeRouteBranches($context)->handle(); // when
 
 				$resourceId = $this->expectedSavedResource($context);
+
+				$this->setRequestVisitor($visitor); // given
 
 				$this->assertNotHandledByFlow("/user-content/$resourceId"); // then
 			});
@@ -109,13 +119,11 @@
 				$this->strangeUsers(...)
 			], function (PendingFlowDetails $context, ?UserContract $visitor) {
 
-				if (!is_null($visitor))
-
-					$this->actingAs($visitor);
-
 				$this->makeRouteBranches($context)->handle(); // when
 
 				$resourceId = $this->expectedSavedResource($context);
+
+				$this->setRequestVisitor($visitor); // given
 
 				// then
 				$this->assertHandledByFlow("/user-content/$resourceId");
@@ -155,8 +163,52 @@
 
 			$this->get("/user-content/" . $this->expectedSavedResource($context)); // when
 
-			// OuterFlowWrapper::HIT_EVENT
 			$this->assertHandledEvent ($this->rendererController); // then
+		}
+
+		/**
+		 * Hydration doesn't even run for same wildcard same/different user, different mechanism
+		*/
+		public function test_wildcard_is_locked_to_mechanism () {
+
+			$this->dataProvider([
+
+				[$this, "userDatabase"]
+			], function (UserContract $visitor) {
+
+				$initializingContext = $this->makePendingFlowDetails($visitor);
+
+				$this->makeRouteBranches($initializingContext)->handle();
+
+				$hydrator = FlowHydrator::class;
+
+				// then
+				$this->massProvide([
+
+					$hydrator => $this->negativeDouble($hydrator, [], [
+
+						"runNodes" => [0, []]
+					])
+				]);
+
+				$context = $this->makePendingFlowDetails(
+
+					$visitor, TokenStorage::class
+				);
+
+				$this->makeRouteBranches($context)->handle(); // when
+
+				$this->setRequestVisitor($visitor); // given
+			});
+		}
+
+		public function userDatabase ():array {
+
+			return [
+				//[$this->contentOwner],
+				
+				[$this->contentVisitor]
+			];
 		}
 	}
 ?>

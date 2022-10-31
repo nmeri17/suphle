@@ -63,7 +63,7 @@
 
 			return $this->variableDecorator->examineInstance(
 
-				$this->handler->getRenderer(), ""
+				$this->handler->getRenderer(), get_class()
 			);
 		}
 
@@ -137,7 +137,7 @@
 
 			$renderer = $this->variableDecorator->examineInstance(
 
-				$this->handlingRenderer(), ""
+				$this->handlingRenderer(), get_class()
 			);
 
 			$this->writeStatusCode($renderer->getStatusCode());

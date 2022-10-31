@@ -1,11 +1,11 @@
 <?php
 	namespace Suphle\Flows;
 
-	use Suphle\Flows\Structures\{RouteUserNode, RangeContext, ServiceContext, GeneratedUrlExecution};
+	use Suphle\Flows\Structures\{RouteUserNode, RangeContext, ServiceContext, GeneratedUrlExecution, PendingFlowDetails};
 
 	use Suphle\Flows\Previous\{ SingleNode, CollectionNode, UnitNode};
 
-	use Suphle\Contracts\Presentation\BaseRenderer;
+	use Suphle\Contracts\{Presentation\BaseRenderer, Auth\AuthStorage};
 
 	use Suphle\Response\RoutedRendererManager;
 
@@ -58,42 +58,52 @@
 			UnitNode::MAX_HITS => "setMaxHitsHydrator"
 		];
 
-		public function __construct (
-
-			UmbrellaSaver $flowSaver, Container $randomContainer,
-
-			PayloadStorage $payloadStorage
-		) {
+		public function __construct (UmbrellaSaver $flowSaver) {
 
 			$this->flowSaver = $flowSaver;
+		}
 
-			$this->container = $randomContainer;
+		/**
+		 * These dependencies are obtained after reading flow structure so they can't be injected in our constructor. For the same reason, we're deliberately not implementing VariableDependencies.
+
+		 placeholderStorage and payloadStorage shouldn't be random instances but the one modified by routeManager for this module
+		*/
+		public function dependencyMethods ():array {
+
+			return [
+
+				"setContainer", "setPlaceholderStorage",
+
+				"setPayloadStorage", "setRendererManager"
+			];
+		}
+
+		public function setContainer (Container $container):void {
+
+			$this->container = $container;
+		}
+
+		public function setPayloadStorage (PayloadStorage $payloadStorage):void {
 
 			$this->payloadStorage = $payloadStorage;
 		}
 
-		/**
-		 * These dependencies are obtained after reading flow structure so they can't be injected in our constructor
-		 * 
-		 * @param {rendererManager} the manager designated to handle this request
-		 * @param {placeholderStorage} this shouldn't be a random instance but the one modified by routeManager for this module
-		*/
-		public function setDependencies (
+		public function setPlaceholderStorage (PathPlaceholders $placeholderStorage):void {
 
-			RoutedRendererManager $rendererManager, PathPlaceholders $placeholderStorage,
+			$this->placeholderStorage = $placeholderStorage;
+		}
 
-			$previousResponse, string $urlPattern
-		):self {
+		// manager designated to handle this request
+		public function setRendererManager (RoutedRendererManager $rendererManager):void {
+
+			$this->rendererManager = $rendererManager;
+		}
+
+		public function setRequestDetails ($previousResponse, string $urlPattern ):void {
 
 			$this->previousResponse = $previousResponse;
 
-			$this->rendererManager = $rendererManager;
-
-			$this->placeholderStorage = $placeholderStorage;
-
 			$this->baseUrlPattern = $urlPattern;
-
-			return $this;
 		}
 
 		/**
@@ -101,35 +111,62 @@
 		*
 		*	@param {flowStructure} $flow->previousResponse()->handler()
 		*/
-		public function runNodes(UnitNode $flowStructure, string $userId):void {
+		public function runNodes(UnitNode $flowStructure, PendingFlowDetails $originatingFlowDetails):void {
 
 			$parentHandler = $this->parentHandlers[$flowStructure::class];
+
+			$this->bindObjectsForUser($originatingFlowDetails);
 
 			$this->rendererToStorable(
 				$this->$parentHandler($flowStructure),
 
-				$flowStructure, $userId
+				$flowStructure, $originatingFlowDetails
 			);
+		}
+
+		protected function bindObjectsForUser (PendingFlowDetails $originatingFlowDetails):void {
+
+			$storageInstance = $this->container->getClass(
+
+				$originatingFlowDetails->getAuthStorage()
+			);
+
+			$storedId = $originatingFlowDetails->getStoredUserId();
+
+			if ($storedId != OuterFlowWrapper::ALL_USERS)
+
+				$storageInstance->imitate($storedId);
+
+			$this->container->whenTypeAny()->needsAny([
+
+				AuthStorage::class => $storageInstance
+			]);
 		}
 
 		/**
 		 * @param {generatedRenderers} GeneratedUrlExecution[]
 		 * @param {flowStructure} the original one given
 		*/
-		public function rendererToStorable (array $generatedRenderers, UnitNode $flowStructure, string $userId):void {
+		public function rendererToStorable (
+
+			array $generatedRenderers, UnitNode $flowStructure,
+
+			PendingFlowDetails $originatingFlowDetails
+		):void {
 
 			foreach ($generatedRenderers as $generationUnit) {
 
-				$renderer = $generationUnit->getRenderer();
-				
-				$unitPayload = new RouteUserNode($renderer);
+				$unitPayload = new RouteUserNode(
+
+					$generationUnit->getRenderer()
+				);
 
 				$this->runNodeConfigs($unitPayload, $flowStructure);
 
 				$this->flowSaver->saveNewUmbrella(
 					$generationUnit->getRequestPath(),
 
-					$unitPayload, $userId
+					$unitPayload, $originatingFlowDetails
 				);
 			}
 		}

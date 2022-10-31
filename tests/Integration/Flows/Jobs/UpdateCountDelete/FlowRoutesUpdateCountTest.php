@@ -1,11 +1,13 @@
 <?php
 	namespace Suphle\Tests\Integration\Flows\Jobs\UpdateCountDelete;
 
-	use Suphle\Contracts\Config\Router;
+	use Suphle\Contracts\{Config\Router, Auth\AuthStorage};
 
 	use Suphle\Flows\{OuterFlowWrapper, Jobs\UpdateCountDelete};
 
 	use Suphle\Flows\Structures\{AccessContext, RouteUserNode, RouteUmbrella};
+
+	use Suphle\Hydration\Structures\ObjectDetails;
 
 	use Suphle\Response\Format\Json;
 
@@ -78,10 +80,21 @@
 
 		private function makeAccessContext (RouteUserNode $unitPayload):AccessContext {
 
+			$container = $this->getContainer();
+
+			$objectMeta = $container->getClass(ObjectDetails::class);
+
+			$routeUmbrella = new RouteUmbrella ($this->resourceUrl, $objectMeta);
+
+			$routeUmbrella->setAuthMechanism(get_class(
+
+				$container->getClass(AuthStorage::class)
+			));
+
 			return new AccessContext(
 				$this->resourceUrl, $unitPayload,
 
-				new RouteUmbrella ($this->resourceUrl),
+				$routeUmbrella,
 
 				OuterFlowWrapper::ALL_USERS
 			); 

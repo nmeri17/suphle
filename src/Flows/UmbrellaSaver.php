@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Flows;
 
-	use Suphle\Flows\Structures\{RouteUserNode, RouteUmbrella};
+	use Suphle\Flows\Structures\{RouteUserNode, RouteUmbrella, PendingFlowDetails};
 
 	use Suphle\Contracts\{IO\CacheManager, Presentation\BaseRenderer, Config\Flows};
 
@@ -27,16 +27,27 @@
 			return self::FLOW_PREFIX . "/" . trim($urlPattern, "/");
 		}
 
-		public function saveNewUmbrella (string $urlPattern, RouteUserNode $nodeContent, string $userId):void {
+		public function saveNewUmbrella (string $urlPattern, RouteUserNode $nodeContent, PendingFlowDetails $originatingFlowDetails):void {
 
 			$cacheManager = null;
    $location = $this->getPatternLocation($urlPattern);
 			
 			$existing = $this->getExistingUmbrella($location);
 
-			if (!$existing) $existing = new RouteUmbrella($location);
+			if (is_null($existing)) {
 
-			$existing->addUser($userId, $nodeContent);
+				$existing = new RouteUmbrella($location, $this->objectMeta);
+
+				$existing->setAuthMechanism(
+
+					$originatingFlowDetails->getAuthStorage()
+				);
+			}
+
+			$existing->addUser(
+
+				$originatingFlowDetails->getUserId(), $nodeContent
+			);
 
 			$saved = $this->cacheManager->saveItem($location, $existing);
 
