@@ -14,7 +14,7 @@
 	*/
 	class ArtisanCli extends BaseCliCommand {
 
-		public const TO_FORWARD_ARGUMENT = "to_forward";
+		final public const TO_FORWARD_ARGUMENT = "to_forward";
 
 		protected static $defaultDescription = "Interface with artisan commands";
 

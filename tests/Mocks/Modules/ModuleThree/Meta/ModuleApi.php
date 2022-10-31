@@ -5,12 +5,9 @@
 
 	class ModuleApi implements ModuleThree {
 
-		private $moduleOne;
-
-		public function __construct (ModuleOne $moduleOne) {
-
-			$this->moduleOne = $moduleOne;
-		}
+		public function __construct(private readonly ModuleOne $moduleOne)
+  {
+  }
 
 		public function getLocalValue ():int {
 

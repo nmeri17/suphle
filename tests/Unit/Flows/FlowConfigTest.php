@@ -27,10 +27,7 @@
 		public function test_setMaxHitsHydrator () {
 
 			// given
-			$callback = function () {
-
-				return 5;
-			};
+			$callback = fn() => 5;
 
 			$this->unitNode->setMaxHits($callback);
 
@@ -45,10 +42,7 @@
 		public function test_setExpiresAtHydrator () {
 
 			// given
-			$callback = function () {
-
-				return new DateTime;
-			};
+			$callback = fn() => new DateTime;
 
 			$this->unitNode->setTTL($callback);
 

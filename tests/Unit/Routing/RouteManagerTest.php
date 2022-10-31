@@ -136,7 +136,7 @@
 
 			$sut = $this->positiveDouble($this->sutName, [], [
 
-				"methodPartiallyMatchPattern" => [count($patterns)-1, []] // omit SEGMENT, the only literal pattern in collection
+				"methodPartiallyMatchPattern" => [(is_countable($patterns) ? count($patterns) : 0)-1, []] // omit SEGMENT, the only literal pattern in collection
 			]); // then
 
 			foreach ($patterns as $method)

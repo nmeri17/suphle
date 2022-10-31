@@ -33,7 +33,7 @@
 			try {
 				
 				return $this->router->getRoutes()->match($this->request) instanceof Route;
-			} catch (NotFoundHttpException $e) {
+			} catch (NotFoundHttpException) {
 			
 				return false;	
 			}

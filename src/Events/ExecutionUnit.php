@@ -3,16 +3,9 @@
 
 	class ExecutionUnit {
 
-		private $eventName;
-
-		private $handlingMethod;
-		
-		function __construct(string $eventName, string $handlingMethod) {
-
-			$this->eventName = $eventName;
-
-			$this->handlingMethod = $handlingMethod;
-		}
+		function __construct(private readonly string $eventName, private readonly string $handlingMethod)
+  {
+  }
 
 		public function matchesEvent(string $eventName):bool {
 			

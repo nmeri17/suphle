@@ -15,7 +15,7 @@
 
 	class MultiCollectionsTest extends ModuleLevelTest {
 
-		private $threeTierUrl = "/api/v2/first/middle/third";
+		private string $threeTierUrl = "/api/v2/first/middle/third";
 
 		protected function getModules():array {
 

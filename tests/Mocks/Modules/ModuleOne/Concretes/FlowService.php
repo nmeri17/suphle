@@ -5,10 +5,7 @@
 
 		public function customHandlePrevious ( $payload):iterable {
 
-			return array_map(function ($model) {
-
-				return $model["id"] * 2;
-			}, $payload["data"]);
+			return array_map(fn($model) => $model["id"] * 2, $payload["data"]);
 		}
 	}
 ?>

@@ -9,12 +9,9 @@
 
 	class CanaryRequestHasFoo implements CanaryGateway {
 
-		private $payloadStorage;
-
-		public function __construct (PayloadStorage $payloadStorage) {
-
-			$this->payloadStorage = $payloadStorage;
-		}
+		public function __construct(private readonly PayloadStorage $payloadStorage)
+  {
+  }
 
 		public function willLoad ():bool {
 

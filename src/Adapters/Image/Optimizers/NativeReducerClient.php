@@ -7,7 +7,7 @@
 
 	class NativeReducerClient implements InferiorImageClient {
 
-		const JPEG = "jpeg", JPG = "jpg", PNG = "png", GIF = "gif";
+		final const JPEG = "jpeg", JPG = "jpg", PNG = "png", GIF = "gif";
 
 		protected $readerFunctions = [
 

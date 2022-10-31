@@ -11,7 +11,7 @@
 
 	class AlterPayloadStorageTest extends ModuleLevelTest {
 
-		private $modifierMiddleware = AltersPayloadStorage::class;
+		private string $modifierMiddleware = AltersPayloadStorage::class;
 		
 		protected function getModules():array {
 

@@ -29,7 +29,7 @@
 			"Foundation/helpers.php", "Support/helpers.php"
 		];
 
-		private static $hasSetApp = false;
+		private static bool $hasSetApp = false;
 
 		protected $kernelBootstrappers = [
 

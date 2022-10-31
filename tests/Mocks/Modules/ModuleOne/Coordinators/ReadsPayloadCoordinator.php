@@ -7,12 +7,9 @@
 
 	class ReadsPayloadCoordinator extends ServiceCoordinator {
 
-		private $payloadStorage;
-
-		public function __construct (PayloadStorage $payloadStorage) {
-
-			$this->payloadStorage = $payloadStorage;
-		}
+		public function __construct(private readonly PayloadStorage $payloadStorage)
+  {
+  }
 
 		public function mirrorPayload () {
 

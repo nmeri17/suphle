@@ -5,12 +5,9 @@
 
 	class BaseConfigLink implements ConfigMarker {
 
-		protected $nativeValues;
-
-		public function __construct (array $nativeValues) {
-
-			$this->nativeValues = $nativeValues;
-		}
+		public function __construct(protected array $nativeValues)
+  {
+  }
 
 		public function getNativeValues ():array {
 

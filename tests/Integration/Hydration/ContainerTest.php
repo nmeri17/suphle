@@ -22,7 +22,7 @@
 			CommonBinds::concreteBinds as commonConcretes;
 		}
 
-		private $aRequires = ARequiresBCounter::class;
+		private string $aRequires = ARequiresBCounter::class;
 
 		protected function simpleBinds ():array {
 
@@ -130,10 +130,7 @@
 			$mock = new RewriteSpaceImpl;
 
 			// given
-			$rewrite = new NamespaceUnit($modulePath . "Interfaces", $modulePath . "Concretes\V1", function (string $contract) {
-
-				return $contract . "Impl";
-			});
+			$rewrite = new NamespaceUnit($modulePath . "Interfaces", $modulePath . "Concretes\V1", fn(string $contract) => $contract . "Impl");
 
 			$container->whenSpace($modulePath . "Concretes")
 

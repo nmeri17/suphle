@@ -9,12 +9,9 @@
 
 	class ProxyManagerConfig implements DecoratorProxy {
 
-		protected $componentEntry;
-
-		public function __construct (ComponentEntry $componentEntry) {
-
-			$this->componentEntry = $componentEntry;
-		}
+		public function __construct(protected ComponentEntry $componentEntry)
+  {
+  }
 
 		protected function generatedClassesLocation ():string {
 

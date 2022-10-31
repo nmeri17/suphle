@@ -53,7 +53,7 @@
 			catch (Throwable $exception) {
 
 				echo implode("\n", [
-					"Error encountered during attempt to find route on descriptor ". get_class($descriptor),
+					"Error encountered during attempt to find route on descriptor ". $descriptor::class,
 
 					$exception
 				]);

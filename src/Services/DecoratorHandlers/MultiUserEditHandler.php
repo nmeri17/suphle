@@ -21,7 +21,7 @@
 
 	class MultiUserEditHandler extends BaseInjectionModifier {
 
-		public const INTEGRITY_KEY = "_collision_protect", // submitted form/payload is expected to contain this key
+		final public const INTEGRITY_KEY = "_collision_protect", // submitted form/payload is expected to contain this key
 
 		DATE_FORMAT = "Y-m-d H:i:s";
 
@@ -66,9 +66,9 @@
 
 			return [
 
-				"updateResource" => [$this, "wrapUpdateResource"],
+				"updateResource" => $this->wrapUpdateResource(...),
 
-				"getResource" => [$this, "wrapGetResource"]
+				"getResource" => $this->wrapGetResource(...)
 			];
 		}
 

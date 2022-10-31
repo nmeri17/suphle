@@ -7,7 +7,7 @@
 
 	class PredisAdapter implements CacheManager {
 
-		const TAG_KEY = "_reserved_key_tags";
+		final const TAG_KEY = "_reserved_key_tags";
 
 		private $client, $cacheConfig;
 

@@ -7,7 +7,7 @@
 
 	abstract class BaseBuilder implements CrudBuilder {
 
-		const SHOW_CREATE = "showCreateForm", SAVE_NEW = "saveNew",
+		final public const SHOW_CREATE = "showCreateForm", SAVE_NEW = "saveNew",
 
 		SHOW_ALL = "showAll", SHOW_ONE = "showOne",
 
@@ -17,7 +17,7 @@
 
 		SEARCH_RESULTS = "getSearchResults";
 
-		private $idPlaceholder = "id";
+		private string $idPlaceholder = "id";
 
 		protected $overwritable = [], $rendererMap = [],
 
@@ -48,12 +48,9 @@
 
 		protected function findActiveRenderers ():array {
 
-			return array_filter($this->allModifiers(), function ($action) {
+			return array_filter($this->allModifiers(), fn($action) => in_array($action, $this->validActions) &&
 
-				return in_array($action, $this->validActions) &&
-
-				!in_array($action, $this->disabledHandlers);
-			}, ARRAY_FILTER_USE_KEY);
+				!in_array($action, $this->disabledHandlers), ARRAY_FILTER_USE_KEY);
 		}
 
 		private function allModifiers ():array {

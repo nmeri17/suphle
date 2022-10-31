@@ -27,7 +27,7 @@
 
 					throw new UnacceptableDependency (
 
-						get_class($dummyInstance), get_class($service)
+						$dummyInstance::class, $service::class
 					);
 			}
 			

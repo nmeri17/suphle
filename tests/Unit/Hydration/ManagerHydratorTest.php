@@ -41,7 +41,7 @@
 
 					"getExternalHydrators" => [
 
-						get_class($manager)
+						$manager::class
 					]
 				]),
 
@@ -58,7 +58,7 @@
 
 			$container->setInterfaceHydrator(
 
-				get_class($this->positiveDouble(BaseInterfaceCollection::class, []))
+				$this->positiveDouble(BaseInterfaceCollection::class, [])::class
 			);
 
 			$sut = new ExternalPackageManagerHydrator($container);

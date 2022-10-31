@@ -34,7 +34,7 @@
 		protected function allMethodAction (object $concrete, callable $action):AccessInterceptorInterface {
 
 			foreach (
-				$this->objectMeta->getPublicMethods(get_class($concrete))
+				$this->objectMeta->getPublicMethods($concrete::class)
 
 				as $methodName
 			)

@@ -11,12 +11,9 @@
 
 	class ArtisanLoader extends BaseInterfaceLoader {
 
-		private $laravelContainer;
-
-		public function __construct (LaravelContainer $laravelContainer) {
-
-			$this->laravelContainer = $laravelContainer;
-		}
+		public function __construct(private readonly LaravelContainer $laravelContainer)
+  {
+  }
 
 		public function bindArguments ():array {
 

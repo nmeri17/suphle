@@ -93,7 +93,7 @@
 
 			return $this->getContainer()->whenType($jobName)
 
-			->needsArguments([ get_class($dependency) => $dependency ])
+			->needsArguments([ $dependency::class => $dependency ])
 			
 			->getClass($jobName);
 		}
@@ -118,7 +118,7 @@
 
 			$this->dataProvider([
 
-				[$this, "expiredContexts"]
+				$this->expiredContexts(...)
 			], function (RouteUserNode $payload) {
 
 				$this->makeUpdateCountDelete( $this->makeAccessContext($payload))->handle(); // given

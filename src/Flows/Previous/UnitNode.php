@@ -10,9 +10,9 @@
 
 		$actions = []; // on CollectionNodes, this is the list of actions to take, while on SingleNodes, this is the list of attributes applied
 
-		private $config = [];
+		private array $config = [];
 
-		const TTL = 1, MAX_HITS = 2;
+		final const TTL = 1, MAX_HITS = 2;
 
 		public function getActions():array {
 			

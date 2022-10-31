@@ -7,25 +7,22 @@
 
 	class VariableDependenciesHandler implements ModifyInjected {
 
-		private $container;
-
-		public function __construct (Container $container) {
-
-			$this->container = $container;
-		}
+		public function __construct(private readonly Container $container)
+  {
+  }
 
 		/**
 		 * @param {concrete} VariableDependencies
 		*/
 		public function examineInstance (object $concrete, string $caller):object {
 
-			$concreteName = get_class($concrete);
+			$concreteName = $concrete::class;
 
 			foreach ($concrete->dependencyMethods() as $methodName) {
 
 				$parameters = $this->container->getMethodParameters(
 				
-					$methodName, get_class($concrete),
+					$methodName, $concrete::class,
 
 					[$concreteName]
 				);

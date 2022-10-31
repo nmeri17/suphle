@@ -13,14 +13,11 @@
 
 	class BrowserLoginMediator implements LoginFlowMediator {
 
-		private $authService;
-
 		protected $successDestination = "/";
 
-		public function __construct (BrowserAuthRepo $authService) {
-
-			$this->authService = $authService;
-		}
+		public function __construct(private readonly BrowserAuthRepo $authService)
+  {
+  }
 
 		public function successRenderer ():BaseRenderer {
 

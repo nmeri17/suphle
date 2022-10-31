@@ -9,7 +9,7 @@
 
 		public function __construct (array $incompatible, string $module) {
 
-			$this->message = "Invalid descriptors given to module $module " . json_encode($incompatible);
+			$this->message = "Invalid descriptors given to module $module " . json_encode($incompatible, JSON_THROW_ON_ERROR);
 		}
 	}
 ?>

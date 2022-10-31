@@ -43,10 +43,7 @@
 
 			return $this->positiveDouble($className, [
 
-				"process" => $this->returnCallback(function($request, $requestHandler) {
-
-					return $requestHandler->handle($request);
-				})
+				"process" => $this->returnCallback(fn($request, $requestHandler) => $requestHandler->handle($request))
 			], [
 
 				"process" => [$numTimes, []]
@@ -163,10 +160,7 @@
 
 					"process" => [1, [
 
-						$this->callback(function ($subject) {
-
-							return $subject instanceof PayloadStorage;
-						}),
+						$this->callback(fn($subject) => $subject instanceof PayloadStorage),
 
 						$this->equalTo(null)
 					]]

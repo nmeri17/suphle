@@ -15,7 +15,7 @@
 
 	class IntraModuleTest extends JobFactory {
 
-		private $user5Url = "/user-content/5";
+		private string $user5Url = "/user-content/5";
 
 		protected function getModules():array {
 
@@ -35,7 +35,7 @@
 
 			$this->dataProvider([
 
-				[$this, "contextParameters"]
+				$this->contextParameters(...)
 			], function (PendingFlowDetails $context) {
 
 				// given => see setup
@@ -99,7 +99,7 @@
 
 			$this->dataProvider([
 
-				[$this, "contextParameters"]
+				$this->contextParameters(...)
 			], function (PendingFlowDetails $context) {
 
 				// given => see dataProvider

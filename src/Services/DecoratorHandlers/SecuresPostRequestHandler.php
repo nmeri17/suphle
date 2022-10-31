@@ -37,7 +37,7 @@
 
 					if (is_object($dependency) && $this->objectMeta->implementsInterface(
 
-						get_class($dependency),
+						$dependency::class,
 
 						$decorator
 					))
@@ -45,7 +45,7 @@
 						return $arguments;
 				}
 
-			throw new MissingPostDecorator(get_class($dummyInstance));
+			throw new MissingPostDecorator($dummyInstance::class);
 		}
 	}
 ?>

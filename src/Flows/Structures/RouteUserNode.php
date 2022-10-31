@@ -37,10 +37,7 @@
 
 		protected function defaultMaxHits ():callable {
 
-			return function ($userId, $pattern) {
-
-				return 1;
-			};
+			return fn($userId, $pattern) => 1;
 		}
 
 		/**

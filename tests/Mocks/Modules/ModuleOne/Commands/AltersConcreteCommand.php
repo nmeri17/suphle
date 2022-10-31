@@ -11,7 +11,7 @@
 
 	class AltersConcreteCommand extends BaseCliCommand {
 
-		public const NEW_VALUE_ARGUMENT = "new_value";
+		final public const NEW_VALUE_ARGUMENT = "new_value";
 
 		protected function configure ():void {
 

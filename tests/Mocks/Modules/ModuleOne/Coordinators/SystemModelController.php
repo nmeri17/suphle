@@ -9,12 +9,9 @@
 
 	class SystemModelController extends ServiceCoordinator {
 
-		private $editService;
-
-		public function __construct (SystemModelEditMock1 $editService) {
-
-			$this->editService = $editService;
-		}
+		public function __construct(private readonly SystemModelEditMock1 $editService)
+  {
+  }
 
 		public function validatorCollection ():?string {
 

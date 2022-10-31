@@ -5,11 +5,7 @@
 
 	class NativeSession implements SessionContract {
 
-		private $envAccessor;
-
-		public function __construct (EnvAccessor $envAccessor) {
-
-			$this->envAccessor = $envAccessor;
+		public function __construct (private readonly EnvAccessor $envAccessor) {
 
 			if ($this->safeToStart()) $this->startNew();
 		}
@@ -48,7 +44,9 @@
 			setcookie(
 				session_name(), session_id(),
 
-				time() + $this->envAccessor->getField("SESSION_DURATION")
+				[
+					"expires" => time() + $this->envAccessor->getField("SESSION_DURATION")
+				]
 			);
 		}
 	}

@@ -3,11 +3,8 @@
 
 	class LoadablesForsaken {
 
-		private $dependency;
-
-		public function __construct (LoadableDependency $dependency) {
-
-			$this->dependency = $dependency;
-		}
+		public function __construct(private readonly LoadableDependency $dependency)
+  {
+  }
 	}
 ?>

@@ -9,10 +9,7 @@
 
 		public function register () {
 
-			$this->app->singleton(ConfigConstructor::class, function ($app) {
-
-				return new ConfigConstructor(config("nested.first_level"));
-			});
+			$this->app->singleton(ConfigConstructor::class, fn($app) => new ConfigConstructor(config("nested.first_level")));
 		}
 
 		public function boot () {

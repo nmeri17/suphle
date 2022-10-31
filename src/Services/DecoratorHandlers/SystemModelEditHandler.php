@@ -38,7 +38,7 @@
 
 			return [
 
-				"updateModels" => [$this, "wrapUpdateModels"]
+				"updateModels" => $this->wrapUpdateModels(...)
 			];
 		}
 
@@ -50,11 +50,7 @@
 
 			try {
 
-				return $this->ormDialect->runTransaction(function () use ($concrete) {
-
-					return $concrete->updateModels();
-
-				}, $concrete->modelsToUpdate());
+				return $this->ormDialect->runTransaction(fn() => $concrete->updateModels(), $concrete->modelsToUpdate());
 			}
 			catch (Throwable $exception) {
 

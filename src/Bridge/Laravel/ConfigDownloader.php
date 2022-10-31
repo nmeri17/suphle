@@ -13,7 +13,7 @@
 
 	class ConfigDownloader extends BaseHttpRequest {
 
-		public const ENV_CONFIG_URL = "LARAVEL_CONFIG_URL";
+		final public const ENV_CONFIG_URL = "LARAVEL_CONFIG_URL";
 
 		private $saveInLocation, $envAccessor;
 

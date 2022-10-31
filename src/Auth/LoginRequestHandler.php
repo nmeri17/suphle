@@ -79,7 +79,7 @@
 			$dependencies = $this->container->getMethodParameters(
 				$renderer->getHandler(),
 
-				get_class($renderer->getController())
+				$renderer->getController()::class
 			);
 
 			$renderer->invokeActionHandler($dependencies);

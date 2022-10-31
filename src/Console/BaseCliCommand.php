@@ -17,7 +17,7 @@
 
 		$withModuleOption = true;
 
-		public const HYDRATOR_MODULE_OPTION = "hydrating_module";
+		final public const HYDRATOR_MODULE_OPTION = "hydrating_module";
 
 		public function __construct () {
 

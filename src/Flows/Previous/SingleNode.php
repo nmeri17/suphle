@@ -3,7 +3,7 @@
 
 	class SingleNode extends UnitNode {
 
-		const ALTERS_QUERY_SEGMENT = 1;
+		final const ALTERS_QUERY_SEGMENT = 1;
 
 		function __construct(string $nodeName) {
 

@@ -7,13 +7,9 @@
 
 	class ApiAuthRepo extends BaseAuthRepo {
 
-		private $authStorage;
-
-		public function __construct (ColumnPayloadComparer $comparer, TokenStorage $authStorage) { 
+		public function __construct (ColumnPayloadComparer $comparer, private readonly TokenStorage $authStorage) { 
 			
 			$this->comparer = $comparer;
-
-			$this->authStorage = $authStorage;
 		}
 
 		public function successLogin () {

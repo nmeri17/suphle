@@ -9,18 +9,14 @@
 
 	class ComponentEntry extends BaseComponentEntry {
 
-		private $remoteConfig;
-
 		public function __construct (
 
 			ModuleFiles $fileConfig, FileSystemReader $fileSystemReader,
 
-			ConfigDownloader $remoteConfig
+			private readonly ConfigDownloader $remoteConfig
 		) {
 
 			parent::__construct($fileConfig, $fileSystemReader);
-
-			$this->remoteConfig = $remoteConfig;
 		}
 
 		public function uniqueName ():string {

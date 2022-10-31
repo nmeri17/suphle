@@ -9,14 +9,11 @@
 
 	class Auth implements AuthContract {
 
-		public const API_LOGIN_PATH = "api/v1/login";
+		final public const API_LOGIN_PATH = "api/v1/login";
 
-		private $requestDetails;
-
-		public function __construct (RequestDetails $requestDetails) {
-
-			$this->requestDetails = $requestDetails;
-		}
+		public function __construct(private readonly RequestDetails $requestDetails)
+  {
+  }
 
 		protected function getLoginPaths ():array {
 

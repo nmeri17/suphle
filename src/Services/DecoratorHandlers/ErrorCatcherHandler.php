@@ -16,13 +16,9 @@
 	*/
 	class ErrorCatcherHandler extends BaseInjectionModifier {
 
-		private $exceptionDetector;
-
 		public function __construct (
-			DetectedExceptionManager $exceptionDetector, ObjectDetails $objectMeta,
+			private readonly DetectedExceptionManager $exceptionDetector, ObjectDetails $objectMeta,
 			DecoratorProxy $proxyConfig) {
-
-			$this->exceptionDetector = $exceptionDetector;
 
 			parent::__construct($proxyConfig, $objectMeta);
 		}
@@ -34,7 +30,7 @@
 
 			return $this->allMethodAction($concrete,
 
-				[$this, "safeCallMethod"]
+				$this->safeCallMethod(...)
 			);
 		}
 
@@ -86,12 +82,12 @@
 
 			$returnType = $objectMeta->methodReturnType(
 
-				get_class($concrete), $method
+				$concrete::class, $method
 			);
 
 			if (is_null($returnType)) return null;
 			
-			if ( $objectMeta->returnsBuiltIn(get_class($concrete), $method))
+			if ( $objectMeta->returnsBuiltIn($concrete::class, $method))
 
 				return $objectMeta->getScalarValue($returnType);
 

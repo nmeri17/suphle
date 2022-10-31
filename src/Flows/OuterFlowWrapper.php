@@ -17,7 +17,7 @@
 
 	class OuterFlowWrapper implements BaseResponseManager, HighLevelRequestHandler {
 
-		const ALL_USERS = "*", HIT_EVENT = "flow_hit";
+		final const ALL_USERS = "*", HIT_EVENT = "flow_hit";
 
 		private $requestDetails, $queueManager, $modules,
 
@@ -111,7 +111,7 @@
 
 			$this->eventManager->emit(
 
-				get_class($renderer->getController()),
+				$renderer->getController()::class,
 
 				$renderer->getHandler(),
 

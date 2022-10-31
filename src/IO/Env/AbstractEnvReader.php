@@ -7,13 +7,9 @@
 
 	abstract class AbstractEnvReader implements EnvAccessor {
 
-		private $fileConfig;
-
 		protected $client;
 
-		public function __construct (ModuleFiles $fileConfig) {
-
-			$this->fileConfig = $fileConfig;
+		public function __construct (private readonly ModuleFiles $fileConfig) {
 
 			$this->setClient();
 

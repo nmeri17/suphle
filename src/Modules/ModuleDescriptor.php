@@ -139,7 +139,7 @@
 
 			if (!empty($incompatible))
 
-				throw new UnexpectedModules($incompatible, get_called_class());
+				throw new UnexpectedModules($incompatible, static::class);
 		}
 
 		private function assignModuleShells ():void {

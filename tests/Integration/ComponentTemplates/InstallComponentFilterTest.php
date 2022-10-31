@@ -58,12 +58,12 @@
 
 			$this->container->whenTypeAny()->needsAny([
 
-				get_class($entry) => $entry
+				$entry::class => $entry
 			]);
 
 			$this->templateEntries[] = $entry;
 
-			return get_class($entry);
+			return $entry::class;
 		}
 
 		protected function doubleAbstractEntry (array $stubMethods, array $mockMethods):MockObject {
@@ -76,7 +76,7 @@
 
 			$builder->setConstructorArgs($parameters);
 
-			$builder->onlyMethods(array_merge(array_keys($stubMethods), array_keys($mockMethods)));
+			$builder->onlyMethods([...array_keys($stubMethods), ...array_keys($mockMethods)]);
 
 			$builder->disableArgumentCloning()
 

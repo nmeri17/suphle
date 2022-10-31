@@ -43,7 +43,7 @@
 
 			if (is_iterable($responseBody))
 
-				return json_decode(json_encode($responseBody), true);
+				return json_decode(json_encode($responseBody, JSON_THROW_ON_ERROR), true, 512, JSON_THROW_ON_ERROR);
 
 			return [$responseBody];
 		}

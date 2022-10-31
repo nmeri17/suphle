@@ -9,10 +9,7 @@
 
 		public function register () {
 
-			$this->app->singleton(ConfigInternal::class, function ($app) {
-
-				return new ConfigInternal;
-			});
+			$this->app->singleton(ConfigInternal::class, fn($app) => new ConfigInternal);
 		}
 	}
 ?>

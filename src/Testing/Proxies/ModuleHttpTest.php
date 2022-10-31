@@ -245,7 +245,7 @@
 			array $headers = [], array $files = []
 		):TestResponseBridge {
 
-			$converted = json_encode($payload);
+			$converted = json_encode($payload, JSON_THROW_ON_ERROR);
 
 			$newHeaders = array_merge([
 				"Content-Length" => mb_strlen($converted, "8bit"),

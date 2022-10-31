@@ -45,7 +45,7 @@
 				
 				return $this->convertToDomainObject();
 			}
-			catch (Throwable $exception) {
+			catch (Throwable) {
 				
 				return $this->translationFailure();
 			}

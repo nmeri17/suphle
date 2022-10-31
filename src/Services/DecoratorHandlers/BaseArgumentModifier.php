@@ -7,12 +7,9 @@
 
 	abstract class BaseArgumentModifier implements ModifiesArguments {
 
-		protected $objectMeta;
-
-		public function __construct ( ObjectDetails $objectMeta) {
-
-			$this->objectMeta = $objectMeta;
-		}
+		public function __construct(protected ObjectDetails $objectMeta)
+  {
+  }
 
 		/**
 		 * {@inheritdoc}

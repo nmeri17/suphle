@@ -7,13 +7,9 @@
 
 	class BrowserAuthRepo extends BaseAuthRepo {
 
-		private $authStorage;
-
-		public function __construct (ColumnPayloadComparer $comparer, SessionStorage $authStorage) { 
+		public function __construct (ColumnPayloadComparer $comparer, private readonly SessionStorage $authStorage) { 
 			
 			$this->comparer = $comparer;
-
-			$this->authStorage = $authStorage;
 		}
 
 		public function successLogin () {

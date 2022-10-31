@@ -3,12 +3,9 @@
 
 	class ConfigConstructor {
 
-		private $firstConfig;
-
-		public function __construct (array $firstConfig) {
-
-			$this->firstConfig = $firstConfig;
-		}
+		public function __construct(private readonly array $firstConfig)
+  {
+  }
 
 		public function getSecondLevel ():array {
 

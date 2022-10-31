@@ -71,11 +71,7 @@
 
 			$commands = $container->getClass(Console::class)->commandsList();
 
-			$newCommands = array_map(function ($name) use ($container) {
-
-				return $container->getClass($name);
-
-			}, $this->getUniqueCommands($commands));
+			$newCommands = array_map(fn($name) => $container->getClass($name), $this->getUniqueCommands($commands));
 
 			$this->allCommands = array_merge($this->allCommands, $newCommands);
 		}

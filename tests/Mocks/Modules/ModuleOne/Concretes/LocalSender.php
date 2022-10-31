@@ -9,7 +9,7 @@
 
 		use EmitProxy;
 
-		const CASCADE_BEGIN_EVENT = "cascading",
+		final const CASCADE_BEGIN_EVENT = "cascading",
 
 		CONCAT_EVENT = "concating",
 

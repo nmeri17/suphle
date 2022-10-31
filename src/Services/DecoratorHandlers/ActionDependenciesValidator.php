@@ -13,7 +13,7 @@
 
 				$foundMatch = false;
 
-				$dependencyType = get_class($dependency);
+				$dependencyType = $dependency::class;
 
 				foreach ($actionInjectables as $validType) {
 
@@ -44,7 +44,7 @@
 
 		protected function getErrorMessage (object $concrete, string $dependency, string $methodName):string {
 
-			return get_class($concrete) . "::". $methodName .
+			return $concrete::class . "::". $methodName .
 
 			" is forbidden from depending on $dependency";
 		}

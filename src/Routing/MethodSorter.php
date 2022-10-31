@@ -8,25 +8,22 @@
 		*/
 		private function descendingCallback ($a, $b):int {
 
-			$aLength = strlen($a);
+			$aLength = strlen((string) $a);
 
-			$bLength = strlen($b);
-
-			if ($aLength == $bLength) return 0;
-
-			return ($bLength > $aLength) ? 1: -1; // push greater right upwards ie descending
+			$bLength = strlen((string) $b);
+   return $bLength <=> $aLength; // push greater right upwards ie descending
 		}
 
 		public function descendingValues (array $patterns):array {
 
-			usort($patterns, [$this, "descendingCallback"]);
+			usort($patterns, $this->descendingCallback(...));
 
 			return $patterns;
 		}
 
 		public function descendingKeys (array $patterns):array {
 
-			uksort($patterns, [$this, "descendingCallback"]);
+			uksort($patterns, $this->descendingCallback(...));
 
 			return $patterns;
 		}

@@ -13,7 +13,7 @@
 
 	class InstallComponentCommand extends BaseCliCommand {
 
-		public const OVERWRITE_OPTION = "overwrite";
+		final public const OVERWRITE_OPTION = "overwrite";
 
 		protected static $defaultDescription = "Extract templates registered for given module";
 

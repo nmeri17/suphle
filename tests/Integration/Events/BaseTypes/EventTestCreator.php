@@ -31,10 +31,7 @@
 
 			$manager = $this->positiveDouble(EventManager::class);
 
-			$dependencies = array_map(function ($argument) {
-
-				return $this->positiveDouble($argument);
-			}, [
+			$dependencies = array_map(fn($argument) => $this->positiveDouble($argument), [
 				ModuleOneDescriptor::class, ModuleLevelEvents::class,
 
 				ObjectDetails::class

@@ -158,7 +158,7 @@
 				$this->buildIdentifier()->setActiveWorker()
 
 				->openEventLoop();
-			}, function (Throwable $exception) {
+			}, function (Throwable $exception): never {
 					
 				var_dump("Failing worker alert", $exception); // if we get here, it means loop terminated/request failed and rr is restarting another one for us
 

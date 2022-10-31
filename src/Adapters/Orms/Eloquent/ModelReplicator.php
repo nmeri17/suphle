@@ -105,7 +105,7 @@
 
 				if (!is_dir($path))
 
-					throw new Exception("Invalid migration path given while trying to migrate model ". get_class($model). ": $path");
+					throw new Exception("Invalid migration path given while trying to migrate model ". $model::class. ": $path");
 		}
 
 		public function dismantleSchema ():void {

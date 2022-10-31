@@ -26,10 +26,7 @@
 
 		public function getAsyncNames ():array {
 
-			return $this->generatedFileNames = array_map(function ($image) {
-
-				return $this->getImageNewName($image);
-			}, $this->imageObjects);
+			return $this->generatedFileNames = array_map(fn($image) => $this->getImageNewName($image), $this->imageObjects);
 		}
 
 		protected function getImageNewName (UploadedFile $image):string {

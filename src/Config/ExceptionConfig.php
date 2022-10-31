@@ -9,12 +9,9 @@
 
 	class ExceptionConfig implements ExceptionInterceptor {
 
-		private $fileConfig;
-
-		public function __construct (ModuleFiles $fileConfig) {
-
-			$this->fileConfig = $fileConfig;
-		}
+		public function __construct(private readonly ModuleFiles $fileConfig)
+  {
+  }
 
 		public function getHandlers ():array {
 

@@ -5,12 +5,9 @@
 
 	class DefaultCacheConfig implements CacheClient {
 
-		private $envAccessor;
-
-		public function __construct (EnvAccessor $envAccessor) {
-
-			$this->envAccessor = $envAccessor;
-		}
+		public function __construct(private readonly EnvAccessor $envAccessor)
+  {
+  }
 
 		public function getCredentials ():array {
 

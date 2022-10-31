@@ -18,7 +18,7 @@
 		}
 	},
 	"require": {
-		"php": "^7.4",
+		"php": "^8.0",
 		"anorgan/qutee": "dev-version-updates",
 		"bugsnag/bugsnag": "^3.0",
 		"firebase/php-jwt": "^5.2",
@@ -48,9 +48,10 @@
 		"fakerphp/faker": "^1.19",
 		"illuminate/testing": "^8.83",
 		"laravel/framework": "^8.83",
-		"phpstan/phpstan": "^1.8",
 		"phpunit/phpunit": "^8.5",
-		"symfony/process": "^5.4"
+		"rector/rector": "^0.14.6",
+		"symfony/process": "^5.4",
+		"vimeo/psalm": "^4.29"
 	},
 	"repositories": [{
 		"type": "vcs",

@@ -44,7 +44,7 @@
 
 			$handlers = $this->config->getHandlers();
 
-			$exceptionName = get_class($exception);
+			$exceptionName = $exception::class;
 
 			if (array_key_exists($exceptionName, $handlers))
 

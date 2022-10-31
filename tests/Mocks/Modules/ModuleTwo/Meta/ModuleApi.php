@@ -5,12 +5,9 @@
 
 	class ModuleApi implements ModuleTwo {
 
-		private $moduleThree;
-
-		public function __construct (ModuleThree $moduleThree) {
-
-			$this->moduleThree = $moduleThree;
-		}
+		public function __construct(private readonly ModuleThree $moduleThree)
+  {
+  }
 
 		public function getShallowValue ():int {
 

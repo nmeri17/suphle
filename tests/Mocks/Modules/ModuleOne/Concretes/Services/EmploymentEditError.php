@@ -3,7 +3,7 @@
 
 	class EmploymentEditError extends EmploymentEditMock {
 
-		public function updateResource () {
+		public function updateResource (): never {
 
 			trigger_error("nonsensical", E_USER_ERROR);
 		}

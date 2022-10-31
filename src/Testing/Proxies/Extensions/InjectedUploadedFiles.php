@@ -7,15 +7,12 @@
 
 	class InjectedUploadedFiles implements FileInputReader {
 
-		private $fileMap;
-
 		/**
 		 * @param {fileMap} UploadedFile[]
 		*/
-		public function __construct (array $fileMap) {
-
-			$this->fileMap = $fileMap;
-		}
+		public function __construct(private readonly array $fileMap)
+  {
+  }
 
 		public function getFileObjects ():array {
 

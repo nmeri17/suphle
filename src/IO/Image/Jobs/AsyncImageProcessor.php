@@ -18,7 +18,8 @@
 
 		public function handle ():void {
 
-			try {
+			$operation = null;
+   try {
 
 				$this->operation->getTransformed();
 			}

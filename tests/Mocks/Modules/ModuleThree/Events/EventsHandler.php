@@ -7,7 +7,7 @@
 
 		use EmitProxy;
 
-		const EXTERNAL_LOCAL_REBOUND = "local_external_local";
+		final const EXTERNAL_LOCAL_REBOUND = "local_external_local";
 
 		private $payload;
 

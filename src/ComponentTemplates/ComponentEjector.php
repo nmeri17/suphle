@@ -18,10 +18,7 @@
 
 		public function depositFiles (?array $componentsToOverride):bool {
 
-			$hydratedComponents = array_map(function ($component) {
-
-				return $this->container->getClass($component);
-			}, $this->componentList);
+			$hydratedComponents = array_map(fn($component) => $this->container->getClass($component), $this->componentList);
 
 			foreach ($hydratedComponents as $component) {
 
@@ -43,7 +40,7 @@
 
 			if (empty($componentsToOverride)) return true;
 
-			return in_array(get_class($component), $componentsToOverride);
+			return in_array($component::class, $componentsToOverride);
 		}
 	}
 ?>

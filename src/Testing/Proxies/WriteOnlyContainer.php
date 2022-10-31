@@ -11,12 +11,9 @@
 
 		use MockFacilitator;
 
-		private $container;
-
-		public function __construct (Container $container) {
-
-			$this->container = $container;
-		}
+		public function __construct(private readonly Container $container)
+  {
+  }
 
 		public function replaceWithMock (
 			string $interface, string $concrete, array $methodStubs,

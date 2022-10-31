@@ -37,7 +37,7 @@
 			if (
 				is_null($user) ||
 
-				!password_verify($password, $user->getPassword())
+				!password_verify((string) $password, (string) $user->getPassword())
 			)
 
 				return false;

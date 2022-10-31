@@ -21,10 +21,7 @@
 
 			$mockManager = $this->positiveDouble($sutName, [], [ // then
 
-				"handleValidRequest" => [1, [$this->callback(function($subject) {
-
-					return $subject instanceof PayloadStorage;
-				})]],
+				"handleValidRequest" => [1, [$this->callback(fn($subject) => $subject instanceof PayloadStorage)]],
 
 				"afterRender" => [1, []],
 

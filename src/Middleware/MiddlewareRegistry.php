@@ -66,16 +66,10 @@
 		*/
 		public function getActiveStack ():array {
 
-			$activeHolders = array_filter ($this->registry, function ($pattern) {
-
-				return in_array($pattern, $this->interactedPatterns);
-			}, ARRAY_FILTER_USE_KEY);
+			$activeHolders = array_filter ($this->registry, fn($pattern) => in_array($pattern, $this->interactedPatterns), ARRAY_FILTER_USE_KEY);
 
 			// If we exclude tags in a child collection, it won't exist in [registry] since our remove action doesn't use such mechanism
-			$activeExcludes = array_filter ($this->excludePatterns, function ($pattern) {
-
-				return in_array($pattern, $this->interactedPatterns);
-			}, ARRAY_FILTER_USE_KEY);
+			$activeExcludes = array_filter ($this->excludePatterns, fn($pattern) => in_array($pattern, $this->interactedPatterns), ARRAY_FILTER_USE_KEY);
 
 			// search among parents for those containing middlewares intersecting with given list
 			foreach ($activeExcludes as $excludeList)

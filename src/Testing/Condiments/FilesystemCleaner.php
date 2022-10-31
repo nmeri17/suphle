@@ -95,7 +95,7 @@
 
 				return new FilesystemIterator($path);
 			}
-			catch (UnexpectedValueException $exception) { // folder does not exist
+			catch (UnexpectedValueException) { // folder does not exist
 
 				return null;
 			}

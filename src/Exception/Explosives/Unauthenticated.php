@@ -7,12 +7,9 @@
 
 	class Unauthenticated extends Exception {
 
-		private $storage;
-
-		public function __construct (AuthStorage $storage) {
-
-			$this->storage = $storage;
-		}
+		public function __construct(private readonly AuthStorage $storage)
+  {
+  }
 
 		public function storageMechanism ():AuthStorage {
 

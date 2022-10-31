@@ -26,15 +26,9 @@
 
 		public function assignScopes ():void {
 
-			$this->argumentScope = array_filter($this->chain, function ($handler) {
+			$this->argumentScope = array_filter($this->chain, fn($handler) => $this->objectMeta->implementsInterface($handler, ModifiesArguments::class));
 
-				return $this->objectMeta->implementsInterface($handler, ModifiesArguments::class);
-			});
-
-			$this->injectScope = array_filter($this->chain, function ($handler) {
-
-				return $this->objectMeta->implementsInterface($handler, ModifyInjected::class);
-			});
+			$this->injectScope = array_filter($this->chain, fn($handler) => $this->objectMeta->implementsInterface($handler, ModifyInjected::class));
 		}
 
 		public function scopeArguments (string $entityName, array $argumentList, string $methodName):array {
@@ -110,7 +104,7 @@
 
 			$scope = $this->injectScope;
 
-			$relevantDecors = $this->getRelevantDecors($scope, get_class($concrete));
+			$relevantDecors = $this->getRelevantDecors($scope, $concrete::class);
 
 			foreach ($relevantDecors as $decorator)
 

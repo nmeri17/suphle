@@ -7,12 +7,9 @@
 
 	class HydratorConsumer {
 
-		protected $container;
-
-		public function __construct (Container $container) {
-
-			$this->container = $container;
-		}
+		public function __construct(protected Container $container)
+  {
+  }
 
 		public function getSuperB ():BCounter {
 

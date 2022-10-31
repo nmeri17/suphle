@@ -5,14 +5,11 @@
 
 	class CsrfGenerator {
 
-		const TOKEN_FIELD = "_csrf_token";
+		final const TOKEN_FIELD = "_csrf_token";
 
-		private $sessionClient;
-
-		public function __construct (Session $sessionClient) {
-
-			$this->sessionClient = $sessionClient;
-		}
+		public function __construct(private readonly Session $sessionClient)
+  {
+  }
 
 		public function newToken ():string {
 

@@ -29,10 +29,7 @@
 		*/
 		private function filterDuplicates ():void {
 
-			$units = array_map(function (PatternMiddleware $pattern) {
-
-				return $pattern->getList();
-			}, $this->stack);
+			$units = array_map(fn(PatternMiddleware $pattern) => $pattern->getList(), $this->stack);
 
 			$reduced = array_reduce($units, function (array $carry, array $current) {
 
@@ -88,10 +85,7 @@
 
 		private function hydrateMiddlewares ():void {
 
-			$this->stack = array_map(function ($name) {
-
-				return $this->container->getClass($name);
-			}, $this->stack);
+			$this->stack = array_map(fn($name) => $this->container->getClass($name), $this->stack);
 		}
 	}
 ?>

@@ -17,7 +17,7 @@
 
 		protected $container, $fileSystemReader;
 
-		public const SOURCE_ARGUMENT = "template_folder",
+		final public const SOURCE_ARGUMENT = "template_folder",
 
 		DESTINATION_ARGUMENT = "project_root",
 

@@ -7,11 +7,8 @@
 
 	class BlankUpdatelessController extends ServiceCoordinator {
 
-		private $dependency;
-
-		public function __construct (BlankUpdateless $dependency) {
-
-			$this->dependency = $dependency;
-		}
+		public function __construct(private readonly BlankUpdateless $dependency)
+  {
+  }
 	}
 ?>

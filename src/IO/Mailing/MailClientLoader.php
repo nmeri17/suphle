@@ -13,12 +13,9 @@
 
 	class MailClientLoader extends BaseInterfaceLoader {
 
-		private $envAccessor;
-
-		public function __construct (EnvAccessor $envAccessor) {
-
-			$this->envAccessor = $envAccessor;
-		}
+		public function __construct(private readonly EnvAccessor $envAccessor)
+  {
+  }
 
 		public function bindArguments ():array {
 

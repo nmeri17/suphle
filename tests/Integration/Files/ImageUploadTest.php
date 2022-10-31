@@ -17,7 +17,7 @@
 
 		use FilesystemCleaner;
 
-		private $resourceOwner = "users";
+		private string $resourceOwner = "users";
 
 		protected $debugCaughtExceptions = true; // it's important to leave this in, otherwise the test, test_giving_no_operation_throws_error, will swallow error, causing test to "fail"
 
@@ -84,7 +84,7 @@
 
 			"\w+\.";
 
-			$matchResult = preg_match("/$pattern/", $imagePath);
+			$matchResult = preg_match("/$pattern/", (string) $imagePath);
 
 			$this->assertSame(1, $matchResult); // then
 		}
@@ -93,7 +93,7 @@
 
 			$fullResponse = $this->sendUploadRequest($url);
 
-			return json_decode($fullResponse->getContent(), true);
+			return json_decode((string) $fullResponse->getContent(), true, 512, JSON_THROW_ON_ERROR);
 		}
 	}
 ?>

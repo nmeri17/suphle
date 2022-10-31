@@ -7,12 +7,9 @@
 
 	class FlowCoordinator extends ServiceCoordinator {
 
-		private $dummyModels;
-
-		public function __construct (DummyModels $dummyModels) {
-
-			$this->dummyModels = $dummyModels;
-		}
+		public function __construct(private readonly DummyModels $dummyModels)
+  {
+  }
 
 		public function noFlowHandler () {
 

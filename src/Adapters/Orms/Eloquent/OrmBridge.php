@@ -74,7 +74,7 @@
 
 			$firstModel = current($models);
 
-			$modelName = get_class($firstModel);
+			$modelName = $firstModel::class;
 
 			$primaryField = $firstModel->getKeyName();
 
@@ -82,10 +82,7 @@
 
 			(new $modelName)->$lockingMethod()->whereIn( // combine user query state into special locking builder to avoid applying update to all rows
 
-				$primaryField, array_map(function ($model) use ($primaryField) {
-
-					return $model->$primaryField;
-				}, $models)
+				$primaryField, array_map(fn($model) => $model->$primaryField, $models)
 			)->get();
 		}
 

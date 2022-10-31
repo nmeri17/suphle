@@ -11,20 +11,17 @@
 
 	class DetectedExceptionManager {
 
-		const ALERTER_METHOD = "queueAlertAdapter";
+		final const ALERTER_METHOD = "queueAlertAdapter";
 
-		private $queueManager;
-
-		public function __construct (AdapterManager $queueManager) {
-
-			$this->queueManager = $queueManager;
-		}
+		public function __construct(private readonly AdapterManager $queueManager)
+  {
+  }
 
 		public function detonateOrDiffuse (Throwable $exception, ServiceErrorCatcher $thrower, $payload):void {
 
 			$rebounds = $thrower->rethrowAs();
 
-			$exceptionName = get_class($exception);
+			$exceptionName = $exception::class;
 
 			if (array_key_exists($exceptionName, $rebounds))
 

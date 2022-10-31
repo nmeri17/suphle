@@ -5,7 +5,7 @@
 
 	class InMemorySession implements SessionContract {
 
-		private $store = [];
+		private array $store = [];
 
 		public function setValue (string $key, $value):void {
 
@@ -65,10 +65,7 @@
 
 		public function only (array $keys):array {
 
-			return array_filter($this->store, function ($key) use ($keys) {
-
-				return in_array($key, $keys);
-			}, ARRAY_FILTER_USE_KEY);
+			return array_filter($this->store, fn($key) => in_array($key, $keys), ARRAY_FILTER_USE_KEY);
 		}
 	}
 ?>

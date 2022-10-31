@@ -103,7 +103,7 @@
 		*/
 		public function runNodes(UnitNode $flowStructure, string $userId):void {
 
-			$parentHandler = $this->parentHandlers[get_class($flowStructure)];
+			$parentHandler = $this->parentHandlers[$flowStructure::class];
 
 			$this->rendererToStorable(
 				$this->$parentHandler($flowStructure),

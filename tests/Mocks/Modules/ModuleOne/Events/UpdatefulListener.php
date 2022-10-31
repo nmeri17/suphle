@@ -5,7 +5,7 @@
 
 	class UpdatefulListener {
 
-		public function terminateTransaction ($payload):void {
+		public function terminateTransaction ($payload):never {
 
 			throw new Exception;
 		}

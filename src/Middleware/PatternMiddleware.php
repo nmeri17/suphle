@@ -3,7 +3,7 @@
 
 	class PatternMiddleware {
 
-		private $middlewareList = [];
+		private array $middlewareList = [];
 
 		/**
 		 * Defer their hydration since not all middleware are guaranteed to run on each request. We're using strings cuz we wanna control their hydration. We don't want to pollute the route collection with their possible dependencies

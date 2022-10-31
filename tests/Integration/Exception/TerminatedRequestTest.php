@@ -30,7 +30,7 @@
 			
 				new Markup("missingHandler", ""),
 
-				function () {
+				function (): never {
 
 					throw new NotFoundException; // when
 				}
@@ -43,7 +43,7 @@
 			
 				new Markup("genericHandler", "errors/default"),
 
-				function () {
+				function (): never {
 
 					throw new Exception; // when
 				}

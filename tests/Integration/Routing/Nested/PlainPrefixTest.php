@@ -22,7 +22,7 @@
 
 			$controller = $matchingRenderer->getController();
 
-			$this->assertNotEquals(get_class($controller), $entry->_handlingClass()); // then
+			$this->assertNotEquals($controller::class, $entry->_handlingClass()); // then
 		}
 
 		public function test_method_name_overwrites_internal_prefix () {

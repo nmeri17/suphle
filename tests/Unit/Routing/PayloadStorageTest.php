@@ -11,7 +11,7 @@
 
 		use CommonBinds;
 
-		private $samplePayload = ["foo" => 1, "bar" => 2, "fooBar" => 3];
+		private array $samplePayload = ["foo" => 1, "bar" => 2, "fooBar" => 3];
 
 		public function test_onlyMethod_correctly_filters () {
 

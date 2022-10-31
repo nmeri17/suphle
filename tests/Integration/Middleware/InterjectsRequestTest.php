@@ -15,7 +15,7 @@
 
 	class InterjectsRequestTest extends ModuleLevelTest {
 
-		private $sutName = HierarchialMiddleware2::class;
+		private string $sutName = HierarchialMiddleware2::class;
 		
 		protected function getModules ():array {
 
@@ -41,16 +41,9 @@
 
 			return $this->positiveDouble($this->sutName, [
 
-				"process" => $this->returnCallback(function($request, $requestHandler) {
+				"process" => $this->returnCallback(fn($request, $requestHandler) => $requestHandler->handle($request))], [
 
-					return $requestHandler->handle($request);
-				})], [
-
-				"process" => [1, [$this->callback(function($subject) {
-
-					return $subject->hasKey("foo");
-
-				}), $this->anything()]]
+				"process" => [1, [$this->callback(fn($subject) => $subject->hasKey("foo")), $this->anything()]]
 			]);
 		}
 

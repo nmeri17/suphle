@@ -6,12 +6,9 @@
 	*/
 	class ActiveDescriptors {
 
-		private $descriptors;
-
-		public function __construct (array $descriptors) {
-
-			$this->descriptors = $descriptors;
-		}
+		public function __construct(private readonly array $descriptors)
+  {
+  }
 
 		public function getDescriptors ():array {
 

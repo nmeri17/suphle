@@ -35,7 +35,7 @@
 
 			$this->dataProvider([
 
-				[$this, "specializedUser"]
+				$this->specializedUser(...)
 			], function (PendingFlowDetails $context, ?UserContract $visitor) {
 
 				$isGuest = is_null($visitor);
@@ -69,7 +69,7 @@
 
 			$this->dataProvider([
 
-				[$this, "strangeUsers"]
+				$this->strangeUsers(...)
 			], function (PendingFlowDetails $context, ?UserContract $visitor) {
 
 				if (!is_null($visitor))
@@ -105,8 +105,8 @@
 		public function test_all_can_access_generalized_content () {
 
 			$this->dataProvider([
-				[$this, "specializedUser"],
-				[$this, "strangeUsers"]
+				$this->specializedUser(...),
+				$this->strangeUsers(...)
 			], function (PendingFlowDetails $context, ?UserContract $visitor) {
 
 				if (!is_null($visitor))

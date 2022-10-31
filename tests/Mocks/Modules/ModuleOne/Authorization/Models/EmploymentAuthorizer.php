@@ -37,7 +37,7 @@
 
 				throw new UnauthorizedServiceAccess;
 
-			foreach ($this->getChildrenMethods(get_class($model)) as $methodName)
+			foreach ($this->getChildrenMethods($model::class) as $methodName)
 
 				$model->$methodName()->delete();
 

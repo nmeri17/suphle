@@ -7,7 +7,7 @@
 
 	abstract class ConditionalFactory {
 
-		private $factoryList = [];
+		private array $factoryList = [];
 
 		/**
 		 * There's a user-defined method with custom type-hinting. That's where dev gets to define their [whenCase] stack that will run arguments that will be eventually injected at consumption point
@@ -34,10 +34,7 @@
 
 		protected function finally ( string $handlingClass, ...$classArguments):void {
 
-			$this->whenCase(function () {
-
-				return true;
-			}, $handlingClass, ...$classArguments);
+			$this->whenCase(fn() => true, $handlingClass, ...$classArguments);
 		}
 
 		/**

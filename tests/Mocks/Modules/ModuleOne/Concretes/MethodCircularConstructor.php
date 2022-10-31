@@ -3,11 +3,8 @@
 
 	class MethodCircularConstructor {
 
-		private $dependency;
-
-		public function __construct (MethodCircularContainer $dependency) {
-
-			$this->dependency = $dependency;
-		}
+		public function __construct(private readonly MethodCircularContainer $dependency)
+  {
+  }
 	}
 ?>

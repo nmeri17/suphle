@@ -63,7 +63,7 @@
 
 				throw new NoCompatibleValidator(
 
-					get_class($this->controller), $this->actionMethod
+					$this->controller::class, $this->actionMethod
 				);
 			}
 
@@ -82,7 +82,7 @@
 
 			$this->handlerParameters = $this->container->getMethodParameters(
 
-				$this->actionMethod, get_class($this->controller)
+				$this->actionMethod, $this->controller::class
 			);
 		}
 

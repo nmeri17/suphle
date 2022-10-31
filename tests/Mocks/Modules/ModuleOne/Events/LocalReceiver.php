@@ -9,7 +9,7 @@
 
 		use EmitProxy;
 
-		const CASCADE_REBOUND_EVENT = "rebounding";
+		final const CASCADE_REBOUND_EVENT = "rebounding";
 
 		public function __construct (EventManager $eventManager) {
 

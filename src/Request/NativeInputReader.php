@@ -7,7 +7,7 @@
 
 		public function getPayload ():array {
 
-			return json_decode(file_get_contents("php://input"), true);
+			return json_decode(file_get_contents("php://input"), true, 512, JSON_THROW_ON_ERROR);
 		}
 
 		public function getHeaders ():array {

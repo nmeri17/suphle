@@ -5,7 +5,7 @@
 
 	class CollectionMethodToUrl {
 
-		const REPLACEMENT_TYPE_PLACEHOLDER = "placeholder",
+		final const REPLACEMENT_TYPE_PLACEHOLDER = "placeholder",
 
 		PLACEHOLDER_IDENTIFIER = "[a-z0-9]+";
 

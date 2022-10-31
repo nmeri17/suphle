@@ -5,13 +5,9 @@
 
 	class EditIntegrityException extends Exception {
 
-		const NO_AUTHORIZER = 1, KEY_MISMATCH = 2, MISSING_KEY = 3;
+		final const NO_AUTHORIZER = 1, KEY_MISMATCH = 2, MISSING_KEY = 3;
 
-		private $integrityType;
-
-		public function __construct (int $integrityType) {
-
-			$this->integrityType = $integrityType;
+		public function __construct (private readonly int $integrityType) {
 
 			$this->setMessage();
 		}

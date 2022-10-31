@@ -11,12 +11,9 @@
 
 	class FinalHandlerWrapper implements Middleware {
 
-		private $rendererManager;
-
-		public function __construct (RoutedRendererManager $rendererManager) {
-
-			$this->rendererManager = $rendererManager;
-		}
+		public function __construct(private readonly RoutedRendererManager $rendererManager)
+  {
+  }
 
 		public function process (PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler):BaseRenderer {
 

@@ -14,7 +14,7 @@
 
 		use SanitizesIntegerInput, BaseSingletonBind;
 
-		const JSON_HEADER_VALUE = "application/json",
+		final const JSON_HEADER_VALUE = "application/json",
 
 		CONTENT_TYPE_KEY = "Content-Type";
 
@@ -119,18 +119,12 @@
 
 		public function only (array $include):array {
 
-			return array_filter($this->fullPayload(), function ($key) use ($include) {
-
-				return in_array($key, $include);
-			}, ARRAY_FILTER_USE_KEY);
+			return array_filter($this->fullPayload(), fn($key) => in_array($key, $include), ARRAY_FILTER_USE_KEY);
 		}
 
 		public function except (array $exclude):array {
 
-			return array_filter($this->fullPayload(), function ($key) use ($exclude) {
-
-				return !in_array($key, $exclude);
-			}, ARRAY_FILTER_USE_KEY);
+			return array_filter($this->fullPayload(), fn($key) => !in_array($key, $exclude), ARRAY_FILTER_USE_KEY);
 		}
 	}
 ?>

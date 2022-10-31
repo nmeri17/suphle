@@ -36,7 +36,7 @@
 
 			$isNotDefault = $storageName != $this->GENERIC_STORAGE &&
 
-			get_class($authStorage) != $storageName;
+			$authStorage::class != $storageName;
 
 			if ($isNotDefault) // the default has hydrator set. If dev wants to test another storage mechanism, we'll do that explicitly
 

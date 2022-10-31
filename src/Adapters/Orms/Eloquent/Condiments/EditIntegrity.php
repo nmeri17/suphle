@@ -60,7 +60,7 @@
 
 			$this->edit_history()->create([
 
-				"payload" => json_encode($payload),
+				"payload" => json_encode($payload, JSON_THROW_ON_ERROR),
 
 				"user_id" => $user->getId() // changes can't be associated with guests
 			]);

@@ -11,7 +11,7 @@
 
 	class TokenStorage extends BaseAuthStorage {
 
-		public const AUTHORIZATION_HEADER = "Authorization";
+		final public const AUTHORIZATION_HEADER = "Authorization";
 
 		private const IDENTIFIER_KEY = "user_id";
 
@@ -54,7 +54,7 @@
 
 				var_dump("Unable to decode token",
 
-					$exception->getMessage(), get_class($exception)
+					$exception->getMessage(), $exception::class
 				);
 
 				return;

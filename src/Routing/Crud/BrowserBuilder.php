@@ -49,12 +49,9 @@
 
 			$prefix = $this->collection->_prefixCurrent();
 
-			return new Redirect(__FUNCTION__, function () use ($prefix) {
-
-				return function () use ($prefix) {
+			return new Redirect(__FUNCTION__, fn() => function () use ($prefix) {
 					return $prefix . "/" . $this->statusCode/*rawResponse["resource"]->id*/; // assumes the controller returns an array containing this key
-				};
-			});
+				});
 		}
 
 		protected function showAll ():BaseRenderer {
@@ -76,10 +73,7 @@
 
 			$prefix = $this->collection->_prefixCurrent();
 
-			return new Redirect(__FUNCTION__, function () use ($prefix) {
-				
-				return "$prefix/";
-			});
+			return new Redirect(__FUNCTION__, fn() => "$prefix/");
 		}
 
 		/**

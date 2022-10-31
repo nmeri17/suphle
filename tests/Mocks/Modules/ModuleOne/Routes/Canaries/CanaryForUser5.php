@@ -7,12 +7,9 @@
 
 	class CanaryForUser5 implements CanaryGateway {
 
-		private $authStorage;
-
-		public function __construct (AuthStorage $authStorage) {
-
-			$this->authStorage = $authStorage;
-		}
+		public function __construct(private readonly AuthStorage $authStorage)
+  {
+  }
 
 		public function willLoad ():bool {
 

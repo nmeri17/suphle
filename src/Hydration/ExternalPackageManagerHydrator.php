@@ -40,10 +40,7 @@
 		*/
 		public function setManagers (array $managerNames):void {
 
-			$this->managers = array_map(function ($managerName) {
-
-				return $this->container->getClass($managerName);
-			}, $managerNames);
+			$this->managers = array_map(fn($managerName) => $this->container->getClass($managerName), $managerNames);
 		}
 
 		public function hasManagers ():bool {

@@ -53,7 +53,7 @@
 
 		protected function renderJson():string {
 
-			return json_encode($this->rawResponse);
+			return json_encode($this->rawResponse, JSON_THROW_ON_ERROR);
 		}
 
 		public function hasBranches():bool {

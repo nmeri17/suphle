@@ -13,12 +13,9 @@
 
 		use BaseErrorCatcherService;
 
-		private $blankModel;
-
-		public function __construct ( Employment $blankModel) {
-
-			$this->blankModel = $blankModel;
-		}
+		public function __construct(private readonly Employment $blankModel)
+  {
+  }
 
 		public function getResource ():IntegrityModel {
 

@@ -11,12 +11,9 @@
 
 	class JsonNegotiator implements Middleware {
 
-		private $activeRenderer;
-
-		public function __construct (BaseRenderer $activeRenderer) {
-
-			$this->activeRenderer = $activeRenderer;
-		}
+		public function __construct(private readonly BaseRenderer $activeRenderer)
+  {
+  }
 
 		public function process (PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler):BaseRenderer {
 

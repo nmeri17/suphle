@@ -12,7 +12,7 @@
 	*/
 	class RequestDetails implements BindsAsSingleton {
 
-		const HTTP_METHOD_KEY = "HTTP_METHOD";
+		final const HTTP_METHOD_KEY = "HTTP_METHOD";
 
 		private $config, $computedPath, $permanentPath, // readonly version of [computedPath]
 		
@@ -65,7 +65,7 @@
 
 			if (is_null($pathComponent)) return null;
 
-			$selfName = get_class();
+			$selfName = self::class;
 
 			$container->refreshClass($selfName);
 
@@ -126,7 +126,7 @@
 
 		public function isApiRoute ():bool {
 
-			$matches = preg_match("/" . $this->regexApiPrefix() . "/", $this->permanentPath); // using permanent since computed may have been changed by the time this method is being read
+			$matches = preg_match("/" . $this->regexApiPrefix() . "/", (string) $this->permanentPath); // using permanent since computed may have been changed by the time this method is being read
 
 			if ($matches) $this->setIncomingVersion();
 
@@ -146,7 +146,7 @@
 			
 			$pattern = $this->regexApiPrefix() . $possibleVersion. "\/(.+)";
 
-			preg_match("/" . $pattern . "/i", $this->permanentPath, $pathArray);
+			preg_match("/" . $pattern . "/i", (string) $this->permanentPath, $pathArray);
 
 			$this->computedPath = $pathArray[1];
 		}
@@ -158,7 +158,7 @@
 			
 			$pattern = $this->regexApiPrefix() . "\/(.+?)\/";
 
-			preg_match("/" . $pattern . "/i", $this->permanentPath, $version);
+			preg_match("/" . $pattern . "/i", (string) $this->permanentPath, $version);
 
 			$this->versionPresent = $version[1] ?? null;
 		}

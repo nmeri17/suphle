@@ -94,10 +94,7 @@
 
 				"flowRequestHandler" => [$this->atLeastOnce(), [ // then
 
-					$this->callback(function($argument) {
-
-						return is_a($argument, OuterFlowWrapper::class);
-					})
+					$this->callback(fn($argument) => is_a($argument, OuterFlowWrapper::class))
 				]]
 			])
 			->respondFromHandler();

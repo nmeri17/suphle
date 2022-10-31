@@ -43,10 +43,7 @@
 
 			return $this->positiveDouble(InterfaceHydrator::class, [
 
-				"deriveConcrete" => $this->returnCallback(function ($subject) {
-
-					return $this->positiveDouble($subject, []);
-				})
+				"deriveConcrete" => $this->returnCallback(fn($subject) => $this->positiveDouble($subject, []))
 			]);
 		}
 
@@ -111,7 +108,7 @@
 
 			$newLine = "\n";
 
-			$methodName = get_class($methodCallable[0]) . "::". $methodCallable[1];
+			$methodName = $methodCallable[0]::class . "::". $methodCallable[1];
 
 			$messages = [
 				"$methodName with data set #$errorIndex:",

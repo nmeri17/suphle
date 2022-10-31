@@ -43,7 +43,7 @@
 
 				$stubs[DetectedExceptionManager::ALERTER_METHOD] = null;
 
-			else $stubs[DetectedExceptionManager::ALERTER_METHOD] = $this->returnCallback(function ($exception) {
+			else $stubs[DetectedExceptionManager::ALERTER_METHOD] = $this->returnCallback(function ($exception): never {
 
 				throw $exception;
 			});
@@ -104,10 +104,7 @@
 		*/
 		protected function getGracefulShutdown ():Stub {
 
-			return $this->returnCallback(function ($argument) {
-
-				return $argument;
-			});
+			return $this->returnCallback(fn($argument) => $argument);
 		}
 
 		private function constructExceptionBridge (array $dynamicStubs):ModuleExceptionBridge {
@@ -116,7 +113,7 @@
 
 			if ($this->debugCaughtExceptions)
 
-				$defaultStubs["hydrateHandler"] = $this->returnCallback(function ($argument) {
+				$defaultStubs["hydrateHandler"] = $this->returnCallback(function ($argument): never {
 
 					throw $argument;
 				});

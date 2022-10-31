@@ -7,11 +7,7 @@
 
 	class ValidationFailure extends Exception {
 
-		private $evaluator;
-
-		public function __construct (ValidationEvaluator $evaluator) {
-
-			$this->evaluator = $evaluator;
+		public function __construct (private readonly ValidationEvaluator $evaluator) {
 
 			$this->message = json_encode(
 

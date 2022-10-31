@@ -18,7 +18,7 @@
 	*/
 	class RouteManager {
 
-		const PREV_RENDERER = "prv_rdr",
+		final const PREV_RENDERER = "prv_rdr",
 
 		PLACEHOLDER_REPLACEMENT = "[\w-]+";
 
@@ -143,7 +143,7 @@
 
 			foreach ($methodRegexes as $methodPattern => $methodDetails) { // not using in_array or ^$ since method is not guaranteed to match entire string
 
-				$safeRegex = str_replace("/", "\/", $methodDetails["url"]);
+				$safeRegex = str_replace("/", "\/", (string) $methodDetails["url"]);
 
 				preg_match("/^$safeRegex/i", $currentRouteState, $matches); // ^ == avoid matches that just appear in the middle of the method instead of being the method
 

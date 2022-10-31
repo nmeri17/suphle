@@ -30,10 +30,8 @@
 		
 		public function getMatchingUnits(string $eventName):array {
 
-			return array_filter($this->handlingUnits, function (ExecutionUnit $unit) use ($eventName) { // return an array of all hits, instead of the first one only so we can chain multiple handlers to one event
-
-				return $unit->matchesEvent($eventName);
-			});
+			return array_filter($this->handlingUnits, fn(ExecutionUnit $unit) => // return an array of all hits, instead of the first one only so we can chain multiple handlers to one event
+$unit->matchesEvent($eventName));
 		}
 	}
 ?>

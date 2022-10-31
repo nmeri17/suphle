@@ -30,7 +30,7 @@
 
 			$indexes = $this->indexes; // given
 
-			$indexesCount = count($indexes);
+			$indexesCount = is_countable($indexes) ? count($indexes) : 0;
 
 			$unitNode = $this->createCollectionNode();
 

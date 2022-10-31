@@ -9,7 +9,7 @@
 
 		use EmitProxy;
 
-		const UPDATE_ERROR = "update_error";
+		final const UPDATE_ERROR = "update_error";
 
 		public function __construct (AssignListeners $eventManager) {
 

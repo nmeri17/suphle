@@ -15,7 +15,7 @@
 
 	class BoltDbQueue extends BaseQueueAdapter {
 
-		const HEADER_ATTEMPTS = "attempts",
+		final const HEADER_ATTEMPTS = "attempts",
 
 		HEADER_RETRY_DELAY = "retry-delay";
 

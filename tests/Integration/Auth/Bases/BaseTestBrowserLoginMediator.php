@@ -9,7 +9,7 @@
 
 		use TestLoginMediator;
 
-		const LOGIN_PATH = "/login";
+		final const LOGIN_PATH = "/login";
 
 		protected function loginRendererName ():string {
 

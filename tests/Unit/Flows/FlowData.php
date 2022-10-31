@@ -20,10 +20,7 @@
 
 		protected function indexesToModels ():array {
 
-			return array_map(function ($id) {
-
-				return compact("id");
-			}, $this->indexes);
+			return array_map(fn($id) => compact("id"), $this->indexes);
 		}
 
 		protected function createCollectionNode ():CollectionNode {

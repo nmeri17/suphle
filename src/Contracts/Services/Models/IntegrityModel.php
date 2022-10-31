@@ -7,7 +7,7 @@
 
 	interface IntegrityModel {
 
-		const INTEGRITY_COLUMN = "updated_at"; // Migration should create this column for methods to read from
+		public const INTEGRITY_COLUMN = "updated_at"; // Migration should create this column for methods to read from
 
 		/**
 		 * If [INTEGRITY_COLUMN] is behind now, user is looking at a stale version

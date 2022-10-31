@@ -9,7 +9,7 @@
 
 	class UmbrellaSaver {
 
-		const FLOW_PREFIX = "tilwa_flow";
+		final const FLOW_PREFIX = "tilwa_flow";
 
 		private $cacheManager, $flowConfig, $objectMeta;
 
@@ -29,7 +29,8 @@
 
 		public function saveNewUmbrella (string $urlPattern, RouteUserNode $nodeContent, string $userId):void {
 
-			$location = $this->getPatternLocation($urlPattern);
+			$cacheManager = null;
+   $location = $this->getPatternLocation($urlPattern);
 			
 			$existing = $this->getExistingUmbrella($location);
 

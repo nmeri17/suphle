@@ -63,7 +63,7 @@
 					try {
 						$result = $concrete->$method();
 					}
-					catch (Throwable $exception) {
+					catch (Throwable) {
 
 						$result = 48;
 					}

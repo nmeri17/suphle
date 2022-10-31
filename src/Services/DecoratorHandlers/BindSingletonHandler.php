@@ -27,7 +27,7 @@
 
 			$allegedParent = $concrete->entityIdentity();
 
-			$concreteName = get_class($concrete);
+			$concreteName = $concrete::class;
 
 			if (!$this->objectMeta->stringInClassTree(
 

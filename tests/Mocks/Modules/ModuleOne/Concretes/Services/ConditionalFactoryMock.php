@@ -16,9 +16,9 @@
 
 		protected function greatestFields (int $fieldA, int $fieldB, int $fieldC):void {
 
-			$this->whenCase([$this, "caseACondition"], FieldAGreater::class, $fieldA, $fieldB)
+			$this->whenCase($this->caseACondition(...), FieldAGreater::class, $fieldA, $fieldB)
 
-			->whenCase([$this, "caseBCondition"], FieldBGreater::class, $fieldB, $fieldA)
+			->whenCase($this->caseBCondition(...), FieldBGreater::class, $fieldB, $fieldA)
 
 			->finally( BothFieldsEqual::class, $fieldC);
 		}

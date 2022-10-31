@@ -25,7 +25,7 @@
 
 		HANDLER_NAME = "genericHandler";
 
-		private $sutName = Transphporm::class;
+		private string $sutName = Transphporm::class;
 
 		public function test_will_infer_template_name () {
 

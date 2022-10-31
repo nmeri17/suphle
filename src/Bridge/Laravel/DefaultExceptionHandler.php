@@ -17,12 +17,12 @@
 			return true;
 		}
 
-		public function render ($request, Throwable $exception) {
+		public function render ($request, Throwable $exception): never {
 
 			throw $exception;
 		}
 
-		public function renderForConsole ($output, Throwable $exception) {
+		public function renderForConsole ($output, Throwable $exception): never {
 
 			throw $exception;
 		}

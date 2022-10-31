@@ -19,9 +19,9 @@
 
 		use DirectHttpTest;
 
-		const LOGIN_PATH = "/login";
+		final const LOGIN_PATH = "/login";
 
-		private $email = "foo@nmeri.com";
+		private string $email = "foo@nmeri.com";
 
 		public function getModules ():array {
 

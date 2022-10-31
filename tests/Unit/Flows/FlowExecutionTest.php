@@ -106,7 +106,7 @@
 
 			$this->dataProvider([
 
-				[$this, "getCollectionNodes"] // given
+				$this->getCollectionNodes(...) // given
 			],/**
 			 * @param {value} Nullable since not all collection nodes take a value
 			*/

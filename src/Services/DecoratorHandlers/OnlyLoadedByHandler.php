@@ -9,12 +9,9 @@
 
 	class OnlyLoadedByHandler implements ModifyInjected {
 
-		private $objectMeta;
-
-		public function __construct (ObjectDetails $objectMeta) {
-
-			$this->objectMeta = $objectMeta;
-		}
+		public function __construct(private readonly ObjectDetails $objectMeta)
+  {
+  }
 
 		/**
 		 * @param {concrete}: OnlyLoadedBy
@@ -27,7 +24,7 @@
 
 					return $concrete;
 
-			throw new UnacceptableDependency($caller, get_class($concrete));
+			throw new UnacceptableDependency($caller, $concrete::class);
 		}
 	}
 ?>

@@ -13,7 +13,7 @@
 
 				FatalShutdownAlert::class => $this->positiveDouble(FatalShutdownAlert::class, [
 
-					"setErrorAsJson" => $this->returnCallback(function ($errorDetails) {
+					"setErrorAsJson" => $this->returnCallback(function ($errorDetails): never {
 
 						throw new Exception($errorDetails);
 					})
@@ -21,7 +21,7 @@
 
 				AlertAdapter::class => $this->positiveDouble(AlertAdapter::class, [
 
-					"broadcastException" => $this->returnCallback(function (Throwable $exception, $activePayload) {
+					"broadcastException" => $this->returnCallback(function (Throwable $exception, $activePayload): never {
 
 						throw $exception;
 					})

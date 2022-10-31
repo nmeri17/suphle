@@ -7,12 +7,9 @@
 
 	class EmploymentEditCoordinator extends ServiceCoordinator {
 
-		private $editService;
-
-		public function __construct (EmploymentEditMock $editService) {
-
-			$this->editService = $editService;
-		}
+		public function __construct(private readonly EmploymentEditMock $editService)
+  {
+  }
 
 		public function validatorCollection ():string {
 

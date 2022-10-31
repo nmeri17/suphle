@@ -7,11 +7,8 @@
 
 	class RandomConcreteController extends ServiceCoordinator {
 
-		private $bCounter;
-
-		public function __construct (BCounter $bCounter) {
-
-			$this->bCounter = $bCounter;
-		}
+		public function __construct(private readonly BCounter $bCounter)
+  {
+  }
 	}
 ?>
