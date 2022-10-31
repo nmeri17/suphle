@@ -3,15 +3,19 @@
 
 	use Suphle\Services\ServiceCoordinator;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Concretes\Services\DummyModels, PayloadReaders\ReadsId};
+	use Suphle\Tests\Mocks\Modules\ModuleOne\PayloadReaders\ReadsId;
+
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\{DummyModels, BlankUpdateless};
 
 	class FlowCoordinator extends ServiceCoordinator {
 
-		private $dummyModels;
+		private $dummyModels, $blankService;
 
-		public function __construct (DummyModels $dummyModels) {
+		public function __construct (DummyModels $dummyModels, BlankUpdateless $blankService) {
 
 			$this->dummyModels = $dummyModels;
+
+			$this->blankService = $blankService;
 		}
 
 		public function noFlowHandler () {

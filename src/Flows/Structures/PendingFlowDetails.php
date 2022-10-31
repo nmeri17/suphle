@@ -10,13 +10,20 @@
 	*/
 	class PendingFlowDetails {
 
-		private $authStorage, $renderer;
+		private $authStorage, $renderer, $userId;
 
 		public function __construct(BaseRenderer $renderer, AuthStorage $authStorage) {
 
 			$this->renderer = $renderer;
 
 			$this->authStorage = $authStorage;
+
+			$this->getUserId(); // trigger property storage before task serialization
+		}
+
+		public function getStoredUserId ():string {
+
+			return $this->userId;
 		}
 
 		public function getRenderer ():BaseRenderer {
@@ -29,11 +36,16 @@
 		*/
 		public function getUserId ():string {
 
-			$user = $this->authStorage->getUser();
-			
-			return !is_null($user) ? strval($user->getId()) :
+			if (is_null($this->userId)) {
 
-			OuterFlowWrapper::ALL_USERS;
+				$user = $this->authStorage->getUser();
+				
+				$this->userId = !is_null($user) ? strval($user->getId()) :
+
+				OuterFlowWrapper::ALL_USERS;
+			}
+
+			return $this->userId;
 		}
 
 		public function getAuthStorage ():string {

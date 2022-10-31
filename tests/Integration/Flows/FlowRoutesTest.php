@@ -5,7 +5,9 @@
 
 	use Suphle\Contracts\Config\Router;
 
-	use Suphle\Flows\{OuterFlowWrapper, Structures\PendingFlowDetails};
+	use Suphle\Auth\Storage\TokenStorage;
+
+	use Suphle\Flows\{FlowHydrator, Structures\PendingFlowDetails};
 
 	use Suphle\Testing\{Proxies\WriteOnlyContainer, Condiments\EmittedEventsCatcher};
 
@@ -13,6 +15,9 @@
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\OriginCollection, Meta\ModuleOneDescriptor, Config\RouterMock};
 
+	/**
+	 * These are low-level tests probably redundant now. But during those early times, I think they offered granular access to Flow task creation
+	*/
 	class FlowRoutesTest extends JobFactory {
 
 		use EmittedEventsCatcher;
@@ -159,6 +164,51 @@
 			$this->get("/user-content/" . $this->expectedSavedResource($context)); // when
 
 			$this->assertHandledEvent ($this->rendererController); // then
+		}
+
+		/**
+		 * Hydration doesn't even run for same wildcard same/different user, different mechanism
+		*/
+		public function test_wildcard_is_locked_to_mechanism () {
+
+			$this->dataProvider([
+
+				[$this, "userDatabase"]
+			], function (UserContract $visitor) {
+
+				$initializingContext = $this->makePendingFlowDetails($visitor);
+
+				$this->makeRouteBranches($initializingContext)->handle();
+
+				$hydrator = FlowHydrator::class;
+
+				// then
+				$this->massProvide([
+
+					$hydrator => $this->negativeDouble($hydrator, [], [
+
+						"runNodes" => [0, []]
+					])
+				]);
+
+				$context = $this->makePendingFlowDetails(
+
+					$visitor, TokenStorage::class
+				);
+
+				$this->makeRouteBranches($context)->handle(); // when
+
+				$this->setRequestVisitor($visitor); // given
+			});
+		}
+
+		public function userDatabase ():array {
+
+			return [
+				//[$this->contentOwner],
+				
+				[$this->contentVisitor]
+			];
 		}
 	}
 ?>

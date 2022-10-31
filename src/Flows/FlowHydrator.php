@@ -126,12 +126,20 @@
 
 		protected function bindObjectsForUser (PendingFlowDetails $originatingFlowDetails):void {
 
+			$storageInstance = $this->container->getClass(
+
+				$originatingFlowDetails->getAuthStorage()
+			);
+
+			$storedId = $originatingFlowDetails->getStoredUserId();
+
+			if ($storedId != OuterFlowWrapper::ALL_USERS)
+
+				$storageInstance->imitate($storedId);
+
 			$this->container->whenTypeAny()->needsAny([
 
-				AuthStorage::class => $this->container->getClass(
-
-					$originatingFlowDetails->getAuthStorage()
-				)
+				AuthStorage::class => $storageInstance
 			]);
 		}
 
