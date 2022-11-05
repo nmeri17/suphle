@@ -77,6 +77,22 @@
 			else $this->getAuthStorage()->logout();
 		}
 		
+		/**
+		 * @\depends test_specialized_user_can_access_his_content
+		*/
+		public function test_content_visitor_must_match_auth_mechanism () {
+
+			$context = $this->makePendingFlowDetails($this->contentOwner, TokenStorage::class);
+
+			$this->makeRouteBranches($context)->handle(); // when
+
+			$resourceId = $this->expectedSavedResource($context);
+
+			$this->setRequestVisitor($this->contentOwner); // given
+
+			$this->assertNotHandledByFlow("/user-content/$resourceId"); // then
+		}
+		
 		public function test_other_users_cant_access_specialized_user_content () {
 
 			$this->dataProvider([
@@ -97,7 +113,6 @@
 		public function strangeUsers ():array {
 
 			return [
-
 				[
 
 					$this->makePendingFlowDetails($this->contentOwner),
@@ -139,7 +154,7 @@
 
 		/**
 		 * @dataProvider getOriginUrls
-		 * @coverss RoutedRendererManager::afterRender Fudging, since this is said to be unrecommended
+		 * @\covers RoutedRendererManager::afterRender Fudging, since this is said to be unrecommended and hampers coverage report
 		*/
 		public function test_visiting_origin_path_pushes_caching_job (string $url) {
 
@@ -168,6 +183,8 @@
 
 		/**
 		 * Hydration doesn't even run for same wildcard same/different user, different mechanism
+		 * 
+		 * @\covers RouteBranches::patternMatchesMechanism
 		*/
 		public function test_wildcard_is_locked_to_mechanism () {
 
@@ -176,11 +193,17 @@
 				$this->userDatabase(...)
 			], function (UserContract $visitor) {
 
-				$initializingContext = $this->makePendingFlowDetails($visitor);
-
-				$this->makeRouteBranches($initializingContext)->handle();
-
 				$hydrator = FlowHydrator::class;
+
+				$this->massProvide([ // inject before hydrating RouteBranches
+
+					$hydrator => $this->negativeDouble($hydrator, [], [
+
+						"runNodes" => [1, []]
+					])
+				]);
+
+				$this->makeRouteBranches($this->makePendingFlowDetails($visitor))->handle(); // given
 
 				// then
 				$this->massProvide([
@@ -191,24 +214,41 @@
 					])
 				]);
 
-				$context = $this->makePendingFlowDetails(
+				$this->makeRouteBranches($this->makePendingFlowDetails( // expecting it to read from same cache as previous and refuse to save
 
 					$visitor, TokenStorage::class
-				);
-
-				$this->makeRouteBranches($context)->handle(); // when
-
-				$this->setRequestVisitor($visitor); // given
+				))->handle(); // when
 			});
 		}
 
 		public function userDatabase ():array {
 
 			return [
-				//[$this->contentOwner],
+				[$this->contentOwner],
 				
 				[$this->contentVisitor]
 			];
+		}
+
+		/**
+		 * @\depends test_specialized_user_can_access_his_content
+		*/
+		public function test_internal_flow_requests_will_see_authStorage () {
+
+			$context = $this->makePendingFlowDetails($this->contentOwner); // note that we don't login until the real request. Yet that controller is still able to read user ID
+
+			$this->makeRouteBranches($context)->handle(); // given
+
+			$resourceId = $this->expectedSavedResource($context);
+
+			$this->setRequestVisitor($this->contentOwner); // for OuterFlowWrapper to evaluate with
+
+			$this->get("/user-content/$resourceId") // when
+
+			->assertJson([
+
+				"user_id" => $this->contentOwner->getId()
+			]); // then
 		}
 	}
 ?>

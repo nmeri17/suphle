@@ -53,7 +53,7 @@
 			->eachBranch(function ($urlPattern, $structure) {
 
 				$mechanismPath = $this->getMechanismPath($urlPattern);
-var_dump(56, $mechanismPath, $this->patternMatchesMechanism($mechanismPath)); // use unit test if possible or find out why the 2nd one who returned false suddenly logs
+
 				if (!$this->patternMatchesMechanism($mechanismPath))
 
 					return;

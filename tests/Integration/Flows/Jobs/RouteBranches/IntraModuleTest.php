@@ -49,14 +49,15 @@
 
 				$this->assertNotNull($umbrella);
 
-				$this->assertSame( // then
-					$this->expectedResponse(),
+				$this->assertArraySubset(
 
+					[ "id" => 5],
+					
 					$this->extractResponse(
 
-						$umbrella, $context->getUserId()
+						$umbrella, $context->getStoredUserId()
 					)
-				);
+				); // then
 			});
 		}
 
@@ -77,14 +78,6 @@
 
 					$this->contentOwner
 				]
-			];
-		}
-
-		private function expectedResponse ():array {
-
-			return [
-
-				"id" => 5
 			];
 		}
 

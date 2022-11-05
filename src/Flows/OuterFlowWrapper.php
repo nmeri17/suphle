@@ -58,14 +58,18 @@
 
 			$this->setAuthFromStored();
 
-			$this->routeUserNode = $this->getActiveFlow($this->getUserId() );
+			$this->routeUserNode = $this->getVisitorsFlow($this->getVisitingUserId() );
 
-			return !is_null($this->routeUserNode);
+			$userHasContent = !is_null($this->routeUserNode);
+
+			if (!$userHasContent)
+
+				$this->container->refreshClass(AuthStorage::class);
+
+			return $userHasContent;
 		}
 
 		protected function setAuthFromStored ():void {
-
-			$genericStorage = AuthStorage::class;
 
 			$this->authStorage = $this->container->getClass(
 
@@ -74,26 +78,27 @@
 
 			$this->container->whenTypeAny()->needsAny([
 
-				$genericStorage => $this->authStorage
+				AuthStorage::class => $this->authStorage
 			]);
 		}
 
-		private function getActiveFlow (string $userId):?RouteUserNode {
+		private function getVisitorsFlow (string $visitorId):?RouteUserNode {
 
-			$userPayload = $this->routeUmbrella->getUserPayload($userId);
+			$userPayload = $this->routeUmbrella->getUserPayload($visitorId);
 
-			if (is_null($userPayload) && ($userId != self::ALL_USERS)) { // assume data was saved for general user base
-				$userId = self::ALL_USERS;
+			if (is_null($userPayload) && ($visitorId != self::ALL_USERS)) { // assume data was saved for general user base
+				
+				$visitorId = self::ALL_USERS;
 
-				$userPayload = $this->routeUmbrella->getUserPayload($userId);
+				$userPayload = $this->routeUmbrella->getUserPayload($visitorId);
 			}
 
-			$this->activeUser = $userId;
+			$this->activeUser = $visitorId;
 
 			return $userPayload;
 		}
 
-		private function getUserId ():string {
+		private function getVisitingUserId ():string {
 
 			$user = $this->authStorage->getUser();
 

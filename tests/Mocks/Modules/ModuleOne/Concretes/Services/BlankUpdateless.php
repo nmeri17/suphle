@@ -8,13 +8,13 @@
 	// these methods are redundant to the class btw
 	class BlankUpdateless extends UpdatelessService {
 
-		public function __construct(protected AuthStorage $authStorage)
-  {
-  }
+		public function __construct(protected readonly AuthStorage $authStorage) {
 
-		public function updateModels () {
+		}
 
-			return true;
+		public function getUserId ():?string {
+
+			return $this->authStorage->getId();
 		}
 
 		public function modelsToUpdate ():array {

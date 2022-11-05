@@ -34,7 +34,7 @@
 		/**
 		* Whether a sub-flow or transition from organic flow, all flow queueing is triggered by a user request. This argument is that user
 		*/
-		public function getUserId ():string {
+		protected function getUserId ():string {
 
 			if (is_null($this->userId)) {
 

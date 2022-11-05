@@ -72,7 +72,9 @@
 
 			return [
 
-				"id" => $payloadReader->getDomainObject()
+				"id" => $payloadReader->getDomainObject(),
+
+				"user_id" => $this->blankService->getUserId()
 			];
 		}
 

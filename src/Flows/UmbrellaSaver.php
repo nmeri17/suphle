@@ -42,7 +42,7 @@
 
 			$existing->addUser(
 
-				$originatingFlowDetails->getUserId(), $nodeContent
+				$originatingFlowDetails->getStoredUserId(), $nodeContent
 			);
 
 			$saved = $this->cacheManager->saveItem($location, $existing);

@@ -11,8 +11,6 @@
 
 		private $GENERIC_STORAGE = AuthStorage::class; // since traits can't have constants
 
-		protected $hasHydratedOrmDialect = false;
-
 		abstract protected function getContainer ():Container;
 
 		/**
@@ -26,23 +24,12 @@
 
 			$container = $this->getContainer();
 
-			if ($this->hasHydratedOrmDialect)
-
-				return $container->getClass($storageName);
-
-			$ormDialect = $container->getClass(OrmDialect::class);
-
 			$authStorage = $container->getClass($storageName);
 
-			$isNotDefault = $storageName != $this->GENERIC_STORAGE &&
+			$authStorage->setHydrator( // in a real app, it's expected that the titular module hydrates OrmDialect, thus triggering this same call under the hood
 
-			$authStorage::class != $storageName;
-
-			if ($isNotDefault) // the default has hydrator set. If dev wants to test another storage mechanism, we'll do that explicitly
-
-				$authStorage->setHydrator($ormDialect->getUserHydrator());
-
-			$this->hasHydratedOrmDialect = true;
+				$container->getClass(OrmDialect::class)->getUserHydrator()
+			);
 
 			return $authStorage;
 		}

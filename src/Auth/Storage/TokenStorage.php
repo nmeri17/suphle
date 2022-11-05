@@ -15,14 +15,7 @@
 
 		private const IDENTIFIER_KEY = "user_id";
 
-		private $payloadStorage, $envAccesso;
-
-		public function __construct ( EnvAccessor $envAccessor, PayloadStorage $payloadStorage) {
-
-			$this->envAccessor = $envAccessor;
-
-			$this->payloadStorage = $payloadStorage;
-		}
+		public function __construct (private readonly EnvAccessor $envAccessor, private readonly PayloadStorage $payloadStorage) {}
 
 		/**
 		 * {@inheritdoc}
@@ -87,6 +80,8 @@
 			$outgoingToken = JWT::encode(
 				$tokenDetails, $envAccessor->getField("APP_SECRET_KEY")
 			);
+
+			$this->identifier = $value; // manually trigger resumption. Can't use getId/resumeSession since it expects to read payload, which isn't valid reaction for this mechanism
 
 			return $outgoingToken;
 		}

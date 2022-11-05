@@ -113,9 +113,16 @@
 
 			$storage = $this->getAuthStorage($storageName);
 
-			if (!is_null($user))
+			if (!is_null($user)) {
 
 				$storage->startSession($user->getId()); // creates a collection of 10 models in preceding renderer, then assigns the given user as their owner in the flow we are going to make
+			
+				$storage->setHydrator($this->container->getClass(
+
+					OrmDialect::class
+				)->getUserHydrator());
+			}
+			
 			else $storage->logout();
 
 			return new PendingFlowDetails(
