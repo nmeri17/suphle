@@ -9,7 +9,7 @@
 
 	use PHPUnit\Framework\{TestCase, ExpectationFailedException};
 
-	use Throwable;
+	use Throwable, ReflectionFunction;
 
 	class TestVirginContainer extends TestCase {
 
@@ -104,11 +104,13 @@
 
 		protected function afterAllMethods ():void {}
 
-		private function providerExceptionMessage (array $methodCallable, int $errorIndex, array $dataRow):string {
+		private function providerExceptionMessage (callable $methodCallable, int $errorIndex, array $dataRow):string {
 
 			$newLine = "\n";
 
-			$methodName = $methodCallable[0]::class . "::". $methodCallable[1];
+			$methodCallable = $this->extractCallableDetails($methodCallable);
+
+			$methodName = $methodCallable[0] . "::". $methodCallable[1];
 
 			$messages = [
 				"$methodName with data set #$errorIndex:",
@@ -117,6 +119,18 @@
 			];
 
 			return $newLine. implode($newLine, $messages). $newLine;
+		}
+
+		private function extractCallableDetails (callable $methodCallable):array {
+
+			$reflectedCallable = new ReflectionFunction($methodCallable);
+
+			return [
+			
+				$reflectedCallable->getClosureThis()::class,
+
+				$reflectedCallable->getName()
+			];
 		}
 
 		protected function mayMonitorContainer (Container $container):void {

@@ -1,15 +1,17 @@
 <?php
 	namespace Suphle\Tests\Unit\Flows;
 
-	use Suphle\Flows\FlowHydrator;
+	use Suphle\Flows\{FlowHydrator, OuterFlowWrapper};
 
 	use Suphle\Flows\Previous\{CollectionNode, SingleNode};
 
-	use Suphle\Flows\Structures\{RouteUserNode, ServiceContext, GeneratedUrlExecution};
+	use Suphle\Flows\Structures\{RouteUserNode, ServiceContext, GeneratedUrlExecution, PendingFlowDetails};
 
 	use Suphle\Response\RoutedRendererManager;
 
 	use Suphle\Routing\PathPlaceholders;
+
+	use Suphle\Services\DecoratorHandlers\VariableDependenciesHandler;
 
 	use Suphle\Contracts\Presentation\BaseRenderer;
 
@@ -21,9 +23,9 @@
 
 	 	use FlowData, CommonBinds;
 
-	 	private $rendererManager = RoutedRendererManager::class,
+	 	private $sutName = FlowHydrator::class,
 
-	 	$sutName = FlowHydrator::class, $placeholderStorage;
+	 	$flowDetails;
 
 	 	public function setUp ():void {
 
@@ -31,25 +33,39 @@
 
 			$this->indexes = $this->getIndexes();
 
-			$this->placeholderStorage = $this->positiveDouble(PathPlaceholders::class);
+			$this->flowDetails = $this->replaceConstructorArguments(PendingFlowDetails::class, [], [
+
+				"getStoredUserId" => OuterFlowWrapper::ALL_USERS
+			]);
 		}
 		
 		public function test_executeGeneratedUrl_triggers_controller () {
 
-			// given
-			$hydrator = $this->getHydratorForExecuteRequest(true);
+			$this->decorateHydrator($this->getHydratorForExecuteRequest(true), [ // given
 
-			$sut = $this->positiveDouble($this->rendererManager, [], [
+ 				RoutedRendererManager::class => $this->positiveDouble(RoutedRendererManager::class, [], [
 
-				"handleValidRequest" => [1, []]
-			]);
- 
- 			// when
-			$hydrator->setDependencies(
+					"handleValidRequest" => [1, []] // then
+				])
+ 			])
+			->executeGeneratedUrl(); // when
+		}
 
-				$sut, $this->placeholderStorage, [], ""
-			)
-			->executeGeneratedUrl();
+		protected function decorateHydrator (FlowHydrator $hydrator, array $dependencies = []):FlowHydrator {
+
+			$hydrator->setRequestDetails([], "");
+
+			return $this->container->whenTypeAny()->needsAny(array_merge(
+
+				[
+					RoutedRendererManager::class => $this->positiveDouble(RoutedRendererManager::class),
+
+					PathPlaceholders::class => $this->positiveDouble(PathPlaceholders::class)
+	 			], $dependencies
+			))
+			->getClass(VariableDependenciesHandler::class)
+
+			->examineInstance($hydrator, self::class);
 		}
 
 		private function getHydratorForExecuteRequest (bool $canProcessPath):FlowHydrator {
@@ -64,38 +80,33 @@
 
 			// given
 			$hydrator = $this->getHydratorForExecuteRequest(false);
-
-			$rendererManager = $this->positiveDouble($this->rendererManager, [], [
-
-				"handleValidRequest" => [0, []]
-			]);
  
  			// when
-			$hydrator->setDependencies(
+			$this->decorateHydrator($hydrator, [
 
-				$rendererManager, $this->placeholderStorage, [], ""
-			)
-			->executeGeneratedUrl();
+ 				RoutedRendererManager::class => $this->positiveDouble(RoutedRendererManager::class, [], [
+
+					"handleValidRequest" => [0, []]
+				])
+ 			])->executeGeneratedUrl();
 		}
 
 		public function test_getNodeFromPrevious() {
-
-			$hydrator = $this->container->getClass($this->sutName);
 
 			$models = $this->indexesToModels();
 
 			$unitNode = new SingleNode($this->payloadKey);
 
 			// given
-			$rendererManager = $this->negativeDouble($this->rendererManager);
-			
-			$hydrator->setDependencies($rendererManager,
+			$hydrator = $this->decorateHydrator($this->container->getClass($this->sutName), [
 
-				$this->placeholderStorage, [
+ 				RoutedRendererManager::class => $this->negativeDouble(RoutedRendererManager::class)
+ 			]);
 
-					$this->payloadKey => $models
-				], ""
-			);
+ 			$hydrator->setRequestDetails([
+
+				$this->payloadKey => $models
+			], "");
 
 			$content = $hydrator->getNodeFromPrevious($unitNode); // when
 
@@ -114,7 +125,7 @@
 
 				$this->getHydratorForRunNode($handler, $value ) // then
 
-				->runNodes($unitNode, "*"); // when
+				->runNodes($unitNode, $this->flowDetails); // when
 			});
 		}
 
@@ -126,7 +137,7 @@
 				],
 
 				[
-					$this->createCollectionNode()->asOne(), "handleOneOf", "ids"
+					$this->createCollectionNode()->asOne(), "handleAsOne", "ids"
 				],
 
 				[$this->createCollectionNode()->inRange(), "handleRange"], // too lazy to extract the context from getActions
@@ -161,9 +172,11 @@
 
 			$response = $this->generatedResponse();
 
-			return $this->replaceConstructorArguments($this->sutName, [], [
+			$hydrator = $this->replaceConstructorArguments($this->sutName, [], [
 
-				$handlerMethod => [$response]
+				$handlerMethod => [$response],
+
+				"getNodeFromPrevious" => $this->indexesToModels()
 			], [
 				"rendererToStorable" => [1, []], // prevent trying to save
 
@@ -173,16 +186,14 @@
 
 					$additionalArgument ?? $this->anything()
 				]]
-			])->setDependencies(
+			]);
 
-				$this->positiveDouble($this->rendererManager),
+			$hydrator->setRequestDetails( // given
 
-				$this->placeholderStorage,
-
-				$this->payloadFromPrevious(), // given
-
-				""
+				$this->payloadFromPrevious(), ""
 			);
+
+			return $this->decorateHydrator($hydrator);
 		}
 
 		public function test_collection_triggers_deferred_handler () {
@@ -198,7 +209,7 @@
 
 				$this->equalTo(null)
 			) // then
-			->runNodes($unitNode, "*"); // when
+			->runNodes($unitNode, $this->flowDetails); // when
 		}
 
 		public function test_single_triggers_underlying_format () {
@@ -211,23 +222,22 @@
 
 			$unitNode = (new SingleNode($leafName))->altersQuery();
 
-			$sut = $this->replaceConstructorArguments($this->sutName, [], [
+			$hydrator = $this->replaceConstructorArguments($this->sutName, [], [
 
-				$handlerMethod => $this->generatedResponse()
+				$handlerMethod => $this->generatedResponse(),
+
+				"getNodeFromPrevious" => $queryPart
 			], [
 				"rendererToStorable" => [1, []],
 
 				$handlerMethod => [1, [ $queryPart]]// then
-			])->setDependencies(
+			]);
 
-				$this->positiveDouble($this->rendererManager),
+			$hydrator->setRequestDetails([$leafName => $queryPart], ""); // given
 
-				$this->placeholderStorage,
+			$this->decorateHydrator($hydrator)
 
-				[$leafName => $queryPart], // given
-
-				""
-			)->runNodes($unitNode, "*"); // when
+			->runNodes($unitNode, $this->flowDetails); // when
 		}
 	}
 ?>

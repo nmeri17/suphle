@@ -78,6 +78,8 @@
 
 			$decoded = $this->getDecodedResponse("/apply-crop"); // when
 
+			$this->assertArrayHasKey($operation, $decoded);
+
 			$imagePath = $decoded[$operation]["profile_pic"]; // spits given array back but with names instead of files
 
 			$pattern = $this->resourceOwner . "\\\\$operation\\\\".

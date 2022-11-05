@@ -11,26 +11,22 @@
 
 		final const FLOW_PREFIX = "tilwa_flow";
 
-		private $cacheManager, $flowConfig, $objectMeta;
+		public function __construct (
+			private readonly Flows $flowConfig,
 
-		public function __construct (Flows $flowConfig, CacheManager $cacheManager, ObjectDetails $objectMeta) {
+			private readonly CacheManager $cacheManager,
 
-			$this->flowConfig = $flowConfig;
+			private readonly ObjectDetails $objectMeta
+		) {}
 
-			$this->cacheManager = $cacheManager;
-
-			$this->objectMeta = $objectMeta;
-		}
-
-		public function getPatternLocation (string $urlPattern) {
+		public function getPatternLocation (string $urlPattern):string {
 
 			return self::FLOW_PREFIX . "/" . trim($urlPattern, "/");
 		}
 
 		public function saveNewUmbrella (string $urlPattern, RouteUserNode $nodeContent, PendingFlowDetails $originatingFlowDetails):void {
 
-			$cacheManager = null;
-   $location = $this->getPatternLocation($urlPattern);
+			$location = $this->getPatternLocation($urlPattern);
 			
 			$existing = $this->getExistingUmbrella($location);
 
@@ -55,7 +51,7 @@
 
 			if ($contentType)
 
-				$cacheManager->tagItem($contentType, $existing);
+				$this->cacheManager->tagItem($contentType, $existing);
 
 			// or, $location can subscribe to a topic(instead of using tags?). update listener publishes to that topic (so we never have outdated content)
 		}

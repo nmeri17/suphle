@@ -5,6 +5,10 @@
 
 	use Suphle\Flows\Structures\{RangeContext, ServiceContext, GeneratedUrlExecution};
 
+	use Suphle\Services\DecoratorHandlers\VariableDependenciesHandler;
+
+	use Suphle\Response\RoutedRendererManager;
+
 	use Suphle\Testing\TestTypes\IsolatedComponentTest;
 
 	use Suphle\Tests\Integration\Generic\CommonBinds;
@@ -58,7 +62,7 @@
 
 			$mocks = array_merge(["executeGeneratedUrl" => [1, []]], $mocks);
 
-			return $this->replaceConstructorArguments(
+			$hydrator = $this->replaceConstructorArguments(
 
 				$this->sutName, [], [
 
@@ -69,6 +73,11 @@
 					"executeGeneratedUrl" => $this->positiveDouble(GeneratedUrlExecution::class)
 				], $mocks
 			);
+
+			return $this->container->whenTypeAny()->needsAny([
+
+				$this->sutName => $hydrator
+			])->getClass($this->sutName); // for the decoration
 		}
 
 		/**
@@ -117,10 +126,17 @@
 
 		private function getHydratorForService (array $mockMethods = []):FlowHydrator {
 
-			return $this->replaceConstructorArguments($this->sutName, [/*using this so they can receive proper containers*/], [
+			$hydrator = $this->positiveDouble($this->sutName, [
 
 				"getNodeFromPrevious" => $this->payloadFromPrevious()
 			], $mockMethods);
+
+			return $this->container->whenTypeAny()->needsAny([
+
+				RoutedRendererManager::class => $this->positiveDouble(RoutedRendererManager::class)
+			])->getClass(VariableDependenciesHandler::class)
+
+			->examineInstance($hydrator, self::class);
 		}
 
 		public function test_fromService_doesnt_edit_request_or_trigger_controller() {
@@ -167,7 +183,7 @@
 			return new ServiceContext($this->flowService, "customHandlePrevious");
 		}
 
-		public function test_handleOneOf () {
+		public function test_handleAsOne () {
 
 			$indexes = $this->indexes;
 
@@ -183,7 +199,7 @@
 			]);
 
 			// when
-			$sut->handleOneOf($indexes, $requestProperty, $this->createCollectionNode());
+			$sut->handleAsOne($indexes, $requestProperty, $this->createCollectionNode());
 		}
 
 		/**

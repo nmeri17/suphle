@@ -51,7 +51,7 @@
 
 			$sut = $this->container->getClass($this->serviceName);
 
-			$result = $this->assertWontBroadcast([$sut, $methodName]); // when
+			$result = $this->assertWontBroadcast($sut->$methodName(...)); // when
 
 			// then
 			$this->assertSame($methodName, $result);

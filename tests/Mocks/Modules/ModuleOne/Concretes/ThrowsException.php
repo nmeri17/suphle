@@ -5,7 +5,7 @@
 
 	class ThrowsException {
 
-		public function awesomeMethod (): never {
+		public function awesomeMethod () {
 
 			throw new Exception;
 		}

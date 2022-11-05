@@ -19,6 +19,11 @@
 
 	use Exception;
 
+	/**
+	 * Dependencies defined in dependencyMethods are obtained after reading flow structure, so they can't be injected in our constructor. For the same reason, we're deliberately not implementing VariableDependencies.
+
+	 placeholderStorage and payloadStorage shouldn't be random instances but the one modified by routeManager for this module
+	*/
 	class FlowHydrator {
 
 		private $previousResponse, $flowSaver, $payloadStorage,
@@ -63,11 +68,6 @@
 			$this->flowSaver = $flowSaver;
 		}
 
-		/**
-		 * These dependencies are obtained after reading flow structure so they can't be injected in our constructor. For the same reason, we're deliberately not implementing VariableDependencies.
-
-		 placeholderStorage and payloadStorage shouldn't be random instances but the one modified by routeManager for this module
-		*/
 		public function dependencyMethods ():array {
 
 			return [
@@ -184,14 +184,13 @@
 
 				$previousContent = $this->getNodeFromPrevious($builtNode);
 
-				$carryRenderer = call_user_func_array(
+				$carryRenderer = call_user_func_array( // dispatch calls to the internal handlers e.g handleQuerySegmentAlter
 					[$this, $handler],
 
 					[$previousContent/*, $value, $carryRenderer*/]
 				);
 
-				$this->handledValidAction($carryRenderer);
-					
+				$this->handledValidAction($carryRenderer);		
 			}
 
 			return [$carryRenderer];
@@ -248,7 +247,11 @@
 
 			$mapped = [];
 
-			foreach ($this->getNodeFromPrevious($rawNode) as $key => $valueObject)
+			$previousNode = $this->getNodeFromPrevious($rawNode);
+
+			if (is_null($previousNode)) return [];
+
+			foreach ($previousNode as $key => $valueObject)
 
 				$mapped[$key] = Arr::get($valueObject, $dataIndex);
 
