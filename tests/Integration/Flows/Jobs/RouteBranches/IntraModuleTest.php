@@ -9,11 +9,13 @@
 
 	use Suphle\Response\RoutedRendererManager;
 
-	use Suphle\Testing\Proxies\WriteOnlyContainer;
+	use Suphle\Testing\{Proxies\WriteOnlyContainer, Utilities\ArrayAssertions};
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\OriginCollection, Meta\ModuleOneDescriptor, Config\RouterMock};
 
 	class IntraModuleTest extends JobFactory {
+
+		use ArrayAssertions;
 
 		private string $user5Url = "/user-content/5";
 
@@ -49,7 +51,7 @@
 
 				$this->assertNotNull($umbrella);
 
-				$this->assertArraySubset(
+				$this->assertAssocArraySubset(
 
 					[ "id" => 5],
 					
