@@ -15,9 +15,11 @@
 
 	use Suphle\Routing\PathPlaceholders;
 
+	use Suphle\Modules\ModuleInitializer;
+
 	use Illuminate\Support\Arr;
 
-	use Exception;
+	use Exception, Throwable;
 
 	/**
 	 * Dependencies defined in dependencyMethods are obtained after reading flow structure, so they can't be injected in our constructor. For the same reason, we're deliberately not implementing VariableDependencies.
@@ -30,7 +32,7 @@
 
 		$rendererManager, $container, $placeholderStorage,
 
-		$baseUrlPattern,
+		$baseUrlPattern, $moduleInitializer,
 
 		$parentHandlers = [
 			SingleNode::class => "handleSingleNodes",
@@ -74,7 +76,9 @@
 
 				"setContainer", "setPlaceholderStorage",
 
-				"setPayloadStorage", "setRendererManager"
+				"setPayloadStorage", "setRendererManager",
+
+				"setModuleInitializer"
 			];
 		}
 
@@ -97,6 +101,11 @@
 		public function setRendererManager (RoutedRendererManager $rendererManager):void {
 
 			$this->rendererManager = $rendererManager;
+		}
+
+		public function setModuleInitializer (ModuleInitializer $moduleInitializer):void {
+
+			$this->moduleInitializer = $moduleInitializer;
 		}
 
 		public function setRequestDetails ($previousResponse, string $urlPattern ):void {
@@ -291,13 +300,6 @@
 			return $generated;
 		}
 
-		public function canProcessPath():bool {
-
-			return $this->rendererManager->bootCoodinatorManager()
-
-			->isValidRequest();
-		}
-
 		protected function updatePlaceholders (array $updates):self {
 
 			$this->placeholderStorage->overwriteValues($updates);
@@ -336,15 +338,24 @@
 
 		public function executeGeneratedUrl ():?GeneratedUrlExecution {
 
-			if (!$this->canProcessPath()) return null;
+			try {
 
-			$originalRenderer = $this->rendererManager->handleValidRequest($this->payloadStorage);
+				$this->moduleInitializer->fullRequestProtocols($this->rendererManager)
 
-			$clonedRenderer = clone $originalRenderer; // since we're working with just one renderer for all those calls, without cloning, updates to one (by virtue of updating placeholderStorage) cascades to them all. By cloning, we're able to store the temporary state in memory as its own unique object
+				->setHandlingRenderer();
 
-			$requestPath = $this->placeholderStorage->getPathFromStack($this->baseUrlPattern);
+				$originalRenderer = $this->moduleInitializer->handlingRenderer();
 
-			return new GeneratedUrlExecution($requestPath, $clonedRenderer);
+				$clonedRenderer = clone $originalRenderer; // since we're working with just one renderer for all those calls, without cloning, updates to one (by virtue of updating placeholderStorage) cascades to them all. By cloning, we're able to store the temporary state in memory as its own unique object
+
+				$requestPath = $this->placeholderStorage->getPathFromStack($this->baseUrlPattern);
+
+				return new GeneratedUrlExecution($requestPath, $clonedRenderer);
+			}
+			catch (Throwable) {
+
+				return null;
+			}
 		}
 
 		/**

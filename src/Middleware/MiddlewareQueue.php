@@ -9,17 +9,20 @@
 
 	class MiddlewareQueue {
 
-		private $payloadStorage, $stack, $routerConfig, $container;
+		private array $routedStack, $mergedStack = [];
 
-		public function __construct ( MiddlewareRegistry $registry, PayloadStorage $payloadStorage, RouterConfig $routerConfig, Container $container) {
+		public function __construct (
 
-			$this->stack = $registry->getActiveStack();
+			MiddlewareRegistry $registry,
 
-			$this->payloadStorage = $payloadStorage;
+			private readonly PayloadStorage $payloadStorage,
 
-			$this->routerConfig = $routerConfig;
+			private readonly RouterConfig $routerConfig,
 
-			$this->container = $container;
+			private readonly Container $container
+		) {
+
+			$this->routedStack = $registry->getActiveStack();
 		}
 
 		/**
@@ -29,7 +32,7 @@
 		*/
 		private function filterDuplicates ():void {
 
-			$units = array_map(fn(PatternMiddleware $pattern) => $pattern->getList(), $this->stack);
+			$units = array_map(fn(PatternMiddleware $pattern) => $pattern->getList(), $this->routedStack);
 
 			$reduced = array_reduce($units, function (array $carry, array $current) {
 
@@ -38,27 +41,35 @@
 				return $carry;
 			}, []);
 
-			$this->stack = array_unique($reduced);
+			$this->routedStack = array_unique($reduced);
 		}
 
 		public function runStack ():BaseRenderer {
 
-			$this->filterDuplicates();
+			if (empty($this->mergedStack)) { // purpose of this 2nd stack is in long-running settings e.g. Flows, this object will be retained. Routing only happens once per pattern, so if the original stack is overwritten, subsequent Flow requests for that pattern will have undesirable behavior
 
-			$this->stack = array_merge( // any temporary ones attached to route precede the defaults
-				$this->stack,
+				$this->filterDuplicates();
 
-				$this->routerConfig->defaultMiddleware()
-			);
+				$this->mergedStack = array_map(
 
-			$this->hydrateMiddlewares();
+					fn(string $name) => $this->container->getClass($name),
 
-			$outermost = array_shift($this->stack);
+					array_merge( // any temporary ones attached to route precede the defaults
+						$this->routedStack,
+
+						$this->routerConfig->defaultMiddleware()
+					)
+				);
+			}
+
+			$mergedStack = $this->mergedStack; // copy to avoid mutating the main stack below
+
+			$outermost = array_shift($mergedStack);
 
 			return $outermost->process(
 				$this->payloadStorage,
 
-				$this->getHandlerChain($this->stack)
+				$this->getHandlerChain($mergedStack)
 			);
 		}
 
@@ -81,11 +92,6 @@
 			[4] = each level injests its predecessor
 			*/
 			return $this->getHandlerChain($middlewareList, $nextHandler);
-		}
-
-		private function hydrateMiddlewares ():void {
-
-			$this->stack = array_map(fn($name) => $this->container->getClass($name), $this->stack);
 		}
 	}
 ?>
