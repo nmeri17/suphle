@@ -7,7 +7,9 @@
 
 	use Suphle\Middleware\MiddlewareRegistry;
 
-	use Suphle\Testing\{Condiments\DirectHttpTest, Proxies\Extensions\TestResponseBridge};
+	use Suphle\Testing\Condiments\DirectHttpTest;
+
+	use Suphle\Testing\Proxies\Extensions\{TestResponseBridge, MiddlewareManipulator};
 
 	use Suphle\Exception\Explosives\NotFoundException;
 
@@ -106,7 +108,7 @@
 
 			if (is_null($this->mockMiddlewareRegistry)) {
 
-				$this->mockMiddlewareRegistry = new MiddlewareManipulator;
+				$this->mockMiddlewareRegistry = $this->getContainer()->getClass(MiddlewareManipulator::class);
 
 				$this->massProvide([
 

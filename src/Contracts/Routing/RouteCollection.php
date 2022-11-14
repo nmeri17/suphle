@@ -11,6 +11,8 @@
 
 	interface RouteCollection {
 
+		final const INDEX_METHOD = "_index";
+
 		public function _handlingClass ():string;
 		
 		public function _prefixCurrent():string;

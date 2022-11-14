@@ -9,7 +9,7 @@
 
 		use BaseSingletonBind;
 
-		private $registry = [], // [patternName => PatternMiddleware]
+		private array $registry = [], // [patternName => PatternMiddleware]
 
 		$excludePatterns = [], $interactedPatterns = [];
 
@@ -66,10 +66,10 @@
 		*/
 		public function getActiveStack ():array {
 
-			$activeHolders = array_filter ($this->registry, fn($pattern) => in_array($pattern, $this->interactedPatterns), ARRAY_FILTER_USE_KEY);
+			$activeHolders = $this->intersectsInteractedPatterns($this->registry);
 
 			// If we exclude tags in a child collection, it won't exist in [registry] since our remove action doesn't use such mechanism
-			$activeExcludes = array_filter ($this->excludePatterns, fn($pattern) => in_array($pattern, $this->interactedPatterns), ARRAY_FILTER_USE_KEY);
+			$activeExcludes = $this->intersectsInteractedPatterns($this->excludePatterns);
 
 			// search among parents for those containing middlewares intersecting with given list
 			foreach ($activeExcludes as $excludeList)
@@ -79,6 +79,17 @@
 					$holder->omitWherePresent($excludeList);
 
 			return $activeHolders;
+		}
+
+		protected function intersectsInteractedPatterns (array $haystack):array {
+
+			return array_filter($haystack, fn(string $pattern)=> in_array(
+
+					$pattern, $this->interactedPatterns
+				),
+
+				ARRAY_FILTER_USE_KEY
+			);
 		}
 
 		public function emptyAllStacks ():void {

@@ -9,15 +9,16 @@
 
 	class PatternIndicator {
 
-		private $patternAuthentication, $registry, $authorizer,
+		private $patternAuthentication, $providedAuthenticator;
 
-		$providedAuthenticator;
+		public function __construct (
 
-		public function __construct (MiddlewareRegistry $registry, PathAuthorizer $authorizer) {
+			private readonly MiddlewareRegistry $registry, 
 
-			$this->registry = $registry;
+			private readonly PathAuthorizer $authorizer
+		) {
 
-			$this->authorizer = $authorizer;
+			//
 		}
 
 		public function indicate (RouteCollection $collection, string $pattern):void {

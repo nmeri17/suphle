@@ -22,40 +22,28 @@
 
 		PLACEHOLDER_REPLACEMENT = "[\w-]+";
 
-		private $indexMethod = "_index",
+		private array $visitedMethods = [];
 
-		$visitedMethods = [],
-
-		$config, $activeRenderer, $requestDetails, $container,
-
-		$placeholderStorage, $patternIndicator,
-
-		$sessionClient, $urlReplacer;
+		private $activeRenderer;
 
 		public function __construct (
 
-			RouterConfig $config, Container $container,
+			private readonly RouterConfig $config,
 
-			RequestDetails $requestDetails, PathPlaceholders $placeholderStorage,
+			private readonly Container $container,
 
-			PatternIndicator $patternIndicator, Session $sessionClient,
+			private readonly RequestDetails $requestDetails,
 
-			CollectionMethodToUrl $urlReplacer
+			private readonly PathPlaceholders $placeholderStorage,
+
+			private readonly PatternIndicator $patternIndicator,
+
+			private readonly Session $sessionClient,
+
+			private readonly CollectionMethodToUrl $urlReplacer
 		) {
 
-			$this->config = $config;
-
-			$this->container = $container;
-
-			$this->requestDetails = $requestDetails;
-
-			$this->placeholderStorage = $placeholderStorage;
-
-			$this->patternIndicator = $patternIndicator;
-
-			$this->sessionClient = $sessionClient;
-
-			$this->urlReplacer = $urlReplacer;
+			//
 		}
 
 		public function findRenderer ():void {
@@ -123,13 +111,13 @@
 
 				return new PlaceholderCheck($fullRouteState, $literalMatch);
 			
-			$indexMethodIndex = array_search($this->indexMethod, $patterns);
+			$indexMethodIndex = array_search(RouteCollection::INDEX_METHOD, $patterns);
 
 			if ($indexMethodIndex !== false) {
 
 				if ($fullRouteState == "" )
 
-					return new PlaceholderCheck("", $this->indexMethod );
+					return new PlaceholderCheck("", RouteCollection::INDEX_METHOD );
 
 				unset($patterns[$indexMethodIndex]); // since we're sure it's not the one, no need to confuse the other guys, who will always "partially" match an empty string
 			}
@@ -221,7 +209,7 @@
 
 		private function matchRemainder (PlaceholderCheck $check, string $fullRouteState):string {
 
-			if (empty($fullRouteState) && $check->getMethodName() == $this->indexMethod)
+			if (empty($fullRouteState) && $check->getMethodName() == RouteCollection::INDEX_METHOD)
 
 				return $fullRouteState;
 

@@ -5,9 +5,9 @@
 
 	class MiddlewareManipulator extends MiddlewareRegistry {
 
-		private $stackAlwaysEmpty = false, $preExclude = [],
+		private bool $stackAlwaysEmpty = false;
 
-		$preInclude = [];
+		private array $preExclude = [], $preInclude = [];
 
 		/**
 		 * Whenever router decides on the active pattern, it'll ultimately include middlewares applied here
@@ -41,17 +41,19 @@
 
 			if ($this->stackAlwaysEmpty) return [];
 
-			$realStack = parent::activeStack();
+			$stack = [];
+
+			$parentStack = parent::getActiveStack();
 
 			if (!empty($this->preInclude))
 
-				$realStack[] = $this->includeCollection();
+				$stack[] = $this->includeCollection();
 
-			foreach ($realStack as $holder)
+			foreach ($parentStack as $holder)
 
-				$this->extractFromHolders($holder, $this->preExclude);
+				$holder->omitWherePresent($this->preExclude);
 
-			return $realStack;
+			return [...$stack, ...$parentStack];
 		}
 
 		private function includeCollection ():PatternMiddleware {

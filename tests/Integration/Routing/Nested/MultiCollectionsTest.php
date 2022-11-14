@@ -46,11 +46,12 @@
 			$this->get($this->threeTierUrl) // when
 
 			// then
-			->assertUnauthorized();
+			->assertUnauthorized(); // misleading authenticates while eventual doesn't. If this fails, recovery didn't work
 
 			$this->assertUsedMiddleware([BlankMiddleware::class]); 
 		}
 
+		// we're using this doubling to simulate absence of the stubbed method
 		private function stubIndicator () {
 
 			$sutName = PatternIndicator::class;
