@@ -7,7 +7,8 @@ rpc:
   listen: tcp://127.0.0.1:6001
 
 server:
-  command: "php test-worker.php" # This file should be identical to dev-rr.yaml, with the exception of this line
+  command: "php test-worker.php" # This file should be identical to dev-rr.yaml, with the exception of this file
+  # command: "php -dzend_extension=opcache.so -dopcache.enable=1 -dopcache.enable_cli=1 test-worker.php"
   env:
     - XDEBUG_SESSION: 1
 

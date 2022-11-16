@@ -9,8 +9,6 @@
 
 	use Suphle\Hydration\Structures\{BaseInterfaceCollection, ContainerBooter};
 
-	use Suphle\Exception\NativeErrorHandlers;
-
 	class CliRunner {
 
 		private string $projectRootPath;
@@ -57,8 +55,6 @@
 				->initializeContainer(BaseInterfaceCollection::class);
 
 				$this->extractCommandsFromContainer($this->defaultContainer);
-
-				(new NativeErrorHandlers)->silentErrorToException();
 			}
 
 			return $this;

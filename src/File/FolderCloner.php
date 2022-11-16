@@ -1,17 +1,19 @@
 <?php
 	namespace Suphle\File;
 
-	use FilesystemIterator, Throwable, Exception;
+	use FilesystemIterator, Throwable, ErrorException;
+
+	use Suphle\Exception\NativeErrorHandlers;
 
 	class FolderCloner {
 
 		private $fileReplacements, $folderReplacements,
 
-		$contentsReplacement, $fileSystemReader;
+		$contentsReplacement;
 
-		public function __construct (FileSystemReader $fileSystemReader) {
+		public function __construct (private readonly FileSystemReader $fileSystemReader) {
 
-			$this->fileSystemReader = $fileSystemReader;
+			//
 		}
 
 		public function setEntryReplacements (
@@ -30,6 +32,8 @@
 		}
 
 		public function transferFolder (string $sourceFolder, string $newDestination):bool {
+
+			(new NativeErrorHandlers)->silentErrorToException(); // Setting this app-wide will cause all warnings/notices e.g. using @[missing index] to throw the exception, which would be a disaster, especially as this behavior is only wanted in this scenario
 
 			$temporaryModulePath = dirname($sourceFolder). DIRECTORY_SEPARATOR . "temp_dir"; // using this so we don't iterate existing files at that destination
 
@@ -100,35 +104,27 @@
 
 		protected function renameEntryOnDisk (string $sourceFolder, string $newDestination):void {
 
-			$operationSuccess = false;
-
 			try {
 
-				if (file_exists($sourceFolder)) {
+				if (file_exists($sourceFolder))
 
-					if (rename($sourceFolder, $newDestination)) // We don't want to rely on the invocation of NativeErrorHandlers::silentErrorToException. Unsuccessful rename shouldn't pretend to have succeeded to the caller
-
-						$operationSuccess = true;
-				}
+					rename($sourceFolder, $newDestination); // NativeErrorHandlers::silentErrorToException will cause it throw on failure
 
 				else trigger_error("Attempt to rename non-existent folder: $sourceFolder");
 			}
 			catch (Throwable $exception) {
 
-				if (stripos($exception->getMessage(), "access is denied") === false) // throw all non-permission related issues. This happens since we didn't create that folder. Trying to remove it causes system to revolt. So, we do it manually
+				$isPermissionIssue = $exception instanceof ErrorException &&
 
+				stripos($exception->getMessage(), "access is denied") !== false;
+
+				if (!$isPermissionIssue) // throw all non-permission related issues. This happens because we didn't create that folder. Trying to remove it causes system to revolt. So, we do it manually
 					throw $exception;
 
 				$this->fileSystemReader->deepCopy($sourceFolder, $newDestination);
 				
 				$this->fileSystemReader->emptyDirectory($sourceFolder);
-
-				$operationSuccess = true;
 			}
-
-			if (!$operationSuccess)
-
-				throw new Exception("Unable to rename folder: $sourceFolder");
 		}
 	}
 ?>
