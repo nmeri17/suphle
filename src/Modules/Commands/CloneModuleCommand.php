@@ -3,25 +3,31 @@
 
 	use Suphle\Console\BaseCliCommand;
 
+	use Suphle\Hydration\Container;
+
 	use Suphle\File\{FolderCloner, FileSystemReader};
 
-	use Symfony\Component\Console\Output\OutputInterface;
+	use Symfony\Component\Console\{Output\OutputInterface, Command\Command};
 
-	use Symfony\Component\Console\Input\{InputInterface, InputArgument};
-
-	use Symfony\Component\Console\Command\Command;
+	use Symfony\Component\Console\Input\{InputInterface, InputArgument, InputOption};
 
 	use Throwable;
 
 	class CloneModuleCommand extends BaseCliCommand {
 
-		protected $container, $fileSystemReader;
+		protected Container $container;
 
-		final public const SOURCE_ARGUMENT = "template_folder",
+		protected FileSystemReader $fileSystemReader;
 
-		DESTINATION_ARGUMENT = "project_root",
+		protected InputInterface $input;
 
-		MODULE_NAME_ARGUMENT = "new_module_name";
+		final public const SOURCE_ARGUMENT = "template_source",
+
+		DESTINATION_OPTION = "destination_path",
+
+		MODULE_NAME_ARGUMENT = "new_module_name",
+
+		RELATIVE_SOURCE_OPTION = "is_relative_source";
 
 		protected static $defaultDescription = "Copy and rename contents of a folder into a module";
 
@@ -37,9 +43,17 @@
 				self::MODULE_NAME_ARGUMENT, InputArgument::REQUIRED, "Module to create"
 			);
 
-			$this->addArgument(
-				self::DESTINATION_ARGUMENT, InputArgument::OPTIONAL, "Destination folder to write to"
+			$this->addOption(
+				self::DESTINATION_OPTION, "d", InputOption::VALUE_REQUIRED,
+
+				"Destination folder to write to"
 			); // note argument ordering: options can't come before arguments
+
+			$this->addOption(
+				self::RELATIVE_SOURCE_OPTION, "r",
+
+				InputOption::VALUE_NONE, "Set whether paths are relative or absolute"
+			);
 		}
 
 		public static function commandSignature ():string {
@@ -53,7 +67,9 @@
 
 			try {
 
-				if ($this->getOperationResult($moduleName, $input)) {
+				$this->input = $input;
+
+				if ($this->getOperationResult($moduleName)) {
 
 					$output->writeln("Module $moduleName created successfully");
 
@@ -71,11 +87,11 @@
 			}
 		}
 
-		protected function getOperationResult (string $moduleName, InputInterface $input):bool {
+		protected function getOperationResult (string $moduleName):bool {
 
 			$this->setEssentials(
 			
-				$input->getOption(self::HYDRATOR_MODULE_OPTION)
+				$this->input->getOption(self::HYDRATOR_MODULE_OPTION)
 			);
 
 			return $this->container->getClass(FolderCloner::class)
@@ -90,9 +106,7 @@
 			)
 			->transferFolder(
 
-				$input->getArgument(self::SOURCE_ARGUMENT),
-
-				$this->getDestination($moduleName, $input)
+				$this->getSource(), $this->getDestination($moduleName)
 			);
 		}
 
@@ -103,11 +117,22 @@
 			$this->fileSystemReader = $this->container->getClass(FileSystemReader::class);
 		}
 
-		protected function getDestination (string $target, InputInterface $input):string {
+		protected function getSource ():string {
+
+			$sourceName = $this->input->getArgument(self::SOURCE_ARGUMENT);
+
+			if (!$this->input->getOption(self::RELATIVE_SOURCE_OPTION))
+
+				return $sourceName;
+
+			return $this->fileSystemReader->noTrailingSlash($this->executionPath) . DIRECTORY_SEPARATOR. $sourceName;
+		}
+
+		protected function getDestination (string $target):string {
 
 			$destination = $this->fileSystemReader->noTrailingSlash(
 
-				$input->getArgument(self::DESTINATION_ARGUMENT) ??
+				$this->input->getOption(self::DESTINATION_OPTION) ??
 
 				$this->executionPath
 			). DIRECTORY_SEPARATOR . $target;

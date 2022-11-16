@@ -21,11 +21,11 @@
 
 			$newLine = ",\n";
 
-			set_error_handler(function($errno, $errmsg) use ($newLine) {
+			set_error_handler(function($errCode, $errMessage) use ($newLine) {
 
 				file_put_contents(
 
-					$this->uncatchableFile, $errmsg . $newLine,
+					$this->uncatchableFile, $errMessage . $newLine,
 
 					FILE_APPEND
 				);

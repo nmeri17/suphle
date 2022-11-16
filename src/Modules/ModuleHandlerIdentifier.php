@@ -52,7 +52,9 @@
 
 			$this->container->getClass(ModulesBooter::class)
 
-			->bootAllModules()->prepareFirstModule();
+			->bootAllModules()->nonUIErrorHandlers()
+
+			->prepareFirstModule();
 		}
 
 		public function setRequestPath (string $requestPath):void {

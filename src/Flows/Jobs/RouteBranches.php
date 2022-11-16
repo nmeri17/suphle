@@ -46,7 +46,7 @@
 
 			$this->modules = $this->modulesBooter->bootAllModules()
 
-			->prepareAllModules()->getModules();
+			->nonUIErrorHandlers()->prepareAllModules()->getModules();
 			
 			$outgoingRenderer->getFlow()
 

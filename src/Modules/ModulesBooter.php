@@ -9,6 +9,8 @@
 
 	use Suphle\Hydration\Structures\BaseSingletonBind;
 
+	use Suphle\Exception\NativeErrorHandlers;
+
 	class ModulesBooter implements BindsAsSingleton {
 
 		use BaseSingletonBind;
@@ -50,6 +52,13 @@
 		public function prepareFirstModule ():void {
 
 			current($this->modules)->prepareToRun();
+		}
+
+		public function nonUIErrorHandlers ():self {
+
+			(new NativeErrorHandlers)->silentErrorToException();
+
+			return $this;
 		}
 
 		/**

@@ -9,22 +9,24 @@
 
 	use Suphle\Hydration\Structures\{BaseInterfaceCollection, ContainerBooter};
 
+	use Suphle\Exception\NativeErrorHandlers;
+
 	class CliRunner {
 
-		private $moduleHandler, $consoleClient, $projectRootPath,
+		private string $projectRootPath;
 
-		$defaultContainer, $allCommands = [];
+		private Container $defaultContainer;
+
+		private array $allCommands = [];
 
 		public function __construct (
 
-			ModuleHandlerIdentifier $moduleHandler,
+			private readonly ModuleHandlerIdentifier $moduleHandler,
 
-			ConsoleClient $consoleClient
+			private readonly ConsoleClient $consoleClient
 		) {
 
-			$this->moduleHandler = $moduleHandler;
-
-			$this->consoleClient = $consoleClient;
+			//
 		}
 
 		public function setRootPath (string $projectRootPath):self {
@@ -55,6 +57,8 @@
 				->initializeContainer(BaseInterfaceCollection::class);
 
 				$this->extractCommandsFromContainer($this->defaultContainer);
+
+				(new NativeErrorHandlers)->silentErrorToException();
 			}
 
 			return $this;

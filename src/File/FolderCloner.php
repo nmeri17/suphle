@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\File;
 
-	use FilesystemIterator, Throwable;
+	use FilesystemIterator, Throwable, Exception;
 
 	class FolderCloner {
 
@@ -100,24 +100,35 @@
 
 		protected function renameEntryOnDisk (string $sourceFolder, string $newDestination):void {
 
+			$operationSuccess = false;
+
 			try {
 
-				if (file_exists($sourceFolder))
+				if (file_exists($sourceFolder)) {
 
-					rename($sourceFolder, $newDestination);
+					if (rename($sourceFolder, $newDestination)) // We don't want to rely on the invocation of NativeErrorHandlers::silentErrorToException. Unsuccessful rename shouldn't pretend to have succeeded to the caller
 
-				else trigger_error("Attempt to rename non-existent folder");
+						$operationSuccess = true;
+				}
+
+				else trigger_error("Attempt to rename non-existent folder: $sourceFolder");
 			}
 			catch (Throwable $exception) {
 
-				if (stripos($exception->getMessage(), "access is denied") === false) // Will fail at the final destination due to permission issues (we didn't create that folder)
+				if (stripos($exception->getMessage(), "access is denied") === false) // throw all non-permission related issues. This happens since we didn't create that folder. Trying to remove it causes system to revolt. So, we do it manually
 
 					throw $exception;
 
 				$this->fileSystemReader->deepCopy($sourceFolder, $newDestination);
 				
 				$this->fileSystemReader->emptyDirectory($sourceFolder);
+
+				$operationSuccess = true;
 			}
+
+			if (!$operationSuccess)
+
+				throw new Exception("Unable to rename folder: $sourceFolder");
 		}
 	}
 ?>
