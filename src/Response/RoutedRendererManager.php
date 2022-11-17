@@ -19,29 +19,21 @@
 
 		use BaseSingletonBind;
 
-		private $container, $router, $renderer, $requestDetails,
-
-		$controllerManager, $flowQueuer;
-
 		public function __construct (
-			BaseRenderer $renderer, Container $container,
+			private readonly BaseRenderer $renderer,
 
-			RouteManager $router, CoodinatorManager $controllerManager,
+			private readonly Container $container,
 
-			FlowResponseQueuer $flowQueuer, RequestDetails $requestDetails
+			private readonly RouteManager $router,
+
+			private readonly CoodinatorManager $controllerManager,
+
+			private readonly FlowResponseQueuer $flowQueuer,
+
+			private readonly RequestDetails $requestDetails
 		) {
 
-			$this->container = $container;
-
-			$this->router = $router;
-
-			$this->controllerManager = $controllerManager;
-
-			$this->flowQueuer = $flowQueuer;
-
-			$this->renderer = $renderer;
-
-			$this->requestDetails = $requestDetails;
+			//
 		}
 
 		public function responseRenderer ():BaseRenderer {

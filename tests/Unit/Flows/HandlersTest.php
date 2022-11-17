@@ -1,6 +1,8 @@
 <?php
 	namespace Suphle\Tests\Unit\Flows;
 
+	use Suphle\Contracts\Modules\DescriptorInterface;
+
 	use Suphle\Flows\{FlowHydrator, Previous\CollectionNode};
 
 	use Suphle\Flows\Structures\{RangeContext, ServiceContext, GeneratedUrlExecution};
@@ -13,11 +15,14 @@
 
 	use Suphle\Tests\Integration\Generic\CommonBinds;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\FlowService;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\{Concretes\FlowService, Meta\ModuleOneDescriptor};
 
 	class HandlersTest extends IsolatedComponentTest {
 
-	 	use FlowData, CommonBinds;
+	 	use FlowData, CommonBinds {
+
+	 		CommonBinds::concreteBinds as commonConcretes;
+	 	}
 
 		private $flowService = FlowService::class,
 
@@ -28,6 +33,14 @@
 			parent::setUp();
 
 			$this->indexes = $this->getIndexes();
+		}
+
+		protected function concreteBinds ():array {
+
+			return array_merge($this->commonConcretes(), [
+
+				DescriptorInterface::class => $this->replaceConstructorArguments(ModuleOneDescriptor::class, [])
+			]);
 		}
 
 		public function test_pipeTo() {

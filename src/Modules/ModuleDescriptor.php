@@ -13,13 +13,13 @@
 
 	abstract class ModuleDescriptor implements DescriptorInterface {
 
-		protected $container, $expatriates = [],
+		protected array $expatriates = [];
 
-		$hasPreparedExpatriates = false;
+		protected bool $hasPreparedExpatriates = false;
 
-		public function __construct (Container $container) {
+		public function __construct (protected readonly Container $container) {
 			
-			$this->container = $container;
+			//
 		}
 
 		/**

@@ -13,7 +13,7 @@
 
 		private string $projectRootPath;
 
-		private Container $defaultContainer;
+		private ?Container $defaultContainer = null;
 
 		private array $allCommands = [];
 

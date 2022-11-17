@@ -11,21 +11,30 @@
 
 	use Suphle\Routing\PathPlaceholders;
 
+	use Suphle\Modules\ModuleInitializer;
+
 	use Suphle\Services\DecoratorHandlers\VariableDependenciesHandler;
 
-	use Suphle\Contracts\Presentation\BaseRenderer;
+	use Suphle\Exception\Explosives\ValidationFailure;
+
+	use Suphle\Contracts\{Presentation\BaseRenderer, Modules\DescriptorInterface, Requests\ValidationEvaluator};
 
 	use Suphle\Testing\TestTypes\IsolatedComponentTest;
 
 	use Suphle\Tests\Integration\Generic\CommonBinds;
 
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
+
 	class FlowExecutionTest extends IsolatedComponentTest {
 
-	 	use FlowData, CommonBinds;
+	 	use FlowData, CommonBinds {
+
+	 		CommonBinds::concreteBinds as commonConcretes;
+	 	}
 
 	 	private $sutName = FlowHydrator::class,
 
-	 	$flowDetails;
+	 	$flowDetails, $defaultHydrator;
 
 	 	public function setUp ():void {
 
@@ -37,16 +46,36 @@
 
 				"getStoredUserId" => OuterFlowWrapper::ALL_USERS
 			]);
+
+			$this->defaultHydrator = $this->container->getClass($this->sutName);
+		}
+
+		protected function concreteBinds ():array {
+
+			return array_merge($this->commonConcretes(), [
+
+				DescriptorInterface::class => $this->replaceConstructorArguments(ModuleOneDescriptor::class, [])
+			]);
 		}
 		
 		public function test_executeGeneratedUrl_triggers_controller () {
 
-			$this->decorateHydrator($this->getHydratorForExecuteRequest(true), [ // given
+			$this->decorateHydrator($this->defaultHydrator, [
 
- 				RoutedRendererManager::class => $this->positiveDouble(RoutedRendererManager::class, [], [
+ 				RoutedRendererManager::class => $this->replaceConstructorArguments(RoutedRendererManager::class, [], [], [
 
 					"handleValidRequest" => [1, []] // then
-				])
+				]),
+
+				ModuleInitializer::class => $this->replaceConstructorArguments( // given
+					ModuleInitializer::class, [
+
+						"descriptor" => $this->concreteBinds()[DescriptorInterface::class]
+					], [
+
+						"fullRequestProtocols" => $this->returnSelf()
+					]
+				)
  			])
 			->executeGeneratedUrl(); // when
 		}
@@ -67,27 +96,27 @@
 
 			->examineInstance($hydrator, self::class);
 		}
-
-		private function getHydratorForExecuteRequest (bool $canProcessPath):FlowHydrator {
-
-			return $this->replaceConstructorArguments(
-
-				$this->sutName, [], compact("canProcessPath")
-			);
-		}
 		
 		public function test_invalid_request_doesnt_trigger_controller () {
 
-			// given
-			$hydrator = $this->getHydratorForExecuteRequest(false);
- 
- 			// when
-			$this->decorateHydrator($hydrator, [
+			// when
+			$this->decorateHydrator($this->defaultHydrator, [
 
  				RoutedRendererManager::class => $this->positiveDouble(RoutedRendererManager::class, [], [
 
 					"handleValidRequest" => [0, []]
-				])
+				]),
+
+				ModuleInitializer::class => $this->positiveDouble( // given
+					ModuleInitializer::class, [
+
+						"fullRequestProtocols" => $this->throwException(new ValidationFailure(
+
+								$this->positiveDouble(ValidationEvaluator::class)
+							)
+						)
+					]
+				)
  			])->executeGeneratedUrl();
 		}
 
@@ -98,7 +127,7 @@
 			$unitNode = new SingleNode($this->payloadKey);
 
 			// given
-			$hydrator = $this->decorateHydrator($this->container->getClass($this->sutName), [
+			$hydrator = $this->decorateHydrator($this->defaultHydrator, [
 
  				RoutedRendererManager::class => $this->negativeDouble(RoutedRendererManager::class)
  			]);

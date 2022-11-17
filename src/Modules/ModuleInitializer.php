@@ -3,11 +3,13 @@
 
 	use Suphle\Response\RoutedRendererManager;
 
-	use Suphle\Routing\{RouteManager, ExternalRouteMatcher};
+	use Suphle\Routing\{RouteManager, ExternalRouteMatcher, PatternIndicator};
 
 	use Suphle\Request\RequestDetails;
 
 	use Suphle\Middleware\MiddlewareQueue;
+
+	use Suphle\Hydration\Container;
 
 	use Suphle\Services\DecoratorHandlers\VariableDependenciesHandler;
 
@@ -19,31 +21,27 @@
 	
 	class ModuleInitializer implements HighLevelRequestHandler {
 
-		private $foundRoute = false, $router, $descriptor,
+		private bool $foundRoute = false;
 
-		$container, $indicator, $requestDetails, $finalRenderer,
+		private Container $container;
 
-		$variableDecorator, $externalRouters;
+		private PatternIndicator $indicator;
+
+		private BaseRenderer $finalRenderer;
 
 		public function __construct (
-			DescriptorInterface $descriptor, RequestDetails $requestDetails,
+			private readonly DescriptorInterface $descriptor,
 
-			VariableDependenciesHandler $variableDecorator,
+			private readonly RequestDetails $requestDetails,
 
-			RouteManager $router, ExternalRouteMatcher $externalRouters
+			private readonly VariableDependenciesHandler $variableDecorator,
+
+			private readonly RouteManager $router,
+
+			private readonly ExternalRouteMatcher $externalRouters
 		) {
 
-			$this->descriptor = $descriptor;
-
 			$this->container = $descriptor->getContainer();
-
-			$this->requestDetails = $requestDetails;
-
-			$this->variableDecorator = $variableDecorator;
-
-			$this->router = $router;
-
-			$this->externalRouters = $externalRouters;
 		}
 
 		public function assignRoute ():self {

@@ -352,7 +352,7 @@
 
 				return new GeneratedUrlExecution($requestPath, $clonedRenderer);
 			}
-			catch (Throwable) {
+			catch (Throwable $exception) {// throw $exception; // for debugging. don't terminate real flow execution
 
 				return null;
 			}

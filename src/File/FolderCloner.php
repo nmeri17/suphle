@@ -33,8 +33,6 @@
 
 		public function transferFolder (string $sourceFolder, string $newDestination):bool {
 
-			(new NativeErrorHandlers)->silentErrorToException(); // Setting this app-wide will cause all warnings/notices e.g. using @[missing index] to throw the exception, which would be a disaster, especially as this behavior is only wanted in this scenario
-
 			$temporaryModulePath = dirname($sourceFolder). DIRECTORY_SEPARATOR . "temp_dir"; // using this so we don't iterate existing files at that destination
 
 			$this->fileSystemReader->deepCopy( $sourceFolder, $temporaryModulePath );
@@ -104,27 +102,22 @@
 
 		protected function renameEntryOnDisk (string $sourceFolder, string $newDestination):void {
 
-			try {
+			$operationSuccess = false;
 
-				if (file_exists($sourceFolder))
+			if (file_exists($sourceFolder)) {
 
-					rename($sourceFolder, $newDestination); // NativeErrorHandlers::silentErrorToException will cause it throw on failure
+				if (@rename($sourceFolder, $newDestination))
 
-				else trigger_error("Attempt to rename non-existent folder: $sourceFolder");
+					$operationSuccess = true;
 			}
-			catch (Throwable $exception) {
 
-				$isPermissionIssue = $exception instanceof ErrorException &&
+			else throw new Exception("Attempt to rename non-existent folder: $sourceFolder");
 
-				stripos($exception->getMessage(), "access is denied") !== false;
+			if ($operationSuccess) return;
 
-				if (!$isPermissionIssue) // throw all non-permission related issues. This happens because we didn't create that folder. Trying to remove it causes system to revolt. So, we do it manually
-					throw $exception;
-
-				$this->fileSystemReader->deepCopy($sourceFolder, $newDestination);
-				
-				$this->fileSystemReader->emptyDirectory($sourceFolder);
-			}
+			$this->fileSystemReader->deepCopy($sourceFolder, $newDestination);
+			
+			$this->fileSystemReader->emptyDirectory($sourceFolder);
 		}
 	}
 ?>
