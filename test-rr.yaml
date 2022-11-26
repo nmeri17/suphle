@@ -63,7 +63,7 @@ reload:
       # Service specific file pattens to sync.
       #
       # Default: []
-      patterns: [ ".php", ".go", ".md" ]
+      patterns: [ ".php", ".go", ".md", ".yaml" ]
 
 jobs:
 #   # Number of threads which will try to obtain the job from the priority queue
@@ -80,9 +80,9 @@ jobs:
 
   # worker pool configuration
   pool:
-    command: ""
-    max_jobs: 0
-    num_workers: 1 #10
+    #command: "php manual-flow-starter.php"
+    #max_jobs: 0
+    num_workers: 10 #1
     allocate_timeout: 60s
     destroy_timeout: 60s
 
@@ -93,20 +93,20 @@ jobs:
   # Pipeline name
     #
     # This option is required when defining pipelines via configuration.
-    # boltdb-queue:
+    boltdb-queue:
     #   # Driver associated with the pipeline
     #   #
     #   # This option is required. Possible values: amqp, memory, sqs, beanstalk, boltdb
-    #   driver: boltdb
+      driver: boltdb
 
     #   # Driver's configuration
     #   #
     #   # Should not be empty
-    #   config:
+      config:
     #     # BoldDB file to create or DB to use
     #     #
     #     # Default: "rr.db"
-    #     file: "rr-queues.db"
+        file: "rr-queues.db"
 
     #     # Pipeline priority
     #     #
@@ -145,6 +145,6 @@ jobs:
   # list of pipelines to be consumed by the server automatically at the start, keep empty if you want to start consuming manually
   consume:
     [
-        #"boltdb-queue",
-        "memory-queue",
+        "boltdb-queue",
+        #"memory-queue",
     ]

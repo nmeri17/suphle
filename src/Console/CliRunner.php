@@ -71,14 +71,23 @@
 
 			$commands = $container->getClass(Console::class)->commandsList();
 
-			$newCommands = array_map(fn($name) => $container->getClass($name), $this->getUniqueCommands($commands));
+			$hydratedCommands = array_map(
+				fn($name) => $container->getClass($name),
 
-			$this->allCommands = array_merge($this->allCommands, $newCommands);
+				$this->getUniqueCommands($commands)
+			);
+
+			$this->allCommands = array_merge($this->allCommands, $hydratedCommands);
+
+			$container->whenTypeAny()->needsAny([self::class => $this]); // for any command that needs to call other commands
 		}
 
-		private function getUniqueCommands (array $commands):array {
+		private function getUniqueCommands (array $commandNames):array {
 
-			return array_diff ($commands, array_map("get_class", $this->allCommands) );
+			return array_diff (
+			
+				$commandNames, array_map("get_class", $this->allCommands)
+			);
 		}
 
 		public function funnelToClient ():void {

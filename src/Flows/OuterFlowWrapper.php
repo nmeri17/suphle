@@ -21,32 +21,24 @@
 
 		final public const ALL_USERS = "*";
 
-		private $requestDetails, $queueManager, $modules,
-
-		$flowSaver, $container, $routeUmbrella,
-
-		$activeUser, $eventManager, $routeUserNode,
+		private $modules, $routeUmbrella, $activeUser, $routeUserNode,
 
 		$authStorage;
 
 		public function __construct(
-			RequestDetails $requestDetails, AdapterManager $queueManager,
-			
-			UmbrellaSaver $flowSaver, Container $container,
+			private readonly RequestDetails $requestDetails,
 
-			EventManager $eventManager, ModulesBooter $modulesBooter
+			private readonly AdapterManager $queueManager,
+			
+			private readonly UmbrellaSaver $flowSaver,
+
+			private readonly Container $container,
+
+			private readonly EventManager $eventManager,
+
+			ModulesBooter $modulesBooter
 		) {
 			
-			$this->requestDetails = $requestDetails;
-
-			$this->queueManager = $queueManager;
-
-			$this->flowSaver = $flowSaver;
-
-			$this->container = $container;
-
-			$this->eventManager = $eventManager;
-
 			$this->modules = $modulesBooter->getModules();
 		}
 

@@ -24,9 +24,8 @@
 					$container->replaceWithMock($consoleConfig, $consoleConfig, [
 
 						"commandsList" => [$this->sutName]
-					]);
-
-					$container->replaceWithConcrete($this->bCounter, $this->mockBCounter(1)); // first match
+					])
+					->replaceWithConcrete($this->bCounter, $this->mockBCounter(1)); // first match
 				}),
 
 				$this->replicateModule(ModuleTwoDescriptor::class, function (WriteOnlyContainer $container) {
@@ -36,9 +35,8 @@
 					$container->replaceWithMock($consoleConfig, $consoleConfig, [
 
 						"commandsList" => [$this->sutName]
-					]);
-
-					$container->replaceWithConcrete($this->bCounter, $this->mockBCounter(0));
+					])
+					->replaceWithConcrete($this->bCounter, $this->mockBCounter(0));
 				})
 			];
 		}

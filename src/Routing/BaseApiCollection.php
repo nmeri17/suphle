@@ -9,7 +9,7 @@
 
 	class BaseApiCollection extends BaseCollection implements ApiRouteCollection {
 
-		protected $collectionParent = BaseApiCollection::class;
+		protected string $collectionParent = BaseApiCollection::class;
 
 		public function __construct(CanaryValidator $validator, TokenStorage $authStorage, MethodSorter $methodSorter) {
 

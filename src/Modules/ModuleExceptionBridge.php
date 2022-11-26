@@ -100,7 +100,10 @@
 
 			return is_null($errorDetails) ||
 
-			in_array($errorDetails["type"], [E_NOTICE, E_USER_NOTICE]);
+			in_array($errorDetails["type"], [
+
+				E_NOTICE, E_USER_NOTICE, E_USER_WARNING, E_WARNING
+			]);
 		}
 
 		/**

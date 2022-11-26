@@ -13,21 +13,24 @@
 
 	class CoodinatorManager implements ValidationEvaluator {
 
-		private $controller, $container, $actionMethod,
+		private ServiceCoordinator $controller;
 
-		$handlerParameters, $validatorManager, $requestDetails,
+		private string $actionMethod;
 
-		$router;
+		private array $handlerParameters;
 
-		function __construct( Container $container, ValidatorManager $validatorManager, RequestDetails $requestDetails, RouteManager $router) {
+		function __construct(
 
-			$this->container = $container;
+			private readonly Container $container,
 
-			$this->validatorManager = $validatorManager;
+			private readonly ValidatorManager $validatorManager,
 
-			$this->requestDetails = $requestDetails;
+			private readonly RequestDetails $requestDetails,
 
-			$this->router = $router;
+			private readonly RouteManager $router
+		) {
+
+			//
 		}
 
 		public function setDependencies (ServiceCoordinator $controller, string $actionMethod):self {

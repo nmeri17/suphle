@@ -15,7 +15,9 @@
 
 	class RoadRunnerTest extends BaseTestProduction {
 
-		protected const REQUEST_SENDER = VisitSegment::class;
+		protected const REQUEST_SENDER = VisitSegment::class,
+
+		SERVER_TIMEOUT = 60; // stop process if unable to start server after these seconds
 		
 		/**
 		 * @dataProvider modulesUrls
@@ -39,7 +41,7 @@
 				$this->binDir ."rr", "serve", "-c", $configPath
 			]);
 
-			$serverProcess->setTimeout(20); // stop process if unable to start server after 20 seconds
+			$serverProcess->setTimeout(self::SERVER_TIMEOUT);
 
 			try {
 
@@ -153,7 +155,7 @@
 				$this->binDir ."rr", "serve", "-c", $configPath
 			]);
 
-			$serverProcess->setTimeout(20_000);
+			$serverProcess->setTimeout(self::SERVER_TIMEOUT);
 
 			try {
 

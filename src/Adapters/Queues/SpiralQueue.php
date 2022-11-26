@@ -13,19 +13,19 @@
 
 	use Throwable;
 
-	class BoltDbQueue extends BaseQueueAdapter {
+	class SpiralQueue extends BaseQueueAdapter {
 
 		final const HEADER_ATTEMPTS = "attempts",
 
 		HEADER_RETRY_DELAY = "retry-delay";
 
-		private $envAccessor, $container, $maxRetries;
+		private int $maxRetries;
 
-		public function __construct (EnvAccessor $envAccessor, Container $container) {
+		public function __construct (
+			private readonly EnvAccessor $envAccessor, 
 
-			$this->envAccessor = $envAccessor;
-
-			$this->container = $container;
+			private readonly Container $container
+		) {
 
 			$this->maxRetries = $envAccessor->getField("MAX_QUEUE_RETRIES", 5);
 		}

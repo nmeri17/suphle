@@ -20,15 +20,17 @@
 	*/
 	class ModuleWorkerAccessor {
 
-		private $handlerIdentifier, $httpWorker, $queueWorker,
+		private PSR7Worker $httpWorker;
 
-		$isHttpMode;
+		private QueueAdapter $queueWorker;
 
-		public function __construct (ModuleHandlerIdentifier $handlerIdentifier, bool $isHttpMode) {
+		public function __construct (
+			private readonly ModuleHandlerIdentifier $handlerIdentifier, 
 
-			$this->handlerIdentifier = $handlerIdentifier;
+			private readonly bool $isHttpMode
+		) {
 
-			$this->isHttpMode = $isHttpMode;
+			//
 		}
 
 		public function runInSandbox (callable $serverAction, callable $onServerError = null):void {

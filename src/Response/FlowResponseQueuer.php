@@ -9,13 +9,13 @@
 
 	class FlowResponseQueuer {
 
-		private $queueManager, $authStorage;
+		public function __construct (
+			private readonly AdapterManager $queueManager,
 
-		public function __construct (AdapterManager $queueManager, AuthStorage $authStorage) {
+			private readonly AuthStorage $authStorage
+		) {
 
-			$this->queueManager = $queueManager;
-
-			$this->authStorage = $authStorage;
+			//
 		}
 
 		public function saveSubBranches (BaseRenderer $renderer):void {

@@ -15,28 +15,29 @@
 
 	abstract class BaseCollection implements RouteCollection {
 
-		protected $collectionParent = BaseCollection::class,
-
-		$crudMode = false,
-
-		$canaryValidator, $authStorage,
+		protected string $collectionParent = BaseCollection::class,
 
 		/**
 		 * this is set if this collection is used as prefix in another. Should be used while determining the prefix of that collection
 		*/
 		$parentPrefix;
 
-		private $crudPrefix, $prefixClass, $lastRegistered = [],
+		protected bool $crudMode = false;
 
-		$methodSorter;
+		private ?string $prefixClass = null;
 
-		public function __construct(CanaryValidator $validator, AuthStorage $authStorage, MethodSorter $methodSorter) {
+		private array $lastRegistered = [];
 
-			$this->canaryValidator = $validator;
+		public function __construct(
 
-			$this->authStorage = $authStorage;
+			protected readonly CanaryValidator $canaryValidator, 
 
-			$this->methodSorter = $methodSorter;
+			protected readonly AuthStorage $authStorage, 
+
+			private readonly MethodSorter $methodSorter
+		) {
+
+			//
 		}
 		
 		/**

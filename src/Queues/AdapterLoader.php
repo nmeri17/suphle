@@ -5,13 +5,14 @@
 
 	use Suphle\Hydration\BaseInterfaceLoader;
 
-	use Suphle\Adapters\Queues\BoltDbQueue;
+	use Suphle\Adapters\Queues\SpiralQueue;
 
 	class AdapterLoader extends BaseInterfaceLoader {
 
-		public function __construct(private readonly EnvAccessor $envAccessor)
-  {
-  }
+		public function __construct(private readonly EnvAccessor $envAccessor) {
+
+			//
+		}
 
 		public function afterBind ($initialized):void {
 
@@ -25,7 +26,7 @@
 
 		public function concreteName ():string {
 
-			return BoltDbQueue::class;
+			return SpiralQueue::class;
 		}
 	}
 ?>

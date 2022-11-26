@@ -9,11 +9,14 @@
 
 		final const TAG_KEY = "_reserved_key_tags";
 
-		private $client, $cacheConfig;
+		private Client $client;
 
-		public function __construct (CacheConfig $cacheConfig) {
+		public function __construct (
 
-			$this->cacheConfig = $cacheConfig;
+			private readonly CacheConfig $cacheConfig
+		) {
+
+			//
 		}
 
 		public function setupClient ():void {

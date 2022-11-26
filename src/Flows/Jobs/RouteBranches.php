@@ -15,27 +15,23 @@
 
 		final public const FLOW_MECHANISMS = "flow_wildcards";
 
-		private $flowDetails, $moduleFinder, $hydrator, $modulesBooter,
+		private array $modules;
 
-		$modules, $cacheManager, $wildcardNotExist = false;
+		private bool $wildcardNotExist = false;
 
 		public function __construct(
-			PendingFlowDetails $flowDetails, ModuleToRoute $moduleFinder,
+			private readonly PendingFlowDetails $flowDetails,
 
-			FlowHydrator $hydrator, ModulesBooter $modulesBooter,
+			private readonly ModuleToRoute $moduleFinder,
 
-			CacheManager $cacheManager
+			private readonly FlowHydrator $hydrator,
+
+			private readonly ModulesBooter $modulesBooter,
+
+			private readonly CacheManager $cacheManager
 		) {
 			
-			$this->flowDetails = $flowDetails;
-
-			$this->moduleFinder = $moduleFinder;
-
-			$this->hydrator = $hydrator;
-
-			$this->modulesBooter = $modulesBooter;
-
-			$this->cacheManager = $cacheManager;
+			//
 		}
 
 		public function handle ():void {
