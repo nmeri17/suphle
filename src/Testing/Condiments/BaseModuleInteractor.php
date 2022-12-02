@@ -23,9 +23,9 @@
 
 		use ExceptionBroadcasters;
 
-		protected $modules, // making this accessible for traits down the line that will need identical instances of the modules this base type is working with
+		protected array $modules; // making this accessible for traits down the line that will need identical instances of the modules this base type is working with
 
-		$entrance;
+		protected ModuleHandlerIdentifier $entrance;
 
 		protected function massProvide (array $provisions):void {
 
@@ -33,10 +33,7 @@
 
 				$container = $descriptor->getContainer();
 
-				foreach ($provisions as $parentType => $concrete) {
-
-					$container->refreshClass($parentType);
-				}
+				$container->refreshMany(array_keys($provisions));
 
 				$container->whenTypeAny()->needsAny($provisions);
 			}

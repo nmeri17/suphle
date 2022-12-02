@@ -24,7 +24,7 @@
 		public function __construct (
 			private readonly EnvAccessor $envAccessor, 
 
-			private readonly Container $container
+			protected readonly Container $container
 		) {
 
 			$this->maxRetries = $envAccessor->getField("MAX_QUEUE_RETRIES", 5);
@@ -50,7 +50,8 @@
 
 				try {
 
-					$this->handleIncomingTask($task);
+					$this->hydrateTask($task->getName(), $task->getPayload())
+					->handle();
 
 					$task->complete();
 				}
@@ -59,17 +60,6 @@
 					$this->onTaskFailure($task, $exception);
 				}
 			}
-		}
-
-		protected function handleIncomingTask (ReceivedTaskInterface $task):void {
-
-			$className = $task->getName();
-
-			$instance = $this->container->whenType($className)
-
-			->needsArguments($task->getPayload())
-
-			->getClass($className)->handle();
 		}
 
 		protected function onTaskFailure (ReceivedTaskInterface $task, Throwable $exception):void {
@@ -87,7 +77,6 @@
 			->fail($exception, $currentAttempts > intval($this->maxRetries));
 		}
 
-		// connection opened here is for the client
 		public function configureNative ():void {
 
 			$rpcAddress = Environment::fromGlobals()->getRPCAddress();

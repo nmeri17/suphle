@@ -13,9 +13,13 @@
 
 	abstract class BaseCliCommand extends Command {
 
-		protected $moduleList, $executionPath, $defaultContainer,
+		protected array $moduleList;
 
-		$withModuleOption = true;
+		protected string $executionPath;
+
+		protected Container $defaultContainer;
+
+		protected bool $withModuleOption = true;
 
 		final public const HYDRATOR_MODULE_OPTION = "hydrating_module";
 

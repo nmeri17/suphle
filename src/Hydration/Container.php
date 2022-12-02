@@ -15,27 +15,35 @@
 
 		CLASS_CONSTRUCTOR = "__construct";
 
-		private $provisionedNamespaces = [], // NamespaceUnit[]
+		private array $provisionedNamespaces = [], // NamespaceUnit[]
 
 		$hydratingForStack = [], // String[]. Doubles as a dependency chain. @see [lastHydratedFor] for main usage
 
-		$internalMethodHydrate = [], // Used when [getMethodParameters] is called directly without going through instance methods such as [instantiateConcrete]
+		$internalMethodHydrate = [],
 
-		$hydratingArguments = false,
+		$hydratedClassConsumers = []; // Used when [getMethodParameters] is called directly without going through instance methods such as [instantiateConcrete]
 
-		$config, $externalContainers,
+		private bool $hydratingArguments = false;
 
-		$hydratedClassConsumers = [],
+		private IContainerConfig $config;
 
-		$interfaceHydrator, $decorator, $objectMeta,
+		private InterfaceHydrator $interfaceHydrator;
 
-		$provisionContext, // the active Type before calling needs
+		private ExternalPackageManagerHydrator $externalContainers;
 
-		$provisionSpace, // same as above, but for namespaces
+		private ?DecoratorHydrator $decorator = null;
 
-		$telescope, $arrayMeta;
+		private ObjectDetails $objectMeta;
 
-		protected $provisionedClasses = []; // ProvisionUnit[]
+		private ?string $provisionContext, // the active Type before calling needs. Nullable since it's reset after a needsAny cycle
+
+		$provisionSpace; // same as above, but for namespaces
+
+		private ?ContainerTelescope $telescope = null;
+
+		private ArrayDetails $arrayMeta;
+
+		protected array $provisionedClasses = []; // ProvisionUnit[]
 
 		public function __construct () {
 

@@ -72,7 +72,7 @@
 
 					$newImageNames[$operationName] = $operation->getAsyncNames();
 
-					$this->queueManager->augmentArguments(
+					$this->queueManager->addTask(
 						AsyncImageProcessor::class,
 
 						compact("operation")

@@ -17,7 +17,7 @@
 
 		protected static $defaultDescription = "Extract templates registered for given module";
 
-		protected $withModuleOption = false;
+		protected bool $withModuleOption = false;
 
 		public static function commandSignature ():string {
 
@@ -32,7 +32,7 @@
 
 				self::HYDRATOR_MODULE_OPTION, InputArgument::REQUIRED,
 
-				"Module interface where templates are to be ejected"
+				"Relative name of the Module interface where templates are to be ejected"
 			);
 
 			$this->addOption(

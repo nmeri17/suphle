@@ -20,7 +20,7 @@
 
 		public function saveSubBranches (BaseRenderer $renderer):void {
 
-			$this->queueManager->augmentArguments(RouteBranches::class, [
+			$this->queueManager->addTask(RouteBranches::class, [
 				
 				"flowDetails" => new PendingFlowDetails(
 					

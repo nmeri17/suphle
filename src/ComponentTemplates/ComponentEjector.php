@@ -7,18 +7,25 @@
 
 	class ComponentEjector {
 
-		private $componentList, $container;
+		private $componentList;
 
-		public function __construct (Container $container, ComponentTemplates $templateConfig) {
+		public function __construct (
 
-			$this->container = $container;
+			private readonly Container $container,
+
+			ComponentTemplates $templateConfig
+		) {
 
 			$this->componentList = $templateConfig->getTemplateEntries();
 		}
 
 		public function depositFiles (?array $componentsToOverride):bool {
 
-			$hydratedComponents = array_map(fn($component) => $this->container->getClass($component), $this->componentList);
+			$hydratedComponents = array_map(
+				fn($component) => $this->container->getClass($component),
+
+				$this->componentList
+			);
 
 			foreach ($hydratedComponents as $component) {
 

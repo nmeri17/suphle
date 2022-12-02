@@ -1,9 +1,7 @@
 <?php
 	namespace Suphle\File;
 
-	use FilesystemIterator, Throwable, ErrorException;
-
-	use Suphle\Exception\NativeErrorHandlers;
+	use Exception;
 
 	class FolderCloner {
 

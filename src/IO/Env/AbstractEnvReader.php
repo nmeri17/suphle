@@ -20,9 +20,11 @@
 
 		public function getField (string $name, $defaultValue = null) {
 
-			return $_ENV[$name] ?? getenv($name) ?? // most runners write to $_ENV except Symfony\Process (used in RoadRunner tests) that writes to getenv
+			$readValue = $_ENV[$name] ?? getenv($name); // most runners write to $_ENV except Symfony\Process (used in RoadRunner tests) that writes to getenv
 
-			$defaultValue;
+			if ($readValue === false) return $defaultValue;
+
+			return $readValue;
 		}
 
 		/*public function setField (string $name, $value):void {

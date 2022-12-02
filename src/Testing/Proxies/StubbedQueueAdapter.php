@@ -16,9 +16,7 @@
 
 			foreach ($this->pushedTasks as $taskClass => $payload)
 
-				(new $taskClass(...array_values($payload)))
-
-				->handle();
+				$this->hydrateTask($taskClass, $payload)->handle();
 		}
 
 		public function configureNative ():void {

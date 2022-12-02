@@ -30,16 +30,12 @@
 			$this->assertSimpleCloneModule();
 		}
 
+		/**
+		 * @depends test_can_transfer_files_to_current_location
+		*/
 		public function test_correctly_changes_file_folder_names () {
 
 			$this->assertSimpleCloneModule(function ($modulePath) {
-
-				$descriptorFullName = implode("\\", [
-
-					"\Suphle\Tests\Mocks\Modules", $this->newModuleName,
-
-					"Meta", $this->newModuleName . "Descriptor"
-				]);
 
 				$descriptorPath = implode(DIRECTORY_SEPARATOR, [
 
@@ -49,6 +45,8 @@
 				]);
 
 				$this->assertFileExists($descriptorPath);
+
+				$descriptorFullName = $this->constructDescriptorName();
 
 				$instance = new $descriptorFullName(new Container);
 

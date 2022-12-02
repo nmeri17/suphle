@@ -32,7 +32,7 @@
 
 		public function queueAlertAdapter (Throwable $exception, $payload):void {
 
-			$this->queueManager->augmentArguments(DeferExceptionAlert::class, [
+			$this->queueManager->addTask(DeferExceptionAlert::class, [
 
 				"explosive" => $exception,
 

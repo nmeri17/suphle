@@ -23,7 +23,9 @@
 			ConfigureExceptionBridge::setUp as mufflerSetup;
 		}
 
-		protected $container, $usesRealDecorator = true;
+		protected Container $container;
+
+		protected bool $usesRealDecorator = true;
 
 		protected function setUp ():void {
 
@@ -93,13 +95,9 @@
 
 		protected function massProvide (array $provisions):void {
 
-			$container = $this->container;
+			$this->container->refreshMany(array_keys($provisions));
 
-			foreach ($provisions as $parentType => $concrete)
-
-				$container->refreshClass($parentType);
-
-			$container->whenTypeAny()->needsAny($provisions);
+			$this->container->whenTypeAny()->needsAny($provisions);
 		}
 
 		private function getContainerStubs ():array {

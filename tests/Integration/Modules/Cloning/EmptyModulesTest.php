@@ -1,9 +1,11 @@
 <?php
 	namespace Suphle\Tests\Integration\Modules\Cloning;
 
+	use Suphle\Contracts\ConsoleClient;
+
 	use Suphle\Adapters\Console\SymfonyCli;
 
-	use Suphle\Console\CliRunner;
+	use Suphle\Console\CliRunnerAccessor;
 
 	use Suphle\Testing\{Proxies\Extensions\FrontDoor, TestTypes\IsolatedComponentTest};
 
@@ -11,9 +13,18 @@
 
 	class EmptyModulesTest extends IsolatedComponentTest {
 
-		use CommonBinds, SimpleCloneAssertions;
+		use CommonBinds, SimpleCloneAssertions {
 
-		private $consoleRunner;
+			CommonBinds::simpleBinds as commonSimples;
+		}
+
+		protected function simpleBinds ():array {
+
+			return array_merge($this->commonSimples(), [
+
+				ConsoleClient::class => SymfonyCli::class // we don't bother with this on CommandLineTest because their setUp boots the runner and binds that to all containers
+			]);
+		}
 
 		public function test_can_clone_without_modules () {
 
@@ -27,16 +38,19 @@
 		*/
 		protected function setConsoleRunner ():self {
 
-			$this->consoleRunner = new CliRunner (
+			$runnerAccessor = new CliRunnerAccessor (
 
-				new FrontDoor([]), new SymfonyCli("SuphleTest", "v2")
+				new FrontDoor([]), "SuphleTest", true
 			);
 
-			$this->consoleRunner->extractAvailableCommands()
+			$runnerAccessor->forwardCommandsToRunner(
 
-			->setRootPath($this->fileConfig->getRootPath())
+				$this->fileConfig->getRootPath()
+			);
 
-			->funnelToClient();
+			$this->consoleRunner = $runnerAccessor->getRunner();
+
+			$this->container = $this->consoleRunner->getDefaultContainer(); // without this, the doubling bind done to replace ModuleClonerService will not bind to the correct container
 
 			return $this;
 		}

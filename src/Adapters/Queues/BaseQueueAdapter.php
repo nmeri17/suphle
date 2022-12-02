@@ -3,9 +3,18 @@
 
 	use Suphle\Contracts\Queues\Adapter;
 
+	use Suphle\Hydration\Container;
+
 	abstract class BaseQueueAdapter implements Adapter {
 
-		protected $activeQueueName, $client;
+		protected string $activeQueueName;
+
+		protected $client; // set from `configureNative`, 
+
+		public function __construct (protected readonly Container $container) {
+
+			//
+		}
 
 		public function setActiveQueue (string $queueName):void {
 
@@ -15,6 +24,13 @@
 		public function getNativeClient () {
 
 			return $this->client;
+		}
+
+		protected function hydrateTask (string $taskName, array $argumentList):object {
+
+			return $this->container->whenType($taskName)
+
+			->needsArguments($argumentList)->getClass($taskName);
 		}
 	}
 ?>

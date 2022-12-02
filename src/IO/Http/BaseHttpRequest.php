@@ -11,16 +11,19 @@
 
 	abstract class BaseHttpRequest extends IndicatesCaughtException {
 
-		protected $requestClient, $exceptionManager, $httpResponse;
+		protected $httpResponse;
 
 		/**
 		 * No need to decorate with VariableDependencies since any request made using external libraries won't use this client at the same time, thus can simply override this constructor
 		*/
-		public function __construct (ClientInterface $requestClient, DetectedExceptionManager $exceptionManager) {
+		public function __construct (
 
-			$this->requestClient = $requestClient;
+			protected readonly ClientInterface $requestClient,
 
-			$this->exceptionManager = $exceptionManager;
+			protected readonly DetectedExceptionManager $exceptionManager
+		) {
+
+			//
 		}
 
 		/**

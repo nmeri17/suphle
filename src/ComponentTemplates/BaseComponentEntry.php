@@ -7,13 +7,13 @@
 
 	abstract class BaseComponentEntry {
 
-		protected $fileConfig, $fileSystemReader;
+		public function __construct (
+			protected readonly ModuleFiles $fileConfig,
 
-		public function __construct (ModuleFiles $fileConfig, FileSystemReader $fileSystemReader) {
+			protected readonly FileSystemReader $fileSystemReader
+		) {
 
-			$this->fileConfig = $fileConfig;
-
-			$this->fileSystemReader = $fileSystemReader;
+			//
 		}
 
 		public function hasBeenEjected ():bool {

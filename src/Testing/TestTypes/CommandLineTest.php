@@ -5,7 +5,7 @@
 
 	use Suphle\Adapters\Console\SymfonyCli;
 
-	use Suphle\Console\CliRunner;
+	use Suphle\Console\{CliRunnerAccessor, CliRunner};
 
 	use Suphle\Hydration\Container;
 
@@ -20,7 +20,7 @@
 			ConfigureExceptionBridge::setUp as mufflerSetup;
 		}
 
-		protected $consoleRunner, $modules;
+		protected CliRunner $consoleRunner;
 
 		protected function setUp ():void {
 
@@ -33,19 +33,19 @@
 
 			$this->monitorModuleContainers();
 
-			$this->consoleRunner = new CliRunner (
+			$runnerAccessor = new CliRunnerAccessor (
 
-				$this->entrance, new SymfonyCli("SuphleTest", "v2")
+				$this->entrance, "SuphleTest", true
 			);
 
-			$this->consoleRunner->extractAvailableCommands()
-			
-			->setRootPath( // can't pass this into the constructor since as evident here, we can't have access to any dynamic paths until containers have booted
+			$runnerAccessor->forwardCommandsToRunner(
+
 				$this->getContainer()->getClass(ModuleFiles::class)
 
 				->getRootPath()
-			)
-			->funnelToClient();
+			);
+
+			$this->consoleRunner = $runnerAccessor->getRunner();
 
 			$this->mufflerSetup();
 		}

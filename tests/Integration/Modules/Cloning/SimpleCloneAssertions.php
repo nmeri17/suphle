@@ -1,11 +1,19 @@
 <?php
 	namespace Suphle\Tests\Integration\Modules\Cloning;
 
-	use Suphle\Contracts\Config\ModuleFiles;
+	use Suphle\Contracts\Config\{ModuleFiles, ComponentTemplates};
+
+	use Suphle\Contracts\Modules\DescriptorInterface;
+
+	use Suphle\Services\ComponentEntry as ServicesComponentEntry;
 
 	use Suphle\File\FileSystemReader;
 
-	use Suphle\Modules\Commands\CloneModuleCommand;
+	use Suphle\Modules\{ModuleCloneService, Commands\CloneModuleCommand};
+
+	use Suphle\Hydration\Container;
+
+	use Suphle\Console\CliRunner;
 
 	use Suphle\Testing\Condiments\FilesystemCleaner;
 
@@ -15,9 +23,19 @@
 
 		use FilesystemCleaner;
 
-		protected $fileConfig, $container, $newModuleName = "ModuleAgnes",
+		protected ModuleFiles $fileConfig;
 
-		$sutName = CloneModuleCommand::class;
+		protected Container $container;
+
+		protected CliRunner $consoleRunner;
+
+		protected string $newModuleName = "ModuleAgnes",
+
+		$sutName = CloneModuleCommand::class,
+
+		$servicesTemplate = ServicesComponentEntry::class,
+
+		$componentConfig = ComponentTemplates::class;
 
 		protected function simpleCloneDependencies ():self {
 
@@ -28,7 +46,56 @@
 			return $this;
 		}
 
+		protected function replaceTemplateEntries ():void {
+
+			$clonerServiceName = ModuleCloneService::class;
+
+			$this->massProvide([
+
+				$clonerServiceName => $this->positiveDouble(
+
+					$clonerServiceName, [
+
+						"bootNewlyCreatedContainer" => $this->returnCallback($this->bootNewlyCreatedContainer(...))
+					], [],
+
+					$this->container->getMethodParameters(
+
+						Container::CLASS_CONSTRUCTOR, $clonerServiceName
+					)
+				)
+			]);
+		}
+
+		protected function bootNewlyCreatedContainer (string $descriptorName):DescriptorInterface {
+
+			$descriptor = new $descriptorName(new Container);
+
+			$descriptor->warmModuleContainer();
+
+			$descriptor->prepareToRun();
+
+			$descriptor->getContainer()->whenTypeAny()
+
+			->needsAny($this->newContainerBindings());
+
+			return $descriptor;
+		}
+
+		protected function newContainerBindings ():array {
+
+			return [
+
+				$this->componentConfig => $this->positiveDouble($this->componentConfig, [
+
+					"getTemplateEntries" => [$this->servicesTemplate]
+				])
+			];
+		}
+
 		protected function assertSimpleCloneModule (callable $onCloneSuccess = null):void {
+
+			$this->replaceTemplateEntries();
 
 			$commandResult = $this->runSimpleCloneCommand( // given
 
@@ -69,7 +136,9 @@
 
 				CloneModuleCommand::SOURCE_ARGUMENT => $this->fileConfig->getRootPath() . "ModuleTemplate",
 
-				CloneModuleCommand::MODULE_NAME_ARGUMENT => $this->newModuleName
+				CloneModuleCommand::MODULE_NAME_ARGUMENT => $this->newModuleName,
+
+				"--" . CloneModuleCommand::DESCRIPTOR_OPTION => $this->constructDescriptorName()
 			]);
 		}
 		
@@ -95,6 +164,16 @@
 				"Interactions", DIRECTORY_SEPARATOR,
 
 				$this->newModuleName, ".php"
+			]);
+		}
+
+		protected function constructDescriptorName ():string {
+
+			return implode("\\", [
+
+				"\Suphle\Tests\Mocks\Modules", $this->newModuleName,
+
+				"Meta", $this->newModuleName . "Descriptor"
 			]);
 		}
 	}

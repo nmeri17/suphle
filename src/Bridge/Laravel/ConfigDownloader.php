@@ -15,18 +15,16 @@
 
 		final public const ENV_CONFIG_URL = "LARAVEL_CONFIG_URL";
 
-		private $saveInLocation, $envAccessor;
+		private $saveInLocation;
 
 		public function __construct (
 
 			ClientInterface $requestClient, DetectedExceptionManager $exceptionDetector,
 
-			EnvAccessor $envAccessor
+			private readonly EnvAccessor $envAccessor
 		) {
 
 			parent::__construct($requestClient, $exceptionDetector);
-
-			$this->envAccessor = $envAccessor;
 		}
 
 		public function getRequestUrl ():string {

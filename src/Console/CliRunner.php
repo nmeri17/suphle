@@ -79,7 +79,10 @@
 
 			$this->allCommands = array_merge($this->allCommands, $hydratedCommands);
 
-			$container->whenTypeAny()->needsAny([self::class => $this]); // for any command that needs to call other commands
+			$container->whenTypeAny()->needsAny([
+
+				ConsoleClient::class => $this->consoleClient
+			]); // for any command that needs to call other commands
 		}
 
 		private function getUniqueCommands (array $commandNames):array {
@@ -104,6 +107,11 @@
 
 				$this->consoleClient->add($command);
 			}
+		}
+
+		public function getDefaultContainer ():?Container {
+
+			return $this->defaultContainer;
 		}
 
 		/**
