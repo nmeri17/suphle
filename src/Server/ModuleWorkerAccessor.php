@@ -1,5 +1,7 @@
 <?php
-	namespace Suphle\Modules;
+	namespace Suphle\Server;
+
+	use Suphle\Modules\ModuleHandlerIdentifier;
 
 	use Suphle\Contracts\{Presentation\BaseRenderer, Queues\Adapter as QueueAdapter};
 

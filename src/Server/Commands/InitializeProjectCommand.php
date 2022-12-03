@@ -1,7 +1,7 @@
 <?php
-	namespace Suphle\Modules\Commands;
+	namespace Suphle\Server\Commands;
 
-	use Suphle\Modules\ProjectInitializer;
+	use Suphle\Server\ProjectInitializer;
 
 	use Suphle\Console\BaseCliCommand;
 
@@ -9,9 +9,9 @@
 
 	use Symfony\Component\Console\Input\{InputInterface, InputArgument};
 
-	class InitializeProjectCommand extends BaseCliCommand {
+	use Throwable;
 
-		final public const MODULE_NAME_ARGUMENT = "new_module_name";
+	class InitializeProjectCommand extends BaseCliCommand {
 
 		protected static $defaultDescription = "Create a module and start RR server";
 
@@ -22,14 +22,19 @@
 			parent::configure();
 
 			$this->addArgument(
-				
-				self::MODULE_NAME_ARGUMENT, InputArgument::REQUIRED, "First module to create"
+				CloneModuleCommand::MODULE_NAME_ARGUMENT, InputArgument::REQUIRED, "Module to create"
+			);
+
+			$this->addOption(
+				CloneModuleCommand::DESCRIPTOR_OPTION, "e",
+
+				InputOption::VALUE_REQUIRED, "Descriptor presence will enable templates installation"
 			);
 		}
 
 		public static function commandSignature ():string {
 
-			return "project:create_new"; // contribute_test
+			return "project:create_new";
 		}
 
 		public function execute (InputInterface $input, OutputInterface $output):int {
@@ -42,9 +47,7 @@
 					$input->getArgument(self::MODULE_NAME_ARGUMENT)
 				);
 
-				$output->writeln("Operation completed successfully");
-
-				return Command::SUCCESS; // Command::SUCCESS/FAILURE/INVALID
+				return Command::SUCCESS;
 			}
 			catch (Throwable $exception) {
 

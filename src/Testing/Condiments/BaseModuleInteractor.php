@@ -9,7 +9,9 @@
 
 	use Suphle\Events\ModuleLevelEvents;
 
-	use Suphle\Modules\{ModuleHandlerIdentifier, ModuleWorkerAccessor};
+	use Suphle\Modules\ModuleHandlerIdentifier
+
+	use Suphle\Server\ModuleWorkerAccessor;
 
 	use Suphle\Request\RequestDetails;
 

@@ -15,7 +15,9 @@
 
 		use MockFacilitator;
 
-		protected $containerTelescope, $monitorContainer = false;
+		protected ?ContainerTelescope $containerTelescope;
+
+		protected bool $monitorContainer = false;
 
 		protected function bootContainer (Container $container):void {
 

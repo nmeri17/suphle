@@ -16,7 +16,7 @@
 			ConfigureExceptionBridge::setUp as mufflerSetup;
 		}
 
-		protected $useTestComponents = true;
+		protected bool $useTestComponents = true;
 
 		protected function setUp ():void {
 

@@ -5,8 +5,6 @@
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\OutgoingRequests\VisitSegment;
 
-	use Symfony\Component\Process\Process;
-
 	use GuzzleHttp\Exception\RequestException;
 
 	use Psr\Http\Message\ResponseInterface;
@@ -17,7 +15,9 @@
 
 		protected const REQUEST_SENDER = VisitSegment::class,
 
-		SERVER_TIMEOUT = 60; // stop process if unable to start server after these seconds
+		SERVER_TIMEOUT = 60, // stop process if unable to start server after these seconds
+
+		RR_CONFIG = "../../test-rr.yaml";
 		
 		/**
 		 * @dataProvider modulesUrls
@@ -31,15 +31,7 @@
 
 			$this->ensureExecutableRuns();
 
-			$configPath = $this->fileSystemReader->getAbsolutePath(
-
-				$this->binDir, "../../test-rr.yaml"
-			);
-
-			$serverProcess = new Process([
-
-				$this->binDir ."rr", "serve", "-c", $configPath
-			]);
+			$serverProcess = $this->vendorBin->getServerLauncher(self::RR_CONFIG);
 
 			$serverProcess->setTimeout(self::SERVER_TIMEOUT);
 
@@ -145,15 +137,7 @@
 
 		public function test_single_process_can_handle_multiple_requests () {
 
-			$configPath = $this->fileSystemReader->getAbsolutePath(
-
-				$this->binDir, "../../test-rr.yaml"
-			);
-
-			$serverProcess = new Process([
-
-				$this->binDir ."rr", "serve", "-c", $configPath
-			]);
+			$serverProcess = $this->vendorBin->getServerLauncher(self::RR_CONFIG);
 
 			$serverProcess->setTimeout(self::SERVER_TIMEOUT);
 

@@ -18,14 +18,9 @@
 
 			$_GET["suphle_path"] = "/$url"; // given
 
-			$indexPath = $this->fileSystemReader->getAbsolutePath(
-
-				$this->binDir, "../../index.php"
-			);
-
 			$this->expectOutputString($output); // then
 
-			require $indexPath; // when
+			require $this->vendorBin->getRootFile("../../index.php"); // when
 		}
 	}
 ?>

@@ -13,11 +13,9 @@
 
 	use Symfony\Component\Console\{Output\OutputInterface, Command\Command};
 
-	use Symfony\Component\Console\Input\{InputInterface, ArrayInput};
+	use Symfony\Component\Console\Input\ArrayInput;
 
 	class ModuleCloneService {
-
-		protected InputInterface $input;
 
 		protected string $executionPath;
 
@@ -35,13 +33,22 @@
 			//
 		}
 
-		public function setCommandDetails (InputInterface $input, string $executionPath, array $moduleList):self {
-
-			$this->input = $input;
+		public function setConsoleDetails ( string $executionPath, array $moduleList):self {
 
 			$this->executionPath = $executionPath;
 
 			$this->moduleList = $moduleList;
+
+			return $this;
+		}
+
+		public function setCommandDetails (string $sourceName, bool $isAbsoluteSource, string $writeDestination = null):self {
+
+			$this->sourceName = $sourceName;
+
+			$this->isAbsoluteSource = $isAbsoluteSource;
+
+			$this->writeDestination = $writeDestination;
 
 			return $this;
 		}
@@ -62,9 +69,7 @@
 			);
 		}
 
-		public function installModuleTemplates (string $moduleName, InputInterface $input, OutputInterface $output):int {
-
-			$descriptorName = $input->getOption(CloneModuleCommand::DESCRIPTOR_OPTION);
+		public function installModuleTemplates (string $moduleName, OutputInterface $output, ?string $descriptorName):int {
 
 			if (empty($descriptorName)) return Command::SUCCESS;
 
@@ -88,9 +93,9 @@
 			return $command->run($commandInput, $output);
 		}
 
-		public function bootNewlyCreatedContainer (string $descriptorName):DescriptorInterface { // move to a service and stub that
+		public function bootNewlyCreatedContainer (string $descriptorName):DescriptorInterface {
 
-			$descriptor = new $descriptorName(new Container);
+			$descriptor = new $descriptorName(new Container); // this is why descriptor fqcn is necessary
 
 			$descriptor->warmModuleContainer();
 
@@ -101,25 +106,21 @@
 
 		protected function getSource ():string {
 
-			$sourceName = $this->input->getArgument(CloneModuleCommand::SOURCE_ARGUMENT);
+			if ($this->isAbsoluteSource)
 
-			if (!$this->input->getOption(CloneModuleCommand::RELATIVE_SOURCE_OPTION))
-
-				return $sourceName;
+				return $this->sourceName;
 
 			return $this->fileSystemReader->noTrailingSlash(
 
 				$this->executionPath
-			) . DIRECTORY_SEPARATOR. $sourceName;
+			) . DIRECTORY_SEPARATOR. $this->sourceName;
 		}
 
 		protected function getDestination (string $target):string {
 
 			$destination = $this->fileSystemReader->noTrailingSlash(
 
-				$this->input->getOption(CloneModuleCommand::DESTINATION_OPTION) ??
-
-				$this->executionPath
+				$this->writeDestination ?? $this->executionPath
 			). DIRECTORY_SEPARATOR . $target;
 
 			return $this->fileSystemReader->pathFromLevels($destination, "", 1); // since we expect to modify even the root folder itself, not only the children

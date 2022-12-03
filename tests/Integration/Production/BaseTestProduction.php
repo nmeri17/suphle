@@ -1,28 +1,32 @@
 <?php
 	namespace Suphle\Tests\Integration\Production;
 
-	use Suphle\File\FileSystemReader;
+	use Suphle\Server\VendorBin;
 
 	use Suphle\Tests\Integration\Modules\ModuleDescriptor\DescriptorCollection;
 
 	abstract class BaseTestProduction extends DescriptorCollection {
 
-		protected $debugCaughtExceptions = true,
+		protected bool $debugCaughtExceptions = true,
 
-		$useTestComponents = false, $binDir, $fileSystemReader;
+		$useTestComponents = false;
+
+		protected VendorBin $vendorBin;
 
 		protected function setUp ():void {
 
 			parent::setUp();
 
-			$this->binDir = $_SERVER["COMPOSER_RUNTIME_BIN_DIR"];
+			$this->vendorBin = $this->getContainer()
 
-			$this->fileSystemReader = new FileSystemReader;
+			->getClass(VendorBin::class);
 		}
 
 		public function modulesUrls ():array {
 
-			return [ $this->moduleThreeUrls()[0], [
+			return [
+				$this->moduleThreeUrls()[0],
+				[
 					"segment", json_encode([
 
 						"message" => "plain Segment"

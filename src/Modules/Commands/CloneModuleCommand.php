@@ -13,13 +13,13 @@
 
 	class CloneModuleCommand extends BaseCliCommand {
 
-		final public const SOURCE_ARGUMENT = "template_source",
+		final public const SOURCE_OPTION = "template_source",
 
 		DESTINATION_OPTION = "destination_path",
 
 		MODULE_NAME_ARGUMENT = "new_module_name",
 
-		RELATIVE_SOURCE_OPTION = "is_relative_source",
+		ABSOLUTE_SOURCE_OPTION = "is_relative_source",
 
 		DESCRIPTOR_OPTION = "module_descriptor";
 
@@ -28,10 +28,6 @@
 		protected function configure ():void {
 
 			parent::configure();
-
-			$this->addArgument(
-				self::SOURCE_ARGUMENT, InputArgument::REQUIRED, "Folder structure to be mirrored"
-			);
 
 			$this->addArgument(
 				self::MODULE_NAME_ARGUMENT, InputArgument::REQUIRED, "Module to create"
@@ -44,7 +40,7 @@
 			); // note argument ordering: options can't come before arguments
 
 			$this->addOption(
-				self::RELATIVE_SOURCE_OPTION, "r",
+				self::ABSOLUTE_SOURCE_OPTION, "i",
 
 				InputOption::VALUE_NONE, "Set whether paths are relative or absolute"
 			);
@@ -53,6 +49,14 @@
 				self::DESCRIPTOR_OPTION, "e",
 
 				InputOption::VALUE_REQUIRED, "Descriptor presence will enable templates installation"
+			);
+
+			$this->addOption(
+				self::SOURCE_OPTION, "t",
+
+				InputOption::VALUE_OPTIONAL, "Folder structure to be mirrored",
+
+				"ModuleTemplate"
 			);
 		}
 
@@ -75,12 +79,14 @@
 
 					$templatesStatus = $clonerService->installModuleTemplates(
 
-						$moduleName, $input, $output
+						$moduleName, $output,
+
+						$input->getOption(self::DESCRIPTOR_OPTION)
 					);
 
 				if ($templatesStatus == Command::SUCCESS) {
 
-					$output->writeln("Module $moduleName created successfully");
+					$output->writeln("$moduleName module created successfully");
 
 					return $templatesStatus;
 				}
@@ -89,7 +95,7 @@
 			}
 			catch (Throwable $exception) {
 
-				$exceptionOutput = "Failed to create module $moduleName:\n". $exception;
+				$exceptionOutput = "$moduleName module creation incomplete:\n". $exception;
 
 				echo( $exceptionOutput); // leaving this in since writeln doesn't work in tests
 				
@@ -106,9 +112,15 @@
 				$input->getOption(self::HYDRATOR_MODULE_OPTION)
 			)->getClass(ModuleCloneService::class)
 
+			->setConsoleDetails($this->executionPath, $this->moduleList)
+
 			->setCommandDetails(
 
-				$input, $this->executionPath, $this->moduleList
+				$input->getOption(self::SOURCE_OPTION),
+
+				$input->getOption(self::ABSOLUTE_SOURCE_OPTION), // absence = false i.e relative
+
+				$input->getOption(self::DESTINATION_OPTION)
 			);
 		}
 	}

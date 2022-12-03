@@ -3,7 +3,9 @@
 
 	use Suphle\Contracts\{ConsoleClient, Config\Console};
 
-	use Suphle\Modules\{ModuleHandlerIdentifier, ModuleWorkerAccessor};
+	use Suphle\Modules\ModuleHandlerIdentifier;
+
+	use Suphle\Server\ModuleWorkerAccessor;
 
 	use Suphle\Hydration\Container;
 

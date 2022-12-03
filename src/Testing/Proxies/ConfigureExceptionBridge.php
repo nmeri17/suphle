@@ -14,12 +14,12 @@
 	*/
 	trait ConfigureExceptionBridge {
 
-		private $bridgeName = ModuleExceptionBridge::class;
+		private string $bridgeName = ModuleExceptionBridge::class;
 
 		/**
 		 * Set to false when debugging a construct that directly interacts with DetectedExceptionManager::ALERTER_METHOD
 		*/
-		protected $muffleExceptionBroadcast = true,
+		protected bool $muffleExceptionBroadcast = true,
 
 		/**
 		 * Only applicable when making HTTP requests using get,post etc

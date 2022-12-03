@@ -1,5 +1,9 @@
 <?php
-	use Suphle\Modules\ModuleWorkerAccessor;
+
+	/**
+	 * Using this for testing the traditional setup without creating modules and other protocols on the starter project
+	*/
+	use Suphle\Server\ModuleWorkerAccessor;
 
 	use Suphle\Tests\Mocks\PublishedTestModules;
 

@@ -134,8 +134,6 @@
 			// when
 			return (new CommandTester($command))->execute([
 
-				CloneModuleCommand::SOURCE_ARGUMENT => $this->fileConfig->getRootPath() . "ModuleTemplate",
-
 				CloneModuleCommand::MODULE_NAME_ARGUMENT => $this->newModuleName,
 
 				"--" . CloneModuleCommand::DESCRIPTOR_OPTION => $this->constructDescriptorName()
