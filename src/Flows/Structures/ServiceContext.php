@@ -3,17 +3,18 @@
 
 	class ServiceContext {
 
-		/**
-		* @property {serviceName} where we'll be pulling the data we intend to filter into another operation
-		*/
-		private $serviceName, $method;
-
-		function __construct(string $serviceName, string $method) {
-
-			$this->serviceName = $serviceName;
-
-			$this->method = $method;
-		}
+		function __construct(
+      /**
+       * @property {serviceName} where we'll be pulling the data we intend to filter into another operation
+       */
+      private readonly string $serviceName,
+      /**
+       * @property {serviceName} where we'll be pulling the data we intend to filter into another operation
+       */
+      private readonly string $method
+  )
+  {
+  }
 
 		public function getServiceName():string {
 			

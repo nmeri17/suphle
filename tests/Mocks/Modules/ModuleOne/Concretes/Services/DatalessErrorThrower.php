@@ -39,12 +39,12 @@
 			return "I'm shy";
 		}
 
-		public function deliberateException () {
+		public function deliberateException (): never {
 
 			throw new Exception;
 		}
 
-		public function terminateRequest () {
+		public function terminateRequest (): never {
 
 			throw new InvalidArgumentException;
 		}

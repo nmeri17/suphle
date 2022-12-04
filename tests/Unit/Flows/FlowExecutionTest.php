@@ -32,9 +32,9 @@
 	 		CommonBinds::concreteBinds as commonConcretes;
 	 	}
 
-	 	private $sutName = FlowHydrator::class,
-
-	 	$flowDetails, $defaultHydrator;
+	 	private string $sutName = FlowHydrator::class;
+   private $flowDetails;
+   private $defaultHydrator;
 
 	 	public function setUp ():void {
 

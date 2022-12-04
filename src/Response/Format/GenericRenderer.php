@@ -13,11 +13,16 @@
 
 	abstract class GenericRenderer implements BaseRenderer, VariableDependencies {
 
-		private $controller, $path, $flows, $routeMethod;
+		private $controller;
+  private $path;
+  private $flows;
+  private $routeMethod;
 
-		protected $handler, $statusCode, $htmlParser,
-
-		$rawResponse = [], $headers = [];
+		protected $handler;
+  protected $statusCode;
+  protected $htmlParser;
+  protected $rawResponse = [];
+  protected $headers = [];
 
 		public function setControllingClass (ServiceCoordinator $controller):void {
 			

@@ -23,7 +23,7 @@
 
 		private bool $foundRoute = false;
 
-		private Container $container;
+		private readonly Container $container;
 
 		private PatternIndicator $indicator;
 

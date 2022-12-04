@@ -9,14 +9,15 @@
 
 		use BaseSingletonBind;
 
-		private $container, $allRules = [], // [ruleName => [taggedPatterns]]
+		private array $allRules = [];
+  private // [ruleName => [taggedPatterns]]
 
-		$interactedPatterns = [], $excludeRules = [];
+		array $interactedPatterns = [];
+  private array $excludeRules = [];
 
-		public function __construct (Container $container) {
-
-			$this->container = $container;
-		}
+		public function __construct(private readonly Container $container)
+  {
+  }
 
 		public function addRule (array $patterns, string $rule):self {
 

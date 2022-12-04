@@ -21,9 +21,8 @@
 
 		use CommonBinds, ExaminesHttpResponse;
 
-		protected const MARKUP_NAME = "profile",
-
-		HANDLER_NAME = "genericHandler";
+		protected const MARKUP_NAME = "profile";
+  protected const HANDLER_NAME = "genericHandler";
 
 		private string $sutName = Transphporm::class;
 

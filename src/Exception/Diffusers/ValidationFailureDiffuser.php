@@ -9,7 +9,8 @@
 
 	class ValidationFailureDiffuser implements ExceptionHandler {
 
-		private $renderer, $validationEvaluator;
+		private $renderer;
+  private $validationEvaluator;
 
 		/**
 		 * @param {origin} ValidationFailure

@@ -5,9 +5,9 @@
 
 	class FolderCloner {
 
-		private $fileReplacements, $folderReplacements,
-
-		$contentsReplacement;
+		private $fileReplacements;
+  private $folderReplacements;
+  private $contentsReplacement;
 
 		public function __construct (private readonly FileSystemReader $fileSystemReader) {
 

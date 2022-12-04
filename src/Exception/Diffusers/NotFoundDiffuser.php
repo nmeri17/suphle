@@ -13,16 +13,12 @@
 
 	class NotFoundDiffuser implements ExceptionHandler {
 
-		private $renderer, $requestDetails, $componentEntry,
+		private $renderer;
+  private string $controllerAction = "missingHandler";
 
-		$controllerAction = "missingHandler";
-
-		public function __construct (RequestDetails $requestDetails, ComponentEntry $componentEntry) {
-
-			$this->requestDetails = $requestDetails;
-
-			$this->componentEntry = $componentEntry;
-		}
+		public function __construct(private readonly RequestDetails $requestDetails, private readonly ComponentEntry $componentEntry)
+  {
+  }
 
 		/**
 		 * @param {origin} NotFoundException

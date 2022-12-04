@@ -6,12 +6,11 @@
 	 */
 	class ExternalPackageManagerHydrator {
 
-		private $container, $managers = [];
+		private array $managers = [];
 
-		public function __construct (Container $container) {
-
-			$this->container = $container;
-		}
+		public function __construct(private readonly Container $container)
+  {
+  }
 
 		/**
 		 * Does not decorate objects since we can't have access to decorate those interfaces/entities. Plus, this method is a decorator on its own

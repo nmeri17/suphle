@@ -5,9 +5,9 @@
 
 	trait FlowData {
 
-		protected $payloadKey = "data", $columnName = "id",
-
-		$indexes;
+		protected $payloadKey = "data";
+  protected $columnName = "id";
+  protected $indexes;
 
 		protected function getIndexes ():array {
 

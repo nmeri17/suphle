@@ -9,7 +9,9 @@
 
 	abstract class ModelfulPayload implements VariableDependencies {
 
-		protected $payloadStorage, $ormDialect, $pathPlaceholders;
+		protected $payloadStorage;
+  protected $ormDialect;
+  protected $pathPlaceholders;
 
 		public function dependencyMethods ():array {
 

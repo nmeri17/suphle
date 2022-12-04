@@ -9,7 +9,8 @@
 
 	class SimpleSearch extends UpdatelessService implements VariableDependencies {
 
-		protected $payloadStorage, $ormDialect;
+		protected $payloadStorage;
+  protected $ormDialect;
 
 		public function dependencyMethods ():array {
 

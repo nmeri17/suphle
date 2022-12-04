@@ -17,16 +17,9 @@
 
 	class CsrfMiddleware implements Middleware {
 
-		private $generator, $authStorage, $requestDetails;
-
-		public function __construct (CsrfGenerator $generator, RequestDetails $requestDetails, AuthStorage $authStorage) {
-
-			$this->generator = $generator;
-
-			$this->authStorage = $authStorage;
-
-			$this->requestDetails = $requestDetails;
-		}
+		public function __construct(private readonly CsrfGenerator $generator, private readonly RequestDetails $requestDetails, private readonly AuthStorage $authStorage)
+  {
+  }
 
 		public function process (PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler):BaseRenderer {
 

@@ -12,9 +12,8 @@
 
 		use DirectHttpTest;
 
-		private $correctPassword = "correct",
-
-		$incorrectPassword = "incorrect";
+		private $correctPassword = "correct";
+  private $incorrectPassword = "incorrect";
 
 		public function getInsertedUser (string $password):UserContract {
 

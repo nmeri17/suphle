@@ -9,7 +9,8 @@
 
 	class MiddlewareQueue {
 
-		private array $routedStack, $mergedStack = [];
+		private array $routedStack;
+  private array $mergedStack = [];
 
 		public function __construct (
 
@@ -54,8 +55,7 @@
 
 					fn(string $name) => $this->container->getClass($name),
 
-					array_merge( // any temporary ones attached to route precede the defaults
-						$this->routedStack,
+					array_merge( $this->routedStack,
 
 						$this->routerConfig->defaultMiddleware()
 					)

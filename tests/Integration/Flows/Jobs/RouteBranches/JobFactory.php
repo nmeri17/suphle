@@ -27,15 +27,17 @@
 			BaseDatabasePopulator::setUp as databaseAllSetup;
 		}
 
-		protected $container, $contentOwner, $contentVisitor,
+		protected $container;
+  protected $contentOwner;
+  protected $contentVisitor;
+  protected $userUrl = "/user-content/5";
+  protected // corresponds to the content generated after using [flowUrl] to create a context
 
-		$userUrl = "/user-content/5", // corresponds to the content generated after using [flowUrl] to create a context
+		$flowUrl = "user-content/id";
+  protected // this is expected to exist in one of the module entry collections
 
-		$flowUrl = "user-content/id", // this is expected to exist in one of the module entry collections
-
-		$originDataName = "all_users",
-
-		$rendererController = FlowCoordinator::class;
+		$originDataName = "all_users";
+  protected $rendererController = FlowCoordinator::class;
 
 		protected function setUp ():void {
 

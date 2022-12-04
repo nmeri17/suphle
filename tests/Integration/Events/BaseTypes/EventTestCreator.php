@@ -15,9 +15,9 @@
 
 	class EventTestCreator extends DescriptorCollection {
 
-		protected $payload = 5, $mockEventReceiver,
-
-		$eventReceiverName;
+		protected $payload = 5;
+  protected $mockEventReceiver;
+  protected $eventReceiverName;
 
 		// since we intend to manually trigger it in extending tests
 		protected function setUp ():void {}

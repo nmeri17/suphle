@@ -21,35 +21,21 @@
 
 	class MultiUserEditHandler extends BaseInjectionModifier {
 
-		final public const INTEGRITY_KEY = "_collision_protect", // submitted form/payload is expected to contain this key
+		final public const INTEGRITY_KEY = "_collision_protect";
+
+		final public const // submitted form/payload is expected to contain this key
 
 		DATE_FORMAT = "Y-m-d H:i:s";
 
-		private $ormDialect, $queueManager, $payloadStorage,
-
-		$errorDecoratorHandler, $pathAuthorizer, $authStorage;
-
 		public function __construct (
-			OrmDialect $ormDialect, AdapterManager $queueManager,
+			private readonly OrmDialect $ormDialect, private readonly AdapterManager $queueManager,
 
-			PayloadStorage $payloadStorage, ErrorCatcherHandler $errorDecoratorHandler,
+			private readonly PayloadStorage $payloadStorage, private readonly ErrorCatcherHandler $errorDecoratorHandler,
 
 			DecoratorProxy $proxyConfig, ObjectDetails $objectMeta,
 
-			PathAuthorizer $pathAuthorizer, AuthStorage $authStorage
+			private readonly PathAuthorizer $pathAuthorizer, private readonly AuthStorage $authStorage
 		) {
-
-			$this->ormDialect = $ormDialect;
-
-			$this->queueManager = $queueManager;
-
-			$this->payloadStorage = $payloadStorage;
-
-			$this->errorDecoratorHandler = $errorDecoratorHandler; // composing instead of extending to decouple constructor dependencies
-
-			$this->pathAuthorizer = $pathAuthorizer;
-
-			$this->authStorage = $authStorage;
 
 			parent::__construct($proxyConfig, $objectMeta);
 		}

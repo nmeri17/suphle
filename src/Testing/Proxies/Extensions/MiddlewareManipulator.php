@@ -7,7 +7,8 @@
 
 		private bool $stackAlwaysEmpty = false;
 
-		private array $preExclude = [], $preInclude = [];
+		private array $preExclude = [];
+  private array $preInclude = [];
 
 		/**
 		 * Whenever router decides on the active pattern, it'll ultimately include middlewares applied here

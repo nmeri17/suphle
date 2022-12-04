@@ -11,7 +11,8 @@
 
 		use CommonBinds;
 
-		private $sut, $filePath = "Sibling/File.txt";
+		private $sut;
+  private string $filePath = "Sibling/File.txt";
 
 		protected function setUp ():void {
 

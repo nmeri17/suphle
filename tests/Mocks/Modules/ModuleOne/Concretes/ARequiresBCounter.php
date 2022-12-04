@@ -7,14 +7,11 @@
 
 	class ARequiresBCounter {
 
-		private $b1, $primitive, $cInterface;
+		private $cInterface;
 
-		public function __construct (BCounter $b1, string $primitive) {
-
-			$this->b1 = $b1;
-
-			$this->primitive = $primitive;
-		}
+		public function __construct(private BCounter $b1, private readonly string $primitive)
+  {
+  }
 
 		public function getConstructorB ():BCounter {
 

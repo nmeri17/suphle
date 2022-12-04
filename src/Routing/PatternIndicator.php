@@ -9,7 +9,8 @@
 
 	class PatternIndicator {
 
-		private $patternAuthentication, $providedAuthenticator;
+		private $patternAuthentication;
+  private $providedAuthenticator;
 
 		public function __construct (
 

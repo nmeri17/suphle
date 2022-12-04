@@ -6,13 +6,15 @@
 	*/
 	abstract class UnitNode {
 
-		protected $nodeName, // the key on the previous response body this node is attached to
+		protected $nodeName;
+  protected // the key on the previous response body this node is attached to
 
 		$actions = []; // on CollectionNodes, this is the list of actions to take, while on SingleNodes, this is the list of attributes applied
 
 		private array $config = [];
 
-		final const TTL = 1, MAX_HITS = 2;
+		final const TTL = 1;
+  final const MAX_HITS = 2;
 
 		public function getActions():array {
 			

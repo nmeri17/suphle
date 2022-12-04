@@ -7,21 +7,23 @@
 
 	abstract class BaseBuilder implements CrudBuilder {
 
-		final public const SHOW_CREATE = "showCreateForm", SAVE_NEW = "saveNew",
-
-		SHOW_ALL = "showAll", SHOW_ONE = "showOne",
-
-		UPDATE_ONE = "updateOne", DELETE_ONE = "deleteOne",
-
-		SHOW_SEARCH = "showSearchForm", SHOW_EDIT = "showEditForm",
-
-		SEARCH_RESULTS = "getSearchResults";
+		final public const SHOW_CREATE = "showCreateForm";
+  final public const SAVE_NEW = "saveNew";
+  final public const SHOW_ALL = "showAll";
+  final public const SHOW_ONE = "showOne";
+  final public const UPDATE_ONE = "updateOne";
+  final public const DELETE_ONE = "deleteOne";
+  final public const SHOW_SEARCH = "showSearchForm";
+  final public const SHOW_EDIT = "showEditForm";
+  final public const SEARCH_RESULTS = "getSearchResults";
 
 		private string $idPlaceholder = "id";
 
-		protected $overwritable = [], $rendererMap = [],
-
-		$disabledHandlers = [], $validActions = [], $collection;
+		protected $overwritable = [];
+  protected $rendererMap = [];
+  protected $disabledHandlers = [];
+  protected $validActions = [];
+  protected $collection;
 
 		public function registerCruds ():void {
 

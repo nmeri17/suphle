@@ -19,11 +19,10 @@
 
 		use CommonBinds;
 
-		private $subDecorator = MultiUserModelEdit::class,
-
-		$superDecorator = ServiceErrorCatcher::class,
-
-		$decoratedClass = EmploymentEditMock::class, $hydrator;
+		private string $subDecorator = MultiUserModelEdit::class;
+  private string $superDecorator = ServiceErrorCatcher::class;
+  private string $decoratedClass = EmploymentEditMock::class;
+  private $hydrator;
 
 		protected function setUp ():void {
 

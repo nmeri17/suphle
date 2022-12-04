@@ -16,7 +16,8 @@
 	*/
 	abstract class ModellessPayload extends IndicatesCaughtException implements VariableDependencies {
 
-		protected $payloadStorage, $pathPlaceholders;
+		protected $payloadStorage;
+  protected $pathPlaceholders;
 
 		public function dependencyMethods ():array {
 

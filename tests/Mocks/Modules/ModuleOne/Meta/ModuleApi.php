@@ -9,20 +9,9 @@
 
 	class ModuleApi implements ModuleOne {
 
-		private $localSender, $bCounter, $localSenderExtended,
-
-		$errorEditService;
-
-		public function __construct (LocalSender $localSender, BCounter $bCounter, SenderExtension $senderExtension, UpdatefulEmitter $errorEditService) {
-
-			$this->localSender = $localSender;
-
-			$this->bCounter = $bCounter;
-
-			$this->localSenderExtended = $senderExtension;
-
-			$this->errorEditService = $errorEditService;
-		}
+		public function __construct(private readonly LocalSender $localSender, private readonly BCounter $bCounter, private readonly SenderExtension $localSenderExtended, private readonly UpdatefulEmitter $errorEditService)
+  {
+  }
 
 		public function setBCounterValue (int $newCount):void {
 

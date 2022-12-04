@@ -13,7 +13,8 @@
 
 		use CommonBinds;
 
-	 	private $hydrator, $unitNode;
+	 	private $hydrator;
+   private $unitNode;
 
 		public function setUp ():void {
 

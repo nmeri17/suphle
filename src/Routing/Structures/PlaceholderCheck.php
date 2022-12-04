@@ -3,14 +3,9 @@
 
 	class PlaceholderCheck {
 
-		private $routeState, $methodName;
-
-		public function __construct (string $newRouteState, string $currentMethod ) {
-
-			$this->routeState = $newRouteState;
-
-			$this->methodName = $currentMethod;
-		}
+		public function __construct(private readonly string $routeState, private readonly string $methodName)
+  {
+  }
 
 		public function getMethodName ():string {
 

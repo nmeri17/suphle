@@ -18,9 +18,8 @@
 	*/
 	class RouteManager {
 
-		final const PREV_RENDERER = "prv_rdr",
-
-		PLACEHOLDER_REPLACEMENT = "[\w-]+";
+		final const PREV_RENDERER = "prv_rdr";
+  final const PLACEHOLDER_REPLACEMENT = "[\w-]+";
 
 		private array $visitedMethods = [];
 

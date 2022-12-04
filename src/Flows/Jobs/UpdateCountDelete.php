@@ -10,14 +10,9 @@
 	*/
 	class UpdateCountDelete implements Task {
 
-		private $accessedContext, $flowSaver;
-
-		public function __construct (AccessContext $theAccessed, UmbrellaSaver $flowSaver) {
-
-			$this->accessedContext = $theAccessed;
-
-			$this->flowSaver = $flowSaver;
-		}
+		public function __construct(private readonly AccessContext $accessedContext, private readonly UmbrellaSaver $flowSaver)
+  {
+  }
 
 		public function handle ():void {
 

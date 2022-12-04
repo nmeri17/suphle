@@ -10,13 +10,9 @@
 	*/
 	class PendingFlowDetails {
 
-		private $authStorage, $renderer, $userId;
+		private $userId;
 
-		public function __construct(BaseRenderer $renderer, AuthStorage $authStorage) {
-
-			$this->renderer = $renderer;
-
-			$this->authStorage = $authStorage;
+		public function __construct(private readonly BaseRenderer $renderer, private readonly AuthStorage $authStorage) {
 
 			$this->getUserId(); // trigger property storage before task serialization
 		}

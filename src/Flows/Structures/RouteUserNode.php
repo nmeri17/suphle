@@ -10,14 +10,13 @@
 	*/
 	class RouteUserNode {
 
-		private $renderer, $maxHitsHydrator, $expiresAtHydrator,
-
-		$hits = 0;
+		private $maxHitsHydrator;
+  private $expiresAtHydrator;
+  private int $hits = 0;
 		
-		public function __construct (BaseRenderer $renderer) {
-
-			$this->renderer = $renderer;
-		}
+		public function __construct(private readonly BaseRenderer $renderer)
+  {
+  }
 
 		public function currentHits():int {
 

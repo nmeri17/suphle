@@ -10,7 +10,7 @@
 	*/
 	class CliRunnerAccessor {
 
-		private CliRunner $runner;
+		private readonly CliRunner $runner;
 
 		public function __construct (
 

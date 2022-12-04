@@ -11,17 +11,13 @@
 
 	class DecoratorHydrator {
 
-		private $chain, $argumentScope, $injectScope,
+		private $chain;
+  private $argumentScope;
+  private $injectScope;
 
-		$container, $objectMeta;
-
-		public function __construct (Container $container, DecoratorChain $chain, ObjectDetails $objectMeta) {
+		public function __construct (private readonly Container $container, DecoratorChain $chain, private readonly ObjectDetails $objectMeta) {
 
 			$this->chain = $chain->allScopes();
-
-			$this->container = $container;
-
-			$this->objectMeta = $objectMeta;
 		}
 
 		public function assignScopes ():void {

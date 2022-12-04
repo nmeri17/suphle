@@ -12,7 +12,9 @@
 	*/
 	trait BaseErrorCatcherService {
 
-		protected $erroneousMethod, $payloadStorage, $pathPlaceholders;
+		protected $erroneousMethod;
+  protected $payloadStorage;
+  protected $pathPlaceholders;
 
 		public function rethrowAs ():array {
 

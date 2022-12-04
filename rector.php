@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Rector\CodeQuality\Rector\Class_\InlineConstructorDefaultToPropertyRector;
+use Rector\CodingStyle\Rector\ClassConst\SplitGroupedConstantsAndPropertiesRector;
 use Rector\Config\RectorConfig;
 use Rector\Set\ValueObject\LevelSetList;
 
@@ -21,7 +21,7 @@ return static function (RectorConfig $rectorConfig): void {
     ]);
 
     // register a single rule
-    $rectorConfig->rule(InlineConstructorDefaultToPropertyRector::class);
+    $rectorConfig->rule(SplitGroupedConstantsAndPropertiesRector::class);
 
     // define sets of rules
    $rectorConfig->sets([

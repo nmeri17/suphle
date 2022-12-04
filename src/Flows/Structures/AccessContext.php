@@ -4,18 +4,9 @@
 
 	class AccessContext {
 
-		private $path, $unitPayload, $umbrella, $userId;
-
-		function __construct(string $path, RouteUserNode $unitPayload, RouteUmbrella $umbrella, string $userId) {
-
-			$this->path = $path;
-
-			$this->unitPayload = $unitPayload;
-
-			$this->umbrella = $umbrella;
-
-			$this->userId = $userId;
-		}
+		function __construct(private readonly string $path, private readonly RouteUserNode $unitPayload, private readonly RouteUmbrella $umbrella, private readonly string $userId)
+  {
+  }
 
 		public function getRouteUmbrella():RouteUmbrella {
 

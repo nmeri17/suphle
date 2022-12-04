@@ -15,9 +15,8 @@
 
 	abstract class BaseCollection implements RouteCollection {
 
-		protected string $collectionParent = BaseCollection::class,
-
-		/**
+		protected string $collectionParent = BaseCollection::class;
+  protected /**
 		 * this is set if this collection is used as prefix in another. Should be used while determining the prefix of that collection
 		*/
 		$parentPrefix;

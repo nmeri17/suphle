@@ -17,7 +17,8 @@
 
 	class UnauthenticatedDiffuser implements ExceptionHandler {
 
-		private $renderer, $controllerAction = "virtualWall";
+		private $renderer;
+  private string $controllerAction = "virtualWall";
 
 		/**
 		 * @param {origin} Unauthenticated

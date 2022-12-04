@@ -15,11 +15,11 @@
 
 		use BaseSingletonBind;
 
-		private $activeHandlerPath, $module, $parentManager,
-
-		$objectMeta,
-
-		$emitters = ["local" => [], "external" => []];
+		private $activeHandlerPath;
+  private $module;
+  private $parentManager;
+  private $objectMeta;
+  private array $emitters = ["local" => [], "external" => []];
 
 		/**
 		 * @param {module}: Descriptor for the module where this handler will be emitting from

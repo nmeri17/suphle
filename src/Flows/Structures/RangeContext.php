@@ -3,7 +3,8 @@
 
 	class RangeContext {
 
-		private $parameterMax, $parameterMin;
+		private $parameterMax;
+  private $parameterMin;
 
 		public function __construct(?string $parameterMax = null, ?string $parameterMin = null) {
 

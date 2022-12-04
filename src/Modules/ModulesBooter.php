@@ -13,13 +13,11 @@
 
 		use BaseSingletonBind;
 
-		private $modules, $eventManager;
+		private $modules;
 
-		public function __construct (ActiveDescriptors $descriptorsHolder, ModuleLevelEvents $eventManager) {
+		public function __construct (ActiveDescriptors $descriptorsHolder, private readonly ModuleLevelEvents $eventManager) {
 
 			$this->modules = $descriptorsHolder->getDescriptors();
-
-			$this->eventManager = $eventManager;
 		}
 		
 		public function getModules ():array {

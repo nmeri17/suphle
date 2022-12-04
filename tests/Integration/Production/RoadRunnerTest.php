@@ -13,9 +13,9 @@
 
 	class RoadRunnerTest extends BaseTestProduction {
 
-		protected const REQUEST_SENDER = VisitSegment::class,
-
-		SERVER_TIMEOUT = 60, // stop process if unable to start server after these seconds
+		protected const REQUEST_SENDER = VisitSegment::class;
+  protected const SERVER_TIMEOUT = 60;
+  protected const // stop process if unable to start server after these seconds
 
 		RR_CONFIG = "../../test-rr.yaml";
 		
@@ -107,10 +107,7 @@
 
 		private function serverIsReady (Process $serverProcess):bool {
 
-			$serverProcess->waitUntil(function ($type, $buffer) {
-
-				return stripos($buffer, "http server was started");
-			});
+			$serverProcess->waitUntil(fn($type, $buffer) => stripos((string) $buffer, "http server was started"));
 
 			return $serverProcess->isRunning();
 		}

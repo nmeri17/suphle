@@ -7,25 +7,11 @@
 
 	class ValidatorManager {
 
-		private $placeholderStorage, $validator, $payloadStorage,
+		private array $actionRules = [];
 
-		$fileInputReader, $actionRules = [];
-
-		public function __construct (
-
-			RequestValidator $validator, PathPlaceholders $placeholderStorage,
-
-			PayloadStorage $payloadStorage, FileInputReader $fileInputReader
-		) {
-
-			$this->validator = $validator;
-
-			$this->placeholderStorage = $placeholderStorage;
-
-			$this->payloadStorage = $payloadStorage;
-
-			$this->fileInputReader = $fileInputReader;
-		}
+		public function __construct(private readonly RequestValidator $validator, private readonly PathPlaceholders $placeholderStorage, private readonly PayloadStorage $payloadStorage, private readonly FileInputReader $fileInputReader)
+  {
+  }
 
 		public function validationErrors ():iterable {
 

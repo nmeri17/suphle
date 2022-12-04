@@ -12,7 +12,8 @@
 	*/
 	class BrowserBuilder extends BaseBuilder {
 
-		private $markupPath, $templatePath;
+		private $markupPath;
+  private $templatePath;
 
 		protected $validActions = [
 

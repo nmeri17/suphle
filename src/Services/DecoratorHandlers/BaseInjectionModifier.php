@@ -14,14 +14,11 @@
 	*/
 	abstract class BaseInjectionModifier implements ModifyInjected {
 
-		protected $methodHooks = [], $proxyConfig, $objectMeta;
+		protected $methodHooks = [];
 
-		public function __construct (DecoratorProxy $proxyConfig, ObjectDetails $objectMeta) {
-
-			$this->proxyConfig = $proxyConfig;
-
-			$this->objectMeta = $objectMeta;
-		}
+		public function __construct(protected DecoratorProxy $proxyConfig, protected ObjectDetails $objectMeta)
+  {
+  }
 
 		public function getMethodHooks ():array {
 

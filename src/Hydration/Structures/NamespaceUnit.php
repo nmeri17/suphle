@@ -4,18 +4,22 @@
 	class NamespaceUnit {
 
 		/**
-		*	@param {nameResolver} Function(string $requestedInterface):string
-		*	[requestedInterface] has the namespace trimmed away. It's the entity requested at runtime
-		*/
-		private $fromNamespace, $newLocation, $nameResolver;
+   *	@param {nameResolver} Function(string $requestedInterface):string
+   *	[requestedInterface] has the namespace trimmed away. It's the entity requested at runtime
+   */
+  private $nameResolver;
 
-		function __construct(string $fromNamespace, string $newLocation, callable $nameResolver) {
-
-			$this->fromNamespace = $fromNamespace;
+		function __construct(/**
+   *	@param {nameResolver} Function(string $requestedInterface):string
+   *	[requestedInterface] has the namespace trimmed away. It's the entity requested at runtime
+   */
+  private readonly string $fromNamespace, /**
+   *	@param {nameResolver} Function(string $requestedInterface):string
+   *	[requestedInterface] has the namespace trimmed away. It's the entity requested at runtime
+   */
+  private readonly string $newLocation, callable $nameResolver) {
 
 			$this->nameResolver = $nameResolver;
-
-			$this->newLocation = $newLocation;
 		}
 
 		public function getSource():string {

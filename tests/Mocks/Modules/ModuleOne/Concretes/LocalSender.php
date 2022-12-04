@@ -9,13 +9,10 @@
 
 		use EmitProxy;
 
-		final const CASCADE_BEGIN_EVENT = "cascading",
-
-		CONCAT_EVENT = "concating",
-
-		CASCADE_EXTERNAL_BEGIN_EVENT = "begin_external_cascade",
-
-		EMPTY_PAYLOAD_EVENT = "no_payload";
+		final const CASCADE_BEGIN_EVENT = "cascading";
+  final const CONCAT_EVENT = "concating";
+  final const CASCADE_EXTERNAL_BEGIN_EVENT = "begin_external_cascade";
+  final const EMPTY_PAYLOAD_EVENT = "no_payload";
 
 		public function __construct (AssignListeners $eventManager) {
 

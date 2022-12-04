@@ -7,9 +7,12 @@
 
 	abstract class BaseTransphpormRenderer extends GenericRenderer implements TransphpormRenderer {
 
-		protected $markupName, $templateName, $markupPath, $templatePath,
-
-		$fileConfig, $viewConfig;
+		protected $markupName;
+  protected $templateName;
+  protected $markupPath;
+  protected $templatePath;
+  protected $fileConfig;
+  protected $viewConfig;
 
 		public function dependencyMethods ():array {
 

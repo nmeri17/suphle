@@ -7,11 +7,11 @@
 
 	abstract class ImagefulPayload extends ModellessPayload {
 
-		protected $imageOptimizer, $allFiles;
+		protected $allFiles;
 
-		public function __construct (OptimizersManager $imageOptimizer) {
+		public function __construct (protected OptimizersManager $imageOptimizer) {
 
-			$this->imageOptimizer = $imageOptimizer; // default optimizer. can be replaced
+			// default optimizer. can be replaced
 		}
 
 		public function dependencyMethods ():array {

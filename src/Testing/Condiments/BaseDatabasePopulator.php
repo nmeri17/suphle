@@ -5,9 +5,11 @@
 
 	trait BaseDatabasePopulator {
 
-		protected $replicator, $databaseApi;
+		protected $replicator;
+  protected $databaseApi;
 
-		protected static $isFirstTest = true, // using this to maintain state since PHPUnit resets all instance properties per test
+		protected static $isFirstTest = true;
+  protected static // using this to maintain state since PHPUnit resets all instance properties per test
 
 		$staticReplicator; // duplicating this value since it's the one used in [tearDownAfterClass] but we want to maintain consistency using `$this` instead of a static property
 

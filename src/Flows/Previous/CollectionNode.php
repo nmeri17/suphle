@@ -5,9 +5,11 @@
 
 	class CollectionNode extends UnitNode {
 
-		final const PIPE_TO = 12, IN_RANGE = 13, DATE_RANGE = 14, AS_ONE = 15,
-
-		FROM_SERVICE = 16;
+		final const PIPE_TO = 12;
+  final const IN_RANGE = 13;
+  final const DATE_RANGE = 14;
+  final const AS_ONE = 15;
+  final const FROM_SERVICE = 16;
 
 		public function __construct(string $nodeName, private readonly string $leafName) {
 

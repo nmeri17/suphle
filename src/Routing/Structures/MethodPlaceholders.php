@@ -3,14 +3,9 @@
 
 	class MethodPlaceholders {
 
-		private $regexified, $placeholders;
-
-		public function __construct (string $regexified, array $placeholders ) {
-
-			$this->regexified = $regexified;
-
-			$this->placeholders = $placeholders;
-		}
+		public function __construct(private readonly string $regexified, private readonly array $placeholders)
+  {
+  }
 
 		public function getPlaceholders ():array {
 

@@ -15,25 +15,16 @@
 
 	class ModuleExceptionBridge implements HighLevelRequestHandler, ClassHydrationBehavior {
 
-		private $container, $handler, $config, $payloadStorage,
-
-		$exceptionDetector, $handledExternally;
+		private $handler;
+  private $handledExternally;
 
 		public function __construct(
-			Container $container, ExceptionInterceptor $config,
+			private readonly Container $container, private readonly ExceptionInterceptor $config,
 
-			PayloadStorage $payloadStorage, DetectedExceptionManager $exceptionDetector,
+			private readonly PayloadStorage $payloadStorage, private readonly DetectedExceptionManager $exceptionDetector,
 
 			VariableDependenciesHandler $variableDecorator
 		) {
-
-			$this->container = $container;
-
-			$this->config = $config;
-
-			$this->payloadStorage = $payloadStorage;
-
-			$this->exceptionDetector = $exceptionDetector;
 
 			$this->variableDecorator = $variableDecorator;
 		}

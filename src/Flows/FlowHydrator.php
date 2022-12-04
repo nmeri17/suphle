@@ -28,19 +28,19 @@
 	*/
 	class FlowHydrator {
 
-		private $previousResponse, $flowSaver, $payloadStorage,
-
-		$rendererManager, $container, $placeholderStorage,
-
-		$baseUrlPattern, $moduleInitializer,
-
-		$parentHandlers = [
+		private $previousResponse;
+  private $payloadStorage;
+  private $rendererManager;
+  private $container;
+  private $placeholderStorage;
+  private $baseUrlPattern;
+  private $moduleInitializer;
+  private array $parentHandlers = [
 			SingleNode::class => "handleSingleNodes",
 
 			CollectionNode::class => "handleCollectionNodes"
-		],
-			
-		$collectionSubHandlers = [
+		];
+  private array $collectionSubHandlers = [
 
 			CollectionNode::PIPE_TO => "handlePipe",
 
@@ -51,24 +51,21 @@
 			CollectionNode::AS_ONE => "handleAsOne",
 
 			CollectionNode::FROM_SERVICE =>	"handleServiceSource"
-		],
-			
-		$singleSubHandlers = [
+		];
+  private array $singleSubHandlers = [
 
 			SingleNode::ALTERS_QUERY_SEGMENT => "handleQuerySegmentAlter"
-		],
-
-		$configHandlers = [
+		];
+  private array $configHandlers = [
 			
 			UnitNode::TTL => "setExpiresAtHydrator",
 
 			UnitNode::MAX_HITS => "setMaxHitsHydrator"
 		];
 
-		public function __construct (UmbrellaSaver $flowSaver) {
-
-			$this->flowSaver = $flowSaver;
-		}
+		public function __construct(private readonly UmbrellaSaver $flowSaver)
+  {
+  }
 
 		public function dependencyMethods ():array {
 
@@ -352,7 +349,7 @@
 
 				return new GeneratedUrlExecution($requestPath, $clonedRenderer);
 			}
-			catch (Throwable $exception) {// throw $exception; // for debugging. don't terminate real flow execution
+			catch (Throwable) {// throw $exception; // for debugging. don't terminate real flow execution
 
 				return null;
 			}

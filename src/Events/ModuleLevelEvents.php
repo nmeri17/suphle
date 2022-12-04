@@ -9,9 +9,12 @@
 
 	class ModuleLevelEvents {
 
-		private $modules, $subscriberLog = [], // this is where subscribers to the immediate last fired external event reside
+		private $modules;
+  private array $subscriberLog = [];
+  private // this is where subscribers to the immediate last fired external event reside
 
-		$eventManagers = [], $firedEvents = [];
+		array $eventManagers = [];
+  private array $firedEvents = [];
 
 		public function __construct (ActiveDescriptors $descriptorsHolder) {
 

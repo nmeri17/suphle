@@ -4,14 +4,9 @@
 
 	class HandlerPath {
 
-		private $emittingEntity, $scope;
-
-		public function __construct(string $emittingEntity, string $scope) {
-
-			$this->emittingEntity = $emittingEntity;
-
-			$this->scope = $scope;
-		}
+		public function __construct(private readonly string $emittingEntity, private readonly string $scope)
+  {
+  }
 
 		public function getEmittable():string {
 			

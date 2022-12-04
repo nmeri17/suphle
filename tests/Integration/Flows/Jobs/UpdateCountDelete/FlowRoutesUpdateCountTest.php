@@ -23,9 +23,8 @@
 
 	class FlowRoutesUpdateCountTest extends JobFactory {
 
-		private $resourceUrl = "/posts/5",
-
-		$aMinuteBehind;
+		private string $resourceUrl = "/posts/5";
+  private $aMinuteBehind;
 
 		public function setUp ():void {
 

@@ -5,17 +5,12 @@
 
 	class ErrorFileWriter {
 
-		private $uncatchableFile, $catchableFile;
-
 		/**
 		 * @param $uncatchableFile Full file paths
 		*/
-		public function __construct (string $uncatchableFile, string $catchableFile) {
-
-			$this->uncatchableFile = $uncatchableFile;
-
-			$this->catchableFile = $catchableFile;
-		}
+		public function __construct(private readonly string $uncatchableFile, private readonly string $catchableFile)
+  {
+  }
 
 		public function setUncatchableHandlers ():self {
 

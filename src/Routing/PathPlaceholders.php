@@ -14,12 +14,12 @@
 
 		use SanitizesIntegerInput, BaseSingletonBind;
 
-		private $stack = [], $methodSegments = [], $urlReplacer;
+		private array $stack = [];
+  private array $methodSegments = [];
 
-		public function __construct (CollectionMethodToUrl $urlReplacer) {
-
-			$this->urlReplacer = $urlReplacer;
-		}
+		public function __construct(private readonly CollectionMethodToUrl $urlReplacer)
+  {
+  }
 
 		public function setMethodSegments (array $methods):void {
 

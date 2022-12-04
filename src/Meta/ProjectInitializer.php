@@ -44,7 +44,8 @@
 		*/
 		protected function createModule (string $moduleName, ?string $descriptorFqcn):int {
 
-			$command = $this->consoleClient->findCommand(
+			$output = null;
+   $command = $this->consoleClient->findCommand(
 
 				CloneModuleCommand::commandSignature()
 			);

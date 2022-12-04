@@ -3,14 +3,9 @@
 
 	class CircularConstructor2 {
 
-		private $dependency, $count;
-
-		public function __construct (CircularConstructor1 $dependency, int $count) {
-
-			$this->dependency = $dependency;
-
-			$this->count = $count;
-		}
+		public function __construct(private readonly CircularConstructor1 $dependency, private readonly int $count)
+  {
+  }
 
 		public function getCount ():int {
 

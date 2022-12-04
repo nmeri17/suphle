@@ -21,9 +21,8 @@
 
 		use BaseModuleInteractor, ModuleReplicator, ModuleHttpTest;
 
-		protected const BRIDGE_NAME = ModuleExceptionBridge::class,
-
-		BROADCASTER_NAME = DetectedExceptionManager::class;
+		protected const BRIDGE_NAME = ModuleExceptionBridge::class;
+  protected const BROADCASTER_NAME = DetectedExceptionManager::class;
 
 		private $objectMeta;
 
@@ -124,7 +123,7 @@
 
 			$defaultStubs = [
 
-				"disgracefulShutdown" => $this->returnCallback(function ($errorDetails, $latestException) {
+				"disgracefulShutdown" => $this->returnCallback(function ($errorDetails, $latestException): never {
 
 					throw $latestException;
 				}),
@@ -166,7 +165,7 @@
 
 					$this->callback(function ($subject) use ($exceptionName, $exceptionMessage) {
 
-						$receivedException = get_class($subject);
+						$receivedException = $subject::class;
 
 						$matchesException = $receivedException === $exceptionName ||
 
@@ -205,7 +204,7 @@
 
 					$renderer->matchesHandler($resolvedRenderer->getHandler()),
 
-					"Failed asserting that exception '". get_class($exception) . "' was handled with given renderer"
+					"Failed asserting that exception '". $exception::class . "' was handled with given renderer"
 				);
 			}
 		}
@@ -214,7 +213,7 @@
 
 			$this->stubExceptionBridge([
 
-				"hydrateHandler" => $this->returnCallback(function ($subject) {
+				"hydrateHandler" => $this->returnCallback(function ($subject): never {
 
 					throw $subject;
 				})

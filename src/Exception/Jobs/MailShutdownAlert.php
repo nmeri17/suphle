@@ -7,12 +7,11 @@
 
 	class MailShutdownAlert implements FatalShutdownAlert {
 
-		private $mailAlerter, $errorDetails;
+		private $errorDetails;
 
-		public function __construct (MailBuildAlerter $mailAlerter) {
-
-			$this->mailAlerter = $mailAlerter;
-		}
+		public function __construct(private readonly MailBuildAlerter $mailAlerter)
+  {
+  }
 
 		public function setErrorAsJson (string $errorDetails):void {
 

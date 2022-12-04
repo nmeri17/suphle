@@ -3,13 +3,11 @@
 
 	class UseCase {
 
-		private $condition, $arguments;
+		private $condition;
 
-		public function __construct (callable $condition, array $arguments) {
+		public function __construct (callable $condition, private readonly array $arguments) {
 
 			$this->condition = $condition;
-
-			$this->arguments = $arguments;
 		}
 
 		public function build ():bool {

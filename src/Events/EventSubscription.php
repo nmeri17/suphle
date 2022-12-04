@@ -8,14 +8,11 @@
 	*/
 	class EventSubscription {
 
-		private $handlingUnits = [], $handlingClass, $container;
+		private array $handlingUnits = [];
 		
-		public function __construct(string $handlingClass, Container $container) {
-
-			$this->handlingClass = $handlingClass;
-
-			$this->container = $container;
-		}
+		public function __construct(private readonly string $handlingClass, private readonly Container $container)
+  {
+  }
 		
 		// since each local event manager points to its own module, we can know that pulling a listener from another module will load the class from its correct scope
 		public function getHandlingClass ():object {

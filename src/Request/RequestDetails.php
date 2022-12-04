@@ -14,16 +14,16 @@
 
 		final const HTTP_METHOD_KEY = "HTTP_METHOD";
 
-		private $config, $computedPath, $permanentPath, // readonly version of [computedPath]
+		private $computedPath;
+  private $permanentPath;
+  private // readonly version of [computedPath]
 		
-		$versionPresent, $stdInputReader, $queryParameters = [];
+		$versionPresent;
+  private array $queryParameters = [];
 
-		public function __construct (Router $config, StdInputReader $stdInputReader) {
-
-			$this->config = $config;
-
-			$this->stdInputReader = $stdInputReader;
-		}
+		public function __construct(private readonly Router $config, private readonly StdInputReader $stdInputReader)
+  {
+  }
 
 		public function getPath ():?string {
 
@@ -101,7 +101,7 @@
 
 			else $methodName = "get";
 
-			return strtolower($methodName);
+			return strtolower((string) $methodName);
 		}
 
 		public function matchesMethod (string $method):bool {
@@ -175,7 +175,7 @@
 			if ( !is_null($this->versionPresent)) {
 
 				$startIndex = array_search(
-					strtolower($this->versionPresent), // case-insensitive search
+					strtolower((string) $this->versionPresent), // case-insensitive search
 					$versionKeys
 				);
 			}

@@ -11,14 +11,9 @@
 
 	class BindSingletonHandler implements ModifyInjected {
 
-		private $objectMeta, $container;
-
-		public function __construct (ObjectDetails $objectMeta, Container $container) {
-
-			$this->objectMeta = $objectMeta;
-
-			$this->container = $container;
-		}
+		public function __construct(private readonly ObjectDetails $objectMeta, private readonly Container $container)
+  {
+  }
 
 		/**
 		 * @param {concrete}: BindsAsSingleton

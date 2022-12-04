@@ -19,7 +19,9 @@
 
 		protected const EDIT_PATH = "/admin/gmulti-edit/";
 
-		private $employment, $admin, $randomEmploymentId;
+		private $employment;
+  private $admin;
+  private $randomEmploymentId;
 
 		protected function getModules ():array {
 

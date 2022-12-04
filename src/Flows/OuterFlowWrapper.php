@@ -21,9 +21,9 @@
 
 		final public const ALL_USERS = "*";
 
-		private array $modules;
+		private readonly array $modules;
 
-		private ?RouteUmbrella $routeUmbrella;
+		private ?RouteUmbrella $routeUmbrella = null;
 
 		private string $activeUser;
 

@@ -14,17 +14,13 @@
 
 		use SanitizesIntegerInput, BaseSingletonBind;
 
-		final const JSON_HEADER_VALUE = "application/json",
+		final const JSON_HEADER_VALUE = "application/json";
+  final const CONTENT_TYPE_KEY = "Content-Type";
 
-		CONTENT_TYPE_KEY = "Content-Type";
+		private $headers;
+  private array $payload = [];
 
-		private $requestDetails, $stdInputReader, $headers, $payload = [];
-
-		public function __construct (RequestDetails $requestDetails, StdInputReader $stdInputReader) {
-
-			$this->requestDetails = $requestDetails;
-
-			$this->stdInputReader = $stdInputReader;
+		public function __construct (private readonly RequestDetails $requestDetails, private readonly StdInputReader $stdInputReader) {
 
 			$this->headers = $stdInputReader->getHeaders();
 

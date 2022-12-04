@@ -11,17 +11,11 @@
 
 	class SystemModelEditHandler extends BaseInjectionModifier {
 
-		private $ormDialect, $errorDecoratorHandler;
-
 		public function __construct (
-			OrmDialect $ormDialect, ErrorCatcherHandler $errorDecoratorHandler,
+			private readonly OrmDialect $ormDialect, private readonly ErrorCatcherHandler $errorDecoratorHandler,
 
 			DecoratorProxy $proxyConfig, ObjectDetails $objectMeta
 		) {
-
-			$this->ormDialect = $ormDialect;
-
-			$this->errorDecoratorHandler = $errorDecoratorHandler;
 
 			parent::__construct($proxyConfig, $objectMeta);
 		}

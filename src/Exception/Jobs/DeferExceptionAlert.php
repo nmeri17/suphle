@@ -7,16 +7,9 @@
 
 	class DeferExceptionAlert implements Task {
 
-		private $explosive, $alerter, $activePayload;
-
-		public function __construct (Throwable $explosive, AlertAdapter $alerter, $activePayload) {
-
-			$this->explosive = $explosive;
-
-			$this->alerter = $alerter;
-
-			$this->activePayload = $activePayload;
-		}
+		public function __construct(private readonly Throwable $explosive, private readonly AlertAdapter $alerter, private $activePayload)
+  {
+  }
 
 		public function handle ():void {
 

@@ -13,14 +13,11 @@
 
 	class StaleEditDiffuser implements ExceptionHandler {
 
-		private $renderer, $requestDetails, $router;
+		private $renderer;
 
-		public function __construct (RequestDetails $requestDetails, RouteManager $router) {
-
-			$this->requestDetails = $requestDetails;
-
-			$this->router = $router;
-		}
+		public function __construct(private readonly RequestDetails $requestDetails, private readonly RouteManager $router)
+  {
+  }
 
 		/**
 		 * @param {origin} EditIntegrityException

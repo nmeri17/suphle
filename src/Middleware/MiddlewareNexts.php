@@ -10,14 +10,9 @@
 	*/
 	class MiddlewareNexts {
 
-		private $currentMiddleware, $nextHandler; 
-
-		public function __construct (Middleware $currentMiddleware, ?self $nextHandler) {
-
-			$this->nextHandler = $nextHandler;
-
-			$this->currentMiddleware = $currentMiddleware;
-		}
+		public function __construct(private readonly Middleware $currentMiddleware, private readonly ?\Suphle\Middleware\MiddlewareNexts $nextHandler)
+  {
+  }
 
 		public function handle (PayloadStorage $payloadStorage) {
 

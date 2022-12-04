@@ -10,16 +10,9 @@
 	*/
 	class AscendingHierarchy implements ModuleFiles {
 
-		private $descriptorPath, $systemReader, $descriptorNamespace;
-
-		public function __construct (string $descriptorPath, string $descriptorNamespace, FileSystemReader $systemReader) {
-
-			$this->descriptorPath = $descriptorPath;
-
-			$this->systemReader = $systemReader;
-
-			$this->descriptorNamespace = $descriptorNamespace;
-		}
+		public function __construct(private readonly string $descriptorPath, private readonly string $descriptorNamespace, private readonly FileSystemReader $systemReader)
+  {
+  }
 
 		/**
 		 * {@inheritdoc}

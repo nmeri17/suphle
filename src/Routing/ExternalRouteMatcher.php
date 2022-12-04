@@ -7,14 +7,11 @@
 
 	class ExternalRouteMatcher {
 
-		private $config, $container, $activeHandler;
+		private $activeHandler;
 
-		public function __construct (RouterConfig $config, Container $container) {
-
-			$this->config = $config;
-
-			$this->container = $container;
-		}
+		public function __construct(private readonly RouterConfig $config, private readonly Container $container)
+  {
+  }
 
 		public function shouldDelegateRouting ():bool {
 

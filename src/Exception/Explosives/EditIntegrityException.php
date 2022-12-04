@@ -5,7 +5,9 @@
 
 	class EditIntegrityException extends Exception {
 
-		final const NO_AUTHORIZER = 1, KEY_MISMATCH = 2, MISSING_KEY = 3;
+		final const NO_AUTHORIZER = 1;
+  final const KEY_MISMATCH = 2;
+  final const MISSING_KEY = 3;
 
 		public function __construct (private readonly int $integrityType) {
 
