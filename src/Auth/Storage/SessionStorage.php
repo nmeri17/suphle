@@ -7,16 +7,13 @@
 
 	class SessionStorage extends BaseAuthStorage {
 
-		private $identifierKey = "tilwa_user_id",
+		private string $identifierKey = "tilwa_user_id";
+  private string $previousUserKey = "previous_user";
+  private $isImpersonating;
 
-		$previousUserKey = "previous_user",
-
-		$isImpersonating, $sessionClient;
-
-		public function __construct ( Session $sessionClient) {
-
-			$this->sessionClient = $sessionClient;
-		}
+		public function __construct(private readonly Session $sessionClient)
+  {
+  }
 
 		/**
 		 * {@inheritdoc}

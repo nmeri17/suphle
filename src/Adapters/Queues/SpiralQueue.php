@@ -15,11 +15,10 @@
 
 	class SpiralQueue extends BaseQueueAdapter {
 
-		final const HEADER_ATTEMPTS = "attempts",
+		final const HEADER_ATTEMPTS = "attempts";
+  final const HEADER_RETRY_DELAY = "retry-delay";
 
-		HEADER_RETRY_DELAY = "retry-delay";
-
-		private int $maxRetries;
+		private readonly int $maxRetries;
 
 		public function __construct (
 			private readonly EnvAccessor $envAccessor, 

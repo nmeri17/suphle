@@ -9,24 +9,9 @@
 
 	class OrmLoader extends BaseInterfaceLoader {
 
-		private $authContract, $authStorage, $container,
-
-		$laravelContainer;
-
-		public function __construct (
-			AuthContract $authContract, AuthStorage $authStorage,
-
-			LaravelContainer $laravelContainer, Container $container
-		) {
-
-			$this->authContract = $authContract;
-
-			$this->authStorage = $authStorage;
-
-			$this->laravelContainer = $laravelContainer;
-
-			$this->container = $container;
-		}
+		public function __construct(private readonly AuthContract $authContract, private readonly AuthStorage $authStorage, private readonly LaravelContainer $laravelContainer, private readonly Container $container)
+  {
+  }
 
 		public function afterBind ($initialized):void {
 

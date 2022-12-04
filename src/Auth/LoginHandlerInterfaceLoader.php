@@ -7,14 +7,9 @@
 
 	class LoginHandlerInterfaceLoader extends BaseInterfaceLoader {
 
-		private $container, $authContract;
-
-		public function __construct (Container $container, AuthContract $authContract) {
-
-			$this->container = $container;
-
-			$this->authContract = $authContract;
-		}
+		public function __construct(private readonly Container $container, private readonly AuthContract $authContract)
+  {
+  }
 
 		public function concreteName ():string {
 

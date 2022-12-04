@@ -13,7 +13,7 @@
   private array // [patternName => PatternMiddleware]
 
 		$excludePatterns = [];
-  private $interactedPatterns = [];
+  private array $interactedPatterns = [];
 
 		public function tagPatterns (array $patterns, array $middlewares):self {
 

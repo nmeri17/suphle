@@ -25,9 +25,11 @@
 
 		use DirectHttpTest, BaseDatabasePopulator, CommonBinds;
 
-		private $lastInserted, $modelName = Employment::class,
-
-		$sutName = EmploymentEditMock::class;
+		private Employment $lastInserted;
+		
+		private string $modelName = Employment::class;
+		
+		private string $sutName = EmploymentEditMock::class;
 
 		protected function preDatabaseFreeze ():void {
 

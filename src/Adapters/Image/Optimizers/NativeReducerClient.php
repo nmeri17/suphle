@@ -7,7 +7,10 @@
 
 	class NativeReducerClient implements InferiorImageClient {
 
-		final const JPEG = "jpeg", JPG = "jpg", PNG = "png", GIF = "gif";
+		final const JPEG = "jpeg";
+  final const JPG = "jpg";
+  final const PNG = "png";
+  final const GIF = "gif";
 
 		protected $readerFunctions = [
 
@@ -18,9 +21,8 @@
 			self::PNG => "imagecreatefrompng",
 
 			self::GIF => "imagecreatefromgif"
-		],
-
-		$writerFunctions = [
+		];
+  protected $writerFunctions = [
 
 			self::JPEG => "imagejpeg",
 

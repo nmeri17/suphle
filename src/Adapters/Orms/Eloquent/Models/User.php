@@ -11,9 +11,9 @@
 
 		use MigrationLocation;
 
-		protected $hidden = ["password"], $table = "users",
-
-		$guarded = ["id", "password"];
+		protected $hidden = ["password"];
+  protected $table = "users";
+  protected $guarded = ["id", "password"];
 
 		protected static function newFactory ():Factory {
 

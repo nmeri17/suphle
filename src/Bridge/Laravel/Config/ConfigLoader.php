@@ -11,17 +11,14 @@
 
 		use BaseSingletonBind;
 
-		private $laravelConfig, $container, $pathSegments = [];
+		private array $pathSegments = [];
 
 		/**
 		 * Even though we don't receive $this->items in the constructor like the parent, LaravelAppLoader manually triggers the process by injecting/setting each config
 		*/
-	    public function __construct(Laravel $laravelConfig, Container $container) {
-
-	        $this->laravelConfig = $laravelConfig;
-
-	        $this->container = $container;
-	    }
+	    public function __construct(private readonly Laravel $laravelConfig, private readonly Container $container)
+     {
+     }
 
 	    /**
 	     * Any call by their config function to access value in a file should defer to their paired OOP counterpart

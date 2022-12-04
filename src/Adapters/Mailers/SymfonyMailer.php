@@ -7,14 +7,9 @@
 
 	class SymfonyMailer implements MailClient {
 
-		private $bodyWriter, $sender;
-
-		public function __construct (Message $bodyWriter, Mailer $sender) {
-
-			$this->bodyWriter = $bodyWriter;
-
-			$this->sender = $sender;
-		}
+		public function __construct(private readonly Message $bodyWriter, private readonly Mailer $sender)
+  {
+  }
 
 		public function setDestination (string $destination):self {
 

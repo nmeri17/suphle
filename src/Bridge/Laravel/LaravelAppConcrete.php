@@ -19,11 +19,7 @@
 
 	class LaravelAppConcrete extends Application implements LaravelContainer, BindsAsSingleton {
 
-		private $requestDetails, $configLoader, // these bindings are stored here rather than on the config in order to avoid circular dependencies between that config and configLoader
-
-		$payloadStorage,
-
-		$helpers = [
+		private array $helpers = [
 			"Collections/helpers.php", "Events/functions.php",
 
 			"Foundation/helpers.php", "Support/helpers.php"
@@ -38,13 +34,7 @@
 			BootProviders::class
 		];
 
-		public function __construct (RequestDetails $requestDetails, ConfigLoader $configLoader, PayloadStorage $payloadStorage, string $basePath) {
-
-			$this->configLoader = $configLoader;
-
-			$this->requestDetails = $requestDetails;
-
-			$this->payloadStorage = $payloadStorage;
+		public function __construct (private readonly RequestDetails $requestDetails, private readonly ConfigLoader $configLoader, private readonly PayloadStorage $payloadStorage, string $basePath) {
 
 			parent::__construct($basePath);
 		}

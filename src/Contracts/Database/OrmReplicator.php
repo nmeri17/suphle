@@ -10,8 +10,6 @@
 
 		/**
 		 * Is expected to return saved models after modifying default factory structure
-		 * 
-		 * @return iterable
 		*/
 		public function modifyInsertion ( int $amount = 1, array $customizeFields = [], callable $customizeModel = null):iterable;
 

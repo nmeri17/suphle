@@ -13,24 +13,15 @@
 
 	class LoginRequestHandler implements ModuleLoginHandler {
 
-		private $rendererCollection, $container, $responseRenderer,
-
-		$validatorManager, $variableDecorator, $loginService;
+		private $responseRenderer;
+  private $loginService;
 
 		public function __construct (
-			LoginFlowMediator $collection, Container $container,
+			private readonly LoginFlowMediator $rendererCollection, private readonly Container $container,
 
-			ValidatorManager $validatorManager, VariableDependenciesHandler $variableDecorator) {
+			private readonly ValidatorManager $validatorManager, private readonly VariableDependenciesHandler $variableDecorator) {
 
-			$this->rendererCollection = $collection;
-
-			$this->container = $container;
-
-			$this->validatorManager = $validatorManager;
-
-			$this->loginService = $collection->getLoginService();
-
-			$this->variableDecorator = $variableDecorator;
+			$this->loginService = $rendererCollection->getLoginService();
 		}
 
 		public function isValidRequest ():bool {

@@ -9,15 +9,14 @@
 
 	class EmailPasswordComparer implements ColumnPayloadComparer {
 
-		private $userHydrator, $payloadStorage, $user;
+		private $userHydrator;
+  private $user;
 
 		protected $columnIdentifier = "email";
 
-		public function __construct (OrmDialect $ormDialect, PayloadStorage $payloadStorage) {
+		public function __construct (OrmDialect $ormDialect, private readonly PayloadStorage $payloadStorage) {
 
 			$this->userHydrator = $ormDialect->getUserHydrator();
-
-			$this->payloadStorage = $payloadStorage;
 		}
 
 		protected function findMatchingUser ():?UserContract {

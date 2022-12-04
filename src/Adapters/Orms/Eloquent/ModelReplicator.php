@@ -15,22 +15,17 @@
 
 	class ModelReplicator implements OrmReplicator {
 
-		/**
-		* @property BaseModel
-		*/
-		private $activeModel,
+		private BaseModel $activeModel;
+  
+  private $databaseConnection;
+  private $migrator;
 
-		$databaseConnection, $laravelContainer, $migrator, $container;
-
-		public function __construct (OrmDialect $ormDialect, LaravelContainer $laravelContainer, Container $container) {
+		public function __construct (OrmDialect $ormDialect, private readonly LaravelContainer $laravelContainer, 
+  private readonly Container $container) {
 
 			$this->databaseConnection = $ormDialect->getConnection();
 
-			$this->laravelContainer = $laravelContainer;
-
-			$this->migrator = $laravelContainer->make("migrator"); // bound to Migrator
-
-			$this->container = $container;
+			$this->migrator = $laravelContainer->make("migrator");
 		}
 
 		public function seedDatabase ( int $amount):void {

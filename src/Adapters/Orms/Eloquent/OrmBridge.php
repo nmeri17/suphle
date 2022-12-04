@@ -11,17 +11,13 @@
 
 	class OrmBridge implements OrmDialect, BindsAsSingleton {
 
-		private $credentials, $connection, $laravelContainer,
+		private $credentials;
+  private $connection;
+  private $nativeClient;
 
-		$nativeClient, $container;
-
-		public function __construct (Database $config, Container $container, LaravelContainer $laravelContainer) {
+		public function __construct (Database $config, private readonly Container $container, private readonly LaravelContainer $laravelContainer) {
 
 			$this->credentials = $config->getCredentials();
-
-			$this->laravelContainer = $laravelContainer;
-
-			$this->container = $container;
 		}
 
 		public function entityIdentity ():string {

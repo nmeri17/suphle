@@ -7,12 +7,11 @@
 
 	class LaravelValidator implements RequestValidator {
 
-		private $errorHolder, $client;
+		private $errorHolder;
 
-		public function __construct (Factory $client) {
-
-			$this->client = $client;
-		}
+		public function __construct(private readonly Factory $client)
+  {
+  }
 
 		public function validate (array $parameters, array $rules):void {
 

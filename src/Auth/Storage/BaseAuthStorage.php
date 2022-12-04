@@ -8,7 +8,9 @@
 	*/
 	abstract class BaseAuthStorage implements AuthStorage {
 
-		protected $userHydrator, $user, $identifier;
+		protected $userHydrator;
+  protected $user;
+  protected $identifier;
 
 		public function setHydrator (UserHydrator $userHydrator):void {
 

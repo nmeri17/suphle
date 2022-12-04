@@ -23,7 +23,9 @@
 
 		use BaseDatabasePopulator, SecureUserAssertions;
 
-		protected $softenDisgraceful = true, $employment;
+		protected bool $softenDisgraceful = true;
+  
+  		protected Employment $employment;
 
 		protected function getModule ():DescriptorInterface {
 
