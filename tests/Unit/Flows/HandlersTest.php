@@ -24,9 +24,8 @@
 	 		CommonBinds::concreteBinds as commonConcretes;
 	 	}
 
-		private $flowService = FlowService::class,
-
-		$sutName = FlowHydrator::class;
+		private string $flowService = FlowService::class;
+  private string $sutName = FlowHydrator::class;
 
 		public function setUp ():void {
 
@@ -212,7 +211,7 @@
 			]);
 
 			// when
-			$sut->handleAsOne($indexes, $requestProperty, $this->createCollectionNode());
+			$sut->handleAsOne($indexes, $requestProperty);
 		}
 
 		/**

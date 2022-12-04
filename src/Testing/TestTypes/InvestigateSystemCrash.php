@@ -123,7 +123,7 @@
 
 			$defaultStubs = [
 
-				"disgracefulShutdown" => $this->returnCallback(function ($errorDetails, $latestException): never {
+				"disgracefulShutdown" => $this->returnCallback(function ($errorDetails, $latestException) {
 
 					throw $latestException;
 				}),

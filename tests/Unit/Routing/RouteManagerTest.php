@@ -18,7 +18,9 @@
 
 		use DirectHttpTest, CommonBinds;
 
-		private $sut, $collection, $sutName = RouteManager::class;
+		private $sut;
+  private $collection;
+  private string $sutName = RouteManager::class;
 
 		protected function setUp ():void {
 

@@ -9,20 +9,17 @@
 
 	abstract class BaseOptimizeOperation implements ImageOptimiseOperation {
 
-		protected $imageObjects = [], $generatedFileNames = [], // only required for async operations
+		protected $imageObjects = [];
+  protected $generatedFileNames = [];
+  protected // only required for async operations
 
-		$client, $imageLocator, $resourceName,
+		$client;
+  protected $resourceName;
+  protected $operationName; // using a property instead of a constant since we can't formalise such as a contract
 
-		$operationName, // using a property instead of a constant since we can't formalise such as a contract
-
-		$fileSystemReader;
-
-		public function __construct (ImageLocator $imageLocator, FileSystemReader $fileSystemReader) {
-
-			$this->imageLocator = $imageLocator;
-
-			$this->fileSystemReader = $fileSystemReader;
-		}
+		public function __construct(protected ImageLocator $imageLocator, protected FileSystemReader $fileSystemReader)
+  {
+  }
 
 		public function getAsyncNames ():array {
 

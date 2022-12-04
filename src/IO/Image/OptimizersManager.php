@@ -18,16 +18,15 @@
 	*/
 	class OptimizersManager implements VariableDependencies {
 
-		private $operations = [], $queueManager,
+		private array $operations = [];
+  private $originalImages;
+  private $thumbnailImage;
+  private $inferiorImage;
+  private $imageResourceName;
 
-		$originalImages, $thumbnailImage,
-
-		$inferiorImage, $imageResourceName;
-
-		public function __construct (AdapterManager $queueManager) {
-
-			$this->queueManager = $queueManager;
-		}
+		public function __construct(private readonly AdapterManager $queueManager)
+  {
+  }
 
 		// this method is the reason class isn't `final`
 		public function dependencyMethods ():array {

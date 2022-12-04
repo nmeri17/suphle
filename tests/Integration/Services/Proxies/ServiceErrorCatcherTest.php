@@ -15,9 +15,9 @@
 
 	class ServiceErrorCatcherTest extends InvestigateSystemCrash {
 
-		private $serviceName = DatalessErrorThrower::class,
-
-		$container, $payloadStorage;
+		private string $serviceName = DatalessErrorThrower::class;
+  private $container;
+  private $payloadStorage;
 
 		protected function setUp ():void {
 

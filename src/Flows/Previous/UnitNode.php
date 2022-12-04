@@ -6,10 +6,8 @@
 	*/
 	abstract class UnitNode {
 
-		protected $nodeName;
-  protected // the key on the previous response body this node is attached to
-
-		$actions = []; // on CollectionNodes, this is the list of actions to take, while on SingleNodes, this is the list of attributes applied
+		protected $nodeName; // the key on the previous response body this node is attached to
+  protected $actions = []; // on CollectionNodes, this is the list of actions to take, while on SingleNodes, this is the list of attributes applied
 
 		private array $config = [];
 

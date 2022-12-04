@@ -44,7 +44,11 @@
 				$this->getExecutionContainer()->getClass(ProjectInitializer::class)
 				->allInitOperations(
 
-					$input->getArgument(self::MODULE_NAME_ARGUMENT)
+					$input->getArgument(CloneModuleCommand::MODULE_NAME_ARGUMENT),
+
+					$input->getOption(CloneModuleCommand::DESCRIPTOR_OPTION),
+
+					$output
 				);
 
 				return Command::SUCCESS;

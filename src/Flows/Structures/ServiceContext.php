@@ -8,9 +8,7 @@
        * @property {serviceName} where we'll be pulling the data we intend to filter into another operation
        */
       private readonly string $serviceName,
-      /**
-       * @property {serviceName} where we'll be pulling the data we intend to filter into another operation
-       */
+      
       private readonly string $method
   )
   {

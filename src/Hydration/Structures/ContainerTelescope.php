@@ -3,52 +3,29 @@
 
 	class ContainerTelescope {
 
-		private array $consumerList = [] // receives $this and is expected to return true when filter should be removed
+		private array $consumerList = []; // [class/interface => [consumers]]
 
-		;
-  private // [class/interface => [consumers]]
+		private array $readArguments = []; // [class => [[parameterName => value]]]
 
-		array $readArguments = [] // receives $this and is expected to return true when filter should be removed
+		private array $readConcretes = []; // same as [readArguments]
 
-		;
-  private // [class => [[parameterName => value]]]
+		private array $refreshedEntities = [];
 
-		array $readConcretes = [] // receives $this and is expected to return true when filter should be removed
+		private array $consumerParents = []; // [dependent/class => [interface whose concrete was hydrated for its constructor]]
 
-		;
-  private // same as [readArguments]
+		private array $writtenArguments = [];
 
-		array $refreshedEntities = [] // receives $this and is expected to return true when filter should be removed
+		private array $writtenConcretes = [];
 
-		;
-  private array $consumerParents = [] // receives $this and is expected to return true when filter should be removed
+		private array $missingConcretes = [];
 
-		;
-  private // [dependent/class => [interface whose concrete was hydrated for its constructor]]
+		private array $missingArguments = [];
 
-		array $writtenArguments = [] // receives $this and is expected to return true when filter should be removed
+		private array $missingContexts = []; // [class1, class2, class3]
 
-		;
-  private array $writtenConcretes = [] // receives $this and is expected to return true when filter should be removed
+		private array $storedConcretes = [];
 
-		;
-  private array $missingConcretes = [] // receives $this and is expected to return true when filter should be removed
-
-		;
-  private array $missingArguments = [] // receives $this and is expected to return true when filter should be removed
-
-		;
-  private array $missingContexts = [] // receives $this and is expected to return true when filter should be removed
-
-		;
-  private // [class1, class2, class3]
-
-		array $storedConcretes = [] // receives $this and is expected to return true when filter should be removed
-
-		;
-  private $noiseFilter // receives $this and is expected to return true when filter should be removed
-
-		;
+		private array $noiseFilter; // receives $this and is expected to return true when filter should be removed
 
 		public function setNoiseFilter (callable $callback):self {
 

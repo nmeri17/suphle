@@ -9,7 +9,7 @@
 
 	use Suphle\Events\ModuleLevelEvents;
 
-	use Suphle\Modules\ModuleHandlerIdentifier
+	use Suphle\Modules\ModuleHandlerIdentifier;
 
 	use Suphle\Server\ModuleWorkerAccessor;
 

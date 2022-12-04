@@ -6,13 +6,14 @@
 	*/
 	class ProvisionUnit {
 
-		private $owner, $concretes = [], // populated by `needs`
+		private array $concretes = [];
+  private array // populated by `needs`
 
 		$arguments = [];
 
-		public function __construct (string $owner) {
+		public function __construct (private readonly string $owner) {
 
-			$this->owner = $owner;
+			//
 		}
 
 		public function getOwner ():string {

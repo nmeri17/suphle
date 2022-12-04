@@ -9,7 +9,9 @@
 
 	trait TestsModuleList {
 
-		protected $moduleOne, $moduleTwo, $moduleThree;
+		protected $moduleOne;
+  protected $moduleTwo;
+  protected $moduleThree;
 
 		protected function setAllDescriptors ():void {
 

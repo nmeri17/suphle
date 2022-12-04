@@ -12,7 +12,7 @@
 	class CanaryValidator {
 
 		private array $allCanaries = [];
-  private $canaryInstances = [];
+  private array $canaryInstances = [];
 
 		public function __construct(private readonly Container $container, private readonly ObjectDetails $objectMeta)
   {

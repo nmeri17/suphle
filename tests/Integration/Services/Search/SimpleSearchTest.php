@@ -17,9 +17,10 @@
 
 		use DirectHttpTest, CommonBinds;
 
-		private $ormDialect, $searchService, $model,
-
-		$baseUrl = "/search/?q=jobs&";
+		private $ormDialect;
+  private $searchService;
+  private $model;
+  private string $baseUrl = "/search/?q=jobs&";
 
 		public function setUp ():void {
 

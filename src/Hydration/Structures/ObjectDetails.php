@@ -9,11 +9,9 @@
 
 	class ObjectDetails {
 
-		private $container;
+		public function __construct (private readonly Container $container) {
 
-		public function __construct (Container $container) {
-
-			$this->container = $container;
+			//
 		}
 
 		public function getReflectedClass (string $className):ReflectionClass {

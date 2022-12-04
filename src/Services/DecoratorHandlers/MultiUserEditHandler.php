@@ -21,16 +21,19 @@
 
 	class MultiUserEditHandler extends BaseInjectionModifier {
 
-		final public const INTEGRITY_KEY = "_collision_protect";
+		final public const INTEGRITY_KEY = "_collision_protect"; // submitted form/payload is expected to contain this key
 
-		final public const // submitted form/payload is expected to contain this key
-
-		DATE_FORMAT = "Y-m-d H:i:s";
+		final public const DATE_FORMAT = "Y-m-d H:i:s";
 
 		public function __construct (
 			private readonly OrmDialect $ormDialect, private readonly AdapterManager $queueManager,
 
-			private readonly PayloadStorage $payloadStorage, private readonly ErrorCatcherHandler $errorDecoratorHandler,
+			private readonly PayloadStorage $payloadStorage,
+
+			/**
+			 * I'm composing instead of extending to decouple constructor dependencies
+			*/
+			private readonly ErrorCatcherHandler $errorDecoratorHandler,
 
 			DecoratorProxy $proxyConfig, ObjectDetails $objectMeta,
 

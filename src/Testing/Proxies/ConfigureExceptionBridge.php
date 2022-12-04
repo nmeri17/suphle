@@ -20,13 +20,11 @@
 		 * Set to false when debugging a construct that directly interacts with DetectedExceptionManager::ALERTER_METHOD
 		*/
 		protected bool $muffleExceptionBroadcast = true;
-  /**
-   * Set to false when debugging a construct that directly interacts with DetectedExceptionManager::ALERTER_METHOD
-   */
-  protected /**
+
+		/**
 		 * Only applicable when making HTTP requests using get,post etc
 		*/
-		$debugCaughtExceptions = false;
+		protected bool $debugCaughtExceptions = false;
 
 		protected function setUp () {
 

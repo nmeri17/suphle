@@ -55,7 +55,8 @@
 
 					fn(string $name) => $this->container->getClass($name),
 
-					array_merge( $this->routedStack,
+					array_merge( // any temporary ones attached to route precede the defaults
+						$this->routedStack,
 
 						$this->routerConfig->defaultMiddleware()
 					)

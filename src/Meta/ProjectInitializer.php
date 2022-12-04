@@ -9,6 +9,8 @@
 
 	use Symfony\Component\Process\Process;
 
+	use Symfony\Component\Console\Output\OutputInterface;
+
 	class ProjectInitializer {
 
 		private ?Process $runningProcess = null;
@@ -23,9 +25,9 @@
 			//
 		}
 
-		public function allInitOperations (string $moduleName, string $descriptorFqcn = null):int {
+		public function allInitOperations (string $moduleName, string $descriptorFqcn = null, OutputInterface $output):int {
 
-			$creationStatus = $this->createModule($moduleName, $descriptorFqcn);
+			$creationStatus = $this->createModule($moduleName, $descriptorFqcn, $output);
 
 			$this->vendorBin->setProcessArguments("rr", ["get-binary"])->run(); // this won't run if binary already exists
 
@@ -42,10 +44,9 @@
 		/**
 		 * Can't automate test for this until a library for adding new descriptor to app module list is found
 		*/
-		protected function createModule (string $moduleName, ?string $descriptorFqcn):int {
+		protected function createModule (string $moduleName, ?string $descriptorFqcn, OutputInterface $output):int {
 
-			$output = null;
-   $command = $this->consoleClient->findCommand(
+			$command = $this->consoleClient->findCommand(
 
 				CloneModuleCommand::commandSignature()
 			);

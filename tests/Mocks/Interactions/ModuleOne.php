@@ -4,8 +4,8 @@
 	interface ModuleOne {
 
 		public const DEFAULT_EVENT = "sample_event";
-  const EMPTY_PAYLOAD_EVENT = "no_payload";
-  const OUTSIDERS_REBOUND_EVENT = "outsiders_rebound";
+  public const EMPTY_PAYLOAD_EVENT = "no_payload";
+  public const OUTSIDERS_REBOUND_EVENT = "outsiders_rebound";
 
 		public function setBCounterValue (int $newCount):void;
 

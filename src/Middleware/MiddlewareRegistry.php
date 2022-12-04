@@ -10,9 +10,7 @@
 		use BaseSingletonBind;
 
 		private array $registry = [];
-  private array // [patternName => PatternMiddleware]
-
-		$excludePatterns = [];
+  private array $excludePatterns = []; // [patternName => PatternMiddleware]
   private array $interactedPatterns = [];
 
 		public function tagPatterns (array $patterns, array $middlewares):self {

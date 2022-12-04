@@ -11,18 +11,14 @@
 
 	abstract class BaseEloquentAuthorizer implements ModelAuthorities {
 
-		protected $authStorage, $objectMeta,
-
-		$childrenTypes = [
+		protected array $childrenTypes = [
 
 			HasOneOrMany::class, HasManyThrough::class
 		];
 
-		public function __construct (AuthStorage $authStorage, ObjectDetails $objectMeta) {
+		public function __construct (protected readonly AuthStorage $authStorage, protected readonly ObjectDetails $objectMeta) {
 
-			$this->authStorage = $authStorage;
-
-			$this->objectMeta = $objectMeta;
+			//
 		}
 
 		/**

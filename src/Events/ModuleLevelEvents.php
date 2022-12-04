@@ -11,9 +11,7 @@
 
 		private $modules;
   private array $subscriberLog = [];
-  private // this is where subscribers to the immediate last fired external event reside
-
-		array $eventManagers = [];
+  private array $eventManagers = []; // this is where subscribers to the immediate last fired external event reside
   private array $firedEvents = [];
 
 		public function __construct (ActiveDescriptors $descriptorsHolder) {

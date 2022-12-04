@@ -7,14 +7,9 @@
 
 	class AsyncImageProcessor implements Task {
 
-		private $operation, $alerter;
-
-		public function __construct ( AlertAdapter $alerter, ImageOptimiseOperation $operation) {
-
-			$this->operation = $operation;
-
-			$this->alerter = $alerter;
-		}
+		public function __construct(private readonly AlertAdapter $alerter, private readonly ImageOptimiseOperation $operation)
+  {
+  }
 
 		public function handle ():void {
 
