@@ -9,6 +9,10 @@
 
 	use Suphle\ComponentTemplates\Commands\InstallComponentCommand;
 
+	use Suphle\Server\Commands\InitializeProjectCommand;
+
+	use Suphle\Meta\Commands\ContributorTestsCommand;
+
 	class Console implements ConsoleContract {
 
 		public function commandsList ():array {
@@ -16,7 +20,11 @@
 			return [
 				ArtisanCli::class,
 
-				InstallComponentCommand::class, CloneModuleCommand::class
+				InstallComponentCommand::class, CloneModuleCommand::class,
+
+				ContributorTestsCommand::class,
+
+				InitializeProjectCommand::class
 			];
 		}
 	}

@@ -3,7 +3,7 @@
 
 	use Suphle\Flows\Jobs\{RouteBranches, UpdateCountDelete};
 
-	use Suphle\Flows\Structures\{RouteUserNode, AccessContext, PendingFlowDetails};
+	use Suphle\Flows\Structures\{RouteUserNode, AccessContext, PendingFlowDetails, RouteUmbrella};
 
 	use Suphle\Contracts\{Requests\BaseResponseManager, IO\CacheManager, Auth\AuthStorage, Modules\HighLevelRequestHandler, Presentation\BaseRenderer};
 
@@ -21,9 +21,15 @@
 
 		final public const ALL_USERS = "*";
 
-		private $modules, $routeUmbrella, $activeUser, $routeUserNode,
+		private array $modules;
 
-		$authStorage;
+		private ?RouteUmbrella $routeUmbrella;
+
+		private string $activeUser;
+
+		private RouteUserNode $routeUserNode;
+
+		private AuthStorage $authStorage;
 
 		public function __construct(
 			private readonly RequestDetails $requestDetails,

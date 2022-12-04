@@ -25,11 +25,11 @@
 			);
 		}
 
-		public function getServerLauncher (string $relativePath):Process {
+		public function getServerLauncher (string $relativeToConfig):Process {
 
 			return $this->setProcessArguments("rr", [
 
-				"serve", "-c", $this->getRootFile($relativePath)
+				"serve", "-c", $this->getRootFile($relativeToConfig)
 			]);
 		}
 

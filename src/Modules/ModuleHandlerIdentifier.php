@@ -3,13 +3,17 @@
 
 	use Suphle\Hydration\Container;
 
+	use Suphle\Hydration\Structures\{ContainerBooter, BaseInterfaceCollection};
+
 	use Suphle\Modules\Structures\ActiveDescriptors;
 
 	use Suphle\Flows\OuterFlowWrapper;
 
 	use Suphle\Contracts\Config\{AuthContract, Flows as FlowConfig};
 
-	use Suphle\Contracts\{Modules\DescriptorInterface, Auth\ModuleLoginHandler, Presentation\BaseRenderer};
+	use Suphle\Contracts\{ Auth\ModuleLoginHandler, Presentation\BaseRenderer};
+
+	use Suphle\Contracts\Modules\{HighLevelRequestHandler, DescriptorInterface};
 
 	use Suphle\Events\ModuleLevelEvents;
 
@@ -23,9 +27,13 @@
 
 	abstract class ModuleHandlerIdentifier {
 
-		private $identifiedHandler, $routedModule;
+		private HighLevelRequestHandler $identifiedHandler;
 
-		protected $container, $descriptorInstances;
+		private ?DescriptorInterface $routedModule = null;
+
+		protected Container $container;
+
+		protected array $descriptorInstances;
 
 		public function __construct () {
 
@@ -36,9 +44,7 @@
 
 			$this->descriptorInstances = $this->getModules();
 
-			if (empty($this->descriptorInstances)) return; // on project initialization, no modules will exist yet
-
-			$this->container = current($this->descriptorInstances)->getContainer();
+			$this->container = current($this->descriptorInstances)->getContainer(); // we don't bother confirming descriptorInstances has contents since we don't even have access to a default error page to render if it doesn't exist
 
 			$this->container->whenTypeAny()->needsAny([ // for the `bootModules` call
 

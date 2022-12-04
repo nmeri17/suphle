@@ -62,7 +62,7 @@
 			}
 		}
 		
-		public function getActiveModule ():?ModuleDescriptor {
+		public function getActiveModule ():?DescriptorInterface {
 
 			return $this->activeDescriptor;
 		}

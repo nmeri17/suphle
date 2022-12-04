@@ -7,7 +7,11 @@
 
 	use Suphle\Server\VendorBin;
 
+	use Symfony\Component\Process\Process;
+
 	class ProjectInitializer {
+
+		private ?Process $runningProcess = null;
 
 		public function __construct (
 
@@ -23,20 +27,21 @@
 
 			$creationStatus = $this->createModule($moduleName, $descriptorFqcn);
 
-			$this->vendorBin->setProcessArguments("rr", ["get-binary"])->run();
+			$this->vendorBin->setProcessArguments("rr", ["get-binary"])->run(); // this won't run if binary already exists
 
-			$this->vendorBin->getServerLauncher("../../dev-rr.yaml")->start();
+			$this->runningProcess = $this->vendorBin->getServerLauncher(
+
+				"../../dev-rr.yaml"
+			);
+
+			$this->runningProcess->start();
 
 			return $creationStatus;
 		}
 
-		public function contributorOperations (string $testsPath):void {
-
-			$this->vendorBin->setProcessArguments("rr", ["get-binary"])->run();
-
-			$this->vendorBin->setProcessArguments("phpunit", [$testsPath])->run();
-		}
-
+		/**
+		 * Can't automate test for this until a library for adding new descriptor to app module list is found
+		*/
 		protected function createModule (string $moduleName, ?string $descriptorFqcn):int {
 
 			$command = $this->consoleClient->findCommand(
@@ -56,6 +61,18 @@
 			$commandInput = new ArrayInput($commandOptions);
 
 			return $command->run($commandInput, $output);
+		}
+
+		public function getRunningProcess ():?Process {
+
+			return $this->runningProcess;
+		}
+
+		public function contributorOperations (string $testsPath):void {
+
+			$this->vendorBin->setProcessArguments("rr", ["get-binary"])->run();
+
+			$this->vendorBin->setProcessArguments("phpunit", [$testsPath])->run();
 		}
 	}
 ?>
