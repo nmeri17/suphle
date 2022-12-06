@@ -7,11 +7,6 @@
 
 		protected static $componentEntry;
 
-		public function dependencyMethods ():array {
-
-			return ["setComponentEntry"];
-		}
-
 		public function setComponentEntry (ComponentEntry $entry):void {
 
 			self::$componentEntry = $entry;

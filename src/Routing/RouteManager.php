@@ -241,7 +241,7 @@
 
 			$container = $this->container;
 
-			$renderer->setControllingClass(
+			$renderer->setCoordinatorClass(
 
 				$container->getClass($collection->_handlingClass())
 			);

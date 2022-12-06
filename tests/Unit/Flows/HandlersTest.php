@@ -7,7 +7,7 @@
 
 	use Suphle\Flows\Structures\{RangeContext, ServiceContext, GeneratedUrlExecution};
 
-	use Suphle\Services\DecoratorHandlers\VariableDependenciesHandler;
+	use Suphle\Hydration\DecoratorHydrator;
 
 	use Suphle\Response\RoutedRendererManager;
 
@@ -146,9 +146,9 @@
 			return $this->container->whenTypeAny()->needsAny([
 
 				RoutedRendererManager::class => $this->positiveDouble(RoutedRendererManager::class)
-			])->getClass(VariableDependenciesHandler::class)
+			])->getClass(DecoratorHydrator::class)
 
-			->examineInstance($hydrator, self::class);
+			->scopeInjecting($hydrator, self::class);
 		}
 
 		public function test_fromService_doesnt_edit_request_or_trigger_controller() {

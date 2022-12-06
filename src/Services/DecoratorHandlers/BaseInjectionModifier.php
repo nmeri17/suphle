@@ -7,6 +7,8 @@
 
 	use Suphle\Hydration\{Container, Structures\ObjectDetails};
 
+	use Suphle\Services\Structures\SetsReflectionAttributes;
+
 	use ProxyManager\{Factory\AccessInterceptorValueHolderFactory as AccessInterceptor, Proxy\AccessInterceptorInterface};
 
 	/**
@@ -14,11 +16,19 @@
 	*/
 	abstract class BaseInjectionModifier implements ModifyInjected {
 
-		protected $methodHooks = [];
+		use SetsReflectionAttributes;
 
-		public function __construct(protected DecoratorProxy $proxyConfig, protected ObjectDetails $objectMeta)
-  {
-  }
+		protected array $methodHooks = [];
+
+		public function __construct(
+
+			protected readonly DecoratorProxy $proxyConfig,
+
+			protected readonly ObjectDetails $objectMeta
+		) {
+
+			//
+		}
 
 		public function getMethodHooks ():array {
 

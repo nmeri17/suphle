@@ -13,7 +13,7 @@
 
 	use Suphle\Modules\ModuleInitializer;
 
-	use Suphle\Services\DecoratorHandlers\VariableDependenciesHandler;
+	use Suphle\Hydration\DecoratorHydrator;
 
 	use Suphle\Exception\Explosives\ValidationFailure;
 
@@ -92,9 +92,9 @@
 					PathPlaceholders::class => $this->positiveDouble(PathPlaceholders::class)
 	 			], $dependencies
 			))
-			->getClass(VariableDependenciesHandler::class)
+			->getClass(DecoratorHydrator::class)
 
-			->examineInstance($hydrator, self::class);
+			->scopeInjecting($hydrator, self::class);
 		}
 		
 		public function test_invalid_request_doesnt_trigger_controller () {

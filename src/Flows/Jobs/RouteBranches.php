@@ -7,7 +7,7 @@
 
 	use Suphle\Request\RequestDetails;
 
-	use Suphle\Services\DecoratorHandlers\VariableDependenciesHandler;
+	use Suphle\Hydration\DecoratorHydrator;
 
 	use Suphle\Contracts\{Queues\Task, Database\OrmDialect, IO\CacheManager};
 
@@ -134,9 +134,9 @@
 
 			$this->moduleFinder->getActiveModule()->getContainer()
 
-			->getClass(VariableDependenciesHandler::class)
+			->getClass(DecoratorHydrator::class)
 
-			->examineInstance($this->hydrator, self::class);
+			->scopeInjecting($this->hydrator, self::class);
 		}
 	}
 ?>

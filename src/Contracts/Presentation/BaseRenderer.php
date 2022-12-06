@@ -15,9 +15,9 @@
 
 		public function getHandler ():string;
 
-		public function setControllingClass (ServiceCoordinator $class):void;
+		public function setCoordinatorClass (ServiceCoordinator $class):void;
 
-		public function getController ():ServiceCoordinator;
+		public function getCoordinator ():ServiceCoordinator;
 
 		public function matchesHandler (string $name):bool;
 
@@ -38,7 +38,5 @@
 		public function getStatusCode ():int;
 
 		public function getHeaders ():array;
-
-		public function dependencyMethods ():array; // even though this is an implementation detail unique to GenericRenderer, renderer callers manually pass the renderer to the decorator, who expects this method to be present
 	}
 ?>

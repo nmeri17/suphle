@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Services\Structures;
 
-	use Suphle\Contracts\Services\Decorators\VariableDependencies;
+	use Suphle\Services\Decorators\VariableDependencies;
 
 	use Suphle\Request\PayloadStorage;
 
@@ -14,18 +14,14 @@
 	/**
 	 * Aside handling requests that don't map to models/entities, this is useful for things like callback endpoints where a user is waiting for feedback on our end, but obviously not on the automated, calling service's end. In such cases, mere validation errors won't cut it. We need to respond to the waiting services with something to complete user flow
 	*/
-	abstract class ModellessPayload extends IndicatesCaughtException implements VariableDependencies {
+	#[VariableDependencies([ "setPayloadStorage", "setPlaceholderStorage"])]
+	abstract class ModellessPayload extends IndicatesCaughtException {
 
-		protected $payloadStorage;
-  protected $pathPlaceholders;
+		protected PayloadStorage $payloadStorage;
 
-		public function dependencyMethods ():array {
+		protected PathPlaceholders $pathPlaceholders;
 
-			return [
-
-				"setPayloadStorage", "setPlaceholderStorage"
-			];
-		}
+		protected ?Throwable $exception = null;
 
 		public function setPayloadStorage (PayloadStorage $payloadStorage):void {
 
@@ -46,7 +42,9 @@
 				
 				return $this->convertToDomainObject();
 			}
-			catch (Throwable) {
+			catch (Throwable $exception) {
+				
+				$this->exception = $exception;
 				
 				return $this->translationFailure();
 			}

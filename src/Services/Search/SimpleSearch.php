@@ -7,18 +7,12 @@
 
 	use Suphle\Contracts\{Database\OrmDialect, Services\Decorators\VariableDependencies};
 
-	class SimpleSearch extends UpdatelessService implements VariableDependencies {
+	#[VariableDependencies([ "setPayloadStorage", "setOrmDialect"])]
+	class SimpleSearch extends UpdatelessService {
 
-		protected $payloadStorage;
-  protected $ormDialect;
+		protected PayloadStorage $payloadStorage;
 
-		public function dependencyMethods ():array {
-
-			return [
-
-				"setPayloadStorage", "setOrmDialect"
-			];
-		}
+		protected OrmDialect $ormDialect;
 
 		public function setPayloadStorage (PayloadStorage $payloadStorage):void {
 

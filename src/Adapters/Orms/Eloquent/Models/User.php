@@ -3,17 +3,25 @@
 
 	use Suphle\Adapters\Orms\Eloquent\{Condiments\MigrationLocation, Factories\UserFactory};
 
-	use Suphle\Contracts\{Auth\UserContract, Services\Decorators\VariableDependencies};
+	use Suphle\Contracts\Auth\UserContract;
+
+	use Suphle\Services\Decorators\VariableDependencies;
 
 	use Illuminate\Database\Eloquent\Factories\Factory;
 
-	class User extends BaseModel implements UserContract, VariableDependencies { // not a component template since it should be extended rather than overwritten
+	#[VariableDependencies([ "setComponentEntry"])]
+	class User extends BaseModel implements UserContract { // not a component template since it should be extended rather than overwritten
 
 		use MigrationLocation;
 
+		/**
+		 * Their model doesn't type these properties
+		*/
 		protected $hidden = ["password"];
-  protected $table = "users";
-  protected $guarded = ["id", "password"];
+		
+		protected $table = "users";
+
+		protected $guarded = ["id", "password"];
 
 		protected static function newFactory ():Factory {
 

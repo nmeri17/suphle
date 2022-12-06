@@ -3,9 +3,9 @@
 
 	use Suphle\Contracts\Hydration\DecoratorChain;
 
-	use Suphle\Contracts\Services\Decorators\{SelectiveDependencies, OnlyLoadedBy, SystemModelEdit, ServiceErrorCatcher, SecuresPostRequest, MultiUserModelEdit, ValidatesActionArguments, VariableDependencies, BindsAsSingleton};
+	use Suphle\Services\Decorators\{ SecuresPostRequest, VariableDependencies, BindsAsSingleton, InterceptsCalls};
 
-	use Suphle\Services\DecoratorHandlers\{SystemModelEditHandler, ErrorCatcherHandler, SecuresPostRequestHandler, ServicePreferenceHandler, OnlyLoadedByHandler, MultiUserEditHandler, ActionDependenciesValidator, VariableDependenciesHandler, BindSingletonHandler};
+	use Suphle\Services\DecoratorHandlers\{ SecuresPostRequestHandler, VariableDependenciesHandler, BindSingletonHandler, CallInterceptorProxy};
 
 	class BaseDecorators implements DecoratorChain {
 
@@ -15,19 +15,9 @@
 
 				BindsAsSingleton::class => BindSingletonHandler::class,
 
-				MultiUserModelEdit::class => MultiUserEditHandler::class,
-
-				OnlyLoadedBy::class => OnlyLoadedByHandler::class,
-
-				SelectiveDependencies::class => ServicePreferenceHandler::class,
-
-				SystemModelEdit::class => SystemModelEditHandler::class,
-
-				ServiceErrorCatcher::class => ErrorCatcherHandler::class,
+				InterceptsCalls::class => CallInterceptorProxy::class,
 
 				SecuresPostRequest::class => SecuresPostRequestHandler::class,
-
-				ValidatesActionArguments::class => ActionDependenciesValidator::class,
 
 				VariableDependencies::class => VariableDependenciesHandler::class
 			];

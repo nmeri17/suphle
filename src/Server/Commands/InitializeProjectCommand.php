@@ -5,9 +5,11 @@
 
 	use Suphle\Console\BaseCliCommand;
 
+	use Suphle\Modules\Commands\CloneModuleCommand;
+
 	use Symfony\Component\Console\{Output\OutputInterface, Command\Command};
 
-	use Symfony\Component\Console\Input\{InputInterface, InputArgument};
+	use Symfony\Component\Console\Input\{InputInterface, InputArgument, InputOption};
 
 	use Throwable;
 

@@ -4,13 +4,15 @@
 	interface ModifiesArguments {
 
 		/**
-		 * @param {arguments} mixed[]. Method argument list
+		 * @param {arguments} Method argument list
 		*/
 		public function transformConstructor (object $dummyInstance, array $arguments):array;
 
 		/**
-		 * @param {arguments} mixed[]. Method argument list
+		 * @param {arguments} Method argument list
 		*/
 		public function transformMethods (object $concreteInstance, array $arguments, string $methodName):array;
+
+		public function setAttributesList (array $attributes):void;
 	}
 ?>

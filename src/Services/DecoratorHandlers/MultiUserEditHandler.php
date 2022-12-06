@@ -26,7 +26,9 @@
 		final public const DATE_FORMAT = "Y-m-d H:i:s";
 
 		public function __construct (
-			private readonly OrmDialect $ormDialect, private readonly AdapterManager $queueManager,
+			private readonly OrmDialect $ormDialect,
+
+			private readonly AdapterManager $queueManager,
 
 			private readonly PayloadStorage $payloadStorage,
 
@@ -37,7 +39,9 @@
 
 			DecoratorProxy $proxyConfig, ObjectDetails $objectMeta,
 
-			private readonly PathAuthorizer $pathAuthorizer, private readonly AuthStorage $authStorage
+			private readonly PathAuthorizer $pathAuthorizer,
+
+			private readonly AuthStorage $authStorage
 		) {
 
 			parent::__construct($proxyConfig, $objectMeta);

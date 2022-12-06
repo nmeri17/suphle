@@ -5,11 +5,16 @@
 
 	use Suphle\Hydration\Structures\ObjectDetails;
 
+	use Suphle\Services\Structures\SetsReflectionAttributes;
+
 	abstract class BaseArgumentModifier implements ModifiesArguments {
 
-		public function __construct(protected ObjectDetails $objectMeta)
-  {
-  }
+		use SetsReflectionAttributes;
+
+		public function __construct(protected ObjectDetails $objectMeta) {
+
+			//
+		}
 
 		/**
 		 * {@inheritdoc}

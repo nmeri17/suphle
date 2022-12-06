@@ -20,7 +20,7 @@
 
 			$this->assertNotNull($matchingRenderer);
 
-			$controller = $matchingRenderer->getController();
+			$controller = $matchingRenderer->getCoordinator();
 
 			$this->assertNotEquals($controller::class, $entry->_handlingClass()); // then
 		}

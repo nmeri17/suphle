@@ -8,7 +8,8 @@
 	abstract class BaseTestProduction extends DescriptorCollection {
 
 		protected bool $debugCaughtExceptions = true;
-  protected $useTestComponents = false;
+  
+  		protected bool $useTestComponents = false;
 
 		protected VendorBin $vendorBin;
 

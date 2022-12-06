@@ -22,11 +22,12 @@
 		use BaseModuleInteractor, ModuleReplicator, ModuleHttpTest;
 
 		protected const BRIDGE_NAME = ModuleExceptionBridge::class;
-  protected const BROADCASTER_NAME = DetectedExceptionManager::class;
+  
+  		protected const BROADCASTER_NAME = DetectedExceptionManager::class;
 
-		private $objectMeta;
+		private ObjectDetails $objectMeta;
 
-		protected $softenDisgraceful = false; // prevents us from stubbing [BRIDGE_NAME]; we'll use the real one i.e. so that disgracefulShutdown can run
+		protected bool $softenDisgraceful = false; // prevents us from stubbing [BRIDGE_NAME]; we'll use the real one i.e. so that disgracefulShutdown can run
 
 		protected function setUp ():void {
 

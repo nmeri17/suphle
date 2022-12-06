@@ -1,5 +1,5 @@
 <?php
-	namespace Suphle\Contracts\Services\Decorators;
+	namespace Suphle\Contracts\Services\CallInterceptors;
 
 	use Suphle\Contracts\Services\Models\IntegrityModel;
 

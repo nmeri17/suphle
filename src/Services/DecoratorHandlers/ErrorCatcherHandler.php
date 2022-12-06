@@ -17,8 +17,10 @@
 	class ErrorCatcherHandler extends BaseInjectionModifier {
 
 		public function __construct (
-			private readonly DetectedExceptionManager $exceptionDetector, ObjectDetails $objectMeta,
-			DecoratorProxy $proxyConfig) {
+			private readonly DetectedExceptionManager $exceptionDetector,
+
+			ObjectDetails $objectMeta, DecoratorProxy $proxyConfig
+		) {
 
 			parent::__construct($proxyConfig, $objectMeta);
 		}

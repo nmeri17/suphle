@@ -3,7 +3,7 @@
 
 	use Suphle\Contracts\Presentation\{HtmlParser, BaseRenderer};
 
-	use Suphle\Contracts\Services\Decorators\VariableDependencies;
+	use Suphle\Services\Decorators\VariableDependencies;
 
 	use Suphle\Hydration\Container;
 
@@ -11,27 +11,24 @@
 
 	use Suphle\Services\ServiceCoordinator;
 
-	abstract class GenericRenderer implements BaseRenderer, VariableDependencies {
+	#[VariableDependencies([ "setHtmlParser"])]
+	abstract class GenericRenderer implements BaseRenderer {
 
-		private $controller;
-  private $path;
-  private $flows;
-  private $routeMethod;
+		protected ServiceCoordinator $coordinator;
+		
+		protected ?ControllerFlows $flows = null;
+		
+		protected string $routeMethod, $handler;
 
-		protected $handler;
-  protected $statusCode;
-  protected $htmlParser;
-  protected $rawResponse = [];
-  protected $headers = [];
+		protected int $statusCode;
 
-		public function setControllingClass (ServiceCoordinator $controller):void {
+		protected HtmlParser $htmlParser;
+
+		protected array $rawResponse = [], $headers = [];
+
+		public function setCoordinatorClass (ServiceCoordinator $coordinator):void {
 			
-			$this->controller = $controller;
-		}
-
-		public function dependencyMethods ():array {
-
-			return [ "setHtmlParser"];
+			$this->coordinator = $coordinator;
 		}
 
 		public function setHtmlParser (HtmlParser $parser):void {
@@ -43,7 +40,7 @@
 
 			$this->rawResponse = call_user_func_array(
 
-				[$this->getController(), $this->handler],
+				[$this->getCoordinator(), $this->handler],
 
 				$handlerParameters
 			);
@@ -51,9 +48,9 @@
 			return $this;
 		}
 
-		public function getController ():ServiceCoordinator {
+		public function getCoordinator ():ServiceCoordinator {
 			
-			return $this->controller;
+			return $this->coordinator;
 		}
 
 		protected function renderJson():string {

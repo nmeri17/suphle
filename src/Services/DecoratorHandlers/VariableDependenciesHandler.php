@@ -5,29 +5,34 @@
 
 	use Suphle\Hydration\Container;
 
+	use Suphle\Services\Structures\SetsReflectionAttributes;
+
 	class VariableDependenciesHandler implements ModifyInjected {
 
-		public function __construct(private readonly Container $container)
-  {
-  }
+		use SetsReflectionAttributes;
 
-		/**
-		 * @param {concrete} VariableDependencies
-		*/
+		public function __construct(private readonly Container $container) {
+
+			//
+		}
+
 		public function examineInstance (object $concrete, string $caller):object {
 
 			$concreteName = $concrete::class;
 
-			foreach ($concrete->dependencyMethods() as $methodName) {
+			foreach ($this->attributesList as $attributeMeta) {
+	
+				foreach ($attributeMeta->newInstance()->dependencyMethods as $methodName) {
 
-				$parameters = $this->container->getMethodParameters(
-				
-					$methodName, $concrete::class,
+					$parameters = $this->container->getMethodParameters(
+					
+						$methodName, $concrete::class,
 
-					[$concreteName]
-				);
+						[$concreteName]
+					);
 
-				call_user_func_array([$concrete, $methodName], $parameters);
+					call_user_func_array([$concrete, $methodName], $parameters);
+				}
 			}
 
 			return $concrete;

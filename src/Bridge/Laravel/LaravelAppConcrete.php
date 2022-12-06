@@ -1,7 +1,9 @@
 <?php
 	namespace Suphle\Bridge\Laravel;
 
-	use Suphle\Contracts\{Config\Laravel, Bridge\LaravelContainer, Services\Decorators\BindsAsSingleton};
+	use Suphle\Contracts\{Config\Laravel, Bridge\LaravelContainer};
+
+	use Suphle\Services\Decorators\BindsAsSingleton;
 
 	use Suphle\Bridge\Laravel\{DefaultExceptionHandler, Config\ConfigLoader};
 
@@ -17,9 +19,17 @@
 
 	use ReflectionClass;
 
-	class LaravelAppConcrete extends Application implements LaravelContainer, BindsAsSingleton {
+	#[BindsAsSingleton(LaravelContainer::class)]
+	class LaravelAppConcrete extends Application implements LaravelContainer {
 
-		private array $helpers = [
+		protected const KERNEL_BOOTSTRAPPERS = [
+
+			RegisterFacades::class, RegisterProviders::class,
+
+			BootProviders::class
+		];
+
+		protected const HELPER_SCRIPTS = [
 			"Collections/helpers.php", "Events/functions.php",
 
 			"Foundation/helpers.php", "Support/helpers.php"
@@ -27,21 +37,18 @@
 
 		private static bool $hasSetApp = false;
 
-		protected $kernelBootstrappers = [
+		public function __construct (
 
-			RegisterFacades::class, RegisterProviders::class,
+			private readonly RequestDetails $requestDetails,
 
-			BootProviders::class
-		];
+			private readonly ConfigLoader $configLoader,
 
-		public function __construct (private readonly RequestDetails $requestDetails, private readonly ConfigLoader $configLoader, private readonly PayloadStorage $payloadStorage, string $basePath) {
+			private readonly PayloadStorage $payloadStorage,
+
+			string $basePath
+		) {
 
 			parent::__construct($basePath);
-		}
-
-		public function entityIdentity ():string {
-
-			return LaravelContainer::class;
 		}
 
 		public function concreteBinds ():array {
@@ -92,7 +99,7 @@
 
 		public function runContainerBootstrappers ():void {
 
-			foreach ($this->kernelBootstrappers as $bootstrapper)
+			foreach (self::KERNEL_BOOTSTRAPPERS as $bootstrapper)
 
 				(new $bootstrapper)->bootstrap($this);
 		}
@@ -119,7 +126,7 @@
 
 			$packageRoot = implode(DIRECTORY_SEPARATOR, $rootArray);
 
-			foreach ($this->helpers as $relativePath)
+			foreach (self::HELPER_SCRIPTS as $relativePath)
 
 				require_once $packageRoot . DIRECTORY_SEPARATOR . $relativePath;
 		}

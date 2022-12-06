@@ -7,9 +7,15 @@
 
 	class LoginHandlerInterfaceLoader extends BaseInterfaceLoader {
 
-		public function __construct(private readonly Container $container, private readonly AuthContract $authContract)
-  {
-  }
+		public function __construct (
+
+			private readonly Container $container,
+
+			private readonly AuthContract $authContract
+		) {
+
+			//
+		}
 
 		public function concreteName ():string {
 
@@ -20,7 +26,10 @@
 
 			return [
 
-				"collection" => $this->container->getClass($this->authContract->getLoginCollection()) // passing collection as argument so the handler can receive a type-safe object
+				"rendererCollection" => $this->container->getClass(
+
+					$this->authContract->getLoginCollection()
+				) // passing collection as argument so the handler can receive a type-safe object
 			];
 		}
 	}

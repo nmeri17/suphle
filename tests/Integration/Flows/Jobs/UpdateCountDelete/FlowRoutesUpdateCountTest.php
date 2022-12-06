@@ -72,7 +72,7 @@
 
 				"renderer" => $this->replaceConstructorArguments (Json::class, [], [
 
-					"getController" => $this->positiveDouble(ServiceCoordinator::class)
+					"getCoordinator" => $this->positiveDouble(ServiceCoordinator::class)
 				])
 			];
 		}

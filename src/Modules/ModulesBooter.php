@@ -5,17 +5,21 @@
 
 	use Suphle\Events\ModuleLevelEvents;
 
-	use Suphle\Contracts\{Modules\DescriptorInterface, Services\Decorators\BindsAsSingleton};
+	use Suphle\Contracts\Modules\DescriptorInterface;
 
-	use Suphle\Hydration\Structures\BaseSingletonBind;
+	use Suphle\Services\Decorators\BindsAsSingleton;
 
-	class ModulesBooter implements BindsAsSingleton {
-
-		use BaseSingletonBind;
+	#[BindsAsSingleton]
+	class ModulesBooter {
 
 		private $modules;
 
-		public function __construct (ActiveDescriptors $descriptorsHolder, private readonly ModuleLevelEvents $eventManager) {
+		public function __construct (
+
+			ActiveDescriptors $descriptorsHolder,
+
+			private readonly ModuleLevelEvents $eventManager
+		) {
 
 			$this->modules = $descriptorsHolder->getDescriptors();
 		}

@@ -3,7 +3,7 @@
 
 	use Suphle\Contracts\IO\Image\{ThumbnailOperationHandler, InferiorOperationHandler};
 
-	use Suphle\Contracts\Services\Decorators\VariableDependencies;
+	use Suphle\Services\Decorators\VariableDependencies;
 
 	use Suphle\IO\Image\Jobs\AsyncImageProcessor;
 
@@ -16,22 +16,23 @@
 	/**
 	 * Doesn't implement an interface since we don't intend to replace it. Doing so means it can be replaced with an implementation that permits save without a operation
 	*/
-	class OptimizersManager implements VariableDependencies {
+	#[VariableDependencies([ "setInferiorImage", "setThumbnailImage" ])]
+	class OptimizersManager {
 
-		private array $operations = [];
-  private $originalImages;
-  private $thumbnailImage;
-  private $inferiorImage;
-  private $imageResourceName;
+		private array $operations = [], $originalImages;
 
-		public function __construct(private readonly AdapterManager $queueManager)
-  {
-  }
+		private ThumbnailOperationHandler $thumbnailImage;
 
-		// this method is the reason class isn't `final`
-		public function dependencyMethods ():array {
+		private InferiorOperationHandler $inferiorImage;
 
-			return [ "setInferiorImage", "setThumbnailImage" ];
+		private string $imageResourceName;
+
+		public function __construct(
+
+			private readonly AdapterManager $queueManager
+		) {
+
+			//
 		}
 
 		public function setThumbnailImage (ThumbnailOperationHandler $thumbnailImage):void {

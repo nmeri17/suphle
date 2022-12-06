@@ -92,6 +92,9 @@
 			return $initial;
 		}
 
+		/**
+		 * @return interfaces on {interfaceList} that {entityName} actually implements
+		*/
 		public function parentInterfaceMatches (string $entityName, array $interfaceList ):array {
 
 			return array_intersect(
@@ -102,7 +105,7 @@
 
 		public function getValueType ($value):string {
 
-			return is_object($value)? get_class($value): gettype($value);
+			return is_object($value)? $value::class : gettype($value);
 		}
 
 		public function getPublicMethods (string $className):array {
@@ -124,6 +127,25 @@
 			]);
 
 			return $methods;
+		}
+
+		/**
+		 * Avoids calling its constructor
+		 * 
+		 * @return class instance
+		*/
+		public function noConstructor (string $className):object {
+
+			return $this->getReflectedClass($className)
+
+			->newInstanceWithoutConstructor();
+		}
+
+		public function getClassAttributes (string $className, string $attributeName = null):array {
+
+			return $this->getReflectedClass($className)
+
+			->getAttributes($attributeName);
 		}
 	}
 ?>

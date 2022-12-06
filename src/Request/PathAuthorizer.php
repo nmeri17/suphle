@@ -1,23 +1,23 @@
 <?php
 	namespace Suphle\Request;
 
-	use Suphle\Hydration\{Container, Structures\BaseSingletonBind};
+	use Suphle\Hydration\Container;
 
-	use Suphle\Contracts\Services\Decorators\BindsAsSingleton;
+	use Suphle\Services\Decorators\BindsAsSingleton;
 
-	class PathAuthorizer implements BindsAsSingleton {
+	#[BindsAsSingleton]
+	class PathAuthorizer {
 
-		use BaseSingletonBind;
+		private array $allRules = [], // [ruleName => [taggedPatterns]]
 
-		private array $allRules = [];
-  private // [ruleName => [taggedPatterns]]
+		$interactedPatterns = [],
 
-		array $interactedPatterns = [];
-  private array $excludeRules = [];
+		$excludeRules = [];
 
-		public function __construct(private readonly Container $container)
-  {
-  }
+		public function __construct(private readonly Container $container) {
+
+			//
+		}
 
 		public function addRule (array $patterns, string $rule):self {
 

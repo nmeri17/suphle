@@ -3,26 +3,23 @@
 
 	use Suphle\Hydration\DecoratorHydrator;
 
-	use Suphle\Contracts\Services\Decorators\{MultiUserModelEdit, ServiceErrorCatcher};
+	use Suphle\Services\Decorators\{InterceptsCalls, VariableDependencies};
 
 	use Suphle\Testing\TestTypes\IsolatedComponentTest;
 
 	use Suphle\Tests\Integration\Generic\CommonBinds;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\{ThrowsException, Services\EmploymentEditMock};
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\{ThrowsException, Services\SystemModelEditMock1};
 
 	use ProxyManager\Factory\AccessInterceptorValueHolderFactory as AccessInterceptor;
 
-	use Throwable;
+	use Throwable, ReflectionAttribute;
 
 	class DecoratorTest extends IsolatedComponentTest {
 
 		use CommonBinds;
 
-		private string $subDecorator = MultiUserModelEdit::class;
-  private string $superDecorator = ServiceErrorCatcher::class;
-  private string $decoratedClass = EmploymentEditMock::class;
-  private $hydrator;
+		private DecoratorHydrator $hydrator;
 
 		protected function setUp ():void {
 
@@ -31,24 +28,29 @@
 			$this->hydrator = $this->container->getClass(DecoratorHydrator::class);
 		}
 
-		public function test_getRelevantDecors_sub_first_returns_sub () {
+		public function test_getRelevantDecors_gets_correct_list () {
 
-			$result = $this->hydrator->getRelevantDecors([
+			$decoratorToHandler = [
 
-				$this->subDecorator => null, $this->superDecorator => null
-			], $this->decoratedClass);
+				InterceptsCalls::class => null,
 
-			$this->assertSame([$this->subDecorator], $result);
-		}
+				VariableDependencies::class => null
+			];
 
-		public function test_getRelevantDecors_super_first_returns_sub () {
+			$result = $this->hydrator->getRelevantDecors(
 
-			$result = $this->hydrator->getRelevantDecors([
+				$decoratorToHandler, SystemModelEditMock1::class
+			);
 
-				$this->superDecorator => null, $this->subDecorator => null
-			], $this->decoratedClass);
+			foreach ($decoratorToHandler as $decoratorName => $handler) {
 
-			$this->assertSame([$this->subDecorator], $result);
+				$this->assertArrayHasKey($decoratorName, $result);
+
+				$this->assertInstanceOf(
+				
+					ReflectionAttribute::class, $result[$decoratorName][0]
+				);
+			}
 		}
 
 		public function test_catches_error () { // proof of concept

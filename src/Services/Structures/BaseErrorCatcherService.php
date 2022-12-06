@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Services\Structures;
 
-	use Suphle\Contracts\Services\Decorators\VariableDependencies;
+	use Suphle\Services\Decorators\VariableDependencies;
 
 	use Suphle\Routing\PathPlaceholders;
 
@@ -12,9 +12,11 @@
 	*/
 	trait BaseErrorCatcherService {
 
-		protected $erroneousMethod;
-  protected $payloadStorage;
-  protected $pathPlaceholders;
+		protected ?string $erroneousMethod = null;
+
+		protected PayloadStorage $payloadStorage;
+
+		protected PathPlaceholders $pathPlaceholders;
 
 		public function rethrowAs ():array {
 

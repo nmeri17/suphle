@@ -1,27 +1,27 @@
 <?php
 	namespace Suphle\Services\Structures;
 
-	use Suphle\Contracts\{Database\OrmDialect, Services\Decorators\VariableDependencies};
+	use Suphle\Contracts\Database\OrmDialect;
+
+	use Suphle\Services\Decorators\VariableDependencies;
 
 	use Suphle\Request\PayloadStorage;
 
 	use Suphle\Routing\PathPlaceholders;
 
-	abstract class ModelfulPayload implements VariableDependencies {
+	#[VariableDependencies([
 
-		protected $payloadStorage;
-  protected $ormDialect;
-  protected $pathPlaceholders;
+		"setPayloadStorage", "setPlaceholderStorage",
 
-		public function dependencyMethods ():array {
+		"setOrmDialect"
+	])]
+	abstract class ModelfulPayload {
 
-			return [
+		protected PayloadStorage $payloadStorage;
 
-				"setPayloadStorage", "setPlaceholderStorage",
+		protected OrmDialect $ormDialect;
 
-				"setOrmDialect"
-			];
-		}
+		protected PathPlaceholders $pathPlaceholders;
 
 		public function setPayloadStorage (PayloadStorage $payloadStorage):void {
 

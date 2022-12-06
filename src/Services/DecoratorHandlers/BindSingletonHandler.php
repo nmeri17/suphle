@@ -3,26 +3,33 @@
 
 	use Suphle\Contracts\Hydration\ScopeHandlers\ModifyInjected;
 
-	use Suphle\Contracts\Services\Decorators\BindsAsSingleton;
-
 	use Suphle\Hydration\{Container, Structures\ObjectDetails};
+
+	use Suphle\Services\Structures\SetsReflectionAttributes;
 
 	use Suphle\Exception\Explosives\Generic\InvalidImplementor;
 
 	class BindSingletonHandler implements ModifyInjected {
 
-		public function __construct(private readonly ObjectDetails $objectMeta, private readonly Container $container)
-  {
-  }
+		use SetsReflectionAttributes;
 
-		/**
-		 * @param {concrete}: BindsAsSingleton
-		*/
+		public function __construct(
+
+			private readonly ObjectDetails $objectMeta,
+
+			private readonly Container $container
+		) {
+
+			//
+		}
+
 		public function examineInstance (object $concrete, string $caller):object {
 
-			$allegedParent = $concrete->entityIdentity();
+			$attribute = current($this->attributesList)->newInstance();
 
 			$concreteName = $concrete::class;
+
+			$allegedParent = $attribute->entityIdentity ?? $concreteName;
 
 			if (!$this->objectMeta->stringInClassTree(
 

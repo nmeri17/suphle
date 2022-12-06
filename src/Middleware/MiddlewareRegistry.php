@@ -1,17 +1,16 @@
 <?php
 	namespace Suphle\Middleware;
 
-	use Suphle\Contracts\Services\Decorators\BindsAsSingleton;
+	use Suphle\Services\Decorators\BindsAsSingleton;
 
-	use Suphle\Hydration\Structures\BaseSingletonBind;
+	#[BindsAsSingleton]
+	class MiddlewareRegistry {
 
-	class MiddlewareRegistry implements BindsAsSingleton {
+		private array $registry = [],
 
-		use BaseSingletonBind;
-
-		private array $registry = [];
-  private array $excludePatterns = []; // [patternName => PatternMiddleware]
-  private array $interactedPatterns = [];
+		$excludePatterns = [], // [patternName => PatternMiddleware]
+		
+		$interactedPatterns = [];
 
 		public function tagPatterns (array $patterns, array $middlewares):self {
 

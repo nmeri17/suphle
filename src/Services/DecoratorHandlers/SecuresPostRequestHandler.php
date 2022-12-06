@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Services\DecoratorHandlers;
 
-	use Suphle\Contracts\Services\Decorators\{SystemModelEdit, MultiUserModelEdit};
+	use Suphle\Contracts\Services\CallInterceptors\{SystemModelEdit, MultiUserModelEdit};
 
 	use Suphle\Hydration\Structures\ObjectDetails;
 
@@ -16,7 +16,12 @@
 			SystemModelEdit::class, MultiUserModelEdit::class
 		];
 
-		public function __construct (private readonly RequestDetails $requestDetails, ObjectDetails $objectMeta) {
+		public function __construct (
+
+			private readonly RequestDetails $requestDetails,
+
+			ObjectDetails $objectMeta
+		) {
 
 			parent::__construct($objectMeta);
 		}

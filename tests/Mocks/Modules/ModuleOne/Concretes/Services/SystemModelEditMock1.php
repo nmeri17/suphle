@@ -3,9 +3,13 @@
 
 	use Suphle\Services\{UpdatefulService, Structures\BaseErrorCatcherService};
 
-	use Suphle\Contracts\Services\Decorators\{SystemModelEdit, VariableDependencies};
+	use Suphle\Contracts\Services\CallInterceptors\SystemModelEdit;
 
-	class SystemModelEditMock1 extends UpdatefulService implements SystemModelEdit, VariableDependencies {
+	use Suphle\Services\Decorators\{InterceptsCalls, VariableDependencies};
+
+	#[InterceptsCalls(SystemModelEdit::class)]
+	#[VariableDependencies]
+	class SystemModelEditMock1 extends UpdatefulService implements SystemModelEdit {
 
 		use BaseErrorCatcherService;
 

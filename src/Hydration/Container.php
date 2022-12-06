@@ -956,8 +956,6 @@
 		public function interiorDecorate ():void {
 
 			$this->decorator = $this->getClass(DecoratorHydrator::class);
-
-			$this->decorator->assignScopes();
 		}
 
 		/**

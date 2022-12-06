@@ -1,20 +1,19 @@
 <?php
 	namespace Suphle\Modules;
 
-	use Suphle\Contracts\{Modules\DescriptorInterface, Services\Decorators\BindsAsSingleton};
+	use Suphle\Contracts\Modules\DescriptorInterface;
 
-	use Suphle\Hydration\Structures\BaseSingletonBind;
+	use Suphle\Services\Decorators\BindsAsSingleton;
 
 	use Throwable;
 
 	/**
 	 * Manager/wrapper around [ModuleInitializer]
 	*/
-	class ModuleToRoute implements BindsAsSingleton {
+	#[BindsAsSingleton]
+	class ModuleToRoute {
 
-		use BaseSingletonBind;
-
-		private $activeDescriptor;
+		private ?DescriptorInterface $activeDescriptor = null;
 		
 		public function findContext (array $descriptors):?ModuleInitializer {
 			

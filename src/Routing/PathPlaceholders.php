@@ -3,23 +3,24 @@
 
 	use Suphle\Request\SanitizesIntegerInput;
 
-	use Suphle\Contracts\Services\Decorators\BindsAsSingleton;
-
-	use Suphle\Hydration\Structures\BaseSingletonBind;
+	use Suphle\Services\Decorators\BindsAsSingleton;
 
 	/**
 	 * Used by route finder during matching to compose and interpolate patterns read from collections and what is incoming in request
 	*/
-	class PathPlaceholders implements BindsAsSingleton {
+	#[BindsAsSingleton]
+	class PathPlaceholders {
 
-		use SanitizesIntegerInput, BaseSingletonBind;
+		use SanitizesIntegerInput;
 
-		private array $stack = [];
-  private array $methodSegments = [];
+		private array $stack = [],
 
-		public function __construct(private readonly CollectionMethodToUrl $urlReplacer)
-  {
-  }
+		$methodSegments = [];
+
+		public function __construct(private readonly CollectionMethodToUrl $urlReplacer) {
+
+			//
+		}
 
 		public function setMethodSegments (array $methods):void {
 

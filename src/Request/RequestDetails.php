@@ -1,7 +1,9 @@
 <?php
 	namespace Suphle\Request;
 
-	use Suphle\Contracts\{Config\Router, Requests\StdInputReader, Services\Decorators\BindsAsSingleton};
+	use Suphle\Contracts\{Config\Router, Requests\StdInputReader};
+
+	use Suphle\Services\Decorators\BindsAsSingleton;
 
 	use Suphle\Hydration\Container;
 
@@ -10,20 +12,26 @@
 	/**
 	 * Our closest adaptation of the PSR\RequestInterface
 	*/
-	class RequestDetails implements BindsAsSingleton {
+	#[BindsAsSingleton]
+	class RequestDetails {
 
 		final const HTTP_METHOD_KEY = "HTTP_METHOD";
 
-		private $computedPath;
-  private $permanentPath;
-  private // readonly version of [computedPath]
-		
-		$versionPresent;
-  private array $queryParameters = [];
+		private ?string $computedPath = null,
 
-		public function __construct(private readonly Router $config, private readonly StdInputReader $stdInputReader)
-  {
-  }
+		$versionPresent, $permanentPath = null; // readonly version of [computedPath]
+
+		private array $queryParameters = [];
+
+		public function __construct(
+
+			private readonly Router $config,
+
+			private readonly StdInputReader $stdInputReader
+		) {
+
+			//
+		}
 
 		public function getPath ():?string {
 
@@ -43,11 +51,6 @@
 		public function getQueryParameters ():array {
 
 			return $this->queryParameters;
-		}
-
-		public function entityIdentity ():string {
-
-			return self::class;
 		}
 
 		public static function fromModules (array $descriptors, string $requestPath):void {

@@ -1,32 +1,37 @@
 <?php
 	namespace Suphle\Modules;
 
-	use Suphle\Hydration\Container;
+	use Suphle\Hydration\{Container, DecoratorHydrator};
 
 	use Suphle\Request\PayloadStorage;
 
-	use Suphle\Services\DecoratorHandlers\VariableDependenciesHandler;
-
 	use Suphle\Exception\DetectedExceptionManager;
 
-	use Suphle\Contracts\{Modules\HighLevelRequestHandler, Config\ExceptionInterceptor, Presentation\BaseRenderer, Exception\FatalShutdownAlert, Hydration\ClassHydrationBehavior};
+	use Suphle\Contracts\{Modules\HighLevelRequestHandler, Config\ExceptionInterceptor, Presentation\BaseRenderer, Hydration\ClassHydrationBehavior};
+
+	use Suphle\Contracts\Exception\{FatalShutdownAlert, ExceptionHandler};
 
 	use Throwable, Exception;
 
 	class ModuleExceptionBridge implements HighLevelRequestHandler, ClassHydrationBehavior {
 
-		private $handler;
-  private $handledExternally;
+		private ExceptionHandler $handler;
+  
+  		private bool $handledExternally;
 
 		public function __construct(
-			private readonly Container $container, private readonly ExceptionInterceptor $config,
+			private readonly Container $container,
 
-			private readonly PayloadStorage $payloadStorage, private readonly DetectedExceptionManager $exceptionDetector,
+			private readonly ExceptionInterceptor $config,
 
-			VariableDependenciesHandler $variableDecorator
+			private readonly PayloadStorage $payloadStorage,
+
+			private readonly DetectedExceptionManager $exceptionDetector,
+
+			private readonly DecoratorHydrator $decoratorHydrator
 		) {
 
-			$this->variableDecorator = $variableDecorator;
+			//
 		}
 
 		public function hydrateHandler (Throwable $exception):void {
@@ -50,7 +55,7 @@
 
 			$this->handler->prepareRendererData();
 
-			return $this->variableDecorator->examineInstance(
+			return $this->decoratorHydrator->scopeInjecting(
 
 				$this->handler->getRenderer(), self::class
 			);
@@ -127,7 +132,7 @@
 
 			$this->exceptionDetector->queueAlertAdapter($exception, $this->payloadStorage);
 
-			$renderer = $this->variableDecorator->examineInstance(
+			$renderer = $this->decoratorHydrator->scopeInjecting(
 
 				$this->handlingRenderer(), self::class
 			);

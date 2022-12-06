@@ -21,13 +21,16 @@
 		use BaseDatabasePopulator, SecureUserAssertions;
 
 		private const NUM_TO_INSERT = 20;
-  private const TABLE_NAME = "employment";
 
-		private $lastInserted;
-  private array $updatePayload = ["salary" => 850_000];
+		private const TABLE_NAME = "employment";
 
-		protected $debugCaughtExceptions = true;
-  protected $muffleExceptionBroadcast = false;
+		private Employment $lastInserted;
+		
+		private array $updatePayload = ["salary" => 850_000];
+
+		protected bool $debugCaughtExceptions = true;
+		
+		protected bool $muffleExceptionBroadcast = false;
 
 		protected function getActiveEntity ():string {
 

@@ -1,24 +1,31 @@
 <?php
 	namespace Suphle\Bridge\Laravel\Config;
 
-	use Suphle\Hydration\{Container, Structures\BaseSingletonBind};
+	use Suphle\Hydration\Container;
 
-	use Suphle\Contracts\{Config\Laravel, Services\Decorators\BindsAsSingleton};
+	use Suphle\Contracts\Config\Laravel;
+
+	use Suphle\Services\Decorators\BindsAsSingleton;
 
 	use Illuminate\Config\Repository;
 
-	class ConfigLoader extends Repository implements BindsAsSingleton {
-
-		use BaseSingletonBind;
+	#[BindsAsSingleton]
+	class ConfigLoader extends Repository {
 
 		private array $pathSegments = [];
 
 		/**
 		 * Even though we don't receive $this->items in the constructor like the parent, LaravelAppLoader manually triggers the process by injecting/setting each config
 		*/
-	    public function __construct(private readonly Laravel $laravelConfig, private readonly Container $container)
-     {
-     }
+	    public function __construct(
+
+	    	private readonly Laravel $laravelConfig,
+
+	    	private readonly Container $container
+	    ) {
+
+	    	//
+	    }
 
 	    /**
 	     * Any call by their config function to access value in a file should defer to their paired OOP counterpart

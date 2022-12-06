@@ -7,19 +7,24 @@
 
 	use Suphle\Events\Structures\HandlerPath;
 
-	use Suphle\Contracts\{Modules\DescriptorInterface, Services\Decorators\BindsAsSingleton};
+	use Suphle\Contracts\Modules\DescriptorInterface;
+
+	use Suphle\Services\Decorators\BindsAsSingleton;
 
 	use InvalidArgumentException;
 
-	abstract class EventManager implements BindsAsSingleton {
+	#[BindsAsSingleton]
+	abstract class EventManager {
 
-		use BaseSingletonBind;
+		private HandlerPath $activeHandlerPath;
 
-		private $activeHandlerPath;
-  private $module;
-  private $parentManager;
-  private $objectMeta;
-  private array $emitters = ["local" => [], "external" => []];
+		private DescriptorInterface $module;
+
+		private ModuleLevelEvents $parentManager;
+
+		private ObjectDetails $objectMeta;
+
+		private array $emitters = ["local" => [], "external" => []];
 
 		/**
 		 * @param {module}: Descriptor for the module where this handler will be emitting from

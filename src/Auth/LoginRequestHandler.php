@@ -1,25 +1,28 @@
 <?php
 	namespace Suphle\Auth;
 
-	use Suphle\Hydration\Container;
+	use Suphle\Hydration\{Container, DecoratorHydrator};
 
 	use Suphle\Contracts\{ Modules\HighLevelRequestHandler, Presentation\BaseRenderer};
 
-	use Suphle\Contracts\Auth\{LoginFlowMediator, ModuleLoginHandler};
+	use Suphle\Contracts\Auth\{LoginFlowMediator, ModuleLoginHandler, LoginActions};
 
 	use Suphle\Request\ValidatorManager;
 
-	use Suphle\Services\DecoratorHandlers\VariableDependenciesHandler;
-
 	class LoginRequestHandler implements ModuleLoginHandler {
 
-		private $responseRenderer;
-  private $loginService;
+		private BaseRenderer $responseRenderer;
+
+		private LoginActions $loginService;
 
 		public function __construct (
-			private readonly LoginFlowMediator $rendererCollection, private readonly Container $container,
+			private readonly LoginFlowMediator $rendererCollection,
 
-			private readonly ValidatorManager $validatorManager, private readonly VariableDependenciesHandler $variableDecorator) {
+			private readonly Container $container,
+
+			private readonly ValidatorManager $validatorManager,
+
+			private readonly DecoratorHydrator $decoratorHydrator) {
 
 			$this->loginService = $rendererCollection->getLoginService();
 		}
@@ -45,7 +48,7 @@
 
 			$renderer = $this->responseRenderer;
 
-			$renderer->setControllingClass($this->loginService);
+			$renderer->setCoordinatorClass($this->loginService);
 
 			$this->executeRenderer();
 		}
@@ -58,7 +61,7 @@
 
 			else $renderer = $this->rendererCollection->failedRenderer();
 
-			$this->responseRenderer = $this->variableDecorator
+			$this->responseRenderer = $this->decoratorHydrator
 
 			->examineInstance($renderer, self::class);
 
@@ -72,7 +75,7 @@
 			$dependencies = $this->container->getMethodParameters(
 				$renderer->getHandler(),
 
-				$renderer->getController()::class
+				$renderer->getCoordinator()::class
 			);
 
 			$renderer->invokeActionHandler($dependencies);

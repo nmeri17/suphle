@@ -3,24 +3,30 @@
 
 	use Suphle\Request\RequestDetails;
 
-	use Suphle\Contracts\{Requests\StdInputReader, Services\Decorators\BindsAsSingleton};
+	use Suphle\Contracts\Requests\StdInputReader;
 
-	use Suphle\Hydration\Structures\BaseSingletonBind;
+	use Suphle\Services\Decorators\BindsAsSingleton;
 
 	/**
 	 * Our closest adaptation of PSR\MessageInterface
 	*/
-	class PayloadStorage implements BindsAsSingleton {
+	#[BindsAsSingleton]
+	class PayloadStorage {
 
-		use SanitizesIntegerInput, BaseSingletonBind;
+		use SanitizesIntegerInput;
 
 		final const JSON_HEADER_VALUE = "application/json";
-  final const CONTENT_TYPE_KEY = "Content-Type";
+  
+  		final const CONTENT_TYPE_KEY = "Content-Type";
 
-		private $headers;
-  private array $payload = [];
+		private array $payload = [], $headers;
 
-		public function __construct (private readonly RequestDetails $requestDetails, private readonly StdInputReader $stdInputReader) {
+		public function __construct (
+
+			private readonly RequestDetails $requestDetails,
+
+			private readonly StdInputReader $stdInputReader
+		) {
 
 			$this->headers = $stdInputReader->getHeaders();
 

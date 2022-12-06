@@ -136,7 +136,7 @@
 
 			$this->eventManager->emit(
 
-				$renderer->getController()::class,
+				$renderer->getCoordinator()::class,
 
 				$renderer->getHandler(),
 

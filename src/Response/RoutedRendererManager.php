@@ -3,21 +3,20 @@
 
 	use Suphle\Modules\ModuleDescriptor;
 
-	use Suphle\Hydration\{Container, Structures\BaseSingletonBind};
+	use Suphle\Hydration\Container;
 
 	use Suphle\Routing\RouteManager;
 
-	use Suphle\Services\CoodinatorManager;
+	use Suphle\Services\{CoodinatorManager, Decorators\BindsAsSingleton};
 
-	use Suphle\Contracts\{Requests\BaseResponseManager, Presentation\BaseRenderer, Services\Decorators\BindsAsSingleton};
+	use Suphle\Contracts\{Requests\BaseResponseManager, Presentation\BaseRenderer};
 
 	use Suphle\Request\{ValidatorManager, PayloadStorage, RequestDetails};
 
 	use Suphle\Exception\Explosives\ValidationFailure;
 
-	class RoutedRendererManager implements BaseResponseManager, BindsAsSingleton {
-
-		use BaseSingletonBind;
+	#[BindsAsSingleton]
+	class RoutedRendererManager implements BaseResponseManager {
 
 		public function __construct (
 			private readonly BaseRenderer $renderer,
@@ -52,7 +51,7 @@
 
 			$this->controllerManager->setDependencies (
 
-				$this->renderer->getController(),
+				$this->renderer->getCoordinator(),
 
 				$this->renderer->getHandler()
 			)->bootController();

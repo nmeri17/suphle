@@ -11,7 +11,7 @@
 
 	use Suphle\Hydration\Container;
 
-	use Suphle\Services\DecoratorHandlers\VariableDependenciesHandler;
+	use Suphle\Hydration\DecoratorHydrator;
 
 	use Suphle\Contracts\{Auth\AuthStorage, Presentation\BaseRenderer};
 
@@ -34,7 +34,7 @@
 
 			private readonly RequestDetails $requestDetails,
 
-			private readonly VariableDependenciesHandler $variableDecorator,
+			private readonly DecoratorHydrator $decoratorHydrator,
 
 			private readonly RouteManager $router,
 
@@ -66,7 +66,7 @@
 
 			->exchangeTokenValues($this->requestDetails->getPath()); // thanks to object references, this update affects the object stored in Container without explicitly rebinding
 
-			$renderer = $this->variableDecorator->examineInstance(
+			$renderer = $this->decoratorHydrator->scopeInjecting(
 
 				$this->router->getActiveRenderer(), self::class
 			);

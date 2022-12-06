@@ -68,7 +68,7 @@
 
 				"getFlow" => $this->constructFlow(),
 
-				"getController" => $this->positiveDouble($this->rendererController)
+				"getCoordinator" => $this->positiveDouble($this->rendererController)
 
 			], [], ["handler" => "preloaded"]);
 		}

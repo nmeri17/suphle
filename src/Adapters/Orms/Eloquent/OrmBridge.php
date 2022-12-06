@@ -3,26 +3,33 @@
 
 	use Suphle\Hydration\Container;
 
-	use Suphle\Contracts\{Database\OrmDialect, Config\Database, Bridge\LaravelContainer, Services\Decorators\BindsAsSingleton};
+	use Suphle\Contracts\{Database\OrmDialect, Config\Database, Bridge\LaravelContainer};
+
+	use Suphle\Services\Decorators\BindsAsSingleton;
 
 	use Suphle\Contracts\Auth\{UserHydrator as HydratorContract, AuthStorage, UserContract};
 
 	use Illuminate\Database\{DatabaseManager, Capsule\Manager as CapsuleManager, Connection};
 
-	class OrmBridge implements OrmDialect, BindsAsSingleton {
+	#[BindsAsSingleton(OrmDialect::class)]
+	class OrmBridge implements OrmDialect {
 
-		private $credentials;
-  private $connection;
-  private $nativeClient;
+		private array $credentials = [];
+		
+		private ?Connection $connection = null;
 
-		public function __construct (Database $config, private readonly Container $container, private readonly LaravelContainer $laravelContainer) {
+		private ?CapsuleManager $nativeClient = null;
+
+		public function __construct (
+
+			Database $config,
+
+			private readonly Container $container,
+
+			private readonly LaravelContainer $laravelContainer
+		) {
 
 			$this->credentials = $config->getCredentials();
-		}
-
-		public function entityIdentity ():string {
-
-			return OrmDialect::class;
 		}
 
 		/**

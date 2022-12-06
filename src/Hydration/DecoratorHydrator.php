@@ -6,25 +6,43 @@
 	use Suphle\Contracts\Hydration\ScopeHandlers\{ModifiesArguments, ModifyInjected};
 
 	use Suphle\Hydration\Structures\ObjectDetails;
-	
-	use ReflectionClass;
 
+	use Suphle\Services\Decorators\BindsAsSingleton;
+	
 	class DecoratorHydrator {
 
-		private $chain;
-  private $argumentScope;
-  private $injectScope;
+		private array $allScopes, $argumentScope, $injectScope;
 
-		public function __construct (private readonly Container $container, DecoratorChain $chain, private readonly ObjectDetails $objectMeta) {
+		public function __construct (
+			private readonly Container $container,
 
-			$this->chain = $chain->allScopes();
+			DecoratorChain $allScopes,
+
+			private readonly ObjectDetails $objectMeta
+		) {
+
+			$this->allScopes = $allScopes->allScopes();
+
+			$this->assignScopes();
 		}
 
 		public function assignScopes ():void {
 
-			$this->argumentScope = array_filter($this->chain, fn($handler) => $this->objectMeta->implementsInterface($handler, ModifiesArguments::class));
+			$this->argumentScope = array_filter($this->allScopes, function ($handler) {
 
-			$this->injectScope = array_filter($this->chain, fn($handler) => $this->objectMeta->implementsInterface($handler, ModifyInjected::class));
+				return $this->objectMeta->implementsInterface(
+
+					$handler, ModifiesArguments::class
+				);
+			});
+
+			$this->injectScope = array_filter($this->allScopes, function ($handler) {
+
+				return $this->objectMeta->implementsInterface(
+
+					$handler, ModifyInjected::class
+				);
+			});
 		}
 
 		public function scopeArguments (string $entityName, array $argumentList, string $methodName):array {
@@ -43,14 +61,16 @@
 
 				$hasConstructor = true;
 
-				$concrete = $this->noConstructor($entityName);
+				$concrete = $this->objectMeta->noConstructor($entityName);
 			}
 
 			else $concrete = $container->getClass($entityName);
 
-			foreach ($relevantDecors as $decorator) {
+			foreach ($relevantDecors as $decoratorName => $attributes) {
 
-				$handler = $container->getClass($scope[$decorator]);
+				$handler = $container->getClass($scope[$decoratorName]);
+
+				$handler->setAttributesList($attributes);
 
 				if ($hasConstructor)
 
@@ -63,37 +83,25 @@
 		}
 
 		/**
-		 * @return numerically indexed names of matching decorators
+		 * @return Array. Relevant decorators and active attributes
 		*/
 		public function getRelevantDecors (array $context, string $search):array {
 
-			$active = $this->objectMeta->parentInterfaceMatches(
+			$attributes = $this->objectMeta->getClassAttributes($search);
 
-				$search, array_keys($context)
-			);
+			$attributeToHandler = [];
 
-			$unique = $active; // one decorator extending another should not select super handler since it's likely already used in the sub
+			foreach ($context as $decoratorName => $handler) {
 
-			foreach ($active as $decorator) {
+				foreach ($attributes as $attribute) {
+					
+					if ($attribute->getName() == $decoratorName)
 
-				$parents = $this->objectMeta->parentInterfaceMatches(
-
-					$decorator, $active // safe not to omit self since it's not its own parent
-				);
-
-				if (!empty($parents)) // weed out preceding ancestors
-
-					$unique = array_diff($unique, $parents);
+						$attributeToHandler[$decoratorName][] = $attribute;
+				}
 			}
 
-			return array_values($unique);
-		}
-
-		/**
-		 * @return given class instance, but avoids calling its constructor */
-		private function noConstructor (string $className) {
-
-			return (new ReflectionClass($className))->newInstanceWithoutConstructor();
+			return $attributeToHandler;
 		}
 
 		public function scopeInjecting (object $concrete, string $caller) {
@@ -102,13 +110,14 @@
 
 			$relevantDecors = $this->getRelevantDecors($scope, $concrete::class);
 
-			foreach ($relevantDecors as $decorator)
+			foreach ($relevantDecors as $decorator => $attributes) {
 
-				$concrete = $this->container
+				$handler = $this->container->getClass($scope[$decorator]);
 
-				->getClass($scope[$decorator])
+				$handler->setAttributesList($attributes);
 
-				->examineInstance($concrete, $caller);
+				$concrete = $handler->examineInstance($concrete, $caller);
+			}
 
 			return $concrete;
 		}

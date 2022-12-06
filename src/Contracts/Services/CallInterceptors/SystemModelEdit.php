@@ -1,5 +1,5 @@
 <?php
-	namespace Suphle\Contracts\Services\Decorators;
+	namespace Suphle\Contracts\Services\CallInterceptors;
 
 	interface SystemModelEdit extends ServiceErrorCatcher {
 
