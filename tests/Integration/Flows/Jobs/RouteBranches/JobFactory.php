@@ -5,6 +5,8 @@
 
 	use Suphle\Contracts\{Auth\UserContract, Presentation\BaseRenderer, Database\OrmDialect};
 
+	use Suphle\Hydration\Container;
+
 	use Suphle\Response\Format\Json;
 
 	use Suphle\Adapters\Orms\Eloquent\Models\User as EloquentUser;
@@ -27,13 +29,15 @@
 			BaseDatabasePopulator::setUp as databaseAllSetup;
 		}
 
-		protected $container;
-  protected $contentOwner;
-  protected $contentVisitor;
-  protected $userUrl = "/user-content/5"; // corresponds to the content generated after using [flowUrl] to create a context
-  protected $flowUrl = "user-content/id"; // this is expected to exist in one of the module entry collections
-  protected $originDataName = "all_users";
-  protected $rendererController = FlowCoordinator::class;
+		protected Container $container;
+		
+		protected EloquentUser $contentOwner, $contentVisitor;
+		
+		protected string $userUrl = "/user-content/5", // corresponds to the content generated after using [flowUrl] to create a context
+		$flowUrl = "user-content/id", // this is expected to exist in one of the module entry collections
+		$originDataName = "all_users",
+
+		$rendererController = FlowCoordinator::class;
 
 		protected function setUp ():void {
 

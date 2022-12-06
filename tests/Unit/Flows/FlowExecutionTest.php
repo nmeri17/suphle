@@ -13,7 +13,7 @@
 
 	use Suphle\Modules\ModuleInitializer;
 
-	use Suphle\Hydration\DecoratorHydrator;
+	use Suphle\Services\DecoratorHandlers\VariableDependenciesHandler;
 
 	use Suphle\Exception\Explosives\ValidationFailure;
 
@@ -84,7 +84,7 @@
 
 			$hydrator->setRequestDetails([], "");
 
-			return $this->container->whenTypeAny()->needsAny(array_merge(
+			$handler = $this->container->whenTypeAny()->needsAny(array_merge(
 
 				[
 					RoutedRendererManager::class => $this->positiveDouble(RoutedRendererManager::class),
@@ -92,9 +92,13 @@
 					PathPlaceholders::class => $this->positiveDouble(PathPlaceholders::class)
 	 			], $dependencies
 			))
-			->getClass(DecoratorHydrator::class)
+			->getClass(VariableDependenciesHandler::class);
 
-			->scopeInjecting($hydrator, self::class);
+			foreach ($hydrator->dependencyMethods() as $methodName)
+
+				$handler->executeDependencyMethod($methodName, $hydrator);
+
+			return $hydrator;
 		}
 		
 		public function test_invalid_request_doesnt_trigger_controller () {

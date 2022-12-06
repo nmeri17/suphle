@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Services\DecoratorHandlers;
 
-	use Suphle\Contracts\{Services\Decorators\SystemModelEdit, Database\OrmDialect, Config\DecoratorProxy};
+	use Suphle\Contracts\{Services\CallInterceptors\SystemModelEdit, Database\OrmDialect, Config\DecoratorProxy};
 
 	use Suphle\Hydration\Structures\ObjectDetails;
 
@@ -12,7 +12,9 @@
 	class SystemModelEditHandler extends BaseInjectionModifier {
 
 		public function __construct (
-			private readonly OrmDialect $ormDialect, private readonly ErrorCatcherHandler $errorDecoratorHandler,
+			private readonly OrmDialect $ormDialect,
+
+			private readonly ErrorCatcherHandler $errorDecoratorHandler,
 
 			DecoratorProxy $proxyConfig, ObjectDetails $objectMeta
 		) {

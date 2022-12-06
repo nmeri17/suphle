@@ -29,18 +29,26 @@
 	class FlowHydrator {
 
 		private $previousResponse;
-  private $payloadStorage;
-  private $rendererManager;
-  private $container;
-  private $placeholderStorage;
-  private $baseUrlPattern;
-  private $moduleInitializer;
-  private array $parentHandlers = [
+
+		private PayloadStorage $payloadStorage;
+
+		private RoutedRendererManager $rendererManager;
+
+		private Container $container;
+
+		private PathPlaceholders $placeholderStorage;
+
+		private string $baseUrlPattern;
+
+		private ModuleInitializer $moduleInitializer;
+		
+		protected const PARENT_HANDLERS = [
 			SingleNode::class => "handleSingleNodes",
 
 			CollectionNode::class => "handleCollectionNodes"
-		];
-  private array $collectionSubHandlers = [
+		],
+
+		COLLECTION_SUB_HANDLERS = [
 
 			CollectionNode::PIPE_TO => "handlePipe",
 
@@ -51,21 +59,24 @@
 			CollectionNode::AS_ONE => "handleAsOne",
 
 			CollectionNode::FROM_SERVICE =>	"handleServiceSource"
-		];
-  private array $singleSubHandlers = [
+		],
+
+		SINGLE_SUB_HANDLERS = [
 
 			SingleNode::ALTERS_QUERY_SEGMENT => "handleQuerySegmentAlter"
-		];
-  private array $configHandlers = [
-			
+		],
+
+		CONFIG_HANDLERS = [
+				
 			UnitNode::TTL => "setExpiresAtHydrator",
 
 			UnitNode::MAX_HITS => "setMaxHitsHydrator"
 		];
 
-		public function __construct(private readonly UmbrellaSaver $flowSaver)
-  {
-  }
+		public function __construct(private readonly UmbrellaSaver $flowSaver) {
+
+			//
+		}
 
 		public function dependencyMethods ():array {
 
@@ -119,7 +130,7 @@
 		*/
 		public function runNodes(UnitNode $flowStructure, PendingFlowDetails $originatingFlowDetails):void {
 
-			$parentHandler = $this->parentHandlers[$flowStructure::class];
+			$parentHandler = self::PARENT_HANDLERS[$flowStructure::class];
 
 			$this->bindObjectsForUser($originatingFlowDetails);
 
@@ -186,7 +197,7 @@
 			
 			foreach ($this->builtNodeActions($builtNode) as $attribute => $dummyValue) {
 
-				$handler = $this->singleSubHandlers[$attribute];
+				$handler = self::SINGLE_SUB_HANDLERS[$attribute];
 
 				$previousContent = $this->getNodeFromPrevious($builtNode);
 
@@ -215,7 +226,7 @@
 
 			foreach ($this->builtNodeActions($builtNode) as $attribute => $value) {
 
-				$handler = $this->collectionSubHandlers[$attribute];
+				$handler = self::COLLECTION_SUB_HANDLERS[$attribute];
 
 				$carryRenderer = call_user_func_array(
 					[$this, $handler],
@@ -421,7 +432,7 @@
 			
 			foreach ($rawNode->getConfig() as $config => $value) {
 
-				$handler = $this->configHandlers[$config];
+				$handler = self::CONFIG_HANDLERS[$config];
 				
 				call_user_func_array([$savedNode, $handler], [$value]);
 			}

@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Services\DecoratorHandlers;
 
-	use Suphle\Contracts\{Services\Decorators\MultiUserModelEdit, Database\OrmDialect, Config\DecoratorProxy, Auth\AuthStorage};
+	use Suphle\Contracts\{Services\CallInterceptors\MultiUserModelEdit, Database\OrmDialect, Config\DecoratorProxy, Auth\AuthStorage};
 
 	use Suphle\Queues\AdapterManager;
 
@@ -27,8 +27,6 @@
 
 		public function __construct (
 			private readonly OrmDialect $ormDialect,
-
-			private readonly AdapterManager $queueManager,
 
 			private readonly PayloadStorage $payloadStorage,
 

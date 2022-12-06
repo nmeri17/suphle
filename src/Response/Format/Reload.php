@@ -3,6 +3,9 @@
 
 	use Suphle\Routing\RouteManager;
 
+	use Suphle\Services\Decorators\VariableDependencies;
+
+	#[VariableDependencies([ "setRouter" ])]
 	class Reload extends BaseTransphpormRenderer {
 
 		protected $router;
@@ -12,14 +15,6 @@
 			$this->handler = $handler;
 
 			$this->setHeaders(205, ["Content-Type" => "text/html"]); // Reset Content
-		}
-
-		public function dependencyMethods ():array {
-
-			return array_merge(parent::dependencyMethods(), [
-
-				"setRouter"
-			]);
 		}
 
 		public function setRouter (RouteManager $router):void {

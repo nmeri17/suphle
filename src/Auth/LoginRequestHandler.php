@@ -22,7 +22,8 @@
 
 			private readonly ValidatorManager $validatorManager,
 
-			private readonly DecoratorHydrator $decoratorHydrator) {
+			private readonly DecoratorHydrator $decoratorHydrator
+		) {
 
 			$this->loginService = $rendererCollection->getLoginService();
 		}
@@ -63,7 +64,7 @@
 
 			$this->responseRenderer = $this->decoratorHydrator
 
-			->examineInstance($renderer, self::class);
+			->scopeInjecting($renderer, self::class);
 
 			return $this;
 		}

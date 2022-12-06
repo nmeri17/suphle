@@ -9,13 +9,15 @@
 
 	use Psr\Http\Message\ResponseInterface;
 
+	use Symfony\Component\Process\Process;
+
 	use Throwable;
 
 	class RoadRunnerTest extends BaseTestProduction {
 
-		protected const REQUEST_SENDER = VisitSegment::class;
-  protected const SERVER_TIMEOUT = 60;
-  protected const // stop process if unable to start server after these seconds
+		protected const REQUEST_SENDER = VisitSegment::class,
+
+		SERVER_TIMEOUT = 60, // stop process if unable to start server after these seconds
 
 		RR_CONFIG = "../../test-rr.yaml";
 		
@@ -93,7 +95,7 @@
 
 		private function ensureExecutableRuns ():void {
 
-			$helpProcess = new Process([ $this->binDir. "rr", "--help" ] );
+			$helpProcess = $this->vendorBin->setProcessArguments("rr", ["--help" ] );
 
 			$helpProcess->mustRun();
 
@@ -107,7 +109,10 @@
 
 		private function serverIsReady (Process $serverProcess):bool {
 
-			$serverProcess->waitUntil(fn($type, $buffer) => stripos((string) $buffer, "http server was started"));
+			$serverProcess->waitUntil(function ($type, $buffer) {
+
+				return stripos((string) $buffer, "http server was started");
+			});
 
 			return $serverProcess->isRunning();
 		}

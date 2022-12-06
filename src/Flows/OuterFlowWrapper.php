@@ -27,7 +27,7 @@
 
 		private string $activeUser;
 
-		private RouteUserNode $routeUserNode;
+		private ?RouteUserNode $routeUserNode = null;
 
 		private AuthStorage $authStorage;
 

@@ -12,7 +12,10 @@
 	use Suphle\Tests\Mocks\Models\Eloquent\Employment;
 
 	#[InterceptsCalls(MultiUserModelEdit::class)]
-	#[VariableDependencies]
+	#[VariableDependencies([
+
+		"setPayloadStorage", "setPlaceholderStorage"
+	])]
 	class EmploymentEditMock extends UpdatefulService implements MultiUserModelEdit {
 
 		use BaseErrorCatcherService;

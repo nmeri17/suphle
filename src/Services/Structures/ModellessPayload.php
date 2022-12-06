@@ -46,6 +46,7 @@
 				
 				$this->exception = $exception;
 				
+				// throw $exception;
 				return $this->translationFailure();
 			}
 		}

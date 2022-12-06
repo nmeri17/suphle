@@ -1,6 +1,8 @@
 <?php
 	namespace Suphle\Hydration\Structures;
 
+	use Closure;
+
 	class ContainerTelescope {
 
 		private array $consumerList = []; // [class/interface => [consumers]]
@@ -25,9 +27,9 @@
 
 		private array $storedConcretes = [];
 
-		private array $noiseFilter; // receives $this and is expected to return true when filter should be removed
+		private ?Closure $noiseFilter = null; // receives $this and is expected to return true when filter should be removed
 
-		public function setNoiseFilter (callable $callback):self {
+		public function setNoiseFilter (Closure $callback):self {
 
 			$this->noiseFilter = $callback;
 

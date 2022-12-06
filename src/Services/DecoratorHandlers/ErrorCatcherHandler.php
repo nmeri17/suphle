@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Services\DecoratorHandlers;
 
-	use Suphle\Contracts\{Services\Decorators\ServiceErrorCatcher, Config\DecoratorProxy};
+	use Suphle\Contracts\{Services\CallInterceptors\ServiceErrorCatcher, Config\DecoratorProxy};
 
 	use Suphle\Exception\DetectedExceptionManager;
 

@@ -5,21 +5,19 @@
 
 	use Suphle\IO\Image\OptimizersManager;
 
+	use Suphle\Services\Decorators\VariableDependencies;
+
+	#[VariableDependencies([
+
+		"setPayloadStorage", "setInputReader"
+	])]
 	abstract class ImagefulPayload extends ModellessPayload {
 
-		protected $allFiles;
+		protected array $allFiles;
 
 		public function __construct (protected OptimizersManager $imageOptimizer) {
 
 			// default optimizer. can be replaced
-		}
-
-		public function dependencyMethods ():array {
-
-			return [
-
-				"setInputReader", "setPayloadStorage" // defined on parent
-			];
 		}
 
 		public function setInputReader (FileInputReader $inputReader):void {

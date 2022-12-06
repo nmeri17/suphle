@@ -18,24 +18,34 @@
 
 		public function examineInstance (object $concrete, string $caller):object {
 
-			$concreteName = $concrete::class;
-
 			foreach ($this->attributesList as $attributeMeta) {
 	
-				foreach ($attributeMeta->newInstance()->dependencyMethods as $methodName) {
+				foreach (
 
-					$parameters = $this->container->getMethodParameters(
-					
-						$methodName, $concrete::class,
+					$attributeMeta->newInstance()->dependencyMethods as
 
-						[$concreteName]
-					);
+					$methodName
+				) {
 
-					call_user_func_array([$concrete, $methodName], $parameters);
+					$this->executeDependencyMethod($methodName, $concrete);
 				}
 			}
 
 			return $concrete;
+		}
+
+		public function executeDependencyMethod (string $methodName, object $concrete):void {
+
+			$concreteName = $concrete::class;
+
+			$parameters = $this->container->getMethodParameters(
+					
+				$methodName, $concreteName,
+
+				[$concreteName]
+			);
+
+			call_user_func_array([$concrete, $methodName], $parameters);
 		}
 	}
 ?>

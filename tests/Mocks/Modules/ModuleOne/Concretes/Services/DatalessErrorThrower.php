@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services;
 
-	use Suphle\Contracts\Services\Decorators\ServiceErrorCatcher;
+	use Suphle\Contracts\Services\CallInterceptors\ServiceErrorCatcher;
 
 	use Suphle\Services\Decorators\{InterceptsCalls, VariableDependencies};
 
@@ -12,7 +12,10 @@
 	use Exception, InvalidArgumentException;
 
 	#[InterceptsCalls]
-	#[VariableDependencies] // not sure this is meant to be here
+	#[VariableDependencies([
+
+		"setPayloadStorage", "setPlaceholderStorage"
+	])]
 	class DatalessErrorThrower implements ServiceErrorCatcher {
 
 		use BaseErrorCatcherService;

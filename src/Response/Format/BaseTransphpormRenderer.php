@@ -5,22 +5,21 @@
 
 	use Suphle\Contracts\Config\{Transphporm as ViewConfig, ModuleFiles};
 
+	use Suphle\Services\Decorators\VariableDependencies;
+
+	#[VariableDependencies([
+
+		"setConfigs"
+	])] // see comment on redirect
 	abstract class BaseTransphpormRenderer extends GenericRenderer implements TransphpormRenderer {
 
-		protected $markupName;
-  protected $templateName;
-  protected $markupPath;
-  protected $templatePath;
-  protected $fileConfig;
-  protected $viewConfig;
+		protected string $markupName;
 
-		public function dependencyMethods ():array {
+		protected ?string $markupPath, $templatePath, $templateName;
 
-			return array_merge(parent::dependencyMethods(), [
-
-				"setConfigs"
-			]);
-		}
+		protected ModuleFiles $fileConfig;
+		
+		protected ViewConfig $viewConfig;
 
 		public function setConfigs (ModuleFiles $fileConfig, ViewConfig $viewConfig):TransphpormRenderer {
 

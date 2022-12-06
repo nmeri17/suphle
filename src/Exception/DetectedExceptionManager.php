@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Exception;
 
-	use Suphle\Contracts\Services\Decorators\ServiceErrorCatcher;
+	use Suphle\Contracts\Services\CallInterceptors\ServiceErrorCatcher;
 
 	use Suphle\Queues\AdapterManager;
 
@@ -13,9 +13,10 @@
 
 		final const ALERTER_METHOD = "queueAlertAdapter";
 
-		public function __construct(private readonly AdapterManager $queueManager)
-  {
-  }
+		public function __construct(private readonly AdapterManager $queueManager) {
+
+			//
+		}
 
 		public function detonateOrDiffuse (Throwable $exception, ServiceErrorCatcher $thrower, $payload):void {
 

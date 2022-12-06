@@ -3,11 +3,7 @@
 
 	use Suphle\Hydration\{Container, Structures\ObjectDetails};
 
-	use Suphle\Services\Decorators\InterceptsCalls;
-
-	use Suphle\Contracts\Services\Decorators\{ SystemModelEdit, ServiceErrorCatcher, MultiUserModelEdit};
-
-	use Suphle\Services\DecoratorHandlers\{SystemModelEditHandler, ErrorCatcherHandler, MultiUserEditHandler};
+	use Suphle\Contracts\Services\CallInterceptors\{ SystemModelEdit, ServiceErrorCatcher, MultiUserModelEdit};
 
 	use Suphle\Exception\Explosives\Generic\InvalidImplementor;
 
@@ -40,16 +36,10 @@
 
 				$interfaceName = $attribute->interceptType;
 
-				if (
-					!$this->objectMeta->implementsInterface(
+				$this->ensureValidInterceptType(
 
-						$concrete::class, $interfaceName
-					) ||
-
-					!array_key_exists($interfaceName, self::CALL_HANDLERS)
-				)
-
-					throw new InvalidImplementor($interfaceName, $concrete::class);
+					$concrete::class, $interfaceName
+				);
 
 				$handler = self::CALL_HANDLERS[$interfaceName];
 
@@ -57,6 +47,22 @@
 
 				->examineInstance($concrete, $caller);
 			}
+
+			return $concrete;
+		}
+
+		protected function ensureValidInterceptType (string $concreteName, string $interfaceName):void {
+
+			$acceptedType = array_key_exists($interfaceName, self::CALL_HANDLERS);
+
+			$isChild = $this->objectMeta->implementsInterface(
+
+				$concreteName, $interfaceName
+			);
+
+			if (!($acceptedType && $isChild))
+
+				throw new InvalidImplementor($interfaceName, $concreteName);
 		}
 	}
 ?>

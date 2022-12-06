@@ -48,14 +48,6 @@
 			return $this->payloadStorage->fullPayload();
 		}
 
-		public function dependencyMethods ():array {
-
-			return [
-
-				"setPayloadStorage", "setPlaceholderStorage"
-			];
-		}
-
 		public function setPayloadStorage (PayloadStorage $payloadStorage):void {
 
 			$this->payloadStorage = $payloadStorage;

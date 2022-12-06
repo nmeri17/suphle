@@ -7,7 +7,7 @@
 
 	use Suphle\Request\RequestDetails;
 
-	use Suphle\Hydration\DecoratorHydrator;
+	use Suphle\Services\DecoratorHandlers\VariableDependenciesHandler;
 
 	use Suphle\Contracts\{Queues\Task, Database\OrmDialect, IO\CacheManager};
 
@@ -132,11 +132,13 @@
 
 		private function setHydratorDependencies ():void {
 
-			$this->moduleFinder->getActiveModule()->getContainer()
+			$handler = $this->moduleFinder->getActiveModule()
 
-			->getClass(DecoratorHydrator::class)
+			->getContainer()->getClass(VariableDependenciesHandler::class);
 
-			->scopeInjecting($this->hydrator, self::class);
+			foreach ($this->hydrator->dependencyMethods() as $methodName)
+
+				$handler->executeDependencyMethod($methodName, $this->hydrator);
 		}
 	}
 ?>

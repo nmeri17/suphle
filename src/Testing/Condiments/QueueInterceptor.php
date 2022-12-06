@@ -9,7 +9,7 @@
 
 	trait QueueInterceptor {
 
-		private $queueAdapter;
+		private ?Adapter $queueAdapter = null;
 
 		public function setUp ():void {
 
@@ -24,7 +24,9 @@
 
 				$this->massProvide([
 
-					Adapter::class => $this->queueAdapter = new StubbedQueueAdapter // mass providing from the onset since we don't know yet what the active module is at this point this
+					Adapter::class => $this->queueAdapter = $this->getContainer()
+
+					->getClass(StubbedQueueAdapter::class) // mass providing from the onset since we don't know yet what the active module is at this point this
 				]);
 		}
 

@@ -3,13 +3,16 @@
 
 	use Suphle\Hydration\Container;
 
+	use Suphle\Services\Decorators\VariableDependencies;
+
 	use Opis\Closure\{SerializableClosure, serialize, unserialize};
 
+	#[VariableDependencies([ "setContainer" ])]
 	class Redirect extends GenericRenderer {
 
 		private $destination;
 
-		protected $container;
+		protected Container $container;
 
 		/**
 		 * @param {destination} Since PDO instances can't be serialized, when using this renderer with PDO in scope, wrap this parameter in a curried/doubly wrapped function
@@ -49,14 +52,6 @@
 			$bound = $outerFunction->bindTo($this, $this /*access protected properties*/); // so dev can have access to `rawResponse`
 
 			return call_user_func_array($bound, $parameters);
-		}
-
-		public function dependencyMethods ():array {
-
-			return array_merge(parent::dependencyMethods(), [
-
-				"setContainer"
-			]);
 		}
 
 		public function setContainer (Container $container):void {

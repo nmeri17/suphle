@@ -10,13 +10,14 @@
 		/**
 		 * @param {markupName}: It's not necessary to prefix with a slash
 		*/
-		public function __construct(string $handler, string $markupName, string $templateName = null) {
+		public function __construct(
 
-			$this->handler = $handler;
+			protected string $handler, 
 
-			$this->markupName = $markupName;
+			protected string $markupName, 
 
-			$this->templateName = $templateName;
+			protected ?string $templateName = null
+		) {
 
 			$this->setHeaders(200, ["Content-Type" => "text/html"]);
 		}

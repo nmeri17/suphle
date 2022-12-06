@@ -8,7 +8,10 @@
 	use Suphle\Services\Decorators\{InterceptsCalls, VariableDependencies};
 
 	#[InterceptsCalls(SystemModelEdit::class)]
-	#[VariableDependencies]
+	#[VariableDependencies([
+
+		"setPayloadStorage", "setPlaceholderStorage"
+	])]
 	class SystemModelEditMock1 extends UpdatefulService implements SystemModelEdit {
 
 		use BaseErrorCatcherService;

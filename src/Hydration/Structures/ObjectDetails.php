@@ -141,11 +141,27 @@
 			->newInstanceWithoutConstructor();
 		}
 
-		public function getClassAttributes (string $className, string $attributeName = null):array {
+		/**
+		 * The native method returns only atribute applied on the class itself
+		*/
+		public function getClassAttributes (string $className, string $filterToAttribute = null):array {
 
-			return $this->getReflectedClass($className)
+			$attributesList = [];
 
-			->getAttributes($attributeName);
+			$inheritanceChain = class_parents($className);
+
+			$inheritanceChain[] = $className;
+
+			foreach ($inheritanceChain as $entry)
+
+				$attributesList = array_merge(
+
+					$attributesList, $this->getReflectedClass($entry)
+
+					->getAttributes($filterToAttribute)
+				);
+
+			return $attributesList;
 		}
 	}
 ?>
