@@ -5,14 +5,16 @@
 
 	use Suphle\Events\ModuleLevelEvents;
 
-	use Suphle\Contracts\Modules\DescriptorInterface;
+	use Suphle\Contracts\{Modules\DescriptorInterface, Config\ModuleFiles};
 
 	use Suphle\Services\Decorators\BindsAsSingleton;
+
+	use Suphle\Server\DependencySanitizer;
 
 	#[BindsAsSingleton]
 	class ModulesBooter {
 
-		private $modules;
+		private array $modules;
 
 		public function __construct (
 
@@ -35,10 +37,16 @@
 
 				$descriptor->warmModuleContainer(); // We're setting these to be able to attach events soon after
 
-				$descriptor->getContainer()->whenTypeAny()->needsAny([
+				$container = $descriptor->getContainer();
+
+				$container->whenTypeAny()->needsAny([
 
 					DescriptorInterface::class => $descriptor
 				]);
+
+				$container->getClass(DependencySanitizer::class)
+
+				->cleanseConsumers();
 			}
 
 			$this->eventManager->bootReactiveLogger();

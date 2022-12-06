@@ -8,11 +8,9 @@
 	#[VariableDependencies([ "setRouter" ])]
 	class Reload extends BaseTransphpormRenderer {
 
-		protected $router;
+		protected RouteManager $router;
 
-		public function __construct(string $handler) {
-
-			$this->handler = $handler;
+		public function __construct(protected string $handler) {
 
 			$this->setHeaders(205, ["Content-Type" => "text/html"]); // Reset Content
 		}
