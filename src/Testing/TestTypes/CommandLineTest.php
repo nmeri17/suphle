@@ -1,8 +1,6 @@
 <?php
 	namespace Suphle\Testing\TestTypes;
 
-	use Suphle\Contracts\Config\ModuleFiles;
-
 	use Suphle\Adapters\Console\SymfonyCli;
 
 	use Suphle\Console\{CliRunnerAccessor, CliRunner};

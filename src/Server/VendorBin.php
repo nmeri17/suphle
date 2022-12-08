@@ -17,6 +17,9 @@
 			return $_SERVER["COMPOSER_RUNTIME_BIN_DIR"];
 		}
 
+		/**
+		 * @param {relativePath} Path as relative to vendor/bin
+		*/
 		public function getRootFile (string $relativePath):string {
 
 			return $this->fileSystemReader->getAbsolutePath(

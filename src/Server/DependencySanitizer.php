@@ -1,110 +1,120 @@
 <?php
 	namespace Suphle\Server;
 
-	use Suphle\Contracts\{Config\ModuleFiles, Modules\ControllerModule};
+	use Suphle\Server\Structures\DependencyRule;
 
-	use Suphle\IO\Http\BaseHttpRequest;
+	use Suphle\Contracts\{Queues\Task, Modules\ControllerModule};
+
+	use Suphle\IO\{Http\BaseHttpRequest, Mailing\MailBuilder};
 
 	use Suphle\Request\PayloadStorage;
 
+	use Suphle\Services\{ServiceCoordinator, UpdatefulService, UpdatelessService, ConditionalFactory};
+
 	use Suphle\Services\Structures\{ModelfulPayload, ModellessPayload};
 
-	use Symfony\Component\Console\Output\ConsoleOutput;
-
-	use Arkitect\ClassSet;
-
-	use Arkitect\CLI\{Config, Runner, TargetPhpVersion, Progress\ProgressBarProgress};
-	
-	use Arkitect\Exceptions\FailOnFirstViolationException;
-
-	use Arkitect\Rules\{Violations, Rule};
-
-	use Arkitect\Expression\ForClasses\{Extend, DependsOnlyOnTheseNamespaces, NotDependsOnTheseNamespaces, ResideInOneOfTheseNamespaces, NotHaveDependencyOutsideNamespace, HaveNameMatching};
-
-	use Throwable;
+	use Suphle\Services\DependencyRules\{OnlyLoadedByHandler, ActionDependenciesValidator, ServicePreferenceHandler};
 
 	class DependencySanitizer {
 
-		protected ?Violations $violations = null;
+		protected array $rules = [];
 
-		public function __construct (private readonly ModuleFiles $fileConfig) {
+		private string $executionPath; // not setting it should throw an error
+
+		public function __construct (
+
+			private readonly FileSystemReader $fileSystemReader,
+
+			private readonly Container $container,
+
+			private readonly ObjectDetails $objectMeta
+		) {
 
 			//
 		}
 
-		public function cleanseConsumers ():bool {
+		public function setExecutionPath (string $executionPath):void {
 
-			return $this->scanModuleContents(
+			$this->executionPath = $executionPath;
+		}
 
-				$this->customizeConfig(new Config), new ConsoleOutput
+		protected function setDefaultRules ():void {
+
+			$this->coordinatorConstructor();
+
+			$this->coordinatorActionMethods();
+
+			$this->protectUpdateyServices();
+
+			$this->protectMailBuilders();
+		}
+
+		/**
+		 * @param {rules} DependencyRules[]
+		*/
+		public function setAllRules (array $rules):void {
+
+			$this->rules = $rules;
+		}
+
+		public function cleanseConsumers ():void {
+
+			if (empty($this->rules)) $this->setDefaultRules();
+
+			$hydratedHandlers = array_map(function ($rule) {
+
+				return $rule->extractHandler($this->container);
+			}, $this->rules);
+
+			foreach ($hydratedHandlers as $index => $handler)
+
+				$this->iterateExecutionPath($handler, $this->rules[$index]);
+		}
+
+		protected function iterateExecutionPath (DependencyFileHandler $handler, DependencyRule $dependencyRule):void {
+
+			$this->fileSystemReader->iterateDirectory(
+
+				$this->executionPath, function ($directoryPath, $directoryName) {
+
+					//
+				},
+
+				$this->iteratedFileHandler($handler, $dependencyRule),
+
+				function ($path) {
+
+					//
+				}
 			);
 		}
 
-		protected function scanModuleContents (Config $config, OutputInterface $output):bool {
+		protected function iteratedFileHandler (DependencyFileHandler $handler, DependencyRule $dependencyRule):callable {
 
-			$runner = new Runner();
-			
-			try {
-			
-				$runner->run(
+			return function ($filePath, $fileName) use ($handler, $dependencyRule) {
 
-					$config, new ProgressBarProgress($output),
+				$currentClasses = get_declared_classes();
 
-					TargetPhpVersion::create(null)
-				);
-			}
-			catch (Throwable $exception) {
-			
-				$output->writeln($exception->getMessage());
-			}
-			
-			$this->violations = $runner->getViolations();
-			
-			if ($this->violations->count() > 0) {
-				
-				$this->printViolations($output);
+				require_once $filePath;
 
-				return false;
-			}
+				$loadedClass = array_diff(get_declared_classes(), $currentClasses);
 
-			return true;
+				$classFullName = current($loadedClass);
+
+				if ($dependencyRule->shouldEvaluateClass($classFullName))
+
+					$handler->evaluateClass($classFullName);
+			};
 		}
 
-		protected function printViolations(OutputInterface $output): void {
+		protected function coordinatorConstructor ():void {
 
-			$output->writeln('<error>ERRORS!</error>');
+			$this->addRule(
+				ServicePreferenceHandler::class,
 
-			$output->writeln(sprintf('%s', $this->violations->toString()));
+				$this->coordinatorFilter(...),
 
-			$output->writeln(sprintf('<error>%s VIOLATIONS DETECTED!</error>', count($this->violations)));
-		}
-
-		protected function customizeConfig (Config $config):Config {
-
-			$modulePath = $this->fileConfig->activeModulePath();
-
-			$moduleClassSet = ClassSet::fromDir($modulePath);
-
-			$rules = [
-
-				$this->restrictCoordinator(),
-
-				...$this->protectUpdateyServices(),
-
-				$this->lockModuleFromSiblings($modulePath)
-			];
-
-			$config->add($moduleClassSet, ...$rules);
-		}
-
-		protected function restrictCoordinator () {
-
-			return Rule::allClasses()
-			
-			->that(new Extend(ServiceCoordinator::class))
-
-			->should(
-				new DependsOnlyOnTheseNamespaces(...[
+				[
 					ConditionalFactory::class, // We're treating it as a type of service in itself
 					ControllerModule::class, // These are a service already. There's no need accessing them through another local proxy
 
@@ -113,47 +123,77 @@
 					BaseHttpRequest::class, UpdatefulService::class,
 
 					UpdatelessService::class
-				], // constructor arguments
-				...[
-
-					ModelfulPayload::class, ModellessPayload::class
-				]) // action method arguments
+				]
 			);
 		}
 
-		protected function protectUpdateyServices ():array {
+		protected function coordinatorActionMethods ():void {
 
-			$updatefulRule = Rule::allClasses()
-			
-			->that(new Extend(UpdatefulService::class))
+			$this->addRule(
+				ActionDependenciesValidator::class,
 
-			->should(new NotDependsOnTheseNamespaces(UpdatelessService::class));
+				$this->coordinatorFilter(...),
 
-			$updatelessRule = Rule::allClasses()
-			
-			->that(new Extend(UpdatelessService::class))
+				[
 
-			->should(new NotDependsOnTheseNamespaces(UpdatefulService::class));
-
-			return [$updatefulRule, $updatelessRule];
+					ModelfulPayload::class, ModellessPayload::class
+				]
+			);
 		}
 
-		protected function lockModuleFromSiblings (string $modulePath) {
+		protected function coordinatorFilter (string $className):bool {
 
-			$moduleNamespace = "*" . basename($modulePath);
+			return $this->objectMeta->stringInClassTree(
 
-			return Rule::allClasses()
-
-			->that(new ResideInOneOfTheseNamespaces( $moduleNamespace))
-			
-			->should(new NotHaveDependencyOutsideNamespace($moduleNamespace))
-
-			->except(new HaveNameMatching("*Interactions", "*Models"));
+				$className, ServiceCoordinator::class
+			);
 		}
 
-		public function getViolations ():?Violations {
+		public function addRule ():void {
 
-			return $this->violations;
+			$this->rules[] = new DependencyRule($ruleHandler, $filter, $argumentList);
+		}
+
+		protected function protectUpdateyServices ():void {
+
+			$this->addRule(
+				ServicePreferenceHandler::class,
+
+				function ($className):bool {
+
+					return $this->objectMeta->stringInClassTree(
+
+						$className, UpdatefulService::class
+					);
+				},
+
+				[UpdatelessService::class]
+			);
+
+			$this->addRule(
+				ServicePreferenceHandler::class,
+
+				function ($className):bool {
+
+					return $this->objectMeta->stringInClassTree(
+
+						$className, UpdatelessService::class
+					);
+				},
+
+				[UpdatefulService::class]
+			);
+		}
+
+		protected function protectMailBuilders ():void {
+
+			$this->addRule(
+				OnlyLoadedByHandler::class,
+
+				function ($className):bool {return true;},
+
+				[MailBuilder::class, [Task::class]]
+			);
 		}
 	}
 ?>

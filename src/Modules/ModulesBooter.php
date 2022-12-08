@@ -9,8 +9,6 @@
 
 	use Suphle\Services\Decorators\BindsAsSingleton;
 
-	use Suphle\Server\DependencySanitizer;
-
 	#[BindsAsSingleton]
 	class ModulesBooter {
 
@@ -37,16 +35,10 @@
 
 				$descriptor->warmModuleContainer(); // We're setting these to be able to attach events soon after
 
-				$container = $descriptor->getContainer();
-
-				$container->whenTypeAny()->needsAny([
+				$descriptor->getContainer()->whenTypeAny()->needsAny([
 
 					DescriptorInterface::class => $descriptor
 				]);
-
-				$container->getClass(DependencySanitizer::class)
-
-				->cleanseConsumers();
 			}
 
 			$this->eventManager->bootReactiveLogger();

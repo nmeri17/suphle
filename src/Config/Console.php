@@ -9,7 +9,7 @@
 
 	use Suphle\ComponentTemplates\Commands\InstallComponentCommand;
 
-	use Suphle\Server\Commands\InitializeProjectCommand;
+	use Suphle\Server\Commands\{InitializeProjectCommand, HttpServerCommand};
 
 	use Suphle\Meta\Commands\ContributorTestsCommand;
 
@@ -24,7 +24,7 @@
 
 				ContributorTestsCommand::class,
 
-				InitializeProjectCommand::class
+				InitializeProjectCommand::class, HttpServerCommand::class
 			];
 		}
 	}

@@ -1,16 +1,9 @@
 <?php
 	namespace Suphle\IO\Mailing;
 
-	use Suphle\Contracts\{Services\Decorators\OnlyLoadedBy, Queues\Task};
-
-	abstract class MailBuilder implements OnlyLoadedBy {
+	abstract class MailBuilder {
 
 		protected $payload;
-
-		final public function allowedConsumers ():array {
-
-			return [Task::class];
-		}
 
 		public function setPayload ($data):self {
 
