@@ -7,9 +7,15 @@
 
 	class MailBuildAlerter extends MailBuilder {
 
-		public function __construct(private readonly MailClient $mailClient, private readonly EnvAccessor $envAccessor)
-  {
-  }
+		public function __construct(
+
+			private readonly MailClient $mailClient,
+
+			private readonly EnvAccessor $envAccessor
+		) {
+
+			//
+		}
 
 		public function sendMessage ():void {
 

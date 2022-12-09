@@ -10,19 +10,16 @@
 			foreach ($this->objectMeta->getPublicMethods($className) as $methodName) {
 
 				foreach (
-					$this->container->getMethodParameters(
-
-						$methodName, $className
-					) as $dependency
+					$this->methodDependencyTypes($className, $methodName) as $dependencyType
 				) {
 
-					if (!$this->isPermittedParent($this->argumentList, $dependency))
+					if (!$this->isPermittedParent($this->argumentList, $dependencyType))
 
 						throw new InvalidArgumentException(
 
 							$this->getErrorMessage(
 
-								$className, $dependency::class, $methodName
+								$className, $dependencyType, $methodName
 							)
 						);
 				}

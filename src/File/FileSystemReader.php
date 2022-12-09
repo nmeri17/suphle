@@ -66,6 +66,9 @@
 			return $matches[1];
 		}
 
+		/**
+		 * @param {onDirectory} has to be recursive for this method to function as expected
+		*/
 		public function iterateDirectory (
 
 			string $path, callable $onDirectory, callable $onFile,

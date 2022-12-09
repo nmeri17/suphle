@@ -163,5 +163,47 @@
 
 			return $attributesList;
 		}
+
+		/**
+		 * @see https://stackoverflow.com/a/27440555/4678871
+
+		 * I'm using this boilerplate method instead of a library since that doesn't iterate directories recursively
+		 * 
+		 * @return FQCN or "" if no class is found in file
+		*/
+		public function classNameFromFile (string $fileName):?string {
+
+			$tokens = token_get_all(file_get_contents($fileName));
+			
+			$namespace = "";
+			
+			for ($index = 0; isset($tokens[$index]); $index++) {
+				
+				if (!isset($tokens[$index][0])) continue;
+
+				if (
+					T_NAMESPACE === $tokens[$index][0] &&
+
+					T_WHITESPACE === $tokens[$index + 1][0] &&
+
+					T_NAME_QUALIFIED === $tokens[$index + 2][0]
+				) {
+					$namespace = $tokens[$index + 2][1];
+					// Skip "namespace" keyword, whitespaces, and actual namespace
+					$index += 2; // forward to next token
+				}
+				
+				if (
+					T_CLASS === $tokens[$index][0] &&
+					
+					T_WHITESPACE === $tokens[$index + 1][0] &&
+					
+					T_STRING === $tokens[$index + 2][0]
+				) {
+					return $namespace. "\\".$tokens[$index + 2][1];
+					// Skip "class" keyword, whitespaces, and actual classname
+				}
+			}
+		}
 	}
 ?>

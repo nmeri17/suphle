@@ -3,7 +3,11 @@
 
 	use Suphle\Server\Structures\DependencyRule;
 
-	use Suphle\Contracts\{Queues\Task, Modules\ControllerModule};
+	use Suphle\File\FileSystemReader;
+
+	use Suphle\Hydration\{Container, Structures\ObjectDetails};
+
+	use Suphle\Contracts\{Queues\Task, Modules\ControllerModule, Server\DependencyFileHandler};
 
 	use Suphle\IO\{Http\BaseHttpRequest, Mailing\MailBuilder};
 
@@ -23,11 +27,11 @@
 
 		public function __construct (
 
-			private readonly FileSystemReader $fileSystemReader,
+			protected readonly FileSystemReader $fileSystemReader,
 
-			private readonly Container $container,
+			protected readonly Container $container,
 
-			private readonly ObjectDetails $objectMeta
+			protected readonly ObjectDetails $objectMeta
 		) {
 
 			//
@@ -68,19 +72,41 @@
 
 			foreach ($hydratedHandlers as $index => $handler)
 
-				$this->iterateExecutionPath($handler, $this->rules[$index]);
+				$this->iterateExecutionPath(
+
+					$this->executionPath, $handler, $this->rules[$index]
+				);
 		}
 
-		protected function iterateExecutionPath (DependencyFileHandler $handler, DependencyRule $dependencyRule):void {
+		protected function iterateExecutionPath (
+
+			string $executionPath, DependencyFileHandler $handler,
+
+			DependencyRule $dependencyRule
+		):void {
 
 			$this->fileSystemReader->iterateDirectory(
 
-				$this->executionPath, function ($directoryPath, $directoryName) {
+				$executionPath, function ($directoryPath, $directoryName) use ($handler, $dependencyRule) {
 
-					//
+					$this->iterateExecutionPath(
+
+						$directoryPath, $handler, $dependencyRule
+					);
 				},
 
-				$this->iteratedFileHandler($handler, $dependencyRule),
+				function ($filePath, $fileName) use ($handler, $dependencyRule) {
+
+					$classFullName = $this->objectMeta->classNameFromFile($filePath);
+
+					if (
+						!empty($classFullName) &&
+
+						$dependencyRule->shouldEvaluateClass($classFullName)
+					)
+
+						$handler->evaluateClass($classFullName);
+				},
 
 				function ($path) {
 
@@ -89,30 +115,17 @@
 			);
 		}
 
-		protected function iteratedFileHandler (DependencyFileHandler $handler, DependencyRule $dependencyRule):callable {
-
-			return function ($filePath, $fileName) use ($handler, $dependencyRule) {
-
-				$currentClasses = get_declared_classes();
-
-				require_once $filePath;
-
-				$loadedClass = array_diff(get_declared_classes(), $currentClasses);
-
-				$classFullName = current($loadedClass);
-
-				if ($dependencyRule->shouldEvaluateClass($classFullName))
-
-					$handler->evaluateClass($classFullName);
-			};
-		}
-
-		protected function coordinatorConstructor ():void {
+		public function coordinatorConstructor (array $toOmit = []):void {
 
 			$this->addRule(
 				ServicePreferenceHandler::class,
 
-				$this->coordinatorFilter(...),
+				function ($className) use ($toOmit) {
+
+					return $this->coordinatorFilter($className) &&
+
+					!in_array($className, $toOmit);
+				},
 
 				[
 					ConditionalFactory::class, // We're treating it as a type of service in itself
@@ -149,7 +162,7 @@
 			);
 		}
 
-		public function addRule ():void {
+		public function addRule (string $ruleHandler, callable $filter, array $argumentList):void {
 
 			$this->rules[] = new DependencyRule($ruleHandler, $filter, $argumentList);
 		}
@@ -185,12 +198,15 @@
 			);
 		}
 
-		protected function protectMailBuilders ():void {
+		public function protectMailBuilders (array $toOmit = []):void {
 
 			$this->addRule(
 				OnlyLoadedByHandler::class,
 
-				function ($className):bool {return true;},
+				function ($className) use ($toOmit):bool {
+
+					return !in_array($className, $toOmit);
+				},
 
 				[MailBuilder::class, [Task::class]]
 			);

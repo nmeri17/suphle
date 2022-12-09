@@ -9,12 +9,7 @@
 
 		public function evaluateClass (string $className):void {
 
-			foreach ($this->container->getMethodParameters(
-
-				Container::CLASS_CONSTRUCTOR, $className
-			) as $dependency) {
-
-				$dependencyType = $dependency::class;
+			foreach ($this->constructorDependencyTypes($className) as $dependencyType) {
 					
 				if (
 					$this->objectMeta->stringInClassTree(
@@ -24,7 +19,7 @@
 
 					!$this->isPermittedParent(
 
-						$this->argumentList[1], $dependency
+						$this->argumentList[1], $dependencyType
 					)
 				)
 
