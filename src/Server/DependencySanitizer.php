@@ -140,7 +140,7 @@
 			);
 		}
 
-		protected function coordinatorActionMethods ():void {
+		public function coordinatorActionMethods ():void {
 
 			$this->addRule(
 				ActionDependenciesValidator::class,

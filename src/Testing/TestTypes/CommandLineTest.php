@@ -7,6 +7,8 @@
 
 	use Suphle\Hydration\Container;
 
+	use Suphle\Contracts\Config\ModuleFiles;
+
 	use Suphle\Testing\Proxies\{Extensions\FrontDoor, ConfigureExceptionBridge};
 
 	use Suphle\Testing\Condiments\{ModuleReplicator, BaseModuleInteractor};

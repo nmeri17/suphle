@@ -44,6 +44,8 @@
 
 			$this->descriptorInstances = $this->getModules();
 
+			if (empty($this->descriptorInstances)) return;
+
 			$this->container = current($this->descriptorInstances)->getContainer(); // we don't bother confirming descriptorInstances has contents since we don't even have access to a default error page to render if it doesn't exist
 
 			$this->container->whenTypeAny()->needsAny([ // for the `bootModules` call

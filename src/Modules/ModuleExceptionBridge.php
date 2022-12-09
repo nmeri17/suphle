@@ -17,7 +17,7 @@
 
 		private ExceptionHandler $handler;
   
-  		private bool $handledExternally;
+  		private bool $handledExternally = false;
 
 		public function __construct(
 			private readonly Container $container,

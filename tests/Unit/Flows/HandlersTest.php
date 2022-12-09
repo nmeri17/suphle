@@ -143,6 +143,8 @@
 				"getNodeFromPrevious" => $this->payloadFromPrevious()
 			], $mockMethods);
 
+			$hydrator->setContainer($this->container);
+
 			return $this->container->whenTypeAny()->needsAny([
 
 				RoutedRendererManager::class => $this->positiveDouble(RoutedRendererManager::class)
