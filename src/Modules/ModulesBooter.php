@@ -16,12 +16,10 @@
 
 		public function __construct (
 
-			ActiveDescriptors $descriptorsHolder,
-
 			private readonly ModuleLevelEvents $eventManager
 		) {
 
-			$this->modules = $descriptorsHolder->getDescriptors();
+			//
 		}
 		
 		public function getModules ():array {
@@ -29,7 +27,9 @@
 			return $this->modules;
 		}
 
-		public function bootAllModules ():self {
+		public function bootAllModules (ActiveDescriptors $descriptorsHolder):self {
+
+			$this->modules = $descriptorsHolder->getOriginalDescriptors();
 
 			foreach ($this->modules as $descriptor) {
 
@@ -37,11 +37,13 @@
 
 				$descriptor->getContainer()->whenTypeAny()->needsAny([
 
-					DescriptorInterface::class => $descriptor
+					DescriptorInterface::class => $descriptor,
+
+					ActiveDescriptors::class => $descriptorsHolder // before this point, any object that requires the holder has to receive it manually
 				]);
 			}
 
-			$this->eventManager->bootReactiveLogger();
+			$this->eventManager->bootReactiveLogger($descriptorsHolder);
 
 			return $this;
 		}

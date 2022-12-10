@@ -7,8 +7,6 @@
 
 	use Suphle\Contracts\{Requests\BaseResponseManager, IO\CacheManager, Auth\AuthStorage, Modules\HighLevelRequestHandler, Presentation\BaseRenderer};
 
-	use Suphle\Modules\ModulesBooter;
-
 	use Suphle\Queues\AdapterManager;
 
 	use Suphle\Events\EventManager;
@@ -17,11 +15,11 @@
 
 	use Suphle\Hydration\Container;
 
+	use Suphle\Modules\Structures\ActiveDescriptors;
+
 	class OuterFlowWrapper implements BaseResponseManager, HighLevelRequestHandler {
 
 		final public const ALL_USERS = "*";
-
-		private readonly array $modules;
 
 		private ?RouteUmbrella $routeUmbrella = null;
 
@@ -42,10 +40,10 @@
 
 			private readonly EventManager $eventManager,
 
-			ModulesBooter $modulesBooter
+			private readonly ActiveDescriptors $descriptorsHolder
 		) {
 			
-			$this->modules = $modulesBooter->getModules();
+			//
 		}
 
 		public function canHandle ():bool {
@@ -148,10 +146,12 @@
 
 			$this->queueManager->addTask(RouteBranches::class, [
 				
-				"context" => new PendingFlowDetails(
+				PendingFlowDetails::class => new PendingFlowDetails(
 					
 					$this->responseRenderer(), $this->authStorage
-				)
+				),
+
+				ActiveDescriptors::class => $this->descriptorsHolder
 			]);
 		}
 

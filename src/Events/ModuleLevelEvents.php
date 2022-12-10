@@ -9,23 +9,23 @@
 
 	class ModuleLevelEvents {
 
-		private $modules;
-  private array $subscriberLog = [];
-  private array $eventManagers = []; // this is where subscribers to the immediate last fired external event reside
-  private array $firedEvents = [];
+		private array $subscriberLog = [],
 
-		public function __construct (ActiveDescriptors $descriptorsHolder) {
+		$eventManagers = [], // this is where subscribers to the immediate last fired external event reside
 
-			$this->modules = $descriptorsHolder->getDescriptors();
-		}
+		$firedEvents = [];
 
-		public function bootReactiveLogger():void {
+		public function bootReactiveLogger (ActiveDescriptors $descriptorsHolder):void {
 
-			$objectMeta = current($this->modules)->getContainer()
+			$objectMeta = $descriptorsHolder->firstOriginalContainer()
 
 			->getClass(ObjectDetails::class);
-			
-			foreach ($this->modules as $descriptor) {
+
+			foreach (
+				$descriptorsHolder->getOriginalDescriptors()
+
+				as $descriptor
+			) {
 
 				$container = $descriptor->getContainer();
 

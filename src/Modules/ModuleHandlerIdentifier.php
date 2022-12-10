@@ -35,6 +35,8 @@
 
 		protected array $descriptorInstances;
 
+		protected ActiveDescriptors $descriptorsHolder;
+
 		public function __construct () {
 
 			$this->setTitularContainer();
@@ -46,12 +48,11 @@
 
 			if (empty($this->descriptorInstances)) return;
 
-			$this->container = current($this->descriptorInstances)->getContainer(); // we don't bother confirming descriptorInstances has contents since we don't even have access to a default error page to render if it doesn't exist
+			$this->descriptorsHolder = new ActiveDescriptors($this->descriptorInstances);
 
-			$this->container->whenTypeAny()->needsAny([ // for the `bootModules` call
+			$this->container = $this->descriptorsHolder->firstOriginalContainer();
 
-				ActiveDescriptors::class => new ActiveDescriptors($this->descriptorInstances)
-			])->setEssentials();
+			$this->container->setEssentials();
 		}
 		
 		abstract protected function getModules():array;
@@ -60,7 +61,9 @@
 
 			$this->container->getClass(ModulesBooter::class)
 
-			->bootAllModules()->prepareFirstModule();
+			->bootAllModules($this->descriptorsHolder)
+
+			->prepareFirstModule();
 		}
 
 		public function setRequestPath (string $requestPath):void {

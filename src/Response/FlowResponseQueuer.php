@@ -7,12 +7,16 @@
 
 	use Suphle\Flows\{Jobs\RouteBranches, Structures\PendingFlowDetails};
 
+	use Suphle\Modules\Structures\ActiveDescriptors;
+
 	class FlowResponseQueuer {
 
 		public function __construct (
 			private readonly AdapterManager $queueManager,
 
-			private readonly AuthStorage $authStorage
+			private readonly AuthStorage $authStorage,
+
+			private readonly ActiveDescriptors $descriptorsHolder
 		) {
 
 			//
@@ -22,10 +26,12 @@
 
 			$this->queueManager->addTask(RouteBranches::class, [
 				
-				"flowDetails" => new PendingFlowDetails(
+				PendingFlowDetails::class => new PendingFlowDetails(
 					
 					$renderer, $this->authStorage
-				)
+				),
+
+				ActiveDescriptors::class => $this->descriptorsHolder
 			]);
 		}
 	}

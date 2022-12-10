@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Flows\Jobs;
 
-	use Suphle\Modules\{ModuleToRoute, ModulesBooter};
+	use Suphle\Modules\{ModuleToRoute, ModulesBooter, Structures\ActiveDescriptors};
 
 	use Suphle\Flows\{FlowHydrator, Structures\PendingFlowDetails, Previous\UnitNode};
 
@@ -28,6 +28,8 @@
 
 			private readonly ModulesBooter $modulesBooter,
 
+			private readonly ActiveDescriptors $descriptorsHolder,
+
 			private readonly CacheManager $cacheManager
 		) {
 			
@@ -40,9 +42,11 @@
 
 			if (!$outgoingRenderer->hasBranches()) return;
 
-			$this->modules = $this->modulesBooter->bootAllModules()
+			$this->modules = $this->descriptorsHolder->getOriginalDescriptors();
 
-			->prepareAllModules()->getModules();
+			$this->modulesBooter->bootAllModules($this->descriptorsHolder)
+
+			->prepareAllModules();
 			
 			$outgoingRenderer->getFlow()
 
