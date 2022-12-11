@@ -7,14 +7,21 @@
 
 	class VendorBin {
 
+		protected string $projectRootPath;
+
 		public function __construct (private readonly FileSystemReader $fileSystemReader) {
 
 			//
 		}
 
+		public function setRootPath (string $path):void {
+
+			$this->projectRootPath = $path;
+		}
+
 		public function getBinDir ():string {
 
-			return $_SERVER["COMPOSER_RUNTIME_BIN_DIR"];
+			return $this->projectRootPath . "/vendor/bin";
 		}
 
 		/**
@@ -38,10 +45,26 @@
 
 		public function setProcessArguments (string $processName, array $commandOptions):Process {
 
-			return new Process(array_merge(
+			$process = new Process(
+				array_merge([$processName], $commandOptions),
 
-				[$this->getBinDir() .$processName ], $commandOptions
-			));
+				$this->getBinDir()
+			);
+
+			$process->setTimeout(20_000);
+
+			$process->setIdleTimeout(60);
+
+			return $process;
+		}
+
+		public function processOut ($type, $buffer):void {
+
+			if (Process::ERR === $type)
+
+				echo "ERR > $buffer";
+
+			else echo $buffer;
 		}
 	}
 ?>

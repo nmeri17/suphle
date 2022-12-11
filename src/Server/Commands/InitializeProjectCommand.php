@@ -46,6 +46,8 @@
 				$this->getExecutionContainer(null)
 
 				->getClass(ProjectInitializer::class)
+
+				->sendRootPath($this->executionPath)
 				
 				->allInitOperations(
 

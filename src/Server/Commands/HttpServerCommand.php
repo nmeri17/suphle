@@ -1,9 +1,7 @@
 <?php
 	namespace Suphle\Server\Commands;
 
-	use Suphle\Server\{DependencySanitizer, VendorBin};
-
-	use Suphle\Hydration\Container;
+	use Suphle\Server\HttpServerOperations;
 
 	use Suphle\Console\BaseCliCommand;
 
@@ -23,8 +21,6 @@
 
 		protected bool $withModuleOption = false;
 
-		protected Container $container;
-
 		protected function configure ():void {
 
 			parent::configure();
@@ -38,7 +34,7 @@
 			$this->addOption(
 				self::DISABLE_SANITIZATION_OPTION, "i",
 
-				InputOption::VALUE_NONE, "Path to custom RR config"
+				InputOption::VALUE_NONE, "Prevent dependency sanitization"
 			);
 		}
 
@@ -49,18 +45,22 @@
 
 		public function execute (InputInterface $input, OutputInterface $output):int {
 
-			$this->container = $this->getExecutionContainer();
-
 			try {
 
-				if (!is_null(
+				$serverOperations = $this->getExecutionContainer(null)
 
-					$input->getOption(self::DISABLE_SANITIZATION_OPTION)
-				))
+				->getClass(HttpServerOperations::class)
 
-					$this->restoreSanity();
+				->sendRootPath($this->executionPath);
 
-				$this->startRRServer($input);
+				if (!$input->getOption(self::DISABLE_SANITIZATION_OPTION)) // absent
+
+					$serverOperations->restoreSanity();
+
+				$serverOperations->startRRServer(
+
+					$input->getOption(self::RR_CONFIG_OPTION)
+				);
 
 				return Command::SUCCESS;
 			}
@@ -68,37 +68,10 @@
 
 				$output->writeln($exception);
 
+				echo $exception;
+
 				return Command::FAILURE;
 			}
-		}
-
-		protected function restoreSanity ():void {
-
-			$sanitizer = $this->container->getClass(DependencySanitizer::class);
-
-			$sanitizer->setExecutionPath($this->executionPath);
-
-			$sanitizer->cleanseConsumers();
-		}
-
-		protected function startRRServer (InputInterface $input):void {
-
-			$commandOptions = ["serve"];
-
-			$configPath = $input->getOption(self::RR_CONFIG_OPTION);
-
-			if (!is_null($configPath))
-
-				$commandOptions = array_merge(
-
-					$commandOptions, ["-c", $configPath]
-				);
-
-			$this->container->getClass(VendorBin::class)
-
-			->setProcessArguments("rr", $commandOptions)
-
-			->start();
 		}
 	}
 ?>

@@ -7,13 +7,13 @@
 
 	use Suphle\Server\VendorBin;
 
-	use Symfony\Component\Process\Process;
-
-	use Symfony\Component\Console\Output\OutputInterface;
+	use Symfony\Component\{Process\Process, Console\Output\OutputInterface};
 
 	class ProjectInitializer {
 
 		private ?Process $runningProcess = null;
+
+		private string $projectRootPath;
 
 		public function __construct (
 
@@ -29,14 +29,23 @@
 
 			$creationStatus = $this->createModule($moduleName, $descriptorFqcn, $output);
 
-			$this->vendorBin->setProcessArguments("rr", ["get-binary"])->run(); // this won't run if binary already exists
+			$this->vendorBin->setProcessArguments("rr", ["get-binary"])
+
+			->run(function ($type, $buffer) {
+
+				if (Process::ERR === $type)
+
+					echo "RR binary already exists";
+
+				else echo $buffer;
+			});
 
 			$this->runningProcess = $this->vendorBin->getServerLauncher(
 
 				"../../dev-rr.yaml"
 			);
 
-			$this->runningProcess->start();
+			$this->runningProcess->start($this->vendorBin->processOut(...));
 
 			return $creationStatus;
 		}
@@ -70,11 +79,28 @@
 			return $this->runningProcess;
 		}
 
-		public function contributorOperations (string $testsPath):void {
+		public function sendRootPath ( string $executionPath):self {
 
-			$this->vendorBin->setProcessArguments("rr", ["get-binary"])->run();
+			$this->vendorBin->setRootPath($executionPath);
 
-			$this->vendorBin->setProcessArguments("phpunit", [$testsPath])->run();
+			$this->projectRootPath = $executionPath;
+
+			return $this;
+		}
+
+		public function contributorOperations (?string $testsPath):void {
+
+			$this->vendorBin->setProcessArguments("rr", ["get-binary"])
+
+			->run($this->vendorBin->processOut(...));
+
+			$this->vendorBin->setProcessArguments("phpunit", [
+
+				$testsPath ??
+
+				$this->projectRootPath . DIRECTORY_SEPARATOR . "tests"
+			])
+			->run($this->vendorBin->processOut(...));
 		}
 	}
 ?>

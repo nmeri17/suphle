@@ -34,7 +34,7 @@
 			// when
 			$commandResult = (new CommandTester($command))->execute([
 
-				ContributorTestsCommand::TESTS_PATH_ARGUMENT => self::TESTS_PATH
+				"--" . ContributorTestsCommand::TESTS_PATH_OPTION => self::TESTS_PATH
 			]);
 
 			// then, sanity check

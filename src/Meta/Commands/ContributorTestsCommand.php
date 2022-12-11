@@ -7,13 +7,13 @@
 
 	use Symfony\Component\Console\{Output\OutputInterface, Command\Command};
 
-	use Symfony\Component\Console\Input\{InputInterface, InputArgument};
+	use Symfony\Component\Console\Input\{InputInterface, InputOption};
 
 	use Throwable;
 
 	class ContributorTestsCommand extends BaseCliCommand {
 
-		final const TESTS_PATH_ARGUMENT = "tests_path";
+		final const TESTS_PATH_OPTION = "tests_path";
 
 		protected static $defaultDescription = "Install RR and run test suite";
 
@@ -28,8 +28,10 @@
 
 			parent::configure();
 
-			$this->addArgument(
-				self::TESTS_PATH_ARGUMENT, InputArgument::REQUIRED, "Absolute path"
+			$this->addOption(
+				self::TESTS_PATH_OPTION, "t", InputOption::VALUE_REQUIRED,
+
+				"Absolute path. Defaults to root tests folder"
 			);
 		}
 
@@ -40,10 +42,12 @@
 				$this->getExecutionContainer(null)
 
 				->getClass(ProjectInitializer::class)
+
+				->sendRootPath($this->executionPath)
 				
 				->contributorOperations(
 
-					$input->getArgument(self::TESTS_PATH_ARGUMENT)
+					$input->getOption(self::TESTS_PATH_OPTION)
 				);
 
 				return Command::SUCCESS;
