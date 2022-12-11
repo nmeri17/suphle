@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Meta\Commands;
 
-	use Suphle\Server\ProjectInitializer;
+	use Suphle\Meta\ProjectInitializer;
 
 	use Suphle\Console\BaseCliCommand;
 
@@ -37,7 +37,9 @@
 
 			try {
 
-				$this->getExecutionContainer()->getClass(ProjectInitializer::class)
+				$this->getExecutionContainer(null)
+
+				->getClass(ProjectInitializer::class)
 				
 				->contributorOperations(
 

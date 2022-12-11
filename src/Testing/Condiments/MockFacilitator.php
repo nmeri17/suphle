@@ -211,6 +211,10 @@
 
 				$argumentType = $parameterType->getName();
 
+				if (array_key_exists($argumentType, $replacements))
+
+					return $replacements[$argumentType];
+
 				if ($argumentType == Container::class && $useBaseContainer)
 
 					return $container;

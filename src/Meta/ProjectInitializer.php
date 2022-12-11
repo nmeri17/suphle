@@ -44,7 +44,7 @@
 		/**
 		 * Can't automate test for this until a library for adding new descriptor to app module list is found
 		*/
-		protected function createModule (string $moduleName, ?string $descriptorFqcn, OutputInterface $output):int {
+		public function createModule (string $moduleName, ?string $descriptorFqcn, OutputInterface $output):int {
 
 			$command = $this->consoleClient->findCommand(
 

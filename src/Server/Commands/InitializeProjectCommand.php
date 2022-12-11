@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Server\Commands;
 
-	use Suphle\Server\ProjectInitializer;
+	use Suphle\Meta\ProjectInitializer;
 
 	use Suphle\Console\BaseCliCommand;
 
@@ -43,7 +43,10 @@
 
 			try {
 
-				$this->getExecutionContainer()->getClass(ProjectInitializer::class)
+				$this->getExecutionContainer(null)
+
+				->getClass(ProjectInitializer::class)
+				
 				->allInitOperations(
 
 					$input->getArgument(CloneModuleCommand::MODULE_NAME_ARGUMENT),
@@ -58,6 +61,8 @@
 			catch (Throwable $exception) {
 
 				$output->writeln($exception);
+
+				echo($exception);
 
 				return Command::FAILURE;
 			}
