@@ -7,24 +7,19 @@
 
 	use Spiral\RoadRunner\Jobs\{Consumer, Jobs, Task\ReceivedTaskInterface};
 
-	use Spiral\Goridge\RPC\RPC;
-
-	use Spiral\RoadRunner\Environment;
+	use Spiral\{Goridge\RPC\RPC, RoadRunner\Environment};
 
 	use Throwable;
 
 	class SpiralQueue extends BaseQueueAdapter {
 
-		final const HEADER_ATTEMPTS = "attempts";
-  final const HEADER_RETRY_DELAY = "retry-delay";
+		final const HEADER_ATTEMPTS = "attempts",
+
+		HEADER_RETRY_DELAY = "retry-delay";
 
 		private readonly int $maxRetries;
 
-		public function __construct (
-			private readonly EnvAccessor $envAccessor, 
-
-			protected readonly Container $container
-		) {
+		public function __construct (EnvAccessor $envAccessor, protected readonly Container $container) {
 
 			$this->maxRetries = $envAccessor->getField("MAX_QUEUE_RETRIES", 5);
 		}

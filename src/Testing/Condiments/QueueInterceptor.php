@@ -18,16 +18,23 @@
 			$this->catchQueuedTasks();
 		}
 
-		protected function catchQueuedTasks ():void {
+		protected function catchQueuedTasks (bool $immediateProcession = false):void {
 
-			if (is_null($this->queueAdapter)) // using this nonce so we can assert more than once in the same test without overwriting the instance
+			if (is_null($this->queueAdapter)) { // using this nonce so we can assert more than once in the same test without overwriting the instance
 
-				$this->massProvide([
+				$this->queueAdapter = $this->getContainer()
 
-					Adapter::class => $this->queueAdapter = $this->getContainer()
+				->getClass(StubbedQueueAdapter::class);
 
-					->getClass(StubbedQueueAdapter::class) // mass providing from the onset since we don't know yet what the active module is at this point this
+				if ($immediateProcession)
+
+					$this->queueAdapter->setExecuteOnPush();
+
+				$this->massProvide([ // mass providing from the onset since we don't know yet what the active module is at this point this
+
+					Adapter::class => $this->queueAdapter
 				]);
+			}
 		}
 
 		protected function assertPushed (string $taskName):void {

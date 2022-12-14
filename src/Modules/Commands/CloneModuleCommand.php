@@ -13,11 +13,15 @@
 
 	class CloneModuleCommand extends BaseCliCommand {
 
-		final public const SOURCE_OPTION = "template_source";
-  final public const DESTINATION_OPTION = "destination_path";
-  final public const MODULE_NAME_ARGUMENT = "new_module_name";
-  final public const ABSOLUTE_SOURCE_OPTION = "is_relative_source";
-  final public const DESCRIPTOR_OPTION = "module_descriptor";
+		final public const MODULE_NAME_ARGUMENT = "new_module_name",
+
+		DESCRIPTOR_OPTION = "module_descriptor",
+
+		DESTINATION_OPTION = "destination_path",
+
+		SOURCE_OPTION = "template_source",
+
+		ABSOLUTE_SOURCE_OPTION = "is_relative_source";
 
 		protected static $defaultDescription = "Copy and rename contents of a folder into a module";
 

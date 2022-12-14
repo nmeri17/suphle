@@ -994,6 +994,9 @@
 			}
 		}
 
+		/**
+		 * Still using an interface for this rather than a decorator since that's faster than reading attribute lists
+		 */
 		private function canClearClass ( string $className):bool {
 
 			return !$this->objectMeta->implementsInterface(
