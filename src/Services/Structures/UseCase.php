@@ -1,13 +1,18 @@
 <?php
 	namespace Suphle\Services\Structures;
 
+	use Closure;
+
 	class UseCase {
 
-		private $condition;
+		public function __construct (
 
-		public function __construct (callable $condition, private readonly array $arguments) {
+			private readonly Closure $condition,
 
-			$this->condition = $condition;
+			private readonly array $arguments
+		) {
+
+			//
 		}
 
 		public function build ():bool {

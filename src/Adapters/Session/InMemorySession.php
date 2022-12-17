@@ -5,6 +5,8 @@
 
 	class InMemorySession implements SessionContract {
 
+		public const FLASH_KEY = "_flash_entry";
+
 		private array $store = [];
 
 		public function setValue (string $key, $value):void {
@@ -45,17 +47,26 @@
 
 		public function startNew ():void {
 
-			$this->store = [];
+			$this->store = [self::FLASH_KEY => []];
+		}
+
+		public function setFlashValue (string $key, $value):void {
+
+			$existingFlash = $this->getValue(self::FLASH_KEY);
+
+			$existingFlash[$key] = $value;
+
+			$this->setValue(self::FLASH_KEY, $existingFlash);
 		}
 
 		public function hasOldInput (string $key):bool {
 
-			return false; // $this->hasKey(RouteManager::PREV_RENDERER)[$key]? // we don't flash data
+			return array_key_exists($key, $this->getValue(self::FLASH_KEY));
 		}
 
 		public function getOldInput (string $key) {
 
-			return; // see above
+			return $this->getValue(self::FLASH_KEY)[$key];
 		}
 
 		public function all (string $key):array {

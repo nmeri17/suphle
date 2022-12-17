@@ -53,14 +53,6 @@
 			$this->protectMailBuilders();
 		}
 
-		/**
-		 * @param {rules} DependencyRules[]
-		*/
-		public function setAllRules (array $rules):void {
-
-			$this->rules = $rules;
-		}
-
 		public function cleanseConsumers ():void {
 
 			if (empty($this->rules)) $this->setDefaultRules();

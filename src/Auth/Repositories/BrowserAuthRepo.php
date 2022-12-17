@@ -7,9 +7,13 @@
 
 	class BrowserAuthRepo extends BaseAuthRepo {
 
-		public function __construct (ColumnPayloadComparer $comparer, private readonly SessionStorage $authStorage) { 
+		public function __construct (
+			protected readonly ColumnPayloadComparer $comparer,
+
+			protected readonly SessionStorage $authStorage
+		) { 
 			
-			$this->comparer = $comparer;
+			//
 		}
 
 		public function successLogin () {
@@ -17,3 +21,4 @@
 			$this->authStorage->startSession($this->comparer->getUser()->getId());
 		}
 	}
+?>

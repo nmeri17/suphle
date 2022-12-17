@@ -1,6 +1,10 @@
 <?php
 	namespace Suphle\Server\Commands;
 
+	use Suphle\Contracts\Server\OnStartup;
+
+	use Suphle\Hydration\Container;
+
 	use Suphle\Server\HttpServerOperations;
 
 	use Suphle\Console\BaseCliCommand;
@@ -15,7 +19,11 @@
 
 		public const RR_CONFIG_OPTION = "rr_config_path",
 
-		DISABLE_SANITIZATION_OPTION = "insane";
+		DISABLE_SANITIZATION_OPTION = "insane",
+
+		CUSTOM_OPERATIONS = "operations_class",
+
+		CUSTOM_CLASS_OPTIONS = "custom_operations_options";
 
 		protected static $defaultDescription = "Run build operations and start RR servers";
 
@@ -26,7 +34,7 @@
 			parent::configure();
 
 			$this->addOption(
-				self::RR_CONFIG_OPTION, "c",
+				self::RR_CONFIG_OPTION, "r",
 
 				InputOption::VALUE_REQUIRED, "Path to custom RR config"
 			);
@@ -35,6 +43,18 @@
 				self::DISABLE_SANITIZATION_OPTION, "i",
 
 				InputOption::VALUE_NONE, "Prevent dependency sanitization"
+			);
+
+			$this->addOption(
+				self::CUSTOM_OPERATIONS, "o",
+
+				InputOption::VALUE_REQUIRED, "Class name of object implementing ". OnStartup::class
+			);
+
+			$this->addOption(
+				self::CUSTOM_CLASS_OPTIONS, "c",
+
+				InputOption::VALUE_IS_ARRAY, "Arguments to pass to the custom boot service class"
 			);
 		}
 
@@ -47,7 +67,9 @@
 
 			try {
 
-				$serverOperations = $this->getExecutionContainer(null)
+				$container = $this->getExecutionContainer(null);
+
+				$serverOperations = $container
 
 				->getClass(HttpServerOperations::class)
 
@@ -56,6 +78,8 @@
 				if (!$input->getOption(self::DISABLE_SANITIZATION_OPTION)) // absent
 
 					$serverOperations->restoreSanity();
+
+				$this->handleCustomOperations($input, $container);
 
 				$serverOperations->startRRServer(
 
@@ -72,6 +96,20 @@
 
 				return Command::FAILURE;
 			}
+		}
+
+		protected function handleCustomOperations (InputInterface $input, Container $container):void {
+
+			$operationName = $input->getOption(self::CUSTOM_OPERATIONS);
+
+			if (!$operationName) return;
+
+			$container->getClass($operationName)->runOperations(
+
+				$this->executionPath,
+
+				$input->getOption(self::CUSTOM_CLASS_OPTIONS)
+			);
 		}
 	}
 ?>

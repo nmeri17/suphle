@@ -12,5 +12,7 @@
 		public function reset ():void;
 
 		public function startNew ():void;
+
+		public function setFlashValue (string $key, $value):void;
 	}
 ?>

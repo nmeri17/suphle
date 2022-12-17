@@ -102,9 +102,11 @@
 			*	1) pre-provisioned caller list
 			*	2) Provisions it afresh if an interface or recursively wires in its constructor dependencies
 		*
-		*	@param {includeSub} Regular provision: A wants B, but we give C sub-class of B. Sub-classes of A can't obtain B unless this parameter is used
+		*	@param $fullName class-string<T>
 		* 
-		* @return A class instance, if found
+		*	@param $includeSub bool. Regular provision: A wants B, but we give C sub-class of B. Sub-classes of A can't obtain B unless this parameter is used
+		* 
+		* @return T. A class instance, if found
 		*/
 		public function getClass (string $fullName, bool $includeSub = false) {
 

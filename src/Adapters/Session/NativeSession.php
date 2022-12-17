@@ -5,19 +5,35 @@
 
 	class NativeSession implements SessionContract {
 
-		public function __construct (private readonly EnvAccessor $envAccessor) {
+		public const FLASH_KEY = "_flash_entry";
+
+		public function __construct (protected readonly EnvAccessor $envAccessor) {
 
 			if ($this->safeToStart()) $this->startNew();
 		}
 
+		/**
+		 * Avoid "session already started" errors
+		 */
 		protected function safeToStart ():bool {
 
-			return session_status() == PHP_SESSION_NONE && !headers_sent();
+			return session_status() == PHP_SESSION_NONE // sessions are enabled but none exists
+
+			&& !headers_sent();
 		}
 
 		public function setValue (string $key, $value):void {
 
 			$_SESSION[$key] = $value;
+		}
+
+		public function setFlashValue (string $key, $value):void {
+
+			$existingFlash = $this->getValue(self::FLASH_KEY);
+
+			$existingFlash[$key] = $value;
+
+			$this->setValue(self::FLASH_KEY, $existingFlash);
 		}
 
 		public function getValue (string $key) {
@@ -41,12 +57,20 @@
 
 			session_start();
 
+			$this->setCookieElapse($this->envAccessor->getField("SESSION_DURATION"));
+
+			$_SESSION[self::FLASH_KEY] = [];
+		}
+
+		protected function setCookieElapse (string $incrementBy, array $cookieOptions = []):void {
+
 			setcookie(
 				session_name(), session_id(),
 
-				[
-					"expires" => time() + $this->envAccessor->getField("SESSION_DURATION")
-				]
+				array_merge([
+
+					"expires" => time() + intval($incrementBy)
+				], $cookieOptions)
 			);
 		}
 	}

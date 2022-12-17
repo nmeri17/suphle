@@ -15,9 +15,10 @@
 
 		protected $successDestination = "/";
 
-		public function __construct(private readonly BrowserAuthRepo $authService)
-  {
-  }
+		public function __construct(private readonly BrowserAuthRepo $authService) {
+
+			//
+		}
 
 		public function successRenderer ():BaseRenderer {
 
