@@ -15,15 +15,11 @@
 
 	abstract class BaseCollection implements RouteCollection {
 
-		protected string $collectionParent = BaseCollection::class;
-  protected /**
-		 * this is set if this collection is used as prefix in another. Should be used while determining the prefix of that collection
-		*/
-		$parentPrefix;
+		protected string $collectionParent = BaseCollection::class; // this is set if this collection is used as prefix in another. Should be used while determining the prefix of that collection
+
+		private ?string $prefixClass = null, $parentPrefix = null;
 
 		protected bool $crudMode = false;
-
-		private ?string $prefixClass = null;
 
 		private array $lastRegistered = [];
 

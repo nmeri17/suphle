@@ -38,8 +38,7 @@
 				(?:_)?# path segments delimited by single underscores
 				(?<placeholder>".
 					self::PLACEHOLDER_IDENTIFIER .
-					"(?<is_optional>[O])?
-				)
+				")
 				_?# possible trailing slash before next literal
 			)?";
 		}
@@ -104,27 +103,11 @@
 
 			$replaceWithPlaceholder = $replacement == self::REPLACEMENT_TYPE_PLACEHOLDER;
 
-			if (!empty($matches["is_optional"])) {
+			if ($replaceWithPlaceholder)
 
-				$placeholder = rtrim($placeholder, "O");
+				$replacement = $placeholder;
 
-				if ($replaceWithPlaceholder)
-
-					$replacement = $placeholder;
-
-				$segment .= "?" . // weaken trailing slash of preceding pattern
-
-				"($replacement/?)?";
-			}
-
-			else {
-
-				if ($replaceWithPlaceholder)
-
-					$replacement = $placeholder;
-
-				$segment .= "$replacement/";
-			}
+			$segment .= "$replacement/";
 
 			$this->caughtPlaceholders[] = $placeholder;
 

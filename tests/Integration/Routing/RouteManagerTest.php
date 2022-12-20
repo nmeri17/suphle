@@ -31,10 +31,7 @@
 				[ "hyphenatedSegments", "/segment-segment/5"],
 				[ "hyphenatedSegments", "/segment-segment/5/"],
 
-				[ "underscoredSegments", "/segment_segment/5"],
-
-				[ "optionalPlaceholder", "/segment/5/segment/5"],
-				[ "optionalPlaceholder", "/segment/5/segment"]
+				[ "underscoredSegments", "/segment_segment/5"]
 			];
 		}
 	}

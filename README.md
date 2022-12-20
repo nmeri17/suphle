@@ -1,7 +1,5 @@
 This is the dev-facing project intended for contribution of Suphle itself. The user-facing project can be found at https://github.com/nmeri17/suphle-starter.
 
-The most important thing for me at the moment is indication of interest from the community. Kindly help by starring/watching the repo, opening an issue, or sharing it with your friends.
-
 ## Testing
 
 Project can either be installed using Composer,
@@ -38,7 +36,24 @@ DATABASE_PASS =
 DATABASE_HOST = localhost
 ```
 
-So, that database must be created, otherwise, an alternative must be provided.
+That database must be created; otherwise, an alternative must be provided.
+
+All interaction with the Framework should be conducted through tests and by extension, the command line. Those unaccustomed to reading the source code/tests or running tests, or those who are impatient and would prefer seeing something on the browser, should fire up the Roadrunner server:
+
+```bash
+
+cd /project/path/vendor/bin
+
+rr serve -c "/project/path/test-rr.yaml"
+```
+
+Then, visit any of the routes available at:
+
+- http://localhost:8080/
+- http://localhost:8080/segment
+- http://localhost:8080/module-three/{any_integer}
+
+They don't require any database connection and only demonstrate the relatively basic ability to route incoming requests to an attached action handler, taking higher-level constraints like modules and prefixing into account.
 
 ## Introduction
 
