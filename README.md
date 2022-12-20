@@ -1,12 +1,44 @@
-The most important thing for me at the moment is indication of interest from the community. Just help by starring/watching the repo, opening an issue, or sharing it with your friends
+This is the dev-facing project intended for contribution of Suphle itself. The user-facing project can be found at https://github.com/nmeri17/suphle-starter.
 
-<!-- ## Installation-->
+The most important thing for me at the moment is indication of interest from the community. Kindly help by starring/watching the repo, opening an issue, or sharing it with your friends.
 
 ## Testing
-Clone project. Run `composer install && php suphle_cli project:contribute_test `
-It requires an active mysql connection
 
-This is the dev-facing project intended for contribution of Suphle itself. The user-facing project can be found at https://github.com/nmeri17/suphle-starter. 
+Project can either be installed using Composer,
+
+```bash
+
+composer require nmeri17/suphle
+```
+
+Or, can simply be cloned -- in which case, we'd have to manually install dependencies:
+
+```bash
+
+git clone https://link/to/repo.git
+
+cd cloned/path
+
+composer install
+```
+
+Either way, after installation, initiation and test can be triggered using the following command:
+
+```bash
+
+php suphle_cli project:contribute_test
+```
+
+For it to run successfully, both an active Internet and MYSQL connection must be available. The former is for downloading the server binary while the latter is for running database migrations. The default modules contain an `.env` with the following entries:
+
+```
+DATABASE_NAME = suphle
+DATABASE_USER = root
+DATABASE_PASS = 
+DATABASE_HOST = localhost
+```
+
+So, that database must be created, otherwise, an alternative must be provided.
 
 ## Introduction
 

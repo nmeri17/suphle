@@ -5,6 +5,8 @@
 
 	use Predis\Client;
 
+	use Exception;
+
 	class PredisAdapter implements CacheManager {
 
 		final const TAG_KEY = "_reserved_key_tags";
@@ -24,9 +26,23 @@
 			$this->client = new Client($this->cacheConfig->getCredentials());
 		}
 
-		public function getItem (string $key) {
+		public function getItem (string $key, callable $storeOnAbsence = null) {
 
-			return $this->client->get($key);
+			$foundData = $this->client->get($key);
+
+			if (!is_null($foundData) || is_null($storeOnAbsence))
+
+				return $foundData;
+
+			$toStore = $storeOnAbsence();
+
+			if (is_null($toStore))
+
+				throw new Exception("Cache data source cannot return null");
+
+			$this->saveItem($key, $toStore);
+
+			return $toStore;
 		}
 
 		public function saveItem (string $key, $data):void {

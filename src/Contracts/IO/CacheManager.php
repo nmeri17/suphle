@@ -5,7 +5,7 @@
 
 		public function setupClient ():void;
 
-		public function getItem (string $key);
+		public function getItem (string $key, callable $storeOnAbsence = null);
 
 		public function deleteItem (string $key);
 
