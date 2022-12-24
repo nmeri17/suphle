@@ -1,12 +1,13 @@
 <?php
 	namespace Suphle\Auth\Repositories;
 
-	use Suphle\Contracts\Auth\LoginActions;
+	use Suphle\Contracts\Auth\{LoginActions, ColumnPayloadComparer};
 
 	abstract class BaseAuthRepo implements LoginActions {
 
-		protected $comparer;
-
+		/**
+		 * Expects sub-classes to inject an ColumnPayloadComparer $comparer. Can't set the property here to avoid visibility headaches
+		*/
 		public function compareCredentials ():bool {
 
 			return $this->comparer->compare();

@@ -21,7 +21,7 @@
 
 		public function getBinDir ():string {
 
-			return $this->projectRootPath . "/vendor/bin";
+			return $this->fileSystemReader->noTrailingSlash($this->projectRootPath) . "/vendor/bin";
 		}
 
 		/**
@@ -43,7 +43,7 @@
 			]);
 		}
 
-		public function setProcessArguments (string $processName, array $commandOptions):Process {
+		public function setProcessArguments (string $processName, array $commandOptions, bool $withTimeout = true):Process {
 
 			$process = new Process(
 				array_merge([$processName], $commandOptions),
@@ -51,9 +51,7 @@
 				$this->getBinDir()
 			);
 
-			$process->setTimeout(20_000);
-
-			$process->setIdleTimeout(60);
+			if ($withTimeout) $process->setTimeout(20_000);
 
 			return $process;
 		}
@@ -62,7 +60,7 @@
 
 			if (Process::ERR === $type)
 
-				echo "ERR > $buffer";
+				echo "ERROR > $buffer";
 
 			else echo $buffer;
 		}

@@ -13,7 +13,9 @@
 
 	class ContributorTestsCommand extends BaseCliCommand {
 
-		final const TESTS_PATH_OPTION = "tests_path";
+		final const TESTS_PATH_OPTION = "tests_path",
+
+		PHPUNIT_ARGS_OPTION = "phpunit_arg";
 
 		protected static $defaultDescription = "Install RR and run test suite";
 
@@ -33,6 +35,14 @@
 
 				"Absolute path. Defaults to root tests folder"
 			);
+
+			$this->addOption(
+				self::PHPUNIT_ARGS_OPTION, "p",
+
+				InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY,
+
+				"Arguments to forward to the phpunit runner", []
+			);
 		}
 
 		public function execute (InputInterface $input, OutputInterface $output):int {
@@ -47,7 +57,9 @@
 				
 				->contributorOperations(
 
-					$input->getOption(self::TESTS_PATH_OPTION)
+					$input->getOption(self::TESTS_PATH_OPTION),
+
+					$input->getOption(self::PHPUNIT_ARGS_OPTION)
 				);
 
 				return Command::SUCCESS;

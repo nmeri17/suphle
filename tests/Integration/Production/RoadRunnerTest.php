@@ -62,7 +62,7 @@
 					]
 				);
 
-				$response = $httpService->getDomainObject();
+				$response = $httpService->getDomainObject(); // when
 
 				if ($httpService->hasErrors()) {
 
@@ -107,6 +107,9 @@
 			);
 		}
 
+		/**
+		 * This method is blocking (like a while loop) and will continually poll the process until the internal condition is met. It doesn't have anything to do with timeout/asyncronicity, only lets us know the appropriate time to make assertions against the process i.e. when condition is met
+		*/
 		private function serverIsReady (Process $serverProcess):bool {
 
 			$serverProcess->waitUntil(function ($type, $buffer) {
@@ -114,7 +117,7 @@
 				return stripos((string) $buffer, "http server was started");
 			});
 
-			return $serverProcess->isRunning();
+			return $serverProcess->isRunning(); // If condition is not met, process should be released by timing out. Thus, this returns false
 		}
 
 		private function getResponseBody (ResponseInterface $response) {

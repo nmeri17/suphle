@@ -54,7 +54,9 @@
 			$this->addOption(
 				self::CUSTOM_CLASS_OPTIONS, "c",
 
-				InputOption::VALUE_IS_ARRAY, "Arguments to pass to the custom boot service class"
+				InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, // the array reader requires the required option
+
+				"Arguments to pass to the custom boot service class"
 			);
 		}
 

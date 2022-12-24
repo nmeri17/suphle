@@ -27,18 +27,9 @@
 
 		public function allInitOperations (string $moduleName, string $descriptorFqcn = null, OutputInterface $output):int {
 
+			$this->downloadRRBinary();
+
 			$creationStatus = $this->createModule($moduleName, $descriptorFqcn, $output);
-
-			$this->vendorBin->setProcessArguments("rr", ["get-binary"])
-
-			->run(function ($type, $buffer) {
-
-				if (Process::ERR === $type)
-
-					echo "RR binary already exists";
-
-				else echo $buffer;
-			});
 
 			$this->runningProcess = $this->vendorBin->getServerLauncher(
 
@@ -74,6 +65,22 @@
 			return $command->run($commandInput, $output);
 		}
 
+		protected function downloadRRBinary ():void {
+
+			$commandSignature = "get-binary";
+
+			$this->vendorBin->setProcessArguments("rr", [$commandSignature])
+
+			->run(function ($type, $buffer) use ($commandSignature) {
+
+				$content = "unknown command '$commandSignature'";
+
+				if (preg_match("/$content/i", $buffer) !== 0)
+
+					echo $buffer;
+			});
+		}
+
 		public function getRunningProcess ():?Process {
 
 			return $this->runningProcess;
@@ -88,19 +95,22 @@
 			return $this;
 		}
 
-		public function contributorOperations (?string $testsPath):void {
+		public function contributorOperations (?string $testsPath, array $phpUnitOptions):void {
 
-			$this->vendorBin->setProcessArguments("rr", ["get-binary"])
+			$this->downloadRRBinary();
 
-			->run($this->vendorBin->processOut(...));
-
-			$this->vendorBin->setProcessArguments("phpunit", [
+			$testProcess = $this->vendorBin->setProcessArguments("phpunit", [
 
 				$testsPath ??
 
-				$this->projectRootPath . DIRECTORY_SEPARATOR . "tests"
-			])
-			->run($this->vendorBin->processOut(...));
+				$this->projectRootPath . DIRECTORY_SEPARATOR . "tests",
+
+				...$phpUnitOptions
+			], false);
+
+			$testProcess->setTimeout(0);
+
+			$testProcess->run($this->vendorBin->processOut(...));
 		}
 	}
 ?>

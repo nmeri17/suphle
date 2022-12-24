@@ -38,9 +38,16 @@
 					$commandOptions, ["-c", $configPath]
 				);
 
-			$this->vendorBin->setProcessArguments("rr", $commandOptions)
+			$process = $this->vendorBin->setProcessArguments("rr", $commandOptions, false);
 
-			->start($this->vendorBin->processOut(...));
+			$process->setTimeout(0); // run indefinitely
+
+			$process->start();
+
+			$process->wait(function ($type, $buffer) { // either this or a foreach loop is required for starting the long-running process
+
+				echo $buffer;
+			});
 		}
 	}
 ?>

@@ -3,13 +3,15 @@
 
 	use Suphle\Server\VendorBin;
 
+	use Suphle\File\FileSystemReader;
+
 	use Suphle\Tests\Integration\Modules\ModuleDescriptor\DescriptorCollection;
 
 	abstract class BaseTestProduction extends DescriptorCollection {
 
-		protected bool $debugCaughtExceptions = true;
+		protected bool $debugCaughtExceptions = true,
   
-  		protected bool $useTestComponents = false;
+  		$useTestComponents = false;
 
 		protected VendorBin $vendorBin;
 
@@ -17,9 +19,16 @@
 
 			parent::setUp();
 
-			$this->vendorBin = $this->getContainer()
+			$container = $this->getContainer();
 
-			->getClass(VendorBin::class);
+			$this->vendorBin = $container->getClass(VendorBin::class);
+
+			$this->vendorBin->setRootPath(
+
+				$container->getClass(FileSystemReader::class)
+
+				->pathFromLevels($_SERVER["COMPOSER_RUNTIME_BIN_DIR"], "", 2)
+			);
 		}
 
 		public function modulesUrls ():array {
