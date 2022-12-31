@@ -13,7 +13,7 @@
 
 	class OriginCollection extends BaseCollection {
 
-		private string $queryNodeHolder = "next_page_url";
+		protected string $queryNodeHolder = "next_page_url";
 
 		public function _handlingClass ():string {
 

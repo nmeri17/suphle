@@ -9,7 +9,7 @@
 
 	class ImagineClient implements ImageThumbnailClient {
 
-		private Imagine $context;
+		protected Imagine $context;
 
 		private $mode;
 

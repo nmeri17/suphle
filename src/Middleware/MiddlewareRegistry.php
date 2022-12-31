@@ -6,7 +6,7 @@
 	#[BindsAsSingleton]
 	class MiddlewareRegistry {
 
-		private array $registry = [],
+		protected array $registry = [],
 
 		$excludePatterns = [], // [patternName => PatternMiddleware]
 		

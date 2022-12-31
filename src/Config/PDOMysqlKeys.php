@@ -5,9 +5,10 @@
 
 	class PDOMysqlKeys implements DatabaseContract {
 
-		public function __construct(private readonly EnvAccessor $envAccessor)
-  {
-  }
+		public function __construct(protected readonly EnvAccessor $envAccessor) {
+
+			//
+		}
 
 		public function getCredentials ():array {
 

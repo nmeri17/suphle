@@ -15,9 +15,9 @@
 
 		public function __construct(
 
-			private readonly ObjectDetails $objectMeta,
+			protected readonly ObjectDetails $objectMeta,
 
-			private readonly Container $container
+			protected readonly Container $container
 		) {
 
 			//

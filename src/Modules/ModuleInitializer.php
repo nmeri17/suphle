@@ -21,24 +21,24 @@
 	
 	class ModuleInitializer implements HighLevelRequestHandler {
 
-		private bool $foundRoute = false;
+		protected bool $foundRoute = false;
 
-		private readonly Container $container;
+		protected readonly Container $container;
 
-		private PatternIndicator $indicator;
+		protected PatternIndicator $indicator;
 
-		private BaseRenderer $finalRenderer;
+		protected BaseRenderer $finalRenderer;
 
 		public function __construct (
-			private readonly DescriptorInterface $descriptor,
+			protected readonly DescriptorInterface $descriptor,
 
-			private readonly RequestDetails $requestDetails,
+			protected readonly RequestDetails $requestDetails,
 
-			private readonly DecoratorHydrator $decoratorHydrator,
+			protected readonly DecoratorHydrator $decoratorHydrator,
 
-			private readonly RouteManager $router,
+			protected readonly RouteManager $router,
 
-			private readonly ExternalRouteMatcher $externalRouters
+			protected readonly ExternalRouteMatcher $externalRouters
 		) {
 
 			$this->container = $descriptor->getContainer();

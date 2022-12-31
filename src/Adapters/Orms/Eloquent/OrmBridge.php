@@ -14,19 +14,19 @@
 	#[BindsAsSingleton(OrmDialect::class)]
 	class OrmBridge implements OrmDialect {
 
-		private array $credentials = [];
+		protected array $credentials = [];
 		
-		private ?Connection $connection = null;
+		protected ?Connection $connection = null;
 
-		private ?CapsuleManager $nativeClient = null;
+		protected ?CapsuleManager $nativeClient = null;
 
 		public function __construct (
 
 			Database $config,
 
-			private readonly Container $container,
+			protected readonly Container $container,
 
-			private readonly LaravelContainer $laravelContainer
+			protected readonly LaravelContainer $laravelContainer
 		) {
 
 			$this->credentials = $config->getCredentials();

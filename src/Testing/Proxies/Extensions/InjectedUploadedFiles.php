@@ -10,9 +10,10 @@
 		/**
 		 * @param {fileMap} UploadedFile[]
 		*/
-		public function __construct(private readonly array $fileMap)
-  {
-  }
+		public function __construct(protected readonly array $fileMap) {
+
+			//
+		}
 
 		public function getFileObjects ():array {
 

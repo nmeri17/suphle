@@ -27,9 +27,9 @@
 
 	abstract class ModuleHandlerIdentifier {
 
-		private HighLevelRequestHandler $identifiedHandler;
+		protected HighLevelRequestHandler $identifiedHandler;
 
-		private ?DescriptorInterface $routedModule = null;
+		protected ?DescriptorInterface $routedModule = null;
 
 		protected Container $container;
 

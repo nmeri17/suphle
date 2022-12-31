@@ -13,12 +13,14 @@
 
 	class UnauthorizedDiffuser implements ExceptionHandler {
 
-		private $renderer;
-  private string $controllerAction = "imaginaryHandler";
+		private Throwable $renderer;
 
-		public function __construct(private readonly RequestDetails $requestDetails, private readonly ComponentEntry $componentEntry)
-  {
-  }
+		protected string $controllerAction = "imaginaryHandler";
+
+		public function __construct(protected readonly RequestDetails $requestDetails, protected readonly ComponentEntry $componentEntry) {
+
+			//
+		}
 
 		/**
 		 * @param {origin} UnauthorizedServiceAccess

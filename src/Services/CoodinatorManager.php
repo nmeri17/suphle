@@ -13,21 +13,21 @@
 
 	class CoodinatorManager implements ValidationEvaluator {
 
-		private ServiceCoordinator $controller;
+		protected ServiceCoordinator $controller;
 
-		private string $actionMethod;
+		protected string $actionMethod;
 
-		private array $handlerParameters;
+		protected array $handlerParameters;
 
 		function __construct(
 
-			private readonly Container $container,
+			protected readonly Container $container,
 
-			private readonly ValidatorManager $validatorManager,
+			protected readonly ValidatorManager $validatorManager,
 
-			private readonly RequestDetails $requestDetails,
+			protected readonly RequestDetails $requestDetails,
 
-			private readonly RouteManager $router
+			protected readonly RouteManager $router
 		) {
 
 			//

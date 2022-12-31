@@ -7,7 +7,7 @@
 
 	class InMemoryCache implements CacheManager {
 
-		private array $store = [], $tags = [];
+		protected array $store = [], $tags = [];
 
 		public function setupClient ():void {
 

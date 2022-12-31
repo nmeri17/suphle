@@ -5,9 +5,10 @@
 
 	class Transphporm implements TConfig {
 
-		public function __construct(private readonly ModuleFiles $fileConfig)
-  {
-  }
+		public function __construct(protected readonly ModuleFiles $fileConfig) {
+
+			//
+		}
 		
 		/**
 		 * {@inheritdoc}

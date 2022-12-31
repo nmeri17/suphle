@@ -9,19 +9,23 @@
 
 	use Suphle\Adapters\Orms\Eloquent\Models\BaseModel;
 
-	use Illuminate\Database\Migrations\Migrator;
+	use Illuminate\Database\{Migrations\Migrator, Connection};
 
 	use Exception;
 
 	class ModelReplicator implements OrmReplicator {
 
-		private BaseModel $activeModel;
+		protected BaseModel $activeModel;
   
-  private $databaseConnection;
-  private $migrator;
+		protected Connection $databaseConnection;
 
-		public function __construct (OrmDialect $ormDialect, private readonly LaravelContainer $laravelContainer, 
-  private readonly Container $container) {
+		protected Migrator $migrator;
+
+		public function __construct (
+			OrmDialect $ormDialect, protected readonly LaravelContainer $laravelContainer,
+
+			protected readonly Container $container
+		) {
 
 			$this->databaseConnection = $ormDialect->getConnection();
 

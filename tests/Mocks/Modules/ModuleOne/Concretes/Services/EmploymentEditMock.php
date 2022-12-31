@@ -20,7 +20,7 @@
 
 		use BaseErrorCatcherService;
 
-		public function __construct(private readonly Employment $blankModel) {
+		public function __construct(protected readonly Employment $blankModel) {
 
 			//
 		}

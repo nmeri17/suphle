@@ -13,9 +13,9 @@
 
 	class BrowserLoginMediator implements LoginFlowMediator {
 
-		protected $successDestination = "/";
+		protected string $successDestination = "/";
 
-		public function __construct(private readonly BrowserAuthRepo $authService) {
+		public function __construct(protected readonly BrowserAuthRepo $authService) {
 
 			//
 		}

@@ -19,13 +19,13 @@
   
   		final const CONTENT_TYPE_KEY = "Content-Type";
 
-		private array $payload = [], $headers;
+		protected array $payload = [], $headers;
 
 		public function __construct (
 
-			private readonly RequestDetails $requestDetails,
+			protected readonly RequestDetails $requestDetails,
 
-			private readonly StdInputReader $stdInputReader
+			protected readonly StdInputReader $stdInputReader
 		) {
 
 			$this->headers = $stdInputReader->getHeaders();

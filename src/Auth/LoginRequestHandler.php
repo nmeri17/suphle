@@ -11,18 +11,18 @@
 
 	class LoginRequestHandler implements ModuleLoginHandler {
 
-		private BaseRenderer $responseRenderer;
+		protected BaseRenderer $responseRenderer;
 
-		private LoginActions $loginService;
+		protected LoginActions $loginService;
 
 		public function __construct (
-			private readonly LoginFlowMediator $rendererCollection,
+			protected readonly LoginFlowMediator $rendererCollection,
 
-			private readonly Container $container,
+			protected readonly Container $container,
 
-			private readonly ValidatorManager $validatorManager,
+			protected readonly ValidatorManager $validatorManager,
 
-			private readonly DecoratorHydrator $decoratorHydrator
+			protected readonly DecoratorHydrator $decoratorHydrator
 		) {
 
 			$this->loginService = $rendererCollection->getLoginService();

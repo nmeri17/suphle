@@ -7,9 +7,10 @@
 
 	class ReadsPayloadCoordinator extends ServiceCoordinator {
 
-		public function __construct(private readonly PayloadStorage $payloadStorage)
-  {
-  }
+		public function __construct(protected readonly PayloadStorage $payloadStorage) {
+
+			//
+		}
 
 		public function mirrorPayload () {
 

@@ -5,9 +5,9 @@
 
 	class StubbedQueueAdapter extends BaseQueueAdapter {
 
-		private array $pushedTasks = [], $executedTasks = [];
+		protected array $pushedTasks = [], $executedTasks = [];
 
-		private bool $executeOnPush = false;
+		protected bool $executeOnPush = false;
 
 		public function pushAction (string $taskClass, array $payload):void {
 

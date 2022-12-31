@@ -3,18 +3,19 @@
 
 	use Suphle\Contracts\Database\OrmDialect;
 
-	use Suphle\Contracts\Auth\{UserContract, ColumnPayloadComparer};
+	use Suphle\Contracts\Auth\{UserContract, ColumnPayloadComparer, UserHydrator as HydratorContract};
 
 	use Suphle\Request\PayloadStorage;
 
 	class EmailPasswordComparer implements ColumnPayloadComparer {
 
-		private $userHydrator;
-  private $user;
+		protected HydratorContract $userHydrator;
 
-		protected $columnIdentifier = "email";
+		protected ?UserContract $user;
 
-		public function __construct (OrmDialect $ormDialect, private readonly PayloadStorage $payloadStorage) {
+		protected string $columnIdentifier = "email";
+
+		public function __construct (OrmDialect $ormDialect, protected readonly PayloadStorage $payloadStorage) {
 
 			$this->userHydrator = $ormDialect->getUserHydrator();
 		}

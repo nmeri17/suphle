@@ -20,7 +20,7 @@
 
 		public function __construct (
 
-			private readonly Container $container,
+			protected readonly Container $container,
 
 			protected readonly ObjectDetails $objectMeta
 		) {

@@ -7,12 +7,13 @@
       /**
        * @property {serviceName} where we'll be pulling the data we intend to filter into another operation
        */
-      private readonly string $serviceName,
+      protected readonly string $serviceName,
       
-      private readonly string $method
-  )
-  {
-  }
+      protected readonly string $method
+  ) {
+
+			//
+		}
 
 		public function getServiceName():string {
 			

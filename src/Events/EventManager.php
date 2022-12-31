@@ -16,15 +16,15 @@
 	#[BindsAsSingleton]
 	abstract class EventManager {
 
-		private HandlerPath $activeHandlerPath;
+		protected HandlerPath $activeHandlerPath;
 
-		private DescriptorInterface $module;
+		protected DescriptorInterface $module;
 
-		private ModuleLevelEvents $parentManager;
+		protected ModuleLevelEvents $parentManager;
 
-		private ObjectDetails $objectMeta;
+		protected ObjectDetails $objectMeta;
 
-		private array $emitters = ["local" => [], "external" => []];
+		protected array $emitters = ["local" => [], "external" => []];
 
 		/**
 		 * @param {module}: Descriptor for the module where this handler will be emitting from

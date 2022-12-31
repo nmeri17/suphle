@@ -12,9 +12,9 @@
 	class SystemModelEditHandler extends BaseInjectionModifier {
 
 		public function __construct (
-			private readonly OrmDialect $ormDialect,
+			protected readonly OrmDialect $ormDialect,
 
-			private readonly ErrorCatcherHandler $errorDecoratorHandler,
+			protected readonly ErrorCatcherHandler $errorDecoratorHandler,
 
 			DecoratorProxy $proxyConfig, ObjectDetails $objectMeta
 		) {

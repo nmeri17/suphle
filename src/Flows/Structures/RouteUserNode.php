@@ -12,11 +12,12 @@
 
 		private $maxHitsHydrator;
   private $expiresAtHydrator;
-  private int $hits = 0;
+  protected int $hits = 0;
 		
-		public function __construct(private readonly BaseRenderer $renderer)
-  {
-  }
+		public function __construct(protected readonly BaseRenderer $renderer) {
+
+			//
+		}
 
 		public function currentHits():int {
 

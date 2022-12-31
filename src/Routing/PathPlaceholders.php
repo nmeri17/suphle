@@ -13,11 +13,11 @@
 
 		use SanitizesIntegerInput;
 
-		private array $stack = [],
+		protected array $stack = [],
 
 		$methodSegments = [];
 
-		public function __construct(private readonly CollectionMethodToUrl $urlReplacer) {
+		public function __construct(protected readonly CollectionMethodToUrl $urlReplacer) {
 
 			//
 		}

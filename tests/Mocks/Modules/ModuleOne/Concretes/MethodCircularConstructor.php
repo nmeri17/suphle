@@ -3,8 +3,9 @@
 
 	class MethodCircularConstructor {
 
-		public function __construct(private readonly MethodCircularContainer $dependency)
-  {
-  }
+		public function __construct(protected readonly MethodCircularContainer $dependency) {
+
+			//
+		}
 	}
 ?>

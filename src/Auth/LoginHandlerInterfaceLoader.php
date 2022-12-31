@@ -9,9 +9,9 @@
 
 		public function __construct (
 
-			private readonly Container $container,
+			protected readonly Container $container,
 
-			private readonly AuthContract $authContract
+			protected readonly AuthContract $authContract
 		) {
 
 			//

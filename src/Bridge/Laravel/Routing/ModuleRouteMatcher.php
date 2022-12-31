@@ -13,12 +13,18 @@
 
 	class ModuleRouteMatcher implements ExternalRouter {
 
-		private $router;
-  		private $request;
+		protected Router $router;
 
-		public function __construct(private readonly LaravelConfig $config, private readonly LaravelContainer $laravelContainer)
-		  {
-		  }
+  		protected Request $request;
+
+		public function __construct(
+			protected readonly LaravelConfig $config,
+
+			protected readonly LaravelContainer $laravelContainer
+		) {
+
+			//
+		}
 
 		public function canHandleRequest ():bool {
 

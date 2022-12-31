@@ -3,9 +3,10 @@
 
 	class CircularConstructor1 {
 
-		public function __construct(private readonly CircularConstructor2 $dependency)
-  {
-  }
+		public function __construct(protected readonly CircularConstructor2 $dependency) {
+
+			//
+		}
 
 		public function getDependencyValue ():int {
 

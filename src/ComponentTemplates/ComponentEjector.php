@@ -7,11 +7,11 @@
 
 	class ComponentEjector {
 
-		private $componentList;
+		protected readonly array $componentList;
 
 		public function __construct (
 
-			private readonly Container $container,
+			protected readonly Container $container,
 
 			ComponentTemplates $templateConfig
 		) {

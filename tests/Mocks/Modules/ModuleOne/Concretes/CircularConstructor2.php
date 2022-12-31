@@ -3,9 +3,10 @@
 
 	class CircularConstructor2 {
 
-		public function __construct(private readonly CircularConstructor1 $dependency, private readonly int $count)
-  {
-  }
+		public function __construct(protected readonly CircularConstructor1 $dependency, protected readonly int $count) {
+
+			//
+		}
 
 		public function getCount ():int {
 

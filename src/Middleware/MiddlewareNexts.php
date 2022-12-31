@@ -10,9 +10,10 @@
 	*/
 	class MiddlewareNexts {
 
-		public function __construct(private readonly Middleware $currentMiddleware, private readonly ?\Suphle\Middleware\MiddlewareNexts $nextHandler)
-  {
-  }
+		public function __construct(protected readonly Middleware $currentMiddleware, protected readonly ?\Suphle\Middleware\MiddlewareNexts $nextHandler) {
+
+			//
+		}
 
 		public function handle (PayloadStorage $payloadStorage) {
 

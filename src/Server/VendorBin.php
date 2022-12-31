@@ -9,7 +9,7 @@
 
 		protected string $projectRootPath;
 
-		public function __construct (private readonly FileSystemReader $fileSystemReader) {
+		public function __construct (protected readonly FileSystemReader $fileSystemReader) {
 
 			//
 		}

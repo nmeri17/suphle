@@ -19,17 +19,17 @@
 	#[VariableDependencies([ "setInferiorImage", "setThumbnailImage" ])]
 	class OptimizersManager {
 
-		private array $operations = [], $originalImages;
+		protected array $operations = [], $originalImages;
 
-		private ThumbnailOperationHandler $thumbnailImage;
+		protected ThumbnailOperationHandler $thumbnailImage;
 
-		private InferiorOperationHandler $inferiorImage;
+		protected InferiorOperationHandler $inferiorImage;
 
-		private string $imageResourceName;
+		protected string $imageResourceName;
 
 		public function __construct(
 
-			private readonly AdapterManager $queueManager
+			protected readonly AdapterManager $queueManager
 		) {
 
 			//

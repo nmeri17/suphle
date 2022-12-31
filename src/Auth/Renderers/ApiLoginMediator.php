@@ -11,9 +11,10 @@
 
 	class ApiLoginMediator implements LoginFlowMediator {
 
-		public function __construct(private readonly ApiAuthRepo $authService)
-  {
-  }
+		public function __construct(protected readonly ApiAuthRepo $authService) {
+
+			//
+		}
 
 		public function successRenderer ():BaseRenderer {
 

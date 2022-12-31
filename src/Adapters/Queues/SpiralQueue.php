@@ -17,7 +17,7 @@
 
 		HEADER_RETRY_DELAY = "retry-delay";
 
-		private readonly int $maxRetries;
+		protected readonly int $maxRetries;
 
 		public function __construct (EnvAccessor $envAccessor, protected readonly Container $container) {
 

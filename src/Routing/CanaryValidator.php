@@ -11,12 +11,13 @@
 
 	class CanaryValidator {
 
-		private array $allCanaries = [];
-  private array $canaryInstances = [];
+		protected array $allCanaries = [];
+  protected array $canaryInstances = [];
 
-		public function __construct(private readonly Container $container, private readonly ObjectDetails $objectMeta)
-  {
-  }
+		public function __construct(protected readonly Container $container, protected readonly ObjectDetails $objectMeta) {
+
+			//
+		}
 
 		public function setCanaries (array $canaries):self {
 

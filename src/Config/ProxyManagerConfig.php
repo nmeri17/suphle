@@ -9,9 +9,10 @@
 
 	class ProxyManagerConfig implements DecoratorProxy {
 
-		public function __construct(protected ComponentEntry $componentEntry)
-  {
-  }
+		public function __construct(protected ComponentEntry $componentEntry) {
+
+			//
+		}
 
 		protected function generatedClassesLocation ():string {
 

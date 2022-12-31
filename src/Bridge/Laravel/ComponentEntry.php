@@ -13,7 +13,7 @@
 
 			ModuleFiles $fileConfig, FileSystemReader $fileSystemReader,
 
-			private readonly ConfigDownloader $remoteConfig
+			protected readonly ConfigDownloader $remoteConfig
 		) {
 
 			parent::__construct($fileConfig, $fileSystemReader);

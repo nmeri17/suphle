@@ -17,7 +17,7 @@
 
 	class ExceptionComponentTest extends InstallComponentTest {
 
-		private Container $container;
+		protected Container $container;
 
 		protected function setUp ():void {
 

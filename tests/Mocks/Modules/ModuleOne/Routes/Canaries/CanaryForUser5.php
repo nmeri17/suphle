@@ -7,9 +7,10 @@
 
 	class CanaryForUser5 implements CanaryGateway {
 
-		public function __construct(private readonly AuthStorage $authStorage)
-  {
-  }
+		public function __construct(protected readonly AuthStorage $authStorage) {
+
+			//
+		}
 
 		public function willLoad ():bool {
 

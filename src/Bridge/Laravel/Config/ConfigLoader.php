@@ -12,16 +12,16 @@
 	#[BindsAsSingleton]
 	class ConfigLoader extends Repository {
 
-		private array $pathSegments = [];
+		protected array $pathSegments = [];
 
 		/**
 		 * Even though we don't receive $this->items in the constructor like the parent, LaravelAppLoader manually triggers the process by injecting/setting each config
 		*/
 	    public function __construct(
 
-	    	private readonly Laravel $laravelConfig,
+	    	protected readonly Laravel $laravelConfig,
 
-	    	private readonly Container $container
+	    	protected readonly Container $container
 	    ) {
 
 	    	//

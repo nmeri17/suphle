@@ -5,9 +5,9 @@
 
 		public function __construct (
 
-			private readonly DependencySanitizer $sanitizer,
+			protected readonly DependencySanitizer $sanitizer,
 
-			private readonly VendorBin $vendorBin
+			protected readonly VendorBin $vendorBin
 		) {
 
 			//

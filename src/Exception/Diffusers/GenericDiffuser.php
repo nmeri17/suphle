@@ -17,12 +17,20 @@
 
 		protected const CONTROLLER_ACTION = "genericHandler";
 
-		private $renderer;
-  private $origin;
+		protected BaseRenderer $renderer;
 
-		public function __construct(private readonly RequestDetails $requestDetails, private readonly ComponentEntry $componentEntry, private readonly DetectedExceptionManager $exceptionDetector)
-  {
-  }
+		protected Throwable $origin;
+
+		public function __construct(
+			protected readonly RequestDetails $requestDetails,
+
+			protected readonly ComponentEntry $componentEntry,
+
+			protected readonly DetectedExceptionManager $exceptionDetector
+		) {
+
+			//
+		}
 
 		public function setContextualData (Throwable $origin):void {
 

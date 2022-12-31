@@ -17,17 +17,17 @@
 
 		final const HTTP_METHOD_KEY = "HTTP_METHOD";
 
-		private ?string $computedPath = null,
+		protected ?string $computedPath = null,
 
 		$versionPresent, $permanentPath = null; // readonly version of [computedPath]
 
-		private array $queryParameters = [];
+		protected array $queryParameters = [];
 
 		public function __construct(
 
-			private readonly Router $config,
+			protected readonly Router $config,
 
-			private readonly StdInputReader $stdInputReader
+			protected readonly StdInputReader $stdInputReader
 		) {
 
 			//

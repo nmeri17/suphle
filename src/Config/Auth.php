@@ -11,9 +11,10 @@
 
 		final public const API_LOGIN_PATH = "api/v1/login";
 
-		public function __construct(private readonly RequestDetails $requestDetails)
-  {
-  }
+		public function __construct(protected readonly RequestDetails $requestDetails) {
+
+			//
+		}
 
 		protected function getLoginPaths ():array {
 

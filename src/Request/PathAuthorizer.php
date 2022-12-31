@@ -8,13 +8,13 @@
 	#[BindsAsSingleton]
 	class PathAuthorizer {
 
-		private array $allRules = [], // [ruleName => [taggedPatterns]]
+		protected array $allRules = [], // [ruleName => [taggedPatterns]]
 
 		$interactedPatterns = [],
 
 		$excludeRules = [];
 
-		public function __construct(private readonly Container $container) {
+		public function __construct(protected readonly Container $container) {
 
 			//
 		}

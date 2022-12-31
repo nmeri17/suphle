@@ -12,11 +12,11 @@
 	class FlowResponseQueuer {
 
 		public function __construct (
-			private readonly AdapterManager $queueManager,
+			protected readonly AdapterManager $queueManager,
 
-			private readonly AuthStorage $authStorage,
+			protected readonly AuthStorage $authStorage,
 
-			private readonly ActiveDescriptors $descriptorsHolder
+			protected readonly ActiveDescriptors $descriptorsHolder
 		) {
 
 			//

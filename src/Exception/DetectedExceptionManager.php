@@ -13,7 +13,7 @@
 
 		final const ALERTER_METHOD = "queueAlertAdapter";
 
-		public function __construct(private readonly AdapterManager $queueManager) {
+		public function __construct(protected readonly AdapterManager $queueManager) {
 
 			//
 		}

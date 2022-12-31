@@ -5,29 +5,29 @@
 
 	class ContainerTelescope {
 
-		private array $consumerList = []; // [class/interface => [consumers]]
+		protected array $consumerList = []; // [class/interface => [consumers]]
 
-		private array $readArguments = []; // [class => [[parameterName => value]]]
+		protected array $readArguments = []; // [class => [[parameterName => value]]]
 
-		private array $readConcretes = []; // same as [readArguments]
+		protected array $readConcretes = []; // same as [readArguments]
 
-		private array $refreshedEntities = [];
+		protected array $refreshedEntities = [];
 
-		private array $consumerParents = []; // [dependent/class => [interface whose concrete was hydrated for its constructor]]
+		protected array $consumerParents = []; // [dependent/class => [interface whose concrete was hydrated for its constructor]]
 
-		private array $writtenArguments = [];
+		protected array $writtenArguments = [];
 
-		private array $writtenConcretes = [];
+		protected array $writtenConcretes = [];
 
-		private array $missingConcretes = [];
+		protected array $missingConcretes = [];
 
-		private array $missingArguments = [];
+		protected array $missingArguments = [];
 
-		private array $missingContexts = []; // [class1, class2, class3]
+		protected array $missingContexts = []; // [class1, class2, class3]
 
-		private array $storedConcretes = [];
+		protected array $storedConcretes = [];
 
-		private ?Closure $noiseFilter = null; // receives $this and is expected to return true when filter should be removed
+		protected ?Closure $noiseFilter = null; // receives $this and is expected to return true when filter should be removed
 
 		public function setNoiseFilter (Closure $callback):self {
 

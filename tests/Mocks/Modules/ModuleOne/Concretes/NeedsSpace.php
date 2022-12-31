@@ -5,9 +5,10 @@
 
 	class NeedsSpace {
 
-		public function __construct(private readonly RewriteSpace $contract)
-  {
-  }
+		public function __construct(protected readonly RewriteSpace $contract) {
+
+			//
+		}
 
 		public function getConcreteValue():int {
 

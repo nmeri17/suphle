@@ -21,25 +21,25 @@
 		final const PREV_RENDERER = "prv_rdr";
   final const PLACEHOLDER_REPLACEMENT = "[\w-]+";
 
-		private array $visitedMethods = [];
+		protected array $visitedMethods = [];
 
 		private $activeRenderer;
 
 		public function __construct (
 
-			private readonly RouterConfig $config,
+			protected readonly RouterConfig $config,
 
-			private readonly Container $container,
+			protected readonly Container $container,
 
-			private readonly RequestDetails $requestDetails,
+			protected readonly RequestDetails $requestDetails,
 
-			private readonly PathPlaceholders $placeholderStorage,
+			protected readonly PathPlaceholders $placeholderStorage,
 
-			private readonly PatternIndicator $patternIndicator,
+			protected readonly PatternIndicator $patternIndicator,
 
-			private readonly Session $sessionClient,
+			protected readonly Session $sessionClient,
 
-			private readonly CollectionMethodToUrl $urlReplacer
+			protected readonly CollectionMethodToUrl $urlReplacer
 		) {
 
 			//

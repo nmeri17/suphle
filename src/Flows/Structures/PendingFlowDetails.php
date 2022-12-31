@@ -12,7 +12,7 @@
 
 		private $userId;
 
-		public function __construct(private readonly BaseRenderer $renderer, private readonly AuthStorage $authStorage) {
+		public function __construct(protected readonly BaseRenderer $renderer, protected readonly AuthStorage $authStorage) {
 
 			$this->getUserId(); // trigger property storage before task serialization
 		}

@@ -11,15 +11,15 @@
 
 	class ProjectInitializer {
 
-		private ?Process $runningProcess = null;
+		protected ?Process $runningProcess = null;
 
-		private string $projectRootPath;
+		protected string $projectRootPath;
 
 		public function __construct (
 
-			private readonly ConsoleClient $consoleClient,
+			protected readonly ConsoleClient $consoleClient,
 
-			private readonly VendorBin $vendorBin
+			protected readonly VendorBin $vendorBin
 		) {
 
 			//

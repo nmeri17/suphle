@@ -19,17 +19,17 @@
 	class RoutedRendererManager implements BaseResponseManager {
 
 		public function __construct (
-			private readonly BaseRenderer $renderer,
+			protected readonly BaseRenderer $renderer,
 
-			private readonly Container $container,
+			protected readonly Container $container,
 
-			private readonly RouteManager $router,
+			protected readonly RouteManager $router,
 
-			private readonly CoodinatorManager $controllerManager,
+			protected readonly CoodinatorManager $controllerManager,
 
-			private readonly FlowResponseQueuer $flowQueuer,
+			protected readonly FlowResponseQueuer $flowQueuer,
 
-			private readonly RequestDetails $requestDetails
+			protected readonly RequestDetails $requestDetails
 		) {
 
 			//

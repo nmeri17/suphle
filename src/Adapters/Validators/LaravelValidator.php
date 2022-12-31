@@ -3,15 +3,16 @@
 
 	use Suphle\Contracts\Requests\RequestValidator;
 
-	use Illuminate\Validation\Factory;
+	use Illuminate\{Validation\Factory, Support\MessageBag};
 
 	class LaravelValidator implements RequestValidator {
 
-		private $errorHolder;
+		protected MessageBag $errorHolder;
 
-		public function __construct(private readonly Factory $client)
-  {
-  }
+		public function __construct(protected readonly Factory $client) {
+
+			//
+		}
 
 		public function validate (array $parameters, array $rules):void {
 

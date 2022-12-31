@@ -12,16 +12,20 @@
 	 */
 	class RouteUmbrella {
 
-		private array $users = [];
-  private $authStorageName;
+		protected array $users = [];
+
+		protected string $authStorageName;
 
 		//private $nodeTags; // should give us a bird's eye view of the path to each model [collection] i.e. [Cows => "user35,foo", "user*,bar"]
 
-		/**
-		 * */
-		public function __construct(private readonly string $routeName, private readonly ObjectDetails $objectMeta)
-  {
-  }
+		public function __construct(
+			protected readonly string $routeName,
+
+			protected readonly ObjectDetails $objectMeta
+		) {
+
+			//
+		}
 
 		public function setAuthMechanism (string $storageName):void {
 

@@ -14,7 +14,7 @@
 	*/
 	trait ConfigureExceptionBridge {
 
-		private string $bridgeName = ModuleExceptionBridge::class;
+		protected string $bridgeName = ModuleExceptionBridge::class;
 
 		/**
 		 * Set to false when debugging a construct that directly interacts with DetectedExceptionManager::ALERTER_METHOD

@@ -11,7 +11,7 @@
   final const AS_ONE = 15;
   final const FROM_SERVICE = 16;
 
-		public function __construct(string $nodeName, private readonly string $leafName) {
+		public function __construct(string $nodeName, protected readonly string $leafName) {
 
 			$this->nodeName = $nodeName;
 		}

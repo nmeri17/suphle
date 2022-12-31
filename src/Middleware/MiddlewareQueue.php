@@ -9,18 +9,18 @@
 
 	class MiddlewareQueue {
 
-		private array $routedStack;
-  private array $mergedStack = [];
+		protected array $routedStack;
+  protected array $mergedStack = [];
 
 		public function __construct (
 
 			MiddlewareRegistry $registry,
 
-			private readonly PayloadStorage $payloadStorage,
+			protected readonly PayloadStorage $payloadStorage,
 
-			private readonly RouterConfig $routerConfig,
+			protected readonly RouterConfig $routerConfig,
 
-			private readonly Container $container
+			protected readonly Container $container
 		) {
 
 			$this->routedStack = $registry->getActiveStack();

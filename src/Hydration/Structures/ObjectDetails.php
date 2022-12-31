@@ -9,7 +9,7 @@
 
 	class ObjectDetails {
 
-		public function __construct (private readonly Container $container) {
+		public function __construct (protected readonly Container $container) {
 
 			//
 		}

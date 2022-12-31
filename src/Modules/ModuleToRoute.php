@@ -13,7 +13,7 @@
 	#[BindsAsSingleton]
 	class ModuleToRoute {
 
-		private ?DescriptorInterface $activeDescriptor = null;
+		protected ?DescriptorInterface $activeDescriptor = null;
 		
 		public function findContext (array $descriptors):?ModuleInitializer {
 			

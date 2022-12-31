@@ -11,14 +11,14 @@
 	
 	class DecoratorHydrator {
 
-		private array $allScopes, $argumentScope, $injectScope;
+		protected array $allScopes, $argumentScope, $injectScope;
 
 		public function __construct (
-			private readonly Container $container,
+			protected readonly Container $container,
 
 			DecoratorChain $allScopes,
 
-			private readonly ObjectDetails $objectMeta
+			protected readonly ObjectDetails $objectMeta
 		) {
 
 			$this->allScopes = $allScopes->allScopes();

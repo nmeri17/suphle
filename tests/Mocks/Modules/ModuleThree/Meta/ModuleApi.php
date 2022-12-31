@@ -5,9 +5,10 @@
 
 	class ModuleApi implements ModuleThree {
 
-		public function __construct(private readonly ModuleOne $moduleOne)
-  {
-  }
+		public function __construct(protected readonly ModuleOne $moduleOne) {
+
+			//
+		}
 
 		public function getLocalValue ():int {
 

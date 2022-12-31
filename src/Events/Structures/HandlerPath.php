@@ -4,9 +4,10 @@
 
 	class HandlerPath {
 
-		public function __construct(private readonly string $emittingEntity, private readonly string $scope)
-  {
-  }
+		public function __construct(protected readonly string $emittingEntity, protected readonly string $scope) {
+
+			//
+		}
 
 		public function getEmittable():string {
 			

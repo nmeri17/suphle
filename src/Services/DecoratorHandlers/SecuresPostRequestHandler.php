@@ -11,14 +11,14 @@
 
 	class SecuresPostRequestHandler extends BaseArgumentModifier {
 
-		private array $postDecorators = [
+		protected array $postDecorators = [
 
 			SystemModelEdit::class, MultiUserModelEdit::class
 		];
 
 		public function __construct (
 
-			private readonly RequestDetails $requestDetails,
+			protected readonly RequestDetails $requestDetails,
 
 			ObjectDetails $objectMeta
 		) {

@@ -15,22 +15,22 @@
 
 		final public const FLOW_MECHANISMS = "flow_wildcards";
 
-		private array $modules;
+		protected array $modules;
 
-		private bool $wildcardNotExist = false;
+		protected bool $wildcardNotExist = false;
 
 		public function __construct(
-			private readonly PendingFlowDetails $flowDetails,
+			protected readonly PendingFlowDetails $flowDetails,
 
-			private readonly ModuleToRoute $moduleFinder,
+			protected readonly ModuleToRoute $moduleFinder,
 
-			private readonly FlowHydrator $hydrator,
+			protected readonly FlowHydrator $hydrator,
 
-			private readonly ModulesBooter $modulesBooter,
+			protected readonly ModulesBooter $modulesBooter,
 
-			private readonly ActiveDescriptors $descriptorsHolder,
+			protected readonly ActiveDescriptors $descriptorsHolder,
 
-			private readonly CacheManager $cacheManager
+			protected readonly CacheManager $cacheManager
 		) {
 			
 			//

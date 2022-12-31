@@ -15,20 +15,20 @@
 
 	class ModuleExceptionBridge implements HighLevelRequestHandler, ClassHydrationBehavior {
 
-		private ExceptionHandler $handler;
+		protected ExceptionHandler $handler;
   
-  		private bool $handledExternally = false;
+  		protected bool $handledExternally = false;
 
 		public function __construct(
-			private readonly Container $container,
+			protected readonly Container $container,
 
-			private readonly ExceptionInterceptor $config,
+			protected readonly ExceptionInterceptor $config,
 
-			private readonly PayloadStorage $payloadStorage,
+			protected readonly PayloadStorage $payloadStorage,
 
-			private readonly DetectedExceptionManager $exceptionDetector,
+			protected readonly DetectedExceptionManager $exceptionDetector,
 
-			private readonly DecoratorHydrator $decoratorHydrator
+			protected readonly DecoratorHydrator $decoratorHydrator
 		) {
 
 			//

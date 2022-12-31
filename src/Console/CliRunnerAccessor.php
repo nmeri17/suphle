@@ -10,7 +10,7 @@
 	*/
 	class CliRunnerAccessor {
 
-		private readonly CliRunner $runner;
+		protected readonly CliRunner $runner;
 
 		public function __construct (
 
@@ -18,7 +18,7 @@
 
 			string $runnerName = "Suphle",
 
-			private readonly bool $isTestEnv = false
+			protected readonly bool $isTestEnv = false
 		) {
 			// without running this in the constructor, we'll need an additional method to boot modules before they can provide paths
 			$this->runner = new CliRunner (

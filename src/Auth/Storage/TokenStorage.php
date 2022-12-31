@@ -15,7 +15,7 @@
 
 		private const IDENTIFIER_KEY = "user_id";
 
-		public function __construct (private readonly EnvAccessor $envAccessor, private readonly PayloadStorage $payloadStorage) {}
+		public function __construct (protected readonly EnvAccessor $envAccessor, protected readonly PayloadStorage $payloadStorage) {}
 
 		/**
 		 * {@inheritdoc}

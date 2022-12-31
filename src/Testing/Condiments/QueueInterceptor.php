@@ -9,7 +9,7 @@
 
 	trait QueueInterceptor {
 
-		private ?Adapter $queueAdapter = null;
+		protected ?Adapter $queueAdapter = null;
 
 		public function setUp ():void {
 

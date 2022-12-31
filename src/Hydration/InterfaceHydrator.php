@@ -7,9 +7,10 @@
 
 	class InterfaceHydrator {
 
-		public function __construct(private readonly InterfaceCollection $collection, private readonly Container $container)
-  {
-  }
+		public function __construct(protected readonly InterfaceCollection $collection, protected readonly Container $container) {
+
+			//
+		}
 
 		/**
 		 * Loads them from sources in their order of importance i.e. configs are at the lowest level. We assume they don't inject additional dependencies

@@ -7,9 +7,10 @@
 
 		final const TOKEN_FIELD = "_csrf_token";
 
-		public function __construct(private readonly Session $sessionClient)
-  {
-  }
+		public function __construct(protected readonly Session $sessionClient) {
+
+			//
+		}
 
 		public function newToken ():string {
 

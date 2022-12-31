@@ -9,9 +9,18 @@
 
 	class OrmLoader extends BaseInterfaceLoader {
 
-		public function __construct(private readonly AuthContract $authContract, private readonly AuthStorage $authStorage, private readonly LaravelContainer $laravelContainer, private readonly Container $container)
-  {
-  }
+		public function __construct(
+			protected readonly AuthContract $authContract,
+
+			protected readonly AuthStorage $authStorage,
+
+			protected readonly LaravelContainer $laravelContainer,
+
+			protected readonly Container $container
+		) {
+
+			//
+		}
 
 		public function afterBind ($initialized):void {
 

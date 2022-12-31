@@ -24,12 +24,12 @@
 
 		private PSR7Worker $httpWorker;
 
-		private QueueAdapter $queueWorker;
+		protected QueueAdapter $queueWorker;
 
 		public function __construct (
-			private readonly ModuleHandlerIdentifier $handlerIdentifier, 
+			protected readonly ModuleHandlerIdentifier $handlerIdentifier, 
 
-			private readonly bool $isHttpMode
+			protected readonly bool $isHttpMode
 		) {
 
 			//

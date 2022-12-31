@@ -7,9 +7,9 @@
 
 	abstract class AbstractEnvReader implements EnvAccessor {
 
-		protected $client;
+		protected Dotenv $client;
 
-		public function __construct (private readonly ModuleFiles $fileConfig) {
+		public function __construct (protected readonly ModuleFiles $fileConfig) {
 
 			$this->setClient();
 

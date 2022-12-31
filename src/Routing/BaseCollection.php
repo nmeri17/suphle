@@ -17,11 +17,11 @@
 
 		protected string $collectionParent = BaseCollection::class; // this is set if this collection is used as prefix in another. Should be used while determining the prefix of that collection
 
-		private ?string $prefixClass = null, $parentPrefix = null;
+		protected ?string $prefixClass = null, $parentPrefix = null;
 
 		protected bool $crudMode = false;
 
-		private array $lastRegistered = [];
+		protected array $lastRegistered = [];
 
 		public function __construct(
 
@@ -29,7 +29,7 @@
 
 			protected readonly AuthStorage $authStorage, 
 
-			private readonly MethodSorter $methodSorter
+			protected readonly MethodSorter $methodSorter
 		) {
 
 			//

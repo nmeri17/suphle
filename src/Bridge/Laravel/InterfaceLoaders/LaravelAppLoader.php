@@ -11,9 +11,10 @@
 
 	class LaravelAppLoader extends BaseInterfaceLoader {
 
-		public function __construct(private readonly ConfigLoader $configLoader, private readonly ComponentEntry $componentEntry)
-  {
-  }
+		public function __construct(protected readonly ConfigLoader $configLoader, protected readonly ComponentEntry $componentEntry) {
+
+			//
+		}
 
 		public function bindArguments():array {
 

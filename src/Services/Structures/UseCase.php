@@ -7,9 +7,9 @@
 
 		public function __construct (
 
-			private readonly Closure $condition,
+			protected readonly Closure $condition,
 
-			private readonly array $arguments
+			protected readonly array $arguments
 		) {
 
 			//

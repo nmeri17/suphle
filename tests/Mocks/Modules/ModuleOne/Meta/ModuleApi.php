@@ -9,9 +9,10 @@
 
 	class ModuleApi implements ModuleOne {
 
-		public function __construct(private readonly LocalSender $localSender, private readonly BCounter $bCounter, private readonly SenderExtension $localSenderExtended, private readonly UpdatefulEmitter $errorEditService)
-  {
-  }
+		public function __construct(protected readonly LocalSender $localSender, protected readonly BCounter $bCounter, protected readonly SenderExtension $localSenderExtended, protected readonly UpdatefulEmitter $errorEditService) {
+
+			//
+		}
 
 		public function setBCounterValue (int $newCount):void {
 

@@ -13,17 +13,17 @@
 
 	class CliRunner {
 
-		private string $projectRootPath;
+		protected string $projectRootPath;
 
-		private ?Container $defaultContainer = null;
+		protected ?Container $defaultContainer = null;
 
-		private array $allCommands = [];
+		protected array $allCommands = [];
 
 		public function __construct (
 
-			private readonly ModuleHandlerIdentifier $moduleHandler,
+			protected readonly ModuleHandlerIdentifier $moduleHandler,
 
-			private readonly ConsoleClient $consoleClient
+			protected readonly ConsoleClient $consoleClient
 		) {
 
 			//

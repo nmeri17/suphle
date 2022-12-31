@@ -9,7 +9,7 @@
 		protected $nodeName; // the key on the previous response body this node is attached to
   protected $actions = []; // on CollectionNodes, this is the list of actions to take, while on SingleNodes, this is the list of attributes applied
 
-		private array $config = [];
+		protected array $config = [];
 
 		final const TTL = 1;
   final const MAX_HITS = 2;

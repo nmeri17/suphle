@@ -12,11 +12,11 @@
 	#[BindsAsSingleton]
 	class ModulesBooter {
 
-		private array $modules;
+		protected array $modules;
 
 		public function __construct (
 
-			private readonly ModuleLevelEvents $eventManager
+			protected readonly ModuleLevelEvents $eventManager
 		) {
 
 			//

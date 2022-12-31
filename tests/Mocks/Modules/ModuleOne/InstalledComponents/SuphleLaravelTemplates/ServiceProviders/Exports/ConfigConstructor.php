@@ -3,9 +3,10 @@
 
 	class ConfigConstructor {
 
-		public function __construct(private readonly array $firstConfig)
-  {
-  }
+		public function __construct(protected readonly array $firstConfig) {
+
+			//
+		}
 
 		public function getSecondLevel ():array {
 

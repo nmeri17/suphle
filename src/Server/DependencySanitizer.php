@@ -23,7 +23,7 @@
 
 		protected array $rules = [];
 
-		private string $executionPath; // not setting it should throw an error
+		protected string $executionPath; // not setting it should throw an error
 
 		public function __construct (
 

@@ -5,9 +5,10 @@
 
 	class ModuleApi implements ModuleTwo {
 
-		public function __construct(private readonly ModuleThree $moduleThree)
-  {
-  }
+		public function __construct(protected readonly ModuleThree $moduleThree) {
+
+			//
+		}
 
 		public function getShallowValue ():int {
 

@@ -14,9 +14,9 @@
 
 		public function __construct (
 
-			private readonly MiddlewareRegistry $registry, 
+			protected readonly MiddlewareRegistry $registry, 
 
-			private readonly PathAuthorizer $authorizer
+			protected readonly PathAuthorizer $authorizer
 		) {
 
 			//

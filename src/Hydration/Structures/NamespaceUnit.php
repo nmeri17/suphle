@@ -7,15 +7,15 @@
 
 		public function __construct(
 
-			private readonly string $fromNamespace,
+			protected readonly string $fromNamespace,
 
-			private readonly string $newLocation,
+			protected readonly string $newLocation,
 
 			/**
 	   		* @param {nameResolver} Function(string $requestedInterface):string
 			*	[requestedInterface] has the namespace trimmed away. It's the entity requested at runtime
 			*/
-			private readonly Closure $nameResolver
+			protected readonly Closure $nameResolver
 		) {
 
 			//

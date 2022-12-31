@@ -9,7 +9,7 @@
   final const KEY_MISMATCH = 2;
   final const MISSING_KEY = 3;
 
-		public function __construct (private readonly int $integrityType) {
+		public function __construct (protected readonly int $integrityType) {
 
 			$this->setMessage();
 		}

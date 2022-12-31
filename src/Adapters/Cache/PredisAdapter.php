@@ -11,11 +11,11 @@
 
 		final const TAG_KEY = "_reserved_key_tags";
 
-		private Client $client;
+		protected Client $client;
 
 		public function __construct (
 
-			private readonly CacheConfig $cacheConfig
+			protected readonly CacheConfig $cacheConfig
 		) {
 
 			//

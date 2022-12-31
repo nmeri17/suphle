@@ -17,9 +17,10 @@
 
 	class ValidatorLoader extends BaseInterfaceLoader {
 
-		public function __construct(private readonly LaravelContainer $laravelContainer, private readonly OrmDialect $ormDialect)
-  {
-  }
+		public function __construct(protected readonly LaravelContainer $laravelContainer, protected readonly OrmDialect $ormDialect) {
+
+			//
+		}
 
 		public function bindArguments ():array {
 

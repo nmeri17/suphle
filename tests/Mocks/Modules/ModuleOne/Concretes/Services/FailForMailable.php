@@ -5,7 +5,7 @@
 
 	class FailForMailable {
 
-		public function __construct(private readonly MailBuildAlerter $dependency) {
+		public function __construct(protected readonly MailBuildAlerter $dependency) {
 
 			//
 		}

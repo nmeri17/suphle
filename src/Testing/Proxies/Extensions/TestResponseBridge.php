@@ -7,7 +7,7 @@
 
 	class TestResponseBridge extends TestResponse {
 
-		public function __construct (Response $response, private readonly SessionContract $sessionClient) {
+		public function __construct (Response $response, protected readonly SessionContract $sessionClient) {
 
 			parent::__construct($response);
 		}

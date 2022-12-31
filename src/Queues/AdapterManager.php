@@ -5,7 +5,7 @@
 
 	class AdapterManager {
 
-		public function __construct (private readonly Adapter $activeAdapter) {
+		public function __construct (protected readonly Adapter $activeAdapter) {
 
 			//
 		}

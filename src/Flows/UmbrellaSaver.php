@@ -12,11 +12,11 @@
 		final const FLOW_PREFIX = "_suphle_flow";
 
 		public function __construct (
-			private readonly Flows $flowConfig,
+			protected readonly Flows $flowConfig,
 
-			private readonly CacheManager $cacheManager,
+			protected readonly CacheManager $cacheManager,
 
-			private readonly ObjectDetails $objectMeta
+			protected readonly ObjectDetails $objectMeta
 		) {}
 
 		public function getPatternLocation (string $urlPattern):string {

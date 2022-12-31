@@ -5,9 +5,10 @@
 
 	class CConcrete implements CInterface {
 
-		public function __construct(private readonly int $value)
-  {
-  }
+		public function __construct(protected readonly int $value) {
+
+			//
+		}
 
 		public function getValue ():int {
 

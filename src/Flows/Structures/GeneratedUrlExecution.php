@@ -5,9 +5,10 @@
 
 	class GeneratedUrlExecution {
 
-		public function __construct(private string $requestPath, private readonly BaseRenderer $renderer)
-  {
-  }
+		public function __construct(protected string $requestPath, protected readonly BaseRenderer $renderer) {
+
+			//
+		}
 
 		public function changeUrl (string $newPath):void {
 

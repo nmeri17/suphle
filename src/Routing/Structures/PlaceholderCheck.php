@@ -3,9 +3,10 @@
 
 	class PlaceholderCheck {
 
-		public function __construct(private readonly string $routeState, private readonly string $methodName)
-  {
-  }
+		public function __construct(protected readonly string $routeState, protected readonly string $methodName) {
+
+			//
+		}
 
 		public function getMethodName ():string {
 

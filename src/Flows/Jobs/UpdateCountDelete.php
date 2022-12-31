@@ -12,9 +12,9 @@
 
 		public function __construct(
 
-			private readonly AccessContext $theAccessed,
+			protected readonly AccessContext $theAccessed,
 
-			private readonly UmbrellaSaver $flowSaver
+			protected readonly UmbrellaSaver $flowSaver
 		) {
 
 			//

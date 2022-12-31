@@ -7,7 +7,7 @@
 
 		public const FLASH_KEY = "_flash_entry";
 
-		private array $store = [];
+		protected array $store = [];
 
 		public function setValue (string $key, $value):void {
 

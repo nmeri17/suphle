@@ -9,9 +9,9 @@
 
 		public function __construct(
 
-			private readonly MailClient $mailClient,
+			protected readonly MailClient $mailClient,
 
-			private readonly EnvAccessor $envAccessor
+			protected readonly EnvAccessor $envAccessor
 		) {
 
 			//

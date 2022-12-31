@@ -23,11 +23,11 @@
 
 		public function __construct (
 
-			private readonly FileSystemReader $fileSystemReader,
+			protected readonly FileSystemReader $fileSystemReader,
 
-			private readonly ConsoleClient $consoleClient,
+			protected readonly ConsoleClient $consoleClient,
 
-			private readonly FolderCloner $folderCloner
+			protected readonly FolderCloner $folderCloner
 		) {
 
 			//

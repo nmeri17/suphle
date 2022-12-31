@@ -9,9 +9,10 @@
 
 	class ExceptionConfig implements ExceptionInterceptor {
 
-		public function __construct(private readonly ModuleFiles $fileConfig)
-  {
-  }
+		public function __construct(protected readonly ModuleFiles $fileConfig) {
+
+			//
+		}
 
 		public function getHandlers ():array {
 

@@ -57,7 +57,7 @@
 
 	class BaseInterfaceCollection implements InterfaceCollection {
 
-		private array $delegateInstances = [];
+		protected array $delegateInstances = [];
 
 		public function getLoaders():array {
 

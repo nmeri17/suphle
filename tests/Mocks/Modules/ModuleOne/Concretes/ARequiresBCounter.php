@@ -9,9 +9,10 @@
 
 		private $cInterface;
 
-		public function __construct(private BCounter $b1, private readonly string $primitive)
-  {
-  }
+		public function __construct(protected BCounter $b1, protected readonly string $primitive) {
+
+			//
+		}
 
 		public function getConstructorB ():BCounter {
 

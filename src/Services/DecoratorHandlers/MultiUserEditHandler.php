@@ -26,20 +26,20 @@
 		final public const DATE_FORMAT = "Y-m-d H:i:s";
 
 		public function __construct (
-			private readonly OrmDialect $ormDialect,
+			protected readonly OrmDialect $ormDialect,
 
-			private readonly PayloadStorage $payloadStorage,
+			protected readonly PayloadStorage $payloadStorage,
 
 			/**
 			 * I'm composing instead of extending to decouple constructor dependencies
 			*/
-			private readonly ErrorCatcherHandler $errorDecoratorHandler,
+			protected readonly ErrorCatcherHandler $errorDecoratorHandler,
 
 			DecoratorProxy $proxyConfig, ObjectDetails $objectMeta,
 
-			private readonly PathAuthorizer $pathAuthorizer,
+			protected readonly PathAuthorizer $pathAuthorizer,
 
-			private readonly AuthStorage $authStorage
+			protected readonly AuthStorage $authStorage
 		) {
 
 			parent::__construct($proxyConfig, $objectMeta);

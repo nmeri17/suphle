@@ -3,9 +3,10 @@
 
 	class MethodPlaceholders {
 
-		public function __construct(private readonly string $regexified, private readonly array $placeholders)
-  {
-  }
+		public function __construct(protected readonly string $regexified, protected readonly array $placeholders) {
+
+			//
+		}
 
 		public function getPlaceholders ():array {
 

@@ -39,11 +39,11 @@
 
 		public function __construct (
 
-			private readonly RequestDetails $requestDetails,
+			protected readonly RequestDetails $requestDetails,
 
-			private readonly ConfigLoader $configLoader,
+			protected readonly ConfigLoader $configLoader,
 
-			private readonly PayloadStorage $payloadStorage,
+			protected readonly PayloadStorage $payloadStorage,
 
 			string $basePath
 		) {

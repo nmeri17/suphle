@@ -7,12 +7,12 @@
 
 	class ExternalRouteMatcher {
 
-		private ?ExternalRouter $activeHandler = null;
+		protected ?ExternalRouter $activeHandler = null;
 
 		public function __construct(
-			private readonly RouterConfig $config,
+			protected readonly RouterConfig $config,
 
-			private readonly Container $container
+			protected readonly Container $container
 		) {
 
 			//

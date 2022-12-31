@@ -19,8 +19,9 @@
 
 		use CommonBinds;
 
-		private array $templateEntries = [];
-  private string $ejectorName = ComponentEjector::class;
+		protected array $templateEntries = [];
+
+		protected string $ejectorName = ComponentEjector::class;
 
 		public function test_can_override_existing__all () {
 

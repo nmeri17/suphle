@@ -5,11 +5,13 @@
 
 	class CollectionMethodToUrl {
 
-		final const REPLACEMENT_TYPE_PLACEHOLDER = "placeholder";
-  final const PLACEHOLDER_IDENTIFIER = "[a-z0-9]+";
+		final const REPLACEMENT_TYPE_PLACEHOLDER = "placeholder",
 
-		private array $caughtPlaceholders = [];
-  private $pattern;
+		PLACEHOLDER_IDENTIFIER = "[a-z0-9]+";
+
+		protected array $caughtPlaceholders = [];
+  
+  		protected string $pattern;
 
 		public function __construct () {
 

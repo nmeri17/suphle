@@ -9,9 +9,10 @@
 
 	class FlowCoordinator extends ServiceCoordinator {
 
-		public function __construct(private readonly DummyModels $dummyModels, private readonly BlankUpdateless $blankService)
-  {
-  }
+		public function __construct(protected readonly DummyModels $dummyModels, protected readonly BlankUpdateless $blankService) {
+
+			//
+		}
 
 		public function noFlowHandler () {
 

@@ -7,9 +7,10 @@
 
 	class AsyncImageProcessor implements Task {
 
-		public function __construct(private readonly AlertAdapter $alerter, private readonly ImageOptimiseOperation $operation)
-  {
-  }
+		public function __construct(protected readonly AlertAdapter $alerter, protected readonly ImageOptimiseOperation $operation) {
+
+			//
+		}
 
 		public function handle ():void {
 

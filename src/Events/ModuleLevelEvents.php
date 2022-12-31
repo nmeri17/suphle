@@ -9,7 +9,7 @@
 
 	class ModuleLevelEvents {
 
-		private array $subscriberLog = [],
+		protected array $subscriberLog = [],
 
 		$eventManagers = [], // this is where subscribers to the immediate last fired external event reside
 

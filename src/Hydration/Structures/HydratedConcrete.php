@@ -3,9 +3,10 @@
 
 	class HydratedConcrete {
 
-		public function __construct(private $concrete, private readonly string $createdFor)
-  {
-  }
+		public function __construct(private $concrete, protected readonly string $createdFor) {
+
+			//
+		}
 
 		public function getCreatedFor ():string {
 

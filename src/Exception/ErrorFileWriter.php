@@ -8,9 +8,10 @@
 		/**
 		 * @param $uncatchableFile Full file paths
 		*/
-		public function __construct(private readonly string $uncatchableFile, private readonly string $catchableFile)
-  {
-  }
+		public function __construct(protected readonly string $uncatchableFile, protected readonly string $catchableFile) {
+
+			//
+		}
 
 		public function setUncatchableHandlers ():self {
 

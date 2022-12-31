@@ -30,17 +30,17 @@
 
 		private $previousResponse;
 
-		private PayloadStorage $payloadStorage;
+		protected PayloadStorage $payloadStorage;
 
-		private RoutedRendererManager $rendererManager;
+		protected RoutedRendererManager $rendererManager;
 
-		private Container $container;
+		protected Container $container;
 
-		private PathPlaceholders $placeholderStorage;
+		protected PathPlaceholders $placeholderStorage;
 
-		private string $baseUrlPattern;
+		protected string $baseUrlPattern;
 
-		private ModuleInitializer $moduleInitializer;
+		protected ModuleInitializer $moduleInitializer;
 		
 		protected const PARENT_HANDLERS = [
 			SingleNode::class => "handleSingleNodes",
@@ -73,7 +73,7 @@
 			UnitNode::MAX_HITS => "setMaxHitsHydrator"
 		];
 
-		public function __construct(private readonly UmbrellaSaver $flowSaver) {
+		public function __construct(protected readonly UmbrellaSaver $flowSaver) {
 
 			//
 		}

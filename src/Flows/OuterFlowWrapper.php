@@ -21,26 +21,26 @@
 
 		final public const ALL_USERS = "*";
 
-		private ?RouteUmbrella $routeUmbrella = null;
+		protected ?RouteUmbrella $routeUmbrella = null;
 
-		private string $activeUser;
+		protected string $activeUser;
 
-		private ?RouteUserNode $routeUserNode = null;
+		protected ?RouteUserNode $routeUserNode = null;
 
-		private AuthStorage $authStorage;
+		protected AuthStorage $authStorage;
 
 		public function __construct(
-			private readonly RequestDetails $requestDetails,
+			protected readonly RequestDetails $requestDetails,
 
-			private readonly AdapterManager $queueManager,
+			protected readonly AdapterManager $queueManager,
 			
-			private readonly UmbrellaSaver $flowSaver,
+			protected readonly UmbrellaSaver $flowSaver,
 
-			private readonly Container $container,
+			protected readonly Container $container,
 
-			private readonly EventManager $eventManager,
+			protected readonly EventManager $eventManager,
 
-			private readonly ActiveDescriptors $descriptorsHolder
+			protected readonly ActiveDescriptors $descriptorsHolder
 		) {
 			
 			//

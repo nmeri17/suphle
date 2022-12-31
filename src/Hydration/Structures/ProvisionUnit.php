@@ -6,12 +6,11 @@
 	*/
 	class ProvisionUnit {
 
-		private array $concretes = [];
-  private array // populated by `needs`
+		protected array $concretes = [], // populated by `needs`
 
 		$arguments = [];
 
-		public function __construct (private readonly string $owner) {
+		public function __construct (protected readonly string $owner) {
 
 			//
 		}

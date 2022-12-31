@@ -5,10 +5,9 @@
 
 	class MiddlewareManipulator extends MiddlewareRegistry {
 
-		private bool $stackAlwaysEmpty = false;
+		protected bool $stackAlwaysEmpty = false;
 
-		private array $preExclude = [];
-  private array $preInclude = [];
+		protected array $preExclude = [], $preInclude = [];
 
 		/**
 		 * Whenever router decides on the active pattern, it'll ultimately include middlewares applied here
