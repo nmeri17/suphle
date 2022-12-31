@@ -7,9 +7,9 @@
 
 	class DefaultInferiorHandler extends BaseOptimizeOperation implements InferiorOperationHandler {
 
-		protected $operationName = InferiorOperationHandler::OPERATION_NAME;
+		protected string $operationName = InferiorOperationHandler::OPERATION_NAME;
 
-		private $maxSize;
+		protected int $maxSize;
 
 		public function __construct (InferiorImageClient $client, ImageLocator $imageLocator, FileSystemReader $fileSystemReader) {
 

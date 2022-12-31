@@ -18,9 +18,11 @@
 
 		use DirectHttpTest, CommonBinds;
 
-		private $sut;
-  private $collection;
-  private string $sutName = RouteManager::class;
+		private RouteManager $sut;
+		
+		private RouteCollection $collection;
+		
+		private string $sutName = RouteManager::class;
 
 		protected function setUp ():void {
 
@@ -31,25 +33,19 @@
 			$this->collection = $this->container->getClass(BrowserNoPrefix::class);
 		}
 
-		/**
-	     * @dataProvider compareOptionalUrl
-	     */
-		public function test_route_compare_optional (string $path) {
+		public function test_can_match_multi_placeholders () {
 
-			$result = $this->sut->findMatchingMethod($path, $this->collection->_getPatterns());
+			$result = $this->sut->findMatchingMethod(
+			
+				"segment/5/segment/5", $this->collection->_getPatterns()
+			);
 
-			$this->assertNotNull($result);
+			$this->assertNotNull($result); // sanity check
 
-			$this->assertSame("SEGMENT_id_SEGMENT_id2O", $result->getMethodName());
-		}
+			$this->assertSame(
 
-		public function compareOptionalUrl ():array {
-
-			return [
-				[ "segment/5/segment/5"],
-
-				[ "segment/5/segment"]
-			];
+				"SEGMENT_id_SEGMENT_id2", $result->getMethodName()
+			);
 		}
 
 		/**
@@ -70,8 +66,8 @@
 
 			return [
 				[
-					"SEGMENT_id_SEGMENT_id2O",
-					"SEGMENT/$placeholder/SEGMENT/?($placeholder/?)?"
+					"SEGMENT_id_SEGMENT_id2",
+					"SEGMENT/$placeholder/SEGMENT/$placeholder/?"
 				],
 				[
 					"SEGMENT_id", "SEGMENT/$placeholder/?"
@@ -98,7 +94,7 @@
 
 				"SEGMENT_SEGMENT/$placeholder/?",
 
-				"SEGMENT/$placeholder/SEGMENT/?($placeholder/?)?",
+				"SEGMENT/$placeholder/SEGMENT/$placeholder/?",
 
 				""
 			], array_column($result, "url")); // then
@@ -179,8 +175,7 @@
 
 				[ "segment_segment/5", "SEGMENT__SEGMENTu_id"],
 
-				[ "segment/5/segment/5", "SEGMENT_id_SEGMENT_id2O"],
-				[ "segment/5/segment", "SEGMENT_id_SEGMENT_id2O"]
+				[ "segment/5/segment/5", "SEGMENT_id_SEGMENT_id2"]
 			];
 		}
 
@@ -212,7 +207,7 @@
 			return [
 				["segment-segment/5", "SEGMENT__SEGMENTh_id", ["id"]],
 
-				["segment/5/segment/5", "SEGMENT_id_SEGMENT_id2O", ["id", "id2"]]
+				["segment/5/segment/5", "SEGMENT_id_SEGMENT_id2", ["id", "id2"]]
 			];
 		}
 

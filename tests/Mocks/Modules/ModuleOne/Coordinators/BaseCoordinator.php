@@ -32,6 +32,11 @@
 			//
 		}
 
+		public function multiPlaceholders () {
+
+			//
+		}
+
 		public function incorrectActionInjection (ImagePayloadReader $payload, ARequiresBCounter $aRequires):array {
 
 			return [];

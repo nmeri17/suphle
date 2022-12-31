@@ -7,7 +7,7 @@
 
 	class DefaultThumbnailHandler extends BaseOptimizeOperation implements ThumbnailOperationHandler {
 
-		protected $operationName = ThumbnailOperationHandler::OPERATION_NAME;
+		protected string $operationName = ThumbnailOperationHandler::OPERATION_NAME;
 
 		public function __construct (ImageThumbnailClient $client, ImageLocator $imageLocator, FileSystemReader $fileSystemReader) {
 

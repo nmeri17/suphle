@@ -13,7 +13,7 @@
 
 	class UnauthorizedDiffuser implements ExceptionHandler {
 
-		private Throwable $renderer;
+		private BaseRenderer $renderer;
 
 		protected string $controllerAction = "imaginaryHandler";
 
