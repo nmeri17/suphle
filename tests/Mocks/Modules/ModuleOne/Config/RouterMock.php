@@ -1,5 +1,4 @@
 <?php
-
 	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Config;
 
 	use Suphle\Config\Router;
@@ -8,7 +7,7 @@
 
 	class RouterMock extends Router {
 
-		public function browserEntryRoute ():string {
+		public function browserEntryRoute ():?string {
 
 			return BrowserNoPrefix::class;
 		}

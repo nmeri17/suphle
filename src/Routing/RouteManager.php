@@ -279,7 +279,9 @@
 			return $this->activeRenderer;
 		}
 
-		// @return Strings<RouteCollection>[]
+		/**
+		 * @return class-string<RouteCollection>[]
+		*/
 		public function entryRouteMap ():array {
 
 			$requestDetails = $this->requestDetails;
@@ -287,21 +289,27 @@
 			$config = $this->config;
 
 			$entryRoute = $config->browserEntryRoute();
+
+			$hasEntry = !is_null($entryRoute);
 			
-			if ($requestDetails->isApiRoute()) {
+			if (!$requestDetails->isApiRoute()) {
 
-				$apiStack = $requestDetails->apiVersionClasses();
+				$browserRoutes = [];
 
-				if ($config->mirrorsCollections())
+				if ($hasEntry) $browserRoutes[] = $entryRoute;
 
-					array_push($apiStack, $entryRoute); // push it to the bottom
-
-				$requestDetails->stripApiPrefix(); // just before we go on our search
-
-				return $apiStack;
+				return $browserRoutes;
 			}
 
-			return [$entryRoute];
+			$apiStack = $requestDetails->apiVersionClasses();
+
+			if ($config->mirrorsCollections() && $hasEntry)
+
+				array_push($apiStack, $entryRoute); // entry goes to the bottom
+
+			$requestDetails->stripApiPrefix(); // just before we go on our search
+
+			return $apiStack;
 		}
 
 		public function getIndicator ():PatternIndicator {

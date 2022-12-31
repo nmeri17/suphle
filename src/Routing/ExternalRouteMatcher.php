@@ -1,17 +1,22 @@
 <?php
 	namespace Suphle\Routing;
 
-	use Suphle\Contracts\{Config\Router as RouterConfig, Presentation\BaseRenderer};
+	use Suphle\Contracts\{Config\Router as RouterConfig, Presentation\BaseRenderer, Routing\ExternalRouter};
 
 	use Suphle\Hydration\Container;
 
 	class ExternalRouteMatcher {
 
-		private $activeHandler;
+		private ?ExternalRouter $activeHandler = null;
 
-		public function __construct(private readonly RouterConfig $config, private readonly Container $container)
-  {
-  }
+		public function __construct(
+			private readonly RouterConfig $config,
+
+			private readonly Container $container
+		) {
+
+			//
+		}
 
 		public function shouldDelegateRouting ():bool {
 

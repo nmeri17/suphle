@@ -3,7 +3,7 @@
 
 	use Suphle\Services\ServiceCoordinator;
 
-	class ApiUpdate3Controller extends ServiceCoordinator {
+	class ApiUpdate3Coordinator extends ServiceCoordinator {
 
 		public function thirdCascade () {
 

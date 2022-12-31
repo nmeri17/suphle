@@ -3,11 +3,11 @@
 
 	use Suphle\Services\ServiceCoordinator;
 
-	class ApiUpdate2Controller extends ServiceCoordinator {
+	class ApiUpdate2Coordinator extends ServiceCoordinator {
 
 		public function secondCascade () {
 
-			//
+			return [];
 		}
 
 		public function segmentInSecond () {

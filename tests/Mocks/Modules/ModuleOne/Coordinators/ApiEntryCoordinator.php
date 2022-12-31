@@ -3,7 +3,7 @@
 
 	use Suphle\Services\ServiceCoordinator;
 
-	class ApiEntryController extends ServiceCoordinator {
+	class ApiEntryCoordinator extends ServiceCoordinator {
 
 		public function segmentHandler() {
 
@@ -13,6 +13,11 @@
 		public function simplePairOverride () {
 
 			//
+		}
+
+		public function originalCascade () {
+
+			return [];
 		}
 	}
 ?>

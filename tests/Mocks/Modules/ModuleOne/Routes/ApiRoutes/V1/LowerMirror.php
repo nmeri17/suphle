@@ -5,13 +5,13 @@
 
 	use Suphle\Response\Format\Json;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\ApiEntryController;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\ApiEntryCoordinator;
 
 	class LowerMirror extends BaseApiCollection {
 
 		public function _handlingClass ():string {
 
-			return ApiEntryController::class;
+			return ApiEntryCoordinator::class;
 		}
 		
 		public function API__SEGMENTh () {
@@ -36,7 +36,7 @@
 
 		public function _authenticatedPaths():array {
 
-			return ["SECURE__SEGMENTh"];
+			return ["SECURE__SEGMENTh", "CASCADE"];
 		}
 	}
 ?>

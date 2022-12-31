@@ -24,7 +24,9 @@
 
 		protected HtmlParser $htmlParser;
 
-		protected array $rawResponse = [], $headers = [];
+		protected array $headers = [];
+
+		protected iterable $rawResponse = [];
 
 		public function setCoordinatorClass (ServiceCoordinator $coordinator):void {
 			

@@ -9,7 +9,7 @@
 
 	use Suphle\Bridge\Laravel\Routing\ModuleRouteMatcher;
 
-	abstract class Router implements RouterConfig {
+	class Router implements RouterConfig {
 
 		public function apiPrefix():string {
 
@@ -27,7 +27,10 @@
 		/**
 		 * {@inheritdoc}
 		*/
-		abstract public function browserEntryRoute ():string;
+		public function browserEntryRoute ():?string {
+
+			return null;
+		}
 
 		/**
 		 * {@inheritdoc}

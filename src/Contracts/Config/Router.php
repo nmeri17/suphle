@@ -11,9 +11,9 @@
 		public function apiStack ():array;
 
 		/**
-		 * @return App entry collection
+		 * @return null if only API collections should be available
 		*/
-		public function browserEntryRoute ():string;
+		public function browserEntryRoute ():?string;
 
 		/**
 		 * List in ascending order of execution
@@ -26,7 +26,7 @@
 		public function mirrorAuthenticator ():string;
 
 		/**
-		 * @return ExternalRouter[]
+		 * @return class-string<ExternalRouter>[]
 		*/
 		public function externalRouters ():array;
 	}
