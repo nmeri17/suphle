@@ -5,13 +5,13 @@
 
 	use Suphle\Response\Format\Markup;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\CrudController;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\CrudCoordinator;
 
 	class BasicRoutes extends BaseCollection {
 
 		public function _handlingClass ():string {
 
-			return CrudController::class;
+			return CrudCoordinator::class;
 		}
 		
 		public function SAVE__ALLh () {

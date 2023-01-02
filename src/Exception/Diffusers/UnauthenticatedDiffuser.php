@@ -18,7 +18,7 @@
 	class UnauthenticatedDiffuser implements ExceptionHandler {
 
 		private $renderer;
-  private string $controllerAction = "virtualWall";
+  protected string $controllerAction = "virtualWall";
 
 		/**
 		 * @param {origin} Unauthenticated
@@ -54,12 +54,20 @@
 
 		protected function getSessionRenderer ():BaseRenderer {
 
-			return new Redirect($this->controllerAction, fn(RequestDetails $requestDetails, AuthContract $authContract, PayloadStorage $payloadStorage) => $authContract->markupRedirect() . "?". http_build_query([
+			return new Redirect($this->controllerAction, function (
+
+				RequestDetails $requestDetails, AuthContract $authContract,
+
+			 	PayloadStorage $payloadStorage
+			 ) {
+
+				return $authContract->markupRedirect() . "?". http_build_query([
 
 					"path" => $requestDetails->getPath(),
 
 					"query" => $payloadStorage->fullPayload()
-				]));
+				]);
+			});
 		}
 	}
 ?>

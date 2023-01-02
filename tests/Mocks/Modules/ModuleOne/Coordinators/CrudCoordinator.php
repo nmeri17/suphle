@@ -5,7 +5,7 @@
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\SystemModelEditMock1;
 
-	class CrudController extends ServiceCoordinator {
+	class CrudCoordinator extends ServiceCoordinator {
 
 		public function __construct(protected readonly SystemModelEditMock1 $editService) {
 

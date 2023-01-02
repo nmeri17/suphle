@@ -7,7 +7,7 @@
 
 	class ApiBuilder extends BaseBuilder {
 
-		protected $validActions = [
+		protected array $validActions = [
 
 			self::SAVE_NEW, self::SHOW_ALL,
 

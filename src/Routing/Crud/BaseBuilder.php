@@ -1,29 +1,31 @@
 <?php
 	namespace Suphle\Routing\Crud;
 
-	use Suphle\Contracts\{Routing\CrudBuilder, Presentation\BaseRenderer};
+	use Suphle\Contracts\Routing\{CrudBuilder, RouteCollection};
+
+	use Suphle\Contracts\Presentation\BaseRenderer;
 
 	use Exception;
 
 	abstract class BaseBuilder implements CrudBuilder {
 
-		final public const SHOW_CREATE = "showCreateForm";
-  final public const SAVE_NEW = "saveNew";
-  final public const SHOW_ALL = "showAll";
-  final public const SHOW_ONE = "showOne";
-  final public const UPDATE_ONE = "updateOne";
-  final public const DELETE_ONE = "deleteOne";
-  final public const SHOW_SEARCH = "showSearchForm";
-  final public const SHOW_EDIT = "showEditForm";
-  final public const SEARCH_RESULTS = "getSearchResults";
+		final public const SHOW_CREATE = "showCreateForm",
 
-		private string $idPlaceholder = "id";
+		SAVE_NEW = "saveNew", SHOW_ALL = "showAll", SHOW_ONE = "showOne",
 
-		protected $overwritable = [];
-  protected $rendererMap = [];
-  protected $disabledHandlers = [];
-  protected $validActions = [];
-  protected $collection;
+		UPDATE_ONE = "updateOne", DELETE_ONE = "deleteOne",
+
+		SHOW_SEARCH = "showSearchForm", SHOW_EDIT = "showEditForm",
+
+		SEARCH_RESULTS = "getSearchResults";
+
+		protected string $idPlaceholder = "id";
+
+		protected array $overwritable = [], $rendererMap = [],
+
+		$disabledHandlers = [], $validActions = [];
+
+		protected RouteCollection $collection;
 
 		public function registerCruds ():void {
 
@@ -82,6 +84,13 @@
 		public function disableHandlers (array $handlers):self {
 
 			$this->disabledHandlers = $handlers;
+
+			return $this;
+		}
+
+		public function setIdPlaceholder (string $placeholder):self {
+
+			$this->idPlaceholder = $placeholder;
 
 			return $this;
 		}

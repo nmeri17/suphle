@@ -12,10 +12,9 @@
 	*/
 	class BrowserBuilder extends BaseBuilder {
 
-		private $markupPath;
-  private $templatePath;
+		private string $markupPath, $templatePath;
 
-		protected $validActions = [
+		protected array $validActions = [
 
 			self::SHOW_CREATE, self::SAVE_NEW, self::SHOW_ALL,
 
@@ -51,7 +50,7 @@
 			$prefix = $this->collection->_prefixCurrent();
 
 			return new Redirect(__FUNCTION__, fn() => function () use ($prefix) {
-					return $prefix . "/" . $this->statusCode/*rawResponse["resource"]->id*/; // assumes the controller returns an array containing this key
+					return $prefix . "/" . $this->rawResponse["resource"]->id; // assumes the controller returns an array containing this key
 				});
 		}
 
