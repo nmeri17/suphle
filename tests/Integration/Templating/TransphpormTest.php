@@ -21,10 +21,11 @@
 
 		use CommonBinds, ExaminesHttpResponse;
 
-		protected const MARKUP_NAME = "profile";
-  protected const HANDLER_NAME = "genericHandler";
+		protected const MARKUP_NAME = "profile",
 
-		private string $sutName = Transphporm::class;
+		HANDLER_NAME = "genericHandler";
+
+		protected string $sutName = Transphporm::class;
 
 		public function test_will_infer_template_name () {
 

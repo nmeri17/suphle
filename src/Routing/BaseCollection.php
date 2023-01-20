@@ -63,15 +63,24 @@
 			return new BrowserBuilder($this, $markupPath, $templatePath );
 		}
 
-		public function __call ($method, $args) {
+		public function _get (BaseRenderer $renderer):self {
 
-			$renderer = current($args);
+			return $this->_register($renderer, "_get");
+		}
 
-			if (in_array($method, ["_get", "_post", "_delete", "_put"]))
+		public function _post (BaseRenderer $renderer):self {
 
-				return $this->_register($renderer, $method);
+			return $this->_register($renderer, "_post");
+		}
 
-			throw new Exception("Unknown collection method $method");
+		public function _put (BaseRenderer $renderer):self {
+
+			return $this->_register($renderer, "_put");
+		}
+
+		public function _delete (BaseRenderer $renderer):self {
+
+			return $this->_register($renderer, "_delete");
 		}
 
 		protected function _register(BaseRenderer $renderer, string $method):self {

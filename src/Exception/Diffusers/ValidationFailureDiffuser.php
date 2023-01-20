@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Exception\Diffusers;
 
-	use Suphle\Contracts\{Exception\ExceptionHandler, Presentation\BaseRenderer};
+	use Suphle\Contracts\{Exception\ExceptionHandler, Presentation\BaseRenderer, Requests\ValidationEvaluator};
 
 	use Suphle\Exception\Explosives\ValidationFailure;
 
@@ -9,8 +9,9 @@
 
 	class ValidationFailureDiffuser implements ExceptionHandler {
 
-		private $renderer;
-  private $validationEvaluator;
+		protected BaseRenderer $renderer;
+
+		protected ValidationEvaluator $validationEvaluator;
 
 		/**
 		 * @param {origin} ValidationFailure
@@ -44,7 +45,12 @@
 
 			if (is_iterable($responseBody))
 
-				return json_decode(json_encode($responseBody, JSON_THROW_ON_ERROR), true, 512, JSON_THROW_ON_ERROR);
+				return json_decode(
+
+					json_encode($responseBody, JSON_THROW_ON_ERROR),
+
+					true, 512, JSON_THROW_ON_ERROR
+				);
 
 			return [$responseBody];
 		}

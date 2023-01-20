@@ -9,9 +9,9 @@
 
 	use Suphle\Contracts\IO\{Session, MailClient, EnvAccessor, CacheManager};
 
-	use Suphle\Contracts\Requests\{RequestValidator, StdInputReader, FileInputReader};
+	use Suphle\Contracts\Requests\{RequestValidator, StdInputReader, FileInputReader, CoodinatorManager, ValidationFailureConvention};
 
-	use Suphle\Contracts\Database\{OrmDialect, OrmReplicator, OrmTester};
+	use Suphle\Contracts\Database\{OrmDialect, OrmReplicator, OrmTester, EntityDetails};
 
 	use Suphle\Contracts\Bridge\{LaravelContainer, LaravelArtisan};
 
@@ -31,11 +31,13 @@
 
 	use Suphle\Auth\{LoginHandlerInterfaceLoader, EmailPasswordComparer, Storage\SessionStorage};
 
-	use Suphle\Adapters\Orms\Eloquent\{ UserEntityLoader, ModelReplicator, OrmLoader, DatabaseTester as EloquentTester, Models\User as EloquentUser};
+	use Suphle\Adapters\Orms\Eloquent\{ UserEntityLoader, ModelReplicator, OrmLoader, DatabaseTester as EloquentTester, Models\User as EloquentUser, ModelDetail};
 
 	use Suphle\Adapters\Image\Optimizers\NativeReducerClient;
 
 	use Suphle\Adapters\{Exception\Bugsnag, Session\NativeSession, Markups\Transphporm as TransphpormAdapter};
+
+	use Suphle\Adapters\Presentation\Hotwire\FailureConventions\HttpMethodValidationConvention;
 
 	use Suphle\Queues\AdapterLoader as QueueAdapterLoader;
 
@@ -50,6 +52,8 @@
 	use Suphle\Bridge\Laravel\InterfaceLoaders\{LaravelAppLoader, ArtisanLoader};
 
 	use Suphle\Exception\Jobs\MailShutdownAlert;
+
+	use Suphle\Services\BaseCoodinatorManager;
 
 	use Psr\Http\Client\ClientInterface as OutgoingRequest;
 
@@ -95,7 +99,11 @@
 
 				ControllerModule::class => ControllerModuleApi::class,
 
+				CoodinatorManager::class => BaseCoodinatorManager::class,
+
 				DecoratorChain::class => BaseDecorators::class,
+
+				EntityDetails::class => ModelDetail::class,
 
 				EnvAccessor::class => DatabaseEnvReader::class,
 
@@ -123,7 +131,9 @@
 
 				ThumbnailOperationHandler::class => DefaultThumbnailHandler::class,
 
-				UserContract::class => EloquentUser::class
+				UserContract::class => EloquentUser::class,
+
+				ValidationFailureConvention::class => HttpMethodValidationConvention::class
 			];
 		}
 

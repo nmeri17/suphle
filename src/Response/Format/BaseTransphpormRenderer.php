@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Response\Format;
 
-	use Suphle\Contracts\Presentation\TransphpormRenderer;
+	use Suphle\Contracts\Presentation\{TransphpormRenderer, HtmlParser};
 
 	use Suphle\Contracts\Config\{Transphporm as ViewConfig, ModuleFiles};
 
@@ -9,8 +9,8 @@
 
 	#[VariableDependencies([
 
-		"setConfigs"
-	])] // see comment on redirect
+		"setConfigs", "setHtmlParser"
+	])]
 	abstract class BaseTransphpormRenderer extends GenericRenderer implements TransphpormRenderer {
 
 		protected string $markupName;
@@ -21,6 +21,8 @@
 		
 		protected ViewConfig $viewConfig;
 
+		protected HtmlParser $htmlParser;
+
 		public function setConfigs (ModuleFiles $fileConfig, ViewConfig $viewConfig):TransphpormRenderer {
 
 			$this->fileConfig = $fileConfig;
@@ -28,6 +30,11 @@
 			$this->viewConfig = $viewConfig;
 
 			return $this;
+		}
+
+		public function setHtmlParser (HtmlParser $parser):void {
+
+			$this->htmlParser = $parser;
 		}
 
 		/**

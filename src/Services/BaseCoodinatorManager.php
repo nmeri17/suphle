@@ -3,7 +3,7 @@
 
 	use Suphle\Hydration\Container;
 
-	use Suphle\Contracts\{Requests\ValidationEvaluator, Presentation\BaseRenderer};
+	use Suphle\Contracts\{Requests\CoodinatorManager, Presentation\BaseRenderer};
 
 	use Suphle\Request\{ValidatorManager, RequestDetails};
 
@@ -11,15 +11,15 @@
 
 	use Suphle\Exception\Explosives\Generic\NoCompatibleValidator;
 
-	class CoodinatorManager implements ValidationEvaluator {
+	class BaseCoodinatorManager implements CoodinatorManager {
 
-		protected ServiceCoordinator $controller;
+		protected ServiceCoordinator $coodinator;
 
 		protected string $actionMethod;
 
 		protected array $handlerParameters;
 
-		function __construct(
+		public function __construct(
 
 			protected readonly Container $container,
 
@@ -33,9 +33,9 @@
 			//
 		}
 
-		public function setDependencies (ServiceCoordinator $controller, string $actionMethod):self {
+		public function setDependencies (ServiceCoordinator $coodinator, string $actionMethod):self {
 			
-			$this->controller = $controller;
+			$this->coodinator = $coodinator;
 
 			$this->actionMethod = $actionMethod;
 
@@ -43,7 +43,7 @@
 		}
 
 		/**
-		 * @throws NoCompatibleValidator
+		 * {@inheritdoc}
 		*/
 		public function bootController ():void {
 
@@ -54,7 +54,7 @@
 
 		public function updateValidatorMethod ():void {
 
-			$collectionName = $this->controller->validatorCollection ();
+			$collectionName = $this->coodinator->validatorCollection();
 
 			$hasNoValidator = empty($collectionName) ||
 
@@ -66,7 +66,7 @@
 
 				throw new NoCompatibleValidator(
 
-					$this->controller::class, $this->actionMethod
+					$this->coodinator::class, $this->actionMethod
 				);
 			}
 
@@ -85,7 +85,7 @@
 
 			$this->handlerParameters = $this->container->getMethodParameters(
 
-				$this->actionMethod, $this->controller::class
+				$this->actionMethod, $this->coodinator::class
 			);
 		}
 

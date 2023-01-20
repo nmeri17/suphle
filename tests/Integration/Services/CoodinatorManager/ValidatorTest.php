@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Tests\Integration\Services\CoodinatorManager;
 
-	use Suphle\Services\CoodinatorManager;
+	use Suphle\Services\BaseCoodinatorManager;
 
 	use Suphle\Request\ValidatorManager;
 
@@ -27,13 +27,15 @@
 
 		use DirectHttpTest;
 
-		private $controller;
+		protected const COORDINATOR_MANAGER = BaseCoodinatorManager::class;
+
+		protected $coodinator;
 
 		protected function setUp ():void {
 
 			parent::setUp();
 
-			$this->controller = $this->container->getClass(ValidatorController::class);
+			$this->coodinator = $this->container->getClass(ValidatorController::class);
 		}
 
 		public function test_get_needs_no_validation () {
@@ -41,9 +43,9 @@
 			// given
 			$this->setHttpParams("/dummy");
 
-			$manager = $this->container->getClass(CoodinatorManager::class);
+			$manager = $this->container->getClass(self::COORDINATOR_MANAGER);
 
-			$error = $manager->setDependencies($this->controller, "handleGet")
+			$error = $manager->setDependencies($this->coodinator, "handleGet")
 
 			->updateValidatorMethod(); // when
 
@@ -57,9 +59,9 @@
 			// given
 			$this->setHttpParams("/dummy", "post");
 
-			$manager = $this->container->getClass(CoodinatorManager::class);
+			$manager = $this->container->getClass(self::COORDINATOR_MANAGER);
 
-			$manager->setDependencies($this->controller, "postNoValidator")
+			$manager->setDependencies($this->coodinator, "postNoValidator")
 
 			->updateValidatorMethod(); // when
 		}
@@ -81,9 +83,9 @@
 				ValidatorManager::class => $validatorManager
 			]); // given 2
 
-			$manager = $this->container->getClass(CoodinatorManager::class);
+			$manager = $this->container->getClass(self::COORDINATOR_MANAGER);
 
-			$manager->setDependencies($this->controller, "postWithValidator")
+			$manager->setDependencies($this->coodinator, "postWithValidator")
 
 			->updateValidatorMethod(); // when
 		}

@@ -1,62 +1,45 @@
 <?php
 	namespace Suphle\Response\Format;
 
-	use Suphle\Hydration\Container;
+	use Suphle\Hydration\Structures\CallbackDetails;
 
 	use Suphle\Services\Decorators\VariableDependencies;
 
 	use Opis\Closure\{SerializableClosure, serialize, unserialize};
 
-	#[VariableDependencies([ "setContainer" ])]
+	#[VariableDependencies([ "setCallbackDetails" ])]
 	class Redirect extends GenericRenderer {
 
-		private $destination;
+		protected $destination;
 
-		protected Container $container;
+		protected CallbackDetails $callbackDetails;
 
 		/**
 		 * @param {destination} Since PDO instances can't be serialized, when using this renderer with PDO in scope, wrap this parameter in a curried/doubly wrapped function
 		 
-		 Arguments for the eventual function is autowired and the return value is used as new request location
+		 Arguments for the eventual function are autowired and the return value is used as new request location
 
 		 Function is bound to this object instance
 		*/
-		public function __construct(string $handler, callable $destination) {
+		public function __construct(protected string $handler, callable $destination) {
 
-			$wrapper = new SerializableClosure($destination);
-
-			$this->destination = serialize($wrapper); // liquefy it so it can be cached later under previous requests
-
-			$this->handler = $handler;
+			$this->destination = serialize(new SerializableClosure($destination)); // liquefy it so it can be cached later under previous requests
 
 			$this->statusCode = 302;
+		}
+
+		public function setCallbackDetails (CallbackDetails $callbackDetails):void {
+
+			$this->callbackDetails = $callbackDetails;
 		}
 
 		public function render ():string {
 			
 			$deserialized = unserialize($this->destination)->getClosure();
 
-			$url = $this->invokeDestination($deserialized);
+			return $this->headers["Location"] = $this->callbackDetails
 
-			$isCurried = is_callable($url);
-
-			if ($isCurried) $url = $this->invokeDestination($url);
-
-			return $this->headers["Location"] = $url;
-		}
-
-		private function invokeDestination (callable $outerFunction):string {
-
-			$parameters = $this->container->getMethodParameters($outerFunction); // autowiring in case next location will be dictated by another library
-
-			$bound = $outerFunction->bindTo($this, $this /*access protected properties*/); // so dev can have access to `rawResponse`
-
-			return call_user_func_array($bound, $parameters);
-		}
-
-		public function setContainer (Container $container):void {
-
-			$this->container = $container;
+			->recursiveValueDerivation($deserialized);
 		}
 	}
 ?>

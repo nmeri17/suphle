@@ -3,9 +3,12 @@
 
 	use Suphle\Contracts\Presentation\MirrorableRenderer;
 
+	/*
+	 * Should not be used in conjuction with forms. Form actions should leave the request's originator
+	*/
 	class Markup extends BaseTransphpormRenderer implements MirrorableRenderer {
 
-		private $wantsJson;
+		protected bool $wantsJson = false;
 
 		/**
 		 * @param {markupName}: It's not necessary to prefix with a slash

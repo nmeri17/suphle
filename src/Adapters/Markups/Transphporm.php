@@ -7,9 +7,6 @@
 
 	class Transphporm implements HtmlParser {
 
-		/**
-		 * @param {renderer}: TransphpormRenderer
-		*/
 		public function parseAll (RendersMarkup $renderer):string {
 
 			return (new Builder(

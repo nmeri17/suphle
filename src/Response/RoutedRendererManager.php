@@ -7,9 +7,11 @@
 
 	use Suphle\Routing\RouteManager;
 
-	use Suphle\Services\{CoodinatorManager, Decorators\BindsAsSingleton};
+	use Suphle\Services\Decorators\BindsAsSingleton;
 
-	use Suphle\Contracts\{Requests\BaseResponseManager, Presentation\BaseRenderer};
+	use Suphle\Contracts\Presentation\BaseRenderer;
+
+	use Suphle\Contracts\Requests\{BaseResponseManager, CoodinatorManager};
 
 	use Suphle\Request\{ValidatorManager, PayloadStorage, RequestDetails};
 

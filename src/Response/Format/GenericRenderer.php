@@ -11,7 +11,6 @@
 
 	use Suphle\Services\ServiceCoordinator;
 
-	#[VariableDependencies([ "setHtmlParser"])]
 	abstract class GenericRenderer implements BaseRenderer {
 
 		protected ServiceCoordinator $coordinator;
@@ -22,8 +21,6 @@
 
 		protected int $statusCode;
 
-		protected HtmlParser $htmlParser;
-
 		protected array $headers = [];
 
 		protected iterable $rawResponse = [];
@@ -31,11 +28,6 @@
 		public function setCoordinatorClass (ServiceCoordinator $coordinator):void {
 			
 			$this->coordinator = $coordinator;
-		}
-
-		public function setHtmlParser (HtmlParser $parser):void {
-
-			$this->htmlParser = $parser;
 		}
 
 		public function invokeActionHandler (array $handlerParameters):BaseRenderer {

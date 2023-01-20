@@ -3,13 +3,13 @@
 
 	use Suphle\Routing\BaseCollection;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\CrudController;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\CrudCoordinator;
 
 	class AuthenticateCrudCollection extends BaseCollection {
 
 		public function _handlingClass ():string {
 
-			return CrudController::class;
+			return CrudCoordinator::class;
 		}
 		
 		public function SECURE__SOMEh () {
