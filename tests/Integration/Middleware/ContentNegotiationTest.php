@@ -3,6 +3,8 @@
 
 	use Suphle\Contracts\Config\Router;
 
+	use Suphle\Request\PayloadStorage;
+
 	use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Middlewares\MultiTagSamePattern, Meta\ModuleOneDescriptor, Config\RouterMock};
@@ -26,8 +28,10 @@
 
 			// given => @see module injection
 
-			$this->get("/negotiate", ["Accept" => "application/json"]) // when
+			$this->get("/negotiate", [
 
+				PayloadStorage::ACCEPTS_KEY => PayloadStorage::JSON_HEADER_VALUE
+			]) // when
 			->assertJson(["message" => "plain Segment"]); // then
 		}
 	}

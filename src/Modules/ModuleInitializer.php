@@ -60,20 +60,20 @@
 			return $this;
 		}
 
-		private function bindRoutingSideEffects ():void {
+		protected function bindRoutingSideEffects ():void {
 
 			$this->router->getPlaceholderStorage()
 
 			->exchangeTokenValues($this->requestDetails->getPath()); // thanks to object references, this update affects the object stored in Container without explicitly rebinding
 
-			$renderer = $this->decoratorHydrator->scopeInjecting(
+			$renderer = $this->decoratorHydrator->scopeInjecting( // this is where all renderer dependencies are being injected
 
 				$this->router->getActiveRenderer(), self::class
 			);
 
-			$this->container->whenTypeAny()->needsAny([
+			$this->container->whenTypeAny()->needsAny([ // Not really necessary but just a slight optimization to save callers from demeter on the router. Any of those callers should assume its module has routed to a renderer
 
-				BaseRenderer::class => $renderer // any object using this expects its module to have routed to a renderer
+				BaseRenderer::class => $renderer
 			]);
 		}
 

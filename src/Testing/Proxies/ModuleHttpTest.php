@@ -7,6 +7,8 @@
 
 	use Suphle\Middleware\MiddlewareRegistry;
 
+	use Suphle\Request\PayloadStorage;
+
 	use Suphle\Testing\Condiments\DirectHttpTest;
 
 	use Suphle\Testing\Proxies\Extensions\{TestResponseBridge, MiddlewareManipulator};
@@ -17,10 +19,6 @@
 
 		use DirectHttpTest, ExaminesHttpResponse;
 
-		private string $JSON_HEADER_VALUE = "application/json",
-		
-		$CONTENT_TYPE_KEY = "Content-Type";
-		
 		private array $staticHeaders = [];
 		
 		private $mockMiddlewareRegistry;
@@ -254,9 +252,9 @@
 			$newHeaders = array_merge([
 				"Content-Length" => mb_strlen($converted, "8bit"),
 
-				$this->CONTENT_TYPE_KEY => $this->JSON_HEADER_VALUE,
+				PayloadStorage::CONTENT_TYPE_KEY => PayloadStorage::JSON_HEADER_VALUE,
 
-				"Accept" => $this->JSON_HEADER_VALUE
+				PayloadStorage::ACCEPTS_KEY => PayloadStorage::JSON_HEADER_VALUE
 			], $headers);
 
 			return $this->gatewayResponse(

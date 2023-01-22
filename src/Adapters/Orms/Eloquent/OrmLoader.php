@@ -5,6 +5,8 @@
 
 	use Suphle\Contracts\{ Config\AuthContract, Bridge\LaravelContainer, Database\OrmDialect, Auth\AuthStorage};
 
+	use Suphle\Adapters\Orms\Eloquent\Models\BaseModel;
+
 	use Illuminate\Events\Dispatcher;
 
 	class OrmLoader extends BaseInterfaceLoader {
@@ -40,6 +42,8 @@
 
 				$this->authStorage
 			);
+
+			BaseModel::shouldBeStrict();
 		}
 
 		public function concreteName ():string {

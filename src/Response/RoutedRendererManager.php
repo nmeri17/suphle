@@ -19,9 +19,10 @@
 
 	#[BindsAsSingleton]
 	class RoutedRendererManager implements BaseResponseManager {
+			
+		protected readonly BaseRenderer $renderer;
 
 		public function __construct (
-			protected readonly BaseRenderer $renderer,
 
 			protected readonly Container $container,
 
@@ -34,7 +35,7 @@
 			protected readonly RequestDetails $requestDetails
 		) {
 
-			//
+			$this->renderer = $router->getActiveRenderer();
 		}
 
 		public function responseRenderer ():BaseRenderer {

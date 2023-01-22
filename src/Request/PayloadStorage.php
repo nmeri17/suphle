@@ -1,8 +1,6 @@
 <?php
 	namespace Suphle\Request;
 
-	use Suphle\Request\RequestDetails;
-
 	use Suphle\Contracts\Requests\StdInputReader;
 
 	use Suphle\Services\Decorators\BindsAsSingleton;
@@ -15,9 +13,11 @@
 
 		use SanitizesIntegerInput;
 
-		final const JSON_HEADER_VALUE = "application/json";
+		final const JSON_HEADER_VALUE = "application/json",
   
-  		final const CONTENT_TYPE_KEY = "Content-Type";
+  		CONTENT_TYPE_KEY = "Content-Type",
+
+  		ACCEPTS_KEY = "Accept";
 
 		protected array $payload = [], $headers;
 
@@ -58,18 +58,18 @@
 
 		public function isJsonPayload ():bool {
 
-			return $this->hasHeader(self::CONTENT_TYPE_KEY) &&
+			return $this->matchesHeader(
 
-			$this->matchesHeader(self::CONTENT_TYPE_KEY, self::JSON_HEADER_VALUE);
+				self::CONTENT_TYPE_KEY, self::JSON_HEADER_VALUE
+			);
 		}
 
 		public function acceptsJson ():bool {
 
-			$acceptsHeader = "Accept";
+			return $this->matchesHeader(
 
-			return $this->hasHeader($acceptsHeader) &&
-
-			$this->matchesHeader($acceptsHeader, self::JSON_HEADER_VALUE);
+				self::ACCEPTS_KEY, self::JSON_HEADER_VALUE
+			);
 		}
 
 		public function hasHeader (string $name):bool {
@@ -83,6 +83,8 @@
 		}
 
 		public function matchesHeader (string $name, string $expectedValue):bool {
+
+			if (!$this->hasHeader($name)) return false;
 
 			$currentValue = str_replace("/", "\/", $this->getHeader($name));
 

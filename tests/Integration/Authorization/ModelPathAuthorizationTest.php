@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Tests\Integration\Authorization;
 
-	use Suphle\Contracts\Config\Router;
+	use Suphle\Contracts\{Config\Router, Auth\UserContract};
 
 	use Suphle\Adapters\Orms\Eloquent\Models\User as EloquentUser;
 
@@ -19,9 +19,11 @@
 
 		protected const EDIT_PATH = "/admin/gmulti-edit/";
 
-		private $employment;
-  private $admin;
-  private $randomEmploymentId;
+		protected Employment $employment;
+		
+		protected UserContract $admin;
+		
+		protected int $randomEmploymentId;
 
 		protected function getModules ():array {
 

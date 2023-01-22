@@ -23,17 +23,17 @@
 
 		public function deriveFormPartial ():BaseRenderer {
 
-			$previous = $this->router->getPreviousRenderer();
+			$currentRenderer = $this->router->getActiveRenderer();
 
-			if (!$previous instanceof BaseHotwireStream)
+			if (!$currentRenderer instanceof BaseHotwireStream)
 
-				return $previous;
+				return $this->router->getPreviousRenderer();
 
 			if ($this->requestDetails->isPostRequest())
 
-				return $previous->retainCreateNodes();
+				return $currentRenderer->retainCreateNodes();
 
-			return $previous->retainUpdateNodes();
+			return $currentRenderer->retainUpdateNodes();
 		}
 	}
 ?>

@@ -1,13 +1,18 @@
 <?php
 	namespace Suphle\Response\Format;
 
+	use Suphle\Request\PayloadStorage;
+
 	class Json extends GenericRenderer {
 
 		function __construct(string $handler) {
 
 			$this->handler = $handler;
 
-			$this->setHeaders(200, ["Content-Type" => "application/json"]);
+			$this->setHeaders(200, [
+
+				PayloadStorage::CONTENT_TYPE_KEY => PayloadStorage::JSON_HEADER_VALUE
+			]);
 		}
 
 		public function render():string {

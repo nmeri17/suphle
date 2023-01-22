@@ -3,6 +3,8 @@
 
 	use Suphle\Contracts\Presentation\MirrorableRenderer;
 
+	use Suphle\Request\PayloadStorage;
+
 	/*
 	 * Should not be used in conjuction with forms. Form actions should leave the request's originator
 	*/
@@ -15,14 +17,15 @@
 		*/
 		public function __construct(
 
-			protected string $handler, 
-
-			protected string $markupName, 
+			protected string $handler, protected string $markupName, 
 
 			protected ?string $templateName = null
 		) {
 
-			$this->setHeaders(200, ["Content-Type" => "text/html"]);
+			$this->setHeaders(200, [
+
+				PayloadStorage::CONTENT_TYPE_KEY => "text/html"
+			]);
 		}
 
 		public function render():string {
@@ -31,7 +34,10 @@
 
 				return $this->htmlParser->parseAll($this);
 
-			$this->setHeaders(200, ["Content-Type" => "application/json"]);
+			$this->setHeaders(200, [
+
+				PayloadStorage::CONTENT_TYPE_KEY => PayloadStorage::JSON_HEADER_VALUE
+			]);
 
 			return $this->renderJson();
 		}

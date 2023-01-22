@@ -47,11 +47,10 @@
 
 		public function isHotwireRequest ():bool {
 
-			$acceptsHeader = "Accept";
-			
-			return $this->payloadStorage->hasHeader($acceptsHeader) &&
+			return $this->payloadStorage->matchesHeader(
 
-			$this->payloadStorage->matchesHeader($acceptsHeader, self::TURBO_INDICATOR);
+				PayloadStorage::ACCEPTS_KEY, self::TURBO_INDICATOR
+			);
 		}
 
 		public function addAppend (string $handler, callable $target, string $markupName, string $templateName = null):self {
@@ -179,7 +178,7 @@
 
 				$this->setHeaders(200, [
 				
-					"Content-Type" => self::TURBO_INDICATOR
+					PayloadStorage::CONTENT_TYPE_KEY => self::TURBO_INDICATOR
 				]);
 
 			else {

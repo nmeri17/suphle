@@ -5,6 +5,8 @@
 
 	use Suphle\Services\Decorators\VariableDependencies;
 
+	use Suphle\Request\PayloadStorage;
+
 	#[VariableDependencies([ "setRouter" ])]
 	class Reload extends BaseTransphpormRenderer {
 
@@ -12,7 +14,10 @@
 
 		public function __construct(protected string $handler) {
 
-			$this->setHeaders(205, ["Content-Type" => "text/html"]); // Reset Content
+			$this->setHeaders(205, [ // Reset Content
+
+				PayloadStorage::CONTENT_TYPE_KEY => "text/html"
+			]);
 		}
 
 		public function setRouter (RouteManager $router):void {
