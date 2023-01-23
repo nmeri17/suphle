@@ -5,15 +5,15 @@
 
 	use Symfony\Component\HttpFoundation\File\{File, Exception\FileException};
 
+	use Closure;
+
 	class LocalFileDownload extends Redirect {
 
 		public function __construct(
 
-			protected readonly string $handler,
+			protected string $handler, protected Closure $deriveFilePath,
 
-			protected callable $deriveFilePath,
-
-			protected ?callable $fallbackRedirect = null
+			protected ?Closure $fallbackRedirect = null
 		) {
 
 			$this->statusCode = 200;

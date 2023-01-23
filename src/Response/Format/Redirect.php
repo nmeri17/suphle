@@ -5,12 +5,12 @@
 
 	use Suphle\Services\Decorators\VariableDependencies;
 
-	use Opis\Closure\{SerializableClosure, serialize, unserialize};
+	use Suphle\Request\PayloadStorage;
+
+	use Closure;
 
 	#[VariableDependencies([ "setCallbackDetails" ])]
 	class Redirect extends GenericRenderer {
-
-		protected $destination;
 
 		protected CallbackDetails $callbackDetails;
 
@@ -21,9 +21,10 @@
 
 		 Function is bound to this object instance
 		*/
-		public function __construct(protected string $handler, callable $destination) {
+		public function __construct (
 
-			$this->destination = serialize(new SerializableClosure($destination)); // liquefy it so it can be cached later under previous requests
+			protected string $handler, protected ?Closure $destination
+		) {
 
 			$this->statusCode = 302;
 		}
@@ -33,13 +34,19 @@
 			$this->callbackDetails = $callbackDetails;
 		}
 
+		protected function renderRedirect (callable $callback):string {
+
+			return $this->headers[PayloadStorage::LOCATION_KEY] = $this->callbackDetails->recursiveValueDerivation($callback);
+		}
+
 		public function render ():string {
 			
-			$deserialized = unserialize($this->destination)->getClosure();
+			return $this->renderRedirect($this->destination);
+		}
 
-			return $this->headers["Location"] = $this->callbackDetails
+		public function isSerializable ():bool {
 
-			->recursiveValueDerivation($deserialized);
+			return false;
 		}
 	}
 ?>

@@ -3,8 +3,6 @@
 
 	use Suphle\Hydration\Container;
 
-	use Opis\Closure\{SerializableClosure, serialize, unserialize};
-
 	class CallbackDetails {
 
 		public function __construct (
@@ -37,20 +35,6 @@
 				$result = $this->recursiveValueDerivation($result);
 
 			return $result;
-		}
-
-		public function freezeFunction (?callable $callback):?string {
-
-			if (is_null($callback)) return null;
-
-			return serialize(new SerializableClosure($callback));
-		}
-
-		public function hydrateSerialized (?string $serialized):?callable {
-
-			if (is_null($serialized)) return null;
-
-			return unserialize($serialized)->getClosure();
 		}
 	}
 ?>

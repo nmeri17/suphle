@@ -15,8 +15,6 @@
 
 		//protected $debugCaughtExceptions = true;
 
-		public static $rdcx = false;
-
 		protected function getModules ():array {
 
 			return [
@@ -31,18 +29,21 @@
 			];
 		}
 
-		public function test_failed_validation_reverts_renderer () {
+		public function test_failed_validation_always_reverts_renderer_with_errors () {
 
-			$this->get("/get-without"); // given
+			for ($i = 0; $i <4; $i++) {
 
-			$response = $this->post("/post-with"); // when
+				$this->get("/get-without"); // given
 
-			// then
-			$response->assertUnprocessable()
+				$response = $this->post("/post-with"); // when
 
-			->assertJsonFragment(["message" => "mercy"])
+				// then
+				$response->assertUnprocessable()
 
-			->assertJsonValidationErrorFor("foo"); 
+				->assertJsonFragment(["message" => "mercy"])
+
+				->assertJsonValidationErrorFor("foo");
+			}
 		}
 	}
 ?>

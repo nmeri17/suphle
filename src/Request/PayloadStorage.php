@@ -17,7 +17,7 @@
   
   		CONTENT_TYPE_KEY = "Content-Type",
 
-  		ACCEPTS_KEY = "Accept";
+  		ACCEPTS_KEY = "Accept", LOCATION_KEY = "Location";
 
 		protected array $payload = [], $headers;
 

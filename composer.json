@@ -31,7 +31,6 @@
 		"level-2/transphporm": "^1.5.1",
 		"mcaskill/composer-exclude-files": "^2.1",
 		"nyholm/psr7": "^1.5",
-		"opis/closure": "^3.6",
 		"predis/predis": "^2.0",
 		"psr/http-client": "^1.0",
 		"psr/http-message": "^1.0.1",

@@ -66,7 +66,11 @@
 
 			$renderer = $this->renderer;
 
-			if (!$this->requestDetails->isApiRoute())
+			if (
+				$this->requestDetails->isGetRequest() &&
+
+				!$this->requestDetails->isApiRoute()
+			)
 
 				$this->router->setPreviousRenderer($renderer);
 

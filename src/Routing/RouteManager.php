@@ -18,12 +18,13 @@
 	*/
 	class RouteManager {
 
-		final const PREV_RENDERER = "prv_rdr";
-  final const PLACEHOLDER_REPLACEMENT = "[\w-]+";
+		final const PREV_RENDERER = "prv_rdr",
+
+		PLACEHOLDER_REPLACEMENT = "[\w-]+";
 
 		protected array $visitedMethods = [];
 
-		private $activeRenderer;
+		protected ?BaseRenderer $activeRenderer = null;
 
 		public function __construct (
 
@@ -266,7 +267,9 @@
 
 		public function setPreviousRenderer(BaseRenderer $renderer):void {
 
-			$this->sessionClient->setValue(self::PREV_RENDERER, $renderer);
+			if ($renderer->isSerializable())
+
+				$this->sessionClient->setValue(self::PREV_RENDERER, $renderer);
 		}
 
 		public function getPreviousRenderer ():BaseRenderer {

@@ -222,13 +222,25 @@
 
 		protected function trimUnwantedActions (array $permittedActions):self {
 
-			foreach ($this->hotwireHandlers as $index => [$hotwireAction])
+			$handlersCopy = $this->hotwireHandlers;
+
+			foreach ($handlersCopy as $index => [$hotwireAction]) {
 
 				if (!in_array($hotwireAction, $permittedActions))
 
-					unset($this->hotwireHandlers[$index]);
+					unset($handlersCopy[$index]);
+			}
 
+			if (!empty($handlersCopy))
+
+				$this->hotwireHandlers = $handlersCopy;
+			
 			return $this;
+		}
+
+		public function isSerializable ():bool {
+
+			return false;
 		}
 	}
 ?>
