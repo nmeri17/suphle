@@ -5,11 +5,15 @@
 
 	use Illuminate\Database\Eloquent\Factories\Factory;
 
+	use Faker\Factory as FakerFactory;
+
 	class EmploymentFactory extends Factory {
 
 		protected $model = Employment::class;
 
 		public function definition ():array {
+
+			$faker = FakerFactory::create();
 
 			return [
 
@@ -17,7 +21,9 @@
 
 				"employer_id" => Employer::factory(),
 
-				"salary" => 150_000
+				"salary" => 150_000,
+
+				"title" => $faker->jobTitle()
 			];
 		}
 	}

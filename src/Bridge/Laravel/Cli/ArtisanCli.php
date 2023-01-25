@@ -37,13 +37,16 @@
 
 			$moduleInterface = $input->getOption(self::HYDRATOR_MODULE_OPTION);
 
-			$exitCode = $this->getExecutionContainer($moduleInterface)->getClass(LaravelArtisan::class)
+			return $this->getExecutionContainer($moduleInterface)
 
-			->invokeCommand($input->getArgument(self::TO_FORWARD_ARGUMENT));
+			->getClass(LaravelArtisan::class)
 
-			$output->writeln("Operation completed successfully");
+			->invokeCommand(
 
-			return $exitCode; // Command::SUCCESS/FAILURE/INVALID
+				$input->getArgument(self::TO_FORWARD_ARGUMENT), [],
+
+				$output
+			); // Command::SUCCESS/FAILURE/INVALID
 		}
 	}
 ?>
