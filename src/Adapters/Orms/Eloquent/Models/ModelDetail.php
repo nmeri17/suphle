@@ -17,7 +17,7 @@
 
 			$segments[] = $model->$primaryField;
 
-			return implode("_", $segments);
+			return strtolower(implode("_", $segments));
 		}
 	}
 ?>

@@ -35,7 +35,7 @@
 		/**
 		 * @throws Throwable
 		*/
-		private function safeSearchRoute (DescriptorInterface $descriptor):ModuleInitializer {
+		protected function safeSearchRoute (DescriptorInterface $descriptor):ModuleInitializer {
 
 			try {
 

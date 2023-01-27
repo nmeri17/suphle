@@ -5,9 +5,10 @@
 
 	abstract class RouteRule {
 
-		public function __construct(protected AuthStorage $authStorage)
-  {
-  }
+		public function __construct(protected AuthStorage $authStorage) {
+
+			//
+		}
 
 		abstract public function permit ():bool;
 	}

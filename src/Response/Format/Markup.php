@@ -24,7 +24,7 @@
 
 			$this->setHeaders(200, [
 
-				PayloadStorage::CONTENT_TYPE_KEY => "text/html"
+				PayloadStorage::CONTENT_TYPE_KEY => PayloadStorage::HTML_HEADER_VALUE
 			]);
 		}
 

@@ -16,8 +16,9 @@
 			concreteBinds as commonConcretes;
 		}
 
-		private $ourB;
-  private string $aRequires = ARequiresBCounter::class;
+		protected BCounter $ourB;
+
+		protected string $aRequires = ARequiresBCounter::class;
 
 		protected function setUp ():void {
 

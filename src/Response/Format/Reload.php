@@ -10,13 +10,15 @@
 	#[VariableDependencies([ "setRouter" ])]
 	class Reload extends BaseTransphpormRenderer {
 
+		public const STATUS_CODE = 205; // Reset Content
+
 		protected RouteManager $router;
 
 		public function __construct(protected string $handler) {
 
-			$this->setHeaders(205, [ // Reset Content
+			$this->setHeaders(self::STATUS_CODE, [
 
-				PayloadStorage::CONTENT_TYPE_KEY => "text/html"
+				PayloadStorage::CONTENT_TYPE_KEY => PayloadStorage::HTML_HEADER_VALUE
 			]);
 		}
 

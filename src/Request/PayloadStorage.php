@@ -14,6 +14,8 @@
 		use SanitizesIntegerInput;
 
 		final const JSON_HEADER_VALUE = "application/json",
+
+		HTML_HEADER_VALUE = "text/html",
   
   		CONTENT_TYPE_KEY = "Content-Type",
 

@@ -1,5 +1,5 @@
 <?php
-	namespace Suphle\Adapters\Presentation\Hotwire\Services;
+	namespace Suphle\Adapters\Presentation\Hotwire;
 
 	use Suphle\Hydration\Container;
 

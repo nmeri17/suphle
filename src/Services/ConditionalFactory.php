@@ -7,7 +7,7 @@
 
 	abstract class ConditionalFactory {
 
-		private array $factoryList = [];
+		protected array $factoryList = [];
 
 		/**
 		 * There's a user-defined method with custom type-hinting. That's where dev gets to define their [whenCase] stack that will run arguments that will be eventually injected at consumption point

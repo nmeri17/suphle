@@ -53,6 +53,9 @@
 			return $this->firstModuleContainer();
 		}
 
+		/**
+		 * Doesn't invoke the end handler, thus, the renderer set to previous will have no contents
+		*/
 		public function from (string $url):self {
 
 			$this->setHttpParams($url);

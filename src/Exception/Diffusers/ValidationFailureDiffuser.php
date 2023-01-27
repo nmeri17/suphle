@@ -3,15 +3,29 @@
 
 	use Suphle\Contracts\{Exception\ExceptionHandler, Presentation\BaseRenderer, Requests\ValidationEvaluator};
 
+	use Suphle\Request\PayloadStorage;
+
 	use Suphle\Exception\Explosives\ValidationFailure;
 
 	use Throwable;
 
 	class ValidationFailureDiffuser implements ExceptionHandler {
 
+		public const ERRORS_PRESENCE = "errors",
+
+		PAYLOAD_KEY = "payload_storage";
+
 		protected BaseRenderer $renderer;
 
 		protected ValidationEvaluator $validationEvaluator;
+
+		public function __construct (
+
+			protected readonly PayloadStorage $payloadStorage
+		) {
+
+			//
+		}
 
 		/**
 		 * @param {origin} ValidationFailure
@@ -25,19 +39,22 @@
 
 			$this->renderer = $this->validationEvaluator->validationRenderer();
 
-			$this->renderer->setRawResponse(array_merge(
+			$this->renderer->setRawResponse(array_merge( // received by the view
 
-				$this->getArrayResponse(), [
+				$this->forceArrayResponse(), [
 
-				"errors" => $this->validationErrors()
-			]))
+					self::ERRORS_PRESENCE => $this->validationErrors(),
+
+					self::PAYLOAD_KEY => $this->payloadStorage->fullPayload()
+				]
+			))
 			->setHeaders(422, []);
 		}
 
 		/**
 		* Insurance against routes that can possibly fail validation that don't return an array
 		*/
-		protected function getArrayResponse ():array {
+		protected function forceArrayResponse ():array {
 
 			$responseBody = $this->renderer->getRawResponse();
 

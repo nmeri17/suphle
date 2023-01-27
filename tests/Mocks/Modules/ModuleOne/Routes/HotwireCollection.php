@@ -7,6 +7,8 @@
 
 	use Suphle\Adapters\Presentation\Hotwire\Formats\{RedirectHotwireStream, ReloadHotwireStream};
 
+	use Suphle\Adapters\Orms\Eloquent\Models\ModelDetail;
+
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\HotwireCoordinator;
 
 	class HotwireCollection extends BaseCollection {
@@ -44,9 +46,11 @@
 			$this->_post($renderer);
 		}
 
-		public function employmentId ():int {
+		public function employmentId ():string {
 
-			return $this->rawResponse["data"]->id;
+			return (new ModelDetail)
+
+			->normalizeIdentifier($this->rawResponse["data"]);
 		}
 
 		public function HOTWIRE__RELOADh () {
@@ -64,7 +68,35 @@
 				"hotwire/update-fragment"
 			);
 
+			$this->_put($renderer);
+		}
+
+		public function NO__REPLACE__NODEh () {
+
+			$renderer = (new RedirectHotwireStream("hotwireFormResponse", fn () => "/"))
+
+			->addAppend(
+				"hotwireReplace", $this->employmentId(...),
+
+				"hotwire/append-fragment"
+			)
+			->addBefore(
+				"hotwireBefore", $this->employmentId(...),
+
+				"hotwire/before-fragment"
+			);
+
 			$this->_post($renderer);
+		}
+
+		public function DELETE__SINGLEh () {
+
+			//
+		}
+
+		public function COMBINE__DELETEh () {
+
+			//
 		}
 	}
 ?>

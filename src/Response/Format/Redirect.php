@@ -12,7 +12,11 @@
 	#[VariableDependencies([ "setCallbackDetails" ])]
 	class Redirect extends GenericRenderer {
 
+		public const STATUS_CODE = 302;
+
 		protected CallbackDetails $callbackDetails;
+
+		protected int $statusCode = self::STATUS_CODE;
 
 		/**
 		 * @param {destination} Since PDO instances can't be serialized, when using this renderer with PDO in scope, wrap this parameter in a curried/doubly wrapped function
@@ -26,7 +30,7 @@
 			protected string $handler, protected ?Closure $destination
 		) {
 
-			$this->statusCode = 302;
+			//
 		}
 
 		public function setCallbackDetails (CallbackDetails $callbackDetails):void {

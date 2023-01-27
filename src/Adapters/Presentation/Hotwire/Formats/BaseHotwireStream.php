@@ -9,21 +9,25 @@
 
 	use Suphle\Services\Decorators\VariableDependencies;
 
+	use Suphle\Adapters\Presentation\Hotwire\HotwireStreamBuilder;
+
 	#[VariableDependencies([
 
 		"setPayloadStorage", "setCallbackDetails"
 	])]
 	abstract class BaseHotwireStream extends BaseTransphpormRenderer {
 
-		public const TURBO_INDICATOR = "text/vnd.turbo-stream.html";
+		public const TURBO_INDICATOR = "text/vnd.turbo-stream.html",
 
-		protected const APPEND_ACTION = "append", PREPEND_ACTION = "prepend",
+		APPEND_ACTION = "append", PREPEND_ACTION = "prepend",
 
 		BEFORE_ACTION = "before", AFTER_ACTION = "after",
 
 		REPLACE_ACTION = "replace", UPDATE_ACTION = "update";
 
-		protected array $hotwireHandlers = [], $nodeResponses = [];
+		protected array $hotwireHandlers = [], $nodeResponses = [],
+
+		$streamBuilders = [];
 
 		protected PayloadStorage $payloadStorage;
 
@@ -155,19 +159,23 @@
 			foreach ($this->hotwireHandlers as $index => [
 
 				$hotwireAction,, $targets, $markupName, $templateName
-			]) 
+			]) {
 
-				$allStreams .= $this->wrapInTurboTags(
-					
-					$hotwireAction, $targets,
+				$targetString = $this->callbackDetails->recursiveValueDerivation($targets);
 
-					$this->parseNodeContent(
+				$builder = new HotwireStreamBuilder($hotwireAction, $targetString);
 
-						$markupName, $templateName,
+				$builder->wrapContent($this->parseNodeContent(
 
-						$this->nodeResponses[$index]
-					)
-				);
+					$markupName, $templateName,
+
+					$this->nodeResponses[$index]
+				));
+
+				$this->streamBuilders[] = $builder;
+
+				$allStreams .= $builder;
+			}
 
 			return $allStreams;
 		}
@@ -200,16 +208,9 @@
 			return $this->htmlParser->parseAll($this);
 		}
 
-		protected function wrapInTurboTags (string $hotwireAction, callable $targets, string $nodeContent):string {
-
-			$targetString = $this->callbackDetails->recursiveValueDerivation($targets);
-
-			return "<turbo-stream action='$hotwireAction' targets='$targetString'>
-
-				<template>$nodeContent</template>
-			</turbo-stream>";
-		}
-
+		/**
+		 * These methods expect the partials/action handlers to check the PayloadStorage for presence of data from previous request
+		*/
 		public function retainCreateNodes ():self {
 
 			return $this->trimUnwantedActions([self::REPLACE_ACTION]);
@@ -241,6 +242,11 @@
 		public function isSerializable ():bool {
 
 			return false;
+		}
+
+		public function getStreamBuilders ():array {
+
+			return $this->streamBuilders;
 		}
 	}
 ?>

@@ -7,7 +7,7 @@
 
 	class RouterMock extends Router {
 
-		public function browserEntryRoute ():string {
+		public function browserEntryRoute ():?string {
 
 			return BrowserCollection::class;
 		}

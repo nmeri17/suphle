@@ -13,7 +13,7 @@
 
 		use DirectHttpTest, CommonBinds;
 
-		private string $ormDialect = OrmDialect::class;
+		protected string $ormDialect = OrmDialect::class;
 
 		private function mockOrm ($numTimes) {
 
