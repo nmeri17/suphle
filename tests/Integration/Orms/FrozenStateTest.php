@@ -51,7 +51,7 @@
 			];
 		}
 
-		public function preDatabaseFreeze ():void {
+		protected function preDatabaseFreeze ():void {
 
 			$this->lastInserted = $this->replicator->modifyInsertion(self::NUM_TO_INSERT)[0];
 		}

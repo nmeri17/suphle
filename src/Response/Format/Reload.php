@@ -1,18 +1,18 @@
 <?php
 	namespace Suphle\Response\Format;
 
-	use Suphle\Routing\RouteManager;
-
 	use Suphle\Services\Decorators\VariableDependencies;
 
 	use Suphle\Request\PayloadStorage;
 
-	#[VariableDependencies([ "setRouter" ])]
+	use Suphle\Response\PreviousResponse;
+
+	#[VariableDependencies([ "setPreviousResponse" ])]
 	class Reload extends BaseTransphpormRenderer {
 
 		public const STATUS_CODE = 205; // Reset Content
 
-		protected RouteManager $router;
+		protected PreviousResponse $previousResponse;
 
 		public function __construct(protected string $handler) {
 
@@ -22,27 +22,23 @@
 			]);
 		}
 
-		public function setRouter (RouteManager $router):void {
+		public function setPreviousResponse (PreviousResponse $previousResponse):void {
 
-			$this->router = $router;
+			$this->previousResponse = $previousResponse;
 		}
 
 		public function render ():string {
 
-			$renderer = $this->router->getPreviousRenderer();
-
-			$this->markupPath = $renderer->getMarkupPath();
-
-			$this->templatePath = $renderer->getTemplatePath();
+			$renderer = $this->previousResponse->getRenderer();
 
 			// keys clashes between current and previous should prioritise contents of the current response
 			// assumes that response is an array
-			$this->rawResponse = array_merge(
+			$renderer->setRawResponse(array_merge(
 
 				$renderer->getRawResponse(), $this->rawResponse
-			);
+			));
 			
-			return $this->htmlParser->parseAll($this);
+			return $renderer->render();
 		}
 	}
 ?>

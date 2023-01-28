@@ -9,13 +9,17 @@
 
 	use Suphle\Routing\RouteManager;
 
+	use Suphle\Response\PreviousResponse;
+
 	class HttpMethodValidationConvention implements ValidationFailureConvention {
 
 		public function __construct (
 
 			protected readonly RouteManager $router,
 
-			protected readonly RequestDetails $requestDetails
+			protected readonly RequestDetails $requestDetails,
+
+			protected readonly PreviousResponse $previousResponse
 		) {
 
 			//
@@ -27,7 +31,7 @@
 
 			if (!$currentRenderer instanceof BaseHotwireStream)
 
-				return $this->router->getPreviousRenderer();
+				return $this->previousResponse->getRenderer();
 
 			if ($this->requestDetails->isPostRequest())
 

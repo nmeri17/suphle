@@ -145,7 +145,7 @@
 			return $this->container->getClass(ModuleLoginHandler::class);
 		}
 
-		protected function handleGenericRequest ():?BaseRenderer {
+		public function handleGenericRequest ():?BaseRenderer {
 
 			$moduleRouter = $this->container->getClass(ModuleToRoute::class); // pulling from a container so tests can replace properties on the singleton
 

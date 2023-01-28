@@ -22,11 +22,19 @@
 
 				if ($builder->hotwireAction == $hotwireAction) {
 
-					if (is_null($target)) return $this->assertTrue(true);
+					if (is_null($target)) {
 
-					if ($builder->target == $target)
+						$this->assertTrue(true);
 
-						 return $this->assertTrue(true);
+						return;
+					}
+
+					if ($builder->target == $target) {
+
+						$this->assertTrue(true);
+
+						return;
+					}
 				}
 			}
 

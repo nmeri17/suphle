@@ -9,6 +9,8 @@
 
 	use Suphle\Routing\RouteManager;
 
+	use Suphle\Response\PreviousResponse;
+
 	use Suphle\Exception\Explosives\Generic\NoCompatibleValidator;
 
 	class BaseCoodinatorManager implements CoodinatorManager {
@@ -27,7 +29,9 @@
 
 			protected readonly RequestDetails $requestDetails,
 
-			protected readonly RouteManager $router
+			protected readonly RouteManager $router,
+
+			protected readonly PreviousResponse $previousResponse
 		) {
 
 			//
@@ -108,7 +112,7 @@
 
 			if (!$this->requestDetails->isApiRoute())
 
-				return $this->router->getPreviousRenderer();
+				return $this->previousResponse->getRenderer();
 
 			return $this->router->getActiveRenderer();
 		}

@@ -64,17 +64,23 @@
 
 		public function handleValidRequest (PayloadStorage $payloadStorage):BaseRenderer {
 
-			$renderer = $this->renderer;
-
 			if (
 				$this->requestDetails->isGetRequest() &&
 
 				!$this->requestDetails->isApiRoute()
 			)
 
-				$this->router->setPreviousRenderer($renderer);
+				$this->router->setPreviousGetPath(
 
-			return $renderer->invokeActionHandler($this->controllerManager->getHandlerParameters());
+					$this->requestDetails->getPath(),
+
+					$this->requestDetails->getQueryParameters()
+				);
+
+			return $this->renderer->invokeActionHandler(
+
+				$this->controllerManager->getHandlerParameters()
+			);
 		}
 
 		public function isValidRequest ():bool {

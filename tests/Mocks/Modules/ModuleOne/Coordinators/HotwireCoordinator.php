@@ -1,6 +1,8 @@
 <?php
 	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
+	use Suphle\Services\ServiceCoordinator;
+
 	use Suphle\Tests\Mocks\Modules\ModuleOne\{Validators\HotwireValidator};
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\PayloadReaders\{BaseEmploymentBuilder, EmploymentId2Builder};

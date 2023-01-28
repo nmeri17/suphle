@@ -27,7 +27,7 @@
 
 		protected PatternIndicator $indicator;
 
-		protected BaseRenderer $finalRenderer;
+		protected ?BaseRenderer $finalRenderer = null;
 
 		public function __construct (
 			protected readonly DescriptorInterface $descriptor,

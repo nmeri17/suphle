@@ -7,6 +7,8 @@
 
 	use Suphle\Contracts\Presentation\BaseRenderer;
 
+	use Suphle\Services\BaseCoodinatorManager;
+
 	use Suphle\Request\{ValidatorManager, RequestDetails};
 
 	use Suphle\Routing\RouteManager;

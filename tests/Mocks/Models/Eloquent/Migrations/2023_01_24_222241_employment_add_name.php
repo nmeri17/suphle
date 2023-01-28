@@ -15,7 +15,7 @@ class EmploymentAddName extends Migration
 
 		Schema::table("employment", function (Blueprint $table) {
 
-			$table->string("title", 60);
+			$table->string("title", 160);
 		});
 	}
 

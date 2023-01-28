@@ -5,7 +5,7 @@
 
 	use Suphle\Hydration\Container;
 
-	use Suphle\Contracts\{ Config\Router as RouterConfig, Routing\RouteCollection, IO\Session};
+	use Suphle\Contracts\{ Config\Router as RouterConfig, Routing\RouteCollection};
 
 	use Suphle\Contracts\Presentation\{MirrorableRenderer, BaseRenderer};
 
@@ -13,14 +13,15 @@
 
 	use Suphle\Exception\Explosives\IncompatibleHttpMethod;
 
+	use Suphle\Services\Decorators\BindsAsSingleton;
+
 	/**
 	 * Can't replace this with a double in a http test cuz it'll get overriden when path is received. Anything exceeding capabilities of this class should be tested high level/behavior-wise rather than relying on specifics
 	*/
+	#[BindsAsSingleton]
 	class RouteManager {
 
-		final const PREV_RENDERER = "prv_rdr",
-
-		PLACEHOLDER_REPLACEMENT = "[\w-]+";
+		public const PLACEHOLDER_REPLACEMENT = "[\w-]+";
 
 		protected array $visitedMethods = [];
 
@@ -37,8 +38,6 @@
 			protected readonly PathPlaceholders $placeholderStorage,
 
 			protected readonly PatternIndicator $patternIndicator,
-
-			protected readonly Session $sessionClient,
 
 			protected readonly CollectionMethodToUrl $urlReplacer
 		) {
@@ -263,18 +262,6 @@
 				);
 
 			$this->patternIndicator->indicate($collection, $pattern);
-		}
-
-		public function setPreviousRenderer(BaseRenderer $renderer):void {
-
-			if ($renderer->isSerializable())
-
-				$this->sessionClient->setValue(self::PREV_RENDERER, $renderer);
-		}
-
-		public function getPreviousRenderer ():BaseRenderer {
-
-			return $this->sessionClient->getValue(self::PREV_RENDERER);
 		}
 
 		public function getActiveRenderer ():?BaseRenderer {

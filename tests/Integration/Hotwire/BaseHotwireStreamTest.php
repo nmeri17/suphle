@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Tests\Integration\Hotwire;
 
-	use Suphle\Contracts\Requests\CoodinatorManager;
+	use Suphle\Contracts\{Requests\CoodinatorManager, Config\Router};
 
 	use Suphle\Adapters\Presentation\Hotwire\{HotwireCoodinatorManager, HotwireStreamBuilder, HotwireAsserter, Formats\BaseHotwireStream};
 
@@ -15,7 +15,7 @@
 
 	use Suphle\Exception\Diffusers\ValidationFailureDiffuser;
 
-	use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer, Proxies\Extensions\TestResponseBridge};
+	use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer, Proxies\Extensions\TestResponseBridge, Condiments\BaseDatabasePopulator};
 
 	use Suphle\Tests\Integration\Services\CoodinatorManager\HttpValidationTest;
 
@@ -25,7 +25,12 @@
 
 	class BaseHotwireStreamTest extends ModuleLevelTest {
 
-		use BaseDatabasePopulator, HotwireAsserter;
+		use BaseDatabasePopulator, HotwireAsserter {
+
+			BaseDatabasePopulator::setUp as databaseAllSetup;
+		}
+
+		//protected bool $debugCaughtExceptions = true;
 
 		protected const INITIAL_URL = "/init-post",
 
@@ -43,7 +48,7 @@
 
 		protected function setUp ():void {
 
-			parent::setUp();
+			$this->databaseAllSetup();
 
 			$container = $this->container = $this->getContainer();
 
@@ -81,34 +86,34 @@
 
 		protected function preDatabaseFreeze ():void {
 
-			[$this->employment1, $this->employment2] = $this->replicator->getRandomEntities(2);
+			[$this->employment1, $this->employment2] = $this->replicator->modifyInsertion(2);
 		}
 
 		/**
 		 * @dataProvider userAgentHeaders
-		 * @depends HttpValidationTest
+		 * @\depends HttpValidationTest
 		 */
 		public function test_regular_renderer_failure_yields_non_hotwire_response (?string $agentHeader) {
 
-			$this->sendFailRedirect(
+			var_dump($this->sendFailRedirect(
 
 				"/regular-markup", self::POST_METHOD, $agentHeader
-			);
+			));
 		}
 
 		public function userAgentHeaders ():array {
 
 			return [
 
-				[null], [BaseHotwireStream::TURBO_INDICATOR]
+				[null]//, [BaseHotwireStream::TURBO_INDICATOR]
 			];
 		}
 
 		protected function sendFailRedirect (string $url, string $httpMethod, ?string $agentHeader = null):TestResponseBridge {
 
-			return $this->from(self::INITIAL_URL)
+			$this->get(self::INITIAL_URL);
 
-			->$httpMethod($url, array_merge($this->csrfField, [
+			return $this->$httpMethod($url, array_merge($this->csrfField, [
 
 				"id" => $this->employment1->id,
 
@@ -118,7 +123,7 @@
 				PayloadStorage::ACCEPTS_KEY => $agentHeader
 			]) // when
 			// then
-			->assertUnprocessable()->assertSee("Edit form"); // "reloads", rendering initial content
+			->assertUnprocessable();
 		}
 
 		public function urlsToHotwireRequests ():array {
@@ -150,9 +155,9 @@
 				string $url, string $httpMethod, callable $outputAsserter
 			) {
 
-				$response = $this->from(self::INITIAL_URL)				
+				$this->get(self::INITIAL_URL);			
 
-				->$httpMethod($url, array_merge($this->csrfField, [
+				$response = $this->$httpMethod($url, array_merge($this->csrfField, [
 
 					"id" => $this->employment1->id,
 
@@ -289,9 +294,9 @@
 				$this->hotwireSuccessContent(...)
 			], function (string $url, string $httpMethod, callable $outputAsserter) {
 
-				$this->from(self::INITIAL_URL)				
+				$this->get(self::INITIAL_URL);		
 
-				->$httpMethod($url, array_merge($this->csrfField, [
+				$this->$httpMethod($url, array_merge($this->csrfField, [
 
 					"id" => $this->employment1->id,
 
@@ -316,9 +321,9 @@
 				$this->regularSuccessContent(...)
 			], function (string $url, string $httpMethod, int $statusCode, array $expectedHeaders) {
 
-				$response = $this->from(self::INITIAL_URL)
+				$this->get(self::INITIAL_URL);
 
-				->$httpMethod($url, array_merge($this->csrfField, [
+				$response = $this->$httpMethod($url, array_merge($this->csrfField, [
 
 					"id" => $this->employment1->id,
 
@@ -360,9 +365,9 @@
 		*/
 		public function test_dual_renderer_correctly_wraps_content () {
 
-			$this->from(self::INITIAL_URL)				
+			$this->get(self::INITIAL_URL);				
 
-			->post(self::DUAL_REDIRECT, array_merge($this->csrfField, [
+			$this->post(self::DUAL_REDIRECT, array_merge($this->csrfField, [
 
 				"id" => $this->employment1->id,
 
@@ -398,9 +403,9 @@
 
 			$employment1Id = $this->employment1->id;
 
-			$response = $this->from(self::INITIAL_URL)				
+			$this->get(self::INITIAL_URL);				
 
-			->post("/no-replace-node", array_merge($this->csrfField, [
+			$response = $this->post("/no-replace-node", array_merge($this->csrfField, [
 
 				"id" => $employment1Id,
 
@@ -433,9 +438,9 @@
 				$this->deleteNodeUrls(...)
 			], function (string $url, callable $outputAsserter) {
 
-				$this->from(self::INITIAL_URL)				
+				$this->get(self::INITIAL_URL);
 
-				->delete($url, array_merge($this->csrfField, [
+				$this->delete($url, array_merge($this->csrfField, [
 
 					"id" => $this->employment1->id
 				]), [

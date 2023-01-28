@@ -47,10 +47,5 @@
 			
 			return $this->renderRedirect($this->destination);
 		}
-
-		public function isSerializable ():bool {
-
-			return false;
-		}
 	}
 ?>

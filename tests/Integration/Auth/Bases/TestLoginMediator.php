@@ -5,7 +5,7 @@
 
 	use Suphle\Contracts\{Auth\ModuleLoginHandler, Presentation\BaseRenderer};
 
-	use Suphle\Routing\RouteManager;
+	use Suphle\Response\PreviousResponse;
 
 	use Suphle\Testing\{ Condiments\BaseDatabasePopulator, Proxies\SecureUserAssertions };
 
@@ -29,13 +29,13 @@
 
 		protected function concreteBinds ():array {
 
-			$routerName = RouteManager::class;
+			$routerName = PreviousResponse::class;
 
 			return array_merge($this->commonConcretes(), [
 
 				$routerName => $this->replaceConstructorArguments($routerName, [], [
 
-					"getPreviousRenderer" => $this->positiveDouble(BaseRenderer::class ) // since we're just sending a post request without an initial get
+					"previousGetPath" => $this->positiveDouble(BaseRenderer::class ) // since we're just sending a post request without an initial get
 				])
 			]);
 		}

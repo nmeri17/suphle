@@ -3,6 +3,8 @@
 
 	use Suphle\Contracts\Presentation\BaseRenderer;
 
+	use Suphle\Response\Format\BaseTransphpormRenderer;
+
 	use Suphle\Request\PayloadStorage;
 
 	use Suphle\Hydration\Structures\CallbackDetails;
@@ -237,11 +239,6 @@
 				$this->hotwireHandlers = $handlersCopy;
 			
 			return $this;
-		}
-
-		public function isSerializable ():bool {
-
-			return false;
 		}
 
 		public function getStreamBuilders ():array {

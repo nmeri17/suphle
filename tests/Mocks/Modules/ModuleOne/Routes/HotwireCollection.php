@@ -3,7 +3,7 @@
 
 	use Suphle\Routing\BaseCollection;
 
-	use Suphle\Response\Format\Redirect;
+	use Suphle\Response\Format\{Redirect, Markup};
 
 	use Suphle\Adapters\Presentation\Hotwire\Formats\{RedirectHotwireStream, ReloadHotwireStream};
 

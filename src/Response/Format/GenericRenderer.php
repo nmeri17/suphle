@@ -117,10 +117,5 @@
 
 			return $this->headers;
 		}
-
-		public function isSerializable ():bool {
-
-			return true;
-		}
 	}
 ?>

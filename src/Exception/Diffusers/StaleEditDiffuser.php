@@ -7,6 +7,8 @@
 
 	use Suphle\Request\RequestDetails;
 
+	use Suphle\Response\PreviousResponse;
+
 	use Suphle\Exception\Explosives\EditIntegrityException;
 
 	use Throwable;
@@ -15,7 +17,13 @@
 
 		private Throwable $renderer;
 
-		public function __construct(protected readonly RequestDetails $requestDetails, protected readonly RouteManager $router) {
+		public function __construct(
+			protected readonly RequestDetails $requestDetails,
+
+			protected readonly RouteManager $router,
+
+			protected readonly PreviousResponse $previousResponse
+		) {
 
 			//
 		}
@@ -32,7 +40,7 @@
 
 			if (!$this->requestDetails->isApiRoute())
 
-				$this->renderer = $this->router->getPreviousRenderer();
+				$this->renderer = $this->previousResponse->getRenderer();
 
 			else $this->renderer = $this->router->getActiveRenderer();
 

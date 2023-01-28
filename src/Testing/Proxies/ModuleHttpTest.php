@@ -54,28 +54,6 @@
 		}
 
 		/**
-		 * Doesn't invoke the end handler, thus, the renderer set to previous will have no contents
-		*/
-		public function from (string $url):self {
-
-			$this->setHttpParams($url);
-
-			$initializer = $this->getInitializerWrapper()
-
-			->findContext($this->getModules());
-
-			if (!$initializer)
-
-				throw new NotFoundException;
-
-			$initializer->getRouter()
-
-			->setPreviousRenderer($initializer->handlingRenderer());
-
-			return $this;
-		}
-
-		/**
 		 * Assumes there's some behavior this middleware may have that we aren't comfortable triggering
 		 * 
 		 * @param {middleware} Middleware[]

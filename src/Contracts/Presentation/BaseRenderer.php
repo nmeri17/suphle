@@ -38,7 +38,5 @@
 		public function getStatusCode ():int;
 
 		public function getHeaders ():array;
-
-		public function isSerializable ():bool;
 	}
 ?>
