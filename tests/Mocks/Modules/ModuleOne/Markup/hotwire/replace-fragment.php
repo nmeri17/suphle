@@ -1,5 +1,15 @@
-<div class="outer-container">
-	<h3>Replace</h3>
-	<span class="id-holder"></span>
-	<span class="title"></span>
+<h3>Replace form</h3>
+
+<form id="">
+	<input type="text" name="title">
+</form>
+
+<div id="validation-errors">
+	<h3>Validation errors</h3>
+
+	<ul>
+		<li class="error"></li>
+	</ul>
 </div>
+
+<div id="from-handler"></div>

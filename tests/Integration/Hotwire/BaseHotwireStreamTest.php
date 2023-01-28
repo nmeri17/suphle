@@ -90,7 +90,7 @@
 		 */
 		public function test_regular_renderer_failure_yields_non_hotwire_response (?string $agentHeader) {
 
-			$this->sendFailedValidationRequest(
+			$this->sendFailRedirect(
 
 				"/regular-markup", self::POST_METHOD, $agentHeader
 			);
@@ -104,7 +104,7 @@
 			];
 		}
 
-		protected function sendFailedValidationRequest (string $url, string $httpMethod, ?string $agentHeader = null):TestResponseBridge {
+		protected function sendFailRedirect (string $url, string $httpMethod, ?string $agentHeader = null):TestResponseBridge {
 
 			return $this->from(self::INITIAL_URL)
 
@@ -138,7 +138,7 @@
 		 */
 		public function test_regular_request_to_dual_failure_reverts_to_previous (string $url, string $httpMethod) {
 
-			$this->sendFailedValidationRequest($url, $httpMethod);
+			$this->sendFailRedirect($url, $httpMethod);
 		}
 
 		public function test_hotwire_to_dual_failure_filters_current () {
@@ -180,10 +180,10 @@
 
 						$this->assertStreamNode(BaseHotwireStream::REPLACE_ACTION, "employment_". $this->employment1->id);
 
-						$this->assertEmploymentFrame(
+						$this->assertEmploymentFormError(
 							$response, BaseHotwireStream::REPLACE_ACTION,
 
-							$this->employment1
+							BaseHotwireStream::BEFORE_ACTION, $this->employment1
 						);
 					}
 				], [
@@ -193,23 +193,43 @@
 
 						$this->assertStreamNode(BaseHotwireStream::UPDATE_ACTION, "employment_". $this->employment2->id);
 
-						$this->assertEmploymentFrame(
+						$this->assertEmploymentFormError(
 							$response, BaseHotwireStream::UPDATE_ACTION,
 
-							$this->employment2
+							BaseHotwireStream::AFTER_ACTION, $this->employment2
 						);
 					}
 				]
 			];
 		}
 
-		protected function assertEmploymentFrame (TestResponseBridge $response, string $hotwireAction, Employment $employment):void {
+		protected function assertEmploymentFormError (TestResponseBridge $response, string $hotwireAction, ?string $oppositeAction, Employment $employment):void {
 
-			$response->assertSee(ucfirst($hotwireAction))
+			$response->assertSee(ucfirst($hotwireAction) . " form")
 
-			->assertSee($employment->id)
+			->assertSee("Validation errors")
 
-			->assertSee($employment->title);
+			->assertSee(
+				"<input type=\"text\" name=\"title\" value=\"{$employment->id}\">", false
+			)
+			->assertDontSee("
+				<div id=\"from-handler\">{$employment->id}</div>", false
+			);
+
+			if (!is_null($oppositeAction))
+
+				$response->assertDontSee($oppositeAction);
+		}
+
+		protected function assertEmploymentSuccessContent (TestResponseBridge $response, string $hotwireAction, Employment $employment):void {
+
+			$response->assertSee(ucfirst($hotwireAction) . " form")
+
+			->assertDontSee("Validation errors")
+
+			->assertDontSee(
+				"<input type=\"text\" name=\"title\" value=\"{$employment->id}\">", false
+			);
 		}
 
 		public function hotwireSuccessContent ():array {
@@ -229,11 +249,11 @@
 
 						->assertStreamNode(BaseHotwireStream::BEFORE_ACTION, "employment_". $employment2Id);
 
-						$this->assertEmploymentFrame(
+						$this->assertEmploymentSuccessContent(
 							$response, BaseHotwireStream::REPLACE_ACTION,
 
 							$this->employment1
-						)->assertEmploymentFrame(
+						)->assertEmploymentSuccessContent(
 							$response, BaseHotwireStream::BEFORE_ACTION,
 
 							$this->employment2
@@ -248,11 +268,11 @@
 
 						->assertStreamNode(BaseHotwireStream::UPDATE_ACTION, "employment_". $employment2Id);
 
-						$this->assertEmploymentFrame(
+						$this->assertEmploymentSuccessContent(
 							$response, BaseHotwireStream::AFTER_ACTION,
 
 							$this->employment1
-						)->assertEmploymentFrame(
+						)->assertEmploymentSuccessContent(
 							$response, BaseHotwireStream::UPDATE_ACTION,
 
 							$this->employment2
@@ -402,13 +422,74 @@
 
 				$this->assertStreamNode($hotwireAction, "employment_". $employment1Id);
 
-				$this->assertEmploymentFrame($response, $hotwireAction, $this->employment1);
+				$this->assertEmploymentFormError($response, $hotwireAction, null, $this->employment1);
 			}
 		}
 
 		public function test_delete_node_renders_correctly () {
 
-			//
+			$this->dataProvider([
+			
+				$this->deleteNodeUrls(...)
+			], function (string $url, callable $outputAsserter) {
+
+				$this->from(self::INITIAL_URL)				
+
+				->delete($url, array_merge($this->csrfField, [
+
+					"id" => $this->employment1->id
+				]), [
+
+					PayloadStorage::ACCEPTS_KEY => BaseHotwireStream::TURBO_INDICATOR
+				]) // when
+				// then
+				->assertOk() // sanity check
+
+				->assertHeader(PayloadStorage::CONTENT_TYPE_KEY, BaseHotwireStream::TURBO_INDICATOR);
+
+				$outputAsserter($response);
+			});
+		}
+
+		public function deleteNodeUrls ():array {
+
+			return [
+
+				[
+					"/delete-single", function (TestResponseBridge $response) {
+
+						$this->assertStreamNode(
+
+							BaseHotwireStream::REMOVE_ACTION,
+
+							"employment_". $this->employment1->id
+						);
+				}], [
+					"/combine-delete", function (TestResponseBridge $response) {
+
+						$employment1Id = $this->employment1->id;
+
+						$this->assertStreamNode(
+
+							BaseHotwireStream::REMOVE_ACTION,
+
+							"employment_". $employment1Id
+						)
+						->assertStreamNode(
+
+							BaseHotwireStream::AFTER_ACTION,
+
+							"employment_". $employment1Id
+						);
+
+						$this->assertEmploymentSuccessContent(
+
+							$response, BaseHotwireStream::AFTER_ACTION,
+
+							$this->employment1
+						);
+				}]
+			];
 		}
 	}
 ?>

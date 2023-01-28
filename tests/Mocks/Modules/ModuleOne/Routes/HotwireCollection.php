@@ -91,12 +91,29 @@
 
 		public function DELETE__SINGLEh () {
 
-			//
+			$renderer = (new RedirectHotwireStream("hotwireFormResponse", fn () => "/"))
+
+			->addRemove(
+				"hotwireReplace", $this->employmentId(...)
+			);
+
+			$this->_delete($renderer);
 		}
 
 		public function COMBINE__DELETEh () {
 
-			//
+			$renderer = (new RedirectHotwireStream("hotwireFormResponse", fn () => "/"))
+
+			->addRemove(
+				"hotwireReplace", $this->employmentId(...)
+			)
+			->addAfter(
+				"hotwireAfter", $this->employmentId(...),
+
+				"hotwire/after-fragment"
+			);
+
+			$this->_delete($renderer);
 		}
 	}
 ?>
