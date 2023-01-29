@@ -13,6 +13,8 @@
 
 	use Suphle\Routing\RouteManager;
 
+	use Suphle\Response\PreviousResponse;
+
 	use Suphle\Exception\Explosives\Generic\NoCompatibleValidator;
 
 	class HotwireCoodinatorManager extends BaseCoodinatorManager {
@@ -25,21 +27,23 @@
 
 			protected readonly RequestDetails $requestDetails,
 
-			protected readonly RouteManager $router,
+			protected readonly PreviousResponse $previousResponse,
 
-			protected readonly ValidationFailureConvention $failureConvention
+			protected readonly ValidationFailureConvention $failureConvention,
+
+			protected readonly BaseRenderer $renderer
 		) {
 
 			//
 		}
 
-		public function validationRenderer ():BaseRenderer {
+		public function validationRenderer (array $failureDetails):BaseRenderer {
 
-			if (!$this->requestDetails->isApiRoute())
+			if (!$this->renderer instanceof BaseHotwireStream)
 
-				return $this->failureConvention->deriveFormPartial();
+				return $this->previousResponse->invokeRenderer($failureDetails);
 
-			return $this->router->getActiveRenderer();
+			return $this->failureConvention->deriveFormPartial($this->renderer, $failureDetails);
 		}
 	}
 ?>

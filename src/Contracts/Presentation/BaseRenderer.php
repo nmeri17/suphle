@@ -38,5 +38,12 @@
 		public function getStatusCode ():int;
 
 		public function getHeaders ():array;
+
+		/**
+		 * Determines whether this renderer is fit for writing validation errors to directly or whether it should be deferred to the renderer of the preceding request
+		*/
+		public function deferValidationContent ():bool;
+
+		public function forceArrayShape (array $includeData = []):void;
 	}
 ?>

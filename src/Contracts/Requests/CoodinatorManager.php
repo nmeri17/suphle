@@ -16,6 +16,6 @@
 		/**
 		 * @throws NoCompatibleValidator
 		*/
-		public function bootController ():void;
+		public function bootCoordinator ():void;
 	}
 ?>

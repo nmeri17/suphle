@@ -45,6 +45,8 @@
 		public function setWantsJson ():void {
 			
 			$this->wantsJson = true;
+
+			$this->shouldDeferValidationFailure = false;
 		}
 	}
 ?>

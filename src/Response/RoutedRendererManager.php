@@ -5,15 +5,13 @@
 
 	use Suphle\Hydration\Container;
 
-	use Suphle\Routing\RouteManager;
-
 	use Suphle\Services\Decorators\BindsAsSingleton;
 
-	use Suphle\Contracts\Presentation\BaseRenderer;
+	use Suphle\Contracts\{Presentation\BaseRenderer, IO\Session};
 
 	use Suphle\Contracts\Requests\{BaseResponseManager, CoodinatorManager};
 
-	use Suphle\Request\{ValidatorManager, PayloadStorage, RequestDetails};
+	use Suphle\Request\{ PayloadStorage, RequestDetails};
 
 	use Suphle\Exception\Explosives\ValidationFailure;
 
@@ -24,9 +22,9 @@
 
 		public function __construct (
 
-			protected readonly Container $container,
+			protected readonly BaseRenderer $renderer,
 
-			protected readonly RouteManager $router,
+			protected readonly Session $sessionClient,
 
 			protected readonly CoodinatorManager $controllerManager,
 
@@ -35,7 +33,7 @@
 			protected readonly RequestDetails $requestDetails
 		) {
 
-			$this->renderer = $router->getActiveRenderer();
+			//
 		}
 
 		public function responseRenderer ():BaseRenderer {
@@ -52,47 +50,61 @@
 
 		public function bootCoodinatorManager ():self {
 
-			$this->controllerManager->setDependencies (
+			$this->coordinatorManager->setDependencies (
 
 				$this->renderer->getCoordinator(),
 
 				$this->renderer->getHandler()
-			)->bootController();
+			)->bootCoordinator();
 
 			return $this;
 		}
 
 		public function handleValidRequest (PayloadStorage $payloadStorage):BaseRenderer {
 
-			if (
-				$this->requestDetails->isGetRequest() &&
+			if ($this->shouldStoreRenderer())
 
-				!$this->requestDetails->isApiRoute()
-			)
-
-				$this->router->setPreviousGetPath(
-
-					$this->requestDetails->getPath(),
-
-					$this->requestDetails->getQueryParameters()
-				);
+				$this->sessionClient->setValue(PreviousResponse::PREVIOUS_GET_RENDERER, $this->renderer); // store this before invocation since PDO objects are unserialiable, and before parsing since that would prevent possible merging on next request
 
 			return $this->renderer->invokeActionHandler(
 
-				$this->controllerManager->getHandlerParameters()
+				$this->coordinatorManager->getHandlerParameters()
+			);
+		}
+
+		protected function shouldStoreRenderer ():bool {
+
+			return $this->requestDetails->isGetRequest() &&
+
+			!$this->requestDetails->isApiRoute();
+		}
+
+		/**
+		 * Expected to be used when renderer is derived from other source other than the router. That source should have run all relevant protocols preceding coordinator execution
+		*/
+		public function bypassRendererProtocols (BaseRenderer $renderer):void {
+
+			$this->coordinatorManager->setDependencies (
+
+				$renderer->getCoordinator(), $renderer->getHandler()
+			)->bootCoordinator();
+
+			$renderer->invokeActionHandler(
+
+				$this->coordinatorManager->getHandlerParameters()
 			);
 		}
 
 		public function isValidRequest ():bool {
 
-			return $this->controllerManager->hasValidatorErrors();
+			return $this->coordinatorManager->hasValidatorErrors();
 		}
 
 		public function mayBeInvalid ():void {
 
 			if (!$this->isValidRequest())
 
-				throw new ValidationFailure($this->controllerManager);
+				throw new ValidationFailure($this->coordinatorManager);
 		}
 
 	}

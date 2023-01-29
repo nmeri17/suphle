@@ -29,16 +29,11 @@
 
 		public function render ():string {
 
-			$renderer = $this->previousResponse->getRenderer();
+			return $this->previousResponse
 
-			// keys clashes between current and previous should prioritise contents of the current response
-			// assumes that response is an array
-			$renderer->setRawResponse(array_merge(
+			->invokeRenderer($this->rawResponse)
 
-				$renderer->getRawResponse(), $this->rawResponse
-			));
-			
-			return $renderer->render();
+			->render();
 		}
 	}
 ?>

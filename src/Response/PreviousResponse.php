@@ -1,44 +1,37 @@
 <?php
 	namespace Suphle\Response;
 
-	use Suphle\Modules\ModuleHandlerIdentifier;
-
 	use Suphle\Contracts\{Presentation\BaseRenderer, IO\Session};
+
+	use Suphle\Request\RequestDetails;
 
 	class PreviousResponse {
 
-		public const PREVIOUS_GET_PATH = "previous_get_path";
+		public const PREVIOUS_GET_RENDERER = "previous_get_renderer";
 
 		public function __construct (
 
-			protected readonly ModuleHandlerIdentifier $handlerIdentifier,
+			protected readonly RoutedRendererManager $rendererManager,
 
-			protected readonly Session $sessionClient
+			protected readonly BaseRenderer $renderer
 		) {
 
 			//
 		}
 
-		public function getRenderer ():BaseRenderer {
+		public function invokeRenderer (array $toMerge = []):BaseRenderer {
 
-			$previousPath = $this->sessionClient->getValue(self::PREVIOUS_GET_PATH);
+			if (!$this->renderer->deferValidationContent()) // if current request is something like json, write validation errors to it
 
-			// internally handle request. A more convenient alternative is to store the renderer itself but I fear it could pose a security risk or a large response size could exceed permitted session contents
-			$this->handlerIdentifier->setRequestPath($previousPath); // think this is dangerous cuz it flushes objects and switches context to this new path
+				return $this->renderer;
 
-			$this->handlerIdentifier->handleGenericRequest();
+			$previousRenderer = $this->sessionClient->getValue(self::PREVIOUS_GET_RENDERER);
 
-			return $this->handlerIdentifier->underlyingRenderer();
-		}
+			$this->rendererManager->bypassRendererProtocols($previousRenderer);
+			
+			$previousRenderer->forceArrayShape($toMerge);
 
-		public function setPreviousGetPath (string $path, array $queryParameters):void {
-
-			$this->sessionClient->setValue(
-
-				self::PREVIOUS_GET_PATH,
-
-				$path . "?". http_build_query($queryParameters)
-			);
+			return $previousRenderer;
 		}
 	}
 ?>

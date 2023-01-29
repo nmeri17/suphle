@@ -25,6 +25,8 @@
 
 		protected iterable $rawResponse = [];
 
+		protected bool $shouldDeferValidationFailure = true;
+
 		public function setCoordinatorClass (ServiceCoordinator $coordinator):void {
 			
 			$this->coordinator = $coordinator;
@@ -116,6 +118,35 @@
 		public function getHeaders ():array {
 
 			return $this->headers;
+		}
+
+		public function deferValidationContent ():bool {
+
+			return $this->shouldDeferValidationFailure;
+		}
+
+		/**
+		* Insurance against routes that can possibly fail validation that don't return an array
+		*/
+		public function forceArrayShape (array $includeData = []):void {
+
+			$currentBody = $this->rawResponse;
+
+			if (!is_array($currentBody)) {
+
+				if (!is_iterable($currentBody))
+
+					$currentBody = [$currentBody];
+
+				else $currentBody = json_decode(
+
+					json_encode($currentBody, JSON_THROW_ON_ERROR),
+
+					true, 512, JSON_THROW_ON_ERROR
+				);
+			}
+
+			$this->rawResponse = array_merge($responseBody, $includeData);
 		}
 	}
 ?>

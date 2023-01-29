@@ -7,6 +7,6 @@
 
 		public function getValidatorErrors ():array;
 
-		public function validationRenderer ():BaseRenderer;
+		public function validationRenderer (array $failureDetails):BaseRenderer;
 	}
 ?>

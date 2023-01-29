@@ -40,9 +40,13 @@
 			return $this->validatorManager->validationErrors();
 		}
 
-		public function validationRenderer ():BaseRenderer {
+		public function validationRenderer (array $failureDetails):BaseRenderer {
 
-			return $this->rendererCollection->failedRenderer(); // browser renderer uses Reload to connect to the get for us, while json returns a plain array as usual
+			$renderer = $this->rendererCollection->failedRenderer(); // browser renderer uses Reload to connect to the get for us, while json returns a plain array as usual
+
+			$renderer->forceArrayShape($failureDetails);
+
+			return $renderer;
 		}
 
 		public function processLoginRequest ():void {

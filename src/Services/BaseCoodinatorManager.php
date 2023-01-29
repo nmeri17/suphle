@@ -29,8 +29,6 @@
 
 			protected readonly RequestDetails $requestDetails,
 
-			protected readonly RouteManager $router,
-
 			protected readonly PreviousResponse $previousResponse
 		) {
 
@@ -49,7 +47,7 @@
 		/**
 		 * {@inheritdoc}
 		*/
-		public function bootController ():void {
+		public function bootCoordinator ():void {
 
 			$this->updateValidatorMethod();
 
@@ -108,13 +106,9 @@
 			return $this->validatorManager->validationErrors();
 		}
 
-		public function validationRenderer ():BaseRenderer {
+		public function validationRenderer (array $failureDetails):BaseRenderer {
 
-			if (!$this->requestDetails->isApiRoute())
-
-				return $this->previousResponse->getRenderer();
-
-			return $this->router->getActiveRenderer();
+			$this->previousResponse->invokeRenderer($failureDetails);
 		}
 	}
 ?>

@@ -35,41 +35,19 @@
 			$this->validationEvaluator = $origin->getEvaluator();
 		}
 
+		/**
+		 * Expected to be called before renderer->render()
+		*/
 		public function prepareRendererData ():void {
 
-			$this->renderer = $this->validationEvaluator->validationRenderer();
+			$this->renderer = $this->validationEvaluator->validationRenderer([ // received by the view
 
-			$this->renderer->setRawResponse(array_merge( // received by the view
+				self::ERRORS_PRESENCE => $this->validationErrors(),
 
-				$this->forceArrayResponse(), [
+				self::PAYLOAD_KEY => $this->payloadStorage->fullPayload()
+			]);
 
-					self::ERRORS_PRESENCE => $this->validationErrors(),
-
-					self::PAYLOAD_KEY => $this->payloadStorage->fullPayload()
-				]
-			))
-			->setHeaders(422, []);
-		}
-
-		/**
-		* Insurance against routes that can possibly fail validation that don't return an array
-		*/
-		protected function forceArrayResponse ():array {
-
-			$responseBody = $this->renderer->getRawResponse();
-
-			if (is_array($responseBody)) return $responseBody;
-
-			if (is_iterable($responseBody))
-
-				return json_decode(
-
-					json_encode($responseBody, JSON_THROW_ON_ERROR),
-
-					true, 512, JSON_THROW_ON_ERROR
-				);
-
-			return [$responseBody];
+			$this->renderer->setHeaders(422, []);
 		}
 
 		protected function validationErrors ():array {

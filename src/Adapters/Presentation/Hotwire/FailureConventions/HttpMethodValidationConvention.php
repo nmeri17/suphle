@@ -3,41 +3,29 @@
 
 	use Suphle\Contracts\{Presentation\BaseRenderer, Requests\ValidationFailureConvention};
 
-	use Suphle\Response\Format\Hotwire\{ReloadHotwireStream, BaseHotwireStream};
+	use Suphle\Response\Format\Hotwire\BaseHotwireStream;
 
 	use Suphle\Request\RequestDetails;
-
-	use Suphle\Routing\RouteManager;
-
-	use Suphle\Response\PreviousResponse;
 
 	class HttpMethodValidationConvention implements ValidationFailureConvention {
 
 		public function __construct (
 
-			protected readonly RouteManager $router,
-
-			protected readonly RequestDetails $requestDetails,
-
-			protected readonly PreviousResponse $previousResponse
+			protected readonly RequestDetails $requestDetails
 		) {
 
 			//
 		}
 
-		public function deriveFormPartial ():BaseRenderer {
+		public function deriveFormPartial (BaseHotwireStream $renderer, array $failureDetails):BaseRenderer {
 
-			$currentRenderer = $this->router->getActiveRenderer();
-
-			if (!$currentRenderer instanceof BaseHotwireStream)
-
-				return $this->previousResponse->getRenderer();
+			$renderer->setRawResponse($failureDetails);
 
 			if ($this->requestDetails->isPostRequest())
 
-				return $currentRenderer->retainCreateNodes();
+				return $renderer->retainCreateNodes();
 
-			return $currentRenderer->retainUpdateNodes();
+			return $renderer->retainUpdateNodes();
 		}
 	}
 ?>

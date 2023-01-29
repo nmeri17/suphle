@@ -18,10 +18,6 @@
 		private Throwable $renderer;
 
 		public function __construct(
-			protected readonly RequestDetails $requestDetails,
-
-			protected readonly RouteManager $router,
-
 			protected readonly PreviousResponse $previousResponse
 		) {
 
@@ -38,16 +34,10 @@
 
 		public function prepareRendererData ():void {
 
-			if (!$this->requestDetails->isApiRoute())
-
-				$this->renderer = $this->previousResponse->getRenderer();
-
-			else $this->renderer = $this->router->getActiveRenderer();
-
-			$this->renderer->setRawResponse(array_merge($this->renderer->getRawResponse(), [
+			$this->renderer = $this->previousResponse->invokeRenderer([
 
 				"errors" => [["message" => "Another user recently updated this resource"]]
-			]))
+			])
 			->setHeaders(400, []);
 		}
 

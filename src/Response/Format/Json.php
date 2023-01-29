@@ -5,7 +5,9 @@
 
 	class Json extends GenericRenderer {
 
-		function __construct(string $handler) {
+		protected bool $shouldDeferValidationFailure = false;
+
+		public function __construct(string $handler) {
 
 			$this->handler = $handler;
 
@@ -18,6 +20,14 @@
 		public function render():string {
 
 			return $this->renderJson();
+		}
+
+		/**
+		 * {@inheritdoc}
+		 */
+		public function deferValidationContent ():bool {
+
+			return false;
 		}
 	}
 ?>
