@@ -10,7 +10,7 @@
 		protected OrmTester $databaseApi;
 
 		protected static bool $isFirstTest = true; // using this to maintain state since PHPUnit resets all instance properties per test
-		protected static OrmReplicator $staticReplicator; // duplicating this value since it's the one used in [tearDownAfterClass] but we want to maintain consistency using `$this` instead of a static property
+		protected static ?OrmReplicator $staticReplicator = null; // duplicating this value since it's the one used in [tearDownAfterClass] but we want to maintain consistency using `$this` instead of a static property
 
 		protected function setUp ():void {
 
@@ -82,7 +82,9 @@
 		*/
 		public static function tearDownAfterClass ():void {
 
-			static::$staticReplicator->dismantleSchema();
+			if (!is_null(static::$staticReplicator)) // will be null if an exception was thrown before or during setup
+
+				static::$staticReplicator->dismantleSchema();
 
 			parent::tearDownAfterClass();
 		}

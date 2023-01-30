@@ -5,7 +5,7 @@
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Validators\ValidatorOne;
 
-	class ValidatorController extends ServiceCoordinator {
+	class ValidatorCoordinator extends ServiceCoordinator {
 
 		public function validatorCollection ():?string {
 

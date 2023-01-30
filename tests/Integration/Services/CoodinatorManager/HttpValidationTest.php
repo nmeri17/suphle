@@ -13,7 +13,9 @@
 
 	class HttpValidationTest extends ModuleLevelTest {
 
-		//protected $debugCaughtExceptions = true;
+		protected const FAIL_NUM_TIMES = 3;
+
+		// protected bool $debugCaughtExceptions = true;
 
 		protected function getModules ():array {
 
@@ -29,20 +31,35 @@
 			];
 		}
 
-		public function test_failed_validation_always_reverts_renderer_with_errors () {
+		public function test_failed_validation_always_adds_errors_to_json_renderer () {
 
-			for ($i = 0; $i <4; $i++) {
+			for ($i = 0; $i < self::FAIL_NUM_TIMES; $i++) {
 
 				$this->get("/get-without"); // given
 
-				$response = $this->post("/post-with"); // when
+				$response = $this->post("/post-with-json"); // when
 
 				// then
 				$response->assertUnprocessable()
 
-				->assertJsonFragment(["message" => "mercy"])
+				->assertJsonValidationErrorFor("foo")
 
-				->assertJsonValidationErrorFor("foo");
+				->assertJsonMissing(["message" => "mercy"]);
+			}
+		}
+
+		public function test_failed_validation_always_reverts_errors_to_previous_on_browser () {
+
+			for ($i = 0; $i < self::FAIL_NUM_TIMES; $i++) {
+
+				$this->get("/get-without"); // given
+
+				$response = $this->post("/post-with-html"); // when
+
+				// then
+				$response->assertUnprocessable()
+
+				->assertSee("Edit form");
 			}
 		}
 	}

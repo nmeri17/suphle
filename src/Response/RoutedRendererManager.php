@@ -24,6 +24,8 @@
 			
 		public function __construct (
 
+			protected readonly Container $container,
+
 			protected readonly BaseRenderer $renderer,
 
 			protected readonly Session $sessionClient,
@@ -51,7 +53,7 @@
 		}
 
 		public function bootDefaultRenderer ():self {
-			
+
 			$this->bootCoordinator(
 				$this->renderer->getCoordinator(),
 
@@ -92,6 +94,9 @@
 			$renderer->invokeActionHandler($this->handlerParameters);
 		}
 
+		/**
+		 * {@inheritdoc}
+		*/
 		public function mayBeInvalid ():void {
 
 			if (!$this->validatorManager->isValidated())
@@ -130,6 +135,9 @@
 			->getMethodParameters($handlingMethod, $coodinator::class);
 		}
 
+		/**
+		 * {@inheritdoc}
+		*/
 		public function updateValidatorMethod (ServiceCoordinator $coodinator, string $handlingMethod):void {
 
 			$collectionName = $coodinator->validatorCollection();
@@ -166,7 +174,7 @@
 
 		public function validationRenderer (array $failureDetails):BaseRenderer {
 
-			$this->invokePreviousRenderer($failureDetails);
+			return $this->invokePreviousRenderer($failureDetails);
 		}
 	}
 ?>

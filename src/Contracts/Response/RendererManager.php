@@ -7,6 +7,8 @@
 
 	use Suphle\Contracts\Presentation\BaseRenderer;
 
+	use Suphle\Exception\Explosives\{ValidationFailure, Generic\NoCompatibleValidator};
+
 	interface RendererManager {
 
 		public function bootDefaultRenderer ():self;
@@ -15,10 +17,16 @@
 
 		public function bypassOrganicProcedures (BaseRenderer $renderer, bool $skipValidation = false):void;
 
+		/**
+		 * @throws ValidationFailure
+		*/
 		public function mayBeInvalid ():void;
 
 		public function invokePreviousRenderer (array $toMerge = []):BaseRenderer;
 
+		/**
+		 * @throws NoCompatibleValidator
+		*/
 		public function updateValidatorMethod (ServiceCoordinator $coodinator, string $handlingMethod):void;
 	}
 ?>

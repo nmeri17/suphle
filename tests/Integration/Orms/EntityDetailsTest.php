@@ -5,11 +5,13 @@
 
 	use Suphle\Testing\{TestTypes\IsolatedComponentTest, Condiments\BaseDatabasePopulator};
 
+	use Suphle\Tests\Integration\Generic\CommonBinds;
+
 	use Suphle\Tests\Mocks\Models\Eloquent\Employment;
 
 	class EntityDetailsTest extends IsolatedComponentTest {
 
-		use BaseDatabasePopulator;
+		use BaseDatabasePopulator, CommonBinds;
 
 		protected function getActiveEntity ():string {
 

@@ -7,6 +7,8 @@
 
 	use Suphle\Response\RoutedRendererManager;
 
+	use Suphle\Contracts\Response\RendererManager;
+
 	use Suphle\Testing\TestTypes\IsolatedComponentTest;
 
 	use Suphle\Tests\Integration\Generic\CommonBinds;
@@ -17,9 +19,7 @@
 
 		public function test_extracts_from_response_manager () {
 
-			$sutName = RoutedRendererManager::class;
-
-			$mockManager = $this->positiveDouble($sutName, [], [ // then
+			$mockManager = $this->positiveDouble(RoutedRendererManager::class, [], [ // then
 
 				"handleValidRequest" => [1, [$this->callback(fn($subject) => $subject instanceof PayloadStorage)]],
 
@@ -30,7 +30,7 @@
 
 			$this->container->whenTypeAny()->needsAny([
 
-				$sutName => $mockManager
+				RendererManager::class => $mockManager
 			]); // given
 
 			$this->container->getClass(FinalHandlerWrapper::class)

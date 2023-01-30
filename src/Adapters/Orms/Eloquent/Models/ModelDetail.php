@@ -17,7 +17,10 @@
 
 			$segments[] = $model->$primaryField;
 
-			return strtolower(implode("_", $segments));
+			return strtolower(implode(
+
+				"_", array_filter($segments) // remove possible empty entries
+			));
 		}
 	}
 ?>

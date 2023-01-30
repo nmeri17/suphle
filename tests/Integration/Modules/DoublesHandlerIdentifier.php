@@ -7,7 +7,7 @@
 
 	trait DoublesHandlerIdentifier {
 
-		protected $dummyRenderer;
+		protected BaseRenderer $dummyRenderer;
 
 		protected function setDummyRenderer ():void {
 

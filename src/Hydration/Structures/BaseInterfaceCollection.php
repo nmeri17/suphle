@@ -31,7 +31,7 @@
 
 	use Suphle\Auth\{LoginHandlerInterfaceLoader, EmailPasswordComparer, Storage\SessionStorage};
 
-	use Suphle\Adapters\Orms\Eloquent\{ UserEntityLoader, ModelReplicator, OrmLoader, DatabaseTester as EloquentTester, Models\User as EloquentUser, ModelDetail};
+	use Suphle\Adapters\Orms\Eloquent\{ UserEntityLoader, ModelReplicator, OrmLoader, DatabaseTester as EloquentTester, Models\User as EloquentUser, Models\ModelDetail};
 
 	use Suphle\Adapters\Image\Optimizers\NativeReducerClient;
 

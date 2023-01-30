@@ -7,7 +7,7 @@
 
 	use Suphle\Tests\Integration\Generic\CommonBinds;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\ValidatorController;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\ValidatorCoordinator;
 
 	class SecuresPutRequestTest extends IsolatedComponentTest {
 
@@ -19,7 +19,7 @@
 
 			$this->setHttpParams("/dummy", "put"); // given
 
-			$this->container->getClass(ValidatorController::class); // when
+			$this->container->getClass(ValidatorCoordinator::class); // when
 		}
 	}
 ?>
