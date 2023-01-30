@@ -1,13 +1,11 @@
 <?php
 	namespace Suphle\Exception\Diffusers;
 
-	use Suphle\Contracts\{Exception\ExceptionHandler, Presentation\BaseRenderer};
+	use Suphle\Contracts\{Exception\ExceptionHandler, Presentation\BaseRenderer, Response\RendererManager};
 
 	use Suphle\Routing\RouteManager;
 
 	use Suphle\Request\RequestDetails;
-
-	use Suphle\Response\PreviousResponse;
 
 	use Suphle\Exception\Explosives\EditIntegrityException;
 
@@ -18,7 +16,8 @@
 		private Throwable $renderer;
 
 		public function __construct(
-			protected readonly PreviousResponse $previousResponse
+			
+			protected readonly RendererManager $rendererManager
 		) {
 
 			//
@@ -34,7 +33,9 @@
 
 		public function prepareRendererData ():void {
 
-			$this->renderer = $this->previousResponse->invokeRenderer([
+			$this->renderer = $this->rendererManager
+
+			->invokePreviousRenderer([
 
 				"errors" => [["message" => "Another user recently updated this resource"]]
 			])

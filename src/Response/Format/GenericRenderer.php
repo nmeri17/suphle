@@ -146,7 +146,7 @@
 				);
 			}
 
-			$this->rawResponse = array_merge($responseBody, $includeData);
+			$this->rawResponse = array_merge($currentBody, $includeData);
 		}
 	}
 ?>

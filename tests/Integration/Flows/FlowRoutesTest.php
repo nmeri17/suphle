@@ -154,7 +154,7 @@
 
 		/**
 		 * @dataProvider getOriginUrls
-		 * @\covers RoutedRendererManager::afterRender Fudging, since this is said to be unrecommended and hampers coverage report
+		 * @\covers RendererManager::afterRender Fudging, since this is said to be unrecommended and hampers coverage report
 		*/
 		public function test_visiting_origin_path_pushes_caching_job (string $url) {
 

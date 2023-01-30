@@ -12,7 +12,11 @@
 		/**
 		 * Is only usable on test types extending TestVirginContainer
 		*/
-		protected function replicateModule(string $descriptor, callable $customizer, bool $stubsDecorator = false):ModuleDescriptor {
+		protected function replicateModule (
+			string $descriptor, callable $customizer,
+
+			bool $stubsDecorator = false, array $descriptorStubs = []
+		):ModuleDescriptor {
 
 			if ($stubsDecorator)
 
@@ -29,7 +33,10 @@
 
 			$customizer($writer);
 
-			return new $descriptor($container);
+			return $this->replaceConstructorArguments(
+
+				$descriptor, compact("container"), $descriptorStubs
+			);
 		}
 	}
 ?>

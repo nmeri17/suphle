@@ -201,8 +201,6 @@
 
 				$parameterName = $parameter->getName();
 
-				$container = $this->getContainer();
-
 				if (array_key_exists($parameterName, $replacements))
 
 					return $replacements[$parameterName];
@@ -214,6 +212,8 @@
 				if (array_key_exists($argumentType, $replacements))
 
 					return $replacements[$argumentType];
+
+				$container = $this->getContainer();
 
 				if ($argumentType == Container::class && $useBaseContainer)
 

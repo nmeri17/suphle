@@ -1,5 +1,5 @@
 <?php
-	namespace Suphle\Contracts\Requests;
+	namespace Suphle\Contracts\Response;
 
 	use Suphle\Contracts\Presentation\BaseRenderer;
 
@@ -7,6 +7,6 @@
 		
 		public function responseRenderer ():BaseRenderer;
 
-		public function afterRender ($data):void;
+		public function afterRender ($data = null):void;
 	}
 ?>

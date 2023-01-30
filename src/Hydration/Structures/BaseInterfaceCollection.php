@@ -3,13 +3,13 @@
 
 	use Suphle\Contracts\Hydration\{InterfaceCollection, DecoratorChain};
 
-	use Suphle\Contracts\{Presentation\HtmlParser, Queues\Adapter as QueueAdapter, Modules\ControllerModule };
+	use Suphle\Contracts\{Presentation\HtmlParser, Queues\Adapter as QueueAdapter, Modules\ControllerModule, Response\RendererManager };
 
 	use Suphle\Contracts\Exception\{FatalShutdownAlert, AlertAdapter};
 
 	use Suphle\Contracts\IO\{Session, MailClient, EnvAccessor, CacheManager};
 
-	use Suphle\Contracts\Requests\{RequestValidator, StdInputReader, FileInputReader, CoodinatorManager, ValidationFailureConvention};
+	use Suphle\Contracts\Requests\{RequestValidator, StdInputReader, FileInputReader, ValidationFailureConvention};
 
 	use Suphle\Contracts\Database\{OrmDialect, OrmReplicator, OrmTester, EntityDetails};
 
@@ -51,9 +51,9 @@
 
 	use Suphle\Bridge\Laravel\InterfaceLoaders\{LaravelAppLoader, ArtisanLoader};
 
-	use Suphle\Exception\Jobs\MailShutdownAlert;
+	use Suphle\Response\RoutedRendererManager;
 
-	use Suphle\Services\BaseCoodinatorManager;
+	use Suphle\Exception\Jobs\MailShutdownAlert;
 
 	use Psr\Http\Client\ClientInterface as OutgoingRequest;
 
@@ -99,8 +99,6 @@
 
 				ControllerModule::class => ControllerModuleApi::class,
 
-				CoodinatorManager::class => BaseCoodinatorManager::class,
-
 				DecoratorChain::class => BaseDecorators::class,
 
 				EntityDetails::class => ModelDetail::class,
@@ -124,6 +122,8 @@
 				OrmReplicator::class => ModelReplicator::class,
 
 				OrmTester::class => EloquentTester::class,
+
+				RendererManager::class => RoutedRendererManager::class,
 
 				Session::class => NativeSession::class,
 

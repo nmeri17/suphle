@@ -7,15 +7,9 @@
 
 	use Suphle\Hydration\Container;
 
-	use Suphle\Events\ModuleLevelEvents;
-
 	use Suphle\Modules\ModuleHandlerIdentifier;
 
 	use Suphle\Server\ModuleWorkerAccessor;
-
-	use Suphle\Request\RequestDetails;
-
-	use Suphle\Flows\OuterFlowWrapper;
 
 	use Suphle\Adapters\{Session\InMemorySession, Cache\InMemoryCache};
 

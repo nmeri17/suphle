@@ -7,8 +7,6 @@
 
 	use Suphle\Contracts\{IO\CacheManager, Config\Router, Presentation\BaseRenderer};
 
-	use Suphle\Response\RoutedRendererManager;
-
 	use Suphle\Testing\{Proxies\WriteOnlyContainer, Utilities\ArrayAssertions};
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\OriginCollection, Meta\ModuleOneDescriptor, Config\RouterMock};

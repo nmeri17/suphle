@@ -3,7 +3,7 @@
 
 	use Suphle\Contracts\{Presentation\BaseRenderer, Requests\ValidationFailureConvention};
 
-	use Suphle\Response\Format\Hotwire\BaseHotwireStream;
+	use Suphle\Adapters\Presentation\Hotwire\Formats\BaseHotwireStream;
 
 	use Suphle\Request\RequestDetails;
 

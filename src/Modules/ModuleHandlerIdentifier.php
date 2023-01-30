@@ -11,7 +11,7 @@
 
 	use Suphle\Contracts\Config\{AuthContract, Flows as FlowConfig};
 
-	use Suphle\Contracts\{ Auth\ModuleLoginHandler, Presentation\BaseRenderer};
+	use Suphle\Contracts\{ Auth\ModuleLoginHandler, Presentation\BaseRenderer, Response\RendererManager};
 
 	use Suphle\Contracts\Modules\{HighLevelRequestHandler, DescriptorInterface};
 
@@ -20,8 +20,6 @@
 	use Suphle\Exception\Explosives\{ValidationFailure, NotFoundException};
 
 	use Suphle\Request\RequestDetails;
-
-	use Suphle\Response\RoutedRendererManager;
 
 	use Throwable;
 
@@ -161,7 +159,7 @@
 
 				$this->getActiveContainer()->getClass(
 				
-					RoutedRendererManager::class
+					RendererManager::class
 				)
 			)->setHandlingRenderer();
 

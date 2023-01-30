@@ -1,17 +1,15 @@
 <?php
 	namespace Suphle\Tests\Integration\Hotwire;
 
-	use Suphle\Contracts\{Requests\CoodinatorManager, Config\Router};
+	use Suphle\Contracts\{Requests\CoodinatorManager, Config\Router, Response\RendererManager};
 
-	use Suphle\Adapters\Presentation\Hotwire\{HotwireCoodinatorManager, HotwireStreamBuilder, HotwireAsserter, Formats\BaseHotwireStream};
+	use Suphle\Adapters\Presentation\Hotwire\{HotwireRendererManager, HotwireStreamBuilder, HotwireAsserter, Formats\BaseHotwireStream};
 
 	use Suphle\Response\Format\{Reload, Redirect};
 
 	use Suphle\Security\CSRF\CsrfGenerator;
 
 	use Suphle\Request\PayloadStorage;
-
-	use Suphle\Hydration\Container;
 
 	use Suphle\Exception\Diffusers\ValidationFailureDiffuser;
 
@@ -20,6 +18,8 @@
 	use Suphle\Tests\Integration\Services\CoodinatorManager\HttpValidationTest;
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\HotwireCollection, Meta\ModuleOneDescriptor, Config\RouterMock};
+
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\CustomInterfaceCollection;
 
 	use Suphle\Tests\Mocks\Models\Eloquent\Employment;
 
@@ -40,8 +40,6 @@
 
 		POST_METHOD = "post", PUT_METHOD = "put";
 
-		protected Container $container;
-
 		protected array $csrfField;
 
 		protected Employment $employment1, $employment2;
@@ -50,22 +48,26 @@
 
 			$this->databaseAllSetup();
 
-			$container = $this->container = $this->getContainer();
-
-			$this->massProvide([
-
-				CoodinatorManager::class => $container->getClass(HotwireCoodinatorManager::class)
-			]);
-
 			$this->csrfField = [
 
-				CsrfGenerator::TOKEN_FIELD => $container->getClass(CsrfGenerator::class)
-				
-				->newToken()
+				CsrfGenerator::TOKEN_FIELD => $this->getContainer()
+
+				->getClass(CsrfGenerator::class)->newToken()
 			];
 		}
 
 		protected function getModules ():array {
+
+			$interfaceCollection = new class extends CustomInterfaceCollection {
+
+				public function simpleBinds ():array {
+
+					return array_merge(parent::simpleBinds(), [
+
+						RendererManager::class => HotwireRendererManager::class
+					]);
+				}
+			};
 
 			return [
 
@@ -75,7 +77,10 @@
 
 						"browserEntryRoute" => HotwireCollection::class
 					]);
-				})
+				}, false, [
+
+					"interfaceCollection" => $interfaceCollection::class
+				])
 			];
 		}
 

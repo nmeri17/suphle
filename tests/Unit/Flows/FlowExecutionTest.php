@@ -17,7 +17,7 @@
 
 	use Suphle\Exception\Explosives\ValidationFailure;
 
-	use Suphle\Contracts\{Presentation\BaseRenderer, Modules\DescriptorInterface, Requests\ValidationEvaluator};
+	use Suphle\Contracts\{Presentation\BaseRenderer, Modules\DescriptorInterface, Requests\ValidationEvaluator, Response\RendererManager};
 
 	use Suphle\Testing\TestTypes\IsolatedComponentTest;
 
@@ -62,7 +62,7 @@
 
 			$this->decorateHydrator($this->defaultHydrator, [
 
- 				RoutedRendererManager::class => $this->replaceConstructorArguments(RoutedRendererManager::class, [], [], [
+ 				RendererManager::class => $this->replaceConstructorArguments(RoutedRendererManager::class, [], [], [
 
 					"handleValidRequest" => [1, []] // then
 				]),
@@ -87,7 +87,7 @@
 			$handler = $this->container->whenTypeAny()->needsAny(array_merge(
 
 				[
-					RoutedRendererManager::class => $this->positiveDouble(RoutedRendererManager::class),
+					RendererManager::class => $this->positiveDouble(RoutedRendererManager::class),
 
 					PathPlaceholders::class => $this->positiveDouble(PathPlaceholders::class)
 	 			], $dependencies
@@ -106,7 +106,7 @@
 			// when
 			$this->decorateHydrator($this->defaultHydrator, [
 
- 				RoutedRendererManager::class => $this->positiveDouble(RoutedRendererManager::class, [], [
+ 				RendererManager::class => $this->positiveDouble(RoutedRendererManager::class, [], [
 
 					"handleValidRequest" => [0, []]
 				]),
@@ -133,7 +133,7 @@
 			// given
 			$hydrator = $this->decorateHydrator($this->defaultHydrator, [
 
- 				RoutedRendererManager::class => $this->negativeDouble(RoutedRendererManager::class)
+ 				RendererManager::class => $this->negativeDouble(RoutedRendererManager::class)
  			]);
 
  			$hydrator->setRequestDetails([

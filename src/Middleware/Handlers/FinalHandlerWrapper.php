@@ -1,17 +1,15 @@
 <?php
 	namespace Suphle\Middleware\Handlers;
 
-	use Suphle\Contracts\{Presentation\BaseRenderer, Routing\Middleware};
+	use Suphle\Contracts\{Presentation\BaseRenderer, Routing\Middleware, Response\RendererManager};
 
 	use Suphle\Middleware\MiddlewareNexts;
-
-	use Suphle\Response\RoutedRendererManager;
 
 	use Suphle\Request\PayloadStorage;
 
 	class FinalHandlerWrapper implements Middleware {
 
-		public function __construct(protected readonly RoutedRendererManager $rendererManager) {
+		public function __construct (protected readonly RendererManager $rendererManager) {
 
 			//
 		}

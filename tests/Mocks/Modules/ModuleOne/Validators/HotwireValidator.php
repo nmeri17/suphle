@@ -7,9 +7,9 @@
 
 			return [
 
-				"id" => "required|numeric|exists",
+				"id" => "required|numeric|exists:employment",
 
-				"id2" => "required|numeric|exists"
+				"id2" => "required|numeric|exists:employment"
 			];
 		}
 
@@ -20,22 +20,22 @@
 
 		public function hotwireReplace ():array {
 
-			return ["id" => "required|numeric|exists"];
+			return ["id" => "required|numeric|exists:employment"];
 		}
 
 		public function hotwireBefore ():array {
 
-			return ["id2" => "required|numeric|exists"];
+			return ["id2" => "required|numeric|exists:employment"];
 		}
 
 		public function hotwireAfter ():array {
 
-			return ["id" => "required|numeric|exists"];
+			return ["id" => "required|numeric|exists:employment"];
 		}
 
 		public function hotwireUpdate ():array {
 
-			return ["id2" => "required|numeric|exists"];
+			return ["id2" => "required|numeric|exists:employment"];
 		}
 	}
 ?>

@@ -5,14 +5,14 @@
 
 	use Suphle\Request\PayloadStorage;
 
-	use Suphle\Response\PreviousResponse;
+	use Suphle\Contracts\Response\RendererManager;
 
-	#[VariableDependencies([ "setPreviousResponse" ])]
+	#[VariableDependencies([ "setRendererManager" ])]
 	class Reload extends BaseTransphpormRenderer {
 
 		public const STATUS_CODE = 205; // Reset Content
 
-		protected PreviousResponse $previousResponse;
+		protected RendererManager $rendererManager;
 
 		public function __construct(protected string $handler) {
 
@@ -22,16 +22,16 @@
 			]);
 		}
 
-		public function setPreviousResponse (PreviousResponse $previousResponse):void {
+		public function setRendererManager (RendererManager $rendererManager):void {
 
-			$this->previousResponse = $previousResponse;
+			$this->rendererManager = $rendererManager;
 		}
 
 		public function render ():string {
 
-			return $this->previousResponse
+			return $this->rendererManager
 
-			->invokeRenderer($this->rawResponse)
+			->invokePreviousRenderer($this->rawResponse)
 
 			->render();
 		}

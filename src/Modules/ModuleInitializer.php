@@ -1,19 +1,15 @@
 <?php
 	namespace Suphle\Modules;
 
-	use Suphle\Response\RoutedRendererManager;
-
 	use Suphle\Routing\{RouteManager, ExternalRouteMatcher, PatternIndicator};
 
 	use Suphle\Request\RequestDetails;
 
 	use Suphle\Middleware\MiddlewareQueue;
 
-	use Suphle\Hydration\Container;
+	use Suphle\Hydration\{Container, DecoratorHydrator};
 
-	use Suphle\Hydration\DecoratorHydrator;
-
-	use Suphle\Contracts\{Auth\AuthStorage, Presentation\BaseRenderer};
+	use Suphle\Contracts\{Auth\AuthStorage, Presentation\BaseRenderer, Response\RendererManager};
 
 	use Suphle\Contracts\Modules\{HighLevelRequestHandler, DescriptorInterface};
 
@@ -82,7 +78,7 @@
 		 * 
 		 * @throws UnauthorizedServiceAccess, Unauthenticated, ValidationFailure
 		*/
-		public function fullRequestProtocols (RoutedRendererManager $rendererManager):self {
+		public function fullRequestProtocols (RendererManager $rendererManager):self {
 
 			if ($this->externalRouters->hasActiveHandler())
 
@@ -92,7 +88,7 @@
 
 			$this->attemptAuthentication()->authorizeRequest();
 
-			$rendererManager->bootCoodinatorManager()
+			$rendererManager->bootDefaultRenderer()
 
 			->mayBeInvalid(); // throws no error if validation Passed
 

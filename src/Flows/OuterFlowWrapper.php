@@ -5,7 +5,7 @@
 
 	use Suphle\Flows\Structures\{RouteUserNode, AccessContext, PendingFlowDetails, RouteUmbrella};
 
-	use Suphle\Contracts\{Requests\BaseResponseManager, IO\CacheManager, Auth\AuthStorage, Modules\HighLevelRequestHandler, Presentation\BaseRenderer};
+	use Suphle\Contracts\{Response\BaseResponseManager, IO\CacheManager, Auth\AuthStorage, Modules\HighLevelRequestHandler, Presentation\BaseRenderer};
 
 	use Suphle\Queues\AdapterManager;
 
@@ -101,7 +101,7 @@
 			return is_null($user) ? self::ALL_USERS: strval($user->getId());
 		}
 
-		public function afterRender($cachedResponse):void {
+		public function afterRender($cachedResponse = null):void {
 
 			$this->emitEvents($cachedResponse);
 

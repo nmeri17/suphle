@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Tests\Unit\Flows;
 
-	use Suphle\Contracts\Modules\DescriptorInterface;
+	use Suphle\Contracts\{Modules\DescriptorInterface, Response\RendererManager};
 
 	use Suphle\Flows\{FlowHydrator, Previous\CollectionNode};
 
@@ -147,7 +147,7 @@
 
 			return $this->container->whenTypeAny()->needsAny([
 
-				RoutedRendererManager::class => $this->positiveDouble(RoutedRendererManager::class)
+				RendererManager::class => $this->positiveDouble(RoutedRendererManager::class)
 			])->getClass(DecoratorHydrator::class)
 
 			->scopeInjecting($hydrator, self::class);

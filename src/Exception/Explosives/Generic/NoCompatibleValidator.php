@@ -7,9 +7,9 @@
 
 	class NoCompatibleValidator extends Exception implements BroadcastableException {
 
-		public function __construct (string $controller, string $method) {
+		public function __construct (string $coordinator, string $method) {
 
-			$this->message = "Unable to find request validator for $method on $controller";
+			$this->message = "Unable to find request validator for the method '$coordinator::$method'";
 		}
 	}
 ?>

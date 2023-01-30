@@ -5,9 +5,7 @@
 
 	use Suphle\Flows\Previous\{ SingleNode, CollectionNode, UnitNode};
 
-	use Suphle\Contracts\{Presentation\BaseRenderer, Auth\AuthStorage};
-
-	use Suphle\Response\RoutedRendererManager;
+	use Suphle\Contracts\{Presentation\BaseRenderer, Auth\AuthStorage, Response\RendererManager};
 
 	use Suphle\Hydration\Container;
 
@@ -32,7 +30,7 @@
 
 		protected PayloadStorage $payloadStorage;
 
-		protected RoutedRendererManager $rendererManager;
+		protected RendererManager $rendererManager;
 
 		protected Container $container;
 
@@ -106,7 +104,7 @@
 		}
 
 		// manager designated to handle this request
-		public function setRendererManager (RoutedRendererManager $rendererManager):void {
+		public function setRendererManager (RendererManager $rendererManager):void {
 
 			$this->rendererManager = $rendererManager;
 		}
