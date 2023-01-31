@@ -40,7 +40,9 @@
 
 		protected function renderRedirect (callable $callback):string {
 
-			return $this->headers[PayloadStorage::LOCATION_KEY] = $this->callbackDetails->recursiveValueDerivation($callback);
+			return $this->headers[PayloadStorage::LOCATION_KEY] = $this->callbackDetails
+
+			->recursiveValueDerivation($callback, $this);
 		}
 
 		public function render ():string {

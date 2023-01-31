@@ -5,11 +5,15 @@
 
 	use Suphle\Response\Format\{Redirect, Markup};
 
+	use Suphle\Exception\Diffusers\ValidationFailureDiffuser;
+
 	use Suphle\Adapters\Presentation\Hotwire\Formats\{RedirectHotwireStream, ReloadHotwireStream};
 
 	use Suphle\Adapters\Orms\Eloquent\Models\ModelDetail;
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\HotwireCoordinator;
+
+	use Suphle\Tests\Mocks\Models\Eloquent\Employment;
 
 	class HotwireCollection extends BaseCollection {
 
@@ -33,12 +37,12 @@
 			$renderer = (new RedirectHotwireStream("hotwireFormResponse", fn () => "/"))
 
 			->addReplace(
-				"hotwireReplace", $this->employmentId(...),
+				"hotwireReplace", $this->employmentId(),
 
 				"hotwire/replace-fragment"
 			)
 			->addBefore(
-				"hotwireBefore", $this->employmentId(...),
+				"hotwireBefore", $this->employmentId(),
 
 				"hotwire/before-fragment"
 			);
@@ -46,11 +50,25 @@
 			$this->_post($renderer);
 		}
 
-		public function employmentId ():string {
+		public function employmentId ():callable {
 
-			return (new ModelDetail)
+			return function () {
 
-			->normalizeIdentifier($this->rawResponse["data"]);
+				$responseBody = $this->rawResponse;
+
+				$modelDetail = new ModelDetail;
+
+				if (!array_key_exists(ValidationFailureDiffuser::ERRORS_PRESENCE, $responseBody))
+
+					return $modelDetail->idFromModel($responseBody["data"]);
+
+				return $modelDetail->idFromString(
+
+					Employment::class,
+
+					$responseBody[ValidationFailureDiffuser::PAYLOAD_KEY]["id"]
+				);
+			};
 		}
 
 		public function HOTWIRE__RELOADh () {
@@ -58,12 +76,12 @@
 			$renderer = (new ReloadHotwireStream("hotwireFormResponse"))
 
 			->addAfter(
-				"hotwireAfter", $this->employmentId(...),
+				"hotwireAfter", $this->employmentId(),
 
 				"hotwire/after-fragment"
 			)
 			->addUpdate(
-				"hotwireUpdate", $this->employmentId(...),
+				"hotwireUpdate", $this->employmentId(),
 
 				"hotwire/update-fragment"
 			);
@@ -76,12 +94,12 @@
 			$renderer = (new RedirectHotwireStream("hotwireFormResponse", fn () => "/"))
 
 			->addAppend(
-				"hotwireReplace", $this->employmentId(...),
+				"hotwireReplace", $this->employmentId(),
 
 				"hotwire/append-fragment"
 			)
 			->addBefore(
-				"hotwireBefore", $this->employmentId(...),
+				"hotwireBefore", $this->employmentId(),
 
 				"hotwire/before-fragment"
 			);
@@ -94,7 +112,7 @@
 			$renderer = (new RedirectHotwireStream("hotwireFormResponse", fn () => "/"))
 
 			->addRemove(
-				"hotwireReplace", $this->employmentId(...)
+				"hotwireReplace", $this->employmentId()
 			);
 
 			$this->_delete($renderer);
@@ -105,10 +123,10 @@
 			$renderer = (new RedirectHotwireStream("hotwireFormResponse", fn () => "/"))
 
 			->addRemove(
-				"hotwireReplace", $this->employmentId(...)
+				"hotwireReplace", $this->employmentId()
 			)
 			->addAfter(
-				"hotwireAfter", $this->employmentId(...),
+				"hotwireAfter", $this->employmentId(),
 
 				"hotwire/after-fragment"
 			);

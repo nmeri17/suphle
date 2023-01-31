@@ -117,7 +117,7 @@
 			$messages = [
 				"$methodName with data set #$errorIndex:",
 
-				json_encode($dataRow, JSON_PRETTY_PRINT)
+				var_export($dataRow, true)
 			];
 
 			return $newLine. implode($newLine, $messages). $newLine;

@@ -59,7 +59,7 @@
 			return !is_null($this->getFlow());
 		}
 
-		public function setRawResponse($response):BaseRenderer {
+		public function setRawResponse (iterable $response):BaseRenderer {
 			
 			$this->rawResponse = $response;
 
@@ -132,19 +132,14 @@
 
 			$currentBody = $this->rawResponse;
 
-			if (!is_array($currentBody)) {
+			if (!is_array($currentBody))
 
-				if (!is_iterable($currentBody))
-
-					$currentBody = [$currentBody];
-
-				else $currentBody = json_decode(
+				$currentBody = json_decode(
 
 					json_encode($currentBody, JSON_THROW_ON_ERROR),
 
 					true, 512, JSON_THROW_ON_ERROR
 				);
-			}
 
 			$this->rawResponse = array_merge($currentBody, $includeData);
 		}

@@ -23,7 +23,7 @@
 
 		public function setHeaders (int $statusCode, array $headers):void;
 
-		public function setRawResponse($response):self;
+		public function setRawResponse (iterable $response):self;
 
 		public function setFlow (ControllerFlows $flow):self;
 

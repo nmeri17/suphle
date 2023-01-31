@@ -3,16 +3,28 @@
 
 	use Suphle\Response\Format\Redirect;
 
+	use Suphle\Hydration\Structures\CallbackDetails;
+
 	class RedirectHotwireStream extends BaseHotwireStream {
 
-		public function __construct(string $handler, callable $destination) {
+		public function __construct(
+
+			protected string $handler, callable $destination
+		) {
 
 			$this->fallbackRenderer = new Redirect($handler, $destination);
 
 			/**
 			 * @see https://turbo.hotwired.dev/handbook/drive#redirecting-after-a-form-submission
 			*/
-			$this->fallbackRenderer->statusCode = 303;
+			$this->fallbackRenderer->setHeaders(303, []);
+		}
+
+		public function setCallbackDetails (CallbackDetails $callbackDetails):void {
+
+			$this->callbackDetails = $callbackDetails;
+
+			$this->fallbackRenderer->setCallbackDetails($callbackDetails);
 		}
 	}
 ?>

@@ -54,7 +54,7 @@
 
 		public function bootDefaultRenderer ():self {
 
-			$this->bootCoordinator(
+			$this->handlerParameters = $this->fetchHandlerParameters(
 				$this->renderer->getCoordinator(),
 
 				$this->renderer->getHandler()
@@ -84,14 +84,12 @@
 		*/
 		public function bypassOrganicProcedures (BaseRenderer $renderer, bool $skipValidation = false):void {
 			
-			$this->bootCoordinator(
+			$renderer->invokeActionHandler($this->fetchHandlerParameters(
 				
 				$renderer->getCoordinator(), $renderer->getHandler(),
 
 				$skipValidation
-			);
-
-			$renderer->invokeActionHandler($this->handlerParameters);
+			));
 		}
 
 		/**
@@ -113,24 +111,31 @@
 
 			if (!$this->renderer->deferValidationContent()) // if current request is something like json, write validation errors to it
 
-				return $this->renderer;
+				$previousRenderer = $this->renderer;
+			else {
 
-			$previousRenderer = $this->sessionClient->getValue(self::PREVIOUS_GET_RENDERER);
+				$previousRenderer = $this->sessionClient->getValue(self::PREVIOUS_GET_RENDERER);
 
-			$this->bypassOrganicProcedures($previousRenderer, true); // safe to disable since renderer was stored on success i.e. must have passed its validation
+				$this->bypassOrganicProcedures($previousRenderer, true); // safe to disable since renderer was stored on success i.e. must have passed its validation
+			}
 			
 			$previousRenderer->forceArrayShape($toMerge);
 
 			return $previousRenderer;
 		}
 
-		public function bootCoordinator (ServiceCoordinator $coodinator, string $handlingMethod, bool $skipValidation = false):void {
+		public function fetchHandlerParameters (
+
+			ServiceCoordinator $coodinator, string $handlingMethod,
+
+			bool $skipValidation = false
+		):array {
 			
 			if (!$skipValidation)
 
 				$this->updateValidatorMethod($coodinator, $handlingMethod);
 
-			$this->handlerParameters = $this->container
+			return $this->container
 
 			->getMethodParameters($handlingMethod, $coodinator::class);
 		}

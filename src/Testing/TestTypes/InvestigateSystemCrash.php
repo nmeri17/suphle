@@ -199,7 +199,9 @@
 				$flammable();
 			} catch (Throwable $exception) {
 
-				$resolvedRenderer = $this->entrance->findExceptionRenderer($exception);
+				$this->entrance->findExceptionRenderer($exception);
+
+				$resolvedRenderer = $this->entrance->underlyingRenderer();
 				
 				$this->assertTrue(
 

@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Modules;
 
-	use Suphle\Hydration\{Container, DecoratorHydrator};
+	use Suphle\Hydration\{Container, DecoratorHydrator, Structures\ObjectDetails};
 
 	use Suphle\Request\PayloadStorage;
 
@@ -28,7 +28,9 @@
 
 			protected readonly DetectedExceptionManager $exceptionDetector,
 
-			protected readonly DecoratorHydrator $decoratorHydrator
+			protected readonly DecoratorHydrator $decoratorHydrator,
+
+			protected readonly ObjectDetails $objectMeta
 		) {
 
 			//
@@ -44,20 +46,38 @@
 
 				$handlerName = $handlers[$exceptionName];
 			
-			else $handlerName = $this->config->defaultHandler();
+			else $handlerName = $this->exceptionFromParent($exceptionName, $handlers);
 
 			$this->handler = $this->container->getClass($handlerName);
 			
 			$this->handler->setContextualData($exception);
 		}
 
+		/**
+		 * Using this so exceptions can be stubbed and still caught by the bound handler
+		*/
+		protected function exceptionFromParent (string $exceptionName, array $handlers):string {
+
+			foreach ($handlers as $exceptionParent => $handlerName)
+
+				if ($this->objectMeta->stringInClassTree($exceptionName, $exceptionParent))
+
+					return $handlerName;
+
+			return $this->config->defaultHandler();
+		}
+
 		public function handlingRenderer ():?BaseRenderer {
 
 			$this->handler->prepareRendererData();
 
+			$this->handledExternally = true; // Causes it not to send out alerts except for uncatchable errors
+
+			$renderer = $this->handler->getRenderer();
+
 			return $this->decoratorHydrator->scopeInjecting(
 
-				$this->handler->getRenderer(), self::class
+				$renderer, self::class
 			);
 		}
 
@@ -150,14 +170,6 @@
 		public function protectRefreshPurge ():bool {
 
 			return true; // in tests, this is provided before PayloadStorage, which is one of its dependencies
-		}
-
-		/**
-		 * Causes it not to send out alerts except for uncatchable errors
-		*/
-		public function successfullyHandled ():void {
-
-			$this->handledExternally = true;
 		}
 	}
 ?>

@@ -9,7 +9,7 @@
 
 	use Suphle\Hydration\Structures\CallbackDetails;
 
-	use Suphle\Services\Decorators\VariableDependencies;
+	use Suphle\Services\{ServiceCoordinator, Decorators\VariableDependencies};
 
 	use Suphle\Adapters\Presentation\Hotwire\HotwireStreamBuilder;
 
@@ -132,18 +132,12 @@
 
 				$this->fallbackRenderer->invokeActionHandler($handlerParameters);
 
-			else {
+			else foreach ($this->hotwireHandlers as [, $handler])
 
-				$coordinator = $this->getCoordinator();
+				$this->nodeResponses[] = call_user_func_array(
 
-				foreach ($this->hotwireHandlers as [, $handler]) {
-
-					$this->nodeResponses[] = call_user_func_array(
-
-						[$coordinator, $handler], $handlerParameters
-					);
-				}
-			}
+					[$this->coordinator, $handler], $handlerParameters
+				);
 
 			return $this;
 		}
@@ -158,18 +152,19 @@
 
 			$allStreams = "";
 
-			foreach ($this->hotwireHandlers as $index => [
+			foreach ($this->hotwireHandlers as $index => $handlerDetails) {
 
-				$hotwireAction,, $targets, $markupName, $templateName
-			]) {
+				[$hotwireAction,, $targets ] = $handlerDetails;
 
-				$targetString = $this->callbackDetails->recursiveValueDerivation($targets);
+				$targetString = $this->callbackDetails
+
+				->recursiveValueDerivation($targets, $this);
 
 				$builder = new HotwireStreamBuilder($hotwireAction, $targetString);
 
 				$builder->wrapContent($this->parseNodeContent(
 
-					$markupName, $templateName,
+					@$handlerDetails[3], @$handlerDetails[4],
 
 					$this->nodeResponses[$index]
 				));
@@ -203,15 +198,14 @@
 
 			if (is_null($markupName)) return ""; // "remove" action has no markup
 
-			foreach ([$markupName, $templateName, $rawResponse] as $property)
-
-				$this->$$property = $property;
+			[$this->markupName, $this->templateName, $this->rawResponse] = 
+			[$markupName, $templateName, $rawResponse];
 
 			return $this->htmlParser->parseAll($this);
 		}
 
 		/**
-		 * These methods expect the partials/action handlers to check the PayloadStorage for presence of data from previous request
+		 * These methods expect the partials to check the PayloadStorage for presence of data from previous request
 		*/
 		public function retainCreateNodes ():self {
 
@@ -234,9 +228,12 @@
 					unset($handlersCopy[$index]);
 			}
 
-			if (!empty($handlersCopy))
+			if (!empty($handlersCopy)) {
+
+				sort($handlersCopy);
 
 				$this->hotwireHandlers = $handlersCopy;
+			}
 			
 			return $this;
 		}
@@ -244,6 +241,22 @@
 		public function getStreamBuilders ():array {
 
 			return $this->streamBuilders;
+		}
+
+		public function setCoordinatorClass (ServiceCoordinator $coordinator):void {
+			
+			parent::setCoordinatorClass($coordinator);
+
+			$this->fallbackRenderer->setCoordinatorClass($coordinator);
+		}
+
+		public function setRawResponse (iterable $response):BaseRenderer {
+
+			$this->forceArrayShape($response);
+
+			$this->nodeResponses = [$this->rawResponse]; // this default implementation caters to only node in the eventuality of a validation failure
+
+			return $this;
 		}
 	}
 ?>

@@ -1,6 +1,6 @@
 form {
 
-	repeat: data(ValidationFailureDiffuser::PAYLOAD_KEY);
+	repeat: data(payload_storage);
 }
 
 form input[name=title]:attr(value) {
@@ -8,14 +8,14 @@ form input[name=title]:attr(value) {
 	content: iteration(title);
 }
 
-#validation-errors:data[ValidationFailureDiffuser::ERRORS_PRESENCE=null] {
+#validation-errors:data[errors=null] {
 
 	display: none;
 }
 
 #validation-errors ul {
 
-	repeat: data(ValidationFailureDiffuser::ERRORS_PRESENCE);
+	repeat: data(errors);
 }
 
 #validation-errors ul li {

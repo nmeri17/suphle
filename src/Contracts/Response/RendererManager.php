@@ -15,7 +15,12 @@
 
 		public function handleValidRequest (PayloadStorage $payloadStorage):BaseRenderer;
 
-		public function bypassOrganicProcedures (BaseRenderer $renderer, bool $skipValidation = false):void;
+		public function fetchHandlerParameters (
+
+			ServiceCoordinator $coodinator, string $handlingMethod,
+
+			bool $skipValidation = false
+		):array;
 
 		/**
 		 * @throws ValidationFailure

@@ -7,19 +7,23 @@
 
 	class ModelDetail implements EntityDetails {
 
-		public function normalizeIdentifier (object $model, string $prefix = ""):string {
-
-			$segments = [$prefix];
-
-			$segments[] = (new ReflectionClass($model))->getShortName();
+		public function idFromModel (object $model, string $prefix = ""):string {
 
 			$primaryField = $model->getKeyName();
 
-			$segments[] = $model->$primaryField;
+			return $this->idFromString(
+
+				(new ReflectionClass($model))->getShortName(),
+
+				$model->$primaryField, $prefix
+			);
+		}
+
+		public function idFromString (string $modelName, string $modelId, string $prefix = ""):string {
 
 			return strtolower(implode(
 
-				"_", array_filter($segments) // remove possible empty entries
+				"_", array_filter([$prefix, $modelName, $modelId]) // remove possible empty entries
 			));
 		}
 	}

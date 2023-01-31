@@ -17,6 +17,8 @@
 		public function wrapContent (?string $nodeContent):self {
 
 			$this->nodeContent = $nodeContent;
+
+			return $this;
 		}
 
 		public function __toString ():string {

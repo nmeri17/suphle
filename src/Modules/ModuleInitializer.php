@@ -62,15 +62,24 @@
 
 			->exchangeTokenValues($this->requestDetails->getPath()); // thanks to object references, this update affects the object stored in Container without explicitly rebinding
 
-			$renderer = $this->decoratorHydrator->scopeInjecting( // this is where all renderer dependencies are being injected
+			$renderer = $this->router->getActiveRenderer();
 
-				$this->router->getActiveRenderer(), self::class
-			);
-
-			$this->container->whenTypeAny()->needsAny([ // Not really necessary but just a slight optimization to save callers from demeter on the router. Any of those callers should assume its module has routed to a renderer
+			/**
+			 * Not really necessary but just a slight optimization to save callers from demeter on the router.
+			 * 
+			 * Any of those callers should assume its module has routed to a renderer
+			 * 
+			 * Ordering here binds to container before scoping the renderer, in case any of the dependencies requires the renderer itself
+			*/
+			$this->container->whenTypeAny()->needsAny([
 
 				BaseRenderer::class => $renderer
 			]);
+
+			$this->decoratorHydrator->scopeInjecting( // this is where all renderer dependencies are being injected
+
+				$renderer, self::class
+			);
 		}
 
 		/**
@@ -109,11 +118,6 @@
 		public function handlingRenderer ():?BaseRenderer {
 
 			return $this->finalRenderer;
-		}
-
-		public function getRouter ():RouteManager {
-			
-			return $this->router;
 		}
 
 		public function didFindRoute():bool {

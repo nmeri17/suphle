@@ -44,7 +44,7 @@
 
 					$this->callbackDetails->recursiveValueDerivation(
 
-						$this->deriveFilePath
+						$this->deriveFilePath, $this
 					)
 				);
 			}

@@ -3,6 +3,8 @@
 
 	interface EntityDetails {
 
-		public function normalizeIdentifier (object $model, string $prefix = ""):string;
+		public function idFromModel (object $model, string $prefix = ""):string;
+
+		public function idFromString (string $modelName, string $modelId, string $prefix = ""):string;
 	}
 ?>

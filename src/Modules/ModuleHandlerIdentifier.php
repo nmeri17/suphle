@@ -179,17 +179,11 @@
 			return $renderer;
 		}
 
-		public function findExceptionRenderer (Throwable $exception):BaseRenderer {
+		public function findExceptionRenderer (Throwable $exception):void {
 
-			$exceptionBridge = $this->identifiedHandler = $this->freshExceptionBridge(); // from currently active container after routing may have occured
+			$this->identifiedHandler = $this->freshExceptionBridge(); // from currently active container after routing may have occured
 
-			$exceptionBridge->hydrateHandler($exception);
-
-			$renderer = $exceptionBridge->handlingRenderer();
-
-			$exceptionBridge->successfullyHandled();
-
-			return $renderer;
+			$this->identifiedHandler->hydrateHandler($exception);
 		}
 
 		public function underlyingRenderer ():BaseRenderer {

@@ -3,7 +3,7 @@
 
 	use Suphle\Services\ServiceCoordinator;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Validators\HotwireValidator};
+	use Suphle\Tests\Mocks\Modules\ModuleOne\{Validators\HotwireValidator, Concretes\Services\SystemModelEditMock1};
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\PayloadReaders\{BaseEmploymentBuilder, EmploymentId2Builder};
 
@@ -12,6 +12,11 @@
 		public function validatorCollection ():string {
 
 			return HotwireValidator::class;
+		}
+
+		public function __construct (protected SystemModelEditMock1 $editService) {
+
+			//
 		}
 
 		public function loadForm ():array {

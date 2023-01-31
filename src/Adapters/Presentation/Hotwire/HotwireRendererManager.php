@@ -35,7 +35,11 @@
 
 		public function validationRenderer (array $failureDetails):BaseRenderer {
 
-			if (!$this->renderer instanceof BaseHotwireStream)
+			if (
+				!($this->renderer instanceof BaseHotwireStream) ||
+
+				!$this->renderer->isHotwireRequest()
+			)
 
 				return $this->invokePreviousRenderer($failureDetails);
 

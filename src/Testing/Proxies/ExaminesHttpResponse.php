@@ -15,9 +15,9 @@
 
 			$response = new Response(
 
-				$renderer->getRawResponse(), $renderer->getStatusCode(),
-				
-				$renderer->getHeaders()
+				$renderer->render(), // rendering straight away instead of giving them the raw response since they have no way of parsing possible html from our templates
+
+				$renderer->getStatusCode(), $renderer->getHeaders()
 			);
 
 			return new TestResponseBridge(

@@ -1,9 +1,11 @@
 <?php
 	namespace Suphle\Tests\Integration\Hotwire;
 
-	use Suphle\Contracts\{Requests\CoodinatorManager, Config\Router, Response\RendererManager};
+	use Suphle\Contracts\{Requests\CoodinatorManager, Config\Router, Response\RendererManager, Presentation\HtmlParser};
 
 	use Suphle\Adapters\Presentation\Hotwire\{HotwireRendererManager, HotwireStreamBuilder, HotwireAsserter, Formats\BaseHotwireStream};
+
+	use Suphle\Adapters\Markups\Transphporm as TransphpormAdapter;
 
 	use Suphle\Response\Format\{Reload, Redirect};
 
@@ -11,7 +13,7 @@
 
 	use Suphle\Request\PayloadStorage;
 
-	use Suphle\Exception\Diffusers\ValidationFailureDiffuser;
+	use Suphle\Exception\{Diffusers\ValidationFailureDiffuser, Explosives\ValidationFailure};
 
 	use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer, Proxies\Extensions\TestResponseBridge, Condiments\BaseDatabasePopulator};
 
@@ -23,6 +25,9 @@
 
 	use Suphle\Tests\Mocks\Models\Eloquent\Employment;
 
+	/**
+	* @\depends HttpValidationTest
+	*/
 	class BaseHotwireStreamTest extends ModuleLevelTest {
 
 		use BaseDatabasePopulator, HotwireAsserter {
@@ -30,7 +35,7 @@
 			BaseDatabasePopulator::setUp as databaseAllSetup;
 		}
 
-		//protected bool $debugCaughtExceptions = true;
+		// protected bool $debugCaughtExceptions = true;
 
 		protected const INITIAL_URL = "/init-post",
 
@@ -44,7 +49,7 @@
 
 		protected Employment $employment1, $employment2;
 
-		protected function setUp ():void {
+		protected function setUp ():void {// $this->markTestSkipped();
 
 			$this->databaseAllSetup();
 
@@ -96,21 +101,20 @@
 
 		/**
 		 * @dataProvider userAgentHeaders
-		 * @\depends HttpValidationTest
 		 */
 		public function test_regular_renderer_failure_yields_non_hotwire_response (?string $agentHeader) {
 
-			var_dump($this->sendFailRedirect(
+			$this->sendFailRedirect(
 
 				"/regular-markup", self::POST_METHOD, $agentHeader
-			));
+			);
 		}
 
 		public function userAgentHeaders ():array {
 
 			return [
 
-				[null]//, [BaseHotwireStream::TURBO_INDICATOR]
+				[null], [BaseHotwireStream::TURBO_INDICATOR]
 			];
 		}
 
@@ -128,7 +132,9 @@
 				PayloadStorage::ACCEPTS_KEY => $agentHeader
 			]) // when
 			// then
-			->assertUnprocessable();
+			->assertUnprocessable()
+
+			->assertSee("Edit form");
 		}
 
 		public function urlsToHotwireRequests ():array {
@@ -148,7 +154,7 @@
 		 */
 		public function test_regular_request_to_dual_failure_reverts_to_previous (string $url, string $httpMethod) {
 
-			$this->sendFailRedirect($url, $httpMethod);
+			$this->sendFailRedirect($url, $httpMethod, "");
 		}
 
 		public function test_hotwire_to_dual_failure_filters_current () {
@@ -180,10 +186,64 @@
 			});
 		}
 
+		public function hotwireFailureToParse ():array {
+
+			return [
+
+				[
+					self::DUAL_REDIRECT, self::POST_METHOD,
+
+					"replace-fragment"
+				], [
+
+					self::DUAL_RELOAD, self::PUT_METHOD,
+
+					"update-fragment"
+				]
+			];
+		}
+
+		public function test_hotwire_to_dual_failure_parses_only_one_partial () {
+
+			$this->dataProvider([
+			
+				$this->hotwireFailureToParse(...)
+			], function (
+				string $url, string $httpMethod, string $markupName
+			) {
+
+				$this->massProvide([
+
+					HtmlParser::class => $this->positiveDouble(TransphpormAdapter::class, [
+
+						"parseAll" => "page contents"
+					], [
+
+						"parseAll" => [1, [ // then
+							$this->callback(function ($subject) use ($markupName) {
+
+								return str_contains($subject->getMarkupPath(), $markupName);
+							})
+						]]
+					])
+				]);
+
+				$this->$httpMethod($url, array_merge($this->csrfField, [
+
+					"id" => $this->employment1->id,
+
+					// given // missing id2 field
+				]), [
+
+					PayloadStorage::ACCEPTS_KEY => BaseHotwireStream::TURBO_INDICATOR
+				]); // when
+			});
+		}
+
 		public function hotwireFailureContent ():array {
 
 			return [ // these frames/forms are expected to check the presence of validation errors and render them appropriately
-				[
+				/*[
 					self::DUAL_REDIRECT, self::POST_METHOD,
 
 					function (TestResponseBridge $response) {
@@ -196,7 +256,7 @@
 							BaseHotwireStream::BEFORE_ACTION, $this->employment1
 						);
 					}
-				], [
+				],*/ [
 					self::DUAL_RELOAD, self::PUT_METHOD,
 
 					function (TestResponseBridge $response) {

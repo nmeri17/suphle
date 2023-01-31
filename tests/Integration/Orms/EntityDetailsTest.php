@@ -30,9 +30,9 @@
 				// when
 				if (!is_null($prefix))
 
-					$result = $sut->normalizeIdentifier($model, $prefix);
+					$result = $sut->idFromModel($model, $prefix);
 
-				else $result = $sut->normalizeIdentifier($model);
+				else $result = $sut->idFromModel($model);
 
 				$this->assertSame($result, $expected); // then
 			});
