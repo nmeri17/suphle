@@ -10,7 +10,7 @@
 		/**
 		 * Doesn't confirm element presence within the frame since we have no APIs for drilling through DOM trees
 		*/
-		protected function assertStreamNode (string $hotwireAction, ?string $target = null):void {
+		protected function assertStreamNode (string $hotwireAction, ?string $targets = null):void {
 
 			$renderer = $this->getContainer()->getClass(BaseRenderer::class);
 
@@ -22,14 +22,14 @@
 
 				if ($builder->hotwireAction == $hotwireAction) {
 
-					if (is_null($target)) {
+					if (is_null($targets)) {
 
 						$this->assertTrue(true);
 
 						return;
 					}
 
-					if ($builder->target == $target) {
+					if ($builder->targets == $targets) {
 
 						$this->assertTrue(true);
 
@@ -40,9 +40,9 @@
 
 			$failMessage = "No node found in response matching action '$hotwireAction'";
 
-			if (!is_null($target))
+			if (!is_null($targets))
 
-				$failMessage .= " and target '$target'";
+				$failMessage .= " and target '$targets'";
 
 			$this->fail($failMessage);
 		}

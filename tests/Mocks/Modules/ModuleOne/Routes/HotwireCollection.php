@@ -62,7 +62,7 @@
 
 					return $modelDetail->idFromModel($responseBody["data"]);
 
-				return $modelDetail->idFromString(
+				return $modelDetail->idFromModelName(
 
 					Employment::class,
 

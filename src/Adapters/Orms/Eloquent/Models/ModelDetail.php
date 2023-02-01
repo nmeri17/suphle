@@ -13,9 +13,22 @@
 
 			return $this->idFromString(
 
-				(new ReflectionClass($model))->getShortName(),
+				$this->getModelName($model::class),
 
 				$model->$primaryField, $prefix
+			);
+		}
+
+		protected function getModelName (string $modelFqcn):string {
+
+			return (new ReflectionClass($modelFqcn))->getShortName();
+		}
+
+		public function idFromModelName (string $modelFqcn, string $modelId, string $prefix = ""):string {
+
+			return $this->idFromString(
+
+				$this->getModelName($modelFqcn), $modelId, $prefix
 			);
 		}
 
@@ -23,7 +36,10 @@
 
 			return strtolower(implode(
 
-				"_", array_filter([$prefix, $modelName, $modelId]) // remove possible empty entries
+				"_", array_filter([ // remove possible empty entries
+
+					$prefix, $modelName, $modelId
+				])
 			));
 		}
 	}
