@@ -6,6 +6,6 @@
 </head>
 <body>
 <!-- Dev-level error page that outputs whatever happened -->
-	<div id="message">{{$message}}</div>
+	<div id="exception">{{$exception}}</div>
 </body>
 </html>

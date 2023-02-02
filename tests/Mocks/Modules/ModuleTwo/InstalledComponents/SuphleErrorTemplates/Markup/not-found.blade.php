@@ -8,7 +8,7 @@
 
 	<h2>Page not found</h2>
 	<div>The Url
-		<span id="url"></span>
+		<span id="url">{{$url}}</span>
 		
 		does not exist. Return <a href="/">home</a>
 	</div>

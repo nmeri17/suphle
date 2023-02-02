@@ -11,7 +11,7 @@
 
 	class ValidationFailureDiffuser implements ExceptionHandler {
 
-		public const ERRORS_PRESENCE = "errors",
+		public const ERRORS_PRESENCE = "validation_errors",
 
 		PAYLOAD_KEY = "payload_storage";
 

@@ -123,8 +123,10 @@
 				// then
 				$response->assertUnprocessable()
 
-				->assertJsonValidationErrorFor("foo")
+				->assertJsonValidationErrorFor(
 
+					"foo", ValidationFailureDiffuser::ERRORS_PRESENCE
+				)
 				->assertJsonMissing(["message" => "mercy"]);
 			}
 		}
