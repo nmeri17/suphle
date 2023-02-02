@@ -29,7 +29,7 @@
 
 		protected array $hotwireHandlers = [], $nodeResponses = [],
 
-		$streamBuilders = [];
+		$streamBuilders = []; // houses each node and its corresponding parsed content
 
 		protected PayloadStorage $payloadStorage;
 
@@ -37,9 +37,9 @@
 
 		protected string $markupName;
 
-		protected ?string $templateName;
-
 		protected CallbackDetails $callbackDetails;
+
+		protected int $statusCode = 200;
 
 		public function setPayloadStorage (PayloadStorage $payloadStorage):void {
 
@@ -59,9 +59,9 @@
 			);
 		}
 
-		public function addAppend (string $handler, callable $target, string $markupName, string $templateName = null):self {
+		public function addAppend (string $handler, callable $target, string $markupName):self {
 
-			$this->hotwireHandlers[] = [
+			$this->hotwireHandlers[] = [ // keying by action will limit each renderer to one action type
 
 				self::APPEND_ACTION, ...func_get_args()
 			];
@@ -69,7 +69,7 @@
 			return $this;
 		}
 
-		public function addPrepend (string $handler, callable $target, string $markupName, string $templateName = null):self {
+		public function addPrepend (string $handler, callable $target, string $markupName):self {
 
 			$this->hotwireHandlers[] = [
 
@@ -79,7 +79,7 @@
 			return $this;
 		}
 
-		public function addReplace (string $handler, callable $target, string $markupName, string $templateName = null):self {
+		public function addReplace (string $handler, callable $target, string $markupName):self {
 
 			$this->hotwireHandlers[] = [
 
@@ -89,7 +89,7 @@
 			return $this;
 		}
 
-		public function addUpdate (string $handler, callable $target, string $markupName, string $templateName = null):self {
+		public function addUpdate (string $handler, callable $target, string $markupName):self {
 
 			$this->hotwireHandlers[] = [
 
@@ -99,7 +99,7 @@
 			return $this;
 		}
 
-		public function addBefore (string $handler, callable $target, string $markupName, string $templateName = null):self {
+		public function addBefore (string $handler, callable $target, string $markupName):self {
 
 			$this->hotwireHandlers[] = [
 
@@ -109,7 +109,7 @@
 			return $this;
 		}
 
-		public function addAfter (string $handler, callable $target, string $markupName, string $templateName = null):self {
+		public function addAfter (string $handler, callable $target, string $markupName):self {
 
 			$this->hotwireHandlers[] = [
 
@@ -132,23 +132,29 @@
 
 				$this->fallbackRenderer->invokeActionHandler($handlerParameters);
 
-			else foreach ($this->hotwireHandlers as [, $handler])
+			else foreach ($this->hotwireHandlers as $index => [, $handler])
 
 				$this->nodeResponses[] = call_user_func_array(
 
-					[$this->coordinator, $handler], $handlerParameters
+					[$this->coordinator, $handler],
+
+					$handlerParameters[$index]
 				);
 
 			return $this;
 		}
 
-		public function render ():string { // we can't set those stuff for each route so renderers may have to be refactored to be internally sent to and fro the container before [render] is called
+		public function render ():string {
 
-			$this->setConditionalHeader();
+			$useFallback = !$this->isHotwireRequest();
 
-			if (!$this->isHotwireRequest())
+			if ($useFallback)
 
-				return $this->fallbackRenderer->render();
+				$renderedContent = $this->fallbackRenderer->render();
+
+			$this->setConditionalHeader($useFallback); // this has to be called after rendering occurs due to the fact that some headers (e.g. redirect) are only known after render is called
+
+			if ($useFallback) return $renderedContent;
 
 			$allStreams = "";
 
@@ -156,50 +162,49 @@
 
 				[$hotwireAction,, $targets ] = $handlerDetails;
 
+				$this->rawResponse = $this->nodeResponses[$index]; // for use by the target derivator and the html parser at each node
+
 				$targetString = $this->callbackDetails
 
 				->recursiveValueDerivation($targets, $this);
 
 				$builder = new HotwireStreamBuilder($hotwireAction, $targetString);
 
-				$builder->wrapContent($this->parseNodeContent(
+				$builder->wrapContent(
 
-					@$handlerDetails[3], @$handlerDetails[4],
-
-					$this->nodeResponses[$index]
-				));
+					$this->parseNodeContent(@$handlerDetails[3])
+				);
 
 				$this->streamBuilders[] = $builder;
 
 				$allStreams .= $builder;
 			}
 
+			$this->rawResponse = $this->nodeResponses; // reset it
+
 			return $allStreams;
 		}
 
-		protected function setConditionalHeader ():void {
+		protected function setConditionalHeader (bool $notHot):void {
 
-			if ($this->isHotwireRequest())
-
-				$this->setHeaders(200, [
-				
-					PayloadStorage::CONTENT_TYPE_KEY => self::TURBO_INDICATOR
-				]);
-
-			else {
+			if ($notHot) {
 
 				$this->statusCode = $this->fallbackRenderer->getStatusCode();
 
 				$this->headers = $this->fallbackRenderer->getHeaders();
 			}
+
+			else $this->setHeaders($this->statusCode, [
+				
+				PayloadStorage::CONTENT_TYPE_KEY => self::TURBO_INDICATOR
+			]);
 		}
 
-		protected function parseNodeContent (?string $markupName, ?string $templateName, $rawResponse):string {
+		protected function parseNodeContent (?string $markupName = null):string {
 
 			if (is_null($markupName)) return ""; // "remove" action has no markup
 
-			[$this->markupName, $this->templateName, $this->rawResponse] = 
-			[$markupName, $templateName, $rawResponse];
+			$this->markupName = $markupName;
 
 			return $this->htmlParser->parseAll($this);
 		}
@@ -243,6 +248,11 @@
 			return $this->streamBuilders;
 		}
 
+		public function getHotwireHandlers ():array {
+
+			return $this->hotwireHandlers;
+		}
+
 		public function setCoordinatorClass (ServiceCoordinator $coordinator):void {
 			
 			parent::setCoordinatorClass($coordinator);
@@ -254,7 +264,7 @@
 
 			$this->forceArrayShape($response);
 
-			$this->nodeResponses = [$this->rawResponse]; // this default implementation caters to only node in the eventuality of a validation failure
+			$this->nodeResponses = [$this->rawResponse]; // this default implementation caters to only one node in the eventuality of a validation failure
 
 			return $this;
 		}

@@ -61,7 +61,9 @@
 
 			$this->renderer->setHeaders(
 
-				$incomingCode > 100 ? $incomingCode: 500, []
+				(is_int($incomingCode) && $incomingCode > 100) ?
+
+				$incomingCode: 500, []
 			);
 		}
 

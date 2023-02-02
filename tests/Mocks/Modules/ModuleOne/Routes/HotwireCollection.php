@@ -37,12 +37,12 @@
 			$renderer = (new RedirectHotwireStream("hotwireFormResponse", fn () => "/"))
 
 			->addReplace(
-				"hotwireReplace", $this->employmentId(),
+				"hotwireReplace", $this->getStreamActionTarget(),
 
 				"hotwire/replace-fragment"
 			)
 			->addBefore(
-				"hotwireBefore", $this->employmentId(),
+				"hotwireBefore", $this->getStreamActionTarget(),
 
 				"hotwire/before-fragment"
 			);
@@ -50,24 +50,22 @@
 			$this->_post($renderer);
 		}
 
-		public function employmentId ():callable {
+		/**
+		 * On success, creates a turbo stream for given element. On failure, should attempt to replace/update the form from which request originated
+		*/
+		public function getStreamActionTarget (string $formTarget = "update-form"):callable {
 
-			return function () {
+			return function () use ($formTarget) {
 
 				$responseBody = $this->rawResponse;
 
-				$modelDetail = new ModelDetail;
-
 				if (!array_key_exists(ValidationFailureDiffuser::ERRORS_PRESENCE, $responseBody))
 
-					return $modelDetail->idFromModel($responseBody["data"]);
+					return (new ModelDetail)
 
-				return $modelDetail->idFromModelName(
+					->idFromModel($responseBody["data"]);
 
-					Employment::class,
-
-					$responseBody[ValidationFailureDiffuser::PAYLOAD_KEY]["id"]
-				);
+				return $formTarget;
 			};
 		}
 
@@ -76,12 +74,12 @@
 			$renderer = (new ReloadHotwireStream("hotwireFormResponse"))
 
 			->addAfter(
-				"hotwireAfter", $this->employmentId(),
+				"hotwireAfter", $this->getStreamActionTarget(),
 
 				"hotwire/after-fragment"
 			)
 			->addUpdate(
-				"hotwireUpdate", $this->employmentId(),
+				"hotwireUpdate", $this->getStreamActionTarget(),
 
 				"hotwire/update-fragment"
 			);
@@ -94,12 +92,12 @@
 			$renderer = (new RedirectHotwireStream("hotwireFormResponse", fn () => "/"))
 
 			->addAppend(
-				"hotwireReplace", $this->employmentId(),
+				"hotwireReplace", $this->getStreamActionTarget(),
 
 				"hotwire/append-fragment"
 			)
 			->addBefore(
-				"hotwireBefore", $this->employmentId(),
+				"hotwireBefore", $this->getStreamActionTarget(),
 
 				"hotwire/before-fragment"
 			);
@@ -112,7 +110,7 @@
 			$renderer = (new RedirectHotwireStream("hotwireFormResponse", fn () => "/"))
 
 			->addRemove(
-				"hotwireReplace", $this->employmentId()
+				"hotwireReplace", $this->getStreamActionTarget()
 			);
 
 			$this->_delete($renderer);
@@ -123,10 +121,10 @@
 			$renderer = (new RedirectHotwireStream("hotwireFormResponse", fn () => "/"))
 
 			->addRemove(
-				"hotwireReplace", $this->employmentId()
+				"hotwireReplace", $this->getStreamActionTarget()
 			)
 			->addAfter(
-				"hotwireAfter", $this->employmentId(),
+				"hotwireAfter", $this->getStreamActionTarget(),
 
 				"hotwire/after-fragment"
 			);

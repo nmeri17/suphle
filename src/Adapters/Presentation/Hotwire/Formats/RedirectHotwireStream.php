@@ -7,17 +7,19 @@
 
 	class RedirectHotwireStream extends BaseHotwireStream {
 
+		public const STATUS_CODE = 303;
+
+		/**
+		 * @see https://turbo.hotwired.dev/handbook/drive#redirecting-after-a-form-submission
+		*/
+		protected int $statusCode = self::STATUS_CODE;
+
 		public function __construct(
 
 			protected string $handler, callable $destination
 		) {
 
 			$this->fallbackRenderer = new Redirect($handler, $destination);
-
-			/**
-			 * @see https://turbo.hotwired.dev/handbook/drive#redirecting-after-a-form-submission
-			*/
-			$this->fallbackRenderer->setHeaders(303, []);
 		}
 
 		public function setCallbackDetails (CallbackDetails $callbackDetails):void {

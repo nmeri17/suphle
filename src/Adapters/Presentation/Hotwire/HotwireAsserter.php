@@ -3,7 +3,9 @@
 
 	use Suphle\Contracts\Presentation\BaseRenderer;
 
-	use Suphle\Adapters\Presentation\Hotwire\Formats\BaseHotwireStream;
+	use Suphle\Adapters\Presentation\Hotwire\Formats\{BaseHotwireStream, RedirectHotwireStream};
+
+	use Suphle\Testing\Proxies\Extensions\TestResponseBridge;
 
 	trait HotwireAsserter {
 
@@ -45,6 +47,11 @@
 				$failMessage .= " and target '$targets'";
 
 			$this->fail($failMessage);
+		}
+
+		protected function assertHotwireRedirect (TestResponseBridge $response):void {
+
+			$response->assertStatus(RedirectHotwireStream::STATUS_CODE);
 		}
 	}
 ?>

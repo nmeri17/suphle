@@ -9,7 +9,7 @@
 
 				"id" => "required|numeric|exists:employment",
 
-				"id2" => "required|numeric|exists:employment"
+				"id2" => "required|numeric|exists:employment,id"
 			];
 		}
 
@@ -20,22 +20,22 @@
 
 		public function hotwireReplace ():array {
 
-			return ["id" => "required|numeric|exists:employment"];
+			return $this->regularFormResponse();
 		}
 
 		public function hotwireBefore ():array {
 
-			return ["id2" => "required|numeric|exists:employment"];
+			return [];
 		}
 
 		public function hotwireAfter ():array {
 
-			return ["id" => "required|numeric|exists:employment"];
+			return [];
 		}
 
 		public function hotwireUpdate ():array {
 
-			return ["id2" => "required|numeric|exists:employment"];
+			return $this->regularFormResponse();
 		}
 	}
 ?>

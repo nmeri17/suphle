@@ -5,7 +5,7 @@
 
 	use Suphle\Adapters\Presentation\Hotwire\{HotwireRendererManager, HotwireStreamBuilder, HotwireAsserter, Formats\BaseHotwireStream};
 
-	use Suphle\Adapters\Markups\Transphporm as TransphpormAdapter;
+	use Suphle\Adapters\Presentation\Blade\BladeParser;
 
 	use Suphle\Response\Format\{Reload, Redirect};
 
@@ -35,7 +35,7 @@
 			BaseDatabasePopulator::setUp as databaseAllSetup;
 		}
 
-		// protected bool $debugCaughtExceptions = true;
+		//protected bool $debugCaughtExceptions = true;
 
 		protected const INITIAL_URL = "/init-post",
 
@@ -176,14 +176,77 @@
 				]), [
 
 					PayloadStorage::ACCEPTS_KEY => BaseHotwireStream::TURBO_INDICATOR
-				]) // when
+				]); // when
 				// then
-				->assertUnprocessable() // sanity check
+				$response->assertUnprocessable() // sanity check
 
-				->assertHeader(PayloadStorage::CONTENT_TYPE_KEY, BaseHotwireStream::TURBO_INDICATOR);
+				->assertHeader(
+					PayloadStorage::CONTENT_TYPE_KEY,
+
+					BaseHotwireStream::TURBO_INDICATOR
+				);
 
 				$outputAsserter($response);
 			});
+		}
+
+		public function hotwireFailureContent ():array {
+
+			return [ // these frames/forms are expected to check the presence of validation errors and render them appropriately
+				[
+					self::DUAL_REDIRECT, self::POST_METHOD,
+
+					function (TestResponseBridge $response) {
+
+						$this->assertStreamNode(BaseHotwireStream::REPLACE_ACTION, "update-form");
+
+						$this->assertEmploymentFormError(
+							$response, BaseHotwireStream::REPLACE_ACTION,
+
+							BaseHotwireStream::BEFORE_ACTION, $this->employment1
+						);
+					}
+				], [
+					self::DUAL_RELOAD, self::PUT_METHOD,
+
+					function (TestResponseBridge $response) {
+
+						$this->assertStreamNode(BaseHotwireStream::UPDATE_ACTION, "update-form");
+
+						$this->assertEmploymentFormError(
+							$response, BaseHotwireStream::UPDATE_ACTION,
+
+							BaseHotwireStream::AFTER_ACTION, $this->employment1
+						);
+					}
+				]
+			];
+		}
+
+		protected function assertEmploymentFormError (
+
+			TestResponseBridge $response, string $hotwireAction,
+
+			?string $oppositeAction, Employment $employment
+		):void {
+
+			$response->assertSee(ucfirst($hotwireAction) . " form")
+
+			->assertSee("Validation errors")
+
+			->assertSee(
+				"<input type=\"text\" name=\"id\" value=\"{$employment->id}\">", false
+			)
+			->assertSee(
+				"<input type=\"text\" name=\"id2\" value=\"\">", false
+			)
+			->assertDontSee("
+				<div id=\"from-handler\">{$employment->id}</div>", false
+			);
+
+			if (!is_null($oppositeAction))
+
+				$response->assertDontSee(ucfirst($oppositeAction) . " form");
 		}
 
 		public function hotwireFailureToParse ():array {
@@ -193,12 +256,12 @@
 				[
 					self::DUAL_REDIRECT, self::POST_METHOD,
 
-					"replace-fragment"
+					"hotwire/replace-fragment"
 				], [
 
 					self::DUAL_RELOAD, self::PUT_METHOD,
 
-					"update-fragment"
+					"hotwire/update-fragment"
 				]
 			];
 		}
@@ -214,7 +277,7 @@
 
 				$this->massProvide([
 
-					HtmlParser::class => $this->positiveDouble(TransphpormAdapter::class, [
+					HtmlParser::class => $this->positiveDouble(BladeParser::class, [
 
 						"parseAll" => "page contents"
 					], [
@@ -222,7 +285,7 @@
 						"parseAll" => [1, [ // then
 							$this->callback(function ($subject) use ($markupName) {
 
-								return str_contains($subject->getMarkupPath(), $markupName);
+								return str_contains($subject->getMarkupName(), $markupName);
 							})
 						]]
 					])
@@ -240,68 +303,6 @@
 			});
 		}
 
-		public function hotwireFailureContent ():array {
-
-			return [ // these frames/forms are expected to check the presence of validation errors and render them appropriately
-				/*[
-					self::DUAL_REDIRECT, self::POST_METHOD,
-
-					function (TestResponseBridge $response) {
-
-						$this->assertStreamNode(BaseHotwireStream::REPLACE_ACTION, "employment_". $this->employment1->id);
-
-						$this->assertEmploymentFormError(
-							$response, BaseHotwireStream::REPLACE_ACTION,
-
-							BaseHotwireStream::BEFORE_ACTION, $this->employment1
-						);
-					}
-				],*/ [
-					self::DUAL_RELOAD, self::PUT_METHOD,
-
-					function (TestResponseBridge $response) {
-
-						$this->assertStreamNode(BaseHotwireStream::UPDATE_ACTION, "employment_". $this->employment2->id);
-
-						$this->assertEmploymentFormError(
-							$response, BaseHotwireStream::UPDATE_ACTION,
-
-							BaseHotwireStream::AFTER_ACTION, $this->employment2
-						);
-					}
-				]
-			];
-		}
-
-		protected function assertEmploymentFormError (TestResponseBridge $response, string $hotwireAction, ?string $oppositeAction, Employment $employment):void {
-
-			$response->assertSee(ucfirst($hotwireAction) . " form")
-
-			->assertSee("Validation errors")
-
-			->assertSee(
-				"<input type=\"text\" name=\"title\" value=\"{$employment->id}\">", false
-			)
-			->assertDontSee("
-				<div id=\"from-handler\">{$employment->id}</div>", false
-			);
-
-			if (!is_null($oppositeAction))
-
-				$response->assertDontSee($oppositeAction);
-		}
-
-		protected function assertEmploymentSuccessContent (TestResponseBridge $response, string $hotwireAction, Employment $employment):void {
-
-			$response->assertSee(ucfirst($hotwireAction) . " form")
-
-			->assertDontSee("Validation errors")
-
-			->assertDontSee(
-				"<input type=\"text\" name=\"title\" value=\"{$employment->id}\">", false
-			);
-		}
-
 		public function hotwireSuccessContent ():array {
 
 			$employment1Id = $this->employment1->id;
@@ -315,14 +316,14 @@
 
 					function (TestResponseBridge $response) use ($employment1Id, $employment2Id) {
 
-						$this->assertStreamNode(BaseHotwireStream::REPLACE_ACTION, "employment_". $employment1Id)
+						$this->assertStreamNode(BaseHotwireStream::REPLACE_ACTION, "employment_". $employment1Id);
 
-						->assertStreamNode(BaseHotwireStream::BEFORE_ACTION, "employment_". $employment2Id);
+						$this->assertStreamNode(BaseHotwireStream::BEFORE_ACTION, "employment_". $employment2Id);
 
 						$this->assertEmploymentSuccessContent(
 							$response, BaseHotwireStream::REPLACE_ACTION,
 
-							$this->employment1
+							$this->employment2 // neither id or 2 should be present but we're testing with id2 since that's the name hard-coded in the asserter
 						)->assertEmploymentSuccessContent(
 							$response, BaseHotwireStream::BEFORE_ACTION,
 
@@ -334,14 +335,14 @@
 
 					function (TestResponseBridge $response) use ($employment1Id, $employment2Id) {
 
-						$this->assertStreamNode(BaseHotwireStream::AFTER_ACTION, "employment_". $employment1Id)
+						$this->assertStreamNode(BaseHotwireStream::AFTER_ACTION, "employment_". $employment1Id);
 
-						->assertStreamNode(BaseHotwireStream::UPDATE_ACTION, "employment_". $employment2Id);
+						$this->assertStreamNode(BaseHotwireStream::UPDATE_ACTION, "employment_". $employment2Id);
 
 						$this->assertEmploymentSuccessContent(
 							$response, BaseHotwireStream::AFTER_ACTION,
 
-							$this->employment1
+							$this->employment2
 						)->assertEmploymentSuccessContent(
 							$response, BaseHotwireStream::UPDATE_ACTION,
 
@@ -350,6 +351,19 @@
 					}
 				]
 			];
+		}
+
+		protected function assertEmploymentSuccessContent (TestResponseBridge $response, string $hotwireAction, Employment $employment):self {
+
+			$response->assertSee(ucfirst($hotwireAction) . " form")
+
+			->assertDontSee("Validation errors")
+
+			->assertDontSee(
+				"<input type=\"text\" name=\"id2\" value=\"{$employment->id}\">", false
+			); // since it's not expected to have gone through validation handler
+
+			return $this;
 		}
 
 		public function test_hotwire_to_dual_success_yields_all () {
@@ -361,7 +375,7 @@
 
 				$this->get(self::INITIAL_URL);		
 
-				$this->$httpMethod($url, array_merge($this->csrfField, [
+				$responseAsserter = $this->$httpMethod($url, array_merge($this->csrfField, [
 
 					"id" => $this->employment1->id,
 
@@ -369,13 +383,16 @@
 				]), [
 
 					PayloadStorage::ACCEPTS_KEY => BaseHotwireStream::TURBO_INDICATOR
-				]) // when
+				]); // when
+
 				// then
-				->assertOk() // sanity check
+				$responseAsserter->assertHeader(
+					PayloadStorage::CONTENT_TYPE_KEY,
 
-				->assertHeader(PayloadStorage::CONTENT_TYPE_KEY, BaseHotwireStream::TURBO_INDICATOR);
+					BaseHotwireStream::TURBO_INDICATOR
+				);
 
-				$outputAsserter($response);
+				$outputAsserter($responseAsserter);
 			});
 		}
 
@@ -395,7 +412,7 @@
 					"id2" => $this->employment2->id
 				])) // when
 				// then
-				->assertOk()->assertStatus($statusCode);
+				->assertStatus($statusCode);
 
 				foreach ($expectedHeaders as $header => $value)
 
@@ -432,7 +449,7 @@
 
 			$this->get(self::INITIAL_URL);				
 
-			$this->post(self::DUAL_REDIRECT, array_merge($this->csrfField, [
+			$responseAsserter = $this->post(self::DUAL_REDIRECT, array_merge($this->csrfField, [
 
 				"id" => $this->employment1->id,
 
@@ -442,13 +459,13 @@
 				PayloadStorage::ACCEPTS_KEY => BaseHotwireStream::TURBO_INDICATOR
 			]) // when
 			// then
-			->assertOk() // sanity check
-
 			->assertSee(
 				$this->frameOuterHtml(BaseHotwireStream::REPLACE_ACTION, $this->employment1),
 
 				false
 			);
+
+			$this->assertHotwireRedirect($response);
 		}
 
 		protected function frameOuterHtml (string $hotwireAction, Employment $employment):string {
@@ -544,8 +561,8 @@
 							BaseHotwireStream::REMOVE_ACTION,
 
 							"employment_". $employment1Id
-						)
-						->assertStreamNode(
+						);
+						$this->assertStreamNode(
 
 							BaseHotwireStream::AFTER_ACTION,
 

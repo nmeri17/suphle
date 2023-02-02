@@ -17,21 +17,19 @@
 
 		public function fetchHandlerParameters (
 
-			ServiceCoordinator $coodinator, string $handlingMethod,
-
-			bool $skipValidation = false
+			ServiceCoordinator $coodinator, string $handlingMethod
 		):array;
 
 		/**
 		 * @throws ValidationFailure
 		*/
-		public function mayBeInvalid ():void;
+		public function mayBeInvalid (?BaseRenderer $renderer = null):self;
 
-		public function invokePreviousRenderer (array $toMerge = []):BaseRenderer;
+		public function invokePreviousRenderer (array $toMerge = []):?BaseRenderer;
 
 		/**
 		 * @throws NoCompatibleValidator
 		*/
-		public function updateValidatorMethod (ServiceCoordinator $coodinator, string $handlingMethod):void;
+		public function acquireValidatorStatus (ServiceCoordinator $coodinator, string $handlingMethod):bool;
 	}
 ?>

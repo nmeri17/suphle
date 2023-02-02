@@ -53,7 +53,7 @@
 		*/
 		final public function getBuilder ():object {
 
-			return $this->orm->selectFields(
+			return $this->ormDialect->selectFields(
 
 				$this->getBaseCriteria(), $this->onlyFields()
 			);

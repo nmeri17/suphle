@@ -97,9 +97,7 @@
 
 			$this->attemptAuthentication()->authorizeRequest();
 
-			$rendererManager->bootDefaultRenderer()
-
-			->mayBeInvalid(); // throws no error if validation Passed
+			$rendererManager->mayBeInvalid()->bootDefaultRenderer();
 
 			return $this;
 		}

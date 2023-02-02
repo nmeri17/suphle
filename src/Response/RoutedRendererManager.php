@@ -80,34 +80,11 @@
 		}
 
 		/**
-		 * Expected to be used when renderer is derived from other source other than the router. That source should have run all relevant protocols preceding coordinator execution
-		*/
-		public function bypassOrganicProcedures (BaseRenderer $renderer, bool $skipValidation = false):void {
-			
-			$renderer->invokeActionHandler($this->fetchHandlerParameters(
-				
-				$renderer->getCoordinator(), $renderer->getHandler(),
-
-				$skipValidation
-			));
-		}
-
-		/**
-		 * {@inheritdoc}
-		*/
-		public function mayBeInvalid ():void {
-
-			if (!$this->validatorManager->isValidated())
-
-				throw new ValidationFailure($this);
-		}
-
-		/**
 		 * Checks for whether current or previous should be renedered, depending on currently active renderer
 		 * 
 		 * Expects current request to contain same placeholder values used for executing that preceding request
 		*/
-		public function invokePreviousRenderer (array $toMerge = []):BaseRenderer {
+		public function invokePreviousRenderer (array $toMerge = []):?BaseRenderer {
 
 			if (!$this->renderer->deferValidationContent()) // if current request is something like json, write validation errors to it
 
@@ -116,7 +93,9 @@
 
 				$previousRenderer = $this->sessionClient->getValue(self::PREVIOUS_GET_RENDERER);
 
-				$this->bypassOrganicProcedures($previousRenderer, true); // safe to disable since renderer was stored on success i.e. must have passed its validation
+				if (!$previousRenderer) return null;
+
+				$this->bypassOrganicProcedures($previousRenderer);
 			}
 			
 			$previousRenderer->forceArrayShape($toMerge);
@@ -124,16 +103,21 @@
 			return $previousRenderer;
 		}
 
+		/**
+		 * Expected to be used when renderer is derived from other source other than the router. That source should have run all relevant protocols preceding coordinator execution
+		*/
+		public function bypassOrganicProcedures (BaseRenderer $renderer):void {
+			
+			$renderer->invokeActionHandler($this->fetchHandlerParameters(
+				
+				$renderer->getCoordinator(), $renderer->getHandler()
+			));
+		}
+
 		public function fetchHandlerParameters (
 
-			ServiceCoordinator $coodinator, string $handlingMethod,
-
-			bool $skipValidation = false
+			ServiceCoordinator $coodinator, string $handlingMethod
 		):array {
-			
-			if (!$skipValidation)
-
-				$this->updateValidatorMethod($coodinator, $handlingMethod);
 
 			return $this->container
 
@@ -143,9 +127,54 @@
 		/**
 		 * {@inheritdoc}
 		*/
-		public function updateValidatorMethod (ServiceCoordinator $coodinator, string $handlingMethod):void {
+		public function mayBeInvalid (?BaseRenderer $renderer = null):self {
+
+			if (is_null($renderer)) $renderer = $this->renderer;
+			
+			$shouldValidate = $this->acquireValidatorStatus(
+
+				$renderer->getCoordinator(), $renderer->getHandler()
+			);
+
+			if ($shouldValidate && !$this->validatorManager->isValidated())
+
+				throw new ValidationFailure($this);
+
+			return $this;
+		}
+
+		/**
+		 * {@inheritdoc}
+		*/
+		public function acquireValidatorStatus (ServiceCoordinator $coodinator, string $handlingMethod):bool {
 
 			$collectionName = $coodinator->validatorCollection();
+
+			if ($this->eligibleToValidate(
+
+				$collectionName, $handlingMethod, $coodinator::class
+			)) {
+
+				$this->validatorManager->setActionRules(
+
+					call_user_func([
+
+						$this->container->getClass($collectionName),
+
+						$handlingMethod
+					])
+				);
+
+				return true;
+			}
+
+			return false;
+		}
+
+		/**
+		 * @param {collectionName} The validation collection
+		*/
+		protected function eligibleToValidate (string $collectionName, string $handlingMethod, string $coodinatorName):bool { 
 
 			$hasNoValidator = empty($collectionName) ||
 
@@ -153,23 +182,15 @@
 
 			if ($hasNoValidator) {
 
-				if ($this->requestDetails->isGetRequest()) return;
+				if ($this->requestDetails->isGetRequest()) return false;
 
 				throw new NoCompatibleValidator(
 
-					$coodinator::class, $handlingMethod
+					$coodinatorName, $handlingMethod
 				);
 			}
 
-			$this->validatorManager->setActionRules(
-
-				call_user_func([
-
-					$this->container->getClass($collectionName),
-
-					$handlingMethod
-				])
-			);
+			return true;
 		}
 
 		public function getValidatorErrors ():array {

@@ -39,22 +39,22 @@
 		*/
 		public function hotwireReplace (BaseEmploymentBuilder $employmentBuilder):array {
 
-			return ["data" => $employmentBuilder->get()];
+			return ["data" => $employmentBuilder->getBuilder()->first()];
 		}
 
 		public function hotwireBefore (EmploymentId2Builder $employmentBuilder):array {
 
-			return ["data" => $employmentBuilder->get()];
+			return ["data" => $employmentBuilder->getBuilder()->first()];
 		}
 
 		public function hotwireAfter (BaseEmploymentBuilder $employmentBuilder):array {
 
-			return ["data" => $employmentBuilder->get()];
+			return ["data" => $employmentBuilder->getBuilder()->first()];
 		}
 
 		public function hotwireUpdate (EmploymentId2Builder $employmentBuilder):array {
 
-			return ["data" => $employmentBuilder->get()];
+			return ["data" => $employmentBuilder->getBuilder()->first()];
 		}
 	}
 ?>
