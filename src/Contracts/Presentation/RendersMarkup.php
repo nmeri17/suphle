@@ -3,6 +3,11 @@
 
 	interface RendersMarkup {
 
-		public function getMarkupPath ():string;
+		public function getMarkupName ():string;
+
+		/**
+		 * @param {markupPath}: should have trailing slash
+		*/
+		public function setFilePath (string $markupPath):self;
 	}
 ?>

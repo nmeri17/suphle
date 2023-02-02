@@ -29,12 +29,6 @@
 			BootProviders::class
 		];
 
-		protected const HELPER_SCRIPTS = [
-			"Collections/helpers.php", "Events/functions.php",
-
-			"Foundation/helpers.php", "Support/helpers.php"
-		];
-
 		private static bool $hasSetApp = false;
 
 		public function __construct (
@@ -104,31 +98,13 @@
 				(new $bootstrapper)->bootstrap($this);
 		}
 
-		public function ensureHasLoadedHelpers ():void {
+		public function overrideAppHelper ():void {
 
 			if (self::$hasSetApp) return;
 
-			$this->requireHelpers();
-
-			function app () { // override their definition
-
-				return $this;
-			}
+			function app () { return $this; }
 
 			self::$hasSetApp = true;
-		}
-
-		private function requireHelpers ():void {
-
-			$knownClass = new ReflectionClass(Application::class);
-
-			$rootArray = explode("\\", $knownClass->getFileName(), -2);
-
-			$packageRoot = implode(DIRECTORY_SEPARATOR, $rootArray);
-
-			foreach (self::HELPER_SCRIPTS as $relativePath)
-
-				require_once $packageRoot . DIRECTORY_SEPARATOR . $relativePath;
 		}
 	}
 ?>

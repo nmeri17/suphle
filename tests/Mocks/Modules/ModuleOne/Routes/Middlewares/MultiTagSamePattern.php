@@ -45,7 +45,7 @@
 
 		public function NEGOTIATE () {
 
-			$this->_get(new Markup("plainSegment", "generic/negotiated-content"));
+			$this->_get(new Markup("plainSegment", "generic.negotiated-content"));
 		}
 
 		public function _assignMiddleware (MiddlewareRegistry $registry):void {

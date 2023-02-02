@@ -6,6 +6,12 @@
 </head>
 <body>
 
-	<div id="message"></div>
+	<div>
+		<ul>
+			@foreach($data as $name)
+				<li>{{$name}}</li>
+			@endforeach
+		</ul>
+	</div>
 </body>
 </html>

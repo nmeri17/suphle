@@ -6,20 +6,15 @@
 	use Suphle\Request\PayloadStorage;
 
 	/*
-	 * Should not be used in conjuction with forms. Form actions should leave the request's originator
+	 * Should not be used in conjuction with form submissions. Form actions should leave the request's originator
 	*/
-	class Markup extends BaseTransphpormRenderer implements MirrorableRenderer {
+	class Markup extends BaseBladeRenderer implements MirrorableRenderer {
 
 		protected bool $wantsJson = false;
 
-		/**
-		 * @param {markupName}: It's not necessary to prefix with a slash
-		*/
 		public function __construct(
 
-			protected string $handler, protected string $markupName, 
-
-			protected ?string $templateName = null
+			protected string $handler, protected string $markupName
 		) {
 
 			$this->setHeaders(200, [

@@ -32,7 +32,7 @@
 
 				BrowserBuilder::SHOW_ONE,
 
-				new Markup("myOverride", "usurp/show-one")
+				new Markup("myOverride", "usurp.show-one")
 			)
 			->registerCruds();
 		}
@@ -41,7 +41,7 @@
 			
 			$this->_crud("missing")
 
-			->replaceRenderer("fooBar", new Markup("atLarge", "missing/show-one"))
+			->replaceRenderer("fooBar", new Markup("atLarge", "missing.show-one"))
 
 			->registerCruds();
 		}

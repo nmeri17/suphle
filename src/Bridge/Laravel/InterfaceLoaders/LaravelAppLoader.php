@@ -9,6 +9,8 @@
 
 	use Suphle\Contracts\{Config\Laravel as LaravelConfig, Bridge\LaravelContainer};
 
+	use Illuminate\Support\Facades\Facade;
+
 	class LaravelAppLoader extends BaseInterfaceLoader {
 
 		public function __construct(protected readonly ConfigLoader $configLoader, protected readonly ComponentEntry $componentEntry) {
@@ -33,14 +35,16 @@
 
 			$this->injectBindings($initialized); // required for below call
 
-			$initialized->ensureHasLoadedHelpers();
+			$initialized->overrideAppHelper();
 
 			$this->attendToConfig($initialized);
 
 			$initialized->runContainerBootstrappers();
 		}
 
-		private function injectBindings (LaravelContainer $laravelContainer):void {
+		protected function injectBindings (LaravelContainer $laravelContainer):void {
+			
+			Facade::setFacadeApplication($laravelContainer);
 
 			$laravelContainer->registerConcreteBindings($laravelContainer->concreteBinds());
 

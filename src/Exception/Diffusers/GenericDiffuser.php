@@ -77,14 +77,12 @@
 
 		protected function getMarkupRenderer ():BaseRenderer {
 
-			$path = $this->componentEntry->userLandMirror();
-
 			return (new Markup(self::CONTROLLER_ACTION, "default"))
 			
-			->setFilePaths(
-				$path . "Markup". DIRECTORY_SEPARATOR,
+			->setFilePath(
+				$this->componentEntry->userLandMirror() . "Markup".
 
-				$path . "Tss". DIRECTORY_SEPARATOR
+				DIRECTORY_SEPARATOR
 			);
 		}
 	}

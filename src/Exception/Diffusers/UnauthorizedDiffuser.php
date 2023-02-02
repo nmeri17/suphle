@@ -55,14 +55,12 @@
 
 		protected function getMarkupRenderer ():Markup {
 
-			$path = $this->componentEntry->userLandMirror();
-
 			return (new Markup($this->controllerAction, "authorization-failure"))
 			
-			->setFilePaths(
-				$path . "Markup". DIRECTORY_SEPARATOR,
+			->setFilePath(
+				$this->componentEntry->userLandMirror() . "Markup".
 
-				$path . "Tss". DIRECTORY_SEPARATOR
+				DIRECTORY_SEPARATOR
 			);
 		}
 	}

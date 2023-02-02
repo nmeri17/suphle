@@ -8,7 +8,7 @@
 	use Suphle\Contracts\Response\RendererManager;
 
 	#[VariableDependencies([ "setRendererManager" ])]
-	class Reload extends BaseTransphpormRenderer {
+	class Reload extends BaseBladeRenderer {
 
 		public const STATUS_CODE = 205; // Reset Content
 

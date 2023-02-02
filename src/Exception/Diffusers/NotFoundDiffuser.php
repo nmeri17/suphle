@@ -13,8 +13,9 @@
 
 	class NotFoundDiffuser implements ExceptionHandler {
 
-		private $renderer;
-  protected string $controllerAction = "missingHandler";
+		protected BaseRenderer $renderer;
+  
+  		protected string $controllerAction = "missingHandler";
 
 		public function __construct(protected readonly RequestDetails $requestDetails, protected readonly ComponentEntry $componentEntry) {
 
@@ -55,21 +56,15 @@
 			]);
 		}
 
-		protected function getMarkupRenderer ():Markup {
-
-			$path = $this->componentEntry->userLandMirror();
+		protected function getMarkupRenderer ():BaseRenderer {
 
 			return (new Markup($this->controllerAction, "not-found"))
 			
-			->setFilePaths(
-				$path . "Markup". DIRECTORY_SEPARATOR,
+			->setFilePath(
+				$this->componentEntry->userLandMirror() . "Markup".
 
-				$path . "Tss". DIRECTORY_SEPARATOR
-			)
-			->setRawResponse([
-
-				"url" => $this->requestDetails->getPath()
-			]);
+				DIRECTORY_SEPARATOR
+			);
 		}
 	}
 ?>

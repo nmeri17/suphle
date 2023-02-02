@@ -1,4 +1,0 @@
-#url {
-
-	content: data(url);
-}

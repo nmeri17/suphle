@@ -31,7 +31,7 @@
 
 		public function GET__WITHOUTh () {
 
-			$this->_get(new Markup("handleGet", "secure-some/edit-form"));
+			$this->_get(new Markup("handleGet", "secure-some.edit-form"));
 		}
 	}
 ?>

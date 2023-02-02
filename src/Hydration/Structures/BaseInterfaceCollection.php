@@ -17,7 +17,7 @@
 
 	use Suphle\Contracts\Auth\{AuthStorage, ModuleLoginHandler, ColumnPayloadComparer, UserContract};
 
-	use Suphle\Contracts\Config\{AuthContract, Database, DecoratorProxy, ExceptionInterceptor, Transphporm as TransphpormConfig, Laravel as LaravelConfig, Console as ConsoleContract, Flows as FlowConfig, ContainerConfig as IContainerConfig, CacheClient as CacheConfig, ComponentTemplates};
+	use Suphle\Contracts\Config\{AuthContract, Database, DecoratorProxy, ExceptionInterceptor, ComponentTemplates, Laravel as LaravelConfig, Console as ConsoleContract, Flows as FlowConfig, ContainerConfig as IContainerConfig, CacheClient as CacheConfig, Blade as BladeConfig};
 
 	use Suphle\Contracts\IO\Image\{ImageThumbnailClient, InferiorImageClient, ImageLocator, InferiorOperationHandler, ThumbnailOperationHandler};
 
@@ -35,15 +35,17 @@
 
 	use Suphle\Adapters\Image\Optimizers\NativeReducerClient;
 
-	use Suphle\Adapters\{Exception\Bugsnag, Session\NativeSession, Markups\Transphporm as TransphpormAdapter};
+	use Suphle\Adapters\{Exception\Bugsnag, Session\NativeSession};
 
 	use Suphle\Adapters\Presentation\Hotwire\FailureConventions\HttpMethodValidationConvention;
+
+	use Suphle\Adapters\Presentation\Blade\{DefaultBladeConfig, BladeParser};
 
 	use Suphle\Queues\AdapterLoader as QueueAdapterLoader;
 
 	use Suphle\Request\{NativeInputReader, ValidatorLoader, NativeFileReader};
 
-	use Suphle\Config\{Auth, Transphporm, Laravel, ExceptionConfig, Console as CliConsole, PDOMysqlKeys, DefaultFlowConfig, ProxyManagerConfig, DefaultCacheConfig, DefaultTemplateConfig, ContainerConfig};
+	use Suphle\Config\{Auth, Laravel, ExceptionConfig, Console as CliConsole, PDOMysqlKeys, DefaultFlowConfig, ProxyManagerConfig, DefaultCacheConfig, DefaultTemplateConfig, ContainerConfig};
 
 	use Suphle\Modules\ControllerModuleApi;
 
@@ -109,7 +111,7 @@
 
 				FileInputReader::class => NativeFileReader::class,
 
-				HtmlParser::class => TransphpormAdapter::class,
+				HtmlParser::class => BladeParser::class,
 
 				ImageLocator::class => LocalSaver::class,
 
@@ -158,6 +160,8 @@
 
 				AuthContract::class => Auth::class,
 
+				BladeConfig::class => DefaultBladeConfig::class,
+
 				CacheConfig::class => DefaultCacheConfig::class,
 
 				ComponentTemplates::class => DefaultTemplateConfig::class,
@@ -174,9 +178,7 @@
 
 				FlowConfig::class => DefaultFlowConfig::class,
 
-				LaravelConfig::class => Laravel::class,
-
-				TransphpormConfig::class => Transphporm::class
+				LaravelConfig::class => Laravel::class
 			];
 		}
 	}

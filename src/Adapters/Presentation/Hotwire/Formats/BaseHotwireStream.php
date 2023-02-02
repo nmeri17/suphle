@@ -3,7 +3,7 @@
 
 	use Suphle\Contracts\Presentation\BaseRenderer;
 
-	use Suphle\Response\Format\BaseTransphpormRenderer;
+	use Suphle\Response\Format\BaseBladeRenderer;
 
 	use Suphle\Request\PayloadStorage;
 
@@ -17,7 +17,7 @@
 
 		"setPayloadStorage", "setCallbackDetails"
 	])]
-	abstract class BaseHotwireStream extends BaseTransphpormRenderer {
+	abstract class BaseHotwireStream extends BaseBladeRenderer {
 
 		public const TURBO_INDICATOR = "text/vnd.turbo-stream.html",
 

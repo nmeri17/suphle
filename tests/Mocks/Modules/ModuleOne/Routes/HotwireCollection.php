@@ -24,7 +24,7 @@
 
 		public function INIT__POSTh () {
 
-			$this->_get(new Markup("loadForm", "secure-some/edit-form"));
+			$this->_get(new Markup("loadForm", "secure-some.edit-form"));
 		}
 
 		public function REGULAR__MARKUPh () {

@@ -29,6 +29,6 @@
 
 		public function runContainerBootstrappers ():void;
 
-		public function ensureHasLoadedHelpers ():void;
+		public function overrideAppHelper ():void;
 	}
 ?>
