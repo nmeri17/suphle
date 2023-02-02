@@ -12,6 +12,8 @@
 
 		protected string $markupName;
 
+		protected ?string $filePath = null;
+
 		protected HtmlParser $htmlParser;
 
 		public function setHtmlParser (HtmlParser $parser):void {
@@ -24,7 +26,7 @@
 		*/
 		public function setFilePath (string $markupPath):self {
 
-			$this->htmlParser->findInPath($markupPath);
+			$this->filePath = $markupPath;
 
 			return $this;
 		}

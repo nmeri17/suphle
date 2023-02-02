@@ -9,7 +9,7 @@
 
 	use Symfony\Component\Mailer\{Transport, Mailer};
 
-	use Symfony\Component\Mime\Email;
+	use Symfony\Component\Mime\{Email, Message};
 
 	class MailClientLoader extends BaseInterfaceLoader {
 
@@ -24,9 +24,9 @@
 
 			return [
 
-				"bodyWriter" => new Email,
+				Message::class => new Email,
 
-				"sender" => new Mailer(Transport::fromDsn($connection))
+				Mailer::class => new Mailer(Transport::fromDsn($connection))
 			];
 		}
 

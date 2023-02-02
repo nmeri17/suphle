@@ -25,9 +25,14 @@
 
 		public function render():string {
 			
-			if ( !$this->wantsJson)
+			if ( !$this->wantsJson) {
+
+				if (!is_null($this->filePath))
+
+					$this->htmlParser->findInPath($this->filePath); // setting this here since dependecies aren't wired as at the time exception handler may trying setting path of its renderer
 
 				return $this->htmlParser->parseAll($this);
+			}
 
 			$this->setHeaders(200, [
 

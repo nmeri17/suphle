@@ -9,7 +9,7 @@
 
 	use Illuminate\Database\Capsule\Manager as Capsule;
 
-	use Illuminate\Validation\{Factory, DatabasePresenceVerifier};
+	use Illuminate\Validation\{Factory as ValidationFactory, DatabasePresenceVerifier};
 	
 	use Illuminate\Translation\{FileLoader, Translator};
 
@@ -17,7 +17,12 @@
 
 	class ValidatorLoader extends BaseInterfaceLoader {
 
-		public function __construct(protected readonly LaravelContainer $laravelContainer, protected readonly OrmDialect $ormDialect) {
+		public function __construct(
+
+			protected readonly LaravelContainer $laravelContainer,
+
+			protected readonly OrmDialect $ormDialect
+		) {
 
 			//
 		}
@@ -26,17 +31,19 @@
 
 			$client = $this->getValidationClient();
 
-			$databaseManager = $this->ormDialect->getNativeClient()->getDatabaseManager();
+			$databaseManager = $this->ormDialect->getNativeClient()
+
+			->getDatabaseManager();
 
 			$client->setPresenceVerifier(new DatabasePresenceVerifier($databaseManager));
 
 			return [
 
-				"client" => $client
+				ValidationFactory::class => $client
 			];
 		}
 
-		private function getValidationClient ():Factory {
+		private function getValidationClient ():ValidationFactory {
 
 			$translator = new Translator(
 				new FileLoader(new Filesystem, "lang"),
@@ -44,7 +51,7 @@
 				"en"
 			);
 
-			return new Factory( $translator, $this->laravelContainer);
+			return new ValidationFactory( $translator, $this->laravelContainer);
 		}
 
 		public function concreteName ():string {

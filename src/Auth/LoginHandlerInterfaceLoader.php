@@ -3,7 +3,7 @@
 
 	use Suphle\Hydration\{BaseInterfaceLoader, Container};
 
-	use Suphle\Contracts\Config\AuthContract;
+	use Suphle\Contracts\{Config\AuthContract, Auth\LoginFlowMediator};
 
 	class LoginHandlerInterfaceLoader extends BaseInterfaceLoader {
 
@@ -26,7 +26,7 @@
 
 			return [
 
-				"rendererCollection" => $this->container->getClass(
+				LoginFlowMediator::class => $this->container->getClass(
 
 					$this->authContract->getLoginCollection()
 				) // passing collection as argument so the handler can receive a type-safe object
