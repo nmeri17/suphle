@@ -56,5 +56,10 @@
 
 			return ["data" => $employmentBuilder->getBuilder()->first()];
 		}
+
+		public function hotwireDelete (BaseEmploymentBuilder $employmentBuilder):array {
+
+			return ["data" => $employmentBuilder->getBuilder()->first()]; // even though it's not used on the front end, it's still necessary for generating the target on the route collection
+		}
 	}
 ?>

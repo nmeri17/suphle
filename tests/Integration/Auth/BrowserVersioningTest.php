@@ -59,9 +59,9 @@
 
 			// given no given user
 
-			$this->get("/api/v2/cascade") // when
+			$responseAsserter = $this->get("/api/v2/cascade"); // when
 
-			->assertOk(); // then
+			$responseAsserter->assertOk(); // then
 		}
 	}
 ?>

@@ -3,7 +3,7 @@
 
 	use Suphle\Contracts\{Requests\CoodinatorManager, Config\Router, Response\RendererManager, Presentation\HtmlParser};
 
-	use Suphle\Adapters\Presentation\Hotwire\{HotwireRendererManager, HotwireStreamBuilder, HotwireAsserter, Formats\BaseHotwireStream};
+	use Suphle\Adapters\Presentation\Hotwire\{HotwireRendererManager, HotwireAsserter, Formats\BaseHotwireStream};
 
 	use Suphle\Adapters\Presentation\Blade\BladeParser;
 
@@ -12,6 +12,8 @@
 	use Suphle\Security\CSRF\CsrfGenerator;
 
 	use Suphle\Request\PayloadStorage;
+
+	use Suphle\Adapters\Orms\Eloquent\Models\ModelDetail;
 
 	use Suphle\Exception\{Diffusers\ValidationFailureDiffuser, Explosives\ValidationFailure};
 
@@ -198,12 +200,12 @@
 
 					function (TestResponseBridge $response) {
 
-						$this->assertStreamNode(BaseHotwireStream::REPLACE_ACTION, "update-form");
+						$this->assertStreamNode(BaseHotwireStream::REPLACE_ACTION, "update-form"); // we set the route collection target generator to fallback to this in event of validation failure
 
 						$this->assertEmploymentFormError(
 							$response, BaseHotwireStream::REPLACE_ACTION,
 
-							BaseHotwireStream::BEFORE_ACTION, $this->employment1
+							BaseHotwireStream::BEFORE_ACTION, $this->employment1 // these IDs should be considered implementation detail and don't really matter. They're determined by what's bound to the action's validator
 						);
 					}
 				], [
@@ -457,28 +459,28 @@
 			]), [
 
 				PayloadStorage::ACCEPTS_KEY => BaseHotwireStream::TURBO_INDICATOR
-			]) // when
+			]); // when
+
+			$frameTarget = (new ModelDetail)->idFromModel($this->employment2); // we're testing against the "before" coordinator, which makes use of id2
+
+			$hotwireAction = BaseHotwireStream::BEFORE_ACTION;
+
+			$upperCaseAction = ucfirst($hotwireAction). " form";
+
 			// then
+			$responseAsserter->assertSee($upperCaseAction)
+
+			->assertSee($this->employment2->id)
+
+			->assertSee($this->employment2->title)
+
 			->assertSee(
-				$this->frameOuterHtml(BaseHotwireStream::REPLACE_ACTION, $this->employment1),
+				"<turbo-stream action='$hotwireAction' targets='$frameTarget'>",
 
 				false
 			);
 
-			$this->assertHotwireRedirect($response);
-		}
-
-		protected function frameOuterHtml (string $hotwireAction, Employment $employment):string {
-
-			return (string) (new HotwireStreamBuilder($hotwireAction, "employment_". $employment->id))
-
-			->wrapContent(
-				"<div class=\"outer-container\">
-					<h3>{ucfirst($hotwireAction)}</h3>
-					<span class=\"id-holder\">{$employment->id}</span>
-					<span class=\"title\">{$employment->title}</span>
-				</div>"
-			);
+			$this->assertHotwireRedirect($responseAsserter);
 		}
 
 		public function test_absence_of_create_node_falls_back_to_available_on_failure () {
@@ -501,16 +503,11 @@
 
 			->assertHeader(PayloadStorage::CONTENT_TYPE_KEY, BaseHotwireStream::TURBO_INDICATOR);
 
-			foreach ([
-				BaseHotwireStream::APPEND_ACTION,
+			$this->assertStreamNode(BaseHotwireStream::BEFORE_ACTION, "update-form");
 
-				BaseHotwireStream::BEFORE_ACTION
-			] as $hotwireAction) {
+			$this->assertStreamNode(BaseHotwireStream::APPEND_ACTION, "update-form");
 
-				$this->assertStreamNode($hotwireAction, "employment_". $employment1Id);
-
-				$this->assertEmploymentFormError($response, $hotwireAction, null, $this->employment1);
-			}
+			// can't use assertEmploymentFormError since none of the forms are bound to the renderer
 		}
 
 		public function test_delete_node_renders_correctly () {
@@ -522,7 +519,7 @@
 
 				$this->get(self::INITIAL_URL);
 
-				$this->delete($url, array_merge($this->csrfField, [
+				$responseAsserter = $this->delete($url, array_merge($this->csrfField, [
 
 					"id" => $this->employment1->id
 				]), [
@@ -530,11 +527,15 @@
 					PayloadStorage::ACCEPTS_KEY => BaseHotwireStream::TURBO_INDICATOR
 				]) // when
 				// then
-				->assertOk() // sanity check
+				->assertHeader(
+					PayloadStorage::CONTENT_TYPE_KEY,
 
-				->assertHeader(PayloadStorage::CONTENT_TYPE_KEY, BaseHotwireStream::TURBO_INDICATOR);
+					BaseHotwireStream::TURBO_INDICATOR
+				);
 
-				$outputAsserter($response);
+				$this->assertHotwireRedirect($responseAsserter);
+
+				$outputAsserter($responseAsserter);
 			});
 		}
 

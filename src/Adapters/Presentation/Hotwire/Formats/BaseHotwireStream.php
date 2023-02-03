@@ -25,9 +25,13 @@
 
 		BEFORE_ACTION = "before", AFTER_ACTION = "after",
 
-		REPLACE_ACTION = "replace", UPDATE_ACTION = "update";
+		REPLACE_ACTION = "replace", UPDATE_ACTION = "update",
 
-		protected array $hotwireHandlers = [], $nodeResponses = [],
+		REMOVE_ACTION = "remove";
+
+		protected array $hotwireHandlers = [], // details about each handler being bound
+
+		$nodeResponses = [], // result of executing each handler
 
 		$streamBuilders = []; // houses each node and its corresponding parsed content
 
@@ -40,6 +44,8 @@
 		protected CallbackDetails $callbackDetails;
 
 		protected int $statusCode = 200;
+
+		protected bool $trimmedActions = false;
 
 		public function setPayloadStorage (PayloadStorage $payloadStorage):void {
 
@@ -121,7 +127,7 @@
 
 		public function addRemove (string $handler, callable $target):self {
 
-			$this->hotwireHandlers[] = ["remove", $handler];
+			$this->hotwireHandlers[] = [self::REMOVE_ACTION, $handler, $target];
 
 			return $this;
 		}
@@ -226,6 +232,8 @@
 
 			$handlersCopy = $this->hotwireHandlers;
 
+			$this->trimmedActions = true;
+
 			foreach ($handlersCopy as $index => [$hotwireAction]) {
 
 				if (!in_array($hotwireAction, $permittedActions))
@@ -233,12 +241,9 @@
 					unset($handlersCopy[$index]);
 			}
 
-			if (!empty($handlersCopy)) {
+			if (!empty($handlersCopy))
 
-				sort($handlersCopy);
-
-				$this->hotwireHandlers = $handlersCopy;
-			}
+				$this->hotwireHandlers = array_values($handlersCopy);
 			
 			return $this;
 		}
@@ -264,7 +269,21 @@
 
 			$this->forceArrayShape($response);
 
-			$this->nodeResponses = [$this->rawResponse]; // this default implementation caters to only one node in the eventuality of a validation failure
+			if ($this->trimmedActions) {
+
+				/**
+				 * Wrap in extra array to match nodeResponse structure ([[], []...]).
+				 *
+				 * Since no action handler will be called in the eventuality of a validation failure, set this for all nodes found.
+				 *
+				 * Can either be one (on trim success), or all otherwise
+				*/
+				foreach ($this->hotwireHandlers as $handlerDetails)
+
+					$this->nodeResponses[] = $this->rawResponse;
+			}
+
+			else $this->nodeResponses = $this->rawResponse;
 
 			return $this;
 		}

@@ -142,7 +142,7 @@
 		}
 
 		/**
-		 * The native method returns only atribute applied on the class itself
+		 * The native method returns only attribute applied on the class itself
 		*/
 		public function getClassAttributes (string $className, string $filterToAttribute = null):array {
 

@@ -2,7 +2,7 @@
 <h3>Update form</h3>
 
 <form id="">
-	<input type="text" name="id" value="@isset($payload_storage){{$payload_storage['id']}}@endisset">
+	<input type="text" name="id" value="@isset($payload_storage){{@$payload_storage['id']}}@endisset">
 	
 	<input type="text" name="id2" value="@isset($payload_storage){{@$payload_storage['id2']}}@endisset">
 </form>

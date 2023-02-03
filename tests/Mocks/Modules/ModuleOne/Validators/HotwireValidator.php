@@ -37,5 +37,13 @@
 
 			return $this->regularFormResponse();
 		}
+
+		public function hotwireDelete ():array {
+
+			return [
+
+				"id" => "required|numeric|exists:employment"
+			];
+		}
 	}
 ?>

@@ -19,13 +19,13 @@
 
 		public function deriveFormPartial (BaseHotwireStream $renderer, array $failureDetails):BaseRenderer {
 
-			$renderer->setRawResponse($failureDetails);
-
 			if ($this->requestDetails->isPostRequest())
 
-				return $renderer->retainCreateNodes();
+				$renderer->retainCreateNodes();
 
-			return $renderer->retainUpdateNodes();
+			else $renderer->retainUpdateNodes();
+
+			return $renderer->setRawResponse($failureDetails); // the above calls indicate the manner nodeResponse should read from rawResponse, thus should be called after them
 		}
 	}
 ?>

@@ -105,7 +105,7 @@
 								ValidationFailureDiffuser::PAYLOAD_KEY,
 
 								ValidationFailureDiffuser::ERRORS_PRESENCE
-							]));
+							])); // contains all keys or array1 == array2
 						})
 					]]
 				])

@@ -94,7 +94,7 @@
 			->addAppend(
 				"hotwireReplace", $this->getStreamActionTarget(),
 
-				"hotwire/append-fragment"
+				"hotwire/after-fragment"
 			)
 			->addBefore(
 				"hotwireBefore", $this->getStreamActionTarget(),
@@ -110,7 +110,7 @@
 			$renderer = (new RedirectHotwireStream("hotwireFormResponse", fn () => "/"))
 
 			->addRemove(
-				"hotwireReplace", $this->getStreamActionTarget()
+				"hotwireDelete", $this->getStreamActionTarget()
 			);
 
 			$this->_delete($renderer);
@@ -121,7 +121,7 @@
 			$renderer = (new RedirectHotwireStream("hotwireFormResponse", fn () => "/"))
 
 			->addRemove(
-				"hotwireReplace", $this->getStreamActionTarget()
+				"hotwireDelete", $this->getStreamActionTarget()
 			)
 			->addAfter(
 				"hotwireAfter", $this->getStreamActionTarget(),

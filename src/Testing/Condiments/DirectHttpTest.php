@@ -104,7 +104,7 @@
 
 		private function isValidPayloadType (string $httpMethod):bool {
 
-			return in_array($httpMethod, ["post", "put"]);
+			return in_array($httpMethod, ["post", "put", "delete"]);
 		}
 	}
 ?>

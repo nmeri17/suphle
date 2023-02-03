@@ -152,7 +152,7 @@
 
 			if ($this->eligibleToValidate(
 
-				$collectionName, $handlingMethod, $coodinator::class
+				$coodinator::class, $handlingMethod, $collectionName
 			)) {
 
 				$this->validatorManager->setActionRules(
@@ -174,7 +174,12 @@
 		/**
 		 * @param {collectionName} The validation collection
 		*/
-		protected function eligibleToValidate (string $collectionName, string $handlingMethod, string $coodinatorName):bool { 
+		protected function eligibleToValidate (
+
+			string $coodinatorName, string $handlingMethod,
+
+			?string $collectionName
+		):bool { 
 
 			$hasNoValidator = empty($collectionName) ||
 

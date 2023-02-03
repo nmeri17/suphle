@@ -20,31 +20,41 @@
 
 				$this->fail(BaseHotwireStream::class." not found");
 
+			$foundAction = false;
+
 			foreach ($renderer->getStreamBuilders() as $builder) {
 
-				if ($builder->hotwireAction == $hotwireAction) {
+				if ($builder->hotwireAction != $hotwireAction) continue;
 
-					if (is_null($targets)) {
+				if (is_null($targets)) {
 
-						$this->assertTrue(true);
+					$this->assertTrue(true);
 
-						return;
-					}
-
-					if ($builder->targets == $targets) {
-
-						$this->assertTrue(true);
-
-						return;
-					}
+					return;
 				}
+
+				if ($builder->targets == $targets) {
+
+					$this->assertTrue(true);
+
+					return;
+				}
+
+				$foundAction = true;
 			}
 
-			$failMessage = "No node found in response matching action '$hotwireAction'";
+			if ($foundAction)
 
-			if (!is_null($targets))
+				$failMessage = "Found node matching action '$hotwireAction' but no corresponding target '$targets'";
 
-				$failMessage .= " and target '$targets'";
+			else {
+
+				$failMessage = "No node found in response matching action '$hotwireAction'";
+
+				if (!is_null($targets))
+
+					$failMessage .= " and target '$targets'";
+			}
 
 			$this->fail($failMessage);
 		}

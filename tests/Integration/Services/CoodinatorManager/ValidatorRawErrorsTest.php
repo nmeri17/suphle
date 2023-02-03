@@ -69,49 +69,25 @@
 			$this->post("/post-without"); // when
 		}
 
-		public function test_sets_validation_rules () {
-
-			$this->getRendererManager([], [ // then
-
-				"setActionRules" => [1, [
-
-					(new ValidatorOne)->postWithValidator()
-				]]
-			])
-			->updateValidatorMethod(
-
-				$this->positiveDouble(ValidatorCoordinator::class),
-
-				"postWithValidator"
-			); // when
-		}
-
 
 		public function test_failed_validation_throws_error () {
 
 			$this->expectException(ValidationFailure::class); // then
 
-			$this->getRendererManager([
+			$this->massProvide([BaseRenderer::class => $this->getRenderer()]);
 
-				"validationErrors" => ["foo" => "bar"] // given
-			])
+			$this->getContainer()->getClass(RendererManager::class)
+
 			->mayBeInvalid(); // when
 		}
 
-		protected function getRendererManager (array $validatorStubs, array $validatorMocks = []):RendererManager {
+		protected function getRenderer ():BaseRenderer {
 
-			$this->massProvide([
+			$renderer = new Json("postWithValidator");
 
-				ValidatorManager::class => $this->positiveDouble(
+			$renderer->setCoordinatorClass($this->positiveDouble(ValidatorCoordinator::class));
 
-					ValidatorManager::class, $validatorStubs,
-
-					$validatorMocks
-				),
-				BaseRenderer::class => $this->positiveDouble(BaseRenderer::class)
-			]);
-
-			return $this->getContainer()->getClass(RendererManager::class);
+			return $renderer;
 		}
 
 		public function test_failure_prevents_middleware_running () {
@@ -134,7 +110,7 @@
 
 				MiddlewareQueue::class => $this->positiveDouble(MiddlewareQueue::class, [
 
-					"runStack" => new Json("postWithValidator")
+					"runStack" => $this->getRenderer()
 				], [
 
 					"runStack" => [$numTimes, []] // then
