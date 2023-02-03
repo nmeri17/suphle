@@ -6,9 +6,6 @@
 	#[SecuresPostRequest]
 	class ServiceCoordinator {
 
-		public function validatorCollection ():?string {
-
-			return null;
-		}
+		//
 	}
 ?>

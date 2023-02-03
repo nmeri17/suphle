@@ -1,20 +1,15 @@
 <?php
 	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-	use Suphle\Services\ServiceCoordinator;
+	use Suphle\Services\{ServiceCoordinator, Decorators\ValidationRules};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Concretes\Services\EmploymentEditMock, Validators\EmploymentValidator};
+	use Suphle\Tests\Mocks\Modules\ModuleOne\{Concretes\Services\EmploymentEditMock};
 
 	class EmploymentEditCoordinator extends ServiceCoordinator {
 
 		public function __construct(protected readonly EmploymentEditMock $editService) {
 
 			//
-		}
-
-		public function validatorCollection ():string {
-
-			return EmploymentValidator::class;
 		}
 
 		public function simpleResult () {
@@ -30,6 +25,11 @@
 			];
 		}
 
+		#[ValidationRules([
+			"id" => "required|numeric|exists:employment,id",
+
+			"salary" => "numeric|min:20000"
+		])]
 		public function updateEmploymentDetails ():iterable {
 
 			return [

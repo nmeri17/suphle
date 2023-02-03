@@ -1,17 +1,17 @@
 <?php
 	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-	use Suphle\Services\ServiceCoordinator;
+	use Suphle\Services\{ServiceCoordinator, Decorators\ValidationRules};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{PayloadReaders\ImagePayloadReader, Validators\ImageValidator};
+	use Suphle\Tests\Mocks\Modules\ModuleOne\PayloadReaders\ImagePayloadReader;
 
 	class ImageUploadCoordinator extends ServiceCoordinator {
 
-		public function validatorCollection ():string {
+		#[ValidationRules([
+			"belonging_resource" => "required|string",
 
-			return ImageValidator::class;
-		}
-
+			"profile_pic" => "required|image"
+		])]
 		public function applyAllOptimizations (ImagePayloadReader $payload):array {
 
 			$fileNames = $payload->getDomainObject() // since no computation happens, it's safe to use without checking for null
@@ -22,11 +22,21 @@
 			return $fileNames;
 		}
 
+		#[ValidationRules([
+			"belonging_resource" => "required|string",
+
+			"profile_pic" => "required|image"
+		])]
 		public function applyNoOptimization (ImagePayloadReader $payload):array {
 
 			return $payload->getDomainObject()->savedImageNames();
 		}
 
+		#[ValidationRules([
+			"belonging_resource" => "required|string",
+
+			"profile_pic" => "required|image"
+		])]
 		public function applyThumbnail (ImagePayloadReader $payload):array {
 
 			return $payload->getDomainObject()->thumbnail(50, 50)

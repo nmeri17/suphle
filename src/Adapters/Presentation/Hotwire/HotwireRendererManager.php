@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Adapters\Presentation\Hotwire;
 
-	use Suphle\Hydration\Container;
+	use Suphle\Hydration\{Container, Structures\CallbackDetails};
 
 	use Suphle\Contracts\{IO\Session, Requests\ValidationFailureConvention, Presentation\BaseRenderer};
 
@@ -30,6 +30,8 @@
 			protected readonly RequestDetails $requestDetails,
 
 			protected readonly ValidatorManager $validatorManager,
+
+			protected readonly CallbackDetails $callbackDetails,
 
 			protected readonly ValidationFailureConvention $failureConvention
 		) {

@@ -3,9 +3,11 @@
 
 	use Suphle\Modules\ModuleDescriptor;
 
-	use Suphle\Hydration\Container;
+	use Suphle\Hydration\{Container, Structures\CallbackDetails};
 
-	use Suphle\Services\{ServiceCoordinator, Decorators\BindsAsSingleton};
+	use Suphle\Services\ServiceCoordinator;
+
+	use Suphle\Services\Decorators\{BindsAsSingleton, ValidationRules};
 
 	use Suphle\Contracts\{Presentation\BaseRenderer, IO\Session, Requests\ValidationEvaluator};
 
@@ -34,7 +36,9 @@
 
 			protected readonly RequestDetails $requestDetails,
 
-			protected readonly ValidatorManager $validatorManager
+			protected readonly ValidatorManager $validatorManager,
+
+			protected readonly CallbackDetails $callbackDetails
 		) {
 
 			//
@@ -148,21 +152,21 @@
 		*/
 		public function acquireValidatorStatus (ServiceCoordinator $coodinator, string $handlingMethod):bool {
 
-			$collectionName = $coodinator->validatorCollection();
+			$attributesList = $this->callbackDetails->getMethodAttributes(
+
+				$coodinator::class, $handlingMethod,
+
+				ValidationRules::class
+			);
 
 			if ($this->eligibleToValidate(
 
-				$coodinator::class, $handlingMethod, $collectionName
+				$coodinator::class, $handlingMethod, $attributesList
 			)) {
 
 				$this->validatorManager->setActionRules(
 
-					call_user_func([
-
-						$this->container->getClass($collectionName),
-
-						$handlingMethod
-					])
+					current($attributesList)->newInstance()->rules // use only the latest
 				);
 
 				return true;
@@ -171,31 +175,21 @@
 			return false;
 		}
 
-		/**
-		 * @param {collectionName} The validation collection
-		*/
 		protected function eligibleToValidate (
 
 			string $coodinatorName, string $handlingMethod,
 
-			?string $collectionName
+			array $attributesList
 		):bool { 
 
-			$hasNoValidator = empty($collectionName) ||
+			if (!empty($attributesList)) return true;
 
-			!method_exists($collectionName, $handlingMethod);
+			if ($this->requestDetails->isGetRequest()) return false;
 
-			if ($hasNoValidator) {
+			throw new NoCompatibleValidator(
 
-				if ($this->requestDetails->isGetRequest()) return false;
-
-				throw new NoCompatibleValidator(
-
-					$coodinatorName, $handlingMethod
-				);
-			}
-
-			return true;
+				$coodinatorName, $handlingMethod
+			);
 		}
 
 		public function getValidatorErrors ():array {

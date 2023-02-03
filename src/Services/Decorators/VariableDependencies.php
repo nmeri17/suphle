@@ -3,7 +3,7 @@
 
 	use Attribute;
 
-	#[Attribute(Attribute::TARGET_CLASS | Attribute::IS_REPEATABLE)]
+	#[Attribute(Attribute::TARGET_CLASS)]
 	class VariableDependencies {
 
 		public function __construct (public readonly array $dependencyMethods) {

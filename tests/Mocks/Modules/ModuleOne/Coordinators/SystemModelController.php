@@ -1,9 +1,7 @@
 <?php
 	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-	use Suphle\Services\ServiceCoordinator;
-
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Validators\ValidatorOne;
+	use Suphle\Services\{ServiceCoordinator, Decorators\ValidationRules};
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\SystemModelEditMock1;
 
@@ -14,11 +12,7 @@
 			//
 		}
 
-		public function validatorCollection ():?string {
-
-			return ValidatorOne::class; // random validator since test doesn't require routing to this controller
-		}
-
+		#[ValidationRules([])] // Empty since test doesn't require routing to this controller
 		public function handlePutRequest () { // supposed to send modefulPayload into editService->initializeUpdateModels. But for the purpose of this test, we'll return a predefined value
 
 			if ($this->editService->updateModels())
