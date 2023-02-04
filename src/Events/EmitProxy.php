@@ -6,7 +6,7 @@
 	*/
 	trait EmitProxy {
 
-		private $eventManager;
+		protected readonly EventManager $eventManager;
 
 		protected function emitHelper (string $eventName, $payload = null):void {
 

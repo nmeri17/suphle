@@ -3,13 +3,13 @@
 
 	use Suphle\Contracts\Hydration\{InterfaceCollection, DecoratorChain};
 
-	use Suphle\Contracts\{Presentation\HtmlParser, Queues\Adapter as QueueAdapter, Modules\ControllerModule, Response\RendererManager };
+	use Suphle\Contracts\{Events, Presentation\HtmlParser, Queues\Adapter as QueueAdapter, Modules\ControllerModule, Response\RendererManager };
 
 	use Suphle\Contracts\Exception\{FatalShutdownAlert, AlertAdapter};
 
 	use Suphle\Contracts\IO\{Session, MailClient, EnvAccessor, CacheManager};
 
-	use Suphle\Contracts\Requests\{RequestValidator, StdInputReader, FileInputReader, ValidationFailureConvention};
+	use Suphle\Contracts\Requests\{RequestValidator, StdInputReader, FileInputReader, ValidationFailureConvention, RequestEventsListener};
 
 	use Suphle\Contracts\Database\{OrmDialect, OrmReplicator, OrmTester, EntityDetails};
 
@@ -43,13 +43,13 @@
 
 	use Suphle\Queues\AdapterLoader as QueueAdapterLoader;
 
-	use Suphle\Request\{NativeInputReader, ValidatorLoader, NativeFileReader};
+	use Suphle\Request\{NativeInputReader, ValidatorLoader, NativeFileReader, DefaultRequestListener};
 
 	use Suphle\Config\{Auth, Laravel, ExceptionConfig, Console as CliConsole, PDOMysqlKeys, DefaultFlowConfig, ProxyManagerConfig, DefaultCacheConfig, DefaultTemplateConfig, ContainerConfig};
 
 	use Suphle\Modules\ControllerModuleApi;
 
-	use Suphle\Hydration\Structures\BaseDecorators;
+	use Suphle\Events\EventManager;
 
 	use Suphle\Bridge\Laravel\InterfaceLoaders\{LaravelAppLoader, ArtisanLoader};
 
@@ -107,6 +107,8 @@
 
 				EnvAccessor::class => DatabaseEnvReader::class,
 
+				Events::class => EventManager::class,
+
 				FatalShutdownAlert::class => MailShutdownAlert::class,
 
 				FileInputReader::class => NativeFileReader::class,
@@ -126,6 +128,8 @@
 				OrmTester::class => EloquentTester::class,
 
 				RendererManager::class => RoutedRendererManager::class,
+
+				RequestEventsListener::class => DefaultRequestListener::class,
 
 				Session::class => NativeSession::class,
 

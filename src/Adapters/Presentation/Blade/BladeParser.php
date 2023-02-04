@@ -21,6 +21,8 @@
 
 			$this->bladeConfig->setViewFactory();
 
+			$this->bladeConfig->bindComponentTags();
+
 			return $this->bladeConfig->getViewFactory()->make(
 
 				$renderer->getMarkupName(), $renderer->getRawResponse()

@@ -7,35 +7,42 @@
 
 	use Suphle\Events\Structures\HandlerPath;
 
-	use Suphle\Contracts\Modules\DescriptorInterface;
+	use Suphle\Contracts\{Events, Modules\DescriptorInterface, Requests\RequestEventsListener};
+
+	use Suphle\Request\RequestDetails;
 
 	use Suphle\Services\Decorators\BindsAsSingleton;
 
 	use InvalidArgumentException;
 
 	#[BindsAsSingleton]
-	abstract class EventManager {
+	class EventManager implements Events {
 
 		protected HandlerPath $activeHandlerPath;
 
-		protected DescriptorInterface $module;
-
 		protected ModuleLevelEvents $parentManager;
-
-		protected ObjectDetails $objectMeta;
 
 		protected array $emitters = ["local" => [], "external" => []];
 
 		/**
 		 * @param {module}: Descriptor for the module where this handler will be emitting from
 		*/
-		public function setDependencies (DescriptorInterface $module, ModuleLevelEvents $parentManager, ObjectDetails $objectMeta):void {
+		public function __construct (
 
-			$this->module = $module;
+			protected readonly DescriptorInterface $module,
+
+			protected readonly ObjectDetails $objectMeta
+		) {
+
+			//
+		}
+
+		/**
+		 * Using a setter instead of a constructor for this to avoid circular dependency during hydration since that parent equally hydrates this
+		*/
+		public function setParentManager (ModuleLevelEvents $parentManager):void {
 
 			$this->parentManager = $parentManager;
-
-			$this->objectMeta = $objectMeta;
 		}
 
 		public function local (string $emittingEntity, string $handlingClass):self {
@@ -67,7 +74,7 @@
 		}
 
 		/**
-		 * @param {$emitter} inserting this without a proxy means a random class can trigger handlers listening on another event, which is not an entirely safe bet, but can come in handy when building dev-facing functionality @see OuterflowWrapper->emitEvents
+		 * {@inheritdoc}
 		 **/
 		public function emit(string $emitter, string $eventName, $payload = null):void {
 
@@ -136,6 +143,11 @@
 			return null;
 		}
 
-		abstract public function registerListeners():void;
+		public function registerListeners ():void {
+
+			$this->local(RequestDetails::class, RequestEventsListener::class)
+
+			->on(RequestDetails::ON_REFRESH, "handleRefreshEvent");
+		}
 	}
 ?>

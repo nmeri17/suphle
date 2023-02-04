@@ -9,7 +9,7 @@
 
 	use Suphle\Request\{RequestDetails, PayloadStorage};
 
-	use Illuminate\Http\Request;
+	use Illuminate\Http\Request as LaravelRequest;
 
 	use Illuminate\Foundation\Application;
 
@@ -45,6 +45,11 @@
 			parent::__construct($basePath);
 		}
 
+		public function protectRefreshPurge ():bool {
+
+			return true;
+		}
+
 		public function concreteBinds ():array {
 
 			return [
@@ -52,7 +57,7 @@
 
 				"config" => $this->configLoader,
 
-				"request" => $this->provideRequest()
+				"request" => $this->provideRequest($this->requestDetails, $this->payloadStorage)
 			];
 		}
 
@@ -78,14 +83,17 @@
 				$this->singleton($alias, $concrete);
 		}
 
-		protected function provideRequest ():Request {
+		public function provideRequest (
 
-			return Request::create(
-				$this->requestDetails->getPath()?? "", // workable alternative: add Request to list of deferred actions to be taken when url is eventually available
+			RequestDetails $requestDetails, PayloadStorage $payloadStorage
+		):LaravelRequest {
 
-				$this->requestDetails->httpMethod(),
+			return LaravelRequest::create(
+				$requestDetails->getPath()?? "", // workable alternative: add Request to list of deferred actions to be taken when url is eventually available
 
-				$this->payloadStorage->fullPayload(),
+				$requestDetails->httpMethod(),
+
+				$payloadStorage->fullPayload(),
 
 				$_COOKIE, $_FILES, $_SERVER
 			);

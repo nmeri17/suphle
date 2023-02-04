@@ -1,7 +1,13 @@
 <?php
 	namespace Suphle\Contracts\Bridge;
 
-	interface LaravelContainer {
+	use Suphle\Contracts\Hydration\ClassHydrationBehavior;
+
+	use Suphle\Request\{RequestDetails, PayloadStorage};
+
+	use Illuminate\Http\Request as LaravelRequest;
+
+	interface LaravelContainer extends ClassHydrationBehavior {
 
 		/**
 		 * @return array
@@ -30,5 +36,10 @@
 		public function runContainerBootstrappers ():void;
 
 		public function overrideAppHelper ():void;
+
+		public function provideRequest (
+
+			RequestDetails $requestDetails, PayloadStorage $payloadStorage
+		):LaravelRequest;
 	}
 ?>

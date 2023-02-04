@@ -15,9 +15,7 @@
 			
 			return array_merge(parent::getConfigs(), [
 
-				Router::class => RouterMock::class,
-
-				Events::class => EventsMock::class
+				Router::class => RouterMock::class
 			]);
 		}
 
@@ -25,7 +23,9 @@
 
 			return array_merge(parent::simpleBinds(), [
 
-				ModuleTwo::class => ModuleApi::class
+				ModuleTwo::class => ModuleApi::class,
+
+				Events::class => EventsMock::class
 			]);
 		}
 	}

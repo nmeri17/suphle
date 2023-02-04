@@ -126,5 +126,7 @@
 				})::getFacadeAccessor()
 			);
 		}
+
+		public function bindComponentTags ():void {}
 	}
 ?>

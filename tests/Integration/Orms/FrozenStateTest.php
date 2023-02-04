@@ -18,9 +18,10 @@
 	// this group of tests should run together rather than individually
 	class FrozenStateTest extends ModuleLevelTest {
 
-		use BaseDatabasePopulator, SecureUserAssertions;
+		use BaseDatabasePopulator, SecureUserAssertions {
 
-		private const NUM_TO_INSERT = 20;
+			BaseDatabasePopulator::setUp as databaseAllSetup;
+		}
 
 		private const TABLE_NAME = "employment";
 
@@ -28,9 +29,12 @@
 		
 		private array $updatePayload = ["salary" => 850_000];
 
-		protected bool $debugCaughtExceptions = true;
-		
-		protected bool $muffleExceptionBroadcast = false;
+		protected function setUp ():void {
+
+			$this->databaseAllSetup();
+
+			$this->lastInserted = $this->replicator->getRandomEntity();
+		}
 
 		protected function getActiveEntity ():string {
 
@@ -51,19 +55,12 @@
 			];
 		}
 
-		protected function preDatabaseFreeze ():void {
+		/**
+		 * Before now, sending the request would terminate connection. Thus, the request won't see seeded data unless it was inserted before transaction commenced, which necessitated the now defunct preDatabaseFreeze method
+		*/
+		public function test_retains_seeded_data_after_request ():int {
 
-			$this->lastInserted = $this->replicator->modifyInsertion(self::NUM_TO_INSERT)[0];
-		}
-
-		public function test_reverts_to_frozen_state_after_reset ():int {
-
-			$this->assertSame( // given
-
-				$this->getInitialCount() + self::NUM_TO_INSERT,
-
-				$this->replicator->getCount()
-			);
+			// given // that we have $this->lastInserted->id
 
 			// for the edit history bits
 			$this->actingAs($this->lastInserted->employer->user); // this must come first since it starts new session
@@ -82,30 +79,31 @@
 					MultiUserEditHandler::INTEGRITY_KEY => $this->lastInserted
 					->toArray()[IntegrityModel::INTEGRITY_COLUMN] // force casting from carbon type to string
 				])
-			); // when
+			) // when
+			->assertOk(); // sanity check
 
 			// then
-			$this->assertSame(
-
-				self::NUM_TO_INSERT, $this->replicator->getCount()
-			);
-
 			$modifiedRows = $this->replicator->getSpecificEntities(
 
-				100, $this->updatePayload
+				100, array_merge($this->updatePayload, [
+
+					"id" => $this->lastInserted->id // the main assertion here -- that this row is retained
+				])
 			);
 
-			$this->assertCount(1, $modifiedRows); // fetch 100 and assert only one was modified
+			$this->assertCount(1, $modifiedRows); // fetch 100 and assert that truly, one was modified
 
-			return $this->lastInserted->id; // since it would've been overriden by the next iteration
+			return $this->lastInserted->id; // since {lastInserted} would've been overriden by the next iteration
 		}
 
 		/**
-		 * @depends test_reverts_to_frozen_state_after_reset
+		 * Passes because the test's transaction is expected to be rolled back after test completes
+		 * 
+		 * @depends test_retains_seeded_data_after_request
 		*/
-		public function test_cant_roll_back_preceding_test_updates (int $previousRequestId) {
+		public function test_rolls_back_preceding_test_updates (int $previousRequestId) {
 
-			$this->databaseApi->assertDatabaseHas( // this works this way since http action reset the connection carrying transaction that should've reset this
+			$this->databaseApi->assertDatabaseMissing(
 
 				self::TABLE_NAME, array_merge($this->updatePayload, [
 
@@ -115,15 +113,13 @@
 		}
 
 		/**
-		 * @depends test_cant_roll_back_preceding_test_updates
+		 * @depends test_rolls_back_preceding_test_updates
 		*/
-		public function test_will_see_leftover_from_previous_seeding () {
-
-			$numTestsBeforeThis = 2 + 1 /*this*/;
+		public function test_will_not_see_leftover_from_previous_seedings () {
 
 			$this->assertSame(// then
 
-				$this->getInitialCount() + (self::NUM_TO_INSERT * $numTestsBeforeThis),
+				$this->getInitialCount(),
 
 				$this->replicator->getCount()
 			);

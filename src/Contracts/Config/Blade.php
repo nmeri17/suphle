@@ -13,5 +13,7 @@
 		public function getViewFactory ():BladeViewFactoryInterface;
 
 		public function setViewFactory ():void;
+
+		public function bindComponentTags ():void;
 	}
 ?>

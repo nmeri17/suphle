@@ -8,6 +8,8 @@
 	class EmitterAsListener extends EventManager {
 
 		public function registerListeners ():void {
+
+			parent::registerListeners();
 			
 			$this->local(LocalReceiver::class, LocalReceiver::class)
 			

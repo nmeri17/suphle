@@ -7,6 +7,8 @@
 
 	use Suphle\Hydration\Container;
 
+	use Suphle\Events\{EventManager, EmitProxy};
+
 	use InvalidArgumentException;
 
 	/**
@@ -15,7 +17,11 @@
 	#[BindsAsSingleton]
 	class RequestDetails {
 
-		final const HTTP_METHOD_KEY = "HTTP_METHOD";
+		use EmitProxy;
+
+		public const HTTP_METHOD_KEY = "HTTP_METHOD",
+
+		ON_REFRESH = "new_request";
 
 		protected ?string $computedPath = null,
 
@@ -27,7 +33,9 @@
 
 			protected readonly Router $config,
 
-			protected readonly StdInputReader $stdInputReader
+			protected readonly StdInputReader $stdInputReader,
+
+			protected readonly EventManager $eventManager
 		) {
 
 			//
@@ -36,6 +44,11 @@
 		public function getPath ():?string {
 
 			return $this->computedPath;
+		}
+
+		public function indicateRefresh ():void {
+
+			$this->emitHelper(self::ON_REFRESH, $this);
 		}
 
 		public function setPath (string $requestPath):void {
@@ -72,13 +85,15 @@
 
 			$container->refreshClass($selfName);
 
-			$instance = $container->getClass($selfName);
+			$instance = $container->getClass($selfName); // automatically binds it
 
 			$instance->setPath($pathComponent);
 
 			parse_str($components["query"] ?? "", $queryParameters);
 
 			$instance->setQueries($queryParameters);
+
+			$instance->indicateRefresh();
 
 			return $instance;
 		}

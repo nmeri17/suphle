@@ -1,9 +1,9 @@
 <?php
 	namespace Suphle\Events;
 
-	use Suphle\Contracts\{Config\Events, Modules\DescriptorInterface};
+	use Suphle\Contracts\{Events, Modules\DescriptorInterface};
 
-	use Suphle\Hydration\{Container, Structures\ObjectDetails};
+	use Suphle\Hydration\Container;
 
 	use Suphle\Modules\Structures\ActiveDescriptors;
 
@@ -17,44 +17,27 @@
 
 		public function bootReactiveLogger (ActiveDescriptors $descriptorsHolder):void {
 
-			$objectMeta = $descriptorsHolder->firstOriginalContainer()
-
-			->getClass(ObjectDetails::class);
-
 			foreach (
 				$descriptorsHolder->getOriginalDescriptors()
 
 				as $descriptor
 			) {
 
-				$container = $descriptor->getContainer();
+				$manager = $container->getClass(Events::class);
 
-				if ($config = $container->getClass(Events::class))
-
-					$this->moduleHasListeners(
-
-						$config, $descriptor, $container, $objectMeta
-					);
+				$this->moduleHasListeners($manager, $descriptor->getContainer());
 			}
 		}
 
-		protected function moduleHasListeners (
+		protected function moduleHasListeners (Events $manager, Container $container):void {
 
-			Events $config, DescriptorInterface $descriptor, Container $container,
-			ObjectDetails $objectMeta
-		):void {
-
-			$manager = $container->getClass($config->getManager());
-
-			$manager->setDependencies($descriptor, $this, $objectMeta);
+			$manager->setParentManager($this);
 
 			$manager->registerListeners();
 
 			$this->eventManagers[] = $manager;
 
-			$container->whenTypeAny()->needsAny([ // bind these for any consumer interested in them
-
-				EventManager::class => $manager,
+			$container->whenTypeAny()->needsAny([
 
 				ModuleLevelEvents::class => $this
 			]);

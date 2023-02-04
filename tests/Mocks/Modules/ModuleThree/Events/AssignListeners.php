@@ -8,6 +8,8 @@
 	class AssignListeners extends EventManager {
 
 		public function registerListeners ():void {
+
+			parent::registerListeners();
 			
 			$this->moduleOneBindings();
 

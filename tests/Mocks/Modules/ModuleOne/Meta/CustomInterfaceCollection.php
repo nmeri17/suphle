@@ -15,8 +15,6 @@
 
 			return array_merge(parent::getConfigs(), [
 
-				Events::class => EventsMock::class,
-
 				Flows::class => FlowMock::class,
 
 				Laravel::class => LaravelMock::class,
@@ -29,7 +27,9 @@
 
 			return array_merge(parent::simpleBinds(), [
 
-				ModuleOne::class => ModuleApi::class
+				ModuleOne::class => ModuleApi::class,
+
+				Events::class => EventsMock::class
 			]);
 		}
 	}
