@@ -14,6 +14,8 @@
 
 		use EmitProxy;
 
+		protected ?Events $eventManager = null;
+
 		public const CASCADE_REBOUND_EVENT = "rebounding";
 
 		/**

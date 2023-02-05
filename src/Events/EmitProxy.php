@@ -4,11 +4,9 @@
 	use Suphle\Contracts\Events;
 
 	/**
-	 * Requires an `eventManager` property to be set on using classes
+	 * Requires an `eventManager` property to be set on using classes. Not specified here to avoid signature clashes
 	*/
 	trait EmitProxy {
-
-		protected readonly Events $eventManager;
 
 		protected function emitHelper (string $eventName, $payload = null):void {
 

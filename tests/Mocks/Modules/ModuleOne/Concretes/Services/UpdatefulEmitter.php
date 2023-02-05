@@ -3,17 +3,17 @@
 
 	use Suphle\Events\EmitProxy;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Events\AssignListeners;
+	use Suphle\Contracts\Events;
 
 	class UpdatefulEmitter extends SystemModelEditMock1 {
 
 		use EmitProxy;
 
-		final const UPDATE_ERROR = "update_error";
+		public const UPDATE_ERROR = "update_error";
 
-		public function __construct (AssignListeners $eventManager) {
+		public function __construct (protected readonly Events $eventManager) {
 
-			$this->eventManager = $eventManager;
+			//
 		}
 
 		/**

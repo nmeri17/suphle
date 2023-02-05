@@ -13,7 +13,7 @@
 
 	use InvalidArgumentException;
 
-	//#[BindsAsSingleton(Events::class)]
+	#[BindsAsSingleton(Events::class)]
 	#[VariableDependencies(["setModuleDescriptor", "setParentManager"])]
 	class EventManager implements Events {
 
@@ -51,7 +51,7 @@
 			$this->parentManager = $parentManager;
 		}
 
-		public function local (string $emittingEntity, string $handlingClass):EventSubscription {
+		protected function local (string $emittingEntity, string $handlingClass):EventSubscription {
 			
 			return $this->initializeHandlingScope(
 
@@ -59,7 +59,7 @@
 			);
 		}
 
-		public function external(string $interaction, string $handlingClass):EventSubscription {
+		protected function external(string $interaction, string $handlingClass):EventSubscription {
 
 			return $this->initializeHandlingScope(
 
@@ -120,7 +120,7 @@
 		 * we want to decouple the emitter from the interface consumers are subscribed to
 		 *
 		 **/
-		public function getLocalHandler(string $emitter):?EventSubscription {
+		private function getLocalHandler (string $emitter):?EventSubscription {
 			
 			foreach ($this->emitters[self::LOCAL_SCOPE] as $emitable => $details) {
 

@@ -30,16 +30,9 @@
 					ModuleLevelEvents::class => $this
 				]);
 
-				$manager = $container->getClass(Events::class);
+				$this->eventManagers[] = $manager = $container->getClass(Events::class);
 
 				$manager->registerListeners();
-
-				$this->eventManagers[] = $manager;
-
-				$container->whenTypeAny()->needsAny([
-
-					Events::class => $manager
-				]);
 			}
 		}
 
