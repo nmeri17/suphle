@@ -3,9 +3,9 @@
 
 	use Suphle\Hydration\Structures\BaseInterfaceCollection;
 
-	use Suphle\Contracts\Config\{Router, Events};
+	use Suphle\Contracts\{Events, Config\Router};
 
-	use Suphle\Tests\Mocks\Modules\ModuleTwo\Config\{RouterMock, EventsMock};
+	use Suphle\Tests\Mocks\Modules\ModuleTwo\{Config\RouterMock, Events\AssignListeners};
 
 	use Suphle\Tests\Mocks\Interactions\ModuleTwo;
 
@@ -25,7 +25,7 @@
 
 				ModuleTwo::class => ModuleApi::class,
 
-				Events::class => EventsMock::class
+				Events::class => AssignListeners::class
 			]);
 		}
 	}

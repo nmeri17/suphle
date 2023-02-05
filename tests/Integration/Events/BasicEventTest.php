@@ -18,13 +18,22 @@
 			$this->parentSetUp();
 		}
 
-		public function test_can_trap_events () {
+		public function test_reports_handled_events () {
 
-			$this->getModuleFor(ModuleOne::class)->noPayloadEvent(); // when
+			$this->getModuleOne()->noPayloadEvent(); // when
 
 			$this->assertHandledEvent(
 				LocalSender::class, ModuleOne::EMPTY_PAYLOAD_EVENT
 			); // then
 		}
+
+		/*public function test_doesnt_report_unhandled_events () { // find one not sent
+$this->markTestSkipped();
+			$this->getModuleOne()->noPayloadEvent(); // when
+
+			$this->assertHandledEvent(
+				LocalSender::class, LocalSender::EMPTY_PAYLOAD_EVENT
+			); // then
+		}*/
 	}
 ?>

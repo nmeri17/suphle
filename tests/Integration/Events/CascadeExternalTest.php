@@ -9,11 +9,11 @@
 
 	class CascadeExternalTest extends EventTestCreator {
 
-		protected $eventReceiverName = EventsHandler::class;
+		protected string $eventReceiverName = EventsHandler::class;
 
 		protected function setModuleThree ():void {
 
-			$this->moduleThree = $this->replicatorProxy(ModuleThreeDescriptor::class)
+			$this->moduleThree = $this->bindMockedEventReceiver(ModuleThreeDescriptor::class)
 			->sendExpatriates([
 
 				ModuleOne::class => $this->moduleOne
@@ -22,14 +22,14 @@
 
 		public function test_local_emit_cascades_to_external () {
 
-			$this->setMockEventReceiver([ // then
+			$this->createMockEventReceiver([ // then
 
 				"handleExternalRebound" => [1, [false]]
 			]);
 
 			$this->parentSetUp(); // given
 
-			$this->getModuleFor(ModuleOne::class)->multiModuleCascadeEvent(false); // when
+			$this->getModuleOne()->multiModuleCascadeEvent(false); // when
 		}
 	}
 ?>

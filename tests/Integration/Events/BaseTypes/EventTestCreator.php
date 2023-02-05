@@ -1,23 +1,21 @@
 <?php
 	namespace Suphle\Tests\Integration\Events\BaseTypes;
 
-	use Suphle\Modules\ModuleDescriptor;
-
-	use Suphle\Hydration\Structures\ObjectDetails;
-
-	use Suphle\Events\{EventManager, ModuleLevelEvents};
+	use Suphle\Contracts\Modules\DescriptorInterface;
 
 	use Suphle\Testing\Proxies\WriteOnlyContainer;
 
 	use Suphle\Tests\Integration\Modules\ModuleDescriptor\DescriptorCollection;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
+	use Suphle\Tests\Mocks\Interactions\ModuleOne;
 
 	class EventTestCreator extends DescriptorCollection {
 
 		protected $payload = 5;
-  protected $mockEventReceiver;
-  protected $eventReceiverName;
+
+		protected object $doubledEventReceiver; // they're POPOs
+
+		protected string $eventReceiverName;
 
 		// since we intend to manually trigger it in extending tests
 		protected function setUp ():void {}
@@ -27,19 +25,9 @@
 			parent::setUp();
 		}
 
-		protected function doubleEventManager ():EventManager {
+		protected function getModuleOne ():ModuleOne {
 
-			$manager = $this->positiveDouble(EventManager::class);
-
-			$dependencies = array_map(fn($argument) => $this->positiveDouble($argument), [
-				ModuleOneDescriptor::class, ModuleLevelEvents::class,
-
-				ObjectDetails::class
-			]);
-
-			$manager->setDependencies(...$dependencies);
-
-			return $manager;
+			return $this->getModuleFor(ModuleOne::class);
 		}
 
 		/**
@@ -49,36 +37,27 @@
 		 * 
 		 * @return new module with updates
 		*/
-		protected function replicatorProxy (string $descriptorName):ModuleDescriptor {
+		protected function bindMockedEventReceiver (string $descriptorName):DescriptorInterface {
 
 			return $this->replicateModule($descriptorName, function(WriteOnlyContainer $container) {
 
-				$container->replaceWithConcrete($this->eventReceiverName, $this->mockEventReceiver);
+				$container->replaceWithConcrete(
+
+					$this->eventReceiverName, $this->doubledEventReceiver
+				);
 			});
-		}
-
-		protected function defaultEventManagerConstructor ():array {
-
-			return [
-
-				"eventManager" => $this->doubleEventManager()
-			];
 		}
 
 		/**
 		 * Intended to be called before [setUp]
-		 * 
-		 * @param {constructorStubs} Uses [defaultEventManagerConstructor] when null instead of an empty array
 		*/
-		protected function setMockEventReceiver (array $mockMethods, array $constructorStubs = null):void {
+		protected function createMockEventReceiver (array $mockMethods, array $constructorStubs = null):void {
 
-			$this->mockEventReceiver = $this->positiveDouble( // can't use [replaceConstructorArguments] since that requires container and that isn't available here
+			$this->doubledEventReceiver = $this->positiveDouble( // can't use [replaceConstructorArguments] since that requires container and that isn't available here
 
 				$this->eventReceiverName, [],
 
-				$mockMethods,
-
-				$constructorStubs ?? $this->defaultEventManagerConstructor()
+				$mockMethods, $constructorStubs
 			);
 		}
 

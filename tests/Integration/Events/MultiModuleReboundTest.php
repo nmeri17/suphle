@@ -9,11 +9,11 @@
 
 	class MultiModuleReboundTest extends EventTestCreator {
 
-		protected $eventReceiverName = ReboundReceiver::class;
+		protected string $eventReceiverName = ReboundReceiver::class;
 
 		protected function setModuleThree ():void {
 
-			$this->moduleThree = $this->replicatorProxy(ModuleThreeDescriptor::class)
+			$this->moduleThree = $this->bindMockedEventReceiver(ModuleThreeDescriptor::class)
 			->sendExpatriates([
 
 				ModuleOne::class => $this->moduleOne
@@ -22,14 +22,14 @@
 
 		public function test_local_emit_cascades_to_multiple_external () {
 
-			$this->setMockEventReceiver([
+			$this->createMockEventReceiver([
 
 				"handleMultiModuleRebound" => [1, []]
 			], []); // then
 
 			$this->parentSetUp(); // given
 
-			$this->getModuleFor(ModuleOne::class)->multiModuleCascadeEvent(true); // when
+			$this->getModuleOne()->multiModuleCascadeEvent(true); // when
 		}
 	}
 ?>

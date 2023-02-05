@@ -3,9 +3,13 @@
 
 	use Suphle\Hydration\Structures\BaseInterfaceCollection;
 
-	use Suphle\Contracts\Config\{Router, Events, Flows};
+	use Suphle\Contracts\Config\{Router, Flows};
 
-	use Suphle\Tests\Mocks\Modules\ModuleThree\Config\{RouterMock, EventsMock, FlowMock};
+	use Suphle\Contracts\Events;
+
+	use Suphle\Tests\Mocks\Modules\ModuleThree\Config\{RouterMock, FlowMock};
+
+	use Suphle\Tests\Mocks\Modules\ModuleThree\Events\AssignListeners;
 
 	use Suphle\Tests\Mocks\Interactions\ModuleThree;
 
@@ -27,7 +31,7 @@
 
 				ModuleThree::class => ModuleApi::class,
 
-				Events::class => EventsMock::class
+				Events::class => AssignListeners::class
 			]);
 		}
 	}

@@ -7,7 +7,7 @@
 
 		public function test_can_receive_emitted_payload () {
 
-			$this->setMockEventReceiver($this->expectUpdatePayload()); // then
+			$this->createMockEventReceiver($this->expectUpdatePayload()); // then
 
 			$this->parentSetUp(); // given
 
@@ -17,7 +17,7 @@
 		// we listen on the parent, then a child emits
 		public function test_listeners_can_listen_to_subclass_emittor () {
 
-			$this->setMockEventReceiver($this->expectUpdatePayload()); // then
+			$this->createMockEventReceiver($this->expectUpdatePayload()); // then
 
 			$this->parentSetUp(); // given
 

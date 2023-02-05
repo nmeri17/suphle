@@ -1,17 +1,25 @@
 <?php
 	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Events;
 
-	use Suphle\Events\{EmitProxy, EventManager};
+	use Suphle\Events\EmitProxy;
+
+	use Suphle\Contracts\Events;
+
+	use Suphle\Services\Decorators\VariableDependencies;
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleApi;
 
+	#[VariableDependencies(["setEventManager"])]
 	class LocalReceiver {
 
 		use EmitProxy;
 
-		final const CASCADE_REBOUND_EVENT = "rebounding";
+		public const CASCADE_REBOUND_EVENT = "rebounding";
 
-		public function __construct (EventManager $eventManager) {
+		/**
+		 * Not necessary on a good day but since this receiver is mocked in tests before the container is available to bind or know module's eventManager, we lazily inject it
+		*/
+		public function setEventManager (Events $eventManager) {
 
 			$this->eventManager = $eventManager;
 		}

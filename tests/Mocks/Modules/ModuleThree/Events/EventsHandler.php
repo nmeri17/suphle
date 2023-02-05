@@ -1,7 +1,9 @@
 <?php
 	namespace Suphle\Tests\Mocks\Modules\ModuleThree\Events;
 
-	use Suphle\Events\{EmitProxy, EventManager};
+	use Suphle\Events\EmitProxy;
+
+	use Suphle\Contracts\Events;
 
 	class EventsHandler {
 
@@ -11,9 +13,9 @@
 
 		private $payload;
 
-		public function __construct (EventManager $eventManager) {
+		public function __construct (protected readonly Events $eventManager) {
 
-			$this->eventManager = $eventManager;
+			//
 		}
 
 		public function setExternalPayload (int $payload) {

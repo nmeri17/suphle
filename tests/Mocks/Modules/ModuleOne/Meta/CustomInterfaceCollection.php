@@ -3,9 +3,13 @@
 
 	use Suphle\Hydration\Structures\BaseInterfaceCollection;
 
-	use Suphle\Contracts\Config\{ Router, Events, Laravel, Flows};
+	use Suphle\Contracts\Config\{ Router, Laravel, Flows};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Config\{RouterMock, EventsMock, LaravelMock, FlowMock};
+	use Suphle\Contracts\Events;
+
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Config\{RouterMock, LaravelMock, FlowMock};
+
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Events\AssignListeners;
 
 	use Suphle\Tests\Mocks\Interactions\ModuleOne;
 
@@ -29,7 +33,7 @@
 
 				ModuleOne::class => ModuleApi::class,
 
-				Events::class => EventsMock::class
+				Events::class => AssignListeners::class
 			]);
 		}
 	}

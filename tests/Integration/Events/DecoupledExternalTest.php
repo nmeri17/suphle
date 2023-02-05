@@ -9,11 +9,11 @@
 
 	class DecoupledExternalTest extends EventTestCreator {
 
-		protected $eventReceiverName = ExternalReactor::class;
+		protected string $eventReceiverName = ExternalReactor::class;
 
 		protected function setModuleTwo ():void {
 
-			$this->moduleTwo = $this->replicatorProxy(ModuleTwoDescriptor::class)
+			$this->moduleTwo = $this->bindMockedEventReceiver(ModuleTwoDescriptor::class)
 			->sendExpatriates([
 
 				ModuleThree::class => $this->moduleThree
@@ -22,7 +22,7 @@
 
 		public function test_can_listen_to_unimported_external () {
 
-			$this->setMockEventReceiver($this->expectUpdatePayload(), []); // then
+			$this->createMockEventReceiver($this->expectUpdatePayload(), []); // then
 
 			$this->parentSetUp(); // given
 

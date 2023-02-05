@@ -7,7 +7,7 @@
 
 		public function test_space_delimited_event_names () {
 
-			$this->setMockEventReceiver([ // then
+			$this->createMockEventReceiver([ // then
 
 				"doNothing" => [1, []],
 

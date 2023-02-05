@@ -1,10 +1,6 @@
 <?php
 	namespace Suphle\Testing\Condiments;
 
-	use Suphle\Testing\Proxies\Extensions\MockModuleEvents;
-
-	use Suphle\Contracts\Config\Events;
-
 	use Suphle\Events\{EventSubscription, ModuleLevelEvents};
 
 	trait EmittedEventsCatcher {

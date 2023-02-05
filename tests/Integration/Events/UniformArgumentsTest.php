@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Tests\Integration\Events;
 
-	use Suphle\Contracts\Config\Events;
+	use Suphle\Contracts\Events;
 
 	use Suphle\Testing\Proxies\WriteOnlyContainer;
 
@@ -9,7 +9,7 @@
 
 	use Suphle\Tests\Mocks\Interactions\ModuleOne;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Events\EmitterAsListener, Config\EventsMock};
+	use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Events\EmitterAsListener};
 
 	use InvalidArgumentException;
 
@@ -19,10 +19,7 @@
 
 			$this->moduleOne = $this->replicateModule(ModuleOneDescriptor::class, function(WriteOnlyContainer $container) {
 
-				$container->replaceWithMock(Events::class, EventsMock::class, [
-
-					"getManager" => EmitterAsListener::class
-				]);
+				$container->replaceWithMock(Events::class, EmitterAsListener::class, []);
 			});
 		}
 

@@ -3,20 +3,28 @@
 
 	use Suphle\Events\EmitProxy;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleApi, Events\AssignListeners};
+	use Suphle\Contracts\Events;
+
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleApi;
 
 	class LocalSender {
 
 		use EmitProxy;
 
-		final const CASCADE_BEGIN_EVENT = "cascading";
-  final const CONCAT_EVENT = "concating";
-  final const CASCADE_EXTERNAL_BEGIN_EVENT = "begin_external_cascade";
-  final const EMPTY_PAYLOAD_EVENT = "no_payload";
+		public const CASCADE_BEGIN_EVENT = "cascading",
 
-		public function __construct (AssignListeners $eventManager) {
+		CONCAT_EVENT = "concating",
 
-			$this->eventManager = $eventManager;
+		CASCADE_EXTERNAL_BEGIN_EVENT = "begin_external_cascade",
+
+		EMPTY_PAYLOAD_EVENT = "no_payload";
+
+		public function __construct (
+
+			protected readonly Events $eventManager
+		) {
+
+			//
 		}
 
 		public function sendLocalEvent ($payload):void {

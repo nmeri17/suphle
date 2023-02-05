@@ -1,13 +1,13 @@
 <?php
 	namespace Suphle\Request;
 
-	use Suphle\Contracts\{Config\Router, Requests\StdInputReader};
+	use Suphle\Contracts\{Events, Config\Router, Requests\StdInputReader};
 
 	use Suphle\Services\Decorators\BindsAsSingleton;
 
 	use Suphle\Hydration\Container;
 
-	use Suphle\Events\{EventManager, EmitProxy};
+	use Suphle\Events\EmitProxy;
 
 	use InvalidArgumentException;
 
@@ -35,7 +35,7 @@
 
 			protected readonly StdInputReader $stdInputReader,
 
-			protected readonly EventManager $eventManager
+			protected readonly Events $eventManager
 		) {
 
 			//

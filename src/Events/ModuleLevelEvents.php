@@ -23,24 +23,24 @@
 				as $descriptor
 			) {
 
+				$container = $descriptor->getContainer();
+
+				$container->whenTypeAny()->needsAny([ // bind before hydrating
+
+					ModuleLevelEvents::class => $this
+				]);
+
 				$manager = $container->getClass(Events::class);
 
-				$this->moduleHasListeners($manager, $descriptor->getContainer());
+				$manager->registerListeners();
+
+				$this->eventManagers[] = $manager;
+
+				$container->whenTypeAny()->needsAny([
+
+					Events::class => $manager
+				]);
 			}
-		}
-
-		protected function moduleHasListeners (Events $manager, Container $container):void {
-
-			$manager->setParentManager($this);
-
-			$manager->registerListeners();
-
-			$this->eventManagers[] = $manager;
-
-			$container->whenTypeAny()->needsAny([
-
-				ModuleLevelEvents::class => $this
-			]);
 		}
 
 		public function gatherForeignSubscribers(string $emittor):self {
@@ -69,7 +69,7 @@
 
 			if (is_null($subscription)) return $this; // no local event handlers attached
 			
-			$hydratedHandler = $subscription->getHandlingClass();
+			$hydratedHandler = $subscription->getListener();
 
 			foreach ($subscription->getMatchingUnits($eventName) as $unit)
 				
@@ -78,6 +78,9 @@
 			return $this;
 		}
 
+		/**
+		 * Used only in tests and should be a test-only class but that would hamper DX such that that observer class must be bound during all module builds, since event binding is part of module booting sequence. May be worth it if there were more methods
+		*/
 		public function getFiredEvents ():array {
 
 			return $this->firedEvents;

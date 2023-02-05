@@ -5,8 +5,6 @@
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\{LocalSender as Emitter, Services\UpdatefulEmitter};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Events\{LocalReceiver, UpdatefulListener};
-
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleApi;
 
 	class AssignListeners extends EventManager {
