@@ -15,7 +15,11 @@
 
 		$firedEvents = [];
 
+		protected ActiveDescriptors $descriptorsHolder;
+
 		public function bootReactiveLogger (ActiveDescriptors $descriptorsHolder):void {
+
+			$this->descriptorsHolder = $descriptorsHolder;
 
 			foreach (
 				$descriptorsHolder->getOriginalDescriptors()
@@ -49,9 +53,14 @@
 
 		public function triggerExternalHandlers(string $evaluatedModule, string $eventName, $payload):void {
 
-			foreach ($this->subscriberLog as $subscription)
+			foreach ($this->subscriberLog as $subscription) {
+
+				$descriptor = $this->descriptorsHolder->findMatchingExports($subscription->getReceivingModule());
+
+				$descriptor->prepareToRun(); // without this, those modules will still run. However, any custom bindings will not be provided
 
 				$this->triggerHandlers($evaluatedModule, $subscription, $eventName, $payload);
+			}
 
 			$this->subscriberLog = []; // ahead of next invocation
 		}

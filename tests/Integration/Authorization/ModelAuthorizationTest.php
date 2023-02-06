@@ -1,21 +1,45 @@
 <?php
 	namespace Suphle\Tests\Integration\Authorization;
 
-	use Suphle\Contracts\Config\AuthContract;
+	use Suphle\Contracts\Config\{AuthContract, Router};
 
 	use Suphle\Exception\Explosives\UnauthorizedServiceAccess;
 
-	use Suphle\Testing\{Proxies\SecureUserAssertions, Condiments\BaseDatabasePopulator};
+	use Suphle\Testing\Proxies\{SecureUserAssertions, WriteOnlyContainer};
 
-	use Suphle\Tests\Integration\Routing\TestsRouter;
+	use Suphle\Testing\{Condiments\BaseDatabasePopulator, TestTypes\ModuleLevelTest};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Authorization\Models\EmploymentAuthorizer;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock, Authorization\Models\EmploymentAuthorizer, Routes\Auth\AuthorizeRoutes};
 
 	use Suphle\Tests\Mocks\Models\Eloquent\Employment;
 
-	class ModelAuthorizationTest extends TestsRouter {
+	class ModelAuthorizationTest extends ModuleLevelTest {
 
 		use BaseDatabasePopulator, SecureUserAssertions;
+
+		protected bool $debugCaughtExceptions = true;
+
+		protected function getModules ():array {
+
+			return [
+
+				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+
+					$container->replaceWithMock(Router::class, RouterMock::class, [
+
+						"browserEntryRoute" => AuthorizeRoutes::class
+					])
+					->replaceWithMock(AuthContract::class, AuthContract::class, [
+
+							"getModelObservers" => [
+
+								Employment::class => EmploymentAuthorizer::class
+							]
+						]
+					);
+				})
+			];
+		}
 
 		protected function getActiveEntity ():string {
 
@@ -33,22 +57,6 @@
 
 				$employment->update(["status" => "taken"]) // when
 			);
-		}
-
-		protected function concreteBinds ():array {
-
-			$authContract = AuthContract::class;
-
-			return array_merge(parent::concreteBinds(), [
-
-				$authContract => $this->positiveDouble($authContract, [
-
-					"getModelObservers" => [
-
-						Employment::class => EmploymentAuthorizer::class
-					]
-				])
-			]);
 		}
 
 		public function test_unauthorized_user_cant_perform_operation () {

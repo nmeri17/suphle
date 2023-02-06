@@ -3,7 +3,9 @@
 
 	use Suphle\Contracts\Config\Laravel;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Config\LaravelMock;
+	use Suphle\Testing\Proxies\WriteOnlyContainer;
+
+	use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\LaravelMock};
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\InstalledComponents\SuphleLaravelTemplates\ConfigLinks\{AppConfig, NestedConfig};
 
@@ -12,12 +14,17 @@
 	*/
 	class ConfigLoaderTest extends TestsConfig {
 
-		protected function simpleBinds ():array {
+		protected function getModules ():array {
 
-			return array_merge(parent::simpleBinds(), [
+			return [
+				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-				Laravel::class => LaravelMock::class
-			]);
+					$container->replaceWithMock(
+
+						Laravel::class, LaravelMock::class, []
+					);
+				})
+			];
 		}
 
 		public function test_their_config_can_get_ours () {
@@ -44,7 +51,7 @@
 
 			$sut = $this->getUnderlyingConfig(); // when
 
-			$value = $this->container->getClass(NestedConfig::class)->first_level()->second_level()->value();
+			$value = $this->getContainer()->getClass(NestedConfig::class)->first_level()->second_level()->value();
 
 			$this->assertSame($value, $sut->get("nested.first_level.second_level.value")); // then
 	    }
@@ -60,7 +67,7 @@
 
 	    private function getNativeValues (string $className):array {
 
-			return $this->container->getClass($className)
+			return $this->getContainer()->getClass($className)
 
 			->getNativeValues();
 		}

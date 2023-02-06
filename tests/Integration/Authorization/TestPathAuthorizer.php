@@ -3,25 +3,41 @@
 
 	use Suphle\Request\PathAuthorizer;
 
-	use Suphle\Bridge\Laravel\LaravelAppConcrete;
+	use Suphle\Adapters\Orms\Eloquent\Models\User as EloquentUser;
 
-	use Suphle\Adapters\Orms\Eloquent\{OrmLoader, Models\User as EloquentUser};
+	use Suphle\Contracts\{Auth\UserContract, Config\Router};
 
-	use Suphle\Contracts\{Auth\UserContract, Database\OrmBridge};
+	use Suphle\Testing\{Condiments\BaseDatabasePopulator, TestTypes\ModuleLevelTest};
 
-	use Suphle\Testing\{Proxies\SecureUserAssertions, Condiments\BaseDatabasePopulator};
+	use Suphle\Testing\Proxies\{SecureUserAssertions, WriteOnlyContainer};
 
-	use Suphle\Tests\Integration\Routing\TestsRouter;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Routes\Auth\AuthorizeRoutes, Config\RouterMock};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Auth\AuthorizeRoutes;
+	abstract class TestPathAuthorizer extends ModuleLevelTest {
 
-	abstract class TestPathAuthorizer extends TestsRouter {
+		use SecureUserAssertions, BaseDatabasePopulator {
 
-		use SecureUserAssertions, BaseDatabasePopulator;
-		
-		protected function getEntryCollection ():string {
+			BaseDatabasePopulator::setUp as databaseAllSetup;
+		}
 
-			return AuthorizeRoutes::class;
+		protected function setUp ():void {
+
+			$this->databaseAllSetup();
+
+			$this->setUser();
+		}
+
+		protected function getModules ():array {
+
+			return [
+				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+
+					$container->replaceWithMock(Router::class, RouterMock::class, [
+
+						"browserEntryRoute" => AuthorizeRoutes::class
+					]);
+				})
+			];
 		}
 
 		protected function getActiveEntity ():string {
@@ -40,17 +56,12 @@
 		// can't move this to setUp since this object is updated after request is updated
 		protected function getAuthorizer ():PathAuthorizer {
 
-			return $this->container->getClass(PathAuthorizer::class);
+			return $this->getContainer()->getClass(PathAuthorizer::class);
 		}
 
 		protected function authorizationSuccess ():bool {
 
 			return $this->getAuthorizer()->passesActiveRules();
-		}
-
-		protected function preDatabaseFreeze ():void {
-
-			$this->setUser();
 		}
 
 		abstract protected function setUser ():void;

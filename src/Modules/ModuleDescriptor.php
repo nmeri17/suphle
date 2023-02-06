@@ -58,15 +58,20 @@
 			return ControllerModule::class;
 		}
 
+		/**
+		 * Binding is unnecessary here. Just return the pairs
+		*/
 		public function globalConcretes ():array {
 
 			return [];
 		}
 
 		/**
-		 * Bind objects either globally or to specific consumers
+		 * Bind objects to all or specific consumers. Or, trigger a component's booting by pulling it from the container
 		*/
 		protected function registerConcreteBindings ():void {
+
+			if ($this->hasPreparedExpatriates) return;
 
 			$bindings = $this->globalConcretes();
 

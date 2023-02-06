@@ -46,6 +46,10 @@
 			$this->catchQueuedTasks();
 
 			$this->container = $this->firstModuleContainer();
+
+			[$this->contentOwner, $this->contentVisitor] = $this
+
+			->replicator->getRandomEntities(2); // we'll visit as one of them
 		}
 
 		protected function getActiveEntity ():string {
@@ -100,15 +104,6 @@
 			$this->container->refreshClass($jobName);
 
 			return $jobInstance;
-		}
-
-		protected function preDatabaseFreeze ():void {
-
-			$this->replicator->modifyInsertion(10); // we'll visit as one of them after connection resets
-
-			[$this->contentOwner, $this->contentVisitor] = $this
-
-			->replicator->getRandomEntities(2);
 		}
 
 		protected function makePendingFlowDetails (?UserContract $user = null, string $storageName = null):PendingFlowDetails {

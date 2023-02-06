@@ -373,7 +373,10 @@
 
 			if (!($concrete instanceof $interface))
 
-				throw new InvalidImplementor($interface, get_class($concrete));
+				throw InvalidImplementor::incompatibleParent(
+
+					$interface, get_class($concrete)
+				);
 
 			$this->storeConcrete( $interface, $concrete);
 		}
@@ -502,7 +505,10 @@
 
 			if (is_null($concrete))
 
-				throw new InvalidImplementor($interface, "No matching concrete" );
+				throw InvalidImplementor::missingParent(
+
+					$interface, $caller, $this->hydratingForStack
+				);
 
 			return $concrete;
 		}

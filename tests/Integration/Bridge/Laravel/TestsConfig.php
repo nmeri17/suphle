@@ -1,21 +1,28 @@
 <?php
 	namespace Suphle\Tests\Integration\Bridge\Laravel;
 
+	use Suphle\Hydration\Container;
+
 	use Suphle\Contracts\Bridge\LaravelContainer;
 
-	use Suphle\Testing\TestTypes\IsolatedComponentTest;
-
-	use Suphle\Tests\Integration\Generic\CommonBinds;
+	use Suphle\Testing\TestTypes\ModuleLevelTest;
 
 	use Illuminate\Contracts\Config\Repository as RepositoryContract;
 
-	class TestsConfig extends IsolatedComponentTest {
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
-		use CommonBinds;
+	class TestsConfig extends ModuleLevelTest {
+
+		protected function getModules ():array {
+
+			return [
+				new ModuleOneDescriptor (new Container)
+			];
+		}
 
 	    protected function getUnderlyingConfig ():RepositoryContract {
 
-			return $this->container->getClass(LaravelContainer::class) // trigger config lifting
+			return $this->getContainer()->getClass(LaravelContainer::class) // trigger config lifting
 
 			->make("config");
 	    }

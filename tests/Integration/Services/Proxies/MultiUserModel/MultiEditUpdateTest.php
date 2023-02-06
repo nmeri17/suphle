@@ -23,17 +23,22 @@
 
 	class MultiEditUpdateTest extends IsolatedComponentTest {
 
-		use DirectHttpTest, BaseDatabasePopulator, CommonBinds;
+		use DirectHttpTest, BaseDatabasePopulator, CommonBinds {
+
+			BaseDatabasePopulator::setUp as databaseAllSetup;
+		}
 
 		private Employment $lastInserted;
 		
-		private string $modelName = Employment::class;
+		private string $modelName = Employment::class,
 		
-		private string $sutName = EmploymentEditMock::class;
+		$sutName = EmploymentEditMock::class;
 
-		protected function preDatabaseFreeze ():void {
+		protected function setUp ():void { // continue by running tests
 
-			$this->lastInserted = $this->replicator->modifyInsertion(10)[0]; // we'll visit one of them after connection resets
+			$this->databaseAllSetup();
+
+			$this->lastInserted = $this->replicator->getRandomEntity();
 		}
 
 		public function test_missing_key_on_update_throws_error () {

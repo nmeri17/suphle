@@ -5,14 +5,16 @@
 
 	class SuccessApiLoginMediatorTest extends BaseTestApiLoginMediator {
 
-		protected function preDatabaseFreeze ():void {
+		protected function setUp ():void {
+
+			parent::setUp();
 
 			$this->sendCorrectRequest(self::LOGIN_PATH); // given
 		}
 
 		public function test_successLogin () {
 
-			$this->injectLoginMediator(1, 0); // then
+			$this->bindAuthStatusObserver(1, 0); // then
 
 			$this->evaluateLoginStatus(); // when
 		}

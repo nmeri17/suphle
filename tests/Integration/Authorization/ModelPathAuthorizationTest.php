@@ -15,7 +15,10 @@
 
 	class ModelPathAuthorizationTest extends ModuleLevelTest {
 
-		use BaseDatabasePopulator, SecureUserAssertions;
+		use BaseDatabasePopulator, SecureUserAssertions {
+
+			BaseDatabasePopulator::setUp as databaseAllSetup;
+		}
 
 		protected const EDIT_PATH = "/admin/gmulti-edit/";
 
@@ -25,27 +28,9 @@
 		
 		protected int $randomEmploymentId;
 
-		protected function getModules ():array {
+		protected function setUp ():void {
 
-			return [
-				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
-
-					$container->replaceWithMock(Router::class, RouterMock::class, [
-
-						"browserEntryRoute" => AuthorizeRoutes::class
-					]);
-				})
-			];
-		}
-
-		protected function getActiveEntity ():string {
-
-			return Employment::class;
-		}
-
-		protected function preDatabaseFreeze ():void {
-
-			$this->replicator->modifyInsertion(10); // using this since the seeded ones will be cleared by the time request is sent
+			$this->databaseAllSetup();
 
 			$this->randomEmploymentId = $this->replicator->getRandomEntity()->id;
 
@@ -65,6 +50,24 @@
 			)->first();
 
 			$this->admin = $this->employment->employer->user;
+		}
+
+		protected function getModules ():array {
+
+			return [
+				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+
+					$container->replaceWithMock(Router::class, RouterMock::class, [
+
+						"browserEntryRoute" => AuthorizeRoutes::class
+					]);
+				})
+			];
+		}
+
+		protected function getActiveEntity ():string {
+
+			return Employment::class;
 		}
 
 		public function test_nested_can_add_more_locks () {

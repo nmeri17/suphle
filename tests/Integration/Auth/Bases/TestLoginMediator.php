@@ -5,23 +5,18 @@
 
 	use Suphle\Contracts\Auth\{ModuleLoginHandler, LoginActions, LoginFlowMediator};
 
-	use Suphle\Response\RoutedRendererManager;
-
-	use Suphle\Response\Format\Json;
+	use Suphle\Hydration\Container;
 
 	use Suphle\Testing\{ Condiments\BaseDatabasePopulator, Proxies\SecureUserAssertions };
 
-	use Suphle\Tests\Integration\Generic\CommonBinds;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
 	/**
 	 * Used for testing login functionality using the raw collaborators i.e. without http responses, middleware, validation etc
 	*/
 	trait TestLoginMediator {
 
-		use BaseDatabasePopulator, UserInserter, CommonBinds, SecureUserAssertions {
-
-			CommonBinds::concreteBinds as commonConcretes;
-		}
+		use BaseDatabasePopulator, UserInserter, SecureUserAssertions;
 
 		/**
 		 * These are used to determine whether login passed or failed
@@ -40,33 +35,27 @@
 			return EloquentUser::class;
 		}
 
-		protected function concreteBinds ():array {
+		protected function getModules ():array {
 
-			$routerName = RoutedRendererManager::class;
-
-			return array_merge($this->commonConcretes(), [
-
-				$routerName => $this->replaceConstructorArguments($routerName, [], [
-
-					"invokePreviousRenderer" => new Json("") // since we're just sending a post request without an initial get
-				])
-			]);
+			return [
+				new ModuleOneDescriptor (new Container)
+			];
 		}
 
 		protected function evaluateLoginStatus ():void {
 
-			$this->container->getClass(ModuleLoginHandler::class)
+			$this->getContainer()->getClass(ModuleLoginHandler::class)
 
 			->setResponseRenderer();
 		}
 
-		protected function injectLoginMediator (int $successCount, int $failureCount):void {
+		protected function bindAuthStatusObserver (int $successCount, int $failureCount):void {
 
 			$localLoginManager = $this->replaceConstructorArguments(
 
 				$this->loginRendererName(), [
 
-					"authService" => $this->container->getClass($this->loginRepoService()) // injecting this since PHPUnit won't recursively hydrate dependencies and we need to evaluate the "comparer" property
+					"authService" => $this->getContainer()->getClass($this->loginRepoService()) // injecting this since PHPUnit won't recursively hydrate dependencies and we need to evaluate the "comparer" property
 				], [], [
 
 					"successRenderer" => [$successCount, []],
@@ -75,7 +64,7 @@
 				]
 			);
 
-			$this->container->whenTypeAny()->needsAny([
+			$this->massProvide([
 
 				$this->loginRendererName() => $localLoginManager
 			]);

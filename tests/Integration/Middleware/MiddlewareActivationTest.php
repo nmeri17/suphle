@@ -19,11 +19,21 @@
 
 	class MiddlewareActivationTest extends ModuleLevelTest {
 
-		use BaseDatabasePopulator, SecureUserAssertions, MocksMiddleware;
+		use BaseDatabasePopulator, SecureUserAssertions, MocksMiddleware {
+
+			BaseDatabasePopulator::setUp as databaseAllSetup;
+		}
 
 		private string $threeTierUrl = "/first/middle/without";
 
 		private $contentVisitor;
+
+		protected function setUp ():void {
+
+			$this->databaseAllSetup();
+
+			$this->contentVisitor = $this->replicator->getRandomEntity();
+		}
 
 		protected function getModules():array {
 
@@ -42,11 +52,6 @@
 		protected function getActiveEntity ():string {
 
 			return EloquentUser::class;
-		}
-
-		protected function preDatabaseFreeze ():void {
-
-			$this->contentVisitor = $this->replicator->modifyInsertion()->first();
 		}
 
 		public function test_can_activate_middleware () {

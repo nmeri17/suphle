@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Console;
 
-	use Suphle\Contracts\Modules\DescriptorInterface;
+	use Suphle\Modules\Structures\ActiveDescriptors;
 
 	use Suphle\Hydration\Container;
 
@@ -69,24 +69,15 @@
 
 			if ($moduleInterface)
 
-				return $this->getActiveModule($moduleInterface)->getContainer();
+				return (new ActiveDescriptors($this->moduleList))
+
+				->findMatchingExports($moduleInterface)->getContainer();
 
 			if (!empty($this->moduleList))
 
 				return current($this->moduleList)->getContainer();
 
 			return $this->defaultContainer;
-		}
-
-		protected function getActiveModule (string $moduleInterface):DescriptorInterface {
-
-			foreach ($this->moduleList as $descriptor)
-
-				if ($moduleInterface == $descriptor->exportsImplements())
-
-					return $descriptor;
-
-			throw new Exception("No matching module for $moduleInterface");
 		}
 	}
 ?>

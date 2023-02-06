@@ -18,10 +18,7 @@
 	*/
 	abstract class IsolatedComponentTest extends TestVirginContainer {
 
-		use ConfigureExceptionBridge, ExceptionBroadcasters {
-
-			ConfigureExceptionBridge::setUp as mufflerSetup;
-		}
+		use ExceptionBroadcasters;
 
 		protected Container $container;
 
@@ -45,8 +42,6 @@
 			$this->maySetRealDecorator();
 
 			$this->mayMonitorContainer($this->container);
-
-			$this->mufflerSetup();
 		}
 
 		protected function entityBindings ():void {

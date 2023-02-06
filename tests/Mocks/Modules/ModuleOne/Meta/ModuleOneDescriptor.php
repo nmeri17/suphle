@@ -38,6 +38,8 @@
 
 		protected function registerConcreteBindings ():void {
 
+			if ($this->hasPreparedExpatriates) return;
+
 			parent::registerConcreteBindings();
 
 			$this->container->getClass(OrmDialect::class);

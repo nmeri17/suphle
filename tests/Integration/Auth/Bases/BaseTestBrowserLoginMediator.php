@@ -3,9 +3,9 @@
 
 	use Suphle\Auth\{Renderers\BrowserLoginMediator, Repositories\BrowserAuthRepo};
 
-	use Suphle\Testing\TestTypes\IsolatedComponentTest;
+	use Suphle\Testing\TestTypes\ModuleLevelTest;
 
-	class BaseTestBrowserLoginMediator extends IsolatedComponentTest {
+	class BaseTestBrowserLoginMediator extends ModuleLevelTest {
 
 		use TestLoginMediator;
 

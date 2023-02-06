@@ -21,11 +21,34 @@
 
 	class MultiEditGetTest extends InvestigateSystemCrash {
 
-		use BaseDatabasePopulator, SecureUserAssertions;
+		use BaseDatabasePopulator, SecureUserAssertions {
+
+			BaseDatabasePopulator::setUp as databaseAllSetup;
+		}
 
 		protected bool $softenDisgraceful = true;
   
   		protected Employment $employment;
+
+		protected function setUp ():void {
+
+			$this->databaseAllSetup();
+
+			$this->employment = $this->replicator->modifyInsertion(
+
+				1, [], function ($builder) {
+
+					$employer = Employer::factory()
+
+					->for(EloquentUser::factory()->state([
+
+						"is_admin" => true
+					]))->create();
+
+					return $builder->for($employer);
+				}
+			)->first();
+		}
 
 		protected function getModule ():DescriptorInterface {
 
@@ -49,24 +72,6 @@
 
 				$this->get("admin/gmulti-edit-unauth"); // when
 			}, EditIntegrityException::NO_AUTHORIZER);
-		}
-
-		protected function preDatabaseFreeze ():void {
-
-			$this->employment = $this->replicator->modifyInsertion(
-
-				1, [], function ($builder) {
-
-					$employer = Employer::factory()
-
-					->for(EloquentUser::factory()->state([
-
-						"is_admin" => true
-					]))->create();
-
-					return $builder->for($employer);
-				}
-			)->first();
 		}
 
 		public function test_authorized_getter_is_successful () { // analogous to above test

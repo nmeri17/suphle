@@ -3,39 +3,37 @@
 
 	use Suphle\Bridge\Laravel\Routing\ModuleRouteMatcher;
 
-	use Suphle\Contracts\Config\Laravel as ILaravel;
+	use Suphle\Contracts\Config\Laravel;
 
-	use Suphle\Testing\{TestTypes\IsolatedComponentTest, Condiments\DirectHttpTest};
+	use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
-	use Suphle\Tests\Integration\Generic\CommonBinds;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\LaravelMock};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Config\LaravelMock;
+	class ModuleRouteMatcherTest extends ModuleLevelTest {
 
-	class ModuleRouteMatcherTest extends IsolatedComponentTest {
+		protected function getModules ():array {
 
-		use DirectHttpTest, CommonBinds {
+			return [
+				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-			CommonBinds::simpleBinds as commonSimples;
+					$container->replaceWithMock(
+
+						Laravel::class, LaravelMock::class, []
+					);
+				})
+			];
 		}
 		
 		public function test_getResponse_from_provided_route () {
 
-			// given ==> [simpleBinds]
+			// given ==> @see module binding
 
 		    // when
-		    $this->setHttpParams("/laravel/entry"); // calling this before sut is created since LaravelContainer needs the information
+		    $this->get("/laravel/entry"); // calling this before sut is created since LaravelContainer needs the information
 
-			$sut = $this->container->getClass(ModuleRouteMatcher::class); // RegistersRouteProvider->boot never runs
+			$sut = $this->getContainer()->getClass(ModuleRouteMatcher::class); // RegistersRouteProvider->boot never runs
 
 		   $this->assertTrue($sut->canHandleRequest()); // then
-		}
-
-		protected function simpleBinds ():array {
-
-			return array_merge($this::commonSimples(), [
-
-				ILaravel::class => LaravelMock::class
-			]);
 		}
 	}
 ?>

@@ -14,7 +14,7 @@
 
 			$this->actingAs($this->user); // given
 
-			$this->fakeRequest("/admin-entry"); // when
+			$this->get("/admin-entry"); // when
 
 			$this->assertFalse($this->authorizationSuccess()); // then
 		}
@@ -23,7 +23,7 @@
 
 			$this->actingAs($this->user); // given
 
-			$this->fakeRequest("/admin/retain"); // when
+			$this->get("/admin/retain"); // when
 
 			$this->assertFalse($this->authorizationSuccess()); // then
 		}
@@ -32,7 +32,7 @@
 
 			$this->actingAs($this->user); // given
 
-			$this->fakeRequest("/admin/secede"); // when
+			$this->get("/admin/secede"); // when
 
 			$this->assertTrue($this->authorizationSuccess()); // then
 		}
@@ -41,7 +41,7 @@
 
 			$this->actingAs($this->user); // given
 
-			$this->fakeRequest("/admin/secede"); // when
+			$this->get("/admin/secede"); // when
 
 			$result = $this->getAuthorizer()->getActiveRules();
 

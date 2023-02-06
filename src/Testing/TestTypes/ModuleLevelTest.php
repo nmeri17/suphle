@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Testing\TestTypes;
 
-	use Suphle\Modules\ModuleDescriptor;
+	use Suphle\Modules\{ModuleDescriptor, Structures\ActiveDescriptors};
 
 	use Suphle\Hydration\Container;
 
@@ -49,16 +49,15 @@
 		*/
 		protected function getModuleFor (string $interface):object {
 
-			foreach ($this->modules as $descriptor)
+			$descriptor = (new ActiveDescriptors($this->modules))
 
-				if ($interface == $descriptor->exportsImplements()) {
+			->findMatchingExports($interface);
 
-					$descriptor->warmModuleContainer();
+			$descriptor->warmModuleContainer();
 
-					$descriptor->prepareToRun();
+			$descriptor->prepareToRun();
 
-					return $descriptor->materialize();
-				}
+			return $descriptor->materialize();
 		}
 
 		protected function getContainer ():Container {

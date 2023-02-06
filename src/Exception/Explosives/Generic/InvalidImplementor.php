@@ -7,9 +7,21 @@
 
 	class InvalidImplementor extends Exception implements BroadcastableException {
 
-		public function __construct (string $interface, string $concrete) {
+		public static function incompatibleParent (string $interface, string $concrete):self {
 
-			$this->message = $concrete ." incorrectly provided for ". $interface; // unfortunately, getMessage is final, so we're resorting to this hack
+			return new self($concrete ." incorrectly bound to ". $interface);
+		}
+
+		public static function missingParent (string $interface, string $caller, array $callStack):self {
+
+			return new self(
+				"Unable to hydrate '$caller' because no concrete class was bound to '$interface'. The following hydration sequence warranted this interface:\n".
+
+				var_export(array_values(
+
+					array_unique($callStack)
+				), true)
+			);
 		}
 	}
 ?>

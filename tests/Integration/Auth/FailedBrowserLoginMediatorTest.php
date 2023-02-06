@@ -5,14 +5,16 @@
 
 	class FailedBrowserLoginMediatorTest extends BaseTestBrowserLoginMediator {
 
-		protected function preDatabaseFreeze ():void {
+		protected function setUp ():void {
+
+			parent::setUp();
 
 			$this->sendIncorrectRequest(self::LOGIN_PATH); // given
 		}
 
 		public function test_failedLogin () {
 
-			$this->injectLoginMediator(0, 1); // then
+			$this->bindAuthStatusObserver(0, 1); // then
 
 			$this->evaluateLoginStatus(); // when
 		}

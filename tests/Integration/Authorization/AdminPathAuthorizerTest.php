@@ -14,7 +14,7 @@
 
 			$this->actingAs($this->user); // given
 
-			$this->fakeRequest("/admin-entry"); // when
+			$this->get("/admin-entry"); // when
 
 			$this->assertTrue($this->authorizationSuccess()); // then
 		}
@@ -23,7 +23,7 @@
 
 			$this->actingAs($this->user); // given
 
-			$this->fakeRequest("/admin/retain"); // when
+			$this->get("/admin/retain"); // when
 
 			$this->assertTrue($this->authorizationSuccess()); // then
 		}

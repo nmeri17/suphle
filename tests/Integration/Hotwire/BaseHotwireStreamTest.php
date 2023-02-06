@@ -61,6 +61,8 @@
 
 				->getClass(CsrfGenerator::class)->newToken()
 			];
+
+			[$this->employment1, $this->employment2] = $this->replicator->getRandomEntities(2);
 		}
 
 		protected function getModules ():array {
@@ -94,11 +96,6 @@
 		protected function getActiveEntity ():string {
 
 			return Employment::class;
-		}
-
-		protected function preDatabaseFreeze ():void {
-
-			[$this->employment1, $this->employment2] = $this->replicator->modifyInsertion(2);
 		}
 
 		/**

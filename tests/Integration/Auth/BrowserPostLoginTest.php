@@ -1,29 +1,23 @@
 <?php
 	namespace Suphle\Tests\Integration\Auth;
 
-	use Suphle\Contracts\Auth\AuthStorage;
-
-	use Suphle\Auth\Storage\SessionStorage;
+	use Suphle\Hydration\Container;
 
 	use Suphle\Adapters\Orms\Eloquent\Models\User as EloquentUser;
 
-	use Suphle\Testing\{Condiments\BaseDatabasePopulator, Proxies\SecureUserAssertions, TestTypes\IsolatedComponentTest};
+	use Suphle\Testing\{Condiments\BaseDatabasePopulator, Proxies\SecureUserAssertions, TestTypes\ModuleLevelTest};
 
-	use Suphle\Tests\Integration\Generic\CommonBinds;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
-	class BrowserPostLoginTest extends IsolatedComponentTest {
+	class BrowserPostLoginTest extends ModuleLevelTest {
 
-		use BaseDatabasePopulator, SecureUserAssertions, CommonBinds {
+		use BaseDatabasePopulator, SecureUserAssertions;
 
-			CommonBinds::simpleBinds as commonSimples;
-		}
+		protected function getModules ():array {
 
-		protected function simpleBinds ():array {
-
-			return array_merge($this->commonSimples(), [
-
-				AuthStorage::class => SessionStorage::class // ensure we're working with session in this test although that's the default
-			]);
+			return [
+				new ModuleOneDescriptor (new Container)
+			];
 		}
 
 		protected function getActiveEntity ():string {
