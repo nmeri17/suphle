@@ -3,7 +3,7 @@
 
 	use Suphle\Modules\ModuleDescriptor;
 
-	use Suphle\Contracts\{Database\OrmDialect, Config\ModuleFiles};
+	use Suphle\Contracts\Config\ModuleFiles;
 
 	use Suphle\Config\AscendingHierarchy;
 
@@ -34,15 +34,6 @@
 
 					$this->container->getClass(FileSystemReader::class))
 			]);
-		}
-
-		protected function registerConcreteBindings ():void {
-
-			if ($this->hasPreparedExpatriates) return;
-
-			parent::registerConcreteBindings();
-
-			$this->container->getClass(OrmDialect::class);
 		}
 	}
 ?>

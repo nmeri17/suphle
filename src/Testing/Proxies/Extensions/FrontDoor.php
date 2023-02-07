@@ -18,5 +18,10 @@
 
 			return $this->descriptorInstances;
 		}
+
+		public function getActiveContainer ():Container {
+
+			return parent::getActiveContainer();
+		}
 	}
 ?>

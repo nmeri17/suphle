@@ -3,13 +3,11 @@
 
 	use Suphle\Contracts\Services\Models\IntegrityModel;
 
-	use Suphle\Adapters\Orms\Eloquent\Models\{BaseModel, User};
-
-	use Suphle\Adapters\Orms\Eloquent\Condiments\EditIntegrity;
+	use Suphle\Adapters\Orms\Eloquent\{Models\BaseModel, Condiments\EditIntegrity};
 
 	use Suphle\Tests\Mocks\Models\Eloquent\Factories\EmploymentFactory;
 
-	use Illuminate\Database\Eloquent\Factories\Factory;
+	use Illuminate\Database\Eloquent\{Factories\Factory, Relations\Relation};
 
 	class Employment extends BaseModel implements IntegrityModel {
 
@@ -21,6 +19,11 @@
 
 			IntegrityModel::INTEGRITY_COLUMN => "datetime:Y-m-d H:i:s"
 		];
+
+		public function edit_history ():Relation {
+
+			return $this->morphMany(EditHistory::class, "historical");
+		}
 
 		public function employer () {
 
@@ -34,11 +37,7 @@
 
 		public static function migrationFolders ():array {
 
-			return array_merge(
-				[__DIR__ . DIRECTORY_SEPARATOR . "Migrations"],
-
-				User::migrationFolders()
-			);
+			return [__DIR__ . DIRECTORY_SEPARATOR . "Migrations"];
 		}
 	}
 ?>

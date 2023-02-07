@@ -10,8 +10,6 @@
 
 		protected array $handlingUnits = [];
 
-		protected ?string $moduleReceiver = null;
-		
 		public function __construct(
 			protected readonly string $handlingClass,
 
@@ -46,16 +44,6 @@
 				$this->handlingUnits[] = new ExecutionUnit($eventName, $handlingMethod);
 
 			return $this;
-		}
-
-		public function setReceivingModule (string $moduleInterface):void {
-
-			$this->moduleReceiver = $moduleInterface;
-		}
-
-		public function getReceivingModule ():?string {
-
-			return $this->moduleReceiver;
 		}
 	}
 ?>

@@ -59,9 +59,7 @@
 
 			$this->container->getClass(ModulesBooter::class)
 
-			->bootAllModules($this->descriptorsHolder)
-
-			->prepareFirstModule();
+			->bootOuterModules($this->descriptorsHolder);
 		}
 
 		public function setRequestPath (string $requestPath):void {
@@ -155,7 +153,7 @@
 
 			$this->routedModule = $moduleRouter->getActiveModule();
 
-			$initializer->whenActive()->fullRequestProtocols(
+			$initializer->fullRequestProtocols(
 
 				$this->getActiveContainer()->getClass(
 				

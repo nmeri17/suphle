@@ -39,10 +39,6 @@
 
 			try {
 
-				if (!$descriptor->expatriateHasPreparedExpatriates()) // avoid overwriting boted bindings
-
-					$descriptor->prepareToRun();
-
 				$initializer = $descriptor->getContainer()
 
 				->getClass(ModuleInitializer::class);
@@ -51,8 +47,10 @@
 			}
 			catch (Throwable $exception) {
 
+				$descriptorName = $descriptor::class;
+
 				echo implode("\n", [
-					"Error encountered during attempt to find route on descriptor ". $descriptor::class,
+					"Error encountered during attempt to find route on descriptor '$descriptorName':",
 
 					$exception
 				]);

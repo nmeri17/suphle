@@ -1,8 +1,6 @@
 <?php
 	namespace Suphle\Adapters\Orms\Eloquent\Migrations;
 
-	use Suphle\Adapters\Orms\Eloquent\Models\User;
-
 	use Illuminate\Database\{Migrations\Migration, Schema\Blueprint};
 
 	use Illuminate\Support\Facades\Schema;
@@ -17,7 +15,7 @@
 
 				$table->morphs("historical");
 
-				$table->foreignIdFor(User::class);
+				// $table->foreignIdFor(User::class); // connect to the appropriate user
 
 				$table->json("payload");
 

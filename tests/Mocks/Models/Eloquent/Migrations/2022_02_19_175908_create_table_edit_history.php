@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Adapters\Orms\Eloquent\Migrations;
 
-	use Suphle\Adapters\Orms\Eloquent\Models\User;
+	use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
 
 	use Illuminate\Database\{Migrations\Migration, Schema\Blueprint};
 
@@ -17,7 +17,7 @@
 
 				$table->morphs("historical");
 
-				$table->foreignIdFor(User::class);
+				$table->foreignIdFor(EloquentUser::class);
 
 				$table->json("payload");
 

@@ -13,9 +13,9 @@
 
 		use SanitizesIntegerInput;
 
-		protected array $stack = [],
+		protected array $stack = [], $methodSegments = [];
 
-		$methodSegments = [];
+		protected bool $hasExchangedTokens = false;
 
 		public function __construct(protected readonly CollectionMethodToUrl $urlReplacer) {
 
@@ -32,7 +32,9 @@
 		*/
 		public function exchangeTokenValues (string $requestPath):void {
 
-			if (empty($this->stack)) return;
+			if (empty($this->stack) || $this->hasExchangedTokens)
+
+				return;
 
 			$realSegments = explode("/", trim($requestPath, "/"));
 
@@ -42,6 +44,8 @@
 
 					$this->stack[$segment] = $realSegments[$index];
 			}
+
+			$this->hasExchangedTokens = true;
 		}
 
 		public function getPathFromStack (string $urlPattern):string {

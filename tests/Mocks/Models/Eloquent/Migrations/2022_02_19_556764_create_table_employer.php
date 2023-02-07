@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Tests\Mocks\Models\Eloquent\Migrations;
 
-	use Suphle\Adapters\Orms\Eloquent\Models\User;
+	use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
 
 	use Illuminate\Database\{Migrations\Migration, Schema\Blueprint};
 
@@ -15,7 +15,7 @@
 
 				$table->id();
 
-				$table->foreignIdFor(User::class);
+				$table->foreignIdFor(EloquentUser::class);
 
 				$table->timestamps();
 			});

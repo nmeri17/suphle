@@ -3,11 +3,11 @@
 
 	use Suphle\Contracts\Modules\{DescriptorInterface, ControllerModule};
 
-	use Suphle\Contracts\Hydration\InterfaceCollection;
+	use Suphle\Contracts\{Hydration\InterfaceCollection, Database\OrmDialect};
 
 	use Suphle\Hydration\{Container, ExternalPackageManagerHydrator};
 
-	use Suphle\Hydration\Structures\{BaseInterfaceCollection, ContainerBooter};
+	use Suphle\Hydration\Structures\{BaseInterfaceCollection, ContainerBooter, ObjectDetails};
 
 	use Suphle\Exception\Explosives\Generic\UnexpectedModules;
 
@@ -30,11 +30,6 @@
 			$this->expatriates = $dependencies;
 
 			return $this;
-		}
-
-		public function getExpatriates ():array {
-
-			return $this->expatriates;
 		}
 
 		/**
@@ -71,11 +66,11 @@
 		*/
 		protected function registerConcreteBindings ():void {
 
-			if ($this->hasPreparedExpatriates) return;
-
 			$bindings = $this->globalConcretes();
 
-			$this->container->whenTypeAny()->needsAny($bindings);
+			$this->container->whenTypeAny()->needsAny($bindings)
+
+			->getClass(OrmDialect::class); // without forcing an ORM hydration using our config, this module's laravel container will create a random, unconfigured db accessor object that will take the place of any existing connection
 		}
 
 		public function getContainer():Container {
@@ -98,33 +93,29 @@
 			->initializeContainer($this->interfaceCollection());
 		}
 
+		public function getExpatriates ():array {
+
+			$this->validateExpatriates();
+
+			$expatriates = array_filter($this->expatriates, function ($descriptor) {
+
+				return !$descriptor->expatriateHasPreparedExpatriates(); // prevent multiple boots
+			});
+
+			return $expatriates;
+		}
+
 		// this should be on an [ExpatriateManager], but that'll make all the loaded descriptors create new instances of that class
-		protected function validateExpatriates ():self {
+		protected function validateExpatriates ():void {
 
 			$this->deportUnexpected();
 
 			$this->assignModuleShells();
-
-			return $this;
 		}
 
 		public function expatriateHasPreparedExpatriates ():bool {
 
 			return $this->hasPreparedExpatriates;
-		}
-
-		protected function empowerExpatriates ():self {
-
-			foreach ($this->expatriates as $descriptor)
-
-				if (!$descriptor->expatriateHasPreparedExpatriates()) {// prevent multiple boots
-
-					$descriptor->warmModuleContainer();
-
-					$descriptor->prepareToRun();
-				}
-
-			return $this;
 		}
 
 		/**
@@ -136,7 +127,22 @@
 
 			$expected = $this->expatriateNames();
 
-			$expectedAbsent = array_diff($expected, $given);
+			$objectMeta = $this->container->getClass(ObjectDetails::class);
+
+			$expectedAbsent = array_filter($expected, function ($descriptorName) use ( $objectMeta) {
+
+				foreach ($this->expatriates as $descriptor) {
+
+					if ($objectMeta->stringInClassTree(
+
+						$descriptor->exportsImplements(), $descriptorName
+					))
+
+						return false;
+				}
+
+				return true;
+			});
 
 			$surplus = array_diff($given, $expected);
 
@@ -155,19 +161,22 @@
 		}
 
 		/**
-		 * This recursively boots all the lower dependencies. It expects [warmModuleContainer] to have been called first. Both calls aren't coupled together cuz both processes can occur at different times
+		 * It expects [warmModuleContainer] to have been called first. Both calls aren't coupled together cuz both processes can occur at different times
 		*/
 		public function prepareToRun ():self {
 
+			if ($this->hasPreparedExpatriates)
+
+				return $this; // avoid overwriting booted bindings
+
 			$this->registerConcreteBindings(); // this has to come first, since it contains instances crucial to hydration of core objects
 
-			$manager = new ExternalPackageManagerHydrator($this->container);
+			$this->container->setExternalContainerManager(
 
-			$this->container->setExternalContainerManager($manager);
+				new ExternalPackageManagerHydrator($this->container)
+			);
 
 			$this->hasPreparedExpatriates = true;
-
-			$this->validateExpatriates()->empowerExpatriates();
 
 			return $this;
 		}

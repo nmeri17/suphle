@@ -3,7 +3,7 @@
 
 	use Suphle\Contracts\{Auth\AuthStorage, Config\Router};
 
-	use Suphle\Adapters\Orms\Eloquent\Models\User as EloquentUser;
+	use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
 
 	use Suphle\Testing\{TestTypes\ModuleLevelTest, Condiments\BaseDatabasePopulator};
 

@@ -123,15 +123,6 @@
 			return $this->foundRoute;
 		}
 
-		public function whenActive ():self {
-
-			if (!$this->externalRouters->hasActiveHandler()) // not booting module for external routers since request won't be handled in the module but by a separate app
-
-				$this->descriptor->prepareToRun();
-
-			return $this;
-		}
-
 		/**
 		 * If route is secured, confirm user is authenticated. When successful, it'll override the default authStorage method provided
 		 * 

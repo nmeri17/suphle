@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Tests\Integration\Console;
 
-	use Suphle\Contracts\Config\Console;
+	use Suphle\Contracts\{Config\Console, Modules\DescriptorInterface};
 
 	use Suphle\Testing\Proxies\WriteOnlyContainer;
 
@@ -9,36 +9,60 @@
 
 	use Suphle\Tests\Mocks\Modules\ModuleTwo\Meta\ModuleTwoDescriptor;
 
+	use Suphle\Tests\Mocks\Modules\ModuleThree\Meta\ModuleThreeDescriptor;
+
+	use Suphle\Tests\Mocks\Interactions\{ModuleThree, ModuleOne};
+
+	use Suphle\Tests\Integration\Generic\TestsModuleList;
+
 	use Symfony\Component\Console\Command\Command;
 
 	class AltersConcreteTest extends TestCliRunner {
 
+		use TestsModuleList;
+
+		protected function setUp ():void {
+
+			$this->setAllDescriptors();
+
+			parent::setUp();
+		}
+
+		protected function setModuleOne ():void {
+
+			$this->moduleOne = $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+
+				$consoleConfig = Console::class;
+
+				$container->replaceWithMock($consoleConfig, $consoleConfig, [
+
+					"commandsList" => [$this->sutName]
+				])
+				->replaceWithConcrete($this->sutName, $this->mockCommand(0));
+			});
+		}
+
+		protected function setModuleTwo ():void {
+
+			$this->moduleThree = $this->replicateModule(ModuleTwoDescriptor::class, function (WriteOnlyContainer $container) {
+
+				$consoleConfig = Console::class;
+
+				$container->replaceWithMock($consoleConfig, $consoleConfig, [
+
+					"commandsList" => [$this->sutName]
+				])
+				->replaceWithConcrete($this->sutName, $this->mockCommand(1));
+			})
+			->sendExpatriates([
+
+				ModuleThree::class => $this->moduleThree
+			]);
+		}
+
 		protected function getModules ():array {
 
-			return [
-
-				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
-
-					$consoleConfig = Console::class;
-
-					$container->replaceWithMock($consoleConfig, $consoleConfig, [
-
-						"commandsList" => [$this->sutName]
-					])
-					->replaceWithConcrete($this->sutName, $this->mockCommand(0));
-				}),
-
-				$this->replicateModule(ModuleTwoDescriptor::class, function (WriteOnlyContainer $container) {
-
-					$consoleConfig = Console::class;
-
-					$container->replaceWithMock($consoleConfig, $consoleConfig, [
-
-						"commandsList" => [$this->sutName]
-					])
-					->replaceWithConcrete($this->sutName, $this->mockCommand(1));
-				})
-			];
+			return [$this->moduleOne, $this->moduleTwo];
 		}
 
 		private function mockCommand (int $numTimes):AltersConcreteCommand {

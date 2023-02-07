@@ -1,29 +1,21 @@
 <?php
 	namespace Suphle\Tests\Integration\Modules;
 
-	use Suphle\Modules\{ModuleToRoute, ModulesBooter};
+	use Suphle\Modules\{ModuleToRoute, ModuleInitializer};
+
+	use Suphle\Contracts\Modules\DescriptorInterface;
 
 	use Suphle\Hydration\Container;
-
-	use Suphle\Testing\Condiments\DirectHttpTest;
 
 	use Suphle\Tests\Integration\Modules\ModuleDescriptor\DescriptorCollection;
 
 	class ModuleToRouteTest extends DescriptorCollection {
 
-		use DirectHttpTest;
+		protected function moduleDidFindRoute (DescriptorInterface $descriptor):?ModuleInitializer {
 
-		private $sut;
+			return $descriptor->getContainer()->getClass(ModuleToRoute::class)
 
-		protected function setUp ():void {
-
-			parent::setUp();
-
-			$container = $this->getContainer();
-
-			$container->getClass(ModulesBooter::class)->prepareAllModules();
-
-			$this->sut = $container->getClass(ModuleToRoute::class);
+			->findContext($this->modules); // given
 		}
 
 		protected function getModules ():array {
@@ -33,24 +25,16 @@
 		
 		public function test_can_find_in_module_other_than_first () {
 
-			$this->setHttpParams("/module-two/5"); // when
+			$this->get("/module-two/5"); // when
 
-			$this->assertNotNull($this->sut->findContext(
-
-				$this->modules // given
-
-			)); // then
+			$this->assertNotNull($this->moduleDidFindRoute($this->moduleTwo)); // then
 		}
 		
 		public function test_none_will_be_found() {
 
-			$this->setHttpParams("/non-existent/32"); // when
+			$this->get("/non-existent/32"); // when
 
-			$this->assertNull($this->sut->findContext(
-
-				$this->modules // given
-
-			)); // then
+			$this->assertNull($this->moduleDidFindRoute($this->moduleTwo)); // then
 		}
 	}
 ?>

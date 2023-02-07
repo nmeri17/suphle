@@ -16,7 +16,7 @@
 	use Suphle\Tests\Mocks\Models\Eloquent\Employment;
 
 	// this group of tests should run together rather than individually
-	class FrozenStateTest extends ModuleLevelTest {
+	class SingleModuleRetainTest extends ModuleLevelTest {
 
 		use BaseDatabasePopulator, SecureUserAssertions {
 
@@ -28,6 +28,10 @@
 		private Employment $lastInserted;
 		
 		private array $updatePayload = ["salary" => 850_000];
+
+		protected bool $debugCaughtExceptions = true;
+
+		protected bool $muffleExceptionBroadcast = false;
 
 		protected function setUp ():void {
 
@@ -55,12 +59,9 @@
 			];
 		}
 
-		/**
-		 * Before now, sending the request would terminate connection. Thus, the request won't see seeded data unless it was inserted before transaction commenced, which necessitated the now defunct preDatabaseFreeze method
-		*/
 		public function test_retains_seeded_data_after_request ():int {
 
-			// given // that we have $this->lastInserted->id
+			// given // that we have $this->lastInserted->id -- it doesn't use preDatabaseFreeze-- just a regular seeding
 
 			// for the edit history bits
 			$this->actingAs($this->lastInserted->employer->user); // this must come first since it starts new session
@@ -80,9 +81,14 @@
 					->toArray()[IntegrityModel::INTEGRITY_COLUMN] // force casting from carbon type to string
 				])
 			) // when
-			->assertOk(); // sanity check
+			->assertJsonPath("message", 1); // sanity check // update success
 
 			// then
+			$this->assertSame(
+
+				$this->getInitialCount(), $this->replicator->getCount()
+			); // still visible
+
 			$modifiedRows = $this->replicator->getSpecificEntities(
 
 				100, array_merge($this->updatePayload, [

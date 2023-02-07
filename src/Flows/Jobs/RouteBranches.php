@@ -44,9 +44,7 @@
 
 			$this->modules = $this->descriptorsHolder->getOriginalDescriptors();
 
-			$this->modulesBooter->bootAllModules($this->descriptorsHolder)
-
-			->prepareAllModules();
+			$this->modulesBooter->bootOuterModules($this->descriptorsHolder);
 			
 			$outgoingRenderer->getFlow()
 
@@ -102,12 +100,9 @@
 
 			$moduleInitializer = $this->moduleFinder->findContext($this->modules);
 
-			if (!is_null($moduleInitializer)) {
-
-				$moduleInitializer->whenActive();
+			if (!is_null($moduleInitializer))
 
 				return true;
-			}
 
 			current($this->modules)->getContainer()
 

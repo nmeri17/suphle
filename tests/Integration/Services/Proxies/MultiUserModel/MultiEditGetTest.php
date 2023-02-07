@@ -9,7 +9,7 @@
 
 	use Suphle\Services\DecoratorHandlers\MultiUserEditHandler;
 
-	use Suphle\Adapters\Orms\Eloquent\Models\User as EloquentUser;
+	use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
 
 	use Suphle\Testing\{TestTypes\InvestigateSystemCrash, Condiments\BaseDatabasePopulator};
 

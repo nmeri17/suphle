@@ -61,17 +61,10 @@
 
 		protected function external(string $interaction, string $handlingClass):EventSubscription {
 
-			$subscription = $this->initializeHandlingScope(
+			return $this->initializeHandlingScope(
 
 				self::EXTERNAL_SCOPE, $interaction, $handlingClass
 			);
-
-			$subscription->setReceivingModule(
-			
-				$this->moduleDescriptor->exportsImplements()
-			);
-
-			return $subscription;
 		}
 
 		/**

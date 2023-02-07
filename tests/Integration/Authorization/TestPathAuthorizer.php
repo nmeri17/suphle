@@ -3,9 +3,9 @@
 
 	use Suphle\Request\PathAuthorizer;
 
-	use Suphle\Adapters\Orms\Eloquent\Models\User as EloquentUser;
-
 	use Suphle\Contracts\{Auth\UserContract, Config\Router};
+
+	use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
 
 	use Suphle\Testing\{Condiments\BaseDatabasePopulator, TestTypes\ModuleLevelTest};
 

@@ -3,8 +3,6 @@
 
 	use Suphle\Contracts\{Services\Models\IntegrityModel, Auth\AuthStorage};
 
-	use Suphle\Adapters\Orms\Eloquent\Models\EditHistory;
-
 	use Illuminate\Database\Eloquent\Relations\Relation;
 
 	use DateTime;
@@ -24,10 +22,7 @@
 	*/
 	trait EditIntegrity {
 
-		public function edit_history ():Relation {
-
-			return $this->morphMany(EditHistory::class, "historical");
-		}
+		abstract public function edit_history ():Relation;
 
 		public function includesEditIntegrity (string $integrity):bool {
 

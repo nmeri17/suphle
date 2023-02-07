@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Tests\Integration\Auth\Bases;
 
-	use Suphle\Adapters\Orms\Eloquent\Models\User as EloquentUser;
+	use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
 
 	use Suphle\Contracts\Auth\{ModuleLoginHandler, LoginActions, LoginFlowMediator};
 

@@ -49,20 +49,16 @@
 		*/
 		protected function getModuleFor (string $interface):object {
 
-			$descriptor = (new ActiveDescriptors($this->modules))
+			return (new ActiveDescriptors($this->modules))
 
-			->findMatchingExports($interface);
+			->findMatchingExports($interface)
 
-			$descriptor->warmModuleContainer();
-
-			$descriptor->prepareToRun();
-
-			return $descriptor->materialize();
+			->materialize();
 		}
 
 		protected function getContainer ():Container {
 
-			return $this->activeModuleContainer();
+			return $this->entrance->getActiveContainer();
 		}
 	}
 ?>

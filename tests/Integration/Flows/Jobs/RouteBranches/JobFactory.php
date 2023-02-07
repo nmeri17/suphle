@@ -9,8 +9,6 @@
 
 	use Suphle\Response\Format\Json;
 
-	use Suphle\Adapters\Orms\Eloquent\Models\User as EloquentUser;
-
 	use Suphle\Testing\Condiments\{QueueInterceptor, BaseDatabasePopulator};
 
 	use Suphle\Testing\Proxies\SecureUserAssertions;
@@ -18,6 +16,8 @@
 	use Suphle\Tests\Integration\Modules\ModuleDescriptor\DescriptorCollection;
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\{Coordinators\FlowCoordinator, Concretes\Services\DummyModels};
+
+	use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
 
 	/**
 	 * This doesn't send the originating requests. It helps for mocking the task of an originated flow, executing that task, then verifying its behavior under certain conditions

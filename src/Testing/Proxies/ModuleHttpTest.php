@@ -3,8 +3,6 @@
 
 	use Suphle\Hydration\Container;
 
-	use Suphle\Modules\ModuleToRoute;
-
 	use Suphle\Middleware\MiddlewareRegistry;
 
 	use Suphle\Request\PayloadStorage;
@@ -35,22 +33,6 @@
 			$this->staticHeaders["Authorization"] = $type . " " . $token;
 
 			return $this;
-		}
-
-		protected function getInitializerWrapper ():ModuleToRoute {
-
-			return $this->firstModuleContainer()->getClass(ModuleToRoute::class);
-		}
-
-		protected function activeModuleContainer ():Container {
-
-			$activeModule = $this->getInitializerWrapper()->getActiveModule();
-
-			if (!is_null($activeModule)) // if [gatewayResponse] has not been called
-
-				return $activeModule->getContainer();
-
-			return $this->firstModuleContainer();
 		}
 
 		/**
@@ -126,7 +108,9 @@
 
 		private function getMatchingMiddleware (array $middlewares):array {
 
-			$registry = $this->activeModuleContainer()->getClass(MiddlewareRegistry::class);
+			$registry = $this->entrance->getActiveContainer()
+
+			->getClass(MiddlewareRegistry::class);
 
 			$matches = [];
 

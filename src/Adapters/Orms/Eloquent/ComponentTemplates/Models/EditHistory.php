@@ -1,29 +1,22 @@
 <?php
 	namespace Suphle\Tests\Mocks\Models\Eloquent;
 
-	use Suphle\Tests\Mocks\Models\Eloquent\Factories\EmployerFactory;
-
 	use Suphle\Adapters\Orms\Eloquent\Models\BaseModel;
 
 	use Illuminate\Database\Eloquent\Factories\Factory;
 
-	class Employer extends BaseModel {
+	class EditHistory extends BaseModel {
 
-		protected $table = "employer";
+		protected $table = "edit_history";
 
-		public function employments () {
+		public function historical () {
 
-			return $this->hasMany(Employment::class);
-		}
-
-		public function user () {
-
-			return $this->belongsTo(User::class);
+			return $this->morphTo();
 		}
 
 		protected static function newFactory ():Factory {
 
-			return EmployerFactory::new();
+			// return EditHistoryFactory::new(); // use appropriate
 		}
 
 		public static function migrationFolders ():array {

@@ -1,9 +1,7 @@
 <?php
 	namespace Suphle\Tests\Mocks\Models\Eloquent\Factories;
 
-	use Suphle\Adapters\Orms\Eloquent\Models\User;
-
-	use Suphle\Tests\Mocks\Models\Eloquent\Employer;
+	use Suphle\Tests\Mocks\Models\Eloquent\{Employer, User as EloquentUser};
 
 	use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -15,7 +13,7 @@
 
 			return [
 
-				"user_id" => User::factory()
+				"user_id" => EloquentUser::factory()
 			];
 		}
 	}

@@ -15,7 +15,7 @@
 
 	use Suphle\Contracts\Bridge\{LaravelContainer, LaravelArtisan};
 
-	use Suphle\Contracts\Auth\{AuthStorage, ModuleLoginHandler, ColumnPayloadComparer, UserContract};
+	use Suphle\Contracts\Auth\{AuthStorage, ModuleLoginHandler, ColumnPayloadComparer};
 
 	use Suphle\Contracts\Config\{AuthContract, Database, DecoratorProxy, ExceptionInterceptor, ComponentTemplates, Laravel as LaravelConfig, Console as ConsoleContract, Flows as FlowConfig, ContainerConfig as IContainerConfig, CacheClient as CacheConfig, Blade as BladeConfig};
 
@@ -31,7 +31,7 @@
 
 	use Suphle\Auth\{LoginHandlerInterfaceLoader, EmailPasswordComparer, Storage\SessionStorage};
 
-	use Suphle\Adapters\Orms\Eloquent\{ UserEntityLoader, ModelReplicator, OrmLoader, DatabaseTester as EloquentTester, Models\User as EloquentUser, Models\ModelDetail};
+	use Suphle\Adapters\Orms\Eloquent\{ UserEntityLoader, ModelReplicator, OrmLoader, DatabaseTester as EloquentTester, Models\ModelDetail};
 
 	use Suphle\Adapters\Image\Optimizers\NativeReducerClient;
 
@@ -136,8 +136,6 @@
 				StdInputReader::class => NativeInputReader::class,
 
 				ThumbnailOperationHandler::class => DefaultThumbnailHandler::class,
-
-				UserContract::class => EloquentUser::class,
 
 				ValidationFailureConvention::class => HttpMethodValidationConvention::class
 			];

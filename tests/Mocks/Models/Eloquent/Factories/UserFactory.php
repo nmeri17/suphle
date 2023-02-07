@@ -1,15 +1,15 @@
 <?php
-	namespace Suphle\Adapters\Orms\Eloquent\Factories;
+	namespace Suphle\Tests\Mocks\Models\Eloquent\Factories;
+
+	use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
 
 	use Illuminate\Database\Eloquent\Factories\Factory;
-
-	use Suphle\Adapters\Orms\Eloquent\Models\User;
 
 	use DateTime;
 
 	class UserFactory extends Factory {
 
-		protected $model = User::class;
+		protected $model = EloquentUser::class;
 
 		public function definition ():array {
 
