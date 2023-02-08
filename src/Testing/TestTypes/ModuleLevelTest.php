@@ -56,6 +56,15 @@
 			->materialize();
 		}
 
+		protected function getContainerFor (string $interface):Container {
+
+			return (new ActiveDescriptors($this->modules))
+
+			->findMatchingExports($interface)
+
+			->getContainer();
+		}
+
 		protected function getContainer ():Container {
 
 			return $this->entrance->getActiveContainer();

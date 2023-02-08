@@ -23,6 +23,12 @@
 				as $descriptor
 			) {
 
+				$descriptorApi = $descriptor->exportsImplements();
+
+				if (array_key_exists($descriptorApi, $this->eventManagers)) // the essence of keying by module name is to prevent multiple manager watching while recursively binding modules and their expatriates
+
+					continue;
+
 				$container = $descriptor->getContainer();
 
 				$container->whenTypeAny()->needsAny([ // bind before hydrating
@@ -30,37 +36,41 @@
 					ModuleLevelEvents::class => $this
 				]);
 
-				$this->eventManagers[] = $manager = $container->getClass(Events::class);
+				$this->eventManagers[$descriptorApi] = $manager = $container->getClass(Events::class);
 
 				$manager->registerListeners();
 			}
 		}
 
-		public function gatherForeignSubscribers(string $emittor):self {
+		public function triggerExternalHandlers (string $emittor, string $eventName, $payload):void {
+
+			$subscriberLog = [];
 
 			foreach ($this->eventManagers as $manager) {
 				
 				if ($subscribers = $manager->getExternalHandlers($emittor))
 
-					$this->subscriberLog[] = $subscribers;
+					$subscriberLog[] = $subscribers;
 			}
-			return $this;
+			
+			foreach ($subscriberLog as $subscription)
+
+				$this->triggerHandlers(
+
+					$emittor, $subscription, $eventName, $payload
+				);
 		}
 
-		public function triggerExternalHandlers(string $evaluatedModule, string $eventName, $payload):void {
+		public function triggerHandlers (
 
-			foreach ($this->subscriberLog as $subscription)
+			string $sender, ?EventSubscription $subscription,
 
-				$this->triggerHandlers($evaluatedModule, $subscription, $eventName, $payload);
-
-			$this->subscriberLog = []; // ahead of next invocation
-		}
-
-		public function triggerHandlers (string $sender, ?EventSubscription $subscription, string $eventName, $payload):self {
+			string $eventName, $payload
+		):self {
 
 			$this->firedEvents[$sender] = $subscription; // even though event won't be handled, by logging it all the same, we can verify later that it was emitted
 
-			if (is_null($subscription)) return $this; // no local event handlers attached
+			if (is_null($subscription)) return $this; // no handlers attached to given scope
 			
 			$hydratedHandler = $subscription->getListener();
 

@@ -11,6 +11,8 @@
 
 	class IncompatiblePairTest extends DescriptorCollection {
 
+		protected function setUp ():void {}
+
 		protected function setModuleTwo ():void {
 
 			$this->moduleTwo = (new ModuleTwoDescriptor(new Container))
@@ -24,6 +26,8 @@
 		public function test_will_throw_implementor_exception () {
 
 			$this->expectException(InvalidImplementor::class); // then
+
+			parent::setUp();
 
 			$this->getModuleFor(ModuleTwo::class); // when
 		}

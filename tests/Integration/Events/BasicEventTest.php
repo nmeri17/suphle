@@ -7,7 +7,7 @@
 
 	use Suphle\Tests\Mocks\Interactions\ModuleOne;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\LocalSender;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\{Concretes\LocalSender, Events\LocalReceiver};
 
 	class BasicEventTest extends EventTestCreator {
 
@@ -27,13 +27,14 @@
 			); // then
 		}
 
-		/*public function test_doesnt_report_unhandled_events () { // find one not sent
-$this->markTestSkipped();
+		public function test_doesnt_report_unhandled_events () {
+
 			$this->getModuleOne()->noPayloadEvent(); // when
 
-			$this->assertHandledEvent(
-				LocalSender::class, LocalSender::EMPTY_PAYLOAD_EVENT
+			$this->assertNotHandledEvent(
+				
+				LocalSender::class, LocalReceiver::CASCADE_REBOUND_EVENT
 			); // then
-		}*/
+		}
 	}
 ?>

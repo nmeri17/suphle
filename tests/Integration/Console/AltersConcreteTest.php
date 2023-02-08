@@ -44,7 +44,7 @@
 
 		protected function setModuleTwo ():void {
 
-			$this->moduleThree = $this->replicateModule(ModuleTwoDescriptor::class, function (WriteOnlyContainer $container) {
+			$this->moduleTwo = $this->replicateModule(ModuleTwoDescriptor::class, function (WriteOnlyContainer $container) {
 
 				$consoleConfig = Console::class;
 

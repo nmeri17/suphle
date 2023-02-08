@@ -25,10 +25,7 @@
 
 		private DescriptorInterface $moduleDescriptor;
 
-		private array $emitters = [
-
-			self::LOCAL_SCOPE => [], self::EXTERNAL_SCOPE => []
-		];
+		private array $localEmitters = [], $foreignListening = [];
 
 		public function __construct (protected readonly ObjectDetails $objectMeta) {
 
@@ -55,7 +52,7 @@
 			
 			return $this->initializeHandlingScope(
 
-				self::LOCAL_SCOPE, $emittingEntity, $handlingClass
+				$this->localEmitters, $emittingEntity, $handlingClass
 			);
 		}
 
@@ -63,7 +60,7 @@
 
 			return $this->initializeHandlingScope(
 
-				self::EXTERNAL_SCOPE, $interaction, $handlingClass
+				$this->foreignListening, $interaction, $handlingClass
 			);
 		}
 
@@ -72,14 +69,20 @@
 		*/
 		private function initializeHandlingScope (
 
-			string $scope, string $emitable, string $handlingClass
+			array &$scope, string $emitable, string $handlingClass
 		):EventSubscription {
+
+			$errorMessage = "";
 
 			if ($emitable == $handlingClass)
 
-				throw new InvalidArgumentException("Cannot listen to events emitted by '$emitable' on the same class");
+				$errorMessage = "Cannot listen to events emitted by '$emitable' on the same class";
 
-			return $this->emitters[$scope][$emitable] = new EventSubscription(
+			if (!empty($errorMessage))
+
+				throw new InvalidArgumentException($errorMessage);
+
+			return $scope[$emitable] = new EventSubscription(
 
 				$handlingClass, $this->moduleDescriptor->getContainer()
 			);
@@ -94,11 +97,14 @@
 
 			$moduleIdentifier = $this->moduleDescriptor->exportsImplements();
 
-			$this->parentManager->triggerHandlers($emitter, $localHandlers, $eventName, $payload)
+			$this->parentManager->triggerHandlers(
 
-			->gatherForeignSubscribers($moduleIdentifier) // this means external listeners of this module can comfortably listen to the module exports interface rather than bothering about the specific entity emitting the event
-			
-			->triggerExternalHandlers($moduleIdentifier, $eventName, $payload);
+				$emitter, $localHandlers, $eventName, $payload
+			)
+			->triggerExternalHandlers(
+
+				$moduleIdentifier, $eventName, $payload
+			); // this means external listeners of this module can comfortably listen to the module exports interface rather than bothering about the specific entity emitting the event
 		}
 
 		/**
@@ -107,22 +113,33 @@
 		 **/
 		public function getExternalHandlers(string $evaluatedModule):?EventSubscription {
 
-			foreach ($this->emitters[self::EXTERNAL_SCOPE] as $emitable => $context)
+			if ($this->objectMeta->stringInClassTree(
 
-				if ($emitable == $evaluatedModule)
+				$evaluatedModule, $this->moduleDescriptor->exportsImplements()
+			))
 
-					return $context;
+				return null;
+				
+			return $this->findDecoupledEmitter(
 
-			return null;
+				$evaluatedModule, $this->foreignListening
+			);
+		}
+
+		public function getLocalHandler (string $emitter):?EventSubscription {
+
+			return $this->findDecoupledEmitter(
+
+				$emitter, $this->localEmitters
+			);
 		}
 
 		/**
 		 * we want to decouple the emitter from the interface consumers are subscribed to
-		 *
-		 **/
-		private function getLocalHandler (string $emitter):?EventSubscription {
-			
-			foreach ($this->emitters[self::LOCAL_SCOPE] as $emitable => $details) {
+		*/
+		private function findDecoupledEmitter (string $emitter, array $scope):?EventSubscription {
+
+			foreach ($scope as $emitable => $details) {
 
 				if ($this->objectMeta->stringInClassTree(
 
