@@ -3,7 +3,7 @@
 
 	use Suphle\Hydration\Container;
 
-	use Suphle\Exception\Explosives\Generic\InvalidImplementor;
+	use Suphle\Exception\Explosives\Generic\UnexpectedModules;
 
 	use Suphle\Tests\Mocks\Interactions\{ModuleThree, ModuleTwo};
 
@@ -23,9 +23,9 @@
 			]);
 		}
 
-		public function test_will_throw_implementor_exception () {
+		public function test_will_throw_unexpected_exception () {
 
-			$this->expectException(InvalidImplementor::class); // then
+			$this->expectException(UnexpectedModules::class); // then
 
 			parent::setUp();
 

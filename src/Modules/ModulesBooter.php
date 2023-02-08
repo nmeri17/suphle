@@ -29,7 +29,7 @@
 			$this->recursivelyBootModuleSet( $descriptorsHolder);
 		}
 
-		protected function recursivelyBootModuleSet (ActiveDescriptors $descriptorsHolder):void {
+		public function recursivelyBootModuleSet (ActiveDescriptors $descriptorsHolder):void {
 
 			foreach ($descriptorsHolder->getOriginalDescriptors() as $descriptor) {
 

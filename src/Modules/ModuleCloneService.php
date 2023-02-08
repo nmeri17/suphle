@@ -5,7 +5,7 @@
 
 	use Suphle\Hydration\Container;
 
-	use Suphle\Modules\Commands\CloneModuleCommand;
+	use Suphle\Modules\{Commands\CloneModuleCommand, Structures\ActiveDescriptors};
 
 	use Suphle\File\{FolderCloner, FileSystemReader};
 
@@ -27,7 +27,9 @@
 
 			protected readonly ConsoleClient $consoleClient,
 
-			protected readonly FolderCloner $folderCloner
+			protected readonly FolderCloner $folderCloner,
+
+			protected readonly ModulesBooter $modulesBooter
 		) {
 
 			//
@@ -97,9 +99,10 @@
 
 			$descriptor = new $descriptorName(new Container); // this is why descriptor fqcn is necessary
 
-			$descriptor->warmModuleContainer();
+			$this->modulesBooter->recursivelyBootModuleSet(
 
-			$descriptor->prepareToRun();
+				new ActiveDescriptors([$descriptor])
+			);
 
 			return $descriptor;
 		}

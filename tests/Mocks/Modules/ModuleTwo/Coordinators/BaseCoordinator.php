@@ -7,7 +7,7 @@
 
 		public function checkPlaceholder () {
 
-			//
+			return [];
 		}
 	}
 ?>

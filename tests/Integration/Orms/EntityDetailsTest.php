@@ -3,15 +3,22 @@
 
 	use Suphle\Contracts\Database\EntityDetails;
 
-	use Suphle\Testing\{TestTypes\IsolatedComponentTest, Condiments\BaseDatabasePopulator};
+	use Suphle\Hydration\Container;
 
-	use Suphle\Tests\Integration\Generic\CommonBinds;
+	use Suphle\Testing\{TestTypes\ModuleLevelTest, Condiments\BaseDatabasePopulator};
+
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
 	use Suphle\Tests\Mocks\Models\Eloquent\Employment;
 
-	class EntityDetailsTest extends IsolatedComponentTest {
+	class EntityDetailsTest extends ModuleLevelTest {
 
-		use BaseDatabasePopulator, CommonBinds;
+		use BaseDatabasePopulator;
+
+		protected function getModules ():array {
+
+			return [new ModuleOneDescriptor(new Container)]; // anything involving orm requires requestDetails->events->modules
+		}
 
 		protected function getActiveEntity ():string {
 
@@ -25,7 +32,7 @@
 				$this->modelPrefixDataset(...) // given
 			], function (object $model, ?string $prefix, string $expected) {
 
-				$sut = $this->container->getClass(EntityDetails::class);
+				$sut = $this->getContainer()->getClass(EntityDetails::class);
 
 				// when
 				if (!is_null($prefix))

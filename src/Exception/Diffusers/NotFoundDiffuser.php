@@ -38,7 +38,14 @@
 
 			else $this->renderer = $this->getMarkupRenderer();
 
-			$this->renderer->setHeaders(404, []);
+			$url = $this->requestDetails->getPath();
+
+			$this->renderer->setRawResponse([
+
+				"url" => $url,
+
+				"message" => $url . " Not Found"
+			])->setHeaders(404, []);
 		}
 
 		public function getRenderer ():BaseRenderer {
@@ -48,12 +55,7 @@
 
 		protected function getApiRenderer ():Json {
 
-			return (new Json($this->controllerAction))
-
-			->setRawResponse([
-
-				"message" => $this->requestDetails->getPath() . " Not Found"
-			]);
+			return new Json($this->controllerAction);
 		}
 
 		protected function getMarkupRenderer ():BaseRenderer {

@@ -9,7 +9,7 @@
 
 	use Suphle\File\FileSystemReader;
 
-	use Suphle\Modules\{ModuleCloneService, Commands\CloneModuleCommand};
+	use Suphle\Modules\{ModuleCloneService, ModulesBooter, Structures\ActiveDescriptors, Commands\CloneModuleCommand};
 
 	use Suphle\Hydration\Container;
 
@@ -29,10 +29,13 @@
 
 		protected CliRunner $consoleRunner;
 
-		protected string $newModuleName = "ModuleAgnes";
-  protected $sutName = CloneModuleCommand::class;
-  protected $servicesTemplate = ServicesComponentEntry::class;
-  protected $componentConfig = ComponentTemplates::class;
+		protected string $newModuleName = "ModuleAgnes",
+
+		$sutName = CloneModuleCommand::class,
+
+		$servicesTemplate = ServicesComponentEntry::class,
+
+		$componentConfig = ComponentTemplates::class;
 
 		protected function simpleCloneDependencies ():self {
 
@@ -68,9 +71,12 @@
 
 			$descriptor = new $descriptorName(new Container);
 
-			$descriptor->warmModuleContainer();
+			$this->replaceConstructorArguments(ModulesBooter::class, [])
 
-			$descriptor->prepareToRun();
+			->recursivelyBootModuleSet(
+
+				new ActiveDescriptors([$descriptor])
+			);
 
 			$descriptor->getContainer()->whenTypeAny()
 
