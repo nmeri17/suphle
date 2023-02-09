@@ -3,29 +3,23 @@
 
 	use Suphle\Services\DecoratorHandlers\MultiUserEditHandler;
 
-	use Suphle\Routing\PathPlaceholders;
-
-	use Suphle\Request\PayloadStorage;
-
-	use Suphle\Hydration\Container;
-
 	use Suphle\Contracts\Services\Models\IntegrityModel;
 
 	use Suphle\Exception\Explosives\EditIntegrityException;
 
-	use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer, Condiments\BaseDatabasePopulator};
-
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{ Meta\ModuleOneDescriptor, Config\RouterMock};
+	use Suphle\Testing\{TestTypes\ModuleLevelTest, Condiments\BaseDatabasePopulator};
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\{EmploymentEditMock, EmploymentEditError};
 
 	use Suphle\Tests\Mocks\Models\Eloquent\Employment;
 
+	use Suphle\Tests\Integration\Services\ReplacesRequestPayload;
+
 	use DateTime, DateInterval;
 
 	class MultiEditUpdateTest extends ModuleLevelTest {
 
-		use BaseDatabasePopulator {
+		use BaseDatabasePopulator, ReplacesRequestPayload {
 
 			BaseDatabasePopulator::setUp as databaseAllSetup;
 		}
@@ -43,16 +37,11 @@
 			$this->lastInserted = $this->replicator->getRandomEntity();
 		}
 
-		protected function getModules ():array {
-
-			return [new ModuleOneDescriptor(new Container)];
-		}
-
 		public function test_missing_key_on_update_throws_error () {
 
 			$this->expectException(EditIntegrityException::class); // then
 
-			$this->stubRequestObjects(5, []);
+			$this->stubRequestObjects(5);
 
 			$sut = $this->getContainer()->getClass($this->sutName);
 
@@ -108,22 +97,6 @@
 			->updateResource(); // when
 
 			$this->assertSame("boo!", $result); // then
-		}
-
-		private function stubRequestObjects (int $segmentValue, array $payload):void {
-
-			$payloadStorage = $this->positiveDouble(PayloadStorage::class);
-
-			$payloadStorage->mergePayload($payload);
-
-			$this->massProvide([
-
-				PathPlaceholders::class => $this->positiveDouble(PathPlaceholders::class, [
-
-					"getSegmentValue" => $segmentValue
-				]),
-				PayloadStorage::class => $payloadStorage
-			]);
 		}
 	}
 ?>

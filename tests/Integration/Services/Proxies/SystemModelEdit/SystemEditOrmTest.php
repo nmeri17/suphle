@@ -3,37 +3,35 @@
 
 	use Suphle\Contracts\Database\OrmDialect;
 
-	use Suphle\Testing\{TestTypes\IsolatedComponentTest, Condiments\DirectHttpTest};
-
-	use Suphle\Tests\Integration\Generic\CommonBinds;
+	use Suphle\Testing\TestTypes\ModuleLevelTest;
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\SystemModelController;
 
-	class SystemEditOrmTest extends IsolatedComponentTest {
+	use Suphle\Tests\Integration\Services\ReplacesRequestPayload;
 
-		use DirectHttpTest, CommonBinds;
+	class SystemEditOrmTest extends ModuleLevelTest {
 
-		protected string $ormDialect = OrmDialect::class;
+		use ReplacesRequestPayload;
 
-		private function mockOrm ($numTimes) {
+		private function mockOrm ($numTimes):void {
 
-			return $this->positiveDouble($this->ormDialect, [], [
+			$this->massProvide([
+
+				OrmDialect::class => $this->positiveDouble(OrmDialect::class, [], [
 				
-				"runTransaction" => [$numTimes, [$this->anything()]]
+					"runTransaction" => [$numTimes, [$this->anything()]]
+				])
 			]);
 		}
 
 		public function test_update_method_runs_in_transaction () {
 
 			// given
-			$this->setHttpParams("/dummy", "put");
+			$this->stubRequestObjects(1);
 
-			$this->container->whenTypeAny()->needsArguments([
+			$this->mockOrm(1); // then
 
-				$this->ormDialect => $this->mockOrm($this->once()) // then
-			])
-
-			->getClass(SystemModelController::class)
+			$this->getContainer()->getClass(SystemModelController::class)
 
 			->handlePutRequest(); // when
 		}
@@ -41,13 +39,11 @@
 		public function test_other_methods_dont_run_in_transaction () {
 
 			// given
-			$this->setHttpParams("/dummy", "put");
+			$this->stubRequestObjects(1);
 
-			$this->container->whenTypeAny()->needsArguments([
-
-				$this->ormDialect => $this->mockOrm($this->never()) // then
-			])
-			->getClass(SystemModelController::class)
+			$this->mockOrm(0); // then
+			
+			$this->getContainer()->getClass(SystemModelController::class)
 
 			->putOtherServiceMethod(); // when
 		}

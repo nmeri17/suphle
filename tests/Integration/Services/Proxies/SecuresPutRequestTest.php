@@ -1,25 +1,28 @@
 <?php
 	namespace Suphle\Tests\Integration\Services\Proxies;
 
-	use Suphle\Testing\{TestTypes\IsolatedComponentTest, Condiments\DirectHttpTest};
+	use Suphle\Testing\TestTypes\ModuleLevelTest;
 
 	use Suphle\Exception\Explosives\Generic\MissingPostDecorator;
 
-	use Suphle\Tests\Integration\Generic\CommonBinds;
-
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\ValidatorCoordinator;
 
-	class SecuresPutRequestTest extends IsolatedComponentTest {
+	use Suphle\Tests\Integration\Services\ReplacesRequestPayload;
 
-		use DirectHttpTest, CommonBinds;
+	class SecuresPutRequestTest extends ModuleLevelTest {
+
+		use ReplacesRequestPayload;
 
 		public function test_missing_types_throws_errors () {
 
 			$this->expectException(MissingPostDecorator::class); // then
 
-			$this->setHttpParams("/dummy", "put"); // given
+			$this->stubRequestObjects(
 
-			$this->container->getClass(ValidatorCoordinator::class); // when
+				7, [], $this->stubRequestMethod("put")
+			); // given
+
+			$this->getContainer()->getClass(ValidatorCoordinator::class); // when
 		}
 	}
 ?>
