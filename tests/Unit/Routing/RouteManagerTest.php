@@ -18,6 +18,8 @@
 
 		use DirectHttpTest, CommonBinds;
 
+		protected bool $usesRealDecorator = false;
+
 		private RouteManager $sut;
 		
 		private RouteCollection $collection;

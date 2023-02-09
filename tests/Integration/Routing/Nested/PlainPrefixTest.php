@@ -14,7 +14,7 @@
 
 		public function test_nested_route_changes_handling_class () {
 
-			$entry = $this->container->getClass($this->getEntryCollection());
+			$entry = $this->getContainer()->getClass($this->getEntryCollection());
 
 			$matchingRenderer = $this->fakeRequest("/outer/use-method/without"); // when
 

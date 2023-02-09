@@ -73,7 +73,7 @@
 				static::fromContainer($descriptor->getContainer(), $requestPath);
 		}
 
-		public static function fromContainer (Container $container, string $requestPath):?self {
+		public static function fromContainer (Container $container, string $requestPath):?RequestDetails {
 
 			$components = parse_url($requestPath);
 
@@ -81,11 +81,7 @@
 
 			if (is_null($pathComponent)) return null;
 
-			$selfName = self::class;
-
-			$container->refreshClass($selfName);
-
-			$instance = $container->getClass($selfName); // automatically binds it
+			$instance = static::newRequestInstance($container); // using static instead of self so any sub-class (e.g. a mock) will be called
 
 			$instance->setPath($pathComponent);
 
@@ -96,6 +92,15 @@
 			$instance->indicateRefresh();
 
 			return $instance;
+		}
+
+		public static function newRequestInstance (Container $container):RequestDetails {
+
+			$selfName = self::class;
+
+			$container->refreshClass($selfName);
+
+			return $container->getClass($selfName); // automatically binds it
 		}
 
 		public function getPermanentPath ():?string {

@@ -1,13 +1,15 @@
 <?php
 	namespace Suphle\Tests\Integration\Routing\Canaries;
 
-	use Suphle\Exception\Explosives\Generic\InvalidImplementor;
+	use Suphle\Exception\Explosives\{NotFoundException, Generic\InvalidImplementor};
 
 	use Suphle\Tests\Integration\Routing\TestsRouter;
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\CanaryRoutes;
 
 	class CanaryTest extends TestsRouter {
+
+		protected bool $debugCaughtExceptions = true;
 
 		protected function getEntryCollection ():string {
 
@@ -21,11 +23,11 @@
 			$this->fakeRequest("/load-default/same-url"); // when
 		}
 
-		public function test_no_matching_canary_will_return_404 () {
+		public function test_no_matching_canary_will_throw_not_found () {
+
+			$this->expectException(NotFoundException::class);
 
 			$matchingRenderer = $this->fakeRequest("/special-foo");
-
-			$this->assertNull($matchingRenderer);
 		}
 
 		public function test_can_hydrate_and_evaluate_dependencies () {

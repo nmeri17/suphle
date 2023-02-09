@@ -1,28 +1,29 @@
 <?php
 	namespace Suphle\Tests\Integration\Routing\Mirror;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Config\RouterMock;
+	use Suphle\Contracts\Config\Router;
 
-	use Suphle\Contracts\Config\Router as IRouter;
+	use Suphle\Testing\Proxies\WriteOnlyContainer;
+
+	use Suphle\Tests\Mocks\Modules\ModuleOne\{ Meta\ModuleOneDescriptor, Config\RouterMock};
 
 	use Suphle\Tests\Integration\Routing\TestsRouter;
 
 	class MirrorDeactivatedTest extends TestsRouter {
 
-		protected function concreteBinds ():array {
+		protected function getModules ():array {
 
-			return array_merge(parent::concreteBinds(), [
+			return [
+				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-				IRouter::class => $this->positiveDouble(
-					RouterMock::class,
+					$container->replaceWithMock(Router::class, RouterMock::class, [
 
-					[
-						"mirrorsCollections" => false,
+						"browserEntryRoute" => $this->getEntryCollection(),
 
-						"browserEntryRoute" => $this->getEntryCollection()
-					]
-				)
-			]);
+						"mirrorsCollections" => false
+					]);
+				})
+			];
 		}
 
 		public function test_disable_mirror_blocks_those_routes () {

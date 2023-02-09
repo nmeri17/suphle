@@ -10,9 +10,9 @@
 			//
 		}
 
-		public function fooHandler () {
+		public function fooHandler ():array {
 			
-			// 
+			return [];
 		}
 
 		public function defaultHandler () {

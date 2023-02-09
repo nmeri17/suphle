@@ -49,11 +49,11 @@
 
 				$descriptorName = $descriptor::class;
 
-				echo implode("\n", [
+				/*echo implode("\n", [
 					"Error encountered during attempt to find route on descriptor '$descriptorName':",
 
 					$exception
-				]);
+				]);*/
 
 				throw $exception;
 			}

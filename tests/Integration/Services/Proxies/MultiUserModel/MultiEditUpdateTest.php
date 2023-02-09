@@ -5,25 +5,27 @@
 
 	use Suphle\Routing\PathPlaceholders;
 
+	use Suphle\Request\PayloadStorage;
+
+	use Suphle\Hydration\Container;
+
 	use Suphle\Contracts\Services\Models\IntegrityModel;
 
 	use Suphle\Exception\Explosives\EditIntegrityException;
 
-	use Suphle\Testing\TestTypes\IsolatedComponentTest;
+	use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer, Condiments\BaseDatabasePopulator};
 
-	use Suphle\Testing\Condiments\{DirectHttpTest, BaseDatabasePopulator};
-
-	use Suphle\Tests\Integration\Generic\CommonBinds;
-
-	use Suphle\Tests\Mocks\Models\Eloquent\Employment;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\{ Meta\ModuleOneDescriptor, Config\RouterMock};
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\{EmploymentEditMock, EmploymentEditError};
 
+	use Suphle\Tests\Mocks\Models\Eloquent\Employment;
+
 	use DateTime, DateInterval;
 
-	class MultiEditUpdateTest extends IsolatedComponentTest {
+	class MultiEditUpdateTest extends ModuleLevelTest {
 
-		use DirectHttpTest, BaseDatabasePopulator, CommonBinds {
+		use BaseDatabasePopulator {
 
 			BaseDatabasePopulator::setUp as databaseAllSetup;
 		}
@@ -41,15 +43,18 @@
 			$this->lastInserted = $this->replicator->getRandomEntity();
 		}
 
+		protected function getModules ():array {
+
+			return [new ModuleOneDescriptor(new Container)];
+		}
+
 		public function test_missing_key_on_update_throws_error () {
 
 			$this->expectException(EditIntegrityException::class); // then
 
-			$this->setHttpParams("/dummy/5", "put"); // given
+			$this->stubRequestObjects(5, []);
 
-			$this->stubPlaceholderStorage(5);
-
-			$sut = $this->container->getClass($this->sutName);
+			$sut = $this->getContainer()->getClass($this->sutName);
 
 			$sut->updateResource(); // when
 		}
@@ -70,17 +75,15 @@
 			// given
 			$modelId = $this->lastInserted->id;
 
-			$this->setJsonParams("/dummy", [
+			$this->stubRequestObjects($modelId, [
 
 				MultiUserEditHandler::INTEGRITY_KEY => $threeMinutesAgo,
 
 				"name" => "ujunwa", "id" => $modelId
-			], "put");
-
-			$this->stubPlaceholderStorage($modelId);
+			]);
 
 			// when
-			$sut = $this->container->getClass($this->sutName); // to wrap in decorator
+			$sut = $this->getContainer()->getClass($this->sutName); // to wrap in decorator
 
 			for ($i = 0; $i < 2; $i++) $sut->updateResource(); // first request updates integrityKey. Next iteration should fail
 		}
@@ -91,34 +94,35 @@
 
 			$modelId = $this->lastInserted->id;
 
-			$this->setJsonParams("/dummy", [
+			$this->stubRequestObjects($modelId, [
 
 				MultiUserEditHandler::INTEGRITY_KEY => $this->lastInserted->$columnName,
 
 				"name" => "ujunwa",
 
 				"id" => $modelId
-			], "put");
+			]);
 
-			$this->stubPlaceholderStorage($modelId);
-
-			$result = $this->container->getClass(EmploymentEditError::class)
+			$result = $this->getContainer()->getClass(EmploymentEditError::class)
 
 			->updateResource(); // when
 
 			$this->assertSame("boo!", $result); // then
 		}
 
-		private function stubPlaceholderStorage (int $segmentValue):void {
+		private function stubRequestObjects (int $segmentValue, array $payload):void {
 
-			$storageName = PathPlaceholders::class;
+			$payloadStorage = $this->positiveDouble(PayloadStorage::class);
+
+			$payloadStorage->mergePayload($payload);
 
 			$this->massProvide([
 
-				$storageName => $this->positiveDouble($storageName, [
+				PathPlaceholders::class => $this->positiveDouble(PathPlaceholders::class, [
 
 					"getSegmentValue" => $segmentValue
-				])
+				]),
+				PayloadStorage::class => $payloadStorage
 			]);
 		}
 	}

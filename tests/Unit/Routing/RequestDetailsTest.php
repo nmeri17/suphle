@@ -5,6 +5,8 @@
 
 	use Suphle\Request\RequestDetails;
 
+	use Suphle\Hydration\Container;
+
 	use Suphle\Testing\TestTypes\IsolatedComponentTest;
 
 	use Suphle\Tests\Integration\Generic\CommonBinds;
@@ -14,6 +16,8 @@
 	class RequestDetailsTest extends IsolatedComponentTest {
 
 		use CommonBinds;
+
+		protected bool $usesRealDecorator = false;
 
 		protected function setUp ():void {
 
@@ -62,7 +66,23 @@
 
 		private function getRequestDetails (string $url):RequestDetails {
 
-			$instance = RequestDetails::fromContainer($this->container, $url);
+			$parameters = $this->container->getMethodParameters(Container::CLASS_CONSTRUCTOR, RequestDetails::class);
+
+			$newRequestDetail = new class (...$parameters) extends RequestDetails {
+
+				public static $parameters;
+
+				public static function newRequestInstance (Container $container):RequestDetails {
+
+					return new self(...self::$parameters);
+				}
+
+				public function indicateRefresh ():void { }
+			};
+
+			$newRequestDetail::$parameters = $parameters;
+
+			$instance = $newRequestDetail::fromContainer($this->container, $url);
 
 			$instance->setIncomingVersion();
 

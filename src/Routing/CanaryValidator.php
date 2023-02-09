@@ -51,7 +51,7 @@
 					$canary, $gatewayName
 				))
 
-					throw new InvalidImplementor($gatewayName, $canary);
+					throw InvalidImplementor::incompatibleParent($gatewayName, $canary);
 
 				$instance = $this->container->getClass($canary);
 

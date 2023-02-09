@@ -5,15 +5,9 @@
 
 	use Suphle\Request\RequestDetails;
 
-	use Suphle\Testing\{TestTypes\IsolatedComponentTest, Condiments\DirectHttpTest};
-
-	use Suphle\Tests\Integration\Generic\CommonBinds;
-
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\BrowserNoPrefix;
 
-	class PathPlaceholdersTest extends IsolatedComponentTest {
-
-		use DirectHttpTest, CommonBinds;
+	class PathPlaceholdersTest extends TestsRouter {
 
 		/**
 	     * @dataProvider pathsAndPlaceholders
@@ -22,7 +16,7 @@
 
 			$this->setHttpParams($activePath);
 
-			$sut = $this->container->getClass(PathPlaceholders::class);
+			$sut = $this->getContainer()->getClass(PathPlaceholders::class);
 
 			$this->buildRouter($sut) // given
 
@@ -49,7 +43,7 @@
 
 		private function buildRouter (PathPlaceholders $pathPlaceholders):RouteManager {
 
-			$container = $this->container;
+			$container = $this->getContainer();
 
 			return $this->replaceConstructorArguments (RouteManager::class, [ // pulling some dependencies from container so their constructors can run
 
@@ -68,7 +62,7 @@
 
 		public function test_can_extract_all_method_segments () {
 
-			$sut = $this->container->getClass(CollectionMethodToUrl::class);
+			$sut = $this->getContainer()->getClass(CollectionMethodToUrl::class);
 
 			$segments = $sut->splitIntoSegments("SEGMENT/id/SEGMENT2/?(id2/?)?"); // when
 

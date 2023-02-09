@@ -1,20 +1,24 @@
 <?php
 	namespace Suphle\Tests\Integration\Routing;
 
-	use Suphle\Contracts\Config\Router as IRouter;
+	use Suphle\Contracts\Config\Router;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Config\RouterMock;
+	use Suphle\Testing\Proxies\WriteOnlyContainer;
+
+	use Suphle\Tests\Mocks\Modules\ModuleOne\{ Meta\ModuleOneDescriptor, Config\RouterMock};
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\ApiRoutes\{V1\LowerMirror, V2\ApiUpdate2Entry, V3\ApiUpdate3Entry};
 
 	class VersioningTest extends TestsRouter {
 
-		protected function concreteBinds ():array {
+		protected function getModules ():array {
 
-			return array_merge(parent::concreteBinds(), [
+			return [
+				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-				IRouter::class => $this->positiveDouble(
-					RouterMock::class, [
+					$container->replaceWithMock(Router::class, RouterMock::class, [
+
+						"browserEntryRoute" => $this->getEntryCollection(),
 
 						"apiStack" => [
 
@@ -24,9 +28,9 @@
 
 							"v1" => LowerMirror::class
 						]
-					]
-				)
-			]);
+					]);
+				})
+			];
 		}
 
 		public function test_can_get_content_at_specific_version () {

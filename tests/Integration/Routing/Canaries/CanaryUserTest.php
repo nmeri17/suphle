@@ -32,7 +32,7 @@
 	     */
 		public function test_canaries_use_collection_auth () {
 
-			$model = $this->container->getClass(UserContract::class);
+			$model = $this->getContainer()->getClass(UserContract::class);
 
 			// default = sessionStorage
 			$this->actingAs($model->findByPrimaryKey(5)); // given
