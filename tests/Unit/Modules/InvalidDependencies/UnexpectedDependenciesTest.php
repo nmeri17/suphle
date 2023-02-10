@@ -13,6 +13,8 @@
 
 	class UnexpectedDependenciesTest extends DescriptorCollection {
 
+		protected function setUp ():void {}
+
 		protected function setModuleTwo ():void {
 
 			$this->moduleTwo = (new ModuleTwoDescriptor(new Container))
@@ -29,9 +31,7 @@
 
 			// given @see module creation
 
-			$this->moduleTwo->warmModuleContainer(); 
-
-			$this->moduleTwo->prepareToRun(); // when
+			parent::setUp(); // when
 		}
 	}
 ?>

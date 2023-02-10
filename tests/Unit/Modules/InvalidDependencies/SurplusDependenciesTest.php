@@ -13,6 +13,8 @@
 
 	class SurplusDependenciesTest extends DescriptorCollection {
 
+		protected function setUp ():void {}
+
 		protected function setModuleTwo ():void {
 
 			$this->moduleTwo = (new ModuleTwoDescriptor(new Container))
@@ -29,11 +31,9 @@
 
 			$this->expectException(UnexpectedModules::class); // then
 
+			parent::setUp(); // when
+
 			// given @see module creation
-
-			$this->moduleTwo->warmModuleContainer(); 
-
-			$this->moduleTwo->prepareToRun(); // when
 		}
 	}
 ?>

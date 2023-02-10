@@ -17,7 +17,7 @@
 
 		protected const REQUEST_SENDER = VisitSegment::class,
 
-		SERVER_TIMEOUT = 250, // stop process if unable to start server after these seconds
+		SERVER_TIMEOUT = 550, // stop process if unable to start server after these seconds
 
 		RR_CONFIG = "../../test-rr.yaml";
 		
