@@ -5,19 +5,26 @@
 
 	use Suphle\Response\Format\Markup;
 
-	use Suphle\Testing\{TestTypes\IsolatedComponentTest, Proxies\ExaminesHttpResponse};
+	use Suphle\Hydration\Container;
 
-	use Suphle\Tests\Integration\Generic\CommonBinds;
+	use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\ExaminesHttpResponse};
+
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
 	use Throwable;
 
-	class BladeAdapterTest extends IsolatedComponentTest {
+	class BladeAdapterTest extends ModuleLevelTest { // required cuz blade uses laravel container which triggers events
 
-		use CommonBinds, ExaminesHttpResponse;
+		use ExaminesHttpResponse;
 
 		protected const MARKUP_NAME = "generic.default",
 
 		HANDLER_NAME = "genericHandler";
+
+		protected function getModules ():array {
+
+			return [new ModuleOneDescriptor(new Container)];
+		}
 
 		public function test_can_render_data () {
 
@@ -27,7 +34,7 @@
 
 			$renderer->setRawResponse([ "data" => $hotGirls]);
 
-			$this->container->whenTypeAny()->needsAny([
+			$this->getContainer()->whenTypeAny()->needsAny([
 
 				BaseRenderer::class => $renderer
 			])
