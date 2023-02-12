@@ -5,11 +5,9 @@
 
 	use Suphle\Flows\Structures\{RouteUserNode, AccessContext, PendingFlowDetails, RouteUmbrella};
 
-	use Suphle\Contracts\{Response\BaseResponseManager, IO\CacheManager, Auth\AuthStorage, Modules\HighLevelRequestHandler, Presentation\BaseRenderer};
+	use Suphle\Contracts\{Events, Response\BaseResponseManager, IO\CacheManager, Auth\AuthStorage, Modules\HighLevelRequestHandler, Presentation\BaseRenderer};
 
 	use Suphle\Queues\AdapterManager;
-
-	use Suphle\Events\EventManager;
 
 	use Suphle\Request\RequestDetails;
 
@@ -38,7 +36,7 @@
 
 			protected readonly Container $container,
 
-			protected readonly EventManager $eventManager,
+			protected readonly Events $eventManager,
 
 			protected readonly ActiveDescriptors $descriptorsHolder
 		) {

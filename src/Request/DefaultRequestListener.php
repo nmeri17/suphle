@@ -23,7 +23,7 @@
 
 			$this->laravelContainer->instance(
 
-				"request",
+				LaravelContainer::INCOMING_REQUEST_KEY,
 
 				$this->laravelContainer->provideRequest(
 

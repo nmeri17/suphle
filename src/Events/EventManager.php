@@ -119,7 +119,7 @@
 			))
 
 				return null;
-				
+
 			return $this->findDecoupledEmitter(
 
 				$evaluatedModule, $this->foreignListening

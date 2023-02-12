@@ -9,7 +9,7 @@
 
 	use Suphle\Services\DecoratorHandlers\VariableDependenciesHandler;
 
-	use Suphle\Contracts\{Queues\Task, Database\OrmDialect, IO\CacheManager};
+	use Suphle\Contracts\{Queues\Task, IO\CacheManager};
 
 	class RouteBranches implements Task {
 
@@ -103,12 +103,6 @@
 			if (!is_null($moduleInitializer))
 
 				return true;
-
-			current($this->modules)->getContainer()
-
-			->getClass(OrmDialect::class)
-
-			->restoreConnections($this->modules);
 
 			return false;
 		}

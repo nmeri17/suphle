@@ -18,7 +18,7 @@
 		#[ValidationRules(["foo" => "required"])]
 		public function postWithValidator () {
 
-			//
+			return [];
 		}
 	}
 ?>

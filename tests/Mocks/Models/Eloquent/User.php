@@ -9,6 +9,11 @@
 
 	class User extends ParentUser {
 
+		public function isAdmin ():bool {
+
+			return $this->is_admin;
+		}
+
 		public static function migrationFolders ():array {
 
 			return [__DIR__ . DIRECTORY_SEPARATOR . "Migrations"];

@@ -57,7 +57,10 @@
 
 				"config" => $this->configLoader,
 
-				"request" => $this->provideRequest($this->requestDetails, $this->payloadStorage)
+				LaravelContainer::INCOMING_REQUEST_KEY => $this->provideRequest(
+				
+					$this->requestDetails, $this->payloadStorage
+				)
 			];
 		}
 
@@ -89,7 +92,7 @@
 		):LaravelRequest {
 
 			return LaravelRequest::create(
-				$requestDetails->getPath()?? "", // workable alternative: add Request to list of deferred actions to be taken when url is eventually available
+				$requestDetails->getPath()?? "", // in case this container is requested outside a http context
 
 				$requestDetails->httpMethod(),
 

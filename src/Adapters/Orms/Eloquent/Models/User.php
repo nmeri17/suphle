@@ -29,11 +29,6 @@
 			return $this->password;
 		}
 
-		public function isAdmin ():bool {
-
-			return $this->is_admin;
-		}
-
 		public function findByPrimaryKey ($id, $columns = ['*']) {
 
 			return $this->find($id, $columns);

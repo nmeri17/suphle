@@ -9,11 +9,9 @@
 
 	class ModuleLevelEvents {
 
-		protected array $subscriberLog = [],
+		protected array $subscriberLog = [], // this is where subscribers to the immediate last fired external event reside
 
-		$eventManagers = [], // this is where subscribers to the immediate last fired external event reside
-
-		$firedEvents = [];
+		$eventManagers = [], $firedEvents = [];
 
 		public function bootReactiveLogger (ActiveDescriptors $descriptorsHolder):void {
 

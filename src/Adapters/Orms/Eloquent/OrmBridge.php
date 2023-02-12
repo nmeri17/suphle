@@ -135,15 +135,5 @@
 
 			return $hydrator;
 		}
-
-		/**
-		 * {@inheritdoc}
-		*/
-		public function restoreConnections (array $modules):void {
-
-			foreach ($modules as $descriptor)
-
-				$descriptor->getContainer()->getClass(OrmDialect::class);
-		}
 	}
 ?>

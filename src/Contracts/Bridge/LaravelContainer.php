@@ -9,6 +9,8 @@
 
 	interface LaravelContainer extends ClassHydrationBehavior {
 
+		public const INCOMING_REQUEST_KEY = "request";
+
 		/**
 		 * @return array
 		*/

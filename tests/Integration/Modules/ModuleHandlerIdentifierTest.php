@@ -5,8 +5,6 @@
 
 	use Suphle\Contracts\Config\{Router, AuthContract};
 
-	use Suphle\Contracts\Database\OrmDialect;
-
 	use Suphle\Flows\OuterFlowWrapper;
 
 	use Suphle\Exception\Explosives\ValidationFailure;
@@ -58,10 +56,6 @@
 
 				Auth::API_LOGIN_PATH // given
 			); // when
-
-			$this->container->getClass(OrmDialect::class)
-
-			->restoreConnections($this->modules);
 		}
 
 		private function mockLoginHandler ():ModuleLoginHandler {
