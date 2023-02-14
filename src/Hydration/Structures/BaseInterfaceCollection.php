@@ -17,7 +17,7 @@
 
 	use Suphle\Contracts\Auth\{AuthStorage, ModuleLoginHandler, ColumnPayloadComparer};
 
-	use Suphle\Contracts\Config\{AuthContract, Database, DecoratorProxy, ExceptionInterceptor, ComponentTemplates, Laravel as LaravelConfig, Console as ConsoleContract, Flows as FlowConfig, ContainerConfig as IContainerConfig, CacheClient as CacheConfig, Blade as BladeConfig};
+	use Suphle\Contracts\Config\{AuthContract, Database, DecoratorProxy, ExceptionInterceptor, ComponentTemplates, Laravel as LaravelConfig, Console as ConsoleContract, Flows as FlowConfig, ContainerConfig as IContainerConfig, CacheClient as CacheConfig};
 
 	use Suphle\Contracts\IO\Image\{ImageThumbnailClient, InferiorImageClient, ImageLocator, InferiorOperationHandler, ThumbnailOperationHandler};
 
@@ -39,7 +39,7 @@
 
 	use Suphle\Adapters\Presentation\Hotwire\FailureConventions\HttpMethodValidationConvention;
 
-	use Suphle\Adapters\Presentation\Blade\{DefaultBladeConfig, BladeParser};
+	use Suphle\Adapters\Presentation\Blade\{BladeInterfaceLoader, DefaultBladeAdapter};
 
 	use Suphle\Queues\AdapterLoader as QueueAdapterLoader;
 
@@ -70,6 +70,8 @@
 			return [
 
 				CacheManager::class => CacheAdapterLoader::class,
+
+				HtmlParser::class => BladeInterfaceLoader::class,
 
 				ImageThumbnailClient::class => ImageThumbnailLoader::class,
 
@@ -112,8 +114,6 @@
 				FatalShutdownAlert::class => MailShutdownAlert::class,
 
 				FileInputReader::class => NativeFileReader::class,
-
-				HtmlParser::class => BladeParser::class,
 
 				ImageLocator::class => LocalSaver::class,
 
@@ -161,8 +161,6 @@
 			return [
 
 				AuthContract::class => Auth::class,
-
-				BladeConfig::class => DefaultBladeConfig::class,
 
 				CacheConfig::class => DefaultCacheConfig::class,
 

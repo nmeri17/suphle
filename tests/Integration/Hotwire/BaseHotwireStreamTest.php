@@ -5,7 +5,7 @@
 
 	use Suphle\Adapters\Presentation\Hotwire\{HotwireRendererManager, HotwireAsserter, Formats\BaseHotwireStream};
 
-	use Suphle\Adapters\Presentation\Blade\BladeParser;
+	use Suphle\Adapters\Presentation\Blade\DefaultBladeAdapter;
 
 	use Suphle\Response\Format\{Reload, Redirect};
 
@@ -276,7 +276,7 @@
 
 				$this->massProvide([
 
-					HtmlParser::class => $this->positiveDouble(BladeParser::class, [
+					HtmlParser::class => $this->positiveDouble(DefaultBladeAdapter::class, [
 
 						"parseAll" => "page contents"
 					], [

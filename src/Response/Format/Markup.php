@@ -8,7 +8,7 @@
 	/*
 	 * Should not be used in conjuction with form submissions. Form actions should leave the request's originator
 	*/
-	class Markup extends BaseBladeRenderer implements MirrorableRenderer {
+	class Markup extends BaseHtmlRenderer implements MirrorableRenderer {
 
 		protected bool $wantsJson = false;
 

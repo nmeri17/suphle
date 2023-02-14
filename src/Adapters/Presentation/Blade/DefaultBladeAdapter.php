@@ -1,9 +1,9 @@
 <?php
 	namespace Suphle\Adapters\Presentation\Blade;
 
-	use Suphle\Contracts\Config\{ModuleFiles, Blade as BladeConfig};
+	use Suphle\Contracts\{Config\ModuleFiles, Bridge\LaravelContainer};
 
-	use Suphle\Contracts\Bridge\LaravelContainer;
+	use Suphle\Contracts\Presentation\{BladeAdapter, RendersMarkup};
 
 	use Illuminate\{Filesystem\Filesystem, Events\Dispatcher};
 
@@ -15,14 +15,11 @@
 
 	use Illuminate\Contracts\View\Factory as BladeViewFactoryInterface;
 
-	/**
-	 * Using a config for this instead of an interface loader since there's opportunity for it to be called from the parser
-	 * 
-	 * An interface loader will cause only one instance to exist, which is undesirable since we don't have a fixed list of view paths, which the viewFactory requires predetermined
-	*/
-	class DefaultBladeConfig implements BladeConfig {
+	class DefaultBladeAdapter implements BladeAdapter {
 
 		protected BladeViewFactoryInterface $viewFactory;
+
+		protected BladeCompiler $bladeCompiler;
 
 		protected array $viewPaths;
 
@@ -36,40 +33,42 @@
 			$this->viewPaths = [$fileConfig->defaultViewPath()];
 		}
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function addViewPath (string $markupPath):void {
+		public function findInPath (string $markupPath):void { // move up there
 
-			$this->viewPaths[] = $markupPath;
+			$this->viewPaths[] = $markupPath; // Where present, this must be called before setViewFactory
 		}
 
-		public function getViewFactory ():BladeViewFactoryInterface {
+		public function parseAll (RendersMarkup $renderer):string {
 
-			return $this->viewFactory;
+			return $this->viewFactory->make(
+
+				$renderer->getMarkupName(), $renderer->getRawResponse()
+			)->render();
 		}
+
+		public function bindComponentTags ():void {}
 
 		public function setViewFactory ():void {
 
 			$filesystem = new Filesystem;
 
-			$bladeCompiler = $this->getBladeCompiler($filesystem);
+			$this->setBladeCompiler($filesystem);
 
 			$this->viewFactory = new BladeViewFactory(
 
-				$this->getViewResolver($bladeCompiler),
+				$this->getViewResolver(),
 
 				new FileViewFinder($filesystem, $this->viewPaths),
 
 				$this->laravelContainer->make(Dispatcher::class)
 			);
 
-			$this->bindInstancesToLaravelContainer($bladeCompiler);
+			$this->bindInstancesToLaravelContainer();
 		}
 
-		protected function getBladeCompiler (Filesystem $fileSystem):BladeCompiler {
+		protected function setBladeCompiler (Filesystem $fileSystem):void {
 
-			return new BladeCompiler(
+			$this->bladeCompiler = new BladeCompiler(
 
 				$fileSystem,
 
@@ -77,20 +76,20 @@
 			);
 		}
 
-		protected function getViewResolver (BladeCompiler $bladeCompiler):EngineResolver {
+		protected function getViewResolver ():EngineResolver {
 
 			$viewResolver = new EngineResolver;
 
-			$viewResolver->register("blade", function () use ($bladeCompiler) {
+			$viewResolver->register("blade", function () {
 
-				return new CompilerEngine($bladeCompiler);
+				return new CompilerEngine($this->bladeCompiler);
 			});
 
 			return $viewResolver;
 		}
 
 		// not really necessary but to avoid any of the objects trying to pull something from somewhere without knowing configured copies are available here
-		protected function bindInstancesToLaravelContainer (BladeCompiler $bladeCompiler):void {
+		protected function bindInstancesToLaravelContainer ():void {
 
 			$this->viewFactory->setContainer($this->laravelContainer);
 			
@@ -106,27 +105,27 @@
 
 					public static function getFacadeAccessor() {
 
-						return parent::getFacadeAccessor(); }
+						return parent::getFacadeAccessor();
+					}
 				})::getFacadeAccessor()
 			);
 
 			$this->laravelContainer->instance(
 
-				$bladeCompiler::class, $bladeCompiler
+				BladeCompiler::class, $this->bladeCompiler
 			);
 
 			$this->laravelContainer->alias(
-				$bladeCompiler::class,
+				BladeCompiler::class,
 
 				(new class extends BladeFacade {
 
 					public static function getFacadeAccessor() {
 
-						return parent::getFacadeAccessor(); }
+						return parent::getFacadeAccessor();
+					}
 				})::getFacadeAccessor()
 			);
 		}
-
-		public function bindComponentTags ():void {}
 	}
 ?>
