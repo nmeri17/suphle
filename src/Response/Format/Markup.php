@@ -31,7 +31,7 @@
 
 					$this->htmlParser->findInPath($this->filePath); // setting this here since dependecies aren't wired as at the time exception handler may trying setting path of its renderer
 
-				return $this->htmlParser->parseAll($this);
+				return $this->htmlParser->parseRenderer($this);
 			}
 
 			$this->setHeaders(200, [

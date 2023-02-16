@@ -278,10 +278,10 @@
 
 					HtmlParser::class => $this->positiveDouble(DefaultBladeAdapter::class, [
 
-						"parseAll" => "page contents"
+						"parseRenderer" => "page contents"
 					], [
 
-						"parseAll" => [1, [ // then
+						"parseRenderer" => [1, [ // then
 							$this->callback(function ($subject) use ($markupName) {
 
 								return str_contains($subject->getMarkupName(), $markupName);

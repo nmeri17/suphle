@@ -212,7 +212,7 @@
 
 			$this->markupName = $markupName;
 
-			return $this->htmlParser->parseAll($this);
+			return $this->htmlParser->parseRenderer($this);
 		}
 
 		/**

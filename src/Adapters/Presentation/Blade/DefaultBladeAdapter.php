@@ -3,7 +3,7 @@
 
 	use Suphle\Contracts\{Config\ModuleFiles, Bridge\LaravelContainer};
 
-	use Suphle\Contracts\Presentation\{BladeAdapter, RendersMarkup};
+	use Suphle\Contracts\Presentation\{HtmlParser, RendersMarkup};
 
 	use Illuminate\{Filesystem\Filesystem, Events\Dispatcher};
 
@@ -15,7 +15,7 @@
 
 	use Illuminate\Contracts\View\Factory as BladeViewFactoryInterface;
 
-	class DefaultBladeAdapter implements BladeAdapter {
+	class DefaultBladeAdapter implements HtmlParser {
 
 		protected BladeViewFactoryInterface $viewFactory;
 
@@ -38,12 +38,22 @@
 			$this->viewPaths[] = $markupPath; // Where present, this must be called before setViewFactory
 		}
 
-		public function parseAll (RendersMarkup $renderer):string {
+		public function parseRenderer (RendersMarkup $renderer):string {
 
-			return $this->viewFactory->make(
+			return $this->parseRaw(
 
 				$renderer->getMarkupName(), $renderer->getRawResponse()
-			)->render();
+			);
+		}
+
+		/**
+		 * This can't exist on the interface cuz different engines will want different sets of arguments. Thus it differs from adapter to adapter
+		*/
+		public function parseRaw (string $markupName, iterable $payload):string {
+
+			return $this->viewFactory->make($markupName, $payload)
+
+			->render();
 		}
 
 		public function bindComponentTags ():void {}
