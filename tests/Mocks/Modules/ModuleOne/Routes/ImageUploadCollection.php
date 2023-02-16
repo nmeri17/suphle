@@ -1,18 +1,14 @@
 <?php
 	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes;
 
-	use Suphle\Routing\BaseCollection;
+	use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
 
 	use Suphle\Response\Format\Json;
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\ImageUploadCoordinator;
 
+	#[HandlingCoordinator(ImageUploadCoordinator::class)]
 	class ImageUploadCollection extends BaseCollection {
-
-		public function _handlingClass ():string {
-
-			return ImageUploadCoordinator::class;
-		}
 
 		public function APPLY__ALLh () {
 

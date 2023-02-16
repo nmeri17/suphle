@@ -1,18 +1,14 @@
 <?php
 	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\ApiRoutes\V1;
 
-	use Suphle\Routing\BaseApiCollection;
+	use Suphle\Routing\{BaseApiCollection, Decorators\HandlingCoordinator};
 
 	use Suphle\Response\Format\Json;
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\ApiEntryCoordinator;
 
+	#[HandlingCoordinator(ApiEntryCoordinator::class)]
 	class LowerMirror extends BaseApiCollection {
-
-		public function _handlingClass ():string {
-
-			return ApiEntryCoordinator::class;
-		}
 		
 		public function API__SEGMENTh () {
 			

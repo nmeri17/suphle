@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes;
 
-	use Suphle\Routing\BaseCollection;
+	use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
 
 	use Suphle\Response\Format\{Redirect, Markup};
 
@@ -15,12 +15,8 @@
 
 	use Suphle\Tests\Mocks\Models\Eloquent\Employment;
 
+	#[HandlingCoordinator(HotwireCoordinator::class)]
 	class HotwireCollection extends BaseCollection {
-
-		public function _handlingClass ():string {
-
-			return HotwireCoordinator::class;
-		}
 
 		public function INIT__POSTh () {
 

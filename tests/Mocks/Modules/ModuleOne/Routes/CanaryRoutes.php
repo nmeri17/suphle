@@ -6,11 +6,6 @@
 	use Suphle\Routing\BaseApiCollection;
 
 	class CanaryRoutes extends BaseApiCollection { // try with/without prefix, with/without middleware, with/without auth
-
-		public function _handlingClass ():string {
-
-			return "";
-		}
 		
 		public function LOAD__DEFAULTh () {
 			

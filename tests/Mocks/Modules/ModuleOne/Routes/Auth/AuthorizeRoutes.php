@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Auth;
 
-	use Suphle\Routing\BaseCollection;
+	use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
 
 	use Suphle\Request\PathAuthorizer;
 
@@ -9,12 +9,8 @@
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\{Coordinators\BaseCoordinator, Authorization\Paths\AdminRule};
 
+	#[HandlingCoordinator(BaseCoordinator::class)]
 	class AuthorizeRoutes extends BaseCollection {
-
-		public function _handlingClass ():string {
-
-			return BaseCoordinator::class;
-		}
 
 		public function ADMIN__ENTRYh () {
 

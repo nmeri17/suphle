@@ -3,18 +3,14 @@
 
 	use Suphle\Flows\ControllerFlows;
 
-	use Suphle\Routing\BaseCollection;
+	use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
 
 	use Suphle\Response\Format\Json;
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\FlowCoordinator;
 
+	#[HandlingCoordinator(FlowCoordinator::class)]
 	class FlowRoutes extends BaseCollection {
-
-		public function _handlingClass ():string {
-
-			return FlowCoordinator::class;
-		}
 
 		public function POSTS_id () {
 

@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Middlewares;
 
-	use Suphle\Routing\BaseCollection;
+	use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
 
 	use Suphle\Middleware\MiddlewareRegistry;
 
@@ -11,12 +11,8 @@
 
 	use Suphle\Response\Format\Json;
 
+	#[HandlingCoordinator(BaseCoordinator::class)]
 	class UntagsMiddleware extends BaseCollection {
-
-		public function _handlingClass ():string {
-
-			return BaseCoordinator::class;
-		}
 
 		public function FIRST__UNTAGh () {
 

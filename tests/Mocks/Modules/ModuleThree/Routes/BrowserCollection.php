@@ -1,18 +1,14 @@
 <?php
 	namespace Suphle\Tests\Mocks\Modules\ModuleThree\Routes;
 
-	use Suphle\Routing\BaseCollection;
+	use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
 
 	use Suphle\Tests\Mocks\Modules\ModuleThree\Coordinators\BaseCoordinator;
 
 	use Suphle\Response\Format\Json;
 
+	#[HandlingCoordinator(BaseCoordinator::class)]
 	class BrowserCollection extends BaseCollection {
-
-		public function _handlingClass ():string {
-
-			return BaseCoordinator::class;
-		}
 		
 		public function _prefixCurrent ():string {
 			

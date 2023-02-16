@@ -1,16 +1,12 @@
 <?php
 	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Crud;
 
-	use Suphle\Routing\BaseCollection;
+	use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\CrudCoordinator;
 
+	#[HandlingCoordinator(CrudCoordinator::class)]
 	class AuthenticateCrudCollection extends BaseCollection {
-
-		public function _handlingClass ():string {
-
-			return CrudCoordinator::class;
-		}
 		
 		public function SECURE__SOMEh () {
 			

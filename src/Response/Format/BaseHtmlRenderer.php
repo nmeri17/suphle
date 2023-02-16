@@ -8,7 +8,7 @@
 	use Suphle\Services\Decorators\VariableDependencies;
 
 	#[VariableDependencies(["setHtmlParser" ])]
-	abstract class BaseBladeRenderer extends GenericRenderer implements RendersMarkup {
+	abstract class BaseHtmlRenderer extends GenericRenderer implements RendersMarkup {
 
 		protected string $markupName;
 

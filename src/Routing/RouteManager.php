@@ -1,9 +1,9 @@
 <?php
 	namespace Suphle\Routing;
 
-	use Suphle\Routing\Structures\PlaceholderCheck;
+	use Suphle\Routing\{Structures\PlaceholderCheck, Decorators\HandlingCoordinator};
 
-	use Suphle\Hydration\Container;
+	use Suphle\Hydration\{Container, Structures\ObjectDetails};
 
 	use Suphle\Contracts\{ Config\Router as RouterConfig, Routing\RouteCollection};
 
@@ -39,7 +39,9 @@
 
 			protected readonly PatternIndicator $patternIndicator,
 
-			protected readonly CollectionMethodToUrl $urlReplacer
+			protected readonly CollectionMethodToUrl $urlReplacer,
+
+			protected readonly ObjectDetails $objectMeta
 		) {
 
 			//
@@ -241,9 +243,14 @@
 
 			$container = $this->container;
 
+			$handlingClass = $this->objectMeta->getClassAttributes(
+
+				$collection::class, HandlingCoordinator::class
+			)[0]->newInstance();
+
 			$renderer->setCoordinatorClass(
 
-				$container->getClass($collection->_handlingClass())
+				$container->getClass($handlingClass->coordinatorName)
 			);
 
 			$this->placeholderStorage->setMethodSegments($this->visitedMethods);

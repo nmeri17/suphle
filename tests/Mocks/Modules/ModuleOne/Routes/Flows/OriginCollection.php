@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Flows;
 
-	use Suphle\Routing\BaseCollection;
+	use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
 
 	use Suphle\Response\Format\Json;
 
@@ -11,14 +11,10 @@
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\FlowService;
 
+	#[HandlingCoordinator(FlowCoordinator::class)]
 	class OriginCollection extends BaseCollection {
 
 		protected string $queryNodeHolder = "next_page_url";
-
-		public function _handlingClass ():string {
-
-			return FlowCoordinator::class;
-		}
 
 		public function COMBINE__FLOWSh() {
 

@@ -1,18 +1,14 @@
 <?php
 	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Middlewares;
 
-	use Suphle\Routing\BaseCollection;
+	use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\ReadsPayloadCoordinator;
 
 	use Suphle\Response\Format\Json;
 
+	#[HandlingCoordinator(ReadsPayloadCoordinator::class)]
 	class PayloadCollection extends BaseCollection {
-
-		public function _handlingClass ():string {
-
-			return ReadsPayloadCoordinator::class;
-		}
 
 		public function ALL__PAYLOADh () {
 

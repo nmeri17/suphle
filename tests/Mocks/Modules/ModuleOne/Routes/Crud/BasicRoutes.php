@@ -1,18 +1,14 @@
 <?php
 	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Crud;
 
-	use Suphle\Routing\{BaseCollection, Crud\BrowserBuilder};
+	use Suphle\Routing\{BaseCollection, Crud\BrowserBuilder, Decorators\HandlingCoordinator};
 
 	use Suphle\Response\Format\Markup;
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\CrudCoordinator;
 
+	#[HandlingCoordinator(CrudCoordinator::class)]
 	class BasicRoutes extends BaseCollection {
-
-		public function _handlingClass ():string {
-
-			return CrudCoordinator::class;
-		}
 		
 		public function SAVE__ALLh () {
 			

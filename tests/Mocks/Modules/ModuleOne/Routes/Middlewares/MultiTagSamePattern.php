@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Middlewares;
 
-	use Suphle\Routing\BaseCollection;
+	use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
 
 	use Suphle\Middleware\{MiddlewareRegistry, Handlers\JsonNegotiator};
 
@@ -11,12 +11,8 @@
 
 	use Suphle\Response\Format\{Json, Markup};
 
+	#[HandlingCoordinator(BaseCoordinator::class)]
 	class MultiTagSamePattern extends BaseCollection {
-
-		public function _handlingClass ():string {
-
-			return BaseCoordinator::class;
-		}
 
 		public function FIRST__SINGLEh () {
 

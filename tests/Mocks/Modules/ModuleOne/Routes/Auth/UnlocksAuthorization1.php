@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Auth;
 
-	use Suphle\Routing\BaseCollection;
+	use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
 
 	use Suphle\Request\PathAuthorizer;
 
@@ -11,12 +11,8 @@
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Authorization\Paths\{EmploymentEditRule, AdminRule};
 
+	#[HandlingCoordinator(EmploymentEditCoordinator::class)]
 	class UnlocksAuthorization1 extends BaseCollection {
-
-		public function _handlingClass ():string {
-
-			return EmploymentEditCoordinator::class;
-		}
 
 		public function RETAIN () {
 

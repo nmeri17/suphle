@@ -43,11 +43,6 @@
 			return "";
 		}
 
-		public function _handlingClass ():string {
-
-			return "";
-		}
-
 		public function _setParentPrefix (string $prefix):void {
 
 			$this->parentPrefix = $prefix;

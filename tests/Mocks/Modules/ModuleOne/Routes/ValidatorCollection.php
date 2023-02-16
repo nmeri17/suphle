@@ -5,14 +5,12 @@
 
 	use Suphle\Response\Format\{Json, Markup, Redirect};
 
+	use Suphle\Routing\Decorators\HandlingCoordinator;
+
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\ValidatorCoordinator;
 
+	#[HandlingCoordinator(ValidatorCoordinator::class)]
 	class ValidatorCollection extends BaseCollection {
-
-		public function _handlingClass ():string {
-
-			return ValidatorCoordinator::class;
-		}
 
 		public function POST__WITH__JSONh () {
 

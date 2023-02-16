@@ -1,18 +1,14 @@
 <?php
 	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Prefix;
 
-	use Suphle\Routing\BaseCollection;
+	use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
 
 	use Suphle\Response\Format\Json;
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\MixedNestedSecuredController;
 
+	#[HandlingCoordinator(MixedNestedSecuredController::class)]
 	class UnchainParentSecurity extends BaseCollection {
-
-		public function _handlingClass ():string {
-
-			return MixedNestedSecuredController::class;
-		}
 
 		public function _authenticatedPaths():array {
 
