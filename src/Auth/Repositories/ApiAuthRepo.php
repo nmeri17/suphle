@@ -5,6 +5,8 @@
 
 	use Suphle\Contracts\Auth\ColumnPayloadComparer;
 
+	use Suphle\Services\Decorators\ValidationRules;
+
 	class ApiAuthRepo extends BaseAuthRepo {
 
 		public function __construct (
@@ -17,11 +19,16 @@
 			//
 		}
 
-		public function successLogin () {
+		#[ValidationRules([
+			"email" => "required|email",
+
+			"password" => "required|alpha_num|min:5"
+		])]
+		public function successLogin ():iterable {
 
 			return [
 
-				"token" => $this->authStorage->startSession($this->comparer->getUser()->getId())
+				"token" => $this->startSessionForCompared()
 			];
 		}
 	}

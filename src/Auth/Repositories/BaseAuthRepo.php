@@ -13,18 +13,17 @@
 			return $this->comparer->compare();
 		}
 
-		public function failedLogin () {
+		public function failedLogin ():iterable {
 
 			return ["message" => "Incorrect credentials"];
 		}
 
-		public function successRules ():array {
+		protected function startSessionForCompared ():string {
 
-			return [
-				"email" => "required|email",
+			return $this->authStorage->startSession(
 
-				"password" => "required|alpha_num|min:5"
-			];
+				$this->comparer->getUser()->getId()
+			);
 		}
 	}
 ?>

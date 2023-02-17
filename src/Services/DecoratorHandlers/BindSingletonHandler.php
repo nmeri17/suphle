@@ -25,7 +25,7 @@
 
 		public function examineInstance (object $concrete, string $caller):object {
 
-			$attribute = current($this->attributesList)->newInstance();
+			$attribute = end($this->attributesList)->newInstance();
 
 			$concreteName = $concrete::class;
 

@@ -40,6 +40,8 @@
 		}
 
 		/**
+		 * List starts with oldest rules i.e. those of the parents. Immediate rules will be at the end of the list
+		 * 
 		 * @return ReflectionAttribute[]
 		*/
 		public function getMethodAttributes (

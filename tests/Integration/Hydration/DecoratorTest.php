@@ -1,15 +1,17 @@
 <?php
 	namespace Suphle\Tests\Integration\Hydration;
 
-	use Suphle\Hydration\DecoratorHydrator;
+	use Suphle\Hydration\{DecoratorHydrator, Structures\CallbackDetails};
 
-	use Suphle\Services\Decorators\{InterceptsCalls, VariableDependencies};
+	use Suphle\Services\Decorators\{InterceptsCalls, VariableDependencies, ValidationRules};
 
-	use Suphle\Testing\TestTypes\IsolatedComponentTest;
+	use Suphle\Testing\{TestTypes\IsolatedComponentTest, Utilities\ArrayAssertions};
 
 	use Suphle\Tests\Integration\Generic\CommonBinds;
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\{ThrowsException, Services\SystemModelEditMock1};
+
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Authentication\CustomBrowserRepo;
 
 	use ProxyManager\Factory\AccessInterceptorValueHolderFactory as AccessInterceptor;
 
@@ -17,7 +19,7 @@
 
 	class DecoratorTest extends IsolatedComponentTest {
 
-		use CommonBinds;
+		use CommonBinds, ArrayAssertions;
 
 		private DecoratorHydrator $hydrator;
 
@@ -86,6 +88,24 @@
 			]);
 
 			$this->assertSame(48, $sut->awesomeMethod());
+		}
+
+		public function test_extended_class_attribute_is_most_recent () {
+
+			$allRules = $this->container->getClass(CallbackDetails::class)
+			->getMethodAttributes(
+
+				CustomBrowserRepo::class, "successLogin", // given // attributes on this method
+
+				ValidationRules::class
+			);
+
+			$mostRecent = end($allRules)->newInstance()->rules; // when
+
+			$this->assertAssocArraySubset([
+
+				"password" => "required|numeric|min:9"
+			], $mostRecent); // then
 		}
 	}
 ?>

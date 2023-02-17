@@ -243,10 +243,12 @@
 
 			$container = $this->container;
 
-			$handlingClass = $this->objectMeta->getClassAttributes(
+			$attributesList = $this->objectMeta->getClassAttributes(
 
 				$collection::class, HandlingCoordinator::class
-			)[0]->newInstance();
+			);
+
+			$handlingClass = end($attributesList)->newInstance();
 
 			$renderer->setCoordinatorClass(
 

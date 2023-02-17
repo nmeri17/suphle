@@ -166,7 +166,7 @@
 
 				$this->validatorManager->setActionRules(
 
-					current($attributesList)->newInstance()->rules // use only the latest
+					end($attributesList)->newInstance()->rules // use only the latest
 				);
 
 				return true;

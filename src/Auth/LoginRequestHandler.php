@@ -1,13 +1,15 @@
 <?php
 	namespace Suphle\Auth;
 
-	use Suphle\Hydration\{Container, DecoratorHydrator};
+	use Suphle\Hydration\{Container, DecoratorHydrator, Structures\CallbackDetails};
 
 	use Suphle\Contracts\{ Modules\HighLevelRequestHandler, Presentation\BaseRenderer};
 
 	use Suphle\Contracts\Auth\{LoginFlowMediator, ModuleLoginHandler, LoginActions};
 
 	use Suphle\Request\ValidatorManager;
+
+	use Suphle\Services\Decorators\ValidationRules;
 
 	class LoginRequestHandler implements ModuleLoginHandler {
 
@@ -22,7 +24,9 @@
 
 			protected readonly ValidatorManager $validatorManager,
 
-			protected readonly DecoratorHydrator $decoratorHydrator
+			protected readonly DecoratorHydrator $decoratorHydrator,
+
+			protected readonly CallbackDetails $callbackDetails
 		) {
 
 			$this->loginService = $rendererCollection->getLoginService();
@@ -30,7 +34,16 @@
 
 		public function isValidRequest ():bool {
 
-			$this->validatorManager->setActionRules($this->loginService->successRules());
+			$attributesList = $this->callbackDetails->getMethodAttributes(
+
+				$this->loginService::class, "successLogin",
+
+				ValidationRules::class
+			);
+
+			$latestRules = end($attributesList)->newInstance();
+
+			$this->validatorManager->setActionRules($latestRules->rules);
 	
 			return $this->validatorManager->isValidated();
 		}
