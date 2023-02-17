@@ -29,9 +29,11 @@
 			];
 		}
 
-		protected function fakeRequest (string $url, string $httpMethod = "get"):?BaseRenderer {
+		protected function fakeRequest (string $url, string $httpMethod = "get", array $payload = null):?BaseRenderer {
 
-			$this->$httpMethod($url);
+			if (is_null($payload)) $this->$httpMethod($url);
+
+			else $this->$httpMethod($url, $payload);
 
 			$router = $this->getContainer()->getClass(RouteManager::class);
 

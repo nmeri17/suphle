@@ -32,10 +32,10 @@
 	     */
 		public function test_canaries_use_collection_auth () {
 
-			$model = $this->getContainer()->getClass(UserContract::class);
+			$user = $this->replicator->getSpecificEntities(1, ["id" => 5])[0];
 
 			// default = sessionStorage
-			$this->actingAs($model->findByPrimaryKey(5)); // given
+			$this->actingAs($user); // given
 
 			$matchingRenderer = $this->fakeRequest("/special-foo/same-url"); // when
 

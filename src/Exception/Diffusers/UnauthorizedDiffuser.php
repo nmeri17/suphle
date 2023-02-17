@@ -1,11 +1,13 @@
 <?php
 	namespace Suphle\Exception\Diffusers;
 
-	use Suphle\Contracts\{Exception\ExceptionHandler, Presentation\BaseRenderer};
+	use Suphle\Contracts\Exception\ExceptionHandler;
+
+	use Suphle\Contracts\Presentation\{HtmlParser, BaseRenderer};
 
 	use Suphle\Request\RequestDetails;
 
-	use Suphle\Response\Format\{ Markup, Json};
+	use Suphle\Response\ModifiesRendererTemplate;
 
 	use Suphle\Exception\{ComponentEntry, Explosives\UnauthorizedServiceAccess};
 
@@ -13,11 +15,19 @@
 
 	class UnauthorizedDiffuser implements ExceptionHandler {
 
-		private BaseRenderer $renderer;
+		public const ERRORS_PRESENCE = "authorization_failure_message";
 
-		protected string $controllerAction = "imaginaryHandler";
+		use ModifiesRendererTemplate;
 
-		public function __construct(protected readonly RequestDetails $requestDetails, protected readonly ComponentEntry $componentEntry) {
+		protected string $newMarkupName = "authorization-failure";
+
+		public function __construct(
+			protected readonly ComponentEntry $componentEntry,
+
+			protected readonly HtmlParser $htmlParser,
+
+			protected readonly BaseRenderer $renderer
+		) {
 
 			//
 		}
@@ -32,36 +42,17 @@
 
 		public function prepareRendererData ():void {
 
-			if ($this->requestDetails->isApiRoute())
+			$this->setMarkupDetails();
 
-				$this->renderer = $this->getApiRenderer();
+			$this->renderer->setRawResponse([
 
-			else $this->renderer = $this->getMarkupRenderer();
-
-			$this->renderer->setHeaders(403, []);
+				self::ERRORS_PRESENCE => "Unauthorized"
+			])->setHeaders(403, []);
 		}
 
 		public function getRenderer ():BaseRenderer {
 
 			return $this->renderer;
-		}
-
-		protected function getApiRenderer ():BaseRenderer {
-
-			return (new Json($this->controllerAction))
-
-			->setRawResponse([ "message" => "Unauthorized" ]);
-		}
-
-		protected function getMarkupRenderer ():Markup {
-
-			return (new Markup($this->controllerAction, "authorization-failure"))
-			
-			->setFilePath(
-				$this->componentEntry->userLandMirror() . "Markup".
-
-				DIRECTORY_SEPARATOR
-			);
 		}
 	}
 ?>

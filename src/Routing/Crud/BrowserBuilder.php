@@ -12,6 +12,8 @@
 	*/
 	class BrowserBuilder extends BaseBuilder {
 
+		public const SAVE_NEW_KEY = "resource";
+
 		private string $markupPath, $templatePath;
 
 		protected array $validActions = [
@@ -50,7 +52,9 @@
 			$prefix = $this->collection->_prefixCurrent();
 
 			return new Redirect(__FUNCTION__, fn() => function () use ($prefix) {
-					return $prefix . "/" . $this->rawResponse["resource"]->id; // assumes the controller returns an array containing this key
+					return $prefix . "/" .
+
+					$this->rawResponse[BrowserBuilder::SAVE_NEW_KEY]->id; // assumes the controller returns an array containing this key
 				});
 		}
 

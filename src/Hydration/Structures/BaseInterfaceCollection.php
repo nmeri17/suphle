@@ -39,7 +39,7 @@
 
 	use Suphle\Adapters\Presentation\Hotwire\FailureConventions\HttpMethodValidationConvention;
 
-	use Suphle\Adapters\Presentation\Blade\{BladeInterfaceLoader, DefaultBladeAdapter};
+	use Suphle\Adapters\Presentation\Blade\DefaultBladeAdapter;
 
 	use Suphle\Queues\AdapterLoader as QueueAdapterLoader;
 
@@ -70,8 +70,6 @@
 			return [
 
 				CacheManager::class => CacheAdapterLoader::class,
-
-				HtmlParser::class => BladeInterfaceLoader::class,
 
 				ImageThumbnailClient::class => ImageThumbnailLoader::class,
 
@@ -114,6 +112,8 @@
 				FatalShutdownAlert::class => MailShutdownAlert::class,
 
 				FileInputReader::class => NativeFileReader::class,
+
+				HtmlParser::class => DefaultBladeAdapter::class,
 
 				ImageLocator::class => LocalSaver::class,
 

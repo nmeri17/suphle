@@ -3,7 +3,11 @@
 
 	use Suphle\Contracts\Exception\{ExceptionHandler, BroadcastableException};
 
-	use Suphle\Contracts\Presentation\BaseRenderer;
+	use Suphle\Contracts\Presentation\{BaseRenderer, HtmlParser};
+
+	use Suphle\Hydration\Container;
+
+	use Suphle\Response\ModifiesRendererTemplate;
 
 	use Suphle\Request\RequestDetails;
 
@@ -11,22 +15,28 @@
 
 	use Suphle\Exception\{ComponentEntry, DetectedExceptionManager};
 
+	use Suphle\Exception\Explosives\Generic\InvalidImplementor;
+
 	use Throwable;
 
 	class GenericDiffuser implements ExceptionHandler {
 
-		protected const CONTROLLER_ACTION = "genericHandler";
-
-		protected BaseRenderer $renderer;
+		use ModifiesRendererTemplate;
 
 		protected Throwable $origin;
+
+		protected string $newMarkupName = "default";
 
 		public function __construct(
 			protected readonly RequestDetails $requestDetails,
 
 			protected readonly ComponentEntry $componentEntry,
 
-			protected readonly DetectedExceptionManager $exceptionDetector
+			protected readonly DetectedExceptionManager $exceptionDetector,
+
+			protected readonly Container $container,
+
+			protected readonly HtmlParser $htmlParser
 		) {
 
 			//
@@ -46,11 +56,20 @@
 					$this->origin, $this->requestDetails->getPath()
 				);
 
-			if ($this->requestDetails->isApiRoute())
+			try {
 
-				$this->renderer = $this->getApiRenderer();
+				$this->renderer = $this->container->getClass(BaseRenderer::class);
+			}
+			catch (InvalidImplementor $exception) { // exception occured before routing completion
 
-			else $this->renderer = $this->getMarkupRenderer();
+				if ($this->requestDetails->isApiRoute())
+
+					$this->renderer = new Json("");
+
+				else $this->renderer = new Markup("genericHandler", $this->newMarkupName);
+			}
+
+			$this->setMarkupDetails();
 
 			$this->renderer->setRawResponse([
 
@@ -70,22 +89,6 @@
 		public function getRenderer ():BaseRenderer {
 
 			return $this->renderer;
-		}
-
-		protected function getApiRenderer ():BaseRenderer {
-
-			return new Json(self::CONTROLLER_ACTION);
-		}
-
-		protected function getMarkupRenderer ():BaseRenderer {
-
-			return (new Markup(self::CONTROLLER_ACTION, "default"))
-			
-			->setFilePath(
-				$this->componentEntry->userLandMirror() . "Markup".
-
-				DIRECTORY_SEPARATOR
-			);
 		}
 	}
 ?>

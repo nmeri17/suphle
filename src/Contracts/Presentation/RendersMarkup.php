@@ -6,8 +6,8 @@
 		public function getMarkupName ():string;
 
 		/**
-		 * @param {markupPath}: should have trailing slash
+		 * For exception diffusers to replace
 		*/
-		public function setFilePath (string $markupPath):self;
+		public function setMarkupName (string $markupName):void;
 	}
 ?>

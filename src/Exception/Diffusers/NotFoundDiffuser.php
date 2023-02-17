@@ -1,7 +1,11 @@
 <?php
 	namespace Suphle\Exception\Diffusers;
 
-	use Suphle\Contracts\{Exception\ExceptionHandler, Presentation\BaseRenderer};
+	use Suphle\Contracts\Exception\ExceptionHandler;
+
+	use Suphle\Contracts\Presentation\{HtmlParser, BaseRenderer};
+
+	use Suphle\Hydration\DecoratorHydrator;
 
 	use Suphle\Request\RequestDetails;
 
@@ -14,10 +18,16 @@
 	class NotFoundDiffuser implements ExceptionHandler {
 
 		protected BaseRenderer $renderer;
-  
-  		protected string $controllerAction = "missingHandler";
 
-		public function __construct(protected readonly RequestDetails $requestDetails, protected readonly ComponentEntry $componentEntry) {
+		public function __construct(
+			protected readonly RequestDetails $requestDetails,
+
+			protected readonly ComponentEntry $componentEntry,
+
+			protected readonly DecoratorHydrator $decoratorHydrator,
+
+			protected readonly HtmlParser $htmlParser
+		) {
 
 			//
 		}
@@ -34,7 +44,7 @@
 
 			if ($this->requestDetails->isApiRoute())
 
-				$this->renderer = $this->getApiRenderer();
+				$this->renderer = new Json("");
 
 			else $this->renderer = $this->getMarkupRenderer();
 
@@ -53,20 +63,22 @@
 			return $this->renderer;
 		}
 
-		protected function getApiRenderer ():Json {
-
-			return new Json($this->controllerAction);
-		}
-
 		protected function getMarkupRenderer ():BaseRenderer {
 
-			return (new Markup($this->controllerAction, "not-found"))
-			
-			->setFilePath(
+			$renderer = new Markup("missingHandler", "not-found");
+
+			$this->decoratorHydrator->scopeInjecting(
+
+				$renderer, self::class
+			);
+
+			$this->htmlParser->findInPath(
 				$this->componentEntry->userLandMirror() . "Markup".
 
 				DIRECTORY_SEPARATOR
 			);
+
+			return $renderer;
 		}
 	}
 ?>

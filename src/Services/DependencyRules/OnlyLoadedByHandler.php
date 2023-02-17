@@ -5,7 +5,7 @@
 
 	use Suphle\Exception\Explosives\Generic\UnacceptableDependency;
 
-	class OnlyLoadedByHandler extends BaseDependencyHandler { // talk about this guy
+	class OnlyLoadedByHandler extends BaseDependencyHandler {
 
 		public function evaluateClass (string $className):void {
 

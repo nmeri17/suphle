@@ -12,8 +12,6 @@
 
 		protected string $markupName;
 
-		protected ?string $filePath = null;
-
 		protected HtmlParser $htmlParser;
 
 		public function setHtmlParser (HtmlParser $parser):void {
@@ -24,11 +22,9 @@
 		/**
 		 * {@inheritdoc}
 		*/
-		public function setFilePath (string $markupPath):self {
+		public function setMarkupName (string $markupName):void {
 
-			$this->filePath = $markupPath;
-
-			return $this;
+			$this->markupName = $markupName;
 		}
 
 		public function getMarkupName ():string {

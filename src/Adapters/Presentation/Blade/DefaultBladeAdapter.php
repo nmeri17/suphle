@@ -5,6 +5,8 @@
 
 	use Suphle\Contracts\Presentation\{HtmlParser, RendersMarkup};
 
+	use Suphle\Services\Decorators\BindsAsSingleton;
+
 	use Illuminate\{Filesystem\Filesystem, Events\Dispatcher};
 
 	use Illuminate\View\Engines\{EngineResolver, CompilerEngine};
@@ -15,6 +17,7 @@
 
 	use Illuminate\Contracts\View\Factory as BladeViewFactoryInterface;
 
+	#[BindsAsSingleton(HtmlParser::class)]
 	class DefaultBladeAdapter implements HtmlParser {
 
 		protected BladeViewFactoryInterface $viewFactory;
@@ -33,12 +36,16 @@
 			$this->viewPaths = [$fileConfig->defaultViewPath()];
 		}
 
-		public function findInPath (string $markupPath):void { // move up there
+		public function findInPath (string $markupPath):void {
 
 			$this->viewPaths[] = $markupPath; // Where present, this must be called before setViewFactory
 		}
 
 		public function parseRenderer (RendersMarkup $renderer):string {
+
+			$this->setViewFactory(); // these calls ought to reside in an interface loader but if they're called before all paths are being set, the factory won't include those sources
+
+			$this->bindComponentTags();
 
 			return $this->parseRaw(
 

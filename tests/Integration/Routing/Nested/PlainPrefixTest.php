@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Tests\Integration\Routing\Nested;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Prefix\OuterCollection;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Prefix\OuterCollection, Coordinators\BlankController};
 
 	use Suphle\Tests\Integration\Routing\TestsRouter;
 
@@ -22,7 +22,10 @@
 
 			$controller = $matchingRenderer->getCoordinator();
 
-			$this->assertNotEquals($controller::class, $entry->_handlingClass()); // then
+			$this->assertNotEquals(
+
+				$controller::class, BlankController::class
+			); // then
 		}
 
 		public function test_method_name_overwrites_internal_prefix () {

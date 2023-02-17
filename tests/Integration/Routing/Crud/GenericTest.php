@@ -3,45 +3,98 @@
 
 	use Suphle\Exception\Explosives\IncompatibleHttpMethod;
 
+	use Suphle\Security\CSRF\CsrfGenerator;
+
+	use Suphle\Testing\Condiments\BaseDatabasePopulator;
+
 	use Suphle\Tests\Integration\Routing\TestsRouter;
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Crud\BasicRoutes;
 
+	use Suphle\Tests\Mocks\Models\Eloquent\Employment;
+
 	use Exception;
 
 	class GenericTest extends TestsRouter {
+
+		use BaseDatabasePopulator {
+
+			BaseDatabasePopulator::setUp as databaseAllSetup;
+		}
+
+		protected array $csrfField;
+
+		protected function setUp ():void {
+
+			$this::databaseAllSetup();
+
+			$this->csrfField = [
+
+				CsrfGenerator::TOKEN_FIELD => $this->getContainer()
+
+				->getClass(CsrfGenerator::class)->newToken()
+			];
+		}
+
+		protected function getActiveEntity ():string {
+
+			return Employment::class;
+		}
 
 		protected function getEntryCollection ():string {
 
 			return BasicRoutes::class;
 		}
 
-		/**
-	     * @dataProvider allPathsAndHandlers
-	     */
-		public function test_can_find_all_routes (string $requestPath, string $handler, string $httpMethod, $payload = null) {
+		public function test_can_find_all_routes () {
 
-			$matchingRenderer = $this->fakeRequest("/save-all/$requestPath", $httpMethod);
+			$this->dataProvider([
 
-			$this->assertNotNull($matchingRenderer);
+				$this->allPathsAndHandlers(...)
+			], function (
+				string $requestPath, string $handler, string $httpMethod,
 
-			$this->assertTrue($matchingRenderer->matchesHandler($handler));
+				$payload = null
+			) {
+
+				$matchingRenderer = $this->fakeRequest(
+
+					"/save-all/$requestPath", $httpMethod, $payload
+				);
+
+				$this->assertNotNull($matchingRenderer);
+
+				$this->assertTrue($matchingRenderer->matchesHandler($handler));
+			});
 		}
 
 		public function allPathsAndHandlers ():array {
 
+			$payload = array_merge($this->csrfField, ["id" => 5]);
+
 			return [
 				["create", "showCreateForm", "get"],
 
-				["save", "saveNew", "post"],
+				[
+					"save", "saveNew", "post",
+
+					array_merge($this->csrfField, [
+
+						"title" => "Will employ for a bag of nuts",
+
+						"employer_id" => 1,
+
+						"salary" => 500_000
+					])
+				],
 
 				["", "showAll", "get"],
 
 				["5", "showOne", "get"],
 
-				["edit", "updateOne", "put", ["id" => 5]],
+				["edit", "updateOne", "put", $payload],
 
-				["delete", "deleteOne", "delete", ["id" => 5]],
+				["delete", "deleteOne", "delete", $payload],
 
 				["search", "showSearchForm", "get"]
 			];
