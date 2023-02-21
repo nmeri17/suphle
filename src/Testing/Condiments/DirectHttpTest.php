@@ -15,8 +15,9 @@
 
 		use MockFacilitator;
 
-		private $HTML_HEADER_VALUE = "application/x-www-form-urlencoded";
-  private $jsonHeaders = [
+		private string $HTML_HEADER_VALUE = "application/x-www-form-urlencoded";
+
+		private array $jsonHeaders = [
 
 			PayloadStorage::CONTENT_TYPE_KEY => PayloadStorage::JSON_HEADER_VALUE
 		];

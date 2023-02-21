@@ -1,12 +1,8 @@
-install turbo
-
 Named renderers for the purpose of portable links that don't break in transit
 	- only way this can work is by searching while building the full route tree
 Url map generation
 	- if it's not the end of the thread (contains a _prefixFor), we create a sub to contain the patterns below it
-
-
-C:\wamp64\www\suphle\nmeri\suphle\vendor\bin>phpunit ../../tests/
+	- will likely use a recursive method somewhere
 
 **
 sqlite
@@ -15,16 +11,15 @@ sqlite
 
 
 4) pending tests:
-	- replace with stubs and test disgraceful and co
 	- only and except from routeCollection?
 
-
-rr can work with bolt
-
-change usage of >|$sutName to self::SUT_NAME
-
-
-project init => create module, templates:install (requires internet for laravel), optional user migrations, rr get-binary, start server (hello world path and test)
-
 complete contributing.md => cs rules, link to discussions and help-wanted issues
+
+setup repo badge thingies, ci
+
+test the multi-layer transaction failure theory. maybe an event handler emitted within a decorated service fails. what happens to the calls and possibly committed data
+
+add psalm command. test whether errors there disrupt command result
+
+stop folding our callbacks
 

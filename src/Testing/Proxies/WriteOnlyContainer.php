@@ -24,12 +24,12 @@
 
 			$doubleMode = $retainOtherMethods ? "positiveDouble":"negativeDouble";
 
-			$this->container->whenTypeAny()->needsAny([
+			return $this->replaceWithConcrete(
 
-				$interface => $this->$doubleMode($concrete, $methodStubs, $mockMethods)
-			]);
+				$interface,
 
-			return $this;
+				$this->$doubleMode($concrete, $methodStubs, $mockMethods)
+			);
 		}
 
 		public function replaceWithConcrete (string $interface, object $concrete):self {

@@ -19,7 +19,7 @@
 
 		private array $staticHeaders = [];
 		
-		private $mockMiddlewareRegistry;
+		private ?MiddlewareRegistry $mockMiddlewareRegistry = null;
 
 		public function withHeaders(array $headers):self {
 
