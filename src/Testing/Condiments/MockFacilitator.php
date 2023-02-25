@@ -14,7 +14,12 @@
 		 * 
 		 * @return Mock version of given [target], with an auto-generated class name
 		*/
-		protected function positiveDouble (string $target, array $stubs = [], array $mockMethods = [], ?array $constructorArguments = null):MockObject {
+		protected function positiveDouble (
+
+			string $target, array $stubs = [], array $mockMethods = [],
+
+			?array $constructorArguments = null
+		):MockObject {
 
 			$builder = $this->createMockBuilder(
 				$target, $constructorArguments,
@@ -29,7 +34,12 @@
 			return $builder;
 		}
 
-		protected function positiveDoubleMany (string $target, array $stubs = [], array $mockMethods = [], ?array $constructorArguments = null) {
+		protected function positiveDoubleMany (
+
+			string $target, array $stubs = [], array $mockMethods = [],
+
+			?array $constructorArguments = null
+		):MockObject {
 
 			$builder = $this->createMockBuilder(
 				$target, $constructorArguments,
@@ -151,9 +161,9 @@
 
 			array $methodStubs = [], array $mockMethods = [],
 
-			bool $positiveDouble = true, bool $positiveConstructor = true,
+			bool $positiveDouble = true, bool $useBaseContainer = true,
 
-			bool $useBaseContainer = true, bool $invokeConstructor = false
+			bool $invokeConstructor = false
 		):MockObject {
 
 			$this->ensureAssocConstructor($constructorStubs);
@@ -164,7 +174,7 @@
 
 				$reflectedConstructor->getParameters(),
 
-				$constructorStubs, $positiveConstructor,
+				$constructorStubs, $positiveDouble,
 
 				$useBaseContainer
 			);
