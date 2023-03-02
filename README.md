@@ -1,4 +1,4 @@
-Details about what Suphle's capabilities and why it was built have been migrated [here](https://dev.to/mmayboy_/introducing-suphle-the-tale-of-a-modern-php-framework-54i9). This repo is the dev-facing project intended for contribution of Suphle itself. Its user-facing project can be found at https://github.com/nmeri17/suphle-starter.
+Details about what Suphle's capabilities and why it was built have been migrated [here](https://dev.to/mmayboy_/introducing-suphle-the-tale-of-a-modern-php-framework-54i9). This repo is the dev-facing project intended for contribution to Suphle itself. Its user-facing project can be found at https://github.com/nmeri17/suphle-starter.
 
 ## Installation
 

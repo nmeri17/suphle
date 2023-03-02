@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e395bb9c193ab13a9ba3b0992ed35330",
+    "content-hash": "c33b3d31265ff37bafb4c0e16ade404e",
     "packages": [
         {
             "name": "brick/math",
@@ -725,16 +725,16 @@
         },
         {
             "name": "firebase/php-jwt",
-            "version": "v5.5.1",
+            "version": "v6.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/firebase/php-jwt.git",
-                "reference": "83b609028194aa042ea33b5af2d41a7427de80e6"
+                "reference": "0541cba75ab108ef901985e68055a92646c73534"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/firebase/php-jwt/zipball/83b609028194aa042ea33b5af2d41a7427de80e6",
-                "reference": "83b609028194aa042ea33b5af2d41a7427de80e6",
+                "url": "https://api.github.com/repos/firebase/php-jwt/zipball/0541cba75ab108ef901985e68055a92646c73534",
+                "reference": "0541cba75ab108ef901985e68055a92646c73534",
                 "shasum": ""
             },
             "require": {
@@ -776,9 +776,9 @@
             ],
             "support": {
                 "issues": "https://github.com/firebase/php-jwt/issues",
-                "source": "https://github.com/firebase/php-jwt/tree/v5.5.1"
+                "source": "https://github.com/firebase/php-jwt/tree/v6.0.0"
             },
-            "time": "2021-11-08T20:18:51+00:00"
+            "time": "2022-01-24T15:18:34+00:00"
         },
         {
             "name": "friendsofphp/proxy-manager-lts",
@@ -1997,104 +1997,6 @@
                 }
             ],
             "time": "2022-04-17T13:12:02+00:00"
-        },
-        {
-            "name": "level-2/transphporm",
-            "version": "v1.5.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Level-2/Transphporm.git",
-                "reference": "3eabb46b65780e12112df4a37e56cbcf91a9b202"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Level-2/Transphporm/zipball/3eabb46b65780e12112df4a37e56cbcf91a9b202",
-                "reference": "3eabb46b65780e12112df4a37e56cbcf91a9b202",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=7.0.0"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "^5.7.20"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Transphporm\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "BSD-2-Clause"
-            ],
-            "authors": [
-                {
-                    "name": "Tom Butler",
-                    "email": "tom@r.je"
-                }
-            ],
-            "description": "A new approach at templating",
-            "homepage": "https://github.com/Level-2/Transphporm",
-            "keywords": [
-                "template system"
-            ],
-            "support": {
-                "issues": "https://github.com/Level-2/Transphporm/issues",
-                "source": "https://github.com/Level-2/Transphporm/tree/v1.5.1"
-            },
-            "time": "2020-08-30T18:48:00+00:00"
-        },
-        {
-            "name": "mcaskill/composer-exclude-files",
-            "version": "v2.1.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/mcaskill/composer-plugin-exclude-files.git",
-                "reference": "0d481db018d5849e87f87cc3145a2cbf0135e428"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/mcaskill/composer-plugin-exclude-files/zipball/0d481db018d5849e87f87cc3145a2cbf0135e428",
-                "reference": "0d481db018d5849e87f87cc3145a2cbf0135e428",
-                "shasum": ""
-            },
-            "require": {
-                "composer-plugin-api": "^1.0 || ^2.0",
-                "php": "^5.3.2 || ^7.0 || ^8.0"
-            },
-            "require-dev": {
-                "composer/composer": "^1.0 || ^2.0",
-                "symfony/phpunit-bridge": "^4.2 || ^5.0 || ^6.0"
-            },
-            "type": "composer-plugin",
-            "extra": {
-                "branch-alias": {
-                    "dev-main": "2.x-dev"
-                },
-                "class": "McAskill\\Composer\\ExcludeFilePlugin"
-            },
-            "autoload": {
-                "psr-4": {
-                    "McAskill\\Composer\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Chauncey McAskill",
-                    "email": "chauncey@mcaskill.ca"
-                }
-            ],
-            "description": "Exclude files from autoload_files.php",
-            "support": {
-                "issues": "https://github.com/mcaskill/composer-plugin-exclude-files/issues",
-                "source": "https://github.com/mcaskill/composer-plugin-exclude-files/tree/v2.1.0"
-            },
-            "time": "2022-04-01T04:35:29+00:00"
         },
         {
             "name": "monolog/monolog",
