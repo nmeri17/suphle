@@ -13,6 +13,8 @@
 
 	use Symfony\Component\Console\{Command\Command, Tester\CommandTester};
 
+	use Symfony\Component\Process\Process;
+
 	class ContributorCommandTest extends CommandLineTest {
 
 		protected const TESTS_PATH = "gfc";
@@ -49,7 +51,10 @@
 
 			$this->massProvide([
 
-				$vendorBin => $this->positiveDouble($vendorBin, [], [
+				$vendorBin => $this->positiveDouble($vendorBin, [
+
+					"setProcessArguments" => new Process([]) // their new updates prohibits this from any form of doubling or auto-generation (as it was before)
+				], [
 
 					"setProcessArguments" => [
 

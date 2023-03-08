@@ -63,19 +63,31 @@
 			return $builder->create();
 		}
 
-		public function getRandomEntity ():object {
+		public function getRandomEntity (array $relations = []):object {
 
-			return $this->activeModel->inRandomOrder()->first();
+			return $this->activeModel->inRandomOrder()->with($relations)
+
+			->first();
 		}
 
-		public function getRandomEntities ( int $amount):iterable {
+		public function getRandomEntities (
 
-			return $this->activeModel->inRandomOrder()->limit($amount)->get();
+			int $amount, array $relations = []
+		):iterable {
+
+			return $this->activeModel->inRandomOrder()->limit($amount)
+
+			->with($relations)->get();
 		}
 
-		public function getSpecificEntities ( int $amount, array $constraints):iterable {
+		public function getSpecificEntities (
 
-			return $this->activeModel->limit($amount)->where($constraints)->get();
+			int $amount, array $constraints, array $relations = []
+		):iterable {
+
+			return $this->activeModel->limit($amount)->with($relations)
+
+			->where($constraints)->get();
 		}
 
 		public function setActiveModelType (string $model):void {

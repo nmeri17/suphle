@@ -13,6 +13,8 @@
 
 	use Symfony\Component\Console\{Command\Command, Tester\CommandTester};
 
+	use Symfony\Component\Process\Process;
+
 	class HttpServerCommandTest extends CommandLineTest {
 
 		protected const RR_CONFIG = "some/path";
@@ -48,7 +50,11 @@
 
 			$this->massProvide([
 
-				$vendorBin => $this->replaceConstructorArguments($vendorBin, [], [], [
+				$vendorBin => $this->replaceConstructorArguments($vendorBin, [], [
+
+					/** @see ContributorCommandTest::mockVendorBin */
+					"setProcessArguments" => new Process([])
+				], [
 
 					"setProcessArguments" => [$this->atLeastOnce(), [
 

@@ -16,7 +16,11 @@
 
 		public function getUserById (string $id):?UserContract {
 
-			return $this->model->findByPrimaryKey($id);
+			$userInstance = $this->model->findByPrimaryKey($id);
+
+			$userInstance->preventsLazyLoading = true; // setting this manually since neither the ORM-level shouldBeStrict nor setting it here works. If that property is false, tests comparing authenticated instance will fail
+
+			return $userInstance;
 		}
 
 		/**

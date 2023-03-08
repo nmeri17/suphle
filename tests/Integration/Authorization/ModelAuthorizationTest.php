@@ -63,7 +63,9 @@
 
 			$this->expectException(UnauthorizedServiceAccess::class); // then
 
-			[$employment1, $employment2] = $this->replicator->getRandomEntities(2);
+			[$employment1, $employment2] = $this->replicator
+
+			->getRandomEntities(2, ["employer.user"]);
 
 			$this->actingAs($employment2->employer->user); // given
 

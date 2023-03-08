@@ -11,7 +11,7 @@
 
 		public const UPDATE_ERROR = "update_error";
 
-		public function __construct (protected readonly Events $eventManager) {
+		public function __construct (private readonly Events $eventManager) {
 
 			//
 		}

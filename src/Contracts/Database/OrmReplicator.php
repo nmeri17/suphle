@@ -16,11 +16,14 @@
 		/**
 		 * @return concrete instance of given model
 		*/
-		public function getRandomEntity ():object;
+		public function getRandomEntity (array $relations = []):object;
 
-		public function getRandomEntities ( int $amount):iterable;
+		public function getRandomEntities ( int $amount, array $relations = []):iterable;
 
-		public function getSpecificEntities ( int $amount, array $constraints):iterable;
+		public function getSpecificEntities (
+
+			int $amount, array $constraints, array $relations = []
+		):iterable;
 
 		public function getCount ():int;
 
