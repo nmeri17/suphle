@@ -6,18 +6,7 @@ Project can either be installed using Composer,
 
 ```bash
 
-composer require nmeri17/suphle
-```
-
-Or, can simply be cloned -- in which case, we'd have to manually install dependencies:
-
-```bash
-
-git clone https://link/to/repo.git
-
-cd cloned/path
-
-composer install
+composer create-project nmeri17/suphle
 ```
 
 ## Testing
