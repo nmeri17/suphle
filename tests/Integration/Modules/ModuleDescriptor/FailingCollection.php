@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Tests\Integration\Modules\ModuleDescriptor;
 
-	use Suphle\Exception\Explosives\Generic\UnexpectedModules;
+	use Suphle\Exception\Explosives\DevError\UnexpectedModules;
 
 	use Suphle\Tests\Mocks\Interactions\ModuleTwo;
 

@@ -9,7 +9,7 @@
 
 	use Suphle\Queues\AdapterManager;
 
-	use Suphle\Exception\Explosives\Generic\UnmodifiedImageException;
+	use Suphle\Exception\Explosives\DevError\UnmodifiedImageException;
 
 	use Symfony\Component\HttpFoundation\File\UploadedFile;
 

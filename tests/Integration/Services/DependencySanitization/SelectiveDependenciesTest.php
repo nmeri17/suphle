@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Tests\Integration\Services\DependencySanitization;
 
-	use Suphle\Exception\Explosives\Generic\UnacceptableDependency;
+	use Suphle\Exception\Explosives\DevError\UnacceptableDependency;
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\Selective\ForbiddenDependencyController;
 

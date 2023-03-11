@@ -7,7 +7,7 @@
 
 	use Suphle\Contracts\Auth\AuthStorage;
 
-	use Suphle\Exception\Explosives\Generic\InvalidImplementor;
+	use Suphle\Exception\Explosives\DevError\InvalidImplementor;
 
 	class CanaryValidator {
 

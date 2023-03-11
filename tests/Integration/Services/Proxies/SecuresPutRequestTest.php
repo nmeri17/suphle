@@ -3,7 +3,7 @@
 
 	use Suphle\Testing\TestTypes\ModuleLevelTest;
 
-	use Suphle\Exception\Explosives\Generic\MissingPostDecorator;
+	use Suphle\Exception\Explosives\DevError\MissingPostDecorator;
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\ValidatorCoordinator;
 

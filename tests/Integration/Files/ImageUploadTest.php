@@ -5,7 +5,7 @@
 
 	use Suphle\Contracts\IO\Image\{InferiorOperationHandler, ThumbnailOperationHandler};
 
-	use Suphle\Exception\Explosives\Generic\UnmodifiedImageException;
+	use Suphle\Exception\Explosives\DevError\UnmodifiedImageException;
 
 	use Suphle\Testing\{TestTypes\ModuleLevelTest, Condiments\FilesystemCleaner};
 

@@ -15,7 +15,7 @@
 
 	use Suphle\Exception\{ComponentEntry, DetectedExceptionManager};
 
-	use Suphle\Exception\Explosives\Generic\InvalidImplementor;
+	use Suphle\Exception\Explosives\DevError\InvalidImplementor;
 
 	use Throwable;
 

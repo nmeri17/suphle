@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Services\DependencyRules;
 
-	use Suphle\Exception\Explosives\Generic\UnacceptableDependency;
+	use Suphle\Exception\Explosives\DevError\UnacceptableDependency;
 
 	class ServicePreferenceHandler extends BaseDependencyHandler {
 

@@ -5,7 +5,7 @@
 
 	use Suphle\Contracts\{Hydration\ClassHydrationBehavior, Config\ContainerConfig as IContainerConfig};
 
-	use Suphle\Exception\Explosives\Generic\{InvalidImplementor, HydrationException};
+	use Suphle\Exception\Explosives\DevError\{InvalidImplementor, HydrationException};
 
 	use ReflectionMethod, ReflectionFunction, ReflectionType, ReflectionFunctionAbstract, ReflectionException;
 

@@ -7,7 +7,7 @@
 
 	use Suphle\Request\RequestDetails;
 
-	use Suphle\Exception\Explosives\Generic\MissingPostDecorator;
+	use Suphle\Exception\Explosives\DevError\MissingPostDecorator;
 
 	class SecuresPostRequestHandler extends BaseArgumentModifier {
 

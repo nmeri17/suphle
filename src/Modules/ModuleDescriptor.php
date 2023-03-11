@@ -9,7 +9,7 @@
 
 	use Suphle\Hydration\Structures\{BaseInterfaceCollection, ContainerBooter, ObjectDetails};
 
-	use Suphle\Exception\Explosives\Generic\UnexpectedModules;
+	use Suphle\Exception\Explosives\DevError\UnexpectedModules;
 
 	abstract class ModuleDescriptor implements DescriptorInterface {
 

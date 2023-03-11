@@ -3,7 +3,7 @@
 
 	use Suphle\Hydration\Container;
 
-	use Suphle\Exception\Explosives\Generic\HydrationException;
+	use Suphle\Exception\Explosives\DevError\HydrationException;
 
 	use ReflectionClass, ReflectionException, ReflectionMethod, ReflectionType;
 

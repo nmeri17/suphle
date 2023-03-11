@@ -11,7 +11,7 @@
 
 	use Suphle\Auth\Storage\SessionStorage;
 
-	use Suphle\Exception\Explosives\Generic\CsrfException;
+	use Suphle\Exception\Explosives\DevError\CsrfException;
 
 	use Suphle\Security\CSRF\CsrfGenerator;
 

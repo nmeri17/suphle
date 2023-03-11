@@ -5,7 +5,7 @@
 
 	use Suphle\Contracts\Services\CallInterceptors\{ SystemModelEdit, ServiceErrorCatcher, MultiUserModelEdit};
 
-	use Suphle\Exception\Explosives\Generic\InvalidImplementor;
+	use Suphle\Exception\Explosives\DevError\InvalidImplementor;
 
 	class CallInterceptorProxy extends BaseInjectionModifier {
 

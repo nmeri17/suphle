@@ -1,5 +1,5 @@
 <?php
-	namespace Suphle\Exception\Explosives\Generic;
+	namespace Suphle\Exception\Explosives\DevError;
 
 	use Exception;
 

@@ -3,7 +3,7 @@
 
 	use Suphle\Hydration\Container;
 
-	use Suphle\Exception\Explosives\Generic\UnexpectedModules;
+	use Suphle\Exception\Explosives\DevError\UnexpectedModules;
 
 	use Suphle\Tests\Integration\Modules\ModuleDescriptor\DescriptorCollection;
 
