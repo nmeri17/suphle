@@ -7,7 +7,7 @@
 
 	use Suphle\Middleware\MiddlewareRegistry;
 
-	use Suphle\Contracts\{ Auth\AuthStorage, Presentation\BaseRenderer};
+	use Suphle\Contracts\Presentation\BaseRenderer;
 
 	use Suphle\Contracts\Routing\{RouteCollection, CrudBuilder};
 
@@ -25,9 +25,7 @@
 
 		public function __construct(
 
-			protected readonly CanaryValidator $canaryValidator, 
-
-			protected readonly AuthStorage $authStorage, 
+			protected readonly CanaryValidator $canaryValidator,
 
 			protected readonly MethodSorter $methodSorter
 		) {
@@ -60,27 +58,27 @@
 
 		public function _get (BaseRenderer $renderer):self {
 
-			return $this->_register($renderer, "_get");
+			return $this->_register($renderer, "get");
 		}
 
 		public function _post (BaseRenderer $renderer):self {
 
-			return $this->_register($renderer, "_post");
+			return $this->_register($renderer, "post");
 		}
 
 		public function _put (BaseRenderer $renderer):self {
 
-			return $this->_register($renderer, "_put");
+			return $this->_register($renderer, "put");
 		}
 
 		public function _delete (BaseRenderer $renderer):self {
 
-			return $this->_register($renderer, "_delete");
+			return $this->_register($renderer, "delete");
 		}
 
-		protected function _register(BaseRenderer $renderer, string $method):self {
+		private function _register (BaseRenderer $renderer, string $method):self {
 
-			$renderer->setRouteMethod(ltrim($method, "_"));
+			$renderer->setRouteMethod($method);
 
 			$this->lastRegistered = [$renderer];
 
@@ -153,19 +151,7 @@
 			return $this->methodSorter;
 		}
 
-		public function _authenticatedPaths():array {
-
-			return [];
-		}
-
-		public function _authorizePaths(PathAuthorizer $pathAuthorizer):void {}
-
 		public function _assignMiddleware(MiddlewareRegistry $registry):void {}
-
-		public function _getAuthenticator ():AuthStorage {
-
-			return $this->authStorage;
-		}
 
 		protected function _only(array $include):array {
 			

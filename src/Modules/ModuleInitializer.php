@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Modules;
 
-	use Suphle\Routing\{RouteManager, ExternalRouteMatcher, PatternIndicator};
+	use Suphle\Routing\{RouteManager, ExternalRouteMatcher};
 
 	use Suphle\Request\RequestDetails;
 
@@ -20,8 +20,6 @@
 		protected bool $foundRoute = false;
 
 		protected readonly Container $container;
-
-		protected PatternIndicator $indicator;
 
 		protected ?BaseRenderer $finalRenderer = null;
 
@@ -85,17 +83,13 @@
 		/**
 		 * @param {rendererManager} this manager should come from currently active module
 		 * 
-		 * @throws UnauthorizedServiceAccess, Unauthenticated, ValidationFailure
+		 * @throws ValidationFailure
 		*/
 		public function fullRequestProtocols (RendererManager $rendererManager):self {
 
 			if ($this->externalRouters->hasActiveHandler())
 
 				return $this;
-
-			$this->indicator = $this->router->getIndicator();
-
-			$this->attemptAuthentication()->authorizeRequest();
 
 			$rendererManager->mayBeInvalid()->bootDefaultRenderer();
 
@@ -121,52 +115,6 @@
 		public function didFindRoute():bool {
 			
 			return $this->foundRoute;
-		}
-
-		/**
-		 * If route is secured, confirm user is authenticated. When successful, it'll override the default authStorage method provided
-		 * 
-		 * @throws Unauthenticated
-		*/
-		protected function attemptAuthentication ():self {
-
-			$routedMechanism = $this->indicator->routedAuthStorage();
-
-			$switchedMechanism = $this->indicator->getProvidedAuthenticator();
-
-			if (!is_null($routedMechanism)) {
-
-				if (!is_null($switchedMechanism))
-
-					$routedMechanism = $switchedMechanism;
-
-				if ( is_null($routedMechanism->getId()))
-
-					throw new Unauthenticated($routedMechanism);
-			}
-			elseif (!is_null($switchedMechanism))
-
-				$routedMechanism = $switchedMechanism;
-
-			if (!is_null($routedMechanism))
-
-				$this->container->whenTypeAny()
-
-				->needsAny([ AuthStorage::class => $routedMechanism]);
-
-			return $this;
-		}
-
-		/**
-		 * @throws UnauthorizedServiceAccess
-		*/
-		protected function authorizeRequest ():self {
-
-			if (!$this->indicator->getAuthorizer()->passesActiveRules())
-
-				throw new UnauthorizedServiceAccess;
-
-			return $this;
 		}
 	}
 ?>

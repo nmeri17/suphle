@@ -3,11 +3,11 @@
 
 	use Suphle\Contracts\{Presentation\BaseRenderer, Routing\Middleware};
 
-	use Suphle\Middleware\MiddlewareNexts;
+	use Suphle\Middleware\{MiddlewareNexts, CollectibleMiddlewareHandler};
 
 	use Suphle\Request\PayloadStorage;
 
-	class BlankMiddleware3 implements Middleware {
+	class GenericMiddlewareHandler extends CollectibleMiddlewareHandler {
 
 		public function process (PayloadStorage $request, ?MiddlewareNexts $requestHandler):BaseRenderer {
 

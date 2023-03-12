@@ -3,17 +3,15 @@
 
 	use Suphle\Contracts\Routing\{ApiRouteCollection, CrudBuilder};
 
-	use Suphle\Auth\Storage\TokenStorage;
-
 	use Suphle\Routing\Crud\ApiBuilder;
 
 	class BaseApiCollection extends BaseCollection implements ApiRouteCollection {
 
 		protected string $collectionParent = BaseApiCollection::class;
 
-		public function __construct(CanaryValidator $validator, TokenStorage $authStorage, MethodSorter $methodSorter) {
+		public function __construct(CanaryValidator $validator, MethodSorter $methodSorter) {
 
-			parent::__construct($validator, $authStorage, $methodSorter);
+			//
 		}
 
 		public function _crudJson ():CrudBuilder {

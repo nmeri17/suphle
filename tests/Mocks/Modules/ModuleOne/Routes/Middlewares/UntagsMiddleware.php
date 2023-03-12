@@ -3,11 +3,11 @@
 
 	use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
 
-	use Suphle\Middleware\MiddlewareRegistry;
+	use Suphle\Middleware\{MiddlewareRegistry, MiddlewareCollector};
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\BaseCoordinator;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares\{BlankMiddleware, BlankMiddleware2, BlankMiddleware3, BlankMiddleware4};
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares\Collectors\{BlankMiddleware3Collector, BlankMiddleware2Collector};
 
 	use Suphle\Response\Format\Json;
 
@@ -42,19 +42,16 @@
 		public function _assignMiddleware (MiddlewareRegistry $registry):void {
 
 			$registry->tagPatterns(
-				["ADDITIONAL__TAGh"],
-
-				[BlankMiddleware4::class]
+				
+				new BlankMiddleware2Collector(["ADDITIONAL__TAGh"])
 			)
 			->removeTag (
-				["FIRST__UNTAGh", "SECOND__UNTAGh"], // notice that given pattern exist on current collection. It's only activated if one of them is intersected in full request path
+				["FIRST__UNTAGh", "SECOND__UNTAGh"], // given pattern must exist on current collection. It's only activated if one of them is intersected in full request path
 
-				[ BlankMiddleware4::class] // while middleware must have been tagged by a parent collection to have any effect
-			)
-			->removeTag (
-				["THIRD__UNTAGh"],
+				function (MiddlewareCollector $collector) {
 
-				[ BlankMiddleware2::class, BlankMiddleware3::class]
+					return $collector instanceof BlankMiddleware3Collector; // while middleware must have been tagged by a parent collection to have any effect
+				}
 			);
 		}
 	}

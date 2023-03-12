@@ -3,10 +3,6 @@
 
 	use Suphle\Routing\MethodSorter;
 
-	use Suphle\Contracts\Auth\AuthStorage;
-
-	use Suphle\Request\PathAuthorizer;
-
 	use Suphle\Middleware\MiddlewareRegistry;
 
 	interface RouteCollection {
@@ -23,13 +19,7 @@
 
 		public function _invokePattern (string $methodPattern):void;
 
-		public function _authenticatedPaths():array;
-
-		public function _authorizePaths(PathAuthorizer $pathAuthorizer):void;
-
 		public function _assignMiddleware(MiddlewareRegistry $registry):void;
-
-		public function _getAuthenticator ():AuthStorage;
 
 		public function _expectsCrud ():bool;
 

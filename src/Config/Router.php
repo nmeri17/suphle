@@ -3,7 +3,11 @@
 
 	use Suphle\Contracts\Config\Router as RouterConfig;
 
-	use Suphle\Middleware\Handlers\{FinalHandlerWrapper, CsrfMiddleware};
+	use Suphle\Middleware\Handlers\{FinalHandlerWrapper, CsrfMiddleware, JsonNegotiator};
+
+	use Suphle\Middleware\Collectors\JsonNegotiatorCollector;
+
+	use Suphle\Auth\Middleware\{AuthenticateCollector, AuthenticateHandler, AuthorizeCollector, AuthorizeHandler};
 
 	use Suphle\Auth\Storage\TokenStorage;
 
@@ -41,6 +45,21 @@
 				CsrfMiddleware::class,
 				
 				FinalHandlerWrapper::class
+			];
+		}
+
+		/**
+		 * {@inheritdoc}
+		*/
+		public function collectorHandlers ():array {
+
+			return [
+
+				AuthenticateCollector::class => AuthenticateHandler::class,
+
+				AuthorizeCollector::class => AuthorizeHandler::class,
+
+				JsonNegotiatorCollector::class => JsonNegotiator::class,
 			];
 		}
 

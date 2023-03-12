@@ -1,24 +1,35 @@
 <?php
 	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Prefix\Secured;
 
-	use Suphle\Routing\BaseCollection;
+	use Suphle\Routing\{BaseCollection, CanaryValidator, MethodSorter};
 
 	use Suphle\Middleware\MiddlewareRegistry;
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Prefix\IntermediaryToWithout;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares\BlankMiddleware;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares\Collectors\BlankMiddlewareCollector;
 
 	class MisleadingEntry extends BaseCollection {
 
-		public function _authenticatedPaths ():array {
+		public function __construct(
 
-			return ["FIRST"];
+			protected readonly CanaryValidator $canaryValidator,
+
+			protected readonly MethodSorter $methodSorter,
+
+			protected readonly AuthStorage $authStorage
+		) {
+
+			//
 		}
 
 		public function _assignMiddleware (MiddlewareRegistry $registry):void {
 
-			$registry->tagPatterns(["FIRST"], [BlankMiddleware::class]);
+			$patterns = ["FIRST"];
+
+			$registry->tagPatterns(new AuthenticateCollector($patterns))
+
+			->tagPatterns(new BlankMiddlewareCollector($patterns));
 		}
 		
 		public function FIRST () {

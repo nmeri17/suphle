@@ -9,8 +9,7 @@
 
 	class MiddlewareQueue {
 
-		protected array $routedStack;
-  protected array $mergedStack = [];
+		protected array $mergedStack = [], $routedCollectors = [];
 
 		public function __construct (
 
@@ -23,47 +22,14 @@
 			protected readonly Container $container
 		) {
 
-			$this->routedStack = $registry->getActiveStack();
-		}
-
-		/**
-		 * Convert a path foo/bar with stack
-		 * foo => patternMiddleware([middleware1,middleware2])
-		 * bar => patternMiddleware([middleware1,middleware3]) to [middleware1,middleware2,middleware3]
-		*/
-		private function filterDuplicates ():void {
-
-			$units = array_map(fn(PatternMiddleware $pattern) => $pattern->getList(), $this->routedStack);
-
-			$reduced = array_reduce($units, function (array $carry, array $current) {
-
-				$carry = array_merge($carry, $current);
-
-				return $carry;
-			}, []);
-
-			$this->routedStack = array_unique($reduced);
+			$this->routedCollectors = $registry->getRoutedCollectors();
 		}
 
 		public function runStack ():BaseRenderer {
 
-			if (empty($this->mergedStack)) { // purpose of this 2nd stack is in long-running settings e.g. Flows, this object will be retained. Routing only happens once per pattern, so if the original stack is overwritten, subsequent Flow requests for that pattern will have undesirable behavior
+			if (empty($this->mergedStack)) $this->setMergedStack();
 
-				$this->filterDuplicates();
-
-				$this->mergedStack = array_map(
-
-					fn(string $name) => $this->container->getClass($name),
-
-					array_merge( // any temporary ones attached to route precede the defaults
-						$this->routedStack,
-
-						$this->routerConfig->defaultMiddleware()
-					)
-				);
-			}
-
-			$mergedStack = $this->mergedStack; // copy to avoid mutating the main stack below
+			$mergedStack = $this->mergedStack; // copy to avoid mutating the main stack with array_shift
 
 			$outermost = array_shift($mergedStack);
 
@@ -71,6 +37,33 @@
 				$this->payloadStorage,
 
 				$this->getHandlerChain($mergedStack)
+			);
+		}
+
+		protected function setMergedStack ():void  {
+			
+			$routedHandlers = [];
+
+			foreach ($this->routedCollectors as $collector) {
+
+				$handlerName = $this->routerConfig->collectorHandlers()[$collector::class];
+
+				$handler = $this->container->getClass($handlerName); // since multiple instances can exist for those patterns down the collection trie, a handler may be called up more than once, as well
+
+				$handler->addCollector($collector);
+
+				$routedHandlers[] = $handler;
+			}
+
+			$this->mergedStack = array_merge( // any temporary ones attached to route precede the defaults
+				$routedHandlers,
+
+				array_map(
+
+					fn(string $name) => $this->container->getClass($name),
+
+					$this->routerConfig->defaultMiddleware()
+				)
 			);
 		}
 

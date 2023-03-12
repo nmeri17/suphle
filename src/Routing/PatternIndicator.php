@@ -24,11 +24,9 @@
 
 		public function indicate (RouteCollection $collection, string $pattern):void {
 
-			$this->setPatternAuthentication($collection, $pattern);
-
 			$this->includeMiddleware($collection, $pattern);
 
-			$this->updatePermissions($collection, $pattern);
+			// $this->updatePermissions($collection, $pattern); // should remove
 		}
 
 		/**
@@ -42,28 +40,6 @@
 		public function getProvidedAuthenticator ():?AuthStorage {
 
 			return $this->providedAuthenticator;
-		}
-
-		/**
-		 *  If a higher level security was applied to a child collection with its own rules, omitting the current pattern, the security will be withdrawn from that pattern
-		*/
-		public function setPatternAuthentication(RouteCollection $collection, string $pattern):void {
-
-			$activePatterns = $collection->_authenticatedPaths();
-
-			if (!empty($activePatterns)) {
-
-				if (in_array($pattern, $activePatterns)) // case-sensitive comparison
-
-					$this->patternAuthentication = $collection->_getAuthenticator();
-
-				else $this->patternAuthentication = null;
-			}
-		}
-
-		public function routedAuthStorage ():?AuthStorage {
-
-			return $this->patternAuthentication;
 		}
 
 		public function getAuthorizer ():PathAuthorizer {

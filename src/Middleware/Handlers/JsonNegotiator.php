@@ -1,18 +1,16 @@
 <?php
 	namespace Suphle\Middleware\Handlers;
 
-	use Suphle\Middleware\MiddlewareNexts;
+	use Suphle\Middleware\{MiddlewareNexts, CollectibleMiddlewareHandler};
 
 	use Suphle\Request\PayloadStorage;
 
 	use Suphle\Contracts\Presentation\{MirrorableRenderer, BaseRenderer};
 
-	use Suphle\Contracts\Routing\Middleware;
-
 	/**
 	 * This seems like a far simpler alternative to route mirroring. But middleware only runs after routing. Moreover, this doesn't offer the flexibility of overriding mirrored routes
 	*/
-	class JsonNegotiator implements Middleware {
+	class JsonNegotiator extends CollectibleMiddlewareHandler {
 
 		public function __construct(protected readonly BaseRenderer $activeRenderer) {
 		}

@@ -20,6 +20,11 @@
 		*/
 		public function defaultMiddleware ():array;
 
+		/**
+		 * @return [MiddlewareCollector => CollectibleMiddlewareHandler]
+		*/
+		public function collectorHandlers ():array;
+
 		public function mirrorsCollections ():bool;
 
 		// names the storage mechanism to be used on the browser collection when we've switched to those collections

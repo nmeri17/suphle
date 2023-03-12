@@ -114,7 +114,7 @@
 
 			$matches = [];
 
-			foreach ($registry->getActiveStack() as $collection) {
+			foreach ($registry->getRoutedCollectors() as $collection) {
 
 				$intersect = array_intersect($collection->getList(), $middlewares);
 

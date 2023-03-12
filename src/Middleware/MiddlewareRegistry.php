@@ -8,28 +8,11 @@
 
 		protected array $registry = [],
 
-		$excludePatterns = [], // [patternName => PatternMiddleware]
-		
-		$interactedPatterns = [];
+		$excludePatterns = [], $interactedPatterns = [];
 
-		public function tagPatterns (array $patterns, array $middlewares):self {
+		public function tagPatterns (MiddlewareCollector $collector):self {
 
-			$uniquePatterns = array_unique($patterns);
-
-			$uniqueMiddlewares = array_unique($middlewares);
-
-			foreach ($uniquePatterns as $pattern) {
-
-				if (array_key_exists($pattern, $this->registry))
-
-					$context = $this->registry[$pattern];
-
-				else $context = $this->registry[$pattern] = new PatternMiddleware;
-
-				foreach ($uniqueMiddlewares as $instance)
-
-					$context->addMiddleware($instance);
-			}
+			$this->registry[] = $collector;
 
 			return $this;
 		}
@@ -39,56 +22,41 @@
 			$this->interactedPatterns[] = $pattern;
 		}
 
-		/**
-		 * These will ultimately be detached from whatever route is active
-		 * 
-		 * @param {parentTags} Middlewares previously tagged while descending the route collections to the point where this is called
-		 * 
-		 * @param {patterns} If any of these turns out to be among active patterns, this list of [parentTags] will be detached
-		*/
-		public function removeTag (array $patterns, array $parentTags):self {
+		public function removeTag (
 
-			foreach ($patterns as $pattern) {
+			array $patternsToOmit, callable $matcher
+		):self {
 
-				if (!array_key_exists($pattern, $this->excludePatterns))
+			foreach ($patternsToOmit as $pattern)
 
-					$this->excludePatterns[$pattern] = [];
-
-				$this->excludePatterns[$pattern] = array_merge($this->excludePatterns[$pattern], $parentTags);
-			}
+				$this->excludePatterns[$pattern] = $matcher;
 
 			return $this;
 		}
 
-		/**
-		 * @return PatternMiddleware[]
-		*/
-		public function getActiveStack ():array {
+		public function getRoutedCollectors ():array {
 
-			$activeHolders = $this->intersectsInteractedPatterns($this->registry);
+			$stack = [];
 
-			// If we exclude tags in a child collection, it won't exist in [registry] since our remove action doesn't use such mechanism
-			$activeExcludes = $this->intersectsInteractedPatterns($this->excludePatterns);
+			foreach ($this->interactedPatterns as $pattern) {
 
-			// search among parents for those containing middlewares intersecting with given list
-			foreach ($activeExcludes as $excludeList)
-			
-				foreach ($activeHolders as $holder)
+				$stack = array_filter(
 
-					$holder->omitWherePresent($excludeList);
+					$this->registry, function (MiddlewareCollector $collector) use ($pattern) {
 
-			return $activeHolders;
-		}
+						if (!$collector->containsPattern($pattern))
 
-		protected function intersectsInteractedPatterns (array $haystack):array {
+							return false;
 
-			return array_filter($haystack, fn(string $pattern)=> in_array(
+						if (!array_key_exists($pattern, $this->excludePatterns))
 
-					$pattern, $this->interactedPatterns
-				),
+							return true;
 
-				ARRAY_FILTER_USE_KEY
-			);
+						return $this->excludePatterns[$pattern]($collector);
+				});
+			}
+
+			return $stack;
 		}
 
 		public function emptyAllStacks ():void {

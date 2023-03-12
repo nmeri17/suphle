@@ -37,13 +37,13 @@
 		/**
 		 * {@inheritdoc}
 		*/
-		public function getActiveStack ():array {
+		public function getRoutedCollectors ():array {
 
 			if ($this->stackAlwaysEmpty) return [];
 
 			$stack = [];
 
-			$parentStack = parent::getActiveStack();
+			$parentStack = parent::getRoutedCollectors();
 
 			if (!empty($this->preInclude))
 
