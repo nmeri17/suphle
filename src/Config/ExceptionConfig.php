@@ -3,9 +3,9 @@
 
 	use Suphle\Contracts\Config\{ExceptionInterceptor, ModuleFiles};
 
-	use Suphle\Exception\Explosives\{NotFoundException, Unauthenticated, ValidationFailure, UnauthorizedServiceAccess, EditIntegrityException};
+	use Suphle\Exception\Explosives\{EditIntegrityException, NotFoundException, Unauthenticated, UnauthorizedServiceAccess, UnverifiedAccount, ValidationFailure};
 
-	use Suphle\Exception\Diffusers\{GenericDiffuser, NotFoundDiffuser, ValidationFailureDiffuser, UnauthorizedDiffuser, UnauthenticatedDiffuser, StaleEditDiffuser};
+	use Suphle\Exception\Diffusers\{GenericDiffuser, NotFoundDiffuser, ValidationFailureDiffuser, UnauthorizedDiffuser, UnauthenticatedDiffuser, StaleEditDiffuser, UnverifiedAccountDiffuser};
 
 	class ExceptionConfig implements ExceptionInterceptor {
 
@@ -17,15 +17,18 @@
 		public function getHandlers ():array {
 
 			return [
+
+				EditIntegrityException::class => StaleEditDiffuser::class,
+
 				NotFoundException::class => NotFoundDiffuser::class,
 
 				Unauthenticated::class => UnauthenticatedDiffuser::class,
 
-				ValidationFailure::class => ValidationFailureDiffuser::class,
-
 				UnauthorizedServiceAccess::class => UnauthorizedDiffuser::class,
 
-				EditIntegrityException::class => StaleEditDiffuser::class
+				UnverifiedAccount::class => UnverifiedAccountDiffuser::class,
+
+				ValidationFailure::class => ValidationFailureDiffuser::class
 			];
 		}
 

@@ -5,6 +5,9 @@
 
 	use Throwable;
 
+	/**
+	 * Only generic exceptions are required to define a status code on the exception itself. Those with custom handlers can set it wherever, usually on the handler
+	*/
 	interface ExceptionHandler {
 
 		public function setContextualData (Throwable $origin):void;
