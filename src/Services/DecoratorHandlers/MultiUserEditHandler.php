@@ -5,7 +5,11 @@
 
 	use Suphle\Queues\AdapterManager;
 
-	use Suphle\Request\{PayloadStorage, PathAuthorizer};
+	use Suphle\Request\PayloadStorage;
+
+	use Suphle\Routing\{CollectionMetaQueue, CollectionMetaFunnel};
+
+	use Suphle\Auth\RequestScrutinizers\PathAuthorizationScrutinizer;
 
 	use Suphle\Hydration\Structures\ObjectDetails;
 
@@ -37,7 +41,7 @@
 
 			DecoratorProxy $proxyConfig, ObjectDetails $objectMeta,
 
-			protected readonly PathAuthorizer $pathAuthorizer,
+			protected readonly CollectionMetaQueue $collectionMetaQueue,
 
 			protected readonly AuthStorage $authStorage
 		) {
@@ -121,7 +125,12 @@
 			string $methodName, array $argumentList
 		) {
 
-			if (empty($this->pathAuthorizer->getActiveRules())) // doesn't confirm current route is authorized since there's no reference to route anywhere
+			$matchingFunnels = $this->collectionMetaQueue->findMatchingFunnels(function (CollectionMetaFunnel $funnel) {
+
+				return $funnel instanceof PathAuthorizationScrutinizer;
+			});
+
+			if (empty($matchingFunnels)) // doesn't confirm current route is authorized since that would have already occured during routing if funnels are present
 
 				throw new EditIntegrityException(EditIntegrityException::NO_AUTHORIZER);
 

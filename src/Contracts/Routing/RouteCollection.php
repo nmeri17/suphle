@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Contracts\Routing;
 
-	use Suphle\Routing\MethodSorter;
+	use Suphle\Routing\{MethodSorter, PreMiddlewareRegistry};
 
 	use Suphle\Middleware\MiddlewareRegistry;
 
@@ -20,6 +20,8 @@
 		public function _invokePattern (string $methodPattern):void;
 
 		public function _assignMiddleware(MiddlewareRegistry $registry):void;
+
+		public function _preMiddleware (PreMiddlewareRegistry $patternIndicator):void;
 
 		public function _expectsCrud ():bool;
 

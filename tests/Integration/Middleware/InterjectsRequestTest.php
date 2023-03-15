@@ -9,13 +9,13 @@
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares\{AltersPayloadStorage, HierarchialMiddleware2};
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares\{AltersPayloadStorage, BlankMiddlewareHandler};
 
 	use Suphle\Tests\Mocks\Interactions\ModuleOne;
 
 	class InterjectsRequestTest extends ModuleLevelTest {
 
-		private string $sutName = HierarchialMiddleware2::class;
+		private string $sutName = BlankMiddlewareHandler::class; // continue here
 		
 		protected function getModules ():array {
 
@@ -37,7 +37,7 @@
 			];
 		}
 
-		private function mockMiddleware2 ():HierarchialMiddleware2 {
+		private function mockMiddleware2 ():BlankMiddlewareHandler {
 
 			return $this->positiveDouble($this->sutName, [
 

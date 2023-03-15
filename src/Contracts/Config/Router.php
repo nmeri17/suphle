@@ -21,9 +21,14 @@
 		public function defaultMiddleware ():array;
 
 		/**
-		 * @return [MiddlewareCollector => CollectibleMiddlewareHandler]
+		 * @return [CollectionMetaFunnel => CollectibleMiddlewareHandler]
 		*/
 		public function collectorHandlers ():array;
+
+		/**
+		 * @return [CollectionMetaFunnel => BaseScrutinizerHandler]
+		*/
+		public function scrutinizerHandlers ():array;
 
 		public function mirrorsCollections ():bool;
 

@@ -1,9 +1,9 @@
 <?php
 	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares\Collectors;
 
-	use Suphle\Middleware\MiddlewareCollector;
+	use Suphle\Routing\CollectionMetaFunnel;
 
-	class BlankMiddleware3Collector extends MiddlewareCollector {
+	class BlankMiddleware3Collector extends CollectionMetaFunnel {
 
 		//
 	}

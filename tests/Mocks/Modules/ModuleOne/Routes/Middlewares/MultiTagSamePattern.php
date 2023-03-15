@@ -7,7 +7,7 @@
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\BaseCoordinator;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares\Collectors\{BlankMiddlewareCollector, BlankMiddleware3Collector};
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares\Collectors\{BlankCollectionMetaFunnel, BlankMiddleware3Collector};
 
 	use Suphle\Response\Format\{Json, Markup};
 
@@ -15,11 +15,6 @@
 	class MultiTagSamePattern extends BaseCollection {
 
 		public function FIRST__SINGLEh () {
-
-			$this->_get(new Json("plainSegment"));
-		}
-
-		public function THIRD__SINGLEh () {
 
 			$this->_get(new Json("plainSegment"));
 		}
@@ -42,7 +37,7 @@
 		public function _assignMiddleware (MiddlewareRegistry $registry):void {
 
 			$registry->tagPatterns(
-				new BlankMiddlewareCollector([
+				new BlankCollectionMetaFunnel([
 
 					"FIRST__SINGLEh", "FIFTH__SINGLEh"
 				])

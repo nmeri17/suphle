@@ -48,7 +48,7 @@
 			// then
 			->assertUnauthorized(); // misleading authenticates while eventual doesn't. If this fails, recovery didn't work
 
-			$this->assertUsedMiddleware([BlankMiddleware::class]); 
+			$this->assertUsedCollectorNames([BlankMiddleware::class]); 
 		}
 
 		// we're using this doubling to simulate absence of the stubbed method
@@ -77,7 +77,7 @@
 			// then
 			->assertOk();
 
-			$this->assertDidntUseMiddleware([BlankMiddleware::class]);
+			$this->assertDidntUseCollectorNames([BlankMiddleware::class]);
 		}
 	}
 ?>

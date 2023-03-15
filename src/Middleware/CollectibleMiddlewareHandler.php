@@ -3,13 +3,10 @@
 
 	use Suphle\Contracts\Routing\Middleware;
 
+	use Suphle\Routing\Structures\ReceivesMetaFunnel;
+
 	abstract class CollectibleMiddlewareHandler implements Middleware {
 
-		protected array $collectors = [];
-
-		public function addCollector (MiddlewareCollector $collector):void {
-
-			$this->collectors[] = $collector;
-		}
+		use ReceivesMetaFunnel;
 	}
 ?>

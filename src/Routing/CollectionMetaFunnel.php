@@ -1,7 +1,7 @@
 <?php
-	namespace Suphle\Middleware;
+	namespace Suphle\Routing;
 
-	abstract class MiddlewareCollector {
+	abstract class CollectionMetaFunnel {
 
 		public function __construct (protected readonly array $activePatterns) {
 

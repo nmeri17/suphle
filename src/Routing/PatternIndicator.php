@@ -3,20 +3,19 @@
 
 	use Suphle\Contracts\{Routing\RouteCollection, Auth\AuthStorage};
 
-	use Suphle\Request\PathAuthorizer;
+	use Suphle\Routing\PreMiddlewareRegistry;
 
 	use Suphle\Middleware\MiddlewareRegistry;
 
 	class PatternIndicator {
 
-		private $patternAuthentication;
-  private $providedAuthenticator;
+		private $patternAuthentication, $providedAuthenticator;
 
 		public function __construct (
 
-			protected readonly MiddlewareRegistry $registry, 
+			protected readonly MiddlewareRegistry $middlewareRegistry, 
 
-			protected readonly PathAuthorizer $authorizer
+			protected readonly PreMiddlewareRegistry $preRegistry
 		) {
 
 			//
@@ -26,7 +25,7 @@
 
 			$this->includeMiddleware($collection, $pattern);
 
-			// $this->updatePermissions($collection, $pattern); // should remove
+			$this->updateMeta($collection, $pattern);
 		}
 
 		/**
@@ -42,23 +41,18 @@
 			return $this->providedAuthenticator;
 		}
 
-		public function getAuthorizer ():PathAuthorizer {
+		protected function includeMiddleware (RouteCollection $collection, string $segment):void {
 
-			return $this->authorizer;
+			$collection->_assignMiddleware($this->middlewareRegistry);
+
+			$this->middlewareRegistry->updateInteractedPatterns($segment);
 		}
 
-		public function includeMiddleware (RouteCollection $collection, string $segment):void {
+		protected function updateMeta (RouteCollection $collection, string $segment):void {
 
-			$collection->_assignMiddleware($this->registry);
+			$collection->_preMiddleware($this->preRegistry);
 
-			$this->registry->updateInteractedPatterns($segment);
-		}
-
-		public function updatePermissions (RouteCollection $collection, string $pattern):void {
-
-			$collection->_authorizePaths($this->authorizer);
-
-			$this->authorizer->updateRuleStatus($pattern);
+			$this->preRegistry->updateInteractedPatterns($segment);
 		}
 
 		/**
@@ -68,9 +62,9 @@
 
 			$this->patternAuthentication = null;
 
-			$this->registry->emptyAllStacks();
+			$this->middlewareRegistry->emptyAllStacks();
 
-			$this->authorizer->forgetAllRules();
+			$this->preRegistry->emptyAllStacks();
 		}
 	}
 ?>

@@ -1,9 +1,9 @@
 <?php
 	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Auth;
 
-	use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
+	use Suphle\Routing\{BaseCollection, PreMiddlewareRegistry, CollectionMetaFunnel, Decorators\HandlingCoordinator};
 
-	use Suphle\Request\PathAuthorizer;
+	use Suphle\Auth\RequestScrutinizers\PathAuthorizationScrutinizer;
 
 	use Suphle\Response\Format\Json;
 
@@ -44,16 +44,19 @@
 			$this->_put(new Json("updateEmploymentDetails"));
 		}
 
-		public function _authorizePaths (PathAuthorizer $pathAuthorizer):void {
+		public function _preMiddleware (PreMiddlewareRegistry $registry):void {
 
-			$pathAuthorizer->addRule (
+			$registry->tagPatterns(
 
-				[ "GMULTI__EDITh_id"], EmploymentEditRule::class
+				new PathAuthorizationScrutinizer(["GMULTI__EDITh_id"], EmploymentEditRule::class)
 			)
-			->forgetRule([
+			->removeTag([
 
 				"SECEDE", "GMULTI__EDIT__UNAUTHh"
-			], AdminRule::class);
+			], PathAuthorizationScrutinizer::class, function (CollectionMetaFunnel $collector) {
+
+				return $collector->ruleClass == AdminRule::class;
+			});
 		}
 	}
 ?>

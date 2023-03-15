@@ -3,7 +3,7 @@
 
 	use Suphle\Routing\CollectionMetaFunnel;
 
-	class BlankMiddleware2Collector extends CollectionMetaFunnel {
+	class BlankCollectionMetaFunnel extends CollectionMetaFunnel {
 
 		//
 	}

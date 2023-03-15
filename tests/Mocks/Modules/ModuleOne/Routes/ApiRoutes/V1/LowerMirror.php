@@ -1,7 +1,9 @@
 <?php
 	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\ApiRoutes\V1;
 
-	use Suphle\Routing\{BaseApiCollection, Decorators\HandlingCoordinator};
+	use Suphle\Routing\{BaseApiCollection, PreMiddlewareRegistry, Decorators\HandlingCoordinator};
+
+	use Suphle\Auth\RequestScrutinizers\AuthenticateMetaFunnel;
 
 	use Suphle\Response\Format\Json;
 
@@ -30,9 +32,12 @@
 			$this->_get(new Json("segmentHandler"));
 		}
 
-		public function _authenticatedPaths():array {
+		public function _preMiddleware (PreMiddlewareRegistry $registry):void {
 
-			return ["SECURE__SEGMENTh", "CASCADE"];
+			$registry->tagPatterns(
+
+				new AuthenticateMetaFunnel(["SECURE__SEGMENTh", "CASCADE"], $this->authStorage)
+			);
 		}
 	}
 ?>

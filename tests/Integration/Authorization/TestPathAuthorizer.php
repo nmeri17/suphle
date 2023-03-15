@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Tests\Integration\Authorization;
 
-	use Suphle\Request\PathAuthorizer;
+	use Suphle\Auth\RequestScrutinizers\PathAuthorizationScrutinizer;
 
 	use Suphle\Contracts\{Auth\UserContract, Config\Router};
 
@@ -54,9 +54,9 @@
 		}
 
 		// can't move this to setUp since this object is updated after request is updated
-		protected function getAuthorizer ():PathAuthorizer {
+		protected function getAuthorizer ():PathAuthorizationScrutinizer {
 
-			return $this->getContainer()->getClass(PathAuthorizer::class);
+			return $this->getContainer()->getClass(PathAuthorizationScrutinizer::class);
 		}
 
 		protected function authorizationSuccess ():bool {

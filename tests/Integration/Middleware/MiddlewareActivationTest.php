@@ -13,7 +13,9 @@
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\{ Meta\ModuleOneDescriptor, Config\RouterMock};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares\{ BlankMiddleware, BlankMiddleware2};
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares\{ BlankMiddlewareHandler, BlankMiddleware2Handler};
+
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares\Collectors\{BlankCollectionMetaFunnel, BlankMiddleware2Collector};
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Prefix\{ActualEntry, Secured\MisleadingEntry};
 
@@ -23,6 +25,8 @@
 
 			BaseDatabasePopulator::setUp as databaseAllSetup;
 		}
+
+		protected bool $debugCaughtExceptions = true;
 
 		private string $threeTierUrl = "/first/middle/without";
 
@@ -58,44 +62,44 @@
 
 			$this->actingAs($this->contentVisitor);
 
-			$middlewareName = BlankMiddleware2::class;
-
-			$expectedMiddleware = [$middlewareName];
-
-			$this->withMiddleware($expectedMiddleware); // given
+			$handlerName = BlankMiddleware2Handler::class;
 
 			$this->provideMiddleware([ // then 1
 
-				$middlewareName => $this->getMiddlewareMock($middlewareName, 1)
+				$handlerName => $this->getMiddlewareMock($handlerName, 1)
 			]);
+
+			$collectorName = BlankMiddleware2Collector::class;
+
+			$this->withMiddleware([new $collectorName(["WITHOUT"])]); // given
 
 			$this->get($this->threeTierUrl) // when
 
 			->assertOk(); // sanity checks
 
-			$this->assertUsedMiddleware($expectedMiddleware); // then 2
+			$this->assertUsedCollectorNames([$collectorName]); // then 2
 		}
 
 		public function test_can_deactivate_middleware () {
 
 			$this->actingAs($this->contentVisitor);
 
-			$middlewareName = BlankMiddleware::class;
-
-			$expectedMiddleware = [$middlewareName]; // can actually be found at the route
-
-			$this->withoutMiddleware($expectedMiddleware); // given
+			$handlerName = BlankMiddlewareHandler::class;
 
 			$this->provideMiddleware([ // then 1
 
-				$middlewareName => $this->getMiddlewareMock($middlewareName, 0)
+				$handlerName => $this->getMiddlewareMock($handlerName, 0)
 			]);
+
+			$expectedMiddleware = [BlankCollectionMetaFunnel::class]; // can actually be found at the route
+
+			$this->withoutMiddleware($expectedMiddleware); // given
 
 			$this->get($this->threeTierUrl) // when
 
 			->assertOk(); // sanity checks
 
-			$this->assertDidntUseMiddleware($expectedMiddleware); // then 2
+			$this->assertDidntUseCollectorNames($expectedMiddleware); // then 2
 		}
 	}
 ?>

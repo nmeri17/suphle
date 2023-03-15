@@ -1,9 +1,9 @@
 <?php
 	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Middlewares;
 
-	use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
+	use Suphle\Routing\{BaseCollection, CollectionMetaFunnel, Decorators\HandlingCoordinator};
 
-	use Suphle\Middleware\{MiddlewareRegistry, MiddlewareCollector};
+	use Suphle\Middleware\MiddlewareRegistry;
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\BaseCoordinator;
 
@@ -48,10 +48,7 @@
 			->removeTag (
 				["FIRST__UNTAGh", "SECOND__UNTAGh"], // given pattern must exist on current collection. It's only activated if one of them is intersected in full request path
 
-				function (MiddlewareCollector $collector) {
-
-					return $collector instanceof BlankMiddleware3Collector; // while middleware must have been tagged by a parent collection to have any effect
-				}
+				BlankMiddleware3Collector::class; // while middleware must have been tagged by a parent collection to have any effect
 			);
 		}
 	}

@@ -5,9 +5,9 @@
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\{ApiRoutes\V1\LowerMirror, BrowserNoPrefix};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares\Collectors\{BlankMiddlewareCollector, BlankMiddleware2Collector, BlankMiddleware3Collector};
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares\Collectors\{BlankCollectionMetaFunnel, BlankMiddleware2Collector, BlankMiddleware3Collector};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares\GenericMiddlewareHandler;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares\{BlankMiddlewareHandler, BlankMiddleware2Handler, BlankMiddleware3Handler};
 
 	class RouterMock extends Router {
 
@@ -36,11 +36,11 @@
 
 			return array_merge(parent::collectorHandlers(), [
 
-				BlankMiddlewareCollector::class => GenericMiddlewareHandler::class,
+				BlankCollectionMetaFunnel::class => BlankMiddlewareHandler::class,
 
-				BlankMiddleware2Collector::class => GenericMiddlewareHandler::class,
+				BlankMiddleware2Collector::class => BlankMiddleware2Handler::class,
 
-				BlankMiddleware3Collector::class => GenericMiddlewareHandler::class
+				BlankMiddleware3Collector::class => BlankMiddleware3Handler::class
 			]);
 		}
 	}

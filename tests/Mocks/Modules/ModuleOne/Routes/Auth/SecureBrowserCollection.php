@@ -1,11 +1,13 @@
 <?php
 	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Auth;
 
-	use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
+	use Suphle\Routing\{BaseCollection, PreMiddlewareRegistry, Decorators\HandlingCoordinator};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\BaseCoordinator;
+	use Suphle\Auth\RequestScrutinizers\AuthenticateMetaFunnel;
 
 	use Suphle\Response\Format\Json;
+
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\BaseCoordinator;
 
 	#[HandlingCoordinator(BaseCoordinator::class)]
 	class SecureBrowserCollection extends BaseCollection {
@@ -15,9 +17,12 @@
 			$this->_get(new Json("plainSegment"));
 		}
 
-		public function _authenticatedPaths():array {
+		public function _preMiddleware (PreMiddlewareRegistry $registry):void {
 
-			return ["SEGMENT"];
+			$registry->tagPatterns(
+
+				new AuthenticateMetaFunnel(["SEGMENT"], $this->authStorage)
+			);
 		}
 	}
 ?>

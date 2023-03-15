@@ -1,7 +1,9 @@
 <?php
 	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Prefix;
 
-	use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
+	use Suphle\Routing\{BaseCollection, PreMiddlewareRegistry, Decorators\HandlingCoordinator};
+
+	use Suphle\Auth\RequestScrutinizers\AuthenticateMetaFunnel;
 
 	use Suphle\Response\Format\Json;
 
@@ -10,9 +12,12 @@
 	#[HandlingCoordinator(MixedNestedSecuredController::class)]
 	class UnchainParentSecurity extends BaseCollection {
 
-		public function _authenticatedPaths():array {
+		public function _preMiddleware (PreMiddlewareRegistry $registry):void {
 
-			return ["RETAIN__AUTHh"];
+			$registry->tagPatterns(
+
+				new AuthenticateMetaFunnel(["RETAIN__AUTHh"], $this->authStorage)
+			);
 		}
 		
 		public function UNLINK () {

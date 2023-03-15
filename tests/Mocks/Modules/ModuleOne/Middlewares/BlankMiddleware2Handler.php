@@ -1,13 +1,13 @@
 <?php
 	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares;
 
-	use Suphle\Contracts\{Presentation\BaseRenderer, Routing\Middleware};
+	use Suphle\Contracts\Presentation\BaseRenderer;
 
 	use Suphle\Middleware\{MiddlewareNexts, CollectibleMiddlewareHandler};
 
 	use Suphle\Request\PayloadStorage;
 
-	class GenericMiddlewareHandler extends CollectibleMiddlewareHandler {
+	class BlankMiddleware2Handler extends CollectibleMiddlewareHandler {
 
 		public function process (PayloadStorage $request, ?MiddlewareNexts $requestHandler):BaseRenderer {
 

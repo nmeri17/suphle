@@ -6,7 +6,12 @@
 	trait MocksMiddleware {
 
 		// without this, we'll use getModules and then need to have test classes for each of these different configurations
-		protected function getMiddlewareMock (string $className, int $numTimes):Middleware {
+		protected function getMiddlewareMock (
+
+			string $className, int $numTimes,
+
+			array $constructorArguments = []
+		):Middleware {
 
 			return $this->positiveDouble($className, [
 
@@ -14,7 +19,7 @@
 			], [
 
 				"process" => [$numTimes, []]
-			]);
+			], $constructorArguments);
 		}
 
 		protected function provideMiddleware (array $middlewareList):void {

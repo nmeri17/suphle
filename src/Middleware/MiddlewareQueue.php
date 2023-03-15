@@ -22,7 +22,7 @@
 			protected readonly Container $container
 		) {
 
-			$this->routedCollectors = $registry->getRoutedCollectors();
+			$this->routedCollectors = $registry->getRoutedFunnels();
 		}
 
 		public function runStack ():BaseRenderer {
@@ -50,7 +50,7 @@
 
 				$handler = $this->container->getClass($handlerName); // since multiple instances can exist for those patterns down the collection trie, a handler may be called up more than once, as well
 
-				$handler->addCollector($collector);
+				$handler->addMetaFunnel($collector);
 
 				$routedHandlers[] = $handler;
 			}

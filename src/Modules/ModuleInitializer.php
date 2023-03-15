@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Modules;
 
-	use Suphle\Routing\{RouteManager, ExternalRouteMatcher};
+	use Suphle\Routing\{RouteManager, ExternalRouteMatcher, CollectionMetaQueue};
 
 	use Suphle\Request\RequestDetails;
 
@@ -90,6 +90,10 @@
 			if ($this->externalRouters->hasActiveHandler())
 
 				return $this;
+
+			$this->container->getClass (CollectionMetaQueue::class)
+
+			->executeRoutedMetaFunnels();
 
 			$rendererManager->mayBeInvalid()->bootDefaultRenderer();
 

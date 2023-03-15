@@ -1,9 +1,9 @@
 <?php
 	namespace Suphle\Middleware\Collectors;
 
-	use Suphle\Middleware\MiddlewareCollector;
+	use Suphle\Routing\CollectionMetaFunnel;
 
-	class JsonNegotiatorCollector extends MiddlewareCollector {
+	class JsonNegotiatorCollector extends CollectionMetaFunnel {
 
 		//
 	}

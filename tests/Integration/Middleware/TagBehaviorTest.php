@@ -13,7 +13,7 @@
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Routes\Middlewares\MultiTagSamePattern, Config\RouterMock};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares\{BlankMiddleware, BlankMiddleware2, BlankMiddleware3, BlankMiddleware4};
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares\{BlankMiddlewareHandler, BlankMiddleware2Handler, BlankMiddleware3Handler};
 
 	class TagBehaviorTest extends ModuleLevelTest {
 
@@ -33,48 +33,18 @@
 			];
 		}
  
-		public function test_multi_patterns_to_single_tag_should_work () {
+		public function test_multi_patterns_to_tag_should_work () {
 
 			// given => @see [getModules]
 			// then 
 			$this->provideMiddleware([
 
-				BlankMiddleware::class => $this->getMiddlewareMock(BlankMiddleware::class, 1),
+				BlankMiddlewareHandler::class => $this->getMiddlewareMock(BlankMiddlewareHandler::class, 1),
 
-				BlankMiddleware2::class => $this->getMiddlewareMock(BlankMiddleware2::class, 0)
+				BlankMiddleware2Handler::class => $this->getMiddlewareMock(BlankMiddleware2Handler::class, 0)
 			]);
 
 			$this->get("/first-single"); // when
-		}
- 
-		public function test_single_pattern_multi_tags_should_work () {
-
-			// given => @see [getModules]
-			// then 
-			$this->provideMiddleware([
-
-				BlankMiddleware::class => $this->getMiddlewareMock(BlankMiddleware::class, 1),
-
-				BlankMiddleware2::class => $this->getMiddlewareMock(BlankMiddleware2::class, 1)
-			]);
-
-			$this->get("/second-single"); // when
-		}
- 
-		public function test_single_pattern_multi_middleware_should_work () {
-
-			// given => @see [getModules]
-			// then 
-			$this->provideMiddleware([
-
-				BlankMiddleware::class => $this->getMiddlewareMock(BlankMiddleware::class, 0),
-
-				BlankMiddleware3::class => $this->getMiddlewareMock(BlankMiddleware3::class, 1),
-
-				BlankMiddleware4::class => $this->getMiddlewareMock(BlankMiddleware4::class, 1)
-			]);
-
-			$this->get("/third-single"); // when
 		}
 
 		public function test_parent_tag_affects_child () {
@@ -83,42 +53,24 @@
 			// then 
 			$this->provideMiddleware([
 
-				BlankMiddleware::class => $this->getMiddlewareMock(BlankMiddleware::class, 1),
+				BlankMiddlewareHandler::class => $this->getMiddlewareMock(BlankMiddlewareHandler::class, 1),
 
-				BlankMiddleware2::class => $this->getMiddlewareMock(BlankMiddleware2::class, 0)
+				BlankMiddleware2Handler::class => $this->getMiddlewareMock(BlankMiddleware2Handler::class, 0)
 			]);
 
 			$this->get("/fifth-single/segment"); // when
 		}
 
-		public function test_can_untag_multiple_patterns () {
+		public function test_can_untag_patterns () {
 
 			// given => @see [getModules]
 			// then 
 			$this->provideMiddleware([
 
-				BlankMiddleware2::class => $this->getMiddlewareMock(BlankMiddleware2::class, 1),
-
-				BlankMiddleware4::class => $this->getMiddlewareMock(BlankMiddleware4::class, 0)
+				BlankMiddleware3Handler::class => $this->getMiddlewareMock(BlankMiddleware3Handler::class, 0)
 			]);
 
 			$this->get("/fourth-single/second-untag"); // when
-		}
-
-		public function test_can_untag_multiple_middlewares () {
-
-			// given => @see [getModules]
-			// then 
-			$this->provideMiddleware([
-
-				BlankMiddleware2::class => $this->getMiddlewareMock(BlankMiddleware2::class, 0),
-
-				BlankMiddleware3::class => $this->getMiddlewareMock(BlankMiddleware3::class, 0),
-
-				BlankMiddleware4::class => $this->getMiddlewareMock(BlankMiddleware4::class, 1)
-			]);
-
-			$this->get("/fourth-single/third-untag"); // when
 		}
 
 		public function test_final_middleware_has_no_request_handler () {

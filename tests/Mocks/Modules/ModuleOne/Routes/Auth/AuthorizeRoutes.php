@@ -1,9 +1,9 @@
 <?php
 	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Auth;
 
-	use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
+	use Suphle\Routing\{BaseCollection, PreMiddlewareRegistry, Decorators\HandlingCoordinator};
 
-	use Suphle\Request\PathAuthorizer;
+	use Suphle\Auth\RequestScrutinizers\PathAuthorizationScrutinizer;
 
 	use Suphle\Response\Format\Json;
 
@@ -22,11 +22,11 @@
 			$this->_prefixFor(UnlocksAuthorization1::class);
 		}
 
-		public function _authorizePaths (PathAuthorizer $pathAuthorizer):void {
+		public function _preMiddleware (PreMiddlewareRegistry $registry):void {
 
-			$pathAuthorizer->addRule (
+			$registry->tagPatterns(
 
-				[ "ADMIN__ENTRYh", "ADMIN"], AdminRule::class
+				new PathAuthorizationScrutinizer(["ADMIN__ENTRYh", "ADMIN"], AdminRule::class)
 			);
 		}
 	}

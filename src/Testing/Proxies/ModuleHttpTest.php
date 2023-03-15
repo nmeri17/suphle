@@ -38,17 +38,17 @@
 		/**
 		 * Assumes there's some behavior this middleware may have that we aren't comfortable triggering
 		 * 
-		 * @param {middleware} Middleware[]
+		 * @param {collectorNames} CollectionMetaFunnel::class[]
 		*/
-		public function withoutMiddleware(array $middlewares = []):self {
+		public function withoutMiddleware (array $collectorNames = []):self {
 
 			$this->setMiddlewareRegistry();
 
-			if (empty($middlewares))
+			if (empty($collectors))
 
 				$this->mockMiddlewareRegistry->disableAll();
 
-			else $this->mockMiddlewareRegistry->disable($middlewares);
+			else $this->mockMiddlewareRegistry->disableCollectors($collectors);
 
 			return $this;
 		}
@@ -56,13 +56,13 @@
 		/**
 		 * Useful when we want to see the implication of using a particular middleware, in test
 		 * 
-		 * @param {middleware} Middleware[]
+		 * @param {collectors} CollectionMetaFunnel[]
 		*/
-		public function withMiddleware(array $middlewares):self {
+		public function withMiddleware (array $collectors):self {
 
 			$this->setMiddlewareRegistry();
 
-			$this->mockMiddlewareRegistry->addToActiveStack($middlewares);
+			$this->mockMiddlewareRegistry->addToActiveStack($collectors);
 
 			return $this;
 		}
@@ -80,48 +80,76 @@
 			}
 		}
 
-		protected function assertUsedMiddleware (array $middlewares) {
+		protected function assertUsedCollectorNames (array $collectorNames):void {
 
-			$matches = $this->getMatchingMiddleware($middlewares);
+			$matches = $this->matchingCollectorNames($collectorNames);
 
-			$unused = array_diff($middlewares, $matches);
+			$this->assertSame($matches, $collectorNames,
+
+				"Failed to assert that given collectors were all used. Only matched: ".
+
+				json_encode( $matches, JSON_PRETTY_PRINT)
+			);
+		}
+
+		protected function assertUsedCollectors (array $collectors):void {
+
+			$unused = array_diff($collectors, $this->getAllCollectors());
 
 			$this->assertEmpty($unused,
 
-				"Failed to assert that middlewares ".
+				"Failed to assert that collectors ".
 
 				json_encode($unused, JSON_PRETTY_PRINT). " were used"
 			);
 		}
 
-		protected function assertDidntUseMiddleware (array $middlewares) {
+		protected function assertDidntUseCollectorNames (array $collectorNames):void {
 
-			$intersectingUsed = $this->getMatchingMiddleware($middlewares);
+			$matches = $this->matchingCollectorNames($collectorNames);
+
+			$intersectingUsed = array_intersect($collectorNames, $matches);
+
+			$this->assertEmpty($matches,
+
+				"Didn't expect to use the following collectors: ".
+
+				json_encode( $intersectingUsed, JSON_PRETTY_PRINT)
+			);
+		}
+
+		protected function assertDidntUseCollectors (array $collectors):void {
+
+			$intersectingUsed = array_intersect($collectors, $this->getAllCollectors());
 
 			$this->assertEmpty($intersectingUsed,
 
-				"Did not expect to use middlewares " .
+				"Didn't expect to use collectors " .
 
 				json_encode($intersectingUsed, JSON_PRETTY_PRINT)
 			);
 		}
 
-		private function getMatchingMiddleware (array $middlewares):array {
+		private function getAllCollectors ():array {
 
-			$registry = $this->entrance->getActiveContainer()
+			return $this->entrance->getActiveContainer()
 
-			->getClass(MiddlewareRegistry::class);
+			->getClass(MiddlewareRegistry::class)->getRoutedFunnels();
+		}
 
-			$matches = [];
+		/**
+		 * @return Array of matching collector names
+		*/
+		private function matchingCollectorNames (array $collectorNames):array {
 
-			foreach ($registry->getRoutedCollectors() as $collection) {
+			$allCollectors = array_map(
 
-				$intersect = array_intersect($collection->getList(), $middlewares);
+				fn ($collector) => $collector::class,
 
-				$matches = array_merge($matches, $intersect);
-			}
+				$this->getAllCollectors()
+			);
 
-			return $matches;
+			return array_intersect($collectorNames, $allCollectors);
 		}
 
 		public function get(string $url, array $headers = []):TestResponseBridge {

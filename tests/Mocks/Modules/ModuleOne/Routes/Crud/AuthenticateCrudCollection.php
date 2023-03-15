@@ -1,7 +1,9 @@
 <?php
 	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Crud;
 
-	use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
+	use Suphle\Routing\{BaseCollection, PreMiddlewareRegistry, Decorators\HandlingCoordinator};
+
+	use Suphle\Auth\RequestScrutinizers\AuthenticateMetaFunnel;
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\CrudCoordinator;
 
@@ -13,9 +15,12 @@
 			$this->_crud("secure-some")->registerCruds();
 		}
 
-		public function _authenticatedPaths():array {
+		public function _preMiddleware (PreMiddlewareRegistry $registry):void {
 
-			return ["EDIT_id"];
+			$registry->tagPatterns(
+
+				new AuthenticateMetaFunnel(["EDIT_id"], $this->authStorage)
+			);
 		}
 	}
 ?>

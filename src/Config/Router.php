@@ -7,7 +7,9 @@
 
 	use Suphle\Middleware\Collectors\JsonNegotiatorCollector;
 
-	use Suphle\Auth\Middleware\{AuthenticateCollector, AuthenticateHandler, AuthorizeCollector, AuthorizeHandler};
+	use Suphle\Auth\RequestScrutinizers\{AuthenticateMetaFunnel, AuthenticateHandler, AuthorizeMetaFunnel, PathAuthorizationScrutinizer};
+
+	use Suphle\Adapters\Orms\Eloquent\RequestScrutinizers\{AccountVerifiedFunnel, UserIsVerified};
 
 	use Suphle\Auth\Storage\TokenStorage;
 
@@ -55,11 +57,22 @@
 
 			return [
 
-				AuthenticateCollector::class => AuthenticateHandler::class,
-
-				AuthorizeCollector::class => AuthorizeHandler::class,
-
 				JsonNegotiatorCollector::class => JsonNegotiator::class,
+			];
+		}
+
+		/**
+		 * {@inheritdoc}
+		*/
+		public function scrutinizerHandlers ():array {
+
+			return [
+
+				AccountVerifiedFunnel::class => UserIsVerified::class,
+
+				AuthenticateMetaFunnel::class => AuthenticateHandler::class,
+
+				AuthorizeMetaFunnel::class => PathAuthorizationScrutinizer::class
 			];
 		}
 

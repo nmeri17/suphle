@@ -1,11 +1,11 @@
 <?php
-	namespace Suphle\Auth\Middleware;
+	namespace Suphle\Auth\RequestScrutinizers;
 
 	use Suphle\Contracts\Auth\AuthStorage;
 
-	use Suphle\Middleware\MiddlewareCollector;
+	use Suphle\Routing\CollectionMetaFunnel;
 
-	class AuthenticateCollector extends MiddlewareCollector {
+	class AuthenticateMetaFunnel extends CollectionMetaFunnel {
 
 		public function __construct (
 

@@ -14,11 +14,11 @@
 		 * 
 		 * We're using this instead of updating the default middleware list, since the eventual module may have custom config we are unwilling to override with whatever mock we'll set as default
 		 * 
-		 * @param {middlewares} Middleware class names
+		 * @param {collectors} CollectionMetaFunnel[]
 		*/
-		public function addToActiveStack (array $middlewares):void {
+		public function addToActiveStack (array $collectors):void {
 
-			$this->preInclude = $middlewares;
+			$this->preInclude = $collectors;
 		}
 
 		public function disableAll ():void {
@@ -27,42 +27,32 @@
 		}
 
 		/** 
-		 * @param {middlewares} Middleware::class[]
+		 * @param {collectorNames} CollectionMetaFunnel::class[]
 		*/
-		public function disable (array $middlewares):void {
+		public function disableCollectors (array $collectorNames):void {
 
-			$this->preExclude = $middlewares;
+			$this->preExclude = $collectorNames;
 		}
 
 		/**
 		 * {@inheritdoc}
 		*/
-		public function getRoutedCollectors ():array {
+		public function getRoutedFunnels ():array {
 
 			if ($this->stackAlwaysEmpty) return [];
 
-			$stack = [];
+			$stack = $this->preInclude;
 
-			$parentStack = parent::getRoutedCollectors();
+			$parentStack = parent::getRoutedFunnels();
 
-			if (!empty($this->preInclude))
+			foreach ($parentStack as $index => $collector) {
 
-				$stack[] = $this->includeCollection();
+				if (in_array($collector::class, $this->preExclude))
 
-			foreach ($parentStack as $holder)
-
-				$holder->omitWherePresent($this->preExclude);
+					unset($parentStack[$index]);
+			}
 
 			return [...$stack, ...$parentStack];
-		}
-
-		private function includeCollection ():PatternMiddleware {
-
-			$collection = new PatternMiddleware;
-
-			$collection->setList($this->preInclude);
-
-			return $collection;
 		}
 	}
 ?>

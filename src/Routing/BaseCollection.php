@@ -1,13 +1,13 @@
 <?php
 	namespace Suphle\Routing;
 
-	use Suphle\Request\PathAuthorizer;
+	use Suphle\Request\PathAuthorizationScrutinizer;
 
 	use Suphle\Routing\Crud\BrowserBuilder;
 
 	use Suphle\Middleware\MiddlewareRegistry;
 
-	use Suphle\Contracts\Presentation\BaseRenderer;
+	use Suphle\Contracts\{Presentation\BaseRenderer, Auth\AuthStorage};
 
 	use Suphle\Contracts\Routing\{RouteCollection, CrudBuilder};
 
@@ -27,7 +27,9 @@
 
 			protected readonly CanaryValidator $canaryValidator,
 
-			protected readonly MethodSorter $methodSorter
+			protected readonly MethodSorter $methodSorter,
+
+			protected readonly AuthStorage $authStorage
 		) {
 
 			//
@@ -152,6 +154,8 @@
 		}
 
 		public function _assignMiddleware(MiddlewareRegistry $registry):void {}
+
+		public function _preMiddleware (PreMiddlewareRegistry $patternIndicator):void {}
 
 		protected function _only(array $include):array {
 			

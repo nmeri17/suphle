@@ -1,6 +1,8 @@
 <?php
 	namespace Suphle\Tests\Integration\Authorization;
 
+	use Suphle\Routing\PreMiddlewareRegistry;
+
 	class NonAdminPathAuthorizerTest extends TestPathAuthorizer {
 
 		private $user;
@@ -43,9 +45,11 @@
 
 			$this->get("/admin/secede"); // when
 
-			$result = $this->getAuthorizer()->getActiveRules();
+			$routedFunnels = $this->getContainer()->getClass(PreMiddlewareRegistry::class)
 
-			$this->assertEmpty($result); // then
+			->getRoutedFunnels();
+
+			$this->assertEmpty($routedFunnels); // then
 		}
 	}
 ?>
