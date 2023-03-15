@@ -3,7 +3,7 @@
 
 	use Suphle\Routing\{BaseCollection, PreMiddlewareRegistry, Decorators\HandlingCoordinator};
 
-	use Suphle\Auth\RequestScrutinizers\PathAuthorizationScrutinizer;
+	use Suphle\Auth\RequestScrutinizers\AuthorizeMetaFunnel;
 
 	use Suphle\Response\Format\Json;
 
@@ -26,7 +26,10 @@
 
 			$registry->tagPatterns(
 
-				new PathAuthorizationScrutinizer(["ADMIN__ENTRYh", "ADMIN"], AdminRule::class)
+				new AuthorizeMetaFunnel(
+
+					["ADMIN__ENTRYh", "ADMIN"], AdminRule::class
+				)
 			);
 		}
 	}

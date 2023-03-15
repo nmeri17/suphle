@@ -38,32 +38,40 @@
 		*/
 		public function getRoutedFunnels ():array {
 
-			$stack = $this->registry;
+			$toWeedOut = array_intersect(
 
-			foreach ($this->interactedPatterns as $index => $pattern) {
+				$this->interactedPatterns,
 
-				$isOuter = $index == 0;
+				array_keys($this->excludePatterns)
+			);
 
-				$stack = array_filter(
+			return array_filter($this->registry, function (CollectionMetaFunnel $funnel) use ($toWeedOut) {
 
-					$stack, function (CollectionMetaFunnel $collector) use ($pattern, $isOuter) {
+				$boundToInteracted = false;
 
-						if ($isOuter && !$collector->containsPattern($pattern)) // it's permitted to not exist on child collections i.e. if the outer one tagged it
+				foreach ($this->interactedPatterns as $pattern) {
 
-							return false;
+					if ($funnel->containsPattern($pattern)) {
 
-						if (array_key_exists($pattern, $this->excludePatterns))
+						$boundToInteracted = true;
 
-							return $this->excludePatterns[$pattern]
-
-							->shouldExclude($collector);
-						
-						return true;
+						break;
 					}
-				);
-			}
+				}
 
-			return $stack;
+				if (!$boundToInteracted) return false;
+
+				foreach ($toWeedOut as $pattern) {
+
+					$shouldExclude = $this->excludePatterns[$pattern]
+
+					->shouldExclude($funnel);
+
+					if ($shouldExclude) return false;
+				}
+
+				return true;
+			});
 		}
 
 		public function emptyAllStacks ():void {

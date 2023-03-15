@@ -17,10 +17,10 @@
 
 			protected readonly MethodSorter $methodSorter,
 
-			protected readonly TokenStorage $authStorage
+			TokenStorage $authStorage
 		) {
 
-			//
+			$this->authStorage = $authStorage;
 		}
 
 		public function _crudJson ():CrudBuilder {

@@ -5,11 +5,11 @@
 
 	trait ReceivesMetaFunnel {
 
-		protected array $metaFunnel = [];
+		protected array $metaFunnels = [];
 
 		public function addMetaFunnel (CollectionMetaFunnel $metaFunnel):void {
 
-			$this->metaFunnel[] = $metaFunnel;
+			$this->metaFunnels[] = $metaFunnel;
 		}
 	}
 ?>

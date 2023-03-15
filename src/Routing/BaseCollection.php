@@ -29,7 +29,7 @@
 
 			protected readonly MethodSorter $methodSorter,
 
-			protected readonly AuthStorage $authStorage
+			protected AuthStorage $authStorage
 		) {
 
 			//

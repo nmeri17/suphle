@@ -29,7 +29,7 @@
 
 		public function passesActiveRules ():bool {
 
-			foreach ($this->metaFunnel as $funnel) {
+			foreach ($this->metaFunnels as $funnel) {
 
 				if (!$this->container->getClass($funnel->ruleClass)->permit())
 

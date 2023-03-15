@@ -3,7 +3,7 @@
 
 	use Suphle\Routing\{BaseCollection, PreMiddlewareRegistry, CollectionMetaFunnel, Decorators\HandlingCoordinator};
 
-	use Suphle\Auth\RequestScrutinizers\PathAuthorizationScrutinizer;
+	use Suphle\Auth\RequestScrutinizers\AuthorizeMetaFunnel;
 
 	use Suphle\Response\Format\Json;
 
@@ -48,12 +48,12 @@
 
 			$registry->tagPatterns(
 
-				new PathAuthorizationScrutinizer(["GMULTI__EDITh_id"], EmploymentEditRule::class)
+				new AuthorizeMetaFunnel(["GMULTI__EDITh_id"], EmploymentEditRule::class)
 			)
 			->removeTag([
 
 				"SECEDE", "GMULTI__EDIT__UNAUTHh"
-			], PathAuthorizationScrutinizer::class, function (CollectionMetaFunnel $collector) {
+			], AuthorizeMetaFunnel::class, function (AuthorizeMetaFunnel $collector) {
 
 				return $collector->ruleClass == AdminRule::class;
 			});

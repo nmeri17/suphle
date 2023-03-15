@@ -9,7 +9,7 @@
 
 	use Suphle\Routing\{CollectionMetaQueue, CollectionMetaFunnel};
 
-	use Suphle\Auth\RequestScrutinizers\PathAuthorizationScrutinizer;
+	use Suphle\Auth\RequestScrutinizers\AuthorizeMetaFunnel;
 
 	use Suphle\Hydration\Structures\ObjectDetails;
 
@@ -125,9 +125,9 @@
 			string $methodName, array $argumentList
 		) {
 
-			$matchingFunnels = $this->collectionMetaQueue->findMatchingFunnels(function (CollectionMetaFunnel $funnel) {
+			$matchingFunnels = $this->collectionMetaQueue->findMatchingFunnels(function (AuthorizeMetaFunnel $funnel) {
 
-				return $funnel instanceof PathAuthorizationScrutinizer;
+				return $funnel instanceof AuthorizeMetaFunnel;
 			});
 
 			if (empty($matchingFunnels)) // doesn't confirm current route is authorized since that would have already occured during routing if funnels are present

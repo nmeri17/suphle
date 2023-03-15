@@ -26,7 +26,7 @@
 		*/
 		public function scrutinizeRequest ():void {
 
-			$routedMechanism = end($this->metaFunnel)->authStorage;
+			$routedMechanism = end($this->metaFunnels)->authStorage;
 
 			/*$switchedMechanism = $this->indicator->getProvidedAuthenticator(); // mirrored bits. should it be coupled to this handler or does it deserve its own
 

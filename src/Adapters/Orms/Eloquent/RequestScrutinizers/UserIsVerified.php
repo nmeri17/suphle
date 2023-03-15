@@ -16,7 +16,7 @@
 
 		public function scrutinizeRequest ():void {
 
-			$collector = end($this->metaFunnel);
+			$collector = end($this->metaFunnels);
 
 			$columnName = $collector->verificationColumn;
 

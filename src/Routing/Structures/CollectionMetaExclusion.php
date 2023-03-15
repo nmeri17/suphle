@@ -25,7 +25,7 @@
 
 			if (!is_null($this->matcher))
 
-				$matcherResult = !call_user_func_array($this->matcher, [$collector]); // returning the inverse i.e. remove collector if callback returns true
+				$matcherResult = call_user_func_array($this->matcher, [$collector]);
 
 			return $matchesType && $matcherResult;
 		}
