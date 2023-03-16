@@ -92,7 +92,7 @@
 
 				if (!$prefixClass) return null;
 
-				$this->indicatorProxy($collection, $methodName);
+				$this->patternIndicator->logPatternDetails($collection, $methodName);
 
 				return $this->recursiveSearch(
 					$prefixClass, $remainder,
@@ -228,16 +228,15 @@
 			return true;
 		}
 
-		private function isMirroring ():bool {
-
-			return $this->requestDetails->isApiRoute() && $this->config->mirrorsCollections();
-		}
-
 		private function onSearchCompletion (RouteCollection $collection, BaseRenderer $renderer, string $pattern):void {
 
-			$this->indicatorProxy($collection, $pattern);
+			$this->patternIndicator->logPatternDetails($collection, $pattern);
 
-			if ($this->isMirroring() && $renderer instanceof MirrorableRenderer)
+			if (
+				$this->patternIndicator->shouldMirror() &&
+
+				$renderer instanceof MirrorableRenderer
+			)
 
 				$renderer->setWantsJson();
 
@@ -258,21 +257,6 @@
 			$this->placeholderStorage->setMethodSegments($this->visitedMethods);
 		}
 
-		private function indicatorProxy (RouteCollection $collection, string $pattern):void {
-
-			if ( $this->isMirroring())
-
-				$this->patternIndicator->provideAuthenticator(
-
-					$this->container->getClass(
-
-						$this->config->mirrorAuthenticator()
-					)
-				);
-
-			$this->patternIndicator->indicate($collection, $pattern);
-		}
-
 		public function getActiveRenderer ():?BaseRenderer {
 
 			return $this->activeRenderer;
@@ -285,9 +269,7 @@
 
 			$requestDetails = $this->requestDetails;
 
-			$config = $this->config;
-
-			$entryRoute = $config->browserEntryRoute();
+			$entryRoute = $this->config->browserEntryRoute();
 
 			$hasEntry = !is_null($entryRoute);
 			
@@ -302,18 +284,13 @@
 
 			$apiStack = $requestDetails->apiVersionClasses();
 
-			if ($config->mirrorsCollections() && $hasEntry)
+			if ($this->patternIndicator->shouldMirror() && $hasEntry)
 
 				array_push($apiStack, $entryRoute); // entry goes to the bottom
 
 			$requestDetails->stripApiPrefix(); // just before we go on our search
 
 			return $apiStack;
-		}
-
-		public function getIndicator ():PatternIndicator {
-
-			return $this->patternIndicator;
 		}
 
 		/**

@@ -14,9 +14,9 @@
 
 		public function _preMiddleware (PreMiddlewareRegistry $registry):void {
 
-			$registry->tagPatterns(
+			$registry->removeTag(
 
-				new AuthenticateMetaFunnel(["RETAIN__AUTHh"], $this->authStorage)
+				["UNLINK"], AuthenticateMetaFunnel::class
 			);
 		}
 		

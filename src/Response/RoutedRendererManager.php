@@ -15,7 +15,7 @@
 
 	use Suphle\Request\{ PayloadStorage, RequestDetails, ValidatorManager};
 
-	use Suphle\Exception\Explosives\{ValidationFailure, Generic\NoCompatibleValidator};
+	use Suphle\Exception\Explosives\{ValidationFailure, DevError\NoCompatibleValidator};
 
 	#[BindsAsSingleton(RendererManager::class)]
 	class RoutedRendererManager implements RendererManager, BaseResponseManager, ValidationEvaluator {

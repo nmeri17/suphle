@@ -63,11 +63,9 @@
 
 				foreach ($toWeedOut as $pattern) {
 
-					$shouldExclude = $this->excludePatterns[$pattern]
+					if ($this->excludePatterns[$pattern]->shouldExclude($funnel))
 
-					->shouldExclude($funnel);
-
-					if ($shouldExclude) return false;
+						return false;
 				}
 
 				return true;
@@ -76,11 +74,7 @@
 
 		public function emptyAllStacks ():void {
 
-			$this->interactedPatterns = [];
-
-			$this->excludePatterns = [];
-
-			$this->registry = [];
+			$this->interactedPatterns = $this->excludePatterns = $this->registry = [];
 		}
 	}
 ?>

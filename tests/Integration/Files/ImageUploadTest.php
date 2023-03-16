@@ -5,6 +5,8 @@
 
 	use Suphle\Contracts\IO\Image\{InferiorOperationHandler, ThumbnailOperationHandler};
 
+	use Suphle\Security\CSRF\CsrfGenerator;
+
 	use Suphle\Exception\Explosives\DevError\UnmodifiedImageException;
 
 	use Suphle\Testing\{TestTypes\ModuleLevelTest, Condiments\FilesystemCleaner};
@@ -63,7 +65,11 @@
 
 			return $this->postJson("/api/v1/$url", [ // using mirroring to bypass csrf errors
 
-					"belonging_resource" => $this->resourceOwner
+					"belonging_resource" => $this->resourceOwner,
+
+					CsrfGenerator::TOKEN_FIELD => $this->getContainer()
+
+					->getClass(CsrfGenerator::class)->newToken()
 
 				], [], [
 

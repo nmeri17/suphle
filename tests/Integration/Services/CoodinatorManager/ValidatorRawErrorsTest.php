@@ -9,7 +9,7 @@
 
 	use Suphle\Contracts\{Presentation\BaseRenderer, Response\RendererManager, Config\Router};
 
-	use Suphle\Exception\Explosives\{Generic\NoCompatibleValidator, ValidationFailure};
+	use Suphle\Exception\Explosives\{DevError\NoCompatibleValidator, ValidationFailure};
 
 	use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 

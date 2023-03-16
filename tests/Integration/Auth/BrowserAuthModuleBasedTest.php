@@ -53,8 +53,6 @@
 
 		public function test_mirrored_route_detects_auth () {
 
-			$this->markTestSkipped();
-
 			$user = $this->replicator->getRandomEntity();
 
 			$this->actingAs($user, SessionStorage::class); // given

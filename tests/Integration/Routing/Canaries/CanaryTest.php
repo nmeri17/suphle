@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Tests\Integration\Routing\Canaries;
 
-	use Suphle\Exception\Explosives\{NotFoundException, Generic\InvalidImplementor};
+	use Suphle\Exception\Explosives\{NotFoundException, DevError\InvalidImplementor};
 
 	use Suphle\Tests\Integration\Routing\TestsRouter;
 

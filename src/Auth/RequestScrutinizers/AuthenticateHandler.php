@@ -3,9 +3,9 @@
 
 	use Suphle\Hydration\Container;
 
-	use Suphle\Routing\Structures\BaseScrutinizerHandler;
+	use Suphle\Routing\{PatternIndicator, Structures\BaseScrutinizerHandler};
 
-	use Suphle\Contracts\Auth\AuthStorage;
+	use Suphle\Contracts\{Auth\AuthStorage, Config\Router as RouterConfig};
 
 	use Suphle\Exception\Explosives\Unauthenticated;
 
@@ -13,7 +13,11 @@
 
 		public function __construct (
 
-			protected readonly Container $container
+			protected readonly Container $container,
+
+			protected readonly PatternIndicator $patternIndicator,
+
+			protected readonly RouterConfig $routerConfig
 		) {
 
 			//
@@ -26,13 +30,14 @@
 		*/
 		public function scrutinizeRequest ():void {
 
-			$routedMechanism = end($this->metaFunnels)->authStorage;
+			if ( $this->patternIndicator->shouldMirror())
 
-			/*$switchedMechanism = $this->indicator->getProvidedAuthenticator(); // mirrored bits. should it be coupled to this handler or does it deserve its own
+				$routedMechanism = $this->container->getClass(
 
-			if (!is_null($switchedMechanism))
+					$this->routerConfig->mirrorAuthenticator()
+				);
 
-				$routedMechanism = $switchedMechanism;*/
+			else $routedMechanism = end($this->metaFunnels)->authStorage;
 
 			if ( is_null($routedMechanism->getId()))
 

@@ -5,7 +5,7 @@
 
 	class UnverifiedAccount extends Exception {
 
-		public function __construct (public readonly string $verificationUrl) { // not handled the mirroring bits
+		public function __construct (public readonly string $verificationUrl) {
 
 			//
 		}

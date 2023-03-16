@@ -1,7 +1,9 @@
 <?php
 	namespace Suphle\Routing;
 
-	use Suphle\Contracts\{Routing\RouteCollection, Auth\AuthStorage};
+	use Suphle\Contracts\{Routing\RouteCollection, Auth\AuthStorage, Config\Router as RouterConfig};
+
+	use Suphle\Request\RequestDetails;
 
 	use Suphle\Routing\PreMiddlewareRegistry;
 
@@ -9,36 +11,38 @@
 
 	class PatternIndicator {
 
-		private $patternAuthentication, $providedAuthenticator;
+		protected ?bool $mirrorState = null;
 
 		public function __construct (
 
 			protected readonly MiddlewareRegistry $middlewareRegistry, 
 
-			protected readonly PreMiddlewareRegistry $preRegistry
+			protected readonly PreMiddlewareRegistry $preRegistry,
+
+			protected readonly RouterConfig $routerConfig,
+
+			protected readonly RequestDetails $requestDetails
 		) {
 
 			//
 		}
 
-		public function indicate (RouteCollection $collection, string $pattern):void {
+		public function logPatternDetails (RouteCollection $collection, string $pattern):void {
 
 			$this->includeMiddleware($collection, $pattern);
 
 			$this->updateMeta($collection, $pattern);
 		}
 
-		/**
-		 * We use this to switch authenticator during mirroring. But the binding can't happen here since it's too early to know what module will eventually handle request
-		*/
-		public function provideAuthenticator (AuthStorage $mechanism):void {
+		public function shouldMirror ():bool {
 
-			$this->providedAuthenticator = $mechanism;
-		}
+			if (is_null($this->mirrorState))
 
-		public function getProvidedAuthenticator ():?AuthStorage {
+				$this->mirrorState = $this->requestDetails->isApiRoute() &&
 
-			return $this->providedAuthenticator;
+				$this->routerConfig->mirrorsCollections();
+
+			return $this->mirrorState;
 		}
 
 		protected function includeMiddleware (RouteCollection $collection, string $segment):void {
@@ -56,11 +60,9 @@
 		}
 
 		/**
-		 * Useful in settings where a module has more than one route collection. The preceding one could have updated lists that would undesirably affect the oncoming collection
+		 * When a module has more than one route collection, the preceding collection could have logged to its registry. Without a reseet, those tags will [undesirably] affect the next collection handling routing
 		*/
 		public function resetIndications ():void {
-
-			$this->patternAuthentication = null;
 
 			$this->middlewareRegistry->emptyAllStacks();
 

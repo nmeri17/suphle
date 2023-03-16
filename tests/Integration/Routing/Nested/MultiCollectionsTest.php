@@ -5,11 +5,15 @@
 
 	use Suphle\Contracts\Config\Router;
 
-	use Suphle\Routing\PatternIndicator;
+	use Suphle\Routing\{PatternIndicator, PreMiddlewareRegistry};
+
+	use Suphle\Request\RequestDetails;
+
+	use Suphle\Middleware\MiddlewareRegistry;
 
 	use Suphle\Testing\{ TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer };
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{ Meta\ModuleOneDescriptor, Config\RouterMock, Middlewares\BlankMiddleware};
+	use Suphle\Tests\Mocks\Modules\ModuleOne\{ Meta\ModuleOneDescriptor, Config\RouterMock, Middlewares\Collectors\BlankCollectionMetaFunnel};
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Prefix\{ActualEntry, Secured\MisleadingEntry};
 
@@ -36,37 +40,46 @@
 			];
 		}
 
-		/**
-		 * Misleading collection tags BlankMiddleware, but the eventual collection group doesn't
-		*/
 		public function test_needs_recovery_from_misleading_trail () {
 
-			$this->stubIndicator(); // given
+			$this->removeIndicatorResetter(); // given
 
 			$this->get($this->threeTierUrl) // when
 
 			// then
-			->assertUnauthorized(); // misleading authenticates while eventual doesn't. If this fails, recovery didn't work
+			->assertUnauthorized(); // misleading authenticates while eventual doesn't. If this assertion fails, recovery functionality is redundant
 
-			$this->assertUsedCollectorNames([BlankMiddleware::class]); 
+			$this->assertUsedCollectorNames([BlankCollectionMetaFunnel::class]); // Misleading collection tags BlankCollectionMetaFunnel, but the eventual collection group doesn't
 		}
 
-		// we're using this doubling to simulate absence of the stubbed method
-		private function stubIndicator () {
+		private function removeIndicatorResetter () {
 
-			$sutName = PatternIndicator::class;
+			$constructorStubs = [
 
-			$this->massProvide([
-				$sutName => $this->replaceConstructorArguments(
-					$sutName,
+				MiddlewareRegistry::class => $this->positiveDouble(MiddlewareRegistry::class),
 
-					$this->getContainer()->getMethodParameters(
-						
-						Container::CLASS_CONSTRUCTOR, $sutName
-					), [
+				PreMiddlewareRegistry::class => $this->positiveDouble(PreMiddlewareRegistry::class)
+			];
 
-					"resetIndications" => null
-				])
+			$this->massProvide(array_merge($constructorStubs, [ // also bind their stubs for any other collaborator to use those instances the indicator is writing to
+
+				PatternIndicator::class => $this->getPatternIndicator($constructorStubs)
+			]));
+		}
+
+		protected function getPatternIndicator (array $constructorStubs):PatternIndicator {
+
+			return $this->replaceConstructorArguments(
+				
+				PatternIndicator::class, array_merge($constructorStubs, [
+
+					RequestDetails::class => $this->positiveDouble(RequestDetails::class, [ // it's impossible to know this object before a request. Besides, doing so will cause sut to get wiped while executing the test url
+
+						"isApiRoute" => true
+					])
+				]), [
+
+				"resetIndications" => null
 			]);
 		}
 
@@ -77,7 +90,7 @@
 			// then
 			->assertOk();
 
-			$this->assertDidntUseCollectorNames([BlankMiddleware::class]);
+			$this->assertDidntUseCollectorNames([BlankCollectionMetaFunnel::class]);
 		}
 	}
 ?>
