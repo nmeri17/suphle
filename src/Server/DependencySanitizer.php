@@ -3,7 +3,7 @@
 
 	use Suphle\Server\Structures\DependencyRule;
 
-	use Suphle\File\FileSystemReader;
+	use Suphle\File\{FileSystemReader, SetsExecutionPath};
 
 	use Suphle\Hydration\{Container, Structures\ObjectDetails};
 
@@ -21,9 +21,9 @@
 
 	class DependencySanitizer {
 
-		protected array $rules = [];
+		use SetsExecutionPath;
 
-		protected string $executionPath; // not setting it should throw an error
+		protected array $rules = [];
 
 		public function __construct (
 
@@ -35,11 +35,6 @@
 		) {
 
 			//
-		}
-
-		public function setExecutionPath (string $executionPath):void {
-
-			$this->executionPath = $executionPath;
 		}
 
 		protected function setDefaultRules ():void {

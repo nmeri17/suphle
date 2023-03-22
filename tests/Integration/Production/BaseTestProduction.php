@@ -1,34 +1,23 @@
 <?php
 	namespace Suphle\Tests\Integration\Production;
 
-	use Suphle\Server\VendorBin;
-
-	use Suphle\File\FileSystemReader;
+	use Suphle\Testing\Proxies\RealVendorPath;
 
 	use Suphle\Tests\Integration\Modules\ModuleDescriptor\DescriptorCollection;
 
 	abstract class BaseTestProduction extends DescriptorCollection {
 
+		use RealVendorPath;
+
 		protected bool $debugCaughtExceptions = true,
   
   		$useTestComponents = false;
-
-		protected VendorBin $vendorBin;
 
 		protected function setUp ():void {
 
 			parent::setUp();
 
-			$container = $this->getContainer();
-
-			$this->vendorBin = $container->getClass(VendorBin::class);
-
-			$this->vendorBin->setRootPath(
-
-				$container->getClass(FileSystemReader::class)
-
-				->pathFromLevels($_SERVER["COMPOSER_RUNTIME_BIN_DIR"], "", 2)
-			);
+			$this->setVendorPath();
 		}
 
 		public function modulesUrls ():array {

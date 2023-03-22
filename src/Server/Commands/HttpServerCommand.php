@@ -23,7 +23,11 @@
 
 		CUSTOM_OPERATIONS = "operations_class",
 
-		CUSTOM_CLASS_OPTIONS = "custom_operations_options";
+		CUSTOM_CLASS_OPTIONS = "custom_operations_options",
+
+		NO_REFACTOR_STATIC_OPTION = "no_static_refactor",
+
+		IGNORE_STATIC_FAILURE_OPTION = "ignore_static_correct";
 
 		protected static $defaultDescription = "Run build operations and start RR servers";
 
@@ -58,6 +62,18 @@
 
 				"Arguments to pass to the custom boot service class"
 			);
+
+			$this->addOption(
+				self::NO_REFACTOR_STATIC_OPTION, "f",
+
+				InputOption::VALUE_NONE, "Don't correct type violations found"
+			);
+
+			$this->addOption(
+				self::IGNORE_STATIC_FAILURE_OPTION, "b",
+
+				InputOption::VALUE_NONE, "Proceed with server build despite static errors"
+			);
 		}
 
 		public static function commandSignature ():string {
@@ -80,6 +96,13 @@
 				if (!$input->getOption(self::DISABLE_SANITIZATION_OPTION)) // absent
 
 					$serverOperations->restoreSanity();
+
+				$serverOperations->runStaticChecks(
+
+					!$input->getOption(self::NO_REFACTOR_STATIC_OPTION), // means default value received by that method will be true i.e. it has to be present for refactor to be disabled
+
+					$input->getOption(self::IGNORE_STATIC_FAILURE_OPTION)
+				);
 
 				$this->handleCustomOperations($input, $container);
 

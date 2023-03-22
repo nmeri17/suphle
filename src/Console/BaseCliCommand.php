@@ -5,6 +5,8 @@
 
 	use Suphle\Hydration\Container;
 
+	use Suphle\File\SetsExecutionPath;
+
 	use Symfony\Component\Console\Input\{InputOption, InputInterface};
 
 	use Symfony\Component\Console\Command\Command;
@@ -13,9 +15,9 @@
 
 	abstract class BaseCliCommand extends Command {
 
-		protected array $moduleList;
+		use SetsExecutionPath;
 
-		protected string $executionPath;
+		protected array $moduleList;
 
 		protected Container $defaultContainer;
 
@@ -31,11 +33,6 @@
 		public function setModules (array $moduleList):void {
 
 			$this->moduleList = $moduleList;
-		}
-
-		public function setExecutionPath (string $path):void {
-
-			$this->executionPath = $path;
 		}
 
 		public function setDefaultContainer (Container $container):void {

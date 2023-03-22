@@ -87,6 +87,10 @@
 
 			$initial = null;
 
+			if ($typeName == "mixed") 
+
+				throw new HydrationException("Use more specific types, not $typeName");
+
 			settype($initial, $typeName);
 
 			return $initial;

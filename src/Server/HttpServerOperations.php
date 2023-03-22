@@ -1,13 +1,17 @@
 <?php
 	namespace Suphle\Server;
 
+	use Exception;
+
 	class HttpServerOperations {
 
 		public function __construct (
 
 			protected readonly DependencySanitizer $sanitizer,
 
-			protected readonly VendorBin $vendorBin
+			protected readonly VendorBin $vendorBin,
+
+			protected readonly PsalmWrapper $psalmWrapper
 		) {
 
 			//
@@ -19,7 +23,23 @@
 
 			$this->vendorBin->setRootPath($path);
 
+			$this->psalmWrapper->setExecutionPath($path);
+
 			return $this;
+		}
+
+		public function runStaticChecks (bool $autoRefactor, bool $isTestBuild):void {
+
+			if ($isTestBuild) return; // disabling scan cuz that takes quite a bit of time
+
+			$scanStatus = $this->psalmWrapper->initPsalm()
+
+			->scanForErrors([], $autoRefactor);
+
+			if (!$scanStatus)
+
+				throw new Exception($this->psalmWrapper->getLastProcess()->getOutput());
+			
 		}
 
 		public function restoreSanity ():void {

@@ -110,6 +110,13 @@
 			return $this->payload[$property];
 		}
 
+		public function matchesContent (string $property, $expectedValue):bool {
+
+			return $this->keyHasContent($property) &&
+
+			$this->getKey($property) == $expectedValue;
+		}
+
 		/**
 		 * Should be called before the readers start calling [getKey]
 		*/

@@ -38,16 +38,21 @@
 				$this->entrance, "SuphleTest", true
 			);
 
-			$runnerAccessor->forwardCommandsToRunner(
-
-				$this->getContainer()->getClass(ModuleFiles::class)
-
-				->getRootPath()
-			);
+			$runnerAccessor->forwardCommandsToRunner($this->getRunnerPath());
 
 			$this->consoleRunner = $runnerAccessor->getRunner();
 
 			$this->mufflerSetup();
+		}
+
+		/**
+		 * Necessary to override when testing commands that internally interact with the actual vendor path
+		*/
+		protected function getRunnerPath ():string {
+
+			return $this->getContainer()->getClass(ModuleFiles::class)
+
+			->getRootPath();
 		}
 		
 		/**
