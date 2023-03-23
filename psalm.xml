@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <psalm
     errorLevel="7"
+    allowNamedArgumentCalls="false"
     resolveFromConfigFile="true"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns="https://getpsalm.org/schema/config"
@@ -10,6 +11,9 @@
         <directory name="src" />
         <ignoreFiles>
             <directory name="vendor" />
+        </ignoreFiles>
+        <ignoreFiles>
+            <directory name="compiled-views" />
         </ignoreFiles>
     </projectFiles>
 </psalm>

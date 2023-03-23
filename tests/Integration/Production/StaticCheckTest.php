@@ -26,7 +26,7 @@
 
 			$psalmWrapper = $this->getPsalmWrapper();
 
-			$scanStatus = $psalmWrapper->scanForErrors(
+			$scanStatus = $psalmWrapper->analyzeErrorStatus(
 
 				[$this->getClassPath(UsesNonMatchingTypes::class)] // given
 			); // when
@@ -55,14 +55,14 @@
 
 			$wrapper->setExecutionPath($vendorDir);
 
-			$wrapper->initPsalm();
+			$wrapper->scanConfigLevel();
 
 			return $wrapper;
 		}
 
 		public function test_file_with_error_returns_false () {
 
-			$scanStatus = $this->getPsalmWrapper()->scanForErrors(
+			$scanStatus = $this->getPsalmWrapper()->analyzeErrorStatus(
 
 				[$this->getClassPath(ContainsError::class)] // given
 			); // when

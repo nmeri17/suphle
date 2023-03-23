@@ -133,14 +133,14 @@
 
 				$wrapperName => $this->replaceConstructorArguments($wrapperName, $arguments, [
 
-					"scanForErrors" => false, // given
+					"analyzeErrorStatus" => false, // given
 
 					"getLastProcess" => $this->positiveDouble(Process::class, [
 
 						"getOutput" => $exceptionMessage
 					]),
 
-					"initPsalm" => $this->returnSelf()
+					"scanConfigLevel" => $this->returnSelf()
 				])
 			]);
 		}

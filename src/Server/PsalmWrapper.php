@@ -33,7 +33,7 @@
 			return $this->lastProcess;
 		}
 
-		public function initPsalm ():self {
+		public function scanConfigLevel ():self {
 
 			$this->vendorBin->setProcessArguments(
 
@@ -43,7 +43,7 @@
 			return $this;
 		}
 
-		public function scanForErrors (array $filePaths = [], bool $correctMistakes = false):bool {
+		public function analyzeErrorStatus (array $filePaths = [], bool $correctMistakes = false):bool {
 
 			if (empty($filePaths))
 

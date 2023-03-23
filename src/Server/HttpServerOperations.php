@@ -32,13 +32,20 @@
 
 			if ($isTestBuild) return; // disabling scan cuz that takes quite a bit of time
 
-			$scanStatus = $this->psalmWrapper->initPsalm()
+			$scanStatus = $this->psalmWrapper->scanConfigLevel()
 
-			->scanForErrors([], $autoRefactor);
+			->analyzeErrorStatus([], $autoRefactor);
 
-			if (!$scanStatus)
+			if (!$scanStatus) {
 
-				throw new Exception($this->psalmWrapper->getLastProcess()->getOutput());
+				$failureMessage = $this->psalmWrapper->getLastProcess()->getOutput();
+
+				if (empty($failureMessage))
+
+					$failureMessage = "Error evaluating psalm.xml";
+
+				throw new Exception($failureMessage);
+			}
 			
 		}
 
