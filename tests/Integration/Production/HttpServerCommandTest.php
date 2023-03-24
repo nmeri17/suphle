@@ -98,7 +98,7 @@
 
 		public function test_will_fail_on_static_check_error () {
 
-			$exceptionMessage = "maduekwe";
+			$exceptionMessage = "pammy_maduekwe";
 
 			$this->stubStaticFailure($exceptionMessage); // given
 

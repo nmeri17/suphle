@@ -3,11 +3,9 @@
 
 	use Suphle\Hydration\Container;
 
-	use Suphle\File\FileSystemReader;
-
 	use Suphle\Server\PsalmWrapper;
 
-	use Suphle\Testing\TestTypes\ModuleLevelTest;
+	use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\RealVendorPath};
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
@@ -16,6 +14,8 @@
 	use ReflectionClass;
 
 	class StaticCheckTest extends ModuleLevelTest {
+
+		use RealVendorPath;
 
 		protected function getModules ():array {
 
@@ -45,15 +45,9 @@
 
 		protected function getPsalmWrapper ():PsalmWrapper {
 
-			$container = $this->getContainer();
+			$wrapper = $this->getContainer()->getClass(PsalmWrapper::class);
 
-			$vendorDir = $container->getClass(FileSystemReader::class)
-
-			->pathFromLevels($_SERVER["COMPOSER_RUNTIME_BIN_DIR"], "", 2);
-
-			$wrapper = $container->getClass(PsalmWrapper::class);
-
-			$wrapper->setExecutionPath($vendorDir);
+			$wrapper->setExecutionPath($this->getVendorPath());
 
 			$wrapper->scanConfigLevel();
 

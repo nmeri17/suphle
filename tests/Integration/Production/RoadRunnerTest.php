@@ -3,6 +3,8 @@
 
 	use Suphle\Hydration\Container;
 
+	use Suphle\Testing\Utilities\PingHttpServer;
+
 	use Suphle\Tests\Mocks\Modules\ModuleOne\OutgoingRequests\VisitSegment;
 
 	use GuzzleHttp\Exception\RequestException;
@@ -14,6 +16,8 @@
 	use Throwable;
 
 	class RoadRunnerTest extends BaseTestProduction {
+
+		use PingHttpServer;
 
 		protected const REQUEST_SENDER = VisitSegment::class,
 
@@ -45,7 +49,7 @@
 
 					$this->fail(
 
-						"Unable to start server:". "\n".
+						"Unable to start server:\n".
 
 						$this->processFullOutput($serverProcess)
 					);
@@ -107,29 +111,9 @@
 			);
 		}
 
-		/**
-		 * This method is blocking (like a while loop) and will continually poll the process until the internal condition is met. It doesn't have anything to do with timeout/asyncronicity, only lets us know the appropriate time to make assertions against the process i.e. when condition is met
-		*/
-		private function serverIsReady (Process $serverProcess):bool {
-
-			$serverProcess->waitUntil(function ($type, $buffer) {
-
-				return stripos((string) $buffer, "http server was started");
-			});
-
-			return $serverProcess->isRunning(); // If condition is not met, process should be released by timing out. Thus, this returns false
-		}
-
 		private function getResponseBody (ResponseInterface $response) {
 
 			return $response->getBody()->getContents();
-		}
-
-		private function processFullOutput (Process $process):string {
-
-			return $process->getOutput() . "\n".
-
-			$process->getErrorOutput();
 		}
 
 		/**
@@ -154,7 +138,7 @@
 
 					$this->fail(
 
-						"Unable to start server:". "\n".
+						"Unable to start server:\n".
 
 						$this->processFullOutput($serverProcess)
 					);
