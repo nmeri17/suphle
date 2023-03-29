@@ -30,7 +30,7 @@
 
 				Container::class,
 
-				$this->getContainerStubs()
+				$this->getContainerStubs(), $this->getContainerMocks()
 			);
 
 			$this->bootContainer($container);
@@ -104,6 +104,11 @@
 				$stubs["getDecorator"] = $this->stubDecorator();
 
 			return $stubs;
+		}
+
+		protected function getContainerMocks ():array {
+
+			return [];
 		}
 
 		private function maySetRealDecorator ():void {

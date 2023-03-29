@@ -38,6 +38,6 @@
 
 		public function listenForQueries ():void;
 
-		public function stopQueryListen ():void;
+		public function revertHeardQueries ():void;
 	}
 ?>

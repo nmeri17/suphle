@@ -65,7 +65,7 @@
 
 		protected function tearDown ():void {
 
-			$this->replicator->stopQueryListen();
+			$this->replicator->revertHeardQueries();
 
 			parent::tearDown();
 		}

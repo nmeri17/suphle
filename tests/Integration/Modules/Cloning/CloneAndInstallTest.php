@@ -31,6 +31,13 @@
 			parent::setUp();
 
 			$this->simpleCloneDependencies();
+
+			/**
+			* This is useful when the test is executed in parallel. Without it, we run into file-system permission issues
+			* 
+			* @see https://github.com/paratestphp/paratest/issues/748#issuecomment-1486614516
+			*/
+			$this->file = __DIR__ . "/test_file_" . sha1(uniqid(__METHOD__));
 		}
 
 		protected function getModules ():array {

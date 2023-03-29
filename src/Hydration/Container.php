@@ -814,10 +814,9 @@
 
 			$newClassName = substr(implode("", $classNameArray), 3, 20);
 
-			trigger_error(
-				"Circular dependency detected. Hint: Compare $typeName and ".$this->lastHydratedFor(),
+			$this->triggerCircularWarning(
 
-				E_USER_WARNING
+				$typeName, $this->lastHydratedFor()
 			);
 
 			return $this->genericFactory(
@@ -836,6 +835,15 @@
 			    	return new $newClassName($types["target"], $this);
 				}
 			); // A requests B and vice versa. If A makes the first call, we're returning a proxied/fake A to the B instance we pass to the real A
+		}
+
+		public function triggerCircularWarning (string $calledClass, string $dependency):void {
+
+			trigger_error(
+				"Circular dependency detected. Hint: Compare $calledClass and $dependency",
+
+				E_USER_WARNING
+			);
 		}
 
 		/**

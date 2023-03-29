@@ -42,10 +42,11 @@
 		"wyrihaximus/json-throwable": "^4.1"
 	},
 	"require-dev": {
+		"brianium/paratest": "*",
 		"fakerphp/faker": "^1.19",
 		"illuminate/testing": "^9.0",
 		"laravel/framework": "^9.0",
-		"phpunit/phpunit": "^8.5",
+		"phpunit/phpunit": "^9.0",
 		"rector/rector": "^0.14.6",
 		"symfony/process": "^6.0",
 		"vimeo/psalm": "*"

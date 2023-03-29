@@ -5,6 +5,6 @@
 
 	interface LaravelArtisan {
 
-		public function invokeCommand ($command, array $parameters = [], OutputInterface $writeTo):int;
+		public function invokeCommand ($command, OutputInterface $writeTo, array $parameters = []):int;
 	}
 ?>

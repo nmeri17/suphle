@@ -32,7 +32,15 @@
 	     */
 		public function test_canaries_use_collection_auth () {
 
-			$user = $this->replicator->getSpecificEntities(1, ["id" => 5])[0];
+			$user5Fields = ["id" => 5];
+
+			$userList = $this->replicator->getSpecificEntities(1, $user5Fields);
+
+			if (count($userList))
+
+				$user = $userList[0]; // this hard-coded row will not exist on long-lived databases where IDs are not really sequential, since transactions don't rollback IDs
+
+			else $user = $this->replicator->modifyInsertion(1, $user5Fields)[0];
 
 			// default = sessionStorage
 			$this->actingAs($user); // given

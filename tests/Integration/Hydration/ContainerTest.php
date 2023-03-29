@@ -158,34 +158,6 @@
 			$this->assertSame($count, $result); // then
 		}
 
-		public function test_unmuted_circular_dependencies_raises_warning () {
-
-			$this->expectWarning(); // then
-
-			$this->container->getClass(CircularConstructor1::class); // when
-		}
-
-		/**
-		 * This happens because $hydratingForStack stores both caller and target, in case it needs to return either
-		*/
-		public function test_circular_can_be_triggered_outside_ctor_explicit () {
-
-			$this->expectWarning(); // then
-
-			(new MethodCircularContainer($this->container))
-
-			->loadFromContainer(); // when
-		}
-
-		public function test_circular_can_be_triggered_outside_ctor_implicit () {
-
-			$this->expectWarning(); // then
-
-			$this->container->getClass(MethodCircularContainer::class)
-
-			->loadFromContainer(); // when
-		}
-
 		public function test_sub_can_see_parent_provision () {
 
 			$value = 10;

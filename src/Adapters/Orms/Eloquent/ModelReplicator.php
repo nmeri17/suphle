@@ -5,13 +5,13 @@
 
 	use Suphle\Contracts\Database\{OrmReplicator, OrmDialect};
 
-	use Suphle\Contracts\Bridge\LaravelContainer;
+	use Suphle\Contracts\{Config\Database, Bridge\LaravelContainer};
 
 	use Suphle\Adapters\Orms\Eloquent\Models\BaseModel;
 
-	use Illuminate\Database\{Migrations\Migrator, Connection};
+	use Illuminate\Database\{Connection, Migrations\Migrator};
 
-	use Exception;
+	use Exception, PDO;
 
 	class ModelReplicator implements OrmReplicator {
 
@@ -21,11 +21,17 @@
 
 		protected Migrator $migrator;
 
-		public function __construct (
-			OrmDialect $ormDialect, protected readonly LaravelContainer $laravelContainer,
+		protected array $credentials = [];
 
-			protected readonly Container $container
+		public function __construct (
+			protected readonly Container $container,
+
+			OrmDialect $ormDialect, LaravelContainer $laravelContainer,
+
+			Database $config
 		) {
+
+			$this->credentials = $config->getCredentials();
 
 			$this->databaseConnection = $ormDialect->getConnection();
 
@@ -35,11 +41,6 @@
 		public function seedDatabase ( int $amount):void {
 
 			$this->activeModel::factory()->count($amount)->create();
-		}
-
-		public function stopQueryListen ():void {
-
-			$this->databaseConnection->rollBack();
 		}
 
 		public function getCount ():int {
@@ -97,6 +98,8 @@
 
 		public function setupSchema ():void {
 
+			$this->mayCreateDatabase();
+
 			$repository = $this->migrator->getRepository();
 
 			if (!$repository->repositoryExists())
@@ -121,12 +124,60 @@
 
 		public function dismantleSchema ():void {
 
+			if (!getenv("NUKE_DB")) return;
+
 			$this->migrator->rollback($this->activeModel::migrationFolders());
+
+			$this->dropDatabase();
 		}
 
 		public function listenForQueries ():void {
 
 			$this->databaseConnection->beginTransaction();
+		}
+
+		public function revertHeardQueries ():void {
+
+			$this->databaseConnection->rollBack();
+		}
+
+		protected function getPdoConnection (array $connectionDetails):PDO {
+
+			extract($connectionDetails);
+			
+			$instance = new PDO("$driver:host=$host", $username, $password);
+
+			$instance->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+			return $instance;
+		}
+
+		protected function mayCreateDatabase ():void {
+
+			foreach ($this->credentials as $connectionDetails) {
+
+				$sanitizedName = "`".
+
+					str_replace("`","``", $connectionDetails["database"]).
+
+					"`";
+
+				$connection = $this->getPdoConnection($connectionDetails);
+
+				$connection->query("CREATE DATABASE IF NOT EXISTS $sanitizedName");
+				
+				$connection->query("use $sanitizedName");
+			}
+		}
+
+		protected function dropDatabase ():void {
+
+			foreach ($this->credentials as $connectionDetails) {
+
+				$connection = $this->getPdoConnection($connectionDetails);
+
+				$connection->exec("DROP database ". $connectionDetails["database"]);
+			}
 		}
 	}
 ?>

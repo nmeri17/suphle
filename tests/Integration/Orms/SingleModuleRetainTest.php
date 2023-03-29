@@ -59,12 +59,39 @@
 			];
 		}
 
-		public function test_retains_seeded_data_after_request ():int {
+		public function test_retains_seeded_data_after_request ():array {
 
-			// given // that we have $this->lastInserted->id -- it doesn't use preDatabaseFreeze-- just a regular seeding
+			$seededAmount = $this->replicator->getCount(); // given
 
 			// for the edit history bits
-			$this->actingAs($this->lastInserted->employer->user); // this must come first since it starts new session
+			$this->actingAs($this->lastInserted->employer->user);
+
+			$this->assertSuccessfulEditUpdate(); // when
+
+			// then
+			$this->assertSame(
+
+				$seededAmount, $this->replicator->getCount()
+			); // still visible
+
+			$modifiedRows = $this->replicator->getSpecificEntities(
+
+				100, array_merge($this->updatePayload, [
+
+					"id" => $this->lastInserted->id // the main assertion here -- that this row is retained
+				])
+			);
+
+			$this->assertCount(1, $modifiedRows); // fetch 100 and assert that truly, one was modified
+
+			return [
+
+				"previous_request_id" => $this->lastInserted->id, // since {lastInserted} would've been overriden by the next iteration
+				"started_with" => $seededAmount - $this->getInitialCount()
+			];
+		}
+
+		protected function assertSuccessfulEditUpdate ():void {
 
 			$csrfToken = $this->getContainer()->getClass(CsrfGenerator::class)
 			->newToken();
@@ -82,24 +109,6 @@
 				])
 			) // when
 			->assertJsonPath("message", 1); // sanity check // update success
-
-			// then
-			$this->assertSame(
-
-				$this->getInitialCount(), $this->replicator->getCount()
-			); // still visible
-
-			$modifiedRows = $this->replicator->getSpecificEntities(
-
-				100, array_merge($this->updatePayload, [
-
-					"id" => $this->lastInserted->id // the main assertion here -- that this row is retained
-				])
-			);
-
-			$this->assertCount(1, $modifiedRows); // fetch 100 and assert that truly, one was modified
-
-			return $this->lastInserted->id; // since {lastInserted} would've been overriden by the next iteration
 		}
 
 		/**
@@ -107,25 +116,27 @@
 		 * 
 		 * @depends test_retains_seeded_data_after_request
 		*/
-		public function test_rolls_back_preceding_test_updates (int $previousRequestId) {
+		public function test_rolls_back_preceding_test_updates (array $testDetails):int {
 
 			$this->databaseApi->assertDatabaseMissing(
 
 				self::TABLE_NAME, array_merge($this->updatePayload, [
 
-					"id" => $previousRequestId
+					"id" => $testDetails["previous_request_id"]
 				])
 			);
+
+			return $testDetails["started_with"];
 		}
 
 		/**
 		 * @depends test_rolls_back_preceding_test_updates
 		*/
-		public function test_will_not_see_leftover_from_previous_seedings () {
+		public function test_will_not_see_leftover_from_previous_seedings (int $startedWith) {
 
 			$this->assertSame(// then
 
-				$this->getInitialCount(),
+				$startedWith + $this->getInitialCount(),
 
 				$this->replicator->getCount()
 			);

@@ -18,6 +18,13 @@
 			CommonBinds::simpleBinds as commonSimples;
 		}
 
+		protected function setUp ():void {
+
+			parent::setUp();
+
+			$this->file = __DIR__ . "/test_file_" . sha1(uniqid(__METHOD__));
+		}
+
 		protected function simpleBinds ():array {
 
 			return array_merge($this->commonSimples(), [

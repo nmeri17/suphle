@@ -43,7 +43,7 @@
 
 			->invokeCommand(
 
-				$input->getArgument(self::TO_FORWARD_ARGUMENT), [],
+				$input->getArgument(self::TO_FORWARD_ARGUMENT),
 
 				$output
 			); // Command::SUCCESS/FAILURE/INVALID

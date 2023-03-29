@@ -5,7 +5,7 @@
 
 	class MethodCircularContainer {
 
-		public function __construct(protected readonly Container $container) {
+		public function __construct (private readonly Container $container) { // any higher access level will prevent the proxy from doing its thing
 
 			//
 		}

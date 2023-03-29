@@ -14,7 +14,7 @@
 			parent::__construct($laravelContainer, $events, $version);
 		}
 
-		public function invokeCommand ($command, array $parameters = [], OutputInterface $writeTo = null):int {
+		public function invokeCommand ($command, OutputInterface $writeTo, array $parameters = []):int {
 
 			return $this->call($command, $parameters, $writeTo);
 		}

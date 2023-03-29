@@ -42,10 +42,10 @@
 				"addWhereClause" => [$this->never(), [$this->anything()]]
 			]);
 
-			$searchService = $this->getSearchService([
+			$searchService = $this->getSearchService($ormDialect, [
 
 				"custom_filter" => [1, [ $this->model, $fieldValue]]
-			], $ormDialect);
+			]);
 
 			$searchService->convertToQuery($this->model, ["q"]); // when
 		}
@@ -58,13 +58,13 @@
 
 			$this->stubRequestObjects(8, $this->baseQuery); // given
 
-			$searchService = $this->getSearchService([
+			$searchService = $this->getSearchService($this->negativeDouble(OrmDialect::class), [
 
 				"custom_filter" => [$this->never(), [
 
 					$this->model, $fieldValue
 				]]
-			], $this->negativeDouble(OrmDialect::class)); // then
+			]); // then
 
 			$searchService->convertToQuery($this->model, ["q"]); // when
 		}
@@ -80,12 +80,12 @@
 				"addWhereClause" => [$this->atLeastOnce(), [$this->anything()]]
 			]); // then
 
-			$this->getSearchService([], $ormDialect)
+			$this->getSearchService($ormDialect, [])
 
 			->convertToQuery($this->model, ["q"]); // when
 		}
 
-		protected function getSearchService (array $mockMethods = [], OrmDialect $ormDialect):SimpleSearchService {
+		protected function getSearchService (OrmDialect $ormDialect, array $mockMethods = []):SimpleSearchService {
 
 			$sut = $this->positiveDouble(SimpleSearchService::class, [], $mockMethods);
 
