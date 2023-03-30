@@ -28,6 +28,6 @@
 		<env name="DATABASE_PASS" value="password" />
 		<env name="DATABASE_NAME" value="thing_test" />
 		<env name="DATABASE_HOST" value="127.0.0.1" /> -->
-		<env name="NUKE_DB" value="true" />
+		<env name="SUPHLE_NUKE_DB" value="true" />
 	</php>
 </phpunit>

@@ -11,6 +11,10 @@
 
 	class ProjectInitializer {
 
+		public const SYNC_TESTER = "phpunit",
+
+		ASYNC_TESTER = "paratest";
+
 		protected ?Process $runningProcess = null;
 
 		protected string $projectRootPath;
@@ -95,11 +99,13 @@
 			return $this;
 		}
 
-		public function contributorOperations (?string $testsPath, array $phpUnitOptions):void {
+		public function contributorOperations (?string $testsPath, array $phpUnitOptions, bool $useParallel):void {
 
 			$this->downloadRRBinary();
 
-			$testProcess = $this->vendorBin->setProcessArguments("phpunit", [
+			$processName = !$useParallel ? self::SYNC_TESTER: self::ASYNC_TESTER;
+
+			$testProcess = $this->vendorBin->setProcessArguments($processName, [
 
 				$testsPath ??
 

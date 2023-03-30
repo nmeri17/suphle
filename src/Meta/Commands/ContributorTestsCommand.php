@@ -13,9 +13,11 @@
 
 	class ContributorTestsCommand extends BaseCliCommand {
 
-		final const TESTS_PATH_OPTION = "tests_path",
+		public const TESTS_PATH_OPTION = "tests_path",
 
-		PHPUNIT_ARGS_OPTION = "phpunit_arg";
+		PHPUNIT_ARGS_OPTION = "phpunit_flags",
+
+		PARALLEL_OPTION = "paratest_flags";
 
 		protected static $defaultDescription = "Install RR and run test suite";
 
@@ -39,13 +41,23 @@
 			$this->addOption(
 				self::PHPUNIT_ARGS_OPTION, "p",
 
-				InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY,
+				InputOption::VALUE_REQUIRED,
 
-				"Arguments to forward to the phpunit runner", []
+				"Arguments to forward to the phpunit runner"
+			);
+
+			$this->addOption(
+				self::PARALLEL_OPTION, "a",
+
+				InputOption::VALUE_REQUIRED,
+
+				"Use the paratest runner with given flags"
 			);
 		}
 
 		public function execute (InputInterface $input, OutputInterface $output):int {
+
+			$parallelOptions = $input->getOption(self::PARALLEL_OPTION);
 
 			try {
 
@@ -59,7 +71,9 @@
 
 					$input->getOption(self::TESTS_PATH_OPTION),
 
-					$input->getOption(self::PHPUNIT_ARGS_OPTION)
+					$this->getRunnerOptions($input, $parallelOptions),
+
+					!is_null($parallelOptions)
 				);
 
 				return Command::SUCCESS;
@@ -72,6 +86,16 @@
 
 				return Command::FAILURE;
 			}
+		}
+
+		protected function getRunnerOptions (InputInterface $input, ?string $parallelOptions):array {
+
+			return array_filter([
+
+				$input->getOption(self::PHPUNIT_ARGS_OPTION),
+
+				$parallelOptions
+			]);
 		}
 	}
 ?>

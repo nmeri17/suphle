@@ -37,9 +37,9 @@
 
 		public function addParallelSuffix (string $databaseName):string {
 
-			if (is_null($this->parallelToken)) return $databaseName;
+			return is_null($this->parallelToken) ? $databaseName:
 
-			return $databaseName. "_". $this->parallelToken;
+			$databaseName. "_". $this->parallelToken;
 		}
 	}
 ?>

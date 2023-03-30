@@ -124,7 +124,7 @@
 
 		public function dismantleSchema ():void {
 
-			if (!getenv("NUKE_DB")) return;
+			if (!getenv("SUPHLE_NUKE_DB")) return;
 
 			$this->migrator->rollback($this->activeModel::migrationFolders());
 

@@ -5,7 +5,7 @@
 
 	use Suphle\Hydration\Container;
 
-	use Suphle\Meta\Commands\ContributorTestsCommand;
+	use Suphle\Meta\{ProjectInitializer, Commands\ContributorTestsCommand};
 
 	use Suphle\Testing\{TestTypes\CommandLineTest, Proxies\WriteOnlyContainer};
 
@@ -19,6 +19,8 @@
 
 		protected const TESTS_PATH = "gfc";
 
+		protected bool $activateArgumentReading;
+
 		protected function getModules ():array {
 
 			return [new ModuleOneDescriptor(new Container) ];
@@ -26,7 +28,7 @@
 
 		public function test_will_try_running_tests () {
 
-			$this->mockVendorBin();
+			$this->mockTestRunnerProcess(ProjectInitializer::SYNC_TESTER, self::TESTS_PATH);
 
 			$command = $this->consoleRunner->findHandler(
 
@@ -41,13 +43,17 @@
 
 			// then, sanity check
 			$this->assertSame($commandResult, Command::SUCCESS );
+
+			if (!$this->activateArgumentReading)
+
+				$this->fail("Didn't execute phpunit process");
 		}
 
-		protected function mockVendorBin ():void {
+		protected function mockTestRunnerProcess (string $runnerName, string $expectedContent):void {
+
+			$this->activateArgumentReading = false;
 
 			$vendorBin = VendorBin::class;
-
-			$isTestCommand = false;
 
 			$this->massProvide([
 
@@ -58,22 +64,49 @@
 
 					"setProcessArguments" => [
 
-						$this->atLeastOnce(), [$this->callback(function($argument) use (&$isTestCommand) {
+						$this->atLeastOnce(), [$this->callback(function($processName) use ($runnerName) {
 
-							$isTestCommand = $argument == "phpunit";
+							$this->activateArgumentReading = $processName == $runnerName;
 
 							return true;
-						}), $this->callback(function($argument) use ($isTestCommand) {
+						}), $this->callback(function($processArguments) use ($expectedContent) {
 
-							if ($isTestCommand)
+							if ($this->activateArgumentReading)
 
-								return $this->assertSame($argument, [self::TESTS_PATH]);
+								return in_array($expectedContent, $processArguments);
 
 							return true;
 						})]
 					]
 				])
 			]);
+		}
+
+		public function test_can_optionally_switch_to_parallel_mode () {
+
+			$parallelOptions = "--processes=5";
+
+			$this->mockTestRunnerProcess(ProjectInitializer::ASYNC_TESTER, $parallelOptions);
+
+			$command = $this->consoleRunner->findHandler(
+
+				ContributorTestsCommand::commandSignature()
+			);
+
+			// when
+			$commandResult = (new CommandTester($command))->execute([
+
+				"--" . ContributorTestsCommand::TESTS_PATH_OPTION => self::TESTS_PATH,
+
+				"--" . ContributorTestsCommand::PARALLEL_OPTION => $parallelOptions
+			]);
+
+			// then, sanity check
+			$this->assertSame($commandResult, Command::SUCCESS );
+
+			if (!$this->activateArgumentReading)
+
+				$this->fail("Didn't execute ". ProjectInitializer::ASYNC_TESTER ." process");
 		}
 	}
 ?>
