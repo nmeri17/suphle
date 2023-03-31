@@ -42,7 +42,11 @@
 				"../../dev-rr.yaml"
 			);
 
-			$this->runningProcess->start($this->vendorBin->processOut(...));
+			$this->runningProcess->setTimeout(0);
+
+			$this->runningProcess->start();
+
+			$this->runningProcess->wait($this->vendorBin->processOut(...));
 
 			return $creationStatus;
 		}
