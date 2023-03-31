@@ -9,6 +9,8 @@
 
 	use Symfony\Component\{Process\Process, Console\Output\OutputInterface};
 
+	use Symfony\Component\Console\Input\ArrayInput;
+
 	class ProjectInitializer {
 
 		public const SYNC_TESTER = "phpunit",
