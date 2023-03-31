@@ -6,7 +6,9 @@ Project can either be installed using Composer,
 
 ```bash
 
-composer create-project nmeri17/suphle
+composer create-project nmeri/suphle AwesomeProject
+
+cd AwesomeProject
 ```
 
 ## Testing
@@ -68,7 +70,7 @@ They don't require any database connection and only demonstrate the relatively b
 
 If you're window shopping, a *sort of* example application resides in the `tests/Mocks` folder. Emphasis is laid on "sort of" since `ModuleOne` there, is for testing majority of the framework's feature set and doesn't necessarily reflect what you'd expect from a real life Suphle module.
 
-Documentation is [hosted temporarily at](https://angry-cray-9c191b.netlify.app).
+Documentation is at [Suphle.com](https://suphle.com).
 
 ## Where to start contributing
 
