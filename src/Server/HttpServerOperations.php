@@ -65,7 +65,7 @@
 					$commandOptions, ["-c", $configPath]
 				);
 
-			$process = $this->vendorBin->setProcessArguments("rr", $commandOptions, false);
+			$process = $this->vendorBin->setProcessArguments(VendorBin::RR_BINARY, $commandOptions, false);
 
 			$process->setTimeout(0); // run indefinitely
 

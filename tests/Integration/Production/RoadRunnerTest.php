@@ -3,6 +3,8 @@
 
 	use Suphle\Hydration\Container;
 
+	use Suphle\Server\VendorBin;
+
 	use Suphle\Testing\Utilities\PingHttpServer;
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\OutgoingRequests\VisitSegment;
@@ -99,7 +101,7 @@
 
 		private function ensureExecutableRuns ():void {
 
-			$helpProcess = $this->vendorBin->setProcessArguments("rr", ["--help" ] );
+			$helpProcess = $this->vendorBin->setProcessArguments(VendorBin::RR_BINARY, ["--help" ] );
 
 			$helpProcess->mustRun();
 

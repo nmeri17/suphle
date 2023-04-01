@@ -23,6 +23,8 @@
 		public const PREVIOUS_GET_RENDERER = "previous_get_renderer";
 
 		protected array $handlerParameters;
+
+		protected ValidatorManager $validatorManager;
 			
 		public function __construct (
 
@@ -35,8 +37,6 @@
 			protected readonly FlowResponseQueuer $flowQueuer,
 
 			protected readonly RequestDetails $requestDetails,
-
-			protected readonly ValidatorManager $validatorManager,
 
 			protected readonly CallbackDetails $callbackDetails
 		) {
@@ -163,6 +163,8 @@
 
 				$coodinator::class, $handlingMethod, $attributesList
 			)) {
+
+				$this->validatorManager = $this->container->getClass(ValidatorManager::class); // lazily setting this since it incurs a ton of hydration irrelevant to every request
 
 				$this->validatorManager->setActionRules(
 

@@ -26,9 +26,11 @@
 			return [new ModuleOneDescriptor(new Container)];
 		}
 
-		public function test_will_start_server_after_module_is_cloned () {
+		public function test_attempts_to_download_binary () {
 
-			$this->mockInitializerServicers();
+			$moduleCreationOutcome = Command::SUCCESS;
+
+			$this->mockInitializerServices($moduleCreationOutcome);
 
 			$command = $this->consoleRunner->findHandler(
 
@@ -43,10 +45,10 @@
 				"--" . CloneModuleCommand::DESCRIPTOR_OPTION => self::DESCRIPTOR_NAME
 			]);
 
-			$this->assertSame($commandResult, Command::SUCCESS );
+			$this->assertSame($commandResult, $moduleCreationOutcome );
 		}
 
-		protected function mockInitializerServicers ():void {
+		protected function mockInitializerServices (int $moduleCreationOutcome):void {
 
 			$initializerName = ProjectInitializer::class;
 
@@ -58,12 +60,14 @@
 
 					$vendorBin => $this->replaceConstructorArguments($vendorBin, [], [], [
 
-						"setProcessArguments" => [$this->atLeastOnce(), []],
-						"getServerLauncher" => [$this->atLeastOnce(), []]
+						"setProcessArguments" => [$this->atLeastOnce(), [
+
+							$this->anything(), [ProjectInitializer::BINARY_FETCHER]
+						]]
 					])
 				], [
 
-					"createModule" => Command::SUCCESS
+					"createModule" => $moduleCreationOutcome
 				], [
 
 					"createModule" => [1, [

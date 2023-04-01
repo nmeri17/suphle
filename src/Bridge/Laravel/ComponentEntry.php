@@ -3,21 +3,7 @@
 
 	use Suphle\ComponentTemplates\BaseComponentEntry;
 
-	use Suphle\Contracts\Config\ModuleFiles;
-
-	use Suphle\File\FileSystemReader;
-
 	class ComponentEntry extends BaseComponentEntry {
-
-		public function __construct (
-
-			ModuleFiles $fileConfig, FileSystemReader $fileSystemReader,
-
-			protected readonly ConfigDownloader $remoteConfig
-		) {
-
-			parent::__construct($fileConfig, $fileSystemReader);
-		}
 
 		public function uniqueName ():string {
 
@@ -33,10 +19,7 @@
 
 			parent::eject();
 
-			$this->remoteConfig->setFilePath(
-
-				$this->userLandMirror() . "config/app.php"
-			)->getDomainObject();
+			mkdir($this->userLandMirror(). "bootstrap/cache");
 		}
 	}
 ?>

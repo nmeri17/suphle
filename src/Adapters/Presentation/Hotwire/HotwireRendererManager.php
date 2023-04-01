@@ -29,8 +29,6 @@
 
 			protected readonly RequestDetails $requestDetails,
 
-			protected readonly ValidatorManager $validatorManager,
-
 			protected readonly CallbackDetails $callbackDetails,
 
 			protected readonly ValidationFailureConvention $failureConvention

@@ -21,6 +21,7 @@
 		"php": "^8.1",
 		"bugsnag/bugsnag": "^3.0",
 		"brianium/paratest": "*",
+		"fakerphp/faker": "^1.19",
 		"firebase/php-jwt": "^6.0",
 		"friendsofphp/proxy-manager-lts": "^1.0",
 		"guzzlehttp/guzzle": "^7.4",
@@ -48,7 +49,6 @@
 		"vimeo/psalm": "*"
 	},
 	"require-dev": {
-		"fakerphp/faker": "^1.19",
 		"rector/rector": "^0.14.6"
 	},
 	"repositories": [],

@@ -9,11 +9,9 @@
 
 		public function __construct (
 
-			//protected readonly Container $container,
-
 			protected readonly LaravelContainer $laravelContainer,
 
-			protected readonly PayloadStorage $payloadStorage // test that this doesn't require servc loca
+			protected readonly PayloadStorage $payloadStorage
 		) {
 
 			//

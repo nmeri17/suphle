@@ -7,6 +7,8 @@
 
 	class VendorBin {
 
+		public const RR_BINARY = "rr";
+
 		protected string $projectRootPath;
 
 		public function __construct (protected readonly FileSystemReader $fileSystemReader) {
@@ -37,7 +39,7 @@
 
 		public function getServerLauncher (string $relativeToConfig):Process {
 
-			return $this->setProcessArguments("rr", [
+			return $this->setProcessArguments(self::RR_BINARY, [
 
 				"serve", "-c", $this->getRootFile($relativeToConfig)
 			]);

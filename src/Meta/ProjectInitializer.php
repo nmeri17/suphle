@@ -15,7 +15,9 @@
 
 		public const SYNC_TESTER = "phpunit",
 
-		ASYNC_TESTER = "paratest";
+		ASYNC_TESTER = "paratest",
+
+		BINARY_FETCHER = "get-binary";
 
 		protected ?Process $runningProcess = null;
 
@@ -35,20 +37,7 @@
 
 			$this->downloadRRBinary();
 
-			$creationStatus = $this->createModule($moduleName, $descriptorFqcn, $output);
-
-			$this->runningProcess = $this->vendorBin->getServerLauncher(
-
-				"../../dev-rr.yaml"
-			);
-
-			$this->runningProcess->setTimeout(0);
-
-			$this->runningProcess->start();
-
-			$this->runningProcess->wait($this->vendorBin->processOut(...));
-
-			return $creationStatus;
+			return $this->createModule($moduleName, $descriptorFqcn, $output);
 		}
 
 		/**
@@ -77,13 +66,11 @@
 
 		protected function downloadRRBinary ():void {
 
-			$commandSignature = "get-binary";
+			$this->vendorBin->setProcessArguments(VendorBin::RR_BINARY, [self::BINARY_FETCHER])
 
-			$this->vendorBin->setProcessArguments("rr", [$commandSignature])
+			->run(function ($type, $buffer) {
 
-			->run(function ($type, $buffer) use ($commandSignature) {
-
-				$content = "unknown command '$commandSignature'";
+				$content = "unknown command '{self::BINARY_FETCHER}'";
 
 				if (preg_match("/$content/i", $buffer) !== 0)
 

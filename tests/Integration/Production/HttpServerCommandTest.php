@@ -90,7 +90,7 @@
 
 					"setProcessArguments" => [1, [
 
-						"rr", ["serve", "-c", $configPath]
+						VendorBin::RR_BINARY, ["serve", "-c", $configPath]
 					]]
 				])
 			]);
