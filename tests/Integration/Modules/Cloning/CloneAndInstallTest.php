@@ -3,21 +3,13 @@
 
 	use Suphle\Hydration\Container;
 
-	use Suphle\Modules\ModuleCloneService;
+	use Suphle\Services\ComponentEntry as ServicesComponentEntry;
 
-	use Suphle\ComponentTemplates\Commands\InstallComponentCommand;
-
-	use Suphle\Contracts\Modules\DescriptorInterface;
-
-	use Suphle\Bridge\Laravel\ComponentEntry as LaravelComponentEntry;
-
-	use Suphle\Testing\{TestTypes\CommandLineTest, Proxies\WriteOnlyContainer};
+	use Suphle\Testing\TestTypes\CommandLineTest;
 
 	use Suphle\Tests\Integration\ComponentTemplates\ExceptionComponentTest;
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
-
-	use Symfony\Component\Console\{Command\Command, Tester\CommandTester};
 
 	class CloneAndInstallTest extends CommandLineTest {
 
@@ -58,7 +50,7 @@
 
 			return array_merge($this->inheritedContainerBindings(), [
 
-				$this->servicesTemplate => $this->negativeDouble($this->servicesTemplate, [], [ // or replaceConstructorArguments
+				ServicesComponentEntry::class => $this->negativeDouble(ServicesComponentEntry::class, [], [ // or replaceConstructorArguments
 
 					"eject" => [1, []]
 				])

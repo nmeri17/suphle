@@ -19,7 +19,7 @@
 
 			parent::eject();
 
-			mkdir($this->userLandMirror(). "bootstrap/cache");
+			@mkdir($this->userLandMirror(). "bootstrap/cache");
 		}
 	}
 ?>

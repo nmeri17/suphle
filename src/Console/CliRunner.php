@@ -3,7 +3,7 @@
 
 	use Suphle\Contracts\{ConsoleClient, Config\Console};
 
-	use Suphle\Modules\ModuleHandlerIdentifier;
+	use Suphle\Modules\{ModuleHandlerIdentifier, Structures\ActiveDescriptors};
 
 	use Suphle\Server\ModuleWorkerAccessor;
 
@@ -17,7 +17,9 @@
 
 		protected ?Container $defaultContainer = null;
 
-		protected array $allCommands = [];
+		protected array $allCommands = [],
+
+		$descriptors = []; // used to avoid getting fresh descriptor copies while repeatedly reading MHI and instantiating descriptors
 
 		public function __construct (
 
@@ -38,15 +40,19 @@
 
 		public function extractAvailableCommands ():self {
 
-			$allModules = $this->moduleHandler->getModules();
+			$firstContainer = $this->moduleHandler->firstContainer();
 
-			if (!empty($allModules)) {
+			if (!is_null($firstContainer)) {
 
 				(new ModuleWorkerAccessor($this->moduleHandler, false))
 
 				->buildIdentifier();
 
-				$this->extractCommandsFromModules($allModules);
+				$descriptorsHolder = $firstContainer->getClass(ActiveDescriptors::class);
+
+				$this->descriptors = $descriptorsHolder->getOriginalDescriptors();
+
+				$this->extractCommandsFromModules();
 			}
 			else {
 
@@ -62,9 +68,9 @@
 			return $this;
 		}
 
-		private function extractCommandsFromModules (array $modules):void {
+		private function extractCommandsFromModules ():void {
 
-			foreach ($modules as $module)
+			foreach ($this->descriptors as $module)
 
 				$this->extractCommandsFromContainer($module->getContainer());
 		}
@@ -99,7 +105,7 @@
 
 			foreach ($this->allCommands as $command) {
 
-				$command->setModules($this->moduleHandler->getModules());
+				$command->setModules($this->descriptors);
 
 				$command->setExecutionPath($this->projectRootPath);
 

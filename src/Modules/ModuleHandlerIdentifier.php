@@ -29,7 +29,7 @@
 
 		protected ?DescriptorInterface $routedModule = null;
 
-		protected Container $container;
+		protected ?Container $container = null;
 
 		protected array $descriptorInstances;
 
@@ -209,7 +209,7 @@
 			return $this->container;
 		}
 
-		public function firstContainer ():Container {
+		public function firstContainer ():?Container {
 
 			return $this->container;
 		}

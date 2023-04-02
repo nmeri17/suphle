@@ -5,7 +5,7 @@
 
 	use Suphle\Hydration\Container;
 
-	use Suphle\Modules\{Commands\CloneModuleCommand, Structures\ActiveDescriptors};
+	use Suphle\Modules\Structures\ActiveDescriptors;
 
 	use Suphle\File\{FolderCloner, FileSystemReader};
 

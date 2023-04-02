@@ -55,5 +55,12 @@
 	"extra": {},
 	"config": {
 		"sort-packages": true
-	}
+	},
+    "scripts": {
+        "post-create-project-cmd": [
+            "rr get-binary"
+        ],
+        "test": "phpunit ../../tests",
+        "parallel-test": "paratest ../../tests"
+    }
 }

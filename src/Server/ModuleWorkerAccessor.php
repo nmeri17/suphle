@@ -27,8 +27,8 @@
 		protected QueueAdapter $queueWorker;
 
 		public function __construct (
-			protected readonly ModuleHandlerIdentifier $handlerIdentifier, 
-
+			protected readonly ModuleHandlerIdentifier $handlerIdentifier,
+			
 			protected readonly bool $isHttpMode
 		) {
 

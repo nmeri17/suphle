@@ -33,8 +33,6 @@
 
 		$sutName = CloneModuleCommand::class,
 
-		$servicesTemplate = ServicesComponentEntry::class,
-
 		$componentConfig = ComponentTemplates::class;
 
 		protected function simpleCloneDependencies ():self {
@@ -91,7 +89,7 @@
 
 				$this->componentConfig => $this->positiveDouble($this->componentConfig, [
 
-					"getTemplateEntries" => [$this->servicesTemplate]
+					"getTemplateEntries" => [ServicesComponentEntry::class]
 				])
 			];
 		}

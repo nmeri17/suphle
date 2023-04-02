@@ -9,9 +9,7 @@
 
 	use Suphle\ComponentTemplates\Commands\InstallComponentCommand;
 
-	use Suphle\Server\Commands\{InitializeProjectCommand, HttpServerCommand};
-
-	use Suphle\Meta\Commands\ContributorTestsCommand;
+	use Suphle\Server\Commands\HttpServerCommand;
 
 	class Console implements ConsoleContract {
 
@@ -22,9 +20,7 @@
 
 				InstallComponentCommand::class, CloneModuleCommand::class,
 
-				ContributorTestsCommand::class,
-
-				InitializeProjectCommand::class, HttpServerCommand::class
+				HttpServerCommand::class
 			];
 		}
 	}
