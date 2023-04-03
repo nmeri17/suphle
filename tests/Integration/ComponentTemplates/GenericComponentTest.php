@@ -7,7 +7,15 @@
 
 	use Suphle\ComponentTemplates\Commands\InstallComponentCommand;
 
-	use Suphle\Testing\TestTypes\CommandLineTest;
+	use Suphle\Adapters\Orms\Eloquent\ComponentEntry as EloquentComponentEntry;
+
+	use Suphle\Testing\{TestTypes\CommandLineTest, Proxies\WriteOnlyContainer};
+
+	use Suphle\Exception\ComponentEntry as ExceptionComponentEntry;
+
+	use Suphle\Bridge\Laravel\ComponentEntry as LaravelComponentEntry;
+
+	use Suphle\Services\ComponentEntry as ServicesComponentEntry;
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
@@ -19,7 +27,17 @@
 
 		protected function getModules ():array {
 
-			return [new ModuleOneDescriptor(new Container)];
+			return [
+				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+
+					$config = ComponentTemplates::class;
+
+					$container->replaceWithMock($config, $config, [
+
+						"getTemplateEntries" => $this->componentList()
+					]);
+				})
+			];
 		}
 
 		public function test_can_install_all_components () {
@@ -40,18 +58,43 @@
 
 			$this->assertSame(Command::SUCCESS, $result); // sanity check
 
+			$this->assertInstalledAll();
+		}
+
+		protected function assertInstalledAll ():void {
+
+			$this->assertSame( // then
+
+				count($this->componentList()),
+
+				count($this->getInstalledComponents())
+			);
+		}
+
+		protected function getInstalledComponents ():array {
+
 			$container = $this->getContainer();
 
-			foreach (
-				$container->getClass(ComponentTemplates::class)
+			$componentInstances = array_map(function ($entry) use ($container) {
 
-				->getTemplateEntries() as $entry
-			)
+				return $container->getClass($entry);
+			}, $this->componentList());
 
-				$this->assertTrue( // then
+			return array_filter($componentInstances, function ($entry) {
 
-					$container->getClass($entry)->hasBeenEjected()
-				);
+				return $entry->hasBeenEjected();
+			});
+		}
+
+		protected function componentList ():array {
+
+			return [
+				ExceptionComponentEntry::class,
+
+				LaravelComponentEntry::class,
+
+				ServicesComponentEntry::class
+			]; // excluding EloquentComponentEntry since we're using a different name than AppModels
 		}
 	}
 ?>
