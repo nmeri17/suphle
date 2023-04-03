@@ -19,10 +19,17 @@
 			$this->componentList = $templateConfig->getTemplateEntries();
 		}
 
-		public function depositFiles (?array $componentsToOverride):bool {
+		public function depositFiles (?array $componentsToOverride, array $componentArguments):bool {
 
 			$hydratedComponents = array_map(
-				fn($component) => $this->container->getClass($component),
+				function ($component) use ($componentArguments) {
+
+					$instance = $this->container->getClass($component);
+
+					$instance->setInputArguments($componentArguments);
+
+					return $instance;
+				},
 
 				$this->componentList
 			);

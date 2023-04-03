@@ -71,7 +71,11 @@
 			);
 		}
 
-		public function installModuleTemplates (string $moduleName, OutputInterface $output, ?string $descriptorName):int {
+		public function installModuleTemplates (
+			string $moduleName, OutputInterface $output,
+
+			?string $descriptorName, ?string $componentArguments
+		):int {
 
 			if (empty($descriptorName)) return Command::SUCCESS;
 
@@ -89,7 +93,9 @@
 
 			$commandInput = new ArrayInput([
 
-				InstallComponentCommand::HYDRATOR_MODULE_OPTION => $descriptor->exportsImplements()
+				InstallComponentCommand::HYDRATOR_MODULE_OPTION => $descriptor->exportsImplements(),
+
+				"--" . InstallComponentCommand::COMPONENT_ARGS_OPTION => $componentArguments
 			]);
 
 			return $command->run($commandInput, $output);

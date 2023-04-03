@@ -1,6 +1,8 @@
 <?php
 	namespace Suphle\Testing\TestTypes;
 
+	use Suphle\ComponentTemplates\BaseComponentEntry;
+
 	use Suphle\ComponentTemplates\Commands\InstallComponentCommand;
 
 	use Suphle\Testing\{Condiments\FilesystemCleaner, TestTypes\CommandLineTest};
@@ -13,6 +15,8 @@
 	abstract class InstallComponentTest extends CommandLineTest {
 
 		use FilesystemCleaner;
+
+		protected ?BaseComponentEntry $componentInstance = null;
 
 		abstract protected function componentEntry ():string;
 
@@ -59,9 +63,16 @@
 
 		protected function getComponentPath ():string {
 
-			return $this->getContainer()->getClass($this->componentEntry())
+			return $this->getComponentInstance()->userLandMirror();
+		}
 
-			->userLandMirror();
+		protected function getComponentInstance ():BaseComponentEntry {
+
+			if (!is_null($this->componentInstance))
+
+				return $this->componentInstance;
+
+			return $this->componentInstance = $this->getContainer()->getClass($this->componentEntry());
 		}
 
 		/**

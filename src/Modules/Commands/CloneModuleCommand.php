@@ -5,6 +5,8 @@
 
 	use Suphle\Modules\ModuleCloneService;
 
+	use Suphle\ComponentTemplates\Commands\InstallComponentCommand;
+
 	use Symfony\Component\Console\{Output\OutputInterface, Command\Command};
 
 	use Symfony\Component\Console\Input\{InputInterface, InputArgument, InputOption};
@@ -58,6 +60,14 @@
 
 				"ModuleTemplate"
 			);
+
+			$this->addOption(
+				InstallComponentCommand::COMPONENT_ARGS_OPTION, "p",
+
+				InputOption::VALUE_REQUIRED,
+
+				"Arguments to pass to the components: foo=value uju=bar"
+			);
 		}
 
 		public static function commandSignature ():string {
@@ -81,7 +91,9 @@
 
 						$moduleName, $output,
 
-						$input->getOption(self::DESCRIPTOR_OPTION)
+						$input->getOption(self::DESCRIPTOR_OPTION),
+
+						$input->getOption(InstallComponentCommand::COMPONENT_ARGS_OPTION)
 					);
 
 				if ($templatesStatus == Command::SUCCESS) {

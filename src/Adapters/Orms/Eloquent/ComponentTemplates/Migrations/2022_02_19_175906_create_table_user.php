@@ -1,5 +1,5 @@
 <?php
-	namespace Suphle\Adapters\Orms\Eloquent\Migrations;
+	namespace _database_namespace\Migrations;
 
 	use Illuminate\Database\{Migrations\Migration, Schema\Blueprint};
 

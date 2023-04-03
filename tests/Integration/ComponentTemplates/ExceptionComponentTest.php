@@ -107,7 +107,7 @@
 
 			$this->container->refreshClass($ejectorName); // flush mock
 
-			$this->runInstallComponent( $commandOptions); // reset the files there since the previous command didn't write anything to disk
+			$this->runInstallComponent( $commandOptions); // re-set the files there since the previous command didn't write anything to disk, while above assertInstalledComponent deleted them
 		}
 
 		protected function getCommandOptions (array $otherOverrides = []):array {

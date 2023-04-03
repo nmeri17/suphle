@@ -7,6 +7,8 @@
 
 	abstract class BaseComponentEntry {
 
+		protected array $inputArguments = [];
+
 		public function __construct (
 			protected readonly ModuleFiles $fileConfig,
 
@@ -32,7 +34,7 @@
 		}
 
 		/**
-		 * Can use the pattern, Vendor_Component, to guarantee uniqueness
+		 * Can use the pattern, {Vendor}_{Component}, to guarantee uniqueness
 		*/
 		abstract public function uniqueName ():string;
 
@@ -47,6 +49,14 @@
 
 				$this->templatesLocation(), $this->userLandMirror()
 			);
+		}
+
+		/**
+		 * @param {argumentList}: [foo=>value,uju=>bar]
+		*/
+		public function setInputArguments (array $argumentList):void {
+
+			$this->inputArguments = $argumentList;
 		}
 	}
 ?>

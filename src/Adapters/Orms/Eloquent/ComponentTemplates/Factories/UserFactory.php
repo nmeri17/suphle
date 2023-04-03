@@ -1,5 +1,7 @@
 <?php
-	namespace Suphle\Adapters\Orms\Eloquent\ComponentTemplates\Factories;
+	namespace _database_namespace\Factories;
+
+	use _database_namespace\User as EloquentUser;
 
 	use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -7,7 +9,7 @@
 
 	class UserFactory extends Factory {
 
-		// protected $model = EloquentUser::class; // connect to appropriate user
+		protected $model = EloquentUser::class;
 
 		public function definition ():array {
 

@@ -13,7 +13,9 @@
 
 	class InstallComponentCommand extends BaseCliCommand {
 
-		final public const OVERWRITE_OPTION = "overwrite";
+		public const OVERWRITE_OPTION = "overwrite",
+
+		COMPONENT_ARGS_OPTION = "misc_args";
 
 		protected static $defaultDescription = "Extract templates registered for given module";
 
@@ -44,6 +46,14 @@
 
 				[] // default value. Means option wasn't passed. When value = [null], option is present but has no value aka "all"
 			);
+
+			$this->addOption(
+				self::COMPONENT_ARGS_OPTION, "p",
+
+				InputOption::VALUE_REQUIRED,
+
+				"Arguments to pass to the components: foo=value uju=bar"
+			);
 		}
 
 		protected function execute (InputInterface $input, OutputInterface $output):int {
@@ -54,7 +64,12 @@
 
 			->getClass(ComponentEjector::class)
 
-			->depositFiles($this->getOverwriteOption($input));
+			->depositFiles(
+			
+				$this->getOverwriteOption($input),
+
+				$this->getMiscArguments($input)
+			);
 
 			if ($result) {
 
@@ -81,6 +96,26 @@
 			}
 
 			return $givenValue; // will never get here since option is declared as an array
+		}
+
+		protected function getMiscArguments (InputInterface $input):array {
+
+			$argumentList = $input->getOption(self::COMPONENT_ARGS_OPTION);
+
+			if (is_null($argumentList)) return [];
+
+			$valueRows = explode(" ", $argumentList);
+
+			$keyValue = [];
+
+			foreach ($valueRows as $row) {
+
+				$keyValuePair = explode("=", $row);
+
+				$keyValue[$keyValuePair[0]] = $keyValuePair[1];
+			}
+
+			return $keyValue;
 		}
 	}
 ?>

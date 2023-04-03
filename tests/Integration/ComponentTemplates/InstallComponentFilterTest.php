@@ -35,7 +35,7 @@
 				"templateConfig" => $this->getTemplateConfig() // given
 			])
 			// when
-			->depositFiles([]); // called with just the option
+			->depositFiles([], []); // called with just the option
 		}
 
 		protected function addTemplateEntry (bool $hasEjected, int $willEject):string {
@@ -105,7 +105,7 @@
 				"templateConfig" => $this->getTemplateConfig() // given
 			])
 			// when
-			->depositFiles(null); // called without the option
+			->depositFiles(null, []); // called without the option
 		}
 
 		public function test_can_override_existing__some () {
@@ -124,7 +124,7 @@
 				"templateConfig" => $this->getTemplateConfig() // given
 			])
 			// when
-			->depositFiles($toClear);
+			->depositFiles($toClear, []);
 		}
 	}
 ?>
