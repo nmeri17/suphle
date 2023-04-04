@@ -223,15 +223,13 @@
 
 					return $replacements[$argumentType];
 
-				$container = $this->getContainer();
-
 				if ($argumentType == Container::class && $useBaseContainer)
 
-					return $container;
+					return $this->getContainer();
 
 				if ($parameterType->isBuiltin())
 
-					return $container->getClass(ObjectDetails::class)
+					return $this->getContainer()->getClass(ObjectDetails::class)
 
 					->getScalarValue($argumentType);
 

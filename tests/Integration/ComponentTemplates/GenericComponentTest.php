@@ -11,12 +11,6 @@
 
 	use Suphle\Testing\{TestTypes\CommandLineTest, Proxies\WriteOnlyContainer};
 
-	use Suphle\Exception\ComponentEntry as ExceptionComponentEntry;
-
-	use Suphle\Bridge\Laravel\ComponentEntry as LaravelComponentEntry;
-
-	use Suphle\Services\ComponentEntry as ServicesComponentEntry;
-
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
 	use Suphle\Tests\Mocks\Interactions\ModuleOne;
@@ -25,24 +19,29 @@
 
 	class GenericComponentTest extends CommandLineTest {
 
+		protected array $treasuredComponents = [
+
+			EloquentComponentEntry::class
+		];
+
+		protected ?array $componentList = null;
+
 		protected function getModules ():array {
 
-			return [
-				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
-
-					$config = ComponentTemplates::class;
-
-					$container->replaceWithMock($config, $config, [
-
-						"getTemplateEntries" => $this->componentList()
-					]);
-				})
-			];
+			return [new ModuleOneDescriptor(new Container)];
 		}
 
 		public function test_can_install_all_components () {
 
-			// given @see => default module config
+			$config = ComponentTemplates::class;
+
+			$this->massProvide([ // given
+
+				$config => $this->positiveDouble($config, [
+
+					"getTemplateEntries" => $this->getComponentList()
+				])
+			]);
 
 			$command = $this->consoleRunner->findHandler(
 
@@ -61,11 +60,31 @@
 			$this->assertInstalledAll();
 		}
 
+		protected function getComponentList ():array {
+
+			if (!is_null($this->componentList))
+
+				return $this->componentList;
+
+			$defaultList = $this->getContainer()->getClass(ComponentTemplates::class)
+
+			->getTemplateEntries();
+
+			foreach ($this->treasuredComponents as $entryName) {
+
+				$index = array_search($entryName, $defaultList);
+
+				if ($index !== false) unset($defaultList[$index]);
+			}
+
+			return $this->componentList = $defaultList;
+		}
+
 		protected function assertInstalledAll ():void {
 
 			$this->assertSame( // then
 
-				count($this->componentList()),
+				count($this->getComponentList()),
 
 				count($this->getInstalledComponents())
 			);
@@ -78,23 +97,12 @@
 			$componentInstances = array_map(function ($entry) use ($container) {
 
 				return $container->getClass($entry);
-			}, $this->componentList());
+			}, $this->getComponentList());
 
 			return array_filter($componentInstances, function ($entry) {
 
 				return $entry->hasBeenEjected();
 			});
-		}
-
-		protected function componentList ():array {
-
-			return [
-				ExceptionComponentEntry::class,
-
-				LaravelComponentEntry::class,
-
-				ServicesComponentEntry::class
-			]; // excluding EloquentComponentEntry since we're using a different name than AppModels
 		}
 	}
 ?>

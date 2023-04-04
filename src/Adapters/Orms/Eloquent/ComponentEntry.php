@@ -3,9 +3,9 @@
 
 	use Suphle\ComponentTemplates\BaseComponentEntry;
 
-	use Suphle\Contracts\Config\ModuleFiles;
+	use Suphle\Contracts\Config\Database;
 
-	use Suphle\File\{FileSystemReader, FolderCloner};
+	use Suphle\File\FolderCloner;
 
 	class ComponentEntry extends BaseComponentEntry {
 
@@ -13,12 +13,8 @@
 
 		EJECT_NAMESPACE = "database_namespace";
 
-		protected string $defaultFolderName = "AppModels"; // trying to use envAccessor for this results in an infinite loop
-
 		public function __construct (
-			protected readonly ModuleFiles $fileConfig,
-
-			protected readonly FileSystemReader $fileSystemReader,
+			protected readonly Database $databaseConfig,
 
 			protected readonly FolderCloner $folderCloner
 		) {
@@ -28,7 +24,7 @@
 
 		public function uniqueName ():string {
 
-			return "SuphleEloquentTemplates";
+			return ""; // replaced by value defined on databaseConfig
 		}
 
 		protected function templatesLocation ():string {
@@ -41,23 +37,12 @@
 		*/
 		public function userLandMirror ():string {
 
-			if (!array_key_exists(self::EJECT_DESTINATION, $this->inputArguments))
-
-				return $this->defaultInstallPath();
-
-			return $this->inputArguments[self::EJECT_DESTINATION];
-		}
-
-		public function defaultInstallPath ():string {
-
-			return $this->fileConfig->getRootPath().
-
-			$this->defaultFolderName . DIRECTORY_SEPARATOR;
+			return $this->databaseConfig->componentInstallPath();
 		}
 
 		public function eject ():void {
 
-			$content = $this->getContentReplacements();
+			$content = $this->getContentReplacements(); // using a method for it to be overridable
 
 			$this->folderCloner->setEntryReplacements($content, [], $content)
 			->transferFolder(
@@ -68,22 +53,10 @@
 
 		protected function getContentReplacements ():array {
 
-			if (array_key_exists(self::EJECT_NAMESPACE, $this->inputArguments))
-
-				$namespace = $this->inputArguments[self::EJECT_NAMESPACE];
-
-			else { // acceptable for single-word/root namespaces
-
-				preg_match(
-					"/[\\/\\\\](\w+)$/i", // escaped version of /[\/\\](\w+)$/i
-
-					rtrim($this->userLandMirror(), "\\/"), $mirrorName
-				);
-
-				$namespace = $mirrorName[1]; // lift last path part
-			}
-
-			return [ "_". self::EJECT_NAMESPACE => $namespace ];
+			return [
+			
+				"_". self::EJECT_NAMESPACE => $this->databaseConfig->componentInstallNamespace()
+			];
 		}
 	}
 ?>

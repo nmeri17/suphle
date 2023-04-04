@@ -91,12 +91,16 @@
 				...$this->moduleList, $descriptor
 			]);
 
-			$commandInput = new ArrayInput([
+			$commandOptions = [
 
-				InstallComponentCommand::HYDRATOR_MODULE_OPTION => $descriptor->exportsImplements(),
+				InstallComponentCommand::HYDRATOR_MODULE_OPTION => $descriptor->exportsImplements()
+			];
 
-				"--" . InstallComponentCommand::COMPONENT_ARGS_OPTION => $componentArguments
-			]);
+			if (!is_null($componentArguments))
+
+				$commandOptions["--" . InstallComponentCommand::COMPONENT_ARGS_OPTION] = $componentArguments;
+
+			$commandInput = new ArrayInput($commandOptions);
 
 			return $command->run($commandInput, $output);
 		}

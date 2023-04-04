@@ -5,6 +5,9 @@
 
 	use Dotenv\Dotenv;
 
+	/**
+	 * {@inheritdoc}
+	*/
 	abstract class AbstractEnvReader implements EnvAccessor {
 
 		protected Dotenv $client;

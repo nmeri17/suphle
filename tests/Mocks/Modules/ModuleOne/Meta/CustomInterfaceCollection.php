@@ -3,11 +3,11 @@
 
 	use Suphle\Hydration\Structures\BaseInterfaceCollection;
 
-	use Suphle\Contracts\Config\{ Router, Laravel, Flows};
+	use Suphle\Contracts\Config\{Router, Laravel, Flows, Database};
 
 	use Suphle\Contracts\{Events, Auth\UserContract};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Config\{RouterMock, LaravelMock, FlowMock};
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Config\{RouterMock, LaravelMock, FlowMock, DatabaseMock};
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Events\AssignListeners;
 
@@ -25,7 +25,9 @@
 
 				Laravel::class => LaravelMock::class,
 
-				Router::class => RouterMock::class
+				Router::class => RouterMock::class,
+
+				Database::class => DatabaseMock::class
 			]);
 		}
 

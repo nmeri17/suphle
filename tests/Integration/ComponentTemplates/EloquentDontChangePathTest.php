@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Tests\Integration\ComponentTemplates;
 
-	use Suphle\Contracts\Config\{ComponentTemplates, ModuleFiles};
+	use Suphle\Contracts\Config\{ComponentTemplates, Database};
 
 	use Suphle\File\FolderCloner;
 
@@ -18,15 +18,6 @@
 	use Suphle\Tests\Mocks\Interactions\ModuleOne;
 
 	class EloquentDontChangePathTest extends InstallComponentTest {
-
-		protected Container $container;
-
-		protected function setUp ():void {
-
-			parent::setUp();
-
-			$this->container = $this->getContainer();
-		}
 
 		protected function getModules ():array {
 
@@ -55,30 +46,27 @@
 
 			return array_merge([
 
-				InstallComponentCommand::HYDRATOR_MODULE_OPTION => ModuleOne::class
+				InstallComponentCommand::HYDRATOR_MODULE_OPTION => ModuleOne::class,
+
+				"--" .InstallComponentCommand::OVERWRITE_OPTION => [null] // without this, it won't try to eject
 			], $otherOverrides);
 		}
 
-		/**
-		 * We can afford to overwrite it since the actual value points to AppModels which is the production directory and is different from what we're using ie eligible for wiping
-		 * 
 		protected function componentIsInstalled ():bool { // prevent it from overwriting our contents
 
 			return false;
-		}*/
+		}
 
 		public function test_writes_to_default_component_path () {
 
-			$methodName = "transferFolder";
-
 			$ejectorName = FolderCloner::class;
 
-			$this->container->whenTypeAny()->needsAny([
+			$this->massProvide([
 
 				$ejectorName => $this->replaceConstructorArguments(
 					$ejectorName, [], [], [
 
-					$methodName => [1, [ // then
+					"transferFolder" => [1, [ // then
 
 						$this->anything(),
 
@@ -93,11 +81,9 @@
 
 		protected function getDefaultInstallLocation ():string {
 
-			return $this->replaceConstructorArguments($this->componentEntry(), [ // don't use container since this very object will trigger its hydration
+			return $this->getContainer()->getClass(Database::class)
 
-				ModuleFiles::class => $this->container->getClass(ModuleFiles::class)
-			])
-			->defaultInstallPath();
+			->componentInstallPath();
 		}
 	}
 ?>
