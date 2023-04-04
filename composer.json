@@ -60,7 +60,11 @@
         "post-create-project-cmd": [
             "rr get-binary"
         ],
-        "test": "phpunit ../../tests",
-        "parallel-test": "paratest ../../tests"
+        "test": [
+        	"Composer\\Config::disableProcessTimeout", "phpunit"
+        ],
+        "parallel-test": [
+        	"Composer\\Config::disableProcessTimeout", "paratest"
+        ]
     }
 }

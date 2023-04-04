@@ -1,26 +1,25 @@
-Details about what Suphle's capabilities and why it was built have been migrated [here](https://dev.to/mmayboy_/introducing-suphle-the-tale-of-a-modern-php-framework-54i9). This repository is the dev-facing project intended for contribution to Suphle itself. Its user-facing project can be found at https://github.com/nmeri17/suphle-starter.
+## Introduction
 
-## Installation
+This is the dev-facing project intended for contribution to Suphle itself. Its complete documentation is live at [Suphle.com](https://suphle.com).
 
-Project can either be installed using Composer,
+High-level details about what Suphle's capabilities are and why it was built have been migrated [here](https://dev.to/mmayboy_/introducing-suphle-the-tale-of-a-modern-php-framework-54i9).
+
+## Testing
+
+Typically, from your system's web folder:
 
 ```bash
 
 composer create-project nmeri/suphle AwesomeProject
 
 cd AwesomeProject
+
+composer test -- "/path/to/AwesomeProject/tests"
 ```
 
-## Testing
+The tests interact with the database, and would thus expect to find an active MySQL connection such as that gotten from running a WAMP equivalent. The server can be configured to use anything else, but for the purpose of this demo, we simply use MySQL.
 
-Project initiation and test can be triggered using the following command:
-
-```bash
-
-php suphle_cli project:contribute_test --phpunit_flags="-c=/project/path/phpunit.xml"
-```
-
-For it to run successfully, both an active Internet and MYSQL connection must be available. The former is for downloading the server binary while the latter is for running database migrations. The default modules contain an `.env` with the following entries:
+Each of the modules contain an `.env` with the following entries:
 
 ```
 DATABASE_NAME = suphle
@@ -29,24 +28,29 @@ DATABASE_PASS =
 DATABASE_HOST = localhost
 ```
 
-Supplying a configuration schema will cause the database to self-destruct after it's done executing, thus the database name is not important. All the command needs is for the credentials to match your local MYSQL server, for migrations to be run.
+The database name is not important. All the command needs is for the credentials to match your local MySQL server, for migrations to be run.
+
+When executed as is, the tests will leave behind seeded data. For the database to self-destruct after it's done executing, we have to supply the configuration schema.
+
+```bash
+
+composer test -- "/path/to/AwesomeProject/tests" -c=/path/to/AwesomeProject/phpunit.xml
+```
 
 ### Parallel testing
 
-The command shown earlier will execute the tests synchronously, which may not be the most optimized for your machine. Those using systems with multiple cores can take advantage of concurrent testing and execute tests in parallel. Just as the `phpunit_flags` accepts options to forward to the underlying PHPUnit process, the `paratest_flags` should be used to send relevant options to the Paratest runner.
-
-A basic indicator would look like this:
+The commands shown earlier will execute the tests synchronously, which may not be the most optimized for your machine. Those using systems with multiple cores can take advantage of concurrent testing and instead execute tests in parallel.
 
 ```bash
 
-php suphle_cli project:contribute_test --phpunit_flags="-c=/project/path/phpunit.xml" --paratest_arg="--processes=5"
+composer parallel-test -- "/path/to/AwesomeProject/tests" --processes=5
 ```
 
-Above, we're enforcing 5 processes, however, when left blank, the runner will determine the optimum number of processes to use based on amount of cores available. Hence, this would equally work:
+Above, we're enforcing 5 processes; however, when left blank, the runner will determine the optimum number of processes to use based on amount of cores available. Hence, this would equally work:
 
 ```bash
 
-php suphle_cli project:contribute_test --phpunit_flags="-c=/project/path/phpunit.xml" --paratest_arg
+composer parallel-test -- "/path/to/AwesomeProject/tests"
 ```
 
 As with using this runner in development, note that it swallows all PHPUnit output. Thus, if the test invocation fails before completion, you may require a synchronous run to understand what went wrong.
@@ -70,7 +74,44 @@ They don't require any database connection and only demonstrate the relatively b
 
 If you're window shopping, a *sort of* example application resides in the `tests/Mocks` folder. Emphasis is laid on "sort of" since `ModuleOne` there, is for testing majority of the framework's feature set and doesn't necessarily reflect what you'd expect from a real life Suphle module.
 
-Documentation is at [Suphle.com](https://suphle.com).
+## Contributing to the Starter project
+
+The [Starter project](https://github.com/nmeri17/suphle-starter) is the user-facing arm intended for bootstrapping fresh Suphle projects. If you have cause to contribute to it, it's much more convenient to install both side by side, such that over the course of development, your updates to this core project will reflect on your Starter installation.
+
+This project must be installed, first.
+
+```bash
+
+composer create-project nmeri/suphle
+
+git clone https://github.com/nmeri/suphle-starter.git
+```
+
+Afterwards, the Starter is to derive its parent project from your local installation. Navigate to the `composer.json` of the Starter project and add the following entry:
+
+```json
+
+"repositories": [
+	{
+		"type": "path",
+        "url": "../suphle"
+    }
+]
+```
+
+Now, instruct Composer to interpret the local installation as parent, using the install command:
+
+```bash
+
+composer install
+```
+
+Now, all is set! Checkout a new branch to implement your amazing feature. If you need to interact with the Roadrunner server as well, fetch its binary like so:
+
+```bash
+
+rr get-binary
+```
 
 ## Where to start contributing
 
