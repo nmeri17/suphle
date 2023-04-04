@@ -84,7 +84,7 @@ This project must be installed, first.
 
 composer create-project nmeri/suphle
 
-git clone https://github.com/nmeri/suphle-starter.git
+git clone https://github.com/nmeri17/suphle-starter.git
 ```
 
 Afterwards, the Starter is to derive its parent project from your local installation. Navigate to the `composer.json` of the Starter project and add the following entry:
