@@ -177,6 +177,8 @@
 		*/
 		public function classNameFromFile (string $fileName):?string {
 
+			if (!preg_match("/\.php$/", $fileName)) return null;
+
 			$tokens = token_get_all(file_get_contents($fileName));
 			
 			$namespace = "";
@@ -208,6 +210,8 @@
 					// Skip "class" keyword, whitespaces, and actual classname
 				}
 			}
+
+			return null;
 		}
 	}
 ?>
