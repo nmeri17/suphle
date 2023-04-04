@@ -127,18 +127,22 @@
 
 				unlink($interfacePath);
 
+			return $this->executeCloneCommand(); // when
+		}
+
+		protected function executeCloneCommand (array $commandOptions = []):int {
+
 			$command = $this->consoleRunner->findHandler(
 
 				CloneModuleCommand::commandSignature()
 			);
 
-			// when
-			return (new CommandTester($command))->execute([
+			return (new CommandTester($command))->execute(array_merge([
 
 				CloneModuleCommand::MODULE_NAME_ARGUMENT => $this->newModuleName,
 
 				"--" . CloneModuleCommand::DESCRIPTOR_OPTION => $this->constructDescriptorName()
-			]);
+			], $commandOptions));
 		}
 		
 		/**
