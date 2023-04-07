@@ -9,7 +9,7 @@
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\StaticChecks\{UsesNonMatchingTypes, ContainsError};
+	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\StaticChecks\ContainsError;
 
 	use ReflectionClass;
 
@@ -22,22 +22,6 @@
 			return [new ModuleOneDescriptor(new Container)];
 		}
 
-		public function test_offers_to_rectify_violations () {
-
-			$psalmWrapper = $this->getPsalmWrapper();
-
-			$scanStatus = $psalmWrapper->analyzeErrorStatus(
-
-				[$this->getClassPath(UsesNonMatchingTypes::class)] // given
-			); // when
-
-			$this->assertTrue($scanStatus); // then
-
-			$haystack = $psalmWrapper->getLastProcess()->getOutput();
-
-			$this->assertStringContainsString(PsalmWrapper::ALTER_OPTION, $haystack);
-		}
-
 		protected function getClassPath (string $className):string {
 
 			return (new ReflectionClass($className))->getFileName();
@@ -47,19 +31,21 @@
 
 			$wrapper = $this->getContainer()->getClass(PsalmWrapper::class);
 
-			$wrapper->setExecutionPath($this->getVendorPath());
-
-			$wrapper->scanConfigLevel();
+			$wrapper->setExecutionPath($this->getVendorParent(), "Modules");
 
 			return $wrapper;
 		}
 
 		public function test_file_with_error_returns_false () {
 
-			$scanStatus = $this->getPsalmWrapper()->analyzeErrorStatus(
+			$this->setOutputCallback(fn () => null); // mute output/report by psalm process
 
-				[$this->getClassPath(ContainsError::class)] // given
-			); // when
+			$scanStatus = $this->getPsalmWrapper()->analyzeErrorStatus( // when
+
+				[$this->getClassPath(ContainsError::class)], // given
+
+				false // important to run in this mode since we can't set a path to a specific file; thus, it'll attempt to repair everything
+			);
 
 			$this->assertFalse($scanStatus); // then
 		}

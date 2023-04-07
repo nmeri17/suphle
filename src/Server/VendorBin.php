@@ -58,7 +58,7 @@
 			return $process;
 		}
 
-		public function processOut ($type, $buffer):void {
+		public static function processOut ($type, $buffer):void {
 
 			if (Process::ERR === $type)
 

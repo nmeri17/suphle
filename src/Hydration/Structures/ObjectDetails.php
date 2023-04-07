@@ -169,11 +169,7 @@
 		}
 
 		/**
-		 * @see https://stackoverflow.com/a/27440555/4678871
-
-		 * I'm using this boilerplate method instead of a library since that doesn't iterate directories recursively
-		 * 
-		 * @return FQCN or "" if no class is found in file
+		* @return FQCN or "" if no class is found in file
 		*/
 		public function classNameFromFile (string $fileName):?string {
 
@@ -188,15 +184,23 @@
 				if (!isset($tokens[$index][0])) continue;
 
 				if (
-					T_NAMESPACE === $tokens[$index][0] &&
+					T_NAMESPACE === $tokens[$index][0] && // the word "namespace"
 
-					T_WHITESPACE === $tokens[$index + 1][0] &&
-
-					T_NAME_QUALIFIED === $tokens[$index + 2][0]
+					T_WHITESPACE === $tokens[$index + 1][0]
 				) {
-					$namespace = $tokens[$index + 2][1];
-					// Skip "namespace" keyword, whitespaces, and actual namespace
-					$index += 2; // forward to next token
+
+					$actualNamespace = $tokens[$index + 2][0];
+
+					$fullNamespace = T_NAME_QUALIFIED === $actualNamespace;
+
+					$rootNamespace = T_STRING === $actualNamespace; // the above doesn't match single word namespaces
+
+					if ($fullNamespace || $rootNamespace) {
+
+						$namespace = $tokens[$index + 2][1]; // token content
+						
+						$index += 2; // Continue iteration from next section (uses or class)
+					}
 				}
 				
 				if (

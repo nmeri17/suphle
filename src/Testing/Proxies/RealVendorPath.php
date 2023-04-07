@@ -9,7 +9,10 @@
 
 		protected ?VendorBin $vendorBin = null;
 
-		protected function getVendorPath ():string {
+		/**
+		 * @return The path 2 steps before vendor/bin
+		*/
+		protected function getVendorParent ():string {
 
 			return $this->getContainer()->getClass(FileSystemReader::class)
 
@@ -20,7 +23,7 @@
 
 			$this->vendorBin = $this->getContainer()->getClass(VendorBin::class);
 
-			$this->vendorBin->setRootPath($this->getVendorPath());
+			$this->vendorBin->setRootPath($this->getVendorParent());
 		}
 	}
 ?>

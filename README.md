@@ -61,7 +61,7 @@ All interaction with the Framework should be conducted through tests and by exte
 
 ```bash
 
-php suphle_cli server:start --rr_config_path="/project/path/test-rr.yaml" --insane
+php suphle_cli server:start AllModules "/project/path/test-rr.yaml" --insane
 ```
 
 Then, visit any of the routes available at:
@@ -96,12 +96,15 @@ Afterwards, the Starter is to derive its parent project from your local installa
 		"type": "path",
         "url": "../suphle"
     }
-]
+],
+"minimum-stability": "dev"
 ```
 
 Now, instruct Composer to interpret the local installation as parent, using the install command:
 
 ```bash
+
+cd suphle-starter
 
 composer install
 ```
@@ -109,6 +112,8 @@ composer install
 Now, all is set! Checkout a new branch to implement your amazing feature. If you need to interact with the Roadrunner server as well, fetch its binary like so:
 
 ```bash
+
+cd vendor/bin
 
 rr get-binary
 ```

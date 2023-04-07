@@ -17,13 +17,18 @@
 			//
 		}
 
-		public function sendRootPath (string $path):self {
+		public function sendRootPath (string $projectRoot, string $scannablePath):self {
 
-			$this->sanitizer->setExecutionPath($path);
+			$this->sanitizer->setExecutionPath(
 
-			$this->vendorBin->setRootPath($path);
+				$projectRoot. DIRECTORY_SEPARATOR. $scannablePath
+			);
 
-			$this->psalmWrapper->setExecutionPath($path);
+			$this->vendorBin->setRootPath($projectRoot);
+
+			$this->psalmWrapper
+
+			->setExecutionPath($projectRoot, $scannablePath);
 
 			return $this;
 		}
@@ -32,21 +37,16 @@
 
 			if ($isTestBuild) return; // disabling scan cuz that takes quite a bit of time
 
-			$scanStatus = $this->psalmWrapper->scanConfigLevel()
+			if ($this->psalmWrapper->analyzeErrorStatus([], $autoRefactor))
 
-			->analyzeErrorStatus([], $autoRefactor);
+				return;
 
-			if (!$scanStatus) {
+			$process = $this->psalmWrapper->getLastProcess();
 
-				$failureMessage = $this->psalmWrapper->getLastProcess()->getOutput();
+			throw new Exception(
 
-				if (empty($failureMessage))
-
-					$failureMessage = "Error evaluating psalm.xml";
-
-				throw new Exception($failureMessage);
-			}
-			
+				$process->getOutput(). "\n". $process->getErrorOutput()
+			);
 		}
 
 		public function restoreSanity ():void {

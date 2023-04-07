@@ -4,22 +4,7 @@ Url map generation
 	- if it's not the end of the thread (contains a _prefixFor), we create a sub to contain the patterns below it
 	- will likely use a recursive method somewhere
 
-**
-sqlite
-<server name="DB_CONNECTION" value="sqlite"/>
-<server name="DB_DATABASE" value=":memory:"/>
-
-
 4) pending tests:
 	- only and except from routeCollection?
 
-complete contributing.md => cs rules, link to discussions and help-wanted issues
-
-setup repo badge thingies, ci
-
 test the multi-layer transaction failure theory. maybe an event handler emitted within a decorated service fails. what happens to the calls and possibly committed data
-
-add psalm command. test whether errors there disrupt command result
-
-stop folding our callbacks
-

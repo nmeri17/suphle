@@ -22,9 +22,9 @@
 			return [new ModuleOneDescriptor(new Container)];
 		}
 
-		public function test_will_try_start_server_with_given_config () {
+		public function test_server_will_start_despite_static_falure_with_option () {
 
-			$this->stubStaticFailure(""); // given
+			$this->stubStaticFailure(); // given
 
 			$this->mockServerStart(self::RR_CONFIG);
 
@@ -34,14 +34,13 @@
 			);
 
 			// when
-			$commandResult = (new CommandTester($command))->execute([
+			$commandResult = (new CommandTester($command))->execute(
 
-				"--" . HttpServerCommand::RR_CONFIG_OPTION => self::RR_CONFIG,
+				$this->getServerOptions([
 
-				"--" . HttpServerCommand::DISABLE_SANITIZATION_OPTION => null,
-
-				"--" . HttpServerCommand::IGNORE_STATIC_FAILURE_OPTION => null // given 2
-			]);
+					"--" . HttpServerCommand::IGNORE_STATIC_FAILURE_OPTION => null // given 2
+				])
+			);
 
 			$this->assertSame($commandResult, Command::SUCCESS ); // then
 		}
@@ -62,6 +61,18 @@
 					"startRRServer" => [1, [$configPath]]
 				])
 			]);
+		}
+
+		protected function getServerOptions (array $additionalArguments = []):array {
+
+			return array_merge([
+
+				HttpServerCommand::MODULES_FOLDER => "Modules",
+
+				HttpServerCommand::RR_CONFIG_OPTION => self::RR_CONFIG,
+
+				"--" . HttpServerCommand::DISABLE_SANITIZATION_OPTION => null
+			], $additionalArguments);
 		}
 
 		public function test_server_start_runs_command () {
@@ -100,7 +111,10 @@
 
 			$exceptionMessage = "pammy_maduekwe";
 
-			$this->stubStaticFailure($exceptionMessage); // given
+			$this->stubStaticFailure($exceptionMessage, [
+
+				"getErrorOutput" => [1, []]
+			]); // given
 
 			$this->expectOutputRegex("/$exceptionMessage/");
 
@@ -110,17 +124,14 @@
 			);
 
 			// when
-			$commandResult = (new CommandTester($command))->execute([
+			$commandResult = (new CommandTester($command))
 
-				"--" . HttpServerCommand::RR_CONFIG_OPTION => self::RR_CONFIG,
-
-				"--" . HttpServerCommand::DISABLE_SANITIZATION_OPTION => null
-			]);
+			->execute($this->getServerOptions());
 
 			$this->assertSame($commandResult, Command::FAILURE );
 		}
 
-		protected function stubStaticFailure (string $exceptionMessage):void {
+		protected function stubStaticFailure (string $exceptionMessage = "", array $psalmProcessMocks = []):void {
 
 			$wrapperName = PsalmWrapper::class;
 
@@ -129,18 +140,18 @@
 				Container::CLASS_CONSTRUCTOR, $wrapperName
 			);
 
+			$dummyProcess = $this->positiveDouble(Process::class, [
+
+				"getOutput" => $exceptionMessage
+			], $psalmProcessMocks);
+
 			$this->massProvide([
 
 				$wrapperName => $this->replaceConstructorArguments($wrapperName, $arguments, [
 
 					"analyzeErrorStatus" => false, // given
 
-					"getLastProcess" => $this->positiveDouble(Process::class, [
-
-						"getOutput" => $exceptionMessage
-					]),
-
-					"scanConfigLevel" => $this->returnSelf()
+					"getLastProcess" => $dummyProcess
 				])
 			]);
 		}

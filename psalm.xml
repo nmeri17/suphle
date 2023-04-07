@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <psalm
-    errorLevel="7"
+    errorLevel="3"
     allowNamedArgumentCalls="false"
     resolveFromConfigFile="true"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -9,11 +9,22 @@
 >
     <projectFiles>
         <directory name="src" />
+        <directory name="tests" />
+
         <ignoreFiles>
             <directory name="vendor" />
         </ignoreFiles>
+
         <ignoreFiles>
-            <directory name="compiled-views" />
+            <directory name="*/compiled-views" />
+            <directory name="*/ModuleTemplate" />
         </ignoreFiles>
     </projectFiles>
+
+    <issueHandlers>
+        <PossiblyUnusedMethod errorLevel="suppress" />
+        <PossiblyUnusedParam errorLevel="suppress" />
+        <PossiblyUnusedProperty errorLevel="suppress" />
+        <PossiblyUnusedReturnValue errorLevel="suppress" />
+    </issueHandlers>
 </psalm>
