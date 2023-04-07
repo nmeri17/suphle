@@ -9,9 +9,13 @@
 
 	trait PingHttpServer {
 
+		protected int $setupDuration = 20_000;
+
+		protected string $modulesFolder = "AllModules";
+
 		// Using a process over a command since that would warrant re-specifying modules map, and doesn't guarantee to turn off the rr process if successful
 
-		// Not testing this asserter since some of the bootstrap operations will attempt to scan the entire codebase, which will not only fail but take an awful amount of time
+		// Not automating tests for this asserter since some of the bootstrap operations will attempt to scan the entire codebase, which will not only fail but take an awful amount of time. But it's *manually* tested on the starter project
 
 		/**
 		 * @param {binaryPath}: Location of the Suphle executable
@@ -23,32 +27,49 @@
 			string $configPath = null
 		):void {
 
-			$serverOptions = [
-
-				"suphle",
-
-				HttpServerCommand::commandSignature(),
-
-				HttpServerCommand::IGNORE_STATIC_FAILURE_OPTION
-			];
-
-			$serverOptions = $serverOptions + $userDefinedOptions; // overwrite numeric indexes
-
 			if (is_null($binaryPath))
 
 				$binaryPath = $this->getContainer()->getClass(ModuleFiles::class)
 				
 				->getRootPath();
 
+			$serverDefaults = [
+
+				"php", "suphle", HttpServerCommand::commandSignature()
+			];
+
 			if (is_null($configPath))
 
 				$configPath = $binaryPath. "dev-rr.yaml";
 
-			$serverOptions[HttpServerCommand::RR_CONFIG_ARGUMENT] = $configPath;
+			$overwritable = [];
 
+			foreach (array_merge([
+
+				HttpServerCommand::MODULES_FOLDER_ARGUMENT => $this->modulesFolder,
+
+				HttpServerCommand::RR_CONFIG_ARGUMENT => $configPath,
+
+				"--". HttpServerCommand::IGNORE_STATIC_FAILURE_OPTION => null
+			], $userDefinedOptions) as $key => $value) {
+
+				if (str_starts_with($key, "--")) {
+
+					$entry = $key;
+
+					if (!is_null($value)) $entry .= "=$value";
+				}
+
+				else $entry = $value;
+
+				$overwritable[] = $entry;
+			}
+
+			$serverOptions = array_merge($serverDefaults, $overwritable);
+		
 			$serverProcess = new Process($serverOptions, $binaryPath);
 
-			$process->setTimeout(20_000);
+			$serverProcess->setTimeout($this->setupDuration);
 
 			$serverProcess->start();
 
