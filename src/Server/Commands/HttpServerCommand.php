@@ -17,9 +17,9 @@
 
 	class HttpServerCommand extends BaseCliCommand {
 
-		public const MODULES_FOLDER = "to_scan",
+		public const MODULES_FOLDER_ARGUMENT = "to_scan",
 
-		RR_CONFIG_OPTION = "rr_config_path",
+		RR_CONFIG_ARGUMENT = "rr_config_path",
 
 		DISABLE_SANITIZATION_OPTION = "insane",
 
@@ -41,11 +41,11 @@
 
 			$this->addArgument(
 
-				self::MODULES_FOLDER, InputArgument::REQUIRED, "Folder containing all modules, relative to project root"
+				self::MODULES_FOLDER_ARGUMENT, InputArgument::REQUIRED, "Folder containing all modules, relative to project root"
 			);
 
 			$this->addArgument(
-				self::RR_CONFIG_OPTION,
+				self::RR_CONFIG_ARGUMENT,
 
 				InputArgument::REQUIRED, "Path to custom RR config"
 			);
@@ -102,7 +102,7 @@
 
 					$this->executionPath,
 
-					$input->getArgument(self::MODULES_FOLDER)
+					$input->getArgument(self::MODULES_FOLDER_ARGUMENT)
 				);
 
 				if (!$input->getOption(self::DISABLE_SANITIZATION_OPTION)) // absent
@@ -120,7 +120,7 @@
 
 				$serverOperations->startRRServer(
 
-					$input->getArgument(self::RR_CONFIG_OPTION)
+					$input->getArgument(self::RR_CONFIG_ARGUMENT)
 				);
 
 				return Command::SUCCESS;

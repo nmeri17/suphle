@@ -67,9 +67,9 @@
 
 			return array_merge([
 
-				HttpServerCommand::MODULES_FOLDER => "Modules",
+				HttpServerCommand::MODULES_FOLDER_ARGUMENT => "Modules",
 
-				HttpServerCommand::RR_CONFIG_OPTION => self::RR_CONFIG,
+				HttpServerCommand::RR_CONFIG_ARGUMENT => self::RR_CONFIG,
 
 				"--" . HttpServerCommand::DISABLE_SANITIZATION_OPTION => null
 			], $additionalArguments);

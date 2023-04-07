@@ -3,6 +3,8 @@
 
 	use Suphle\Contracts\Config\ModuleFiles;
 
+	use Suphle\Server\Commands\HttpServerCommand;
+
 	use Symfony\Component\Process\Process;
 
 	trait PingHttpServer {
@@ -21,7 +23,14 @@
 			string $configPath = null
 		):void {
 
-			$serverOptions = ["suphle", "server:start", "--no_static_refactor"];
+			$serverOptions = [
+
+				"suphle",
+
+				HttpServerCommand::commandSignature(),
+
+				HttpServerCommand::IGNORE_STATIC_FAILURE_OPTION
+			];
 
 			if (empty($userDefinedOptions))
 
@@ -37,7 +46,7 @@
 
 				$configPath = $binaryPath. "dev-rr.yaml";
 
-			$serverOptions["--rr_config_path"] = $configPath;
+			$serverOptions[HttpServerCommand::RR_CONFIG_ARGUMENT] = $configPath;
 
 			$serverProcess = new Process($serverOptions, $binaryPath);
 
