@@ -1,7 +1,3 @@
-[![Codacy Security Scan](https://github.com/nmeri17/suphle/actions/workflows/codacy.yml/badge.svg)](https://github.com/nmeri17/suphle/actions/workflows/codacy.yml)
-
-[![PHP Composer](https://github.com/nmeri17/suphle/actions/workflows/php.yml/badge.svg)](https://github.com/nmeri17/suphle/actions/workflows/php.yml)
-
 ## Introduction
 
 This is the dev-facing project intended for contribution to Suphle itself. Its complete documentation is live at [Suphle.com](https://suphle.com).
