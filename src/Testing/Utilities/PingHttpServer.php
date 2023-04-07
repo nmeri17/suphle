@@ -32,9 +32,7 @@
 				HttpServerCommand::IGNORE_STATIC_FAILURE_OPTION
 			];
 
-			if (empty($userDefinedOptions))
-
-				$serverOptions = $serverOptions + $userDefinedOptions; // overwrite numeric indexes
+			$serverOptions = $serverOptions + $userDefinedOptions; // overwrite numeric indexes
 
 			if (is_null($binaryPath))
 
