@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle;
 
-	class RootClass {
+	class InRootNamespace {
 
 		//
 	}

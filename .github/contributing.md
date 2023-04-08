@@ -21,7 +21,7 @@ Alternatively, propose such API in an issue if you're absolutely certain about i
 
 1. New inclusion or modification must be covered by tests.
 
-These are theoretic coding guidelines. A more formal set of rules is enforced by a PHP-CS-FIXER configuration at the project root that should be included in an automated review of your pull request.
+These are philosophical coding guidelines. A more formal set of rules is enforced by a PHP-CS-FIXER configuration at the project root that should be included in an automated review of your pull request.
 
 That's it. If you are in agreement, you can either lookup [existing issues](https://github.com/nmeri17/suphle/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22), or [create a new one](https://github.com/nmeri17/suphle/issues/new?assignees=&labels=&template=feature_request.md&title=) to discuss what you intend to add.
 

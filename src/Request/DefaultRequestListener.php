@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Request;
 
-	use Suphle\Contracts\{Bridge\LaravelContainer, Requests\RequestEventsListener};
+	use Suphle\Contracts\{Bridge\LaravelContainer, Requests\RequestEventsListener, Config\Laravel as LaravelConfigContract};
 
 	use Suphle\Hydration\Container;
 
@@ -9,9 +9,11 @@
 
 		public function __construct (
 
-			protected readonly LaravelContainer $laravelContainer,
+			protected readonly Container $container,
 
-			protected readonly PayloadStorage $payloadStorage
+			protected readonly PayloadStorage $payloadStorage,
+
+			protected readonly LaravelConfigContract $laravelConfig
 		) {
 
 			//
@@ -19,11 +21,15 @@
 
 		public function handleRefreshEvent (RequestDetails $requestDetails):void {
 
-			$this->laravelContainer->instance(
+			if (!$this->laravelConfig->registersRoutes()) return;
+
+			$laravelContainer = $this->container->getClass(LaravelContainer::class);
+
+			$laravelContainer->instance(
 
 				LaravelContainer::INCOMING_REQUEST_KEY,
 
-				$this->laravelContainer->provideRequest(
+				$laravelContainer->provideRequest(
 
 					$requestDetails, $this->payloadStorage
 				)

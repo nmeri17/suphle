@@ -7,13 +7,17 @@
 
 	use Suphle\Bridge\Laravel\Config\{ConfigLoader, ConfigFileFinder};
 
-	use Suphle\Contracts\{Config\Laravel as LaravelConfig, Bridge\LaravelContainer};
+	use Suphle\Contracts\Bridge\LaravelContainer;
 
 	use Illuminate\Support\Facades\Facade;
 
 	class LaravelAppLoader extends BaseInterfaceLoader {
 
-		public function __construct(protected readonly ConfigLoader $configLoader, protected readonly ComponentEntry $componentEntry) {
+		public function __construct (
+			protected readonly ConfigLoader $configLoader,
+
+			protected readonly ComponentEntry $componentEntry
+		) {
 
 			//
 		}

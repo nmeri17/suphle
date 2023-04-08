@@ -7,7 +7,7 @@
 
 	use Suphle\Exception\Explosives\DevError\{InvalidImplementor, HydrationException};
 
-	use ReflectionMethod, ReflectionFunction, ReflectionType, ReflectionFunctionAbstract, ReflectionException;
+	use ReflectionMethod, ReflectionFunction, ReflectionType, ReflectionFunctionAbstract, ReflectionException, ReflectionEnum, UnitEnum;
 
 	class Container implements ClassHydrationBehavior {
 
@@ -285,7 +285,6 @@
 				$this->hydratedClassConsumers[$fullName] = [];
 
 			$isNotInterfaceLoading = $concreteHydratedFor != $fullName && 
-
 				!$this->objectMeta->stringInClassTree(
 
 					$fullName, $concreteHydratedFor
@@ -789,6 +788,12 @@
 				return $this->objectMeta->getScalarValue($typeName);
 
 			if (!in_array($typeName, $this->hydratingForStack) ) {
+
+				if ($this->objectMeta->stringInClassTree($typeName, UnitEnum::class))
+
+					return (new ReflectionEnum($typeName))->getCases()[0]
+
+					->getValue();
 
 				if (!$callerIsClosure )
 

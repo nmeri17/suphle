@@ -193,9 +193,9 @@
 
 					$fullNamespace = T_NAME_QUALIFIED === $actualNamespace;
 
-					$rootNamespace = T_STRING === $actualNamespace; // the above doesn't match single word namespaces
+					$inRootNamespace = T_STRING === $actualNamespace; // the above doesn't match single word namespaces
 
-					if ($fullNamespace || $rootNamespace) {
+					if ($fullNamespace || $inRootNamespace) {
 
 						$namespace = $tokens[$index + 2][1]; // token content
 						

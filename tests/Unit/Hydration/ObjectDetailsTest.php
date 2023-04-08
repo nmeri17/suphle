@@ -36,13 +36,13 @@
 			
 			->getFileName();
 
-			$directoryPath = dirname($classPath). DIRECTORY_SEPARATOR . "RootClass.php"; // given
+			$directoryPath = dirname($classPath). DIRECTORY_SEPARATOR . "InRootNamespace.php"; // given
 
 			$derivedNamespace = $sut->classNameFromFile($directoryPath); // when
 
 			$this->assertSame( // then
 
-				$derivedNamespace, "Suphle\RootClass"
+				$derivedNamespace, "Suphle\InRootNamespace"
 			);
 		}
 	}
