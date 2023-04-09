@@ -11,8 +11,6 @@
 
 		protected int $setupDuration = 20_000;
 
-		protected string $modulesFolder = "AllModules";
-
 		// Using a process over a command since that would warrant re-specifying modules map, and doesn't guarantee to turn off the rr process if successful
 
 		// Not automating tests for this asserter since some of the bootstrap operations will attempt to scan the entire codebase, which will not only fail but take an awful amount of time. But it's *manually* tested on the starter project
@@ -46,7 +44,7 @@
 
 			foreach (array_merge([
 
-				HttpServerCommand::MODULES_FOLDER_ARGUMENT => $this->modulesFolder,
+				HttpServerCommand::MODULES_FOLDER_ARGUMENT => "AllModules",
 
 				HttpServerCommand::RR_CONFIG_ARGUMENT => $configPath,
 
