@@ -31,16 +31,16 @@
 		"phpdoc_var_without_name" => true,
 		"return_type_declaration" => true,
 		"single_quote" => false,
-		"sort_array_syntax" => ["syntax" => "alphabetical"],
+		//"sort_array_syntax" => ["syntax" => "alphabetical"],
 		"standardize_not_equals" => true,
 		"ternary_operator_spaces" => true,
 		"trailing_comma_in_multiline" => true,
 		"trim_array_spaces" => true,
 		"no_unused_imports" => true,
-		"declare_strict_types" => true,
-		"single_line_comment_style" => ["comment_types" => ["hash"]],
+		// "declare_strict_types" => true,
+		// "single_line_comment_style" => ["comment_types" => ["hash"]],
 		"blank_line_before_statement" => true, // <--- New rule
-		"line_ending" => "\n", // <--- New rule
+		"line_ending" => true, // <--- New rule
 		"linebreak_after_opening_tag" => true,
 		"no_leading_namespace_whitespace" => true,
 		"single_blank_line_before_namespace" => false,
@@ -48,11 +48,11 @@
 		"no_whitespace_before_comma_in_array" => true,
 		"lowercase_keywords" => true,
 		"php_unit_test_class_requires_covers" => false,
-		"php_unit_strict" => true,
-		"php_unit_test_case_static_method_calls" => ["call_type" => "this"],
-		"brace_style" => ["allow_single_line_closure" => true, "position_after_functions_and_oop_constructs" => "same_line"], // <--- Updated rule
-		"line_length" => ["max" => 75], // <--- New rule
-		"string_notation" => true, // <--- New rule
+		// "php_unit_strict" => true,
+		// "php_unit_test_case_static_method_calls" => ["call_type" => "this"],
+		"braces" => ["allow_single_line_closure" => true, "position_after_functions_and_oop_constructs" => "same"], // <--- Updated rule
+		//"line_length" => ["max" => 75], // <--- New rule
+		"single_quote" => false, // <--- New rule
 		"group_import" => true, // <--- New rule
 	])
 	->setFinder($finder);
