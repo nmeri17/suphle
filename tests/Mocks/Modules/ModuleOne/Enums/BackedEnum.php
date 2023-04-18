@@ -3,8 +3,8 @@
 
 	enum BackedEnum:int {
 
-		case CHIGOZIE = 2;
+		case AGNES = 2;
 
-		case UJU = 1;
+		case FT = 1;
 	}
 ?>

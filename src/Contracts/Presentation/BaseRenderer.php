@@ -5,6 +5,9 @@
 
 	use Suphle\Services\ServiceCoordinator;
 
+	/**
+	 * Psr\Http\Message\ResponseInterface, if you will
+	*/
 	interface BaseRenderer {
 
 		public function render ():string;

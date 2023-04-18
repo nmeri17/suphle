@@ -12,12 +12,12 @@
 
 		public function SAME__URLh () {
 
-			$this->_get(new Json("defaultHandler"));
+			$this->_httpGet(new Json("defaultHandler"));
 		}
 
 		public function id () {
 
-			$this->_get(new Json("defaultPlaceholder"));
+			$this->_httpGet(new Json("defaultPlaceholder"));
 		}
 	}
 ?>

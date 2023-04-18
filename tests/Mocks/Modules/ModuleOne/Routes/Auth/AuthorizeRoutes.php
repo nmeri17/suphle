@@ -14,7 +14,7 @@
 
 		public function ADMIN__ENTRYh () {
 
-			$this->_get(new Json("plainSegment"));
+			$this->_httpGet(new Json("plainSegment"));
 		}
 
 		public function ADMIN () {

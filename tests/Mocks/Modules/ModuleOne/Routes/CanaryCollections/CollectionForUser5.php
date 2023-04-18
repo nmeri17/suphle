@@ -12,7 +12,7 @@
 
 		public function SAME__URLh () {
 
-			$this->_get(new Json("user5Handler"));
+			$this->_httpGet(new Json("user5Handler"));
 		}
 	}
 ?>

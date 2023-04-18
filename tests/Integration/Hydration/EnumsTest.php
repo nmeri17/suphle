@@ -20,7 +20,7 @@
 
 			$sut = $this->container->getClass(InjectsBackedEnum::class); // when
 
-			$this->assertSame(BackedEnum::CHIGOZIE, $sut->backedEnum); // then
+			$this->assertSame(BackedEnum::AGNES, $sut->backedEnum); // then
 		}
 	}
 ?>

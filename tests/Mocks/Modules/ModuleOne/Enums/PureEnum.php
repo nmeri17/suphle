@@ -5,6 +5,6 @@
 
 		case UJU;
 
-		case CHIGOZIE;
+		case AGNES;
 	}
 ?>

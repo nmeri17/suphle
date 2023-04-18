@@ -14,7 +14,7 @@
 
 		public function POSTS_id () {
 
-			$this->_get(new Json("getPostDetails"));
+			$this->_httpGet(new Json("getPostDetails"));
 		}
 
 		public function FLOW__WITH__FLOWh_id() {
@@ -28,12 +28,12 @@
 				->previousResponse()->collectionNode("anchor")->pipeTo()
 			);
 
-			$this->_get($renderer->setFlow($flow));
+			$this->_httpGet($renderer->setFlow($flow));
 		}
 
 		public function INTERNAL__FLOWh_id () {
 
-			$this->_get(new Json("handleChildFlow"));
+			$this->_httpGet(new Json("handleChildFlow"));
 		}
 
 		public function FLOW__TO__MODULE3h () {
@@ -47,7 +47,7 @@
 				->previousResponse()->collectionNode("anchor")->pipeTo()
 			);
 
-			$this->_get($renderer->setFlow($flow));
+			$this->_httpGet($renderer->setFlow($flow));
 		}
 	}
 ?>

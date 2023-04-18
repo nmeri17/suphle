@@ -12,7 +12,7 @@
 		
 		public function WITHOUT () {
 			
-			$this->_get(new Json("noInner"));
+			$this->_httpGet(new Json("noInner"));
 		}
 	}
 ?>

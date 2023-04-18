@@ -12,12 +12,12 @@
 
 		public function CASCADE () {
 
-			$this->_get(new Json("secondCascade"));
+			$this->_httpGet(new Json("secondCascade"));
 		}
 
 		public function SEGMENT__IN__SECONDh () {
 
-			$this->_get(new Json("segmentInSecond"));
+			$this->_httpGet(new Json("segmentInSecond"));
 		}
 	}
 ?>

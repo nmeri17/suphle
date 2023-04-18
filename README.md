@@ -1,3 +1,12 @@
+<p align="center">
+    <a href="https://suphle.com">
+        <img src="./suphle-banner.png" title="Suphle Banner" alt="Suphle Banner">
+    </a>
+</p>
+
+Suphle Framework
+==========================
+
 ## Introduction
 
 This is the dev-facing project intended for contribution to Suphle itself. Its complete documentation is live at [Suphle.com](https://suphle.com).

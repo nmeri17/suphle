@@ -12,7 +12,7 @@
 
 		public function MODULE__TWOh_id() {
 
-			$this->_get(new Json("checkPlaceholder"));
+			$this->_httpGet(new Json("checkPlaceholder"));
 		}
 	}
 ?>

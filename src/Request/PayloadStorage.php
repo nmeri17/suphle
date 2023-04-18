@@ -6,7 +6,7 @@
 	use Suphle\Services\Decorators\BindsAsSingleton;
 
 	/**
-	 * Our closest adaptation of PSR\MessageInterface
+	 * Our closest adaptation of Psr\Http\Message\ServerRequestInterface
 	*/
 	#[BindsAsSingleton]
 	class PayloadStorage {

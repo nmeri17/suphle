@@ -16,7 +16,7 @@
 
 		public function FIRST__SINGLEh () {
 
-			$this->_get(new Json("plainSegment"));
+			$this->_httpGet(new Json("plainSegment"));
 		}
 
 		public function FOURTH__SINGLEh () {
@@ -31,7 +31,7 @@
 
 		public function NEGOTIATE () {
 
-			$this->_get(new Markup("plainSegment", "generic.negotiated-content"));
+			$this->_httpGet(new Markup("plainSegment", "generic.negotiated-content"));
 		}
 
 		public function _assignMiddleware (MiddlewareRegistry $registry):void {

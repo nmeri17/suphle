@@ -17,7 +17,7 @@
 		
 		public function WITH () {
 			
-			$this->_get(new Json("hasInner"));
+			$this->_httpGet(new Json("hasInner"));
 		}
 	}
 ?>

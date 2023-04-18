@@ -20,12 +20,12 @@
 
 		public function INIT__POSTh () {
 
-			$this->_get(new Markup("loadForm", "secure-some.edit-form"));
+			$this->_httpGet(new Markup("loadForm", "secure-some.edit-form"));
 		}
 
 		public function REGULAR__MARKUPh () {
 
-			$this->_post(new Redirect("regularFormResponse", fn () => "/"));
+			$this->_httpPost(new Redirect("regularFormResponse", fn () => "/"));
 		}
 
 		public function HOTWIRE__REDIRECTh () {
@@ -43,7 +43,7 @@
 				"hotwire/before-fragment"
 			);
 
-			$this->_post($renderer);
+			$this->_httpPost($renderer);
 		}
 
 		/**
@@ -80,7 +80,7 @@
 				"hotwire/update-fragment"
 			);
 
-			$this->_put($renderer);
+			$this->_httpPut($renderer);
 		}
 
 		public function NO__REPLACE__NODEh () {
@@ -98,7 +98,7 @@
 				"hotwire/before-fragment"
 			);
 
-			$this->_post($renderer);
+			$this->_httpPost($renderer);
 		}
 
 		public function DELETE__SINGLEh () {
@@ -109,7 +109,7 @@
 				"hotwireDelete", $this->getStreamActionTarget()
 			);
 
-			$this->_delete($renderer);
+			$this->_httpDelete($renderer);
 		}
 
 		public function COMBINE__DELETEh () {
@@ -125,7 +125,7 @@
 				"hotwire/after-fragment"
 			);
 
-			$this->_delete($renderer);
+			$this->_httpDelete($renderer);
 		}
 	}
 ?>

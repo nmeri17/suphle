@@ -14,22 +14,22 @@
 		
 		public function API__SEGMENTh () {
 			
-			$this->_get(new Json("segmentHandler"));
+			$this->_httpGet(new Json("segmentHandler"));
 		}
 
 		public function SEGMENT_id() {
 
-			$this->_get(new Json("simplePairOverride"));
+			$this->_httpGet(new Json("simplePairOverride"));
 		}
 
 		public function CASCADE () {
 
-			$this->_get(new Json("originalCascade"));
+			$this->_httpGet(new Json("originalCascade"));
 		}
 
 		public function SECURE__SEGMENTh () {
 
-			$this->_get(new Json("segmentHandler"));
+			$this->_httpGet(new Json("segmentHandler"));
 		}
 
 		public function _preMiddleware (PreMiddlewareRegistry $registry):void {

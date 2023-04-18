@@ -16,27 +16,27 @@
 
 		public function FIRST__UNTAGh () {
 
-			$this->_get(new Json("plainSegment"));
+			$this->_httpGet(new Json("plainSegment"));
 		}
 
 		public function SECOND__UNTAGh () {
 
-			$this->_get(new Json("plainSegment"));
+			$this->_httpGet(new Json("plainSegment"));
 		}
 
 		public function THIRD__UNTAGh () {
 
-			$this->_get(new Json("plainSegment"));
+			$this->_httpGet(new Json("plainSegment"));
 		}
 
 		public function RETAIN () {
 
-			$this->_get(new Json("plainSegment"));
+			$this->_httpGet(new Json("plainSegment"));
 		}
 
 		public function ADDITIONAL__TAGh () {
 
-			$this->_get(new Json("plainSegment"));
+			$this->_httpGet(new Json("plainSegment"));
 		}
 
 		public function _assignMiddleware (MiddlewareRegistry $registry):void {

@@ -58,22 +58,22 @@
 			return new BrowserBuilder($this, $markupPath, $templatePath );
 		}
 
-		public function _get (BaseRenderer $renderer):self {
+		public function _httpGet (BaseRenderer $renderer):self {
 
 			return $this->_register($renderer, "get");
 		}
 
-		public function _post (BaseRenderer $renderer):self {
+		public function _httpPost (BaseRenderer $renderer):self {
 
 			return $this->_register($renderer, "post");
 		}
 
-		public function _put (BaseRenderer $renderer):self {
+		public function _httpPut (BaseRenderer $renderer):self {
 
 			return $this->_register($renderer, "put");
 		}
 
-		public function _delete (BaseRenderer $renderer):self {
+		public function _httpDelete (BaseRenderer $renderer):self {
 
 			return $this->_register($renderer, "delete");
 		}

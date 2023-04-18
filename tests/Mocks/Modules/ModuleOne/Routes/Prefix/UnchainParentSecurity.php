@@ -22,12 +22,12 @@
 		
 		public function UNLINK () {
 			
-			$this->_get(new Json("handleUnlinked"));
+			$this->_httpGet(new Json("handleUnlinked"));
 		}
 		
 		public function RETAIN__AUTHh () {
 			
-			$this->_get(new Json("handleRetained"));
+			$this->_httpGet(new Json("handleRetained"));
 		}
 	}
 ?>

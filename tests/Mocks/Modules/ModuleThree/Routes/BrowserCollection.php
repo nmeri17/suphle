@@ -17,7 +17,7 @@
 
 		public function id () {
 
-			$this->_get(new Json("checkPlaceholder"));
+			$this->_httpGet(new Json("checkPlaceholder"));
 		}
 	}
 ?>

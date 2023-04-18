@@ -33,7 +33,7 @@
 				->pipeTo(),
 			);
 
-			$this->_get($renderer->setFlow($flow));
+			$this->_httpGet($renderer->setFlow($flow));
 		}
 
 		public function SINGLE__NODEh() {
@@ -49,7 +49,7 @@
 				->altersQuery()
 			);
 
-			$this->_get($renderer->setFlow($flow));
+			$this->_httpGet($renderer->setFlow($flow));
 		}
 
 		public function FROM__SERVICEh() {
@@ -71,7 +71,7 @@
 				// after adding them, update [flroutest->getOriginUrls]
 			);
 
-			$this->_get($renderer->setFlow($flow));
+			$this->_httpGet($renderer->setFlow($flow));
 		}
 
 		public function PIPE__TOh() {
@@ -86,7 +86,7 @@
 				->pipeTo(),
 			);
 			
-			$this->_get($renderer->setFlow($flow));
+			$this->_httpGet($renderer->setFlow($flow));
 		}
 
 		public function ONE__OFh() {
@@ -100,17 +100,17 @@
 				->asOne()
 			);
 			
-			$this->_get($renderer->setFlow($flow));
+			$this->_httpGet($renderer->setFlow($flow));
 		}
 
 		public function NO__FLOWh() {
 
-			$this->_get(new Json("noFlowHandler"));
+			$this->_httpGet(new Json("noFlowHandler"));
 		}
 
 		public function USER__CONTENTh_id () {
 
-			$this->_get(new Json("readFlowPayload"));
+			$this->_httpGet(new Json("readFlowPayload"));
 		}
 	}
 ?>

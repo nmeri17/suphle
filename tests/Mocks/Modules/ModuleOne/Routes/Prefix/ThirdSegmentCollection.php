@@ -12,7 +12,7 @@
 
 		public function THIRD () {
 			
-			$this->_get(new Json("thirdSegmentHandler"));
+			$this->_httpGet(new Json("thirdSegmentHandler"));
 		}
 	}
 ?>

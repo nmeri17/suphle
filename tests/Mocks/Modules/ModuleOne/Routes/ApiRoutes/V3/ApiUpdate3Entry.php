@@ -12,7 +12,7 @@
 
 		public function CASCADE () {
 
-			$this->_get(new Json("thirdCascade"));
+			$this->_httpGet(new Json("thirdCascade"));
 		}
 	}
 ?>

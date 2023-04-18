@@ -16,32 +16,32 @@
 
 		public function RETAIN () {
 
-			$this->_get(new Json("simpleResult"));
+			$this->_httpGet(new Json("simpleResult"));
 		}
 
 		public function ADDITIONAL__RULEh () {
 
-			$this->_get(new Json("simpleResult"));
+			$this->_httpGet(new Json("simpleResult"));
 		}
 
 		public function SECEDE () {
 
-			$this->_get(new Json("simpleResult"));
+			$this->_httpGet(new Json("simpleResult"));
 		}
 
 		public function GMULTI__EDITh_id () {
 
-			$this->_get(new Json("getEmploymentDetails"));
+			$this->_httpGet(new Json("getEmploymentDetails"));
 		}
 
 		public function GMULTI__EDIT__UNAUTHh () {
 
-			$this->_get(new Json("getEmploymentDetails"));
+			$this->_httpGet(new Json("getEmploymentDetails"));
 		}
 
 		public function PMULTI__EDITh_id () {
 
-			$this->_put(new Json("updateEmploymentDetails"));
+			$this->_httpPut(new Json("updateEmploymentDetails"));
 		}
 
 		public function _preMiddleware (PreMiddlewareRegistry $registry):void {

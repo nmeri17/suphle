@@ -12,7 +12,7 @@
 
 		public function ALL__PAYLOADh () {
 
-			$this->_get(new Json("mirrorPayload"));
+			$this->_httpGet(new Json("mirrorPayload"));
 		}
 	}
 ?>

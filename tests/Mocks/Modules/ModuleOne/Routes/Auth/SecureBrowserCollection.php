@@ -14,7 +14,7 @@
 
 		public function SEGMENT() {
 
-			$this->_get(new Json("plainSegment"));
+			$this->_httpGet(new Json("plainSegment"));
 		}
 
 		public function _preMiddleware (PreMiddlewareRegistry $registry):void {

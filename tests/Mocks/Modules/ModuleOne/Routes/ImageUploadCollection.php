@@ -12,17 +12,17 @@
 
 		public function APPLY__ALLh () {
 
-			$this->_post(new Json("applyAllOptimizations"));
+			$this->_httpPost(new Json("applyAllOptimizations"));
 		}
 
 		public function APPLY__NONEh () {
 
-			$this->_post(new Json("applyNoOptimization"));
+			$this->_httpPost(new Json("applyNoOptimization"));
 		}
 
 		public function APPLY__CROPh () {
 
-			$this->_post(new Json("applyThumbnail"));
+			$this->_httpPost(new Json("applyThumbnail"));
 		}
 	}
 ?>
