@@ -135,5 +135,10 @@
 
 			return $hydrator;
 		}
+
+		public function crudFilesLocation ():string {
+
+			return __DIR__ . DIRECTORY_SEPARATOR. "CrudModels". DIRECTORY_SEPARATOR;
+		}
 	}
 ?>

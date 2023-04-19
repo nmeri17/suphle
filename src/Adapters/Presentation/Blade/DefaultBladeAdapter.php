@@ -41,6 +41,11 @@
 			$this->viewPaths[] = $markupPath; // Where present, this must be called before setViewFactory
 		}
 
+		public function crudFilesLocation ():string {
+
+			return __DIR__ . DIRECTORY_SEPARATOR. "CrudTemplates". DIRECTORY_SEPARATOR;
+		}
+
 		public function parseRenderer (RendersMarkup $renderer):string {
 
 			$this->setViewFactory(); // these calls ought to reside in an interface loader but if they're called before all paths are being set, the factory won't include those sources

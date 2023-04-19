@@ -1,7 +1,9 @@
 <?php
 	namespace Suphle\Contracts\Presentation;
 
-	interface HtmlParser {
+	use Suphle\Contracts\Routing\OutputsCrudFiles;
+
+	interface HtmlParser extends OutputsCrudFiles {
 
 		public function parseRenderer (RendersMarkup $renderer):string;
 

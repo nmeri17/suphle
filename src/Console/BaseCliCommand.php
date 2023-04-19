@@ -62,6 +62,9 @@
 		*/
 		abstract public static function commandSignature ():string;
 
+		/**
+		 * Can either be called with HYDRATOR_MODULE_OPTION or no argument
+		*/
 		protected function getExecutionContainer (?string $moduleInterface):Container {
 
 			if ($moduleInterface)

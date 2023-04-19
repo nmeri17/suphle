@@ -14,7 +14,9 @@
 
 		public const SAVE_NEW_KEY = "resource";
 
-		private string $markupPath, $templatePath;
+		private string $markupPath, // relative markup path for this resource. The absolute path is derived by htmlParser
+
+		$templatePath;
 
 		protected array $validActions = [
 

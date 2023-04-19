@@ -3,7 +3,9 @@
 
 	use Suphle\Contracts\Auth\{AuthStorage, UserHydrator};
 
-	interface OrmDialect {
+	use Suphle\Contracts\Routing\OutputsCrudFiles;
+
+	interface OrmDialect extends OutputsCrudFiles {
 
 		public function getConnection ():object;
 

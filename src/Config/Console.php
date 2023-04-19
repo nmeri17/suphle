@@ -11,16 +11,18 @@
 
 	use Suphle\Server\Commands\HttpServerCommand;
 
+	use Suphle\Routing\Commands\CrudCommand;
+
 	class Console implements ConsoleContract {
 
 		public function commandsList ():array {
 
 			return [
-				ArtisanCli::class,
+				ArtisanCli::class, CloneModuleCommand::class,
 
-				InstallComponentCommand::class, CloneModuleCommand::class,
+				CrudCommand::class, HttpServerCommand::class,
 
-				HttpServerCommand::class
+				InstallComponentCommand::class
 			];
 		}
 	}
