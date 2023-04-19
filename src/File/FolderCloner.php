@@ -7,7 +7,7 @@
 
 		protected array $fileReplacements, $folderReplacements,
 
-		$contentsReplacement;
+		$contentsReplacement, $copiedFiles = [];
 
 		public function __construct (protected readonly FileSystemReader $fileSystemReader) {
 
@@ -37,7 +37,7 @@
 
 			$this->nameContentChange($temporaryModulePath);
 
-			$this->renameEntryOnDisk($temporaryModulePath, $newDestination); // since we copied instead of moved, we have do the actual moving from temp to permanent
+			$this->renameEntryOnDisk($temporaryModulePath, $newDestination); // since we copied instead of moved, we have to do the actual moving from temp to permanent
 
 			return true;
 		}
@@ -113,9 +113,23 @@
 
 			if ($operationSuccess) return;
 
+			$this->fileSystemReader->resetCopiedBatch();
+
 			$this->fileSystemReader->deepCopy($sourceFolder, $newDestination);
+
+			$this->copiedFiles = array_merge(
+
+				$this->copiedFiles,
+
+				$this->fileSystemReader->lastCopiedBatch()
+			);
 			
 			$this->fileSystemReader->emptyDirectory($sourceFolder);
+		}
+
+		public function getCopiedFiles ():array {
+
+			return $this->copiedFiles;
 		}
 	}
 ?>

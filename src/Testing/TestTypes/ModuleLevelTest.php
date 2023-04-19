@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Testing\TestTypes;
 
-	use Suphle\Modules\{ModuleDescriptor, Structures\ActiveDescriptors};
+	use Suphle\Modules\ModuleDescriptor;
 
 	use Suphle\Hydration\Container;
 
@@ -43,27 +43,6 @@
 		 * @return ModuleDescriptor[]
 		 */
 		abstract protected function getModules ():array;
-
-		/**
-		 * Doesn't return the descriptor but rather the concrete associated with inteface exported by given module
-		*/
-		protected function getModuleFor (string $interface):object {
-
-			return (new ActiveDescriptors($this->modules))
-
-			->findMatchingExports($interface)
-
-			->materialize();
-		}
-
-		protected function getContainerFor (string $interface):Container {
-
-			return (new ActiveDescriptors($this->modules))
-
-			->findMatchingExports($interface)
-
-			->getContainer();
-		}
 
 		protected function getContainer ():Container {
 

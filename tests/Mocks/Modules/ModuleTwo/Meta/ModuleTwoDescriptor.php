@@ -5,9 +5,9 @@
 
 	use Suphle\Contracts\Config\ModuleFiles;
 
-	use Suphle\Config\AscendingHierarchy;
-
 	use Suphle\File\FileSystemReader;
+
+	use Suphle\Tests\Mocks\Modules\ModuleTwo\Config\FilesMock;
 
 	use Suphle\Tests\Mocks\Interactions\{ModuleTwo, ModuleThree};
 
@@ -35,7 +35,7 @@
 
 			return array_merge(parent::globalConcretes(), [
 
-				ModuleFiles::class => new AscendingHierarchy(
+				ModuleFiles::class => new FilesMock(
 					
 					__DIR__, __NAMESPACE__,
 

@@ -9,6 +9,11 @@
 		public function getRootPath ():string;
 
 		/**
+		 * Without trailing slash
+		*/
+		public function modulesNamespace ():string;
+
+		/**
 		 * @return Absolute path, with trailing slash
 		*/
 		public function activeModulePath ():string;

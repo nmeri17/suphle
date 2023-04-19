@@ -26,6 +26,11 @@
 			);
 		}
 
+		public function modulesNamespace ():string {
+
+			return "AllModules";
+		}
+
 		/**
 		 * {@inheritdoc}
 		*/

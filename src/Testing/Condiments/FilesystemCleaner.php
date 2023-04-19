@@ -118,7 +118,7 @@
 
 			foreach ($indexes as $index)
 
-				$this->assertSavedFileNames(data_httpGet($fileMap, $index));
+				$this->assertSavedFileNames(data_get($fileMap, $index));
 		}
 
 		/**

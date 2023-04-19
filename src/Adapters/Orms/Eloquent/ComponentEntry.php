@@ -9,9 +9,7 @@
 
 	class ComponentEntry extends BaseComponentEntry {
 
-		public const EJECT_DESTINATION = "database_folder",
-
-		EJECT_NAMESPACE = "database_namespace";
+		public const EJECT_NAMESPACE = "database_namespace";
 
 		public function __construct (
 			protected readonly Database $databaseConfig,

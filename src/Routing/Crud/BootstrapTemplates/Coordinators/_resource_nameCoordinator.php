@@ -1,11 +1,11 @@
 <?php
-	namespace AllModules\_module_name\Coordinators;
+	namespace _modules_shell\_module_name\Coordinators;
 
 	use Suphle\Services\ServiceCoordinator;
 
 	use Suphle\Request\PayloadStorage;
 
-	use AllModules\_module_name\PayloadReaders\Base_resource_nameBuilder;
+	use _modules_shell\_module_name\PayloadReaders\Base_resource_nameBuilder;
 
 	class _resource_nameCoordinator extends ServiceCoordinator {
 

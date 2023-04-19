@@ -5,6 +5,8 @@
 
 	class FileSystemReader {
 
+		protected array $filesFinalDestination = [];
+
 		/**
 		 * Traverse {currentWorkingDirectory} backwards, for the number of levels given by dots in {relativePath}
 		 * 
@@ -66,6 +68,16 @@
 			return $matches[1];
 		}
 
+		public function lastCopiedBatch ():array {
+
+			return $this->filesFinalDestination;
+		}
+
+		public function resetCopiedBatch ():void {
+
+			$this->filesFinalDestination = [];
+		}
+
 		/**
 		 * @param {onDirectory} has to be recursive for this method to function as expected
 		*/
@@ -117,6 +129,8 @@
 					$newDestination = $currentDestination . DIRECTORY_SEPARATOR . $fileName; // in a folder containing folders and files, the files will be read first, which means destination path is expected to exist otherwise copy won't work
 
 					$this->ensureDirectoryExists($newDestination, true);
+
+					$this->filesFinalDestination[] = $newDestination;
 
 					copy($filePath, $newDestination);
 				}

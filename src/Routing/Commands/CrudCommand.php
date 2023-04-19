@@ -49,16 +49,16 @@
 
 			try {
 
-				$operationStatus = $bootstrapperService
+				if (!$bootstrapperService->outputResourceTemplates(
 
-				->outputResourceTemplates(
-
-					$resourceName, $input->getOption(self::IS_API_OPTION)
-				);
+						$resourceName, $input->getOption(self::IS_API_OPTION)
+					)
+				)
+					return Command::FAILURE;
 
 				$output->writeln("Elements for Resource '$resourceName' outputted successfully");
 
-				return $operationStatus;
+				return Command::SUCCESS;
 			}
 			catch (Throwable $exception) {
 

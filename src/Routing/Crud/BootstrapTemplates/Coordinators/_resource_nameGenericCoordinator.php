@@ -1,5 +1,5 @@
 <?php
-	namespace AllModules\_module_name\Coordinators;
+	namespace _modules_shell\_module_name\Coordinators;
 
 	use Suphle\Services\Decorators\ValidationRules;
 
@@ -7,7 +7,7 @@
 
 	use _database_namespace\_resource_name;
 
-	use AllModules\_module_name\PayloadReaders\Base_resource_nameBuilder;
+	use _modules_shell\_module_name\PayloadReaders\Base_resource_nameBuilder;
 
 	trait _resource_nameGenericCoordinator {
 

@@ -5,6 +5,19 @@
 
 	class DatabaseMock extends PDOMysqlKeys {
 
-		protected string $relativeFolderName = "Models";
+		/**
+		 * {@inheritdoc}
+		*/
+		public function componentInstallPath ():string {
+
+			return $this->fileConfig->getRootPath().
+
+			"Models\Eloquent" . DIRECTORY_SEPARATOR;
+		}
+
+		public function componentInstallNamespace ():string {
+
+			return "Suphle\Tests\Mocks\Models\Eloquent";
+		}
 	}
 ?>

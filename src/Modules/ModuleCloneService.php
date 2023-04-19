@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Modules;
 
-	use Suphle\Contracts\{ConsoleClient, Modules\DescriptorInterface};
+	use Suphle\Contracts\{ConsoleClient, Modules\DescriptorInterface, Config\ModuleFiles};
 
 	use Suphle\Hydration\Container;
 
@@ -29,7 +29,9 @@
 
 			protected readonly FolderCloner $folderCloner,
 
-			protected readonly ModulesBooter $modulesBooter
+			protected readonly ModulesBooter $modulesBooter,
+
+			protected readonly ModuleFiles $fileConfig
 		) {
 
 			//
@@ -57,13 +59,13 @@
 
 		public function createModuleFolder (string $moduleName):bool {
 
+			$contentsReplacement = $this->getContentReplacements($moduleName);
+
 			return $this->folderCloner->setEntryReplacements(
 
-				$this->getFileReplacements($moduleName),
+				$contentsReplacement, $contentsReplacement,
 
-				$this->getFolderReplacements($moduleName),
-
-				$this->getContentReplacements($moduleName)
+				$contentsReplacement
 			)
 			->transferFolder(
 
@@ -139,19 +141,14 @@
 			return $this->fileSystemReader->pathFromLevels($destination, "", 1); // since we expect to modify even the root folder itself, not only the children
 		}
 
-		protected function getFileReplacements (string $moduleName):array {
-
-			return ["_module_name" => $moduleName];
-		}
-
-		protected function getFolderReplacements (string $moduleName):array {
-
-			return ["_module_name" => $moduleName];
-		}
-
 		protected function getContentReplacements (string $moduleName):array {
 
-			return ["_module_name" => $moduleName];
+			return [
+
+				"_module_name" => $moduleName,
+
+				"_modules_shell" => $this->fileConfig->modulesNamespace()
+			];
 		}
 	}
 ?>

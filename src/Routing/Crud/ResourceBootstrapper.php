@@ -70,11 +70,16 @@
 
 			return [
 			
-				"_module_name" => $this->descriptor->exportsImplements(),
+				"_module_name" => @end(explode(
+
+					"\\", $this->descriptor->exportsImplements()
+				)),
 
 				"_database_namespace" => $this->databaseConfig->componentInstallNamespace(),
 
-				"_resource_name_" => $resourceName
+				"_resource_name" => $resourceName,
+
+				"_modules_shell" => $this->fileConfig->modulesNamespace()
 			];
 		}
 	}

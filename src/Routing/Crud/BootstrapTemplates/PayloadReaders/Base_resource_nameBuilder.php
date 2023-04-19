@@ -1,5 +1,5 @@
 <?php
-	namespace AllModules\_module_name\PayloadReaders;
+	namespace _modules_shell\_module_name\PayloadReaders;
 
 	use Suphle\Services\Structures\ModelfulPayload;
 

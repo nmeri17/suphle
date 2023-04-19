@@ -7,7 +7,7 @@
 
 	use Suphle\Hydration\Container;
 
-	use Suphle\Modules\ModuleHandlerIdentifier;
+	use Suphle\Modules\{ModuleHandlerIdentifier, Structures\ActiveDescriptors};
 
 	use Suphle\Server\ModuleWorkerAccessor;
 
@@ -71,6 +71,27 @@
 
 				QueueAdapter::class => $this->positiveDouble(QueueAdapter::class)
 			], $this->getExceptionDoubles()));
+		}
+
+		/**
+		 * Doesn't return the descriptor but rather the concrete associated with inteface exported by given module
+		*/
+		protected function getModuleFor (string $interface):object {
+
+			return (new ActiveDescriptors($this->modules))
+
+			->findMatchingExports($interface)
+
+			->materialize();
+		}
+
+		protected function getContainerFor (string $interface):Container {
+
+			return (new ActiveDescriptors($this->modules))
+
+			->findMatchingExports($interface)
+
+			->getContainer();
 		}
 	}
 ?>

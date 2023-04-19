@@ -1,5 +1,5 @@
 <?php
-	namespace AllModules\_module_name\Tests;
+	namespace _modules_shell\_module_name\Tests;
 
 	use Suphle\Hydration\Container;
 
@@ -7,7 +7,7 @@
 
 	use Suphle\Testing\{TestTypes\ModuleLevelTest, Condiments\BaseDatabasePopulator};
 
-	use AllModules\_module_name\Meta\_module_nameDescriptor;
+	use _modules_shell\_module_name\Meta\_module_nameDescriptor;
 
 	use _database_namespace\_resource_name;
 
