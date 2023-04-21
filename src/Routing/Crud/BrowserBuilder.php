@@ -51,10 +51,10 @@
 		*/
 		public function saveNew ():BaseRenderer {
 
-			$prefix = $this->collection->_prefixCurrent();
+			$prefix = rtrim($this->markupPath, DIRECTORY_SEPARATOR);
 
 			return new Redirect(__FUNCTION__, fn() => function () use ($prefix) {
-					return $prefix . "/" .
+					return "/$prefix/" .
 
 					$this->rawResponse[BrowserBuilder::SAVE_NEW_KEY]->id; // assumes the controller returns an array containing this key
 				});

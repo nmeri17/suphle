@@ -49,7 +49,7 @@
 		}
 
 		/**
-		 * `save` must be called in the invoking method
+		 * `registerCruds` must be called in the invoking method
 		*/
 		public function _crud (string $markupPath, string $templatePath = null):CrudBuilder {
 

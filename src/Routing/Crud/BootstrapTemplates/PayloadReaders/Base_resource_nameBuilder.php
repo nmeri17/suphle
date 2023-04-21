@@ -3,7 +3,7 @@
 
 	use Suphle\Services\Structures\ModelfulPayload;
 
-	use AppModels\_resource_name;
+	use _database_namespace\_resource_name;
 
 	class Base_resource_nameBuilder extends ModelfulPayload {
 
