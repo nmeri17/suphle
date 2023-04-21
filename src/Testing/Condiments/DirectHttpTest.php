@@ -1,15 +1,15 @@
 <?php
 	namespace Suphle\Testing\Condiments;
 
-	use Suphle\Contracts\Requests\{StdInputReader, FileInputReader};
-
-	use Suphle\Contracts\Auth\UserHydrator;
+	use Suphle\Contracts\{Requests\FileInputReader, Auth\UserHydrator};
 
 	use Suphle\Request\{RequestDetails, PayloadStorage};
 
 	use Suphle\Testing\Proxies\Extensions\InjectedUploadedFiles;
 
 	use Symfony\Component\HttpFoundation\File\UploadedFile;
+
+	use GuzzleHttp\Psr7\Stream;
 
 	trait DirectHttpTest {
 
@@ -27,34 +27,26 @@
 		*/
 		protected function setHttpParams (string $requestPath, string $httpMethod = "get", ?array $payload = [], array $headers = []):void {
 
-			$reader = ["getHeaders" => $headers];
+			$this->setRequestPath($requestPath, $httpMethod);
 
-			if (
-				!empty($payload) &&
+			$payloadStorage = $this->getContainer()->getClass(PayloadStorage::class);
 
-				$this->isValidPayloadType($httpMethod)
-			) {
+			foreach ($headers as $key => $value)
 
-				$hasHeader = array_key_exists(
+				$payloadStorage = $payloadStorage->withHeader($key, $value);
 
-					PayloadStorage::CONTENT_TYPE_KEY, $headers
-				);
+			if (PayloadStorage::CONTENT_TYPE_KEY == $this->HTML_HEADER_VALUE)
 
-				$hasJsonHeader = $hasHeader && $headers[PayloadStorage::CONTENT_TYPE_KEY] == PayloadStorage::JSON_HEADER_VALUE;
+				$payloadString = http_build_query($payload);
 
-				if ($hasJsonHeader)
+			else $payloadString = json_encode($payload);
 
-					$reader["getPayload"] = $payload;
-
-				else $_POST = $payload;
-			}
+			$payloadStorage = $payloadStorage->withBody(Stream::create($payloadString));
 
 			$this->massProvide([
 
-				StdInputReader::class => $this->positiveDouble(StdInputReader::class, $reader)
+				PayloadStorage::class => $payloadStorage
 			]);
-
-			$this->setRequestPath($requestPath, $httpMethod);
 		}
 
 		/**

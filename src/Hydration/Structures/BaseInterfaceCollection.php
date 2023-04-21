@@ -9,7 +9,7 @@
 
 	use Suphle\Contracts\IO\{Session, MailClient, EnvAccessor, CacheManager};
 
-	use Suphle\Contracts\Requests\{RequestValidator, StdInputReader, FileInputReader, ValidationFailureConvention, RequestEventsListener};
+	use Suphle\Contracts\Requests\{RequestValidator, FileInputReader, ValidationFailureConvention, RequestEventsListener};
 
 	use Suphle\Contracts\Database\{OrmDialect, OrmReplicator, OrmTester, EntityDetails};
 
@@ -43,7 +43,7 @@
 
 	use Suphle\Queues\AdapterLoader as QueueAdapterLoader;
 
-	use Suphle\Request\{NativeInputReader, ValidatorLoader, NativeFileReader, DefaultRequestListener};
+	use Suphle\Request\{ValidatorLoader, NativeFileReader, DefaultRequestListener};
 
 	use Suphle\Config\{Auth, Laravel, ExceptionConfig, Console as CliConsole, PDOMysqlKeys, DefaultFlowConfig, ProxyManagerConfig, DefaultCacheConfig, DefaultTemplateConfig, ContainerConfig};
 
@@ -132,8 +132,6 @@
 				RequestEventsListener::class => DefaultRequestListener::class,
 
 				Session::class => NativeSession::class,
-
-				StdInputReader::class => NativeInputReader::class,
 
 				ThumbnailOperationHandler::class => DefaultThumbnailHandler::class,
 

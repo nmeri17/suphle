@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Request;
 
-	use Suphle\Contracts\{Events, Config\Router, Requests\StdInputReader};
+	use Suphle\Contracts\{Events, Config\Router};
 
 	use Suphle\Services\Decorators\BindsAsSingleton;
 
@@ -11,9 +11,6 @@
 
 	use InvalidArgumentException;
 
-	/**
-	 * Our closest adaptation of the PSR\RequestInterface
-	*/
 	#[BindsAsSingleton]
 	class RequestDetails {
 
@@ -32,8 +29,6 @@
 		public function __construct(
 
 			protected readonly Router $config,
-
-			protected readonly StdInputReader $stdInputReader,
 
 			protected readonly Events $eventManager
 		) {

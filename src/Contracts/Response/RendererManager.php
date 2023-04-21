@@ -25,7 +25,7 @@
 		*/
 		public function mayBeInvalid (?BaseRenderer $renderer = null):self;
 
-		public function invokePreviousRenderer (array $toMerge = []):?BaseRenderer;
+		public function invokePreviousRenderer (array $toMerge = []):BaseRenderer;
 
 		/**
 		 * @throws NoCompatibleValidator

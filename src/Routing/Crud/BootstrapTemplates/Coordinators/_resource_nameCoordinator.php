@@ -5,20 +5,30 @@
 
 	use Suphle\Request\PayloadStorage;
 
+	use Suphle\Security\CSRF\CsrfGenerator;
+
 	use _modules_shell\_module_name\PayloadReaders\Base_resource_nameBuilder;
 
 	class _resource_nameCoordinator extends ServiceCoordinator {
 
 		use _resource_nameGenericCoordinator;
 
-		public function __construct(protected readonly PayloadStorage $payloadStorage) {
+		public function __construct (
+
+			protected readonly PayloadStorage $payloadStorage,
+
+			protected readonly CsrfGenerator $csrf
+		) {
 
 			//
 		}
 
 		public function showCreateForm ():iterable {
 
-			return [];
+			return [
+
+				CsrfGenerator::TOKEN_FIELD => $this->csrf->newToken()
+			];
 		}
 
 		public function showSearchForm ():iterable {

@@ -3,7 +3,7 @@
 
 	use Suphle\Contracts\{Exception\ExceptionHandler, Presentation\BaseRenderer, Requests\ValidationEvaluator};
 
-	use Suphle\Request\PayloadStorage;
+	use Suphle\Request\{PayloadStorage, RequestDetails};
 
 	use Suphle\Exception\Explosives\ValidationFailure;
 
@@ -21,7 +21,9 @@
 
 		public function __construct (
 
-			protected readonly PayloadStorage $payloadStorage
+			protected readonly PayloadStorage $payloadStorage,
+
+			protected readonly RequestDetails $requestDetails
 		) {
 
 			//
@@ -46,8 +48,10 @@
 
 				self::PAYLOAD_KEY => $this->payloadStorage->fullPayload()
 			]);
+			
+			if ($this->requestDetails->isApiRoute())
 
-			$this->renderer->setHeaders(422, []);
+				$this->renderer->setHeaders(422, []);
 		}
 
 		protected function validationErrors ():array {

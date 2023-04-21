@@ -13,6 +13,8 @@
 
 	use Suphle\Contracts\Response\{BaseResponseManager, RendererManager};
 
+	use Suphle\Response\Format\Redirect;
+
 	use Suphle\Request\{ PayloadStorage, RequestDetails, ValidatorManager};
 
 	use Suphle\Exception\Explosives\{ValidationFailure, DevError\NoCompatibleValidator};
@@ -20,7 +22,7 @@
 	#[BindsAsSingleton(RendererManager::class)]
 	class RoutedRendererManager implements RendererManager, BaseResponseManager, ValidationEvaluator {
 
-		public const PREVIOUS_GET_RENDERER = "previous_get_renderer";
+		public const PREVIOUS_GET_URL = "PREVIOUS_GET_URL";
 
 		protected array $handlerParameters;
 
@@ -71,7 +73,10 @@
 
 			if ($this->shouldStoreRenderer())
 
-				$this->sessionClient->setValue(self::PREVIOUS_GET_RENDERER, $this->renderer); // store this before invocation since PDO objects are unserialiable, and before parsing since that would prevent possible merging on next request
+				$this->sessionClient->setValue(
+
+					self::PREVIOUS_GET_URL, $this->requestDetails->getPath()
+				);
 
 			return $this->renderer->invokeActionHandler($this->handlerParameters);
 		}
@@ -88,34 +93,26 @@
 		 * 
 		 * Expects current request to contain same placeholder values used for executing that preceding request
 		*/
-		public function invokePreviousRenderer (array $toMerge = []):?BaseRenderer {
+		public function invokePreviousRenderer (array $toMerge = []):BaseRenderer {
 
-			if (!$this->renderer->deferValidationContent()) // if current request is something like json, write validation errors to it
+			if (!$this->renderer->deferValidationContent()) {// if current request is something like json, write validation errors to it
 
 				$previousRenderer = $this->renderer;
+			
+				$previousRenderer->forceArrayShape($toMerge);
+			}
 			else {
 
-				$previousRenderer = $this->sessionClient->getValue(self::PREVIOUS_GET_RENDERER);
+				$previousUrl = $this->sessionClient->getValue(self::PREVIOUS_GET_URL);
 
-				if (!$previousRenderer) return null;
+				$previousRenderer = new Redirect("", fn () => $previousUrl);
 
-				$this->bypassOrganicProcedures($previousRenderer);
+				foreach ($toMerge as $key => $value)
+
+					$this->sessionClient->setValue($key, $value);
 			}
-			
-			$previousRenderer->forceArrayShape($toMerge);
 
 			return $previousRenderer;
-		}
-
-		/**
-		 * Expected to be used when renderer is derived from other source other than the router. That source should have run all relevant protocols preceding coordinator execution
-		*/
-		public function bypassOrganicProcedures (BaseRenderer $renderer):void {
-			
-			$renderer->invokeActionHandler($this->fetchHandlerParameters(
-				
-				$renderer->getCoordinator(), $renderer->getHandler()
-			));
 		}
 
 		public function fetchHandlerParameters (

@@ -110,14 +110,19 @@
 				}
 				catch (Throwable $exception) { // only roadRunner specific errors are expected here, since our own errors are fully handled internally
 
-					$this->httpWorker->getWorker()
+					$this->httpWorker->getWorker()->error(
 
-					->error($exception->getMessage());
+						$exception->getMessage(). "\n".
+
+						$exception->getTraceAsString()
+					);
 				}
 			}
 		}
 
 		protected function flushHttpResponse (?ServerRequestInterface $newRequest):void {
+
+			$_POST = $newRequest->getParsedBody() ?? []; // this is the only way to retrieve payload. Any attempt outside this object sees everything as empty. Using POST instead of passing it all the way down to payloadStorage, since it's the only usage with that requirement; moreover, downward interacts with requestDetail, not payloadStorage
 
 			$renderer = $this->getRequestRenderer(
 

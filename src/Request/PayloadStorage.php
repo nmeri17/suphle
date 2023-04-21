@@ -1,15 +1,12 @@
 <?php
 	namespace Suphle\Request;
 
-	use Suphle\Contracts\Requests\StdInputReader;
-
 	use Suphle\Services\Decorators\BindsAsSingleton;
 
-	/**
-	 * Our closest adaptation of Psr\Http\Message\ServerRequestInterface
-	*/
+	use GuzzleHttp\Psr7\ServerRequest;
+
 	#[BindsAsSingleton]
-	class PayloadStorage {
+	class PayloadStorage extends ServerRequest {
 
 		use SanitizesIntegerInput;
 
@@ -21,18 +18,25 @@
 
   		ACCEPTS_KEY = "Accept", LOCATION_KEY = "Location";
 
-		protected array $payload = [], $headers;
+		protected array $payload = [];
 
 		public function __construct (
 
-			protected readonly RequestDetails $requestDetails,
-
-			protected readonly StdInputReader $stdInputReader
+			protected readonly RequestDetails $requestDetails
 		) {
 
-			$this->headers = $stdInputReader->getHeaders();
+			$this->psrRequest = self::fromGlobals();
 
 			$this->setPayload();
+		}
+
+		protected function setPayload ():void {
+
+			if ($this->requestDetails->isGetRequest())
+
+				$this->payload = $this->psrRequest->getQueryParams();
+
+			else $this->payload = $this->psrRequest->getParsedBody();
 		}
 
 		public function fullPayload ():array {
@@ -45,43 +49,12 @@
 			$this->payload = array_merge($this->payload, $upserts);
 		}
 
-		public function setPayload ():void {
-
-			if ($this->requestDetails->isGetRequest())
-
-				$this->payload = $this->requestDetails->getQueryParameters();
-
-			else if ($this->isJsonPayload() )
-
-				$this->payload = $this->stdInputReader->getPayload();
-
-			else $this->payload = $_POST;
-		}
-
-		public function isJsonPayload ():bool {
-
-			return $this->matchesHeader(
-
-				self::CONTENT_TYPE_KEY, self::JSON_HEADER_VALUE
-			);
-		}
-
 		public function acceptsJson ():bool {
 
 			return $this->matchesHeader(
 
 				self::ACCEPTS_KEY, self::JSON_HEADER_VALUE
 			);
-		}
-
-		public function hasHeader (string $name):bool {
-
-			return array_key_exists($name, $this->headers);
-		}
-
-		public function getHeader (string $name):string {
-
-			return $this->headers[$name];
 		}
 
 		public function matchesHeader (string $name, string $expectedValue):bool {
