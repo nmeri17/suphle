@@ -79,6 +79,8 @@
 
 				"_resource_name" => $resourceName,
 
+				"_resource_route" => strtoupper($resourceName),
+
 				"_modules_shell" => $this->fileConfig->modulesNamespace()
 			];
 		}
