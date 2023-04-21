@@ -1,6 +1,4 @@
-<x-layout>
-
-	<x-slot name="page-title">Viewing all _resource_name</x-slot>
+<x-layout pageTitle="Viewing all _resource_name">
 
 	<div>
 		<ul>

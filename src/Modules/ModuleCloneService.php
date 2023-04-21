@@ -1,7 +1,7 @@
 <?php
 	namespace Suphle\Modules;
 
-	use Suphle\Contracts\{ConsoleClient, Modules\DescriptorInterface, Config\ModuleFiles};
+	use Suphle\Contracts\{ConsoleClient, Modules\DescriptorInterface};
 
 	use Suphle\Hydration\Container;
 
@@ -29,9 +29,7 @@
 
 			protected readonly FolderCloner $folderCloner,
 
-			protected readonly ModulesBooter $modulesBooter,
-
-			protected readonly ModuleFiles $fileConfig
+			protected readonly ModulesBooter $modulesBooter
 		) {
 
 			//
@@ -141,14 +139,12 @@
 			return $this->fileSystemReader->pathFromLevels($destination, "", 1); // since we expect to modify even the root folder itself, not only the children
 		}
 
+		/**
+		 * Cannot dynamically replace root namespace since at least one module must exist, which isn't true for fresh projects
+		*/
 		protected function getContentReplacements (string $moduleName):array {
 
-			return [
-
-				"_module_name" => $moduleName,
-
-				"_modules_shell" => $this->fileConfig->modulesNamespace()
-			];
+			return ["_module_name" => $moduleName];
 		}
 	}
 ?>

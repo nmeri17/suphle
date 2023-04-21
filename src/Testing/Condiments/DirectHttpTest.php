@@ -27,8 +27,6 @@
 		*/
 		protected function setHttpParams (string $requestPath, string $httpMethod = "get", ?array $payload = [], array $headers = []):void {
 
-			$headers[RequestDetails::HTTP_METHOD_KEY] = $httpMethod;
-
 			$reader = ["getHeaders" => $headers];
 
 			if (
@@ -56,7 +54,7 @@
 				StdInputReader::class => $this->positiveDouble(StdInputReader::class, $reader)
 			]);
 
-			$this->setRequestPath($requestPath);
+			$this->setRequestPath($requestPath, $httpMethod);
 		}
 
 		/**
@@ -72,7 +70,7 @@
 			]);
 		}
 
-		abstract protected function setRequestPath (string $requestPath):void;
+		abstract protected function setRequestPath (string $requestPath, string $httpMethod):void;
 
 		protected function setJsonParams (string $requestPath, array $payload, string $httpMethod = "post"):bool {
 

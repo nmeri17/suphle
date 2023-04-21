@@ -1,6 +1,4 @@
-<x-layout>
-
-	<x-slot name="page-title">Search results for _resource_name</x-slot>
+<x-layout pageTitle="Search results for _resource_name">
 
 	<div>
 		<ul>

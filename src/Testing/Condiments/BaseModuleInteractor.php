@@ -56,9 +56,9 @@
 				$this->mayMonitorContainer($descriptor->getContainer());
 		}
 
-		protected function setRequestPath (string $requestPath):void {
+		protected function setRequestPath (string $requestPath, string $httpMethod):void {
 
-			$this->entrance->setRequestPath($requestPath);
+			$this->entrance->setRequestPath($requestPath, $httpMethod);
 		}
 
 		protected function provideTestEquivalents ():void {

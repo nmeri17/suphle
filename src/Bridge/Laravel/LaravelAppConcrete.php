@@ -94,7 +94,7 @@
 			return LaravelRequest::create(
 				$requestDetails->getPath()?? "", // in case this container is requested outside a http context
 
-				$requestDetails->httpMethod(),
+				$requestDetails->getHttpMethod()?? "",
 
 				$payloadStorage->fullPayload(),
 

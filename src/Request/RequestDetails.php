@@ -19,13 +19,13 @@
 
 		use EmitProxy;
 
-		public const HTTP_METHOD_KEY = "HTTP_METHOD",
-
-		ON_REFRESH = "new_request";
+		public const ON_REFRESH = "new_request";
 
 		protected ?string $computedPath = null,
 
-		$versionPresent, $permanentPath = null; // readonly version of [computedPath]
+		$versionPresent, $permanentPath = null, // readonly version of [computedPath]
+
+		$httpMethod = null;
 
 		protected array $queryParameters = [];
 
@@ -66,14 +66,18 @@
 			return $this->queryParameters;
 		}
 
-		public static function fromModules (array $descriptors, string $requestPath):void {
+		public static function fromModules (array $descriptors, string $requestPath, ?string $forceHttpMethod):void {
 
 			foreach ($descriptors as $descriptor)
 
-				static::fromContainer($descriptor->getContainer(), $requestPath);
+				static::fromContainer(
+					$descriptor->getContainer(), $requestPath,
+
+					$forceHttpMethod
+				);
 		}
 
-		public static function fromContainer (Container $container, string $requestPath):?RequestDetails {
+		public static function fromContainer (Container $container, string $requestPath, ?string $forceHttpMethod):?RequestDetails {
 
 			$components = parse_url($requestPath);
 
@@ -88,6 +92,12 @@
 			parse_str($components["query"] ?? "", $queryParameters);
 
 			$instance->setQueries($queryParameters);
+
+			if (!is_null($forceHttpMethod))
+
+				$instance->setHttpMethod($forceHttpMethod);
+
+			else $instance->deriveHttpMethod();
 
 			$instance->indicateRefresh();
 
@@ -108,28 +118,36 @@
 			return $this->permanentPath;
 		}
 
-		public function httpMethod ():string {
+		protected function setHttpMethod (string $method):void {
+
+			$this->httpMethod = $method;
+		}
+
+		protected function deriveHttpMethod ():void {
 
 			$hiddenField = "_method";
-
-			$headers = $this->stdInputReader->getHeaders();
 
 			if (array_key_exists($hiddenField, $_POST))
 
 				$methodName = $_POST[$hiddenField];
 
-			elseif (array_key_exists(self::HTTP_METHOD_KEY, $headers))
+			elseif (array_key_exists("REQUEST_METHOD", $_SERVER))
 
-				$methodName = $headers[self::HTTP_METHOD_KEY];
+				$methodName = $_SERVER["REQUEST_METHOD"];
 
 			else $methodName = "get";
 
-			return strtolower((string) $methodName);
+			$this->httpMethod = strtolower((string) $methodName);
+		}
+
+		public function getHttpMethod ():?string {
+
+			return $this->httpMethod;
 		}
 
 		public function matchesMethod (string $method):bool {
-
-			return preg_match("/" . $this->httpMethod() . "/i", $method);
+		
+			return preg_match("/" . $this->httpMethod . "/i", $method);
 		}
 
 		public function isGetRequest ():bool {

@@ -1,9 +1,8 @@
-<x-layout>
-
-	<x-slot name="page-title">Create _resource_name</x-slot>
+<x-layout pageTitle="Create _resource_name">
 
 	<div>
-		<form action="post" target="/_resource_name/save">
+		<form method="post" action="/_resource_name/save">
+			<label>Title:</label>
 			<input type="text" name="title">
 
 			<input type="submit" value="save">

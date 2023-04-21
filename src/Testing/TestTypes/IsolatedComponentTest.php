@@ -118,9 +118,9 @@
 				$this->container->interiorDecorate();
 		}
 
-		protected function setRequestPath (string $requestPath):void {
+		protected function setRequestPath (string $requestPath, string $httpMethod):void {
 
-			RequestDetails::fromContainer($this->container, $requestPath);
+			RequestDetails::fromContainer($this->container, $requestPath, $httpMethod);
 		}
 	}
 ?>

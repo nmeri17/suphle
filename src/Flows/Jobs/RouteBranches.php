@@ -96,7 +96,7 @@
 		*/
 		private function findManagerForPattern (string $pattern):bool {
 
-			RequestDetails::fromModules($this->modules, $pattern);
+			RequestDetails::fromModules($this->modules, $pattern, "get");
 
 			$moduleInitializer = $this->moduleFinder->findContext($this->modules);
 

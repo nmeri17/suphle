@@ -5,11 +5,11 @@
 
 	use Suphle\Contracts\Config\{Router, Laravel, Flows, Database};
 
-	use Suphle\Contracts\{Events, Auth\UserContract};
+	use Suphle\Contracts\{Events, Auth\UserContract, Presentation\HtmlParser};
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\Config\{RouterMock, LaravelMock, FlowMock, DatabaseMock};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Events\AssignListeners;
+	use Suphle\Tests\Mocks\Modules\ModuleOne\{Events\AssignListeners, Concretes\CustomBladeAdapter};
 
 	use Suphle\Tests\Mocks\Interactions\ModuleOne;
 
@@ -38,6 +38,8 @@
 				ModuleOne::class => ModuleApi::class,
 
 				Events::class => AssignListeners::class,
+
+				HtmlParser::class => CustomBladeAdapter::class,
 
 				UserContract::class => EloquentUser::class
 			]);

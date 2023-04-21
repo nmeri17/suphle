@@ -75,18 +75,6 @@
 			]);
 		}
 
-		protected function assertCreatedClasses (array $classNames):void {
-
-			$classesExist = false;
-
-			foreach ($classNames as $className) {
-
-				if (!$classesExist = class_exists($className)) break;
-			}
-
-			$this->assertTrue($classesExist);
-		}
-
 		protected function executeCrudCommand (array $additionalArguments = []):int {
 
 			$command = $this->consoleRunner->findHandler(
@@ -98,6 +86,18 @@
 
 				CrudCommand::RESOURCE_NAME_ARGUMENT => $this->resourceName
 			], $additionalArguments));
+		}
+
+		protected function assertCreatedClasses (array $classNames):void {
+
+			$classesExist = false;
+
+			foreach ($classNames as $className) {
+
+				if (!$classesExist = class_exists($className)) break;
+			}
+
+			$this->assertTrue($classesExist);
 		}
 
 		public function test_writes_to_the_relevant_locations () {

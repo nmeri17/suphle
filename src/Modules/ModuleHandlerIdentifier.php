@@ -62,11 +62,11 @@
 			->bootOuterModules($this->descriptorsHolder);
 		}
 
-		public function setRequestPath (string $requestPath):void {
+		public function setRequestPath (string $requestPath, string $httpMethod = null):void {
 
 			RequestDetails::fromModules(
 
-				$this->descriptorInstances, $requestPath
+				$this->descriptorInstances, $requestPath, $httpMethod
 			);
 		}
 

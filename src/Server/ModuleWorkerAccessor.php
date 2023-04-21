@@ -132,7 +132,7 @@
 
 		public function getRequestRenderer (string $urlPattern, bool $outputHeaders):BaseRenderer {
 
-			$this->handlerIdentifier->setRequestPath($urlPattern); // this depends on stdInputReader, so it's assumed that headers are equally set, possibly from here
+			$this->handlerIdentifier->setRequestPath($urlPattern);
 
 			$this->handlerIdentifier->diffuseSetResponse($outputHeaders);
 
