@@ -19,7 +19,7 @@
 
 		public const MODULES_FOLDER_ARGUMENT = "to_scan",
 
-		RR_CONFIG_ARGUMENT = "rr_config_path",
+		RR_CONFIG_OPTION = "rr_config_path",
 
 		DISABLE_SANITIZATION_OPTION = "insane",
 
@@ -44,10 +44,10 @@
 				self::MODULES_FOLDER_ARGUMENT, InputArgument::REQUIRED, "Folder containing all modules, relative to project root"
 			);
 
-			$this->addArgument(
-				self::RR_CONFIG_ARGUMENT,
+			$this->addOption(
+				self::RR_CONFIG_OPTION, "r",
 
-				InputArgument::REQUIRED, "Path to custom RR config"
+				InputOption::VALUE_REQUIRED, "Path to custom RR config"
 			);
 
 			$this->addOption(
@@ -120,7 +120,7 @@
 
 				$serverOperations->startRRServer(
 
-					$input->getArgument(self::RR_CONFIG_ARGUMENT)
+					$input->getOption(self::RR_CONFIG_OPTION)
 				);
 
 				return Command::SUCCESS;

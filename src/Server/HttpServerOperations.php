@@ -1,9 +1,13 @@
 <?php
 	namespace Suphle\Server;
 
+	use Suphle\Contracts\IO\EnvAccessor;
+
 	use Exception;
 
 	class HttpServerOperations {
+
+		protected string $projectRoot;
 
 		public function __construct (
 
@@ -11,7 +15,9 @@
 
 			protected readonly VendorBin $vendorBin,
 
-			protected readonly PsalmWrapper $psalmWrapper
+			protected readonly PsalmWrapper $psalmWrapper,
+
+			protected readonly EnvAccessor $envAccessor
 		) {
 
 			//
@@ -29,6 +35,8 @@
 			$this->psalmWrapper
 
 			->setExecutionPath($projectRoot, $scannablePath);
+
+			$this->projectRoot = $projectRoot;
 
 			return $this;
 		}
@@ -58,12 +66,16 @@
 
 			$commandOptions = ["serve"];
 
-			if (!is_null($configPath))
+			if (is_null($configPath))
 
-				$commandOptions = array_merge(
+				$configPath = $this->projectRoot. DIRECTORY_SEPARATOR.
 
-					$commandOptions, ["-c", $configPath]
-				);
+				$this->envAccessor->getField("RR_CONFIG");
+
+			$commandOptions = array_merge(
+
+				$commandOptions, ["-c", $configPath]
+			);
 
 			$process = $this->vendorBin->setProcessArguments(VendorBin::RR_BINARY, $commandOptions, false);
 

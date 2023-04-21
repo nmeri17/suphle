@@ -17,12 +17,9 @@
 
 		/**
 		 * @param {binaryPath}: Location of the Suphle executable
-		 * @param {configPath}: When present, it's not necessary to be defined inside the options array
 		*/
 		protected function assertServerBuilds (
-			array $userDefinedOptions = [], string $binaryPath = null,
-
-			string $configPath = null
+			array $userDefinedOptions = [], string $binaryPath = null
 		):void {
 
 			if (is_null($binaryPath))
@@ -36,17 +33,11 @@
 				"php", "suphle", HttpServerCommand::commandSignature()
 			];
 
-			if (is_null($configPath))
-
-				$configPath = $binaryPath. "dev-rr.yaml";
-
 			$overwritable = [];
 
 			foreach (array_merge([
 
 				HttpServerCommand::MODULES_FOLDER_ARGUMENT => "AllModules",
-
-				HttpServerCommand::RR_CONFIG_ARGUMENT => $configPath,
 
 				"--". HttpServerCommand::IGNORE_STATIC_FAILURE_OPTION => null
 			], $userDefinedOptions) as $key => $value) {
