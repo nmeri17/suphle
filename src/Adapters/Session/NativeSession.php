@@ -85,7 +85,7 @@
 
 		public function prolongSession (array $cookieOptions = []):void {
 
-			setcookie(
+			@setcookie( // muting a possible notice here since the rr server itself gets spun up in an isolated process by an automated test, where it's impossible to replace with the in-memory version
 				session_name(), session_id(),
 
 				array_merge([

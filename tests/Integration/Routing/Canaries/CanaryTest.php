@@ -32,7 +32,10 @@
 
 		public function test_can_hydrate_and_evaluate_dependencies () {
 
-			$matchingRenderer = $this->fakeRequest("/special-foo/same-url?foo=32");
+			$matchingRenderer = $this->fakeRequest(
+
+				"/special-foo/same-url", "get", ["foo" => 32]
+			);
 
 			$this->assertNotNull($matchingRenderer);
 

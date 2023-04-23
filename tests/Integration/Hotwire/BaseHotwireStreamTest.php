@@ -3,9 +3,7 @@
 
 	use Suphle\Contracts\{Requests\CoodinatorManager, Config\Router, Response\RendererManager, Presentation\HtmlParser};
 
-	use Suphle\Adapters\Presentation\Hotwire\{HotwireRendererManager, HotwireAsserter};
-
-	use Suphle\Adapters\Presentation\Hotwire\Formats\{BaseHotwireStream, RedirectHotwireStream};
+	use Suphle\Adapters\Presentation\Hotwire\{HotwireRendererManager, HotwireAsserter, Formats\BaseHotwireStream};
 
 	use Suphle\Adapters\Presentation\Blade\DefaultBladeAdapter;
 
@@ -177,7 +175,7 @@
 					PayloadStorage::ACCEPTS_KEY => BaseHotwireStream::TURBO_INDICATOR
 				]); // when
 				// then
-				$response->assertStatus(RedirectHotwireStream::STATUS_CODE)
+				$response->assertUnprocessable() // sanity check
 
 				->assertHeader(
 					PayloadStorage::CONTENT_TYPE_KEY,

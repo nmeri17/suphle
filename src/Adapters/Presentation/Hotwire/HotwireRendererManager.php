@@ -96,5 +96,14 @@
 
 			return $this;
 		}
+
+		public function shouldSetCode (RequestDetails $requestDetails, BaseRenderer $renderer):bool {
+
+			$isHotwireRenderer = !$this->avoidHotwireConditions();
+
+			return $isHotwireRenderer ||
+
+			parent::shouldSetCode($requestDetails, $renderer);
+		}
 	}
 ?>

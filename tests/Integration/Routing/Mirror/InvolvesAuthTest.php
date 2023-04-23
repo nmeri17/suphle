@@ -42,7 +42,7 @@
 
 			$requestToken = $this->actingAs($this->replicator->getRandomEntity(), $tokenClass); // given
 
-			$this->get("/api/v1/segment", [
+			$this->get("/api/v1/segment", [], [
 
 				TokenStorage::AUTHORIZATION_HEADER => "Bearer ". $requestToken
 			]) // when

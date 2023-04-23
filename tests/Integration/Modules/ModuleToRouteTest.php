@@ -20,7 +20,7 @@
 
 		protected function getModules ():array {
 
-			return [ $this->moduleOne, $this->moduleTwo ];
+			return [ $this->moduleOne, $this->moduleThree, $this->moduleTwo ];
 		}
 		
 		public function test_can_find_in_module_other_than_first () {

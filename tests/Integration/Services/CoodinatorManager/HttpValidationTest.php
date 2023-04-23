@@ -140,9 +140,7 @@
 				$response = $this->post("/post-with-html", $this->csrfField); // when
 
 				// then
-				$response->assertUnprocessable()
-
-				->assertSee("Edit form");
+				$response->assertRedirect();
 			}
 		}
 	}

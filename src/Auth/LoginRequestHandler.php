@@ -11,7 +11,11 @@
 
 	use Suphle\Services\Decorators\ValidationRules;
 
+	use Suphle\Response\SetJsonValidationError;
+
 	class LoginRequestHandler implements ModuleLoginHandler {
+
+		use SetJsonValidationError;
 
 		protected BaseRenderer $responseRenderer;
 

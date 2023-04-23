@@ -3,7 +3,7 @@
 
 	use Suphle\Modules\ModuleDescriptor;
 
-	use Suphle\Hydration\{Container, Structures\CallbackDetails};
+	use Suphle\Hydration\{Container, DecoratorHydrator, Structures\CallbackDetails};
 
 	use Suphle\Services\ServiceCoordinator;
 
@@ -21,6 +21,8 @@
 
 	#[BindsAsSingleton(RendererManager::class)]
 	class RoutedRendererManager implements RendererManager, BaseResponseManager, ValidationEvaluator {
+
+		use SetJsonValidationError;
 
 		public const PREVIOUS_GET_URL = "PREVIOUS_GET_URL";
 
@@ -111,6 +113,13 @@
 				foreach ($toMerge as $key => $value)
 
 					$this->sessionClient->setFlashValue($key, $value);
+
+				$decoratorHydrator = $this->container->getClass(DecoratorHydrator::class);
+
+				$decoratorHydrator->scopeInjecting(
+
+					$previousRenderer, self::class
+				);
 			}
 
 			return $previousRenderer;

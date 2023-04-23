@@ -10,6 +10,8 @@
 	#[VariableDependencies([ "setRendererManager" ])]
 	class ReloadHotwireStream extends BaseHotwireStream {
 
+		protected int $statusCode = RedirectHotwireStream::STATUS_CODE;
+
 		public function __construct(protected string $handler) {
 
 			$this->fallbackRenderer = new Reload($handler);

@@ -51,7 +51,10 @@
 				self::PAYLOAD_KEY => $this->payloadStorage->fullPayload()
 			]);
 
-			if ($this->requestDetails->isApiRoute())
+			if ($this->validationEvaluator->shouldSetCode(
+
+				$this->requestDetails, $this->renderer
+			))
 
 				$this->renderer->setHeaders(422, []);
 		}

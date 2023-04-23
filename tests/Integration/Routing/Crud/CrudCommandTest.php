@@ -118,7 +118,7 @@
 
 			return implode(DIRECTORY_SEPARATOR, [
 
-				$markupPath, $this->resourceName,
+				$markupPath, trim($this->resourceName, "\\"),
 
 				"create-form.blade.php"
 			]);

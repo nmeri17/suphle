@@ -28,7 +28,7 @@
 
 			// given => @see module injection
 
-			$this->get("/negotiate", [
+			$this->get("/negotiate", [], [
 
 				PayloadStorage::ACCEPTS_KEY => PayloadStorage::JSON_HEADER_VALUE
 			]) // when

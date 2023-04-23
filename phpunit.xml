@@ -21,7 +21,8 @@
 	</testsuites>
 
 	<php>
-		<ini name="error_reporting" value="-1" /><!-- 
+		<ini name="error_reporting" value="1" /> <!-- using this so the deliberate errors (trigger_error) don't crash test tun by being treated as fatal -->
+		<!-- 
 		<ini name="display_errors" value="1" />
 		<ini name="display_startup_errors" value="1" /> --><!-- 
 		<env name="DATABASE_USER" value="test" />
