@@ -76,8 +76,6 @@
 
 					return new self(...self::$parameters);
 				}
-
-				public function indicateRefresh ():void { }
 			};
 
 			$newRequestDetail::$parameters = $parameters;

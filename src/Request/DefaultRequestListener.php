@@ -11,7 +11,7 @@
 
 			protected readonly Container $container,
 
-			protected readonly PayloadStorage $payloadStorage,
+			protected readonly RequestDetails $requestDetails,
 
 			protected readonly LaravelConfigContract $laravelConfig
 		) {
@@ -19,7 +19,7 @@
 			//
 		}
 
-		public function handleRefreshEvent (RequestDetails $requestDetails):void {
+		public function handleRefreshEvent (PayloadStorage $payloadStorage):void {
 
 			if (!$this->laravelConfig->registersRoutes()) return;
 
@@ -31,7 +31,7 @@
 
 				$laravelContainer->provideRequest(
 
-					$requestDetails, $this->payloadStorage
+					$this->requestDetails, $payloadStorage
 				)
 			);
 		}

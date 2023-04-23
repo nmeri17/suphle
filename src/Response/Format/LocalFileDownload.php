@@ -28,6 +28,8 @@
 			
 			$fileObject = $this->getFileObject();
 
+			if (is_null($fileObject)) return "";
+
 			$this->setDownloadHeaders($fileObject);
 
 			return $fileObject->getContent();
@@ -36,7 +38,7 @@
 		/**
 		 * @throws FileException
 		*/
-		protected function getFileObject ():File {
+		protected function getFileObject ():?File {
 
 			try {
 
@@ -54,7 +56,9 @@
 
 				$this->statusCode = 404;
 
-				return $this->renderRedirect($this->fallbackRedirect);
+				$this->renderRedirect($this->fallbackRedirect);
+
+				return null;
 			}
 		}
 

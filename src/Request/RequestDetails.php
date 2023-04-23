@@ -1,22 +1,16 @@
 <?php
 	namespace Suphle\Request;
 
-	use Suphle\Contracts\{Events, Config\Router};
+	use Suphle\Contracts\Config\Router;
 
 	use Suphle\Services\Decorators\BindsAsSingleton;
 
 	use Suphle\Hydration\Container;
 
-	use Suphle\Events\EmitProxy;
-
 	use InvalidArgumentException;
 
 	#[BindsAsSingleton]
 	class RequestDetails {
-
-		use EmitProxy;
-
-		public const ON_REFRESH = "new_request";
 
 		protected ?string $computedPath = null,
 
@@ -26,12 +20,7 @@
 
 		protected array $queryParameters = [];
 
-		public function __construct(
-
-			protected readonly Router $config,
-
-			protected readonly Events $eventManager
-		) {
+		public function __construct (protected readonly Router $config) {
 
 			//
 		}
@@ -39,11 +28,6 @@
 		public function getPath ():?string {
 
 			return $this->computedPath;
-		}
-
-		public function indicateRefresh ():void {
-
-			$this->emitHelper(self::ON_REFRESH, $this);
 		}
 
 		public function setPath (string $requestPath):void {
@@ -93,8 +77,6 @@
 				$instance->setHttpMethod($forceHttpMethod);
 
 			else $instance->deriveHttpMethod();
-
-			$instance->indicateRefresh();
 
 			return $instance;
 		}

@@ -3,12 +3,18 @@
 
 	use Suphle\Services\Decorators\BindsAsSingleton;
 
+	use Suphle\Contracts\Events;
+
+	use Suphle\Events\EmitProxy;
+
 	use GuzzleHttp\Psr7\ServerRequest;
+
+	use Psr\Http\Message\ServerRequestInterface;
 
 	#[BindsAsSingleton]
 	class PayloadStorage extends ServerRequest {
 
-		use SanitizesIntegerInput;
+		use SanitizesIntegerInput, EmitProxy;
 
 		final const JSON_HEADER_VALUE = "application/json",
 
@@ -16,27 +22,45 @@
   
   		CONTENT_TYPE_KEY = "Content-Type",
 
-  		ACCEPTS_KEY = "Accept", LOCATION_KEY = "Location";
+  		ACCEPTS_KEY = "Accept", LOCATION_KEY = "Location",
+
+		ON_REFRESH = "new_request";
 
 		protected array $payload = [];
 
+		protected bool $shouldIndicateRefresh = false;
+
 		public function __construct (
 
-			protected readonly RequestDetails $requestDetails
+			protected readonly RequestDetails $requestDetails,
+
+			protected readonly Events $eventManager
 		) {
 
-			$this->psrRequest = self::fromGlobals();
-
-			$this->setPayload();
+			$this->setPsrOrigin(self::fromGlobals());
 		}
 
-		protected function setPayload ():void {
+		public function setPsrOrigin (ServerRequestInterface $psrOrigin):void {
+
+			$this->psrOrigin = $psrOrigin;
+
+			$this->assignActivePayload();
+		}
+
+		protected function assignActivePayload ():void {
 
 			if ($this->requestDetails->isGetRequest())
 
-				$this->payload = $this->psrRequest->getQueryParams();
+				$this->setFullPayload($this->psrOrigin->getQueryParams());
 
-			else $this->payload = $this->psrRequest->getParsedBody();
+			else $this->setFullPayload($this->psrOrigin->getParsedBody());
+		}
+
+		public function setFullPayload (array $payload):void {
+
+			$this->payload = $payload;
+
+			$this->indicateRefresh();
 		}
 
 		public function fullPayload ():array {
@@ -61,7 +85,7 @@
 
 			if (!$this->hasHeader($name)) return false;
 
-			$currentValue = str_replace("/", "\/", $this->getHeader($name));
+			$currentValue = str_replace("/", "\/", $this->getHeaderLine($name));
 
 			return preg_match("/^$currentValue$/i", $expectedValue);
 		}
@@ -111,6 +135,18 @@
 		public function except (array $exclude):array {
 
 			return array_filter($this->fullPayload(), fn($key) => !in_array($key, $exclude), ARRAY_FILTER_USE_KEY);
+		}
+
+		public function setRefreshMode (bool $mode):void {
+
+			$this->shouldIndicateRefresh = $mode;
+		}
+
+		public function indicateRefresh ():void {
+
+			if ($this->shouldIndicateRefresh)
+
+				$this->emitHelper(self::ON_REFRESH, $this);
 		}
 	}
 ?>

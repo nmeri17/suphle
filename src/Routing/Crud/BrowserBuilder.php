@@ -54,9 +54,14 @@
 			$prefix = rtrim($this->markupPath, DIRECTORY_SEPARATOR);
 
 			return new Redirect(__FUNCTION__, fn() => function () use ($prefix) {
+
+					if (!array_key_exists(self::SAVE_NEW_KEY, $this->rawResponse))
+
+						return false;
+					
 					return "/$prefix/" .
 
-					$this->rawResponse[BrowserBuilder::SAVE_NEW_KEY]->id; // assumes the controller returns an array containing this key
+					$this->rawResponse[self::SAVE_NEW_KEY]->id; // assumes the controller returns an array containing this key
 				});
 		}
 

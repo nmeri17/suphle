@@ -3,7 +3,7 @@
 
 	use Suphle\Routing\{RouteManager, ExternalRouteMatcher, CollectionMetaQueue};
 
-	use Suphle\Request\RequestDetails;
+	use Suphle\Request\{RequestDetails, PayloadStorage};
 
 	use Suphle\Middleware\MiddlewareQueue;
 
@@ -49,7 +49,12 @@
 				$this->bindRoutingSideEffects();
 			}
 			
-			else $this->foundRoute = $this->externalRouters->shouldDelegateRouting();
+			else {
+
+				$this->sharePayloadToExternals();
+
+				$this->foundRoute = $this->externalRouters->shouldDelegateRouting();
+			}
 
 			return $this;
 		}
@@ -78,6 +83,15 @@
 
 				$renderer, self::class
 			);
+		}
+
+		protected function sharePayloadToExternals ():void {
+
+			$payloadStorage = $this->container->getClass(PayloadStorage::class);
+
+			$payloadStorage->setRefreshMode(true);
+
+			$payloadStorage->indicateRefresh();
 		}
 
 		/**

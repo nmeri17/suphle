@@ -45,9 +45,14 @@
 			$this->store = [];
 		}
 
-		public function startNew ():void {
+		public function prolongSession (array $cookieOptions = []):void {
 
-			$this->store = [self::FLASH_KEY => []];
+			//
+		}
+
+		public function resetOldInput ():void {
+
+			$this->store[self::FLASH_KEY] = [];
 		}
 
 		public function setFlashValue (string $key, $value):void {
@@ -69,7 +74,12 @@
 			return $this->getValue(self::FLASH_KEY)[$key];
 		}
 
-		public function all (string $key):array {
+		public function all ():array {
+
+			return $this->allSessionEntries();
+		}
+
+		public function allSessionEntries ():array {
 
 			return $this->store;
 		}

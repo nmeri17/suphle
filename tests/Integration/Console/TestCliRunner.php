@@ -13,8 +13,9 @@
 
 	abstract class TestCliRunner extends CommandLineTest {
 
-		protected $sutName = AltersConcreteCommand::class;
-  protected $bCounter = BCounter::class;
+		protected string $sutName = AltersConcreteCommand::class,
+
+  		$bCounter = BCounter::class;
 
 		protected function runAltersConcrete ():int {
 

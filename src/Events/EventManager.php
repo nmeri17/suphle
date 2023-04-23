@@ -7,7 +7,7 @@
 
 	use Suphle\Contracts\{Events, Modules\DescriptorInterface, Requests\RequestEventsListener};
 
-	use Suphle\Request\RequestDetails;
+	use Suphle\Request\PayloadStorage;
 
 	use Suphle\Services\Decorators\{BindsAsSingleton, VariableDependencies};
 
@@ -153,9 +153,9 @@
 
 		public function registerListeners ():void {
 
-			$this->local(RequestDetails::class, RequestEventsListener::class)
+			$this->local(PayloadStorage::class, RequestEventsListener::class)
 
-			->on(RequestDetails::ON_REFRESH, "handleRefreshEvent");
+			->on(PayloadStorage::ON_REFRESH, "handleRefreshEvent");
 		}
 	}
 ?>

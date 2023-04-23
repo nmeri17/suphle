@@ -62,7 +62,7 @@
 
 		protected function getModules ():array {
 
-			return [$this->moduleOne, $this->moduleTwo];
+			return [$this->moduleOne, $this->moduleThree, $this->moduleTwo];
 		}
 
 		private function mockCommand (int $numTimes):AltersConcreteCommand {

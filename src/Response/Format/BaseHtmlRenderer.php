@@ -3,8 +3,6 @@
 
 	use Suphle\Contracts\Presentation\{RendersMarkup, HtmlParser};
 
-	use Suphle\Contracts\Config\ModuleFiles;
-
 	use Suphle\Services\Decorators\VariableDependencies;
 
 	#[VariableDependencies(["setHtmlParser" ])]

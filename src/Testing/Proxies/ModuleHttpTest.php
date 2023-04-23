@@ -152,14 +152,14 @@
 			return array_intersect($collectorNames, $allCollectors);
 		}
 
-		public function get(string $url, array $headers = []):TestResponseBridge {
+		public function get(string $url, array $payload = [], array $headers = []):TestResponseBridge {
 
-			return $this->gatewayResponse($url, __FUNCTION__, null, $headers);
+			return $this->gatewayResponse($url, __FUNCTION__, $payload, $headers);
 		}
 
-		public function getJson(string $url, array $headers = []):TestResponseBridge {
+		public function getJson(string $url, array $payload = [], array $headers = []):TestResponseBridge {
 
-			return $this->json( "get", $url, null, $headers);
+			return $this->json( "get", $url, $payload, $headers);
 		}
 
 		private function gatewayResponse (

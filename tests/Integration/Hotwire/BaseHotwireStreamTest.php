@@ -3,7 +3,9 @@
 
 	use Suphle\Contracts\{Requests\CoodinatorManager, Config\Router, Response\RendererManager, Presentation\HtmlParser};
 
-	use Suphle\Adapters\Presentation\Hotwire\{HotwireRendererManager, HotwireAsserter, Formats\BaseHotwireStream};
+	use Suphle\Adapters\Presentation\Hotwire\{HotwireRendererManager, HotwireAsserter};
+
+	use Suphle\Adapters\Presentation\Hotwire\Formats\{BaseHotwireStream, RedirectHotwireStream};
 
 	use Suphle\Adapters\Presentation\Blade\DefaultBladeAdapter;
 
@@ -131,9 +133,7 @@
 				PayloadStorage::ACCEPTS_KEY => $agentHeader
 			]) // when
 			// then
-			->assertUnprocessable()
-
-			->assertSee("Edit form");
+			->assertRedirect(self::INITIAL_URL);
 		}
 
 		public function urlsToHotwireRequests ():array {
@@ -177,7 +177,7 @@
 					PayloadStorage::ACCEPTS_KEY => BaseHotwireStream::TURBO_INDICATOR
 				]); // when
 				// then
-				$response->assertUnprocessable() // sanity check
+				$response->assertStatus(RedirectHotwireStream::STATUS_CODE)
 
 				->assertHeader(
 					PayloadStorage::CONTENT_TYPE_KEY,

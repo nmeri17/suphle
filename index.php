@@ -9,7 +9,7 @@
 
 	require_once "vendor/autoload.php";
 
-	$writeHeaders = !isset($_SERVER["REQUEST_TIME"]); // this is set by phpUnit--an env where we don't wanna write headers in
+	$writeHeaders = php_sapi_name() !== "cli";
 
 	echo (new ModuleWorkerAccessor(new PublishedTestModules, true))
 

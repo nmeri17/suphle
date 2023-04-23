@@ -32,7 +32,7 @@
 
 			$this->router = $this->laravelContainer->make(Router::class);
 
-			$this->request = $this->laravelContainer->make(Request::class);
+			$this->request = $this->laravelContainer->make(LaravelContainer::INCOMING_REQUEST_KEY);
 
 			try {
 				

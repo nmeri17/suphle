@@ -13,7 +13,9 @@
 
 		public const ERRORS_PRESENCE = "validation_errors",
 
-		PAYLOAD_KEY = "payload_storage";
+		PAYLOAD_KEY = "payload_storage",
+
+		FAILURE_KEYS = [self::ERRORS_PRESENCE, self::PAYLOAD_KEY];
 
 		protected BaseRenderer $renderer;
 
@@ -48,7 +50,7 @@
 
 				self::PAYLOAD_KEY => $this->payloadStorage->fullPayload()
 			]);
-			
+
 			if ($this->requestDetails->isApiRoute())
 
 				$this->renderer->setHeaders(422, []);

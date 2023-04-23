@@ -3,9 +3,11 @@
 
 	use Suphle\Contracts\{Bridge\LaravelContainer, Config\Router};
 
-	use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
-
 	use Suphle\Security\CSRF\CsrfGenerator;
+
+	use Suphle\Request\PayloadStorage;
+
+	use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
 	use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock, Routes\ValidatorCollection};
 
@@ -63,7 +65,15 @@
 
 		protected function getTheirRequest ():LaravelRequest {
 
-			return $this->getContainer()->getClass(LaravelContainer::class)
+			$container = $this->getContainer();
+
+			$payloadStorage = $container->getClass(PayloadStorage::class);
+
+			$payloadStorage->setRefreshMode(true);
+
+			$payloadStorage->indicateRefresh();
+
+			return $container->getClass(LaravelContainer::class)
 
 			->make(LaravelContainer::INCOMING_REQUEST_KEY);
 		}

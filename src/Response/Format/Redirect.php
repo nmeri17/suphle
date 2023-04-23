@@ -7,14 +7,20 @@
 
 	use Suphle\Request\PayloadStorage;
 
-	use Closure;
+	use Suphle\Contracts\IO\Session;
 
-	#[VariableDependencies([ "setCallbackDetails" ])]
+	use Suphle\Response\RoutedRendererManager;
+
+	use Closure, Throwable;
+
+	#[VariableDependencies(["setCallbackDetails", "setSession" ])]
 	class Redirect extends GenericRenderer {
 
 		public const STATUS_CODE = 302;
 
 		protected CallbackDetails $callbackDetails;
+
+		protected Session $sessionClient;
 
 		protected int $statusCode = self::STATUS_CODE;
 
@@ -38,16 +44,47 @@
 			$this->callbackDetails = $callbackDetails;
 		}
 
-		protected function renderRedirect (callable $callback):string {
+		public function setSession (Session $sessionClient):void {
 
-			return $this->headers[PayloadStorage::LOCATION_KEY] = $this->callbackDetails
+			$this->sessionClient = $sessionClient;
+		}
 
-			->recursiveValueDerivation($callback, $this);
+		protected function renderRedirect (callable $callback):void {
+
+			try { /**
+				* If it's a failing form request and next destination relies on coordinator's response, renderer will have no location; so try returning back.
+				* 
+				* Assumes the exception's handler must have written something to session and alerter, so no need presenting exception to user here
+				*/
+
+				$nextDestination = $this->callbackDetails
+
+				->recursiveValueDerivation($callback, $this);
+
+				if ($nextDestination === false)
+
+					$nextDestination = $this->navigateBack();
+			}
+			catch (Throwable) {
+
+				$nextDestination = $this->navigateBack();
+			}
+
+			$this->headers[PayloadStorage::LOCATION_KEY] = $nextDestination;
+		}
+
+		protected function navigateBack ():string {
+
+			$this->setHeaders(self::STATUS_CODE, []); // override 500 written by error handler
+
+			return $this->sessionClient->getValue(RoutedRendererManager::PREVIOUS_GET_URL);
 		}
 
 		public function render ():string {
+
+			$this->renderRedirect($this->destination);
 			
-			return $this->renderRedirect($this->destination);
+			return "";
 		}
 	}
 ?>

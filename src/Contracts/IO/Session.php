@@ -11,8 +11,16 @@
 
 		public function reset ():void;
 
-		public function startNew ():void;
+		public function prolongSession (array $cookieOptions = []):void;
+
+		public function hasOldInput (string $key):bool;
+
+		public function getOldInput (string $key);
 
 		public function setFlashValue (string $key, $value):void;
+
+		public function resetOldInput ():void;
+
+		public function allSessionEntries ():array;
 	}
 ?>

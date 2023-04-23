@@ -60,7 +60,7 @@
 
 		protected function getModules ():array {
 
-			return [$this->moduleOne, $this->moduleTwo];
+			return [$this->moduleOne, $this->moduleThree, $this->moduleTwo];
 		}
 
 		public function test_command_only_runs_once () {

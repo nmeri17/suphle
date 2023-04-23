@@ -3,23 +3,31 @@
 
 	use Suphle\Contracts\IO\{Session as SessionContract, EnvAccessor};
 
+	use Suphle\Services\Decorators\BindsAsSingleton;
+
+	#[BindsAsSingleton(SessionContract::class)]
 	class NativeSession implements SessionContract {
 
 		public const FLASH_KEY = "_flash_entry";
 
 		public function __construct (protected readonly EnvAccessor $envAccessor) {
 
-			if ($this->safeToStart()) $this->startNew();
+			$this->safeToStart();
+
+			$this->prolongSession();
 		}
 
 		/**
-		 * Avoid "session already started" errors
+		 * Avoid "session already started" errors. The superglobal must wait for this to be called before it can be accessed. Otherwise, all data from preceding request will be lost
 		 */
-		protected function safeToStart ():bool {
+		protected function safeToStart ():void {
 
-			return session_status() == PHP_SESSION_NONE // sessions are enabled but none exists
+			if (
+				session_status() == PHP_SESSION_NONE // sessions are enabled but none exists
 
-			&& !headers_sent();
+				&& !headers_sent()
+			)
+				session_start();
 		}
 
 		public function setValue (string $key, $value):void {
@@ -27,23 +35,45 @@
 			$_SESSION[$key] = $value;
 		}
 
-		public function setFlashValue (string $key, $value):void {
-
-			$existingFlash = $this->getValue(self::FLASH_KEY);
-
-			$existingFlash[$key] = $value;
-
-			$this->setValue(self::FLASH_KEY, $existingFlash);
-		}
-
 		public function getValue (string $key) {
 
 			return $_SESSION[$key];
 		}
 
+		public function allSessionEntries ():array {
+
+			return $_SESSION;
+		}
+
+		public function getOldInput (string $key) {
+
+			return $this->getValue(self::FLASH_KEY)[$key];
+		}
+
+		public function setFlashValue (string $key, $value):void {
+
+			if (!$this->hasKey(self::FLASH_KEY))
+
+				$this->resetOldInput();
+
+			$_SESSION[self::FLASH_KEY][$key] = $value;
+		}
+
 		public function hasKey (string $key):bool {
 
 			return array_key_exists($key, $_SESSION);
+		}
+
+		public function hasOldInput (string $key):bool {
+
+			return $this->hasKey(self::FLASH_KEY) &&
+
+			array_key_exists($key, $this->getValue(self::FLASH_KEY));
+		}
+
+		public function resetOldInput ():void {
+
+			$_SESSION[self::FLASH_KEY] = [];
 		}
 
 		public function reset ():void {
@@ -53,23 +83,16 @@
 			session_destroy();
 		}
 
-		public function startNew ():void {
-
-			session_start();
-
-			$this->setCookieElapse($this->envAccessor->getField("SESSION_DURATION"));
-
-			$_SESSION[self::FLASH_KEY] = [];
-		}
-
-		protected function setCookieElapse (string $incrementBy, array $cookieOptions = []):void {
+		public function prolongSession (array $cookieOptions = []):void {
 
 			setcookie(
 				session_name(), session_id(),
 
 				array_merge([
 
-					"expires" => time() + intval($incrementBy)
+					"expires" => time() +
+
+					intval($this->envAccessor->getField("SESSION_DURATION"))
 				], $cookieOptions)
 			);
 		}

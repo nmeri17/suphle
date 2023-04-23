@@ -27,7 +27,7 @@
 
 				$this->logout();
 
-				$this->sessionClient->startNew();
+				$this->sessionClient->prolongSession();
 			}
 
 			$this->sessionClient->setValue($this->identifierKey, $value);

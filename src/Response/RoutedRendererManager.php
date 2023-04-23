@@ -71,12 +71,13 @@
 
 		public function handleValidRequest (PayloadStorage $payloadStorage):BaseRenderer {
 
-			if ($this->shouldStoreRenderer())
+			if ($this->shouldStoreRenderer()) {
 
 				$this->sessionClient->setValue(
 
 					self::PREVIOUS_GET_URL, $this->requestDetails->getPath()
 				);
+			}
 
 			return $this->renderer->invokeActionHandler($this->handlerParameters);
 		}
@@ -109,7 +110,7 @@
 
 				foreach ($toMerge as $key => $value)
 
-					$this->sessionClient->setValue($key, $value);
+					$this->sessionClient->setFlashValue($key, $value);
 			}
 
 			return $previousRenderer;
@@ -137,9 +138,14 @@
 				$renderer->getCoordinator(), $renderer->getHandler()
 			);
 
-			if ($shouldValidate && !$this->validatorManager->isValidated())
+			if ($shouldValidate) {
 
-				throw new ValidationFailure($this);
+				if (!$this->validatorManager->isValidated())
+
+					throw new ValidationFailure($this);
+
+				$this->sessionClient->resetOldInput(); // discard any validation errors
+			}
 
 			return $this;
 		}

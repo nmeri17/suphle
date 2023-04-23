@@ -9,8 +9,6 @@
 
 	use Symfony\Component\HttpFoundation\File\UploadedFile;
 
-	use GuzzleHttp\Psr7\Stream;
-
 	trait DirectHttpTest {
 
 		use MockFacilitator;
@@ -31,18 +29,11 @@
 
 			$payloadStorage = $this->getContainer()->getClass(PayloadStorage::class);
 
+			$payloadStorage->setFullPayload($payload);
+
 			foreach ($headers as $key => $value)
 
 				$payloadStorage = $payloadStorage->withHeader($key, $value);
-
-			if (PayloadStorage::CONTENT_TYPE_KEY == $this->HTML_HEADER_VALUE)
-
-				$payloadString = http_build_query($payload);
-
-			else $payloadString = json_encode($payload);
-
-			$payloadStorage = $payloadStorage->withBody(Stream::create($payloadString));
-
 			$this->massProvide([
 
 				PayloadStorage::class => $payloadStorage

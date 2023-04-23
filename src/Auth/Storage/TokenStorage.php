@@ -32,7 +32,7 @@
 
 				$incomingToken = explode(" ",
 
-					$this->payloadStorage->getHeader(self::AUTHORIZATION_HEADER)
+					$this->payloadStorage->getHeaderLine(self::AUTHORIZATION_HEADER)
 				)[1]; // the bearer part
 
 				$decoded = JWT::decode(
