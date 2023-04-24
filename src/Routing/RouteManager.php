@@ -177,6 +177,10 @@
 
 				$methodName = $this->findActiveCrud(array_keys($possibleRenderers), $remainder);
 
+				if (!array_key_exists($methodName, $possibleRenderers)) // invalid path or segment received for a crud path
+
+					return null;
+
 				$renderer = $possibleRenderers[$methodName];
 			}
 

@@ -123,5 +123,25 @@
 
 			$this->fakeRequest("/non-existent/save"); // when
 		}
+
+		/**
+		 * @dataProvider invalidCruds
+		*/
+		public function test_correctly_fails_invalid_paths (string $requestPath) {
+
+			$matchingRenderer = $this->fakeRequest("/save-all/$requestPath"); // when
+
+			$this->assertNull($matchingRenderer); // then // means 404
+		}
+
+		public function invalidCruds ():array {
+
+			return [
+
+				["/create"], // extra slash
+
+				["create/nmeri"]
+			];
+		}
 	}
 ?>
