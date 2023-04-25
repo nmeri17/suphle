@@ -70,7 +70,7 @@ All interaction with the Framework should be conducted through tests and by exte
 
 ```bash
 
-php suphle_cli server:start Modules "/project/path/test-rr.yaml" --insane  --ignore_static_correct
+php suphle_cli server:start Modules --insane  --ignore_static_correct
 ```
 
 Then, visit any of the routes available at:

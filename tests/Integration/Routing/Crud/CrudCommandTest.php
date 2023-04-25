@@ -38,6 +38,8 @@
 			$this->setModuleThree();
 
 			parent::setUp();
+
+			$this->file = __DIR__ . "/test_file_" . sha1(uniqid(__METHOD__));
 		}
 
 		protected function getModules ():array {

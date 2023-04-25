@@ -80,7 +80,7 @@
 
 			$newRequestDetail::$parameters = $parameters;
 
-			$instance = $newRequestDetail::fromContainer($this->container, $url);
+			$instance = $newRequestDetail::fromContainer($this->container, $url, "get");
 
 			$instance->setIncomingVersion();
 
