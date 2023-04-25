@@ -1,22 +1,21 @@
 <?php
-	namespace Suphle\Services\Decorators;
 
-	use Suphle\Contracts\Services\CallInterceptors\ServiceErrorCatcher;
+namespace Suphle\Services\Decorators;
 
-	use Attribute;
+use Suphle\Contracts\Services\CallInterceptors\ServiceErrorCatcher;
 
-	/**
-	 * @throws Exception if target doesn't implement {interceptType}
-	*/
-	#[Attribute(Attribute::TARGET_CLASS)]
-	class InterceptsCalls {
+use Attribute;
 
-		public function __construct (
+/**
+ * @throws Exception if target doesn't implement {interceptType}
+*/
+#[Attribute(Attribute::TARGET_CLASS)]
+class InterceptsCalls
+{
+    public function __construct(
+        public readonly string $interceptType = ServiceErrorCatcher::class
+    ) {
 
-			public readonly string $interceptType = ServiceErrorCatcher::class
-		) {
-
-			//
-		}
-	}
-?>
+        //
+    }
+}

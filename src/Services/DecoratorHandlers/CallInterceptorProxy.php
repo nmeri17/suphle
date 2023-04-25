@@ -1,68 +1,69 @@
 <?php
-	namespace Suphle\Services\DecoratorHandlers;
 
-	use Suphle\Hydration\{Container, Structures\ObjectDetails};
+namespace Suphle\Services\DecoratorHandlers;
 
-	use Suphle\Contracts\Services\CallInterceptors\{ SystemModelEdit, ServiceErrorCatcher, MultiUserModelEdit};
+use Suphle\Hydration\{Container, Structures\ObjectDetails};
 
-	use Suphle\Exception\Explosives\DevError\InvalidImplementor;
+use Suphle\Contracts\Services\CallInterceptors\{ SystemModelEdit, ServiceErrorCatcher, MultiUserModelEdit};
 
-	class CallInterceptorProxy extends BaseInjectionModifier {
+use Suphle\Exception\Explosives\DevError\InvalidImplementor;
 
-		protected const CALL_HANDLERS = [
+class CallInterceptorProxy extends BaseInjectionModifier
+{
+    protected const CALL_HANDLERS = [
 
-			MultiUserModelEdit::class => MultiUserEditHandler::class,
+        MultiUserModelEdit::class => MultiUserEditHandler::class,
 
-			SystemModelEdit::class => SystemModelEditHandler::class,
+        SystemModelEdit::class => SystemModelEditHandler::class,
 
-			ServiceErrorCatcher::class => ErrorCatcherHandler::class
-		];
+        ServiceErrorCatcher::class => ErrorCatcherHandler::class
+    ];
 
-		public function __construct (
+    public function __construct(
+        protected readonly Container $container,
+        protected readonly ObjectDetails $objectMeta
+    ) {
 
-			protected readonly Container $container,
+        //
+    }
 
-			protected readonly ObjectDetails $objectMeta
-		) {
+    public function examineInstance(object $concrete, string $caller): object
+    {
 
-			//
-		}
+        foreach ($this->attributesList as $attributeMeta) {
 
-		public function examineInstance (object $concrete, string $caller):object {
+            $attribute = $attributeMeta->newInstance();
 
-			foreach ($this->attributesList as $attributeMeta) {
+            $interfaceName = $attribute->interceptType;
 
-				$attribute = $attributeMeta->newInstance();
+            $this->ensureValidInterceptType(
+                $concrete::class,
+                $interfaceName
+            );
 
-				$interfaceName = $attribute->interceptType;
+            $handler = self::CALL_HANDLERS[$interfaceName];
 
-				$this->ensureValidInterceptType(
+            $concrete = $this->container->getClass($handler)
 
-					$concrete::class, $interfaceName
-				);
+            ->examineInstance($concrete, $caller);
+        }
 
-				$handler = self::CALL_HANDLERS[$interfaceName];
+        return $concrete;
+    }
 
-				$concrete = $this->container->getClass($handler)
+    protected function ensureValidInterceptType(string $concreteName, string $interfaceName): void
+    {
 
-				->examineInstance($concrete, $caller);
-			}
+        $acceptedType = array_key_exists($interfaceName, self::CALL_HANDLERS);
 
-			return $concrete;
-		}
+        $isChild = $this->objectMeta->implementsInterface(
+            $concreteName,
+            $interfaceName
+        );
 
-		protected function ensureValidInterceptType (string $concreteName, string $interfaceName):void {
+        if (!($acceptedType && $isChild)) {
 
-			$acceptedType = array_key_exists($interfaceName, self::CALL_HANDLERS);
-
-			$isChild = $this->objectMeta->implementsInterface(
-
-				$concreteName, $interfaceName
-			);
-
-			if (!($acceptedType && $isChild))
-
-				throw new InvalidImplementor($interfaceName, $concreteName);
-		}
-	}
-?>
+            throw new InvalidImplementor($interfaceName, $concreteName);
+        }
+    }
+}

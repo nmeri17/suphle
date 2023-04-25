@@ -1,44 +1,47 @@
 <?php
-	namespace Suphle\Adapters\Image\Optimizers;
 
-	use Suphle\Contracts\IO\Image\ImageThumbnailClient;
+namespace Suphle\Adapters\Image\Optimizers;
 
-	use Imagine\Gd\Imagine;
+use Suphle\Contracts\IO\Image\ImageThumbnailClient;
 
-	use Imagine\Image\{ImageInterface, Box};
+use Imagine\Gd\Imagine;
 
-	class ImagineClient implements ImageThumbnailClient {
+use Imagine\Image\{ImageInterface, Box};
 
-		protected Imagine $context;
+class ImagineClient implements ImageThumbnailClient
+{
+    protected Imagine $context;
 
-		private $mode;
+    private $mode;
 
-		private $size;
+    private $size;
 
-		public function setupClient ():void {
+    public function setupClient(): void
+    {
 
-			$this->context = new Imagine();
+        $this->context = new Imagine();
 
-			$this->mode = ImageInterface::THUMBNAIL_INSET;
-		}
+        $this->mode = ImageInterface::THUMBNAIL_INSET;
+    }
 
-		public function setDimensions (int $width, int $height):void {
+    public function setDimensions(int $width, int $height): void
+    {
 
-			$this->size = new Box($width, $height);
-		}
+        $this->size = new Box($width, $height);
+    }
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function miniature (string $imageNewPath):string {
+    /**
+     * {@inheritdoc}
+    */
+    public function miniature(string $imageNewPath): string
+    {
 
-			$this->context->open($imageNewPath)
+        $this->context->open($imageNewPath)
 
-			->thumbnail($this->size, $this->mode)
+        ->thumbnail($this->size, $this->mode)
 
-			->save($imageNewPath );
+        ->save($imageNewPath);
 
-			return $imageNewPath;
-		}
-	}
-?>
+        return $imageNewPath;
+    }
+}

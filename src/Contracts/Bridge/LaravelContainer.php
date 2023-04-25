@@ -1,47 +1,47 @@
 <?php
-	namespace Suphle\Contracts\Bridge;
 
-	use Suphle\Contracts\Hydration\ClassHydrationBehavior;
+namespace Suphle\Contracts\Bridge;
 
-	use Suphle\Request\{RequestDetails, PayloadStorage};
+use Suphle\Contracts\Hydration\ClassHydrationBehavior;
 
-	use Illuminate\Http\Request as LaravelRequest;
+use Suphle\Request\{RequestDetails, PayloadStorage};
 
-	interface LaravelContainer extends ClassHydrationBehavior {
+use Illuminate\Http\Request as LaravelRequest;
 
-		public const INCOMING_REQUEST_KEY = "request";
+interface LaravelContainer extends ClassHydrationBehavior
+{
+    public const INCOMING_REQUEST_KEY = "request";
 
-		/**
-		 * @return array
-		*/
-		public function getBindings();
+    /**
+     * @return array
+    */
+    public function getBindings();
 
-		/**
-		 * @return void
-		*/
-		public function bind($abstract, $concrete = null, $shared = false);
+    /**
+     * @return void
+    */
+    public function bind($abstract, $concrete = null, $shared = false);
 
-		public function make($abstract, array $parameters = []);
+    public function make($abstract, array $parameters = []);
 
-		public function instance($abstract, $instance);
+    public function instance($abstract, $instance);
 
-		public function basePath($path = "");
+    public function basePath($path = "");
 
-		public function concreteBinds ():array;
+    public function concreteBinds(): array;
 
-		public function simpleBinds ():array;
+    public function simpleBinds(): array;
 
-		public function registerConcreteBindings (array $bindings):void;
+    public function registerConcreteBindings(array $bindings): void;
 
-		public function registerSimpleBindings (array $bindings):void;
+    public function registerSimpleBindings(array $bindings): void;
 
-		public function runContainerBootstrappers ():void;
+    public function runContainerBootstrappers(): void;
 
-		public function overrideAppHelper ():void;
+    public function overrideAppHelper(): void;
 
-		public function provideRequest (
-
-			RequestDetails $requestDetails, PayloadStorage $payloadStorage
-		):LaravelRequest;
-	}
-?>
+    public function provideRequest(
+        RequestDetails $requestDetails,
+        PayloadStorage $payloadStorage
+    ): LaravelRequest;
+}

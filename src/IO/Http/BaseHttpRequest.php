@@ -1,82 +1,81 @@
 <?php
-	namespace Suphle\IO\Http;
 
-	use Suphle\Services\IndicatesCaughtException;
+namespace Suphle\IO\Http;
 
-	use Suphle\Exception\DetectedExceptionManager;
+use Suphle\Services\IndicatesCaughtException;
 
-	use Psr\Http\{Client\ClientInterface, Message\ResponseInterface};
+use Suphle\Exception\DetectedExceptionManager;
 
-	use Throwable;
+use Psr\Http\{Client\ClientInterface, Message\ResponseInterface};
 
-	abstract class BaseHttpRequest extends IndicatesCaughtException {
+use Throwable;
 
-		protected $httpResponse;
+abstract class BaseHttpRequest extends IndicatesCaughtException
+{
+    protected $httpResponse;
 
-		/**
-		 * No need to decorate with VariableDependencies since any request made using external libraries won't use this client at the same time, thus can simply override this constructor
-		*/
-		public function __construct (
+    /**
+     * No need to decorate with VariableDependencies since any request made using external libraries won't use this client at the same time, thus can simply override this constructor
+    */
+    public function __construct(
+        protected readonly ClientInterface $requestClient,
+        protected readonly DetectedExceptionManager $exceptionManager
+    ) {
 
-			protected readonly ClientInterface $requestClient,
+        //
+    }
 
-			protected readonly DetectedExceptionManager $exceptionManager
-		) {
+    /**
+     * {@inheritdoc}
+    */
+    public function getDomainObject()
+    {
 
-			//
-		}
+        try {
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function getDomainObject () {
+            return $this->convertToDomainObject(
+                $this->httpResponse = $this->getHttpResponse() // saving it in this property for use in error handler without resending request
+            );
+        } catch (Throwable $exception) {
 
-			try {
-				
-				return $this->convertToDomainObject(
+            $this->exception = $exception;
 
-					$this->httpResponse = $this->getHttpResponse() // saving it in this property for use in error handler without resending request
-				);
-			}
-			catch (Throwable $exception) {
+            return $this->translationFailure();
+        }
+    }
 
-				$this->exception = $exception;
-				
-				return $this->translationFailure();
-			}
-		}
+    /**
+     * @throws Throwable, when it meets an unexpected/undesirable payload
+    */
+    abstract protected function convertToDomainObject(ResponseInterface $response);
 
-		/**
-		 * @throws Throwable, when it meets an unexpected/undesirable payload
-		*/
-		abstract protected function convertToDomainObject (ResponseInterface $response);
+    /**
+     * return $this->requestClient->request(GET, $url, $options)
+    */
+    abstract protected function getHttpResponse(): ResponseInterface;
 
-		/**
-		 * return $this->requestClient->request(GET, $url, $options)
-		*/
-		abstract protected function getHttpResponse ():ResponseInterface;
+    /**
+     * Extra layer of abstraction for it to be replaceable in tests
+    */
+    abstract public function getRequestUrl(): string;
 
-		/**
-		 * Extra layer of abstraction for it to be replaceable in tests
-		*/
-		abstract public function getRequestUrl ():string;
+    protected function translationFailure(): void
+    {
 
-		protected function translationFailure ():void {
+        $this->exceptionManager->queueAlertAdapter(
+            $this->exception,
+            $this->httpResponse
+        );
 
-			$this->exceptionManager->queueAlertAdapter(
+        parent::translationFailure();
+    }
 
-				$this->exception, $this->httpResponse
-			);
+    /**
+     * For debugging
+    */
+    public function getException(): Throwable
+    {
 
-			parent::translationFailure();
-		}
-
-		/**
-		 * For debugging
-		*/
-		public function getException ():Throwable {
-
-			return $this->exception;
-		}
-	}
-?>
+        return $this->exception;
+    }
+}

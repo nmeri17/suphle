@@ -1,201 +1,217 @@
 <?php
-	namespace Suphle\Testing\Condiments;
 
-	use Suphle\File\FileSystemReader;
+namespace Suphle\Testing\Condiments;
 
-	use Suphle\Testing\Proxies\Extensions\DummyUpload;
+use Suphle\File\FileSystemReader;
 
-	use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Suphle\Testing\Proxies\Extensions\DummyUpload;
 
-	use FilesystemIterator, UnexpectedValueException;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
-	trait FilesystemCleaner {
+use FilesystemIterator;
+use UnexpectedValueException;
 
-		private $fileSystemReader;
+trait FilesystemCleaner
+{
+    private $fileSystemReader;
 
-		protected function assertEmptyDirectory (string $path):void {
+    protected function assertEmptyDirectory(string $path): void
+    {
 
-			$this->assertTrue(
+        $this->assertTrue(
+            $this->isEmptyDirectory($path),
+            "Failed asserting that '$path' does not exist or is empty"
+        );
+    }
 
-				$this->isEmptyDirectory($path),
+    protected function assertNotEmptyDirectory(string $path, bool $wipeWhenTrue = false): void
+    {
 
-				"Failed asserting that '$path' does not exist or is empty"
-			);
-		}
+        $this->assertFalse(
+            $this->isEmptyDirectory($path),
+            "Failed asserting that '$path' is not empty"
+        );
 
-		protected function assertNotEmptyDirectory (string $path, bool $wipeWhenTrue = false):void {
+        if ($wipeWhenTrue) {
 
-			$this->assertFalse(
+            $this->getFilesystemReader()->emptyDirectory($path);
+        }
+    }
 
-				$this->isEmptyDirectory($path),
+    /**
+     * Expects a preceding operation to have confirmed that @param {path} exists
+    */
+    private function inDirectory(string $path, array $fileNames, callable $onMatchAction)
+    {
 
-				"Failed asserting that '$path' is not empty"
-			);
+        foreach ($fileNames as $entry) {
 
-			if ($wipeWhenTrue)
+            $onMatchAction(
+                $path,
+                $entry,
+                file_exists($path. DIRECTORY_SEPARATOR . $entry)
+            );
+        }
+    }
 
-				$this->getFilesystemReader()->emptyDirectory($path);
-		}
+    protected function assertLacksEntries(string $path, array $fileNames): void
+    {
 
-		/**
-		 * Expects a preceding operation to have confirmed that @param {path} exists
-		*/
-		private function inDirectory (string $path, array $fileNames, callable $onMatchAction) {
+        if ($this->isEmptyDirectory($path)) {
 
-			foreach ($fileNames as $entry) {
+            $this->assertTrue(true);
 
-				$onMatchAction(
-					$path, $entry,
+            return;
+        }
 
-					file_exists($path. DIRECTORY_SEPARATOR . $entry)
-				);
-			}
-		}
+        $this->inDirectory($path, $fileNames, function ($path, $givenMatch, $result) {
 
-		protected function assertLacksEntries (string $path, array $fileNames):void {
+            $this->assertFalse($result, "Did not expect to see '$givenMatch' at $path");
+        });
+    }
 
-			if ($this->isEmptyDirectory($path)) {
+    protected function assertContainsEntries(string $path, array $fileNames): void
+    {
 
-				$this->assertTrue(true);
+        if ($this->isEmptyDirectory($path)) {
 
-				return;
-			}
+            $this->assertTrue(false, "'$path' does not contain given entries");
 
-			$this->inDirectory($path, $fileNames, function ($path, $givenMatch, $result) {
+            return;
+        }
 
-				$this->assertFalse($result, "Did not expect to see '$givenMatch' at $path");
-			});
-		}
+        $this->inDirectory($path, $fileNames, function ($path, $givenMatch, $result) {
 
-		protected function assertContainsEntries (string $path, array $fileNames):void {
+            $this->assertTrue($result, "$path does not contain entry '$givenMatch'");
+        });
+    }
 
-			if ($this->isEmptyDirectory($path)) {
+    private function isEmptyDirectory(string $path): bool
+    {
 
-				$this->assertTrue(false, "'$path' does not contain given entries");
+        $iterator = $this->safeGetIterator($path);
 
-				return;
-			}
+        return is_null($iterator) || !$iterator->valid();
+    }
 
-			$this->inDirectory($path, $fileNames, function ($path, $givenMatch, $result) {
+    protected function safeGetIterator(string $path): ?FilesystemIterator
+    {
 
-				$this->assertTrue($result, "$path does not contain entry '$givenMatch'");
-			});
-		}
+        try {
 
-		private function isEmptyDirectory (string $path):bool {
+            return new FilesystemIterator($path);
+        } catch (UnexpectedValueException) { // folder does not exist
 
-			$iterator = $this->safeGetIterator($path);
+            return null;
+        }
+    }
 
-			return is_null($iterator) || !$iterator->valid();
-		}
+    protected function getFilesystemReader(): FileSystemReader
+    {
 
-		protected function safeGetIterator (string $path):?FilesystemIterator {
+        if (is_null($this->fileSystemReader)) {
 
-			try {
+            $this->fileSystemReader = $this->getContainer()->getClass(FileSystemReader::class);
+        }
 
-				return new FilesystemIterator($path);
-			}
-			catch (UnexpectedValueException) { // folder does not exist
+        return $this->fileSystemReader;
+    }
 
-				return null;
-			}
-		}
+    /**
+     * @param {indexes} Accepts wildcards
+     * @param {fileMap} Leaving this open to any iterable instead of tying it to TestResponseBridge to keep it agnostic to response types and more importantly, so services can be tested directly
+    */
+    protected function assertSavedFiles(array $indexes, iterable $fileMap): void
+    {
 
-		protected function getFilesystemReader ():FileSystemReader {
+        foreach ($indexes as $index) {
 
-			if (is_null($this->fileSystemReader))
+            $this->assertSavedFileNames(data_get($fileMap, $index));
+        }
+    }
 
-				$this->fileSystemReader = $this->getContainer()->getClass(FileSystemReader::class);
+    /**
+     * Deletes file after verifying its presence
+     *
+     * @param {files} Iterable of literal file names
+    */
+    protected function assertSavedFileNames(iterable $files): void
+    {
 
-			return $this->fileSystemReader;
-		}
+        foreach ($files as $file) {
 
-		/**
-		 * @param {indexes} Accepts wildcards
-		 * @param {fileMap} Leaving this open to any iterable instead of tying it to TestResponseBridge to keep it agnostic to response types and more importantly, so services can be tested directly
-		*/
-		protected function assertSavedFiles (array $indexes, iterable $fileMap):void {
+            if (is_iterable($file)) {
 
-			foreach ($indexes as $index)
+                $this->assertSavedFileNames($file);
+            }
 
-				$this->assertSavedFileNames(data_get($fileMap, $index));
-		}
+            $this->assertFileExists($file);
 
-		/**
-		 * Deletes file after verifying its presence
-		 * 
-		 * @param {files} Iterable of literal file names
-		*/
-		protected function assertSavedFileNames (iterable $files):void {
+            unlink($file);
+        }
+    }
 
-			foreach ($files as $file) {
+    /**
+     * @param {expectedSize} in kB
+     */
+    protected function saveFakeImage(string $fileName, int $width, int $height, int $expectedSize = 100): UploadedFile
+    {
 
-				if (is_iterable($file))
+        $tempImageName = $this->getImageTemporaryPath($fileName, $width, $height);
 
-					$this->assertSavedFileNames($file);
+        $extension = pathinfo($fileName, PATHINFO_EXTENSION);
 
-				$this->assertFileExists($file);
+        while (filesize($tempImageName)/1024 < $expectedSize) {
 
-				unlink($file);
-			}
-		}
+            $loopTemp = $this->getImageTemporaryPath($fileName, $width, $height);
 
-		/**
-		 * @param {expectedSize} in kB
-		 */
-		protected function saveFakeImage (string $fileName, int $width, int $height, int $expectedSize = 100):UploadedFile {
+            file_put_contents($tempImageName, file_get_contents($loopTemp), FILE_APPEND);
 
-			$tempImageName = $this->getImageTemporaryPath($fileName, $width, $height);
+            unlink($loopTemp);
+        }
 
-			$extension = pathinfo($fileName, PATHINFO_EXTENSION);
+        return new UploadedFile($tempImageName, $fileName, $extension, null, true);
+    }
 
-			while (filesize($tempImageName)/1024 < $expectedSize) {
+    private function getImageTemporaryPath(string $extension, int $width, int $height): string
+    {
 
-				$loopTemp = $this->getImageTemporaryPath($fileName, $width, $height);
+        $extension = in_array($extension, [
 
-				file_put_contents($tempImageName, file_get_contents($loopTemp), FILE_APPEND);
+            "jpeg", "png", "gif", "webp", "wbmp", "bmp"
+        ]) ? strtolower($extension) : "jpeg";
 
-				unlink($loopTemp);
-			}
+        $imageResource = imagecreatetruecolor($width, $height);
 
-			return new UploadedFile($tempImageName, $fileName, $extension, null, true);
-		}
+        $writeFunction = "image$extension";
 
-		private function getImageTemporaryPath (string $extension, int $width, int $height):string {
+        $imagePath = $this->getTempFilePath();
 
-			$extension = in_array($extension, [
+        $writeFunction($imageResource, $imagePath);
 
-				"jpeg", "png", "gif", "webp", "wbmp", "bmp"
-			]) ? strtolower($extension): "jpeg";
+        imagedestroy($imageResource);
 
-			$imageResource = imagecreatetruecolor($width, $height);
+        return $imagePath;
+    }
 
-			$writeFunction = "image$extension";
+    private function getTempFilePath(): string
+    {
 
-			$imagePath = $this->getTempFilePath();
+        return tempnam(sys_get_temp_dir(), "php_file");
+    }
 
-			$writeFunction($imageResource, $imagePath);
+    protected function saveFakeFile(string $fileName, int $expectedSize = 100): DummyUpload
+    {
 
-			imagedestroy($imageResource);
+        $instance = new DummyUpload(
+            $this->getTempFilePath(),
+            $fileName,
+            null,
+            true
+        );
 
-			return $imagePath;
-		}
+        $instance->setSize($expectedSize);
 
-		private function getTempFilePath ():string {
-
-			return tempnam(sys_get_temp_dir(), "php_file");
-		}
-
-		protected function saveFakeFile (string $fileName, int $expectedSize = 100):DummyUpload {
-
-			$instance = new DummyUpload(
-
-				$this->getTempFilePath(), $fileName, null, true
-			);
-
-			$instance->setSize($expectedSize);
-
-			return $instance;
-		}
-	}
-?>
+        return $instance;
+    }
+}

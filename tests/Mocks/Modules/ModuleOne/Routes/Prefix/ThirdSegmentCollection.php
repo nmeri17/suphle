@@ -1,18 +1,19 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Prefix;
 
-	use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Prefix;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\NestedController;
+use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
 
-	use Suphle\Response\Format\Json;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\NestedController;
 
-	#[HandlingCoordinator(NestedController::class)]
-	class ThirdSegmentCollection extends BaseCollection {
+use Suphle\Response\Format\Json;
 
-		public function THIRD () {
-			
-			$this->_httpGet(new Json("thirdSegmentHandler"));
-		}
-	}
-?>
+#[HandlingCoordinator(NestedController::class)]
+class ThirdSegmentCollection extends BaseCollection
+{
+    public function THIRD()
+    {
+
+        $this->_httpGet(new Json("thirdSegmentHandler"));
+    }
+}

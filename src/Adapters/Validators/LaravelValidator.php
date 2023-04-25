@@ -1,29 +1,32 @@
 <?php
-	namespace Suphle\Adapters\Validators;
 
-	use Suphle\Contracts\Requests\RequestValidator;
+namespace Suphle\Adapters\Validators;
 
-	use Illuminate\{Validation\Factory, Support\MessageBag};
+use Suphle\Contracts\Requests\RequestValidator;
 
-	class LaravelValidator implements RequestValidator {
+use Illuminate\{Validation\Factory, Support\MessageBag};
 
-		protected MessageBag $errorHolder;
+class LaravelValidator implements RequestValidator
+{
+    protected MessageBag $errorHolder;
 
-		public function __construct(protected readonly Factory $client) {
+    public function __construct(protected readonly Factory $client)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function validate (array $parameters, array $rules):void {
+    public function validate(array $parameters, array $rules): void
+    {
 
-			$validator = $this->client->make($parameters, $rules);
+        $validator = $this->client->make($parameters, $rules);
 
-			$this->errorHolder = $validator->errors();
-		}
+        $this->errorHolder = $validator->errors();
+    }
 
-		public function getErrors ():iterable {
+    public function getErrors(): iterable
+    {
 
-			return $this->errorHolder->messages();
-		}
-	}
-?>
+        return $this->errorHolder->messages();
+    }
+}

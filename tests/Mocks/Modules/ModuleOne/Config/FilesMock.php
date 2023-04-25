@@ -1,13 +1,14 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Config;
 
-	use Suphle\Config\AscendingHierarchy;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Config;
 
-	class FilesMock extends AscendingHierarchy {
+use Suphle\Config\AscendingHierarchy;
 
-		public function modulesNamespace ():string {
+class FilesMock extends AscendingHierarchy
+{
+    public function modulesNamespace(): string
+    {
 
-			return "Suphle\Tests\Mocks\Modules";
-		}
-	}
-?>
+        return "Suphle\Tests\Mocks\Modules";
+    }
+}

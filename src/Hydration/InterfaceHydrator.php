@@ -1,83 +1,92 @@
 <?php
-	namespace Suphle\Hydration;
 
-	use Suphle\Contracts\{Config\ConfigMarker, Hydration\InterfaceCollection};
+namespace Suphle\Hydration;
 
-	use Suphle\Modules\ModuleDescriptor;
+use Suphle\Contracts\{Config\ConfigMarker, Hydration\InterfaceCollection};
 
-	class InterfaceHydrator {
+use Suphle\Modules\ModuleDescriptor;
 
-		public function __construct(protected readonly InterfaceCollection $collection, protected readonly Container $container) {
+class InterfaceHydrator
+{
+    public function __construct(protected readonly InterfaceCollection $collection, protected readonly Container $container)
+    {
 
-			//
-		}
+        //
+    }
 
-		/**
-		 * Loads them from sources in their order of importance i.e. configs are at the lowest level. We assume they don't inject additional dependencies
-		*/
-		public function deriveConcrete(string $interface) {
+    /**
+     * Loads them from sources in their order of importance i.e. configs are at the lowest level. We assume they don't inject additional dependencies
+    */
+    public function deriveConcrete(string $interface)
+    {
 
-			$collection = $this->collection;
+        $collection = $this->collection;
 
-			$container = $this->container;
+        $container = $this->container;
 
-			if ($this->isConfig($interface)) {
+        if ($this->isConfig($interface)) {
 
-				$configs = $collection->getConfigs();
+            $configs = $collection->getConfigs();
 
-				if (!array_key_exists($interface, $configs)) return;
+            if (!array_key_exists($interface, $configs)) {
+                return;
+            }
 
-				return $container->instantiateConcrete($configs[$interface]); // not using `getClass` since we can't have custom config
-			}
+            return $container->instantiateConcrete($configs[$interface]); // not using `getClass` since we can't have custom config
+        }
 
-			$simpleBinds = $collection->simpleBinds();
+        $simpleBinds = $collection->simpleBinds();
 
-			if (array_key_exists($interface, $simpleBinds))
+        if (array_key_exists($interface, $simpleBinds)) {
 
-				return $container->instantiateConcrete( $simpleBinds[$interface]);
+            return $container->instantiateConcrete($simpleBinds[$interface]);
+        }
 
-			$loaders = $collection->getLoaders();
+        $loaders = $collection->getLoaders();
 
-			if (array_key_exists($interface, $loaders)) {
+        if (array_key_exists($interface, $loaders)) {
 
-				$loader = $container->getClass($loaders[$interface]);
+            $loader = $container->getClass($loaders[$interface]);
 
-				return $this->extractFromLoader($loader);
-			}
+            return $this->extractFromLoader($loader);
+        }
 
-			$modules = $collection->getDelegatedInstances();
+        $modules = $collection->getDelegatedInstances();
 
-			if (array_key_exists($interface, $modules))
+        if (array_key_exists($interface, $modules)) {
 
-				return $this->moduleDependencyConnector($interface, $modules[$interface]);
-		}
+            return $this->moduleDependencyConnector($interface, $modules[$interface]);
+        }
+    }
 
-		protected function isConfig(string $interface):bool {
-			
-			return in_array(ConfigMarker::class, class_implements($interface));
-		}
+    protected function isConfig(string $interface): bool
+    {
 
-		protected function extractFromLoader (BaseInterfaceLoader $loader) {
+        return in_array(ConfigMarker::class, class_implements($interface));
+    }
 
-			$name = $loader->concreteName();
+    protected function extractFromLoader(BaseInterfaceLoader $loader)
+    {
 
-			$concreteArguments = $loader->bindArguments(); // call separately so it doesn't mess with the provision below
+        $name = $loader->concreteName();
 
-			$this->container->whenType($name)
+        $concreteArguments = $loader->bindArguments(); // call separately so it doesn't mess with the provision below
 
-			->needsArguments($concreteArguments);
+        $this->container->whenType($name)
 
-			$concrete = $this->container->instantiateConcrete($name);
+        ->needsArguments($concreteArguments);
 
-			$loader->afterBind($concrete);
+        $concrete = $this->container->instantiateConcrete($name);
 
-			return $concrete;
-		}
+        $loader->afterBind($concrete);
 
-		// ask their container to hydrate it on our behalf
-		protected function moduleDependencyConnector(string $contract, ModuleDescriptor $descriptor) {
+        return $concrete;
+    }
 
-			return $descriptor->materialize();
-		}
-	}
-?>
+    // ask their container to hydrate it on our behalf
+    protected function moduleDependencyConnector(string $contract, ModuleDescriptor $descriptor)
+    {
+
+        return $descriptor->materialize();
+    }
+}

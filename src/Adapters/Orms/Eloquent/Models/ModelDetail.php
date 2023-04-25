@@ -1,46 +1,50 @@
 <?php
-	namespace Suphle\Adapters\Orms\Eloquent\Models;
 
-	use Suphle\Contracts\Database\EntityDetails;
+namespace Suphle\Adapters\Orms\Eloquent\Models;
 
-	use ReflectionClass;
+use Suphle\Contracts\Database\EntityDetails;
 
-	class ModelDetail implements EntityDetails {
+use ReflectionClass;
 
-		public function idFromModel (object $model, string $prefix = ""):string {
+class ModelDetail implements EntityDetails
+{
+    public function idFromModel(object $model, string $prefix = ""): string
+    {
 
-			$primaryField = $model->getKeyName();
+        $primaryField = $model->getKeyName();
 
-			return $this->idFromString(
+        return $this->idFromString(
+            $this->getModelName($model::class),
+            $model->$primaryField,
+            $prefix
+        );
+    }
 
-				$this->getModelName($model::class),
+    protected function getModelName(string $modelFqcn): string
+    {
 
-				$model->$primaryField, $prefix
-			);
-		}
+        return (new ReflectionClass($modelFqcn))->getShortName();
+    }
 
-		protected function getModelName (string $modelFqcn):string {
+    public function idFromModelName(string $modelFqcn, string $modelId, string $prefix = ""): string
+    {
 
-			return (new ReflectionClass($modelFqcn))->getShortName();
-		}
+        return $this->idFromString(
+            $this->getModelName($modelFqcn),
+            $modelId,
+            $prefix
+        );
+    }
 
-		public function idFromModelName (string $modelFqcn, string $modelId, string $prefix = ""):string {
+    public function idFromString(string $modelName, string $modelId, string $prefix = ""): string
+    {
 
-			return $this->idFromString(
+        return strtolower(implode(
+            "_",
+            array_filter([ // remove possible empty entries
 
-				$this->getModelName($modelFqcn), $modelId, $prefix
-			);
-		}
-
-		public function idFromString (string $modelName, string $modelId, string $prefix = ""):string {
-
-			return strtolower(implode(
-
-				"_", array_filter([ // remove possible empty entries
-
-					$prefix, $modelName, $modelId
-				])
-			));
-		}
-	}
-?>
+                $prefix, $modelName, $modelId
+            ])
+        ));
+    }
+}

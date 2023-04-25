@@ -1,13 +1,14 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes;
 
-	use Exception;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes;
 
-	class ThrowsException {
+use Exception;
 
-		public function awesomeMethod () {
+class ThrowsException
+{
+    public function awesomeMethod()
+    {
 
-			throw new Exception;
-		}
-	}
-?>
+        throw new Exception();
+    }
+}

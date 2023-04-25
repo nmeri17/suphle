@@ -1,34 +1,38 @@
 <?php
-	namespace Suphle\IO\Image\Operations;
 
-	use Suphle\Contracts\IO\Image\{ InferiorImageClient, ImageLocator, InferiorOperationHandler};
+namespace Suphle\IO\Image\Operations;
 
-	use Suphle\File\FileSystemReader;
+use Suphle\Contracts\IO\Image\{ InferiorImageClient, ImageLocator, InferiorOperationHandler};
 
-	class DefaultInferiorHandler extends BaseOptimizeOperation implements InferiorOperationHandler {
+use Suphle\File\FileSystemReader;
 
-		protected string $operationName = InferiorOperationHandler::OPERATION_NAME;
+class DefaultInferiorHandler extends BaseOptimizeOperation implements InferiorOperationHandler
+{
+    protected string $operationName = InferiorOperationHandler::OPERATION_NAME;
 
-		protected int $maxSize;
+    protected int $maxSize;
 
-		public function __construct (InferiorImageClient $client, ImageLocator $imageLocator, FileSystemReader $fileSystemReader) {
+    public function __construct(InferiorImageClient $client, ImageLocator $imageLocator, FileSystemReader $fileSystemReader)
+    {
 
-			$this->client = $client;
+        $this->client = $client;
 
-			parent::__construct($imageLocator, $fileSystemReader);
-		}
+        parent::__construct($imageLocator, $fileSystemReader);
+    }
 
-		public function setMaxSize (int $size):void {
+    public function setMaxSize(int $size): void
+    {
 
-			$this->maxSize = $size;
-		}
+        $this->maxSize = $size;
+    }
 
-		public function getTransformed ():?array {
+    public function getTransformed(): ?array
+    {
 
-			return array_map(fn($file) => $this->client->downgradeImage(
-					
-					$file, $this->localFileCopy($file), $this->maxSize
-				), $this->imageObjects);
-		}
-	}
-?>
+        return array_map(fn ($file) => $this->client->downgradeImage(
+            $file,
+            $this->localFileCopy($file),
+            $this->maxSize
+        ), $this->imageObjects);
+    }
+}

@@ -1,29 +1,31 @@
 <?php
-	namespace Suphle\Bridge\Laravel\Config;
 
-	use Illuminate\Foundation\Bootstrap\LoadConfiguration;
+namespace Suphle\Bridge\Laravel\Config;
 
-	use Illuminate\Contracts\{Config\Repository as ConfigRepository, Foundation\Application};
+use Illuminate\Foundation\Bootstrap\LoadConfiguration;
 
-	/**
-	 * We methods from the parent to be made public
-	*/		
-	class ConfigFileFinder extends LoadConfiguration {
+use Illuminate\Contracts\{Config\Repository as ConfigRepository, Foundation\Application};
 
-		public function getConfigNames (Application $app) {
+/**
+ * We methods from the parent to be made public
+*/
+class ConfigFileFinder extends LoadConfiguration
+{
+    public function getConfigNames(Application $app)
+    {
 
-			return array_map(function ($fullPath) {
+        return array_map(function ($fullPath) {
 
-				preg_match("/([\w]+)\.\w+$/", $fullPath, $matches);
+            preg_match("/([\w]+)\.\w+$/", $fullPath, $matches);
 
-				return $matches[1];
-			
-			}, $this->getConfigurationFiles($app));
-		}
+            return $matches[1];
 
-		public function __call (string $methodName, array $arguments) {
+        }, $this->getConfigurationFiles($app));
+    }
 
-			return call_user_func_array([$this, $methodName], $arguments);
-		}
-	}
-?>
+    public function __call(string $methodName, array $arguments)
+    {
+
+        return call_user_func_array([$this, $methodName], $arguments);
+    }
+}

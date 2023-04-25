@@ -1,183 +1,189 @@
 <?php
-	namespace Suphle\Tests\Integration\Modules\Cloning;
 
-	use Suphle\Contracts\Config\{ModuleFiles, ComponentTemplates};
+namespace Suphle\Tests\Integration\Modules\Cloning;
 
-	use Suphle\Contracts\Modules\DescriptorInterface;
+use Suphle\Contracts\Config\{ModuleFiles, ComponentTemplates};
 
-	use Suphle\Services\ComponentEntry as ServicesComponentEntry;
+use Suphle\Contracts\Modules\DescriptorInterface;
 
-	use Suphle\File\FileSystemReader;
+use Suphle\Services\ComponentEntry as ServicesComponentEntry;
 
-	use Suphle\Modules\{ModuleCloneService, ModulesBooter, Structures\ActiveDescriptors, Commands\CloneModuleCommand};
+use Suphle\File\FileSystemReader;
 
-	use Suphle\Hydration\Container;
+use Suphle\Modules\{ModuleCloneService, ModulesBooter, Structures\ActiveDescriptors, Commands\CloneModuleCommand};
 
-	use Suphle\Console\CliRunner;
+use Suphle\Hydration\Container;
 
-	use Suphle\Testing\Condiments\FilesystemCleaner;
+use Suphle\Console\CliRunner;
 
-	use Symfony\Component\Console\{Command\Command, Tester\CommandTester};
+use Suphle\Testing\Condiments\FilesystemCleaner;
 
-	trait SimpleCloneAssertions {
+use Symfony\Component\Console\{Command\Command, Tester\CommandTester};
 
-		use FilesystemCleaner;
+trait SimpleCloneAssertions
+{
+    use FilesystemCleaner;
 
-		protected ModuleFiles $fileConfig;
+    protected ModuleFiles $fileConfig;
 
-		protected Container $container;
+    protected Container $container;
 
-		protected CliRunner $consoleRunner;
+    protected CliRunner $consoleRunner;
 
-		protected string $newModuleName = "ModuleAgnes",
+    protected string $newModuleName = "ModuleAgnes";
+    protected string $sutName = CloneModuleCommand::class;
+    protected string $componentConfig = ComponentTemplates::class;
 
-		$sutName = CloneModuleCommand::class,
+    protected function simpleCloneDependencies(): self
+    {
 
-		$componentConfig = ComponentTemplates::class;
+        $this->container = $this->getContainer();
 
-		protected function simpleCloneDependencies ():self {
+        $this->fileConfig = $this->container->getClass(ModuleFiles::class);
 
-			$this->container = $this->getContainer();
+        return $this;
+    }
 
-			$this->fileConfig = $this->container->getClass(ModuleFiles::class);
+    protected function replaceTemplateEntries(): void
+    {
 
-			return $this;
-		}
+        $clonerServiceName = ModuleCloneService::class;
 
-		protected function replaceTemplateEntries ():void {
+        $this->massProvide([
 
-			$clonerServiceName = ModuleCloneService::class;
+            $clonerServiceName => $this->positiveDouble(
+                $clonerServiceName,
+                [
 
-			$this->massProvide([
+                    "bootNewlyCreatedContainer" => $this->returnCallback($this->bootNewlyCreatedContainer(...))
+                ],
+                [],
+                $this->container->getMethodParameters(
+                    Container::CLASS_CONSTRUCTOR,
+                    $clonerServiceName
+                )
+            )
+        ]);
+    }
 
-				$clonerServiceName => $this->positiveDouble(
+    protected function bootNewlyCreatedContainer(string $descriptorName): DescriptorInterface
+    {
 
-					$clonerServiceName, [
+        $descriptor = new $descriptorName(new Container());
 
-						"bootNewlyCreatedContainer" => $this->returnCallback($this->bootNewlyCreatedContainer(...))
-					], [],
+        $this->replaceConstructorArguments(ModulesBooter::class, [])
 
-					$this->container->getMethodParameters(
+        ->recursivelyBootModuleSet(
+            new ActiveDescriptors([$descriptor])
+        );
 
-						Container::CLASS_CONSTRUCTOR, $clonerServiceName
-					)
-				)
-			]);
-		}
+        $descriptor->getContainer()->whenTypeAny()
 
-		protected function bootNewlyCreatedContainer (string $descriptorName):DescriptorInterface {
+        ->needsAny($this->newContainerBindings());
 
-			$descriptor = new $descriptorName(new Container);
+        return $descriptor;
+    }
 
-			$this->replaceConstructorArguments(ModulesBooter::class, [])
+    protected function newContainerBindings(): array
+    {
 
-			->recursivelyBootModuleSet(
+        return [
 
-				new ActiveDescriptors([$descriptor])
-			);
+            $this->componentConfig => $this->positiveDouble($this->componentConfig, [
 
-			$descriptor->getContainer()->whenTypeAny()
+                "getTemplateEntries" => [ServicesComponentEntry::class]
+            ])
+        ];
+    }
 
-			->needsAny($this->newContainerBindings());
+    protected function assertSimpleCloneModule(callable $onCloneSuccess = null): void
+    {
 
-			return $descriptor;
-		}
+        $this->replaceTemplateEntries();
 
-		protected function newContainerBindings ():array {
+        $commandResult = $this->runSimpleCloneCommand( // given
 
-			return [
+            $modulePath = $this->getModulePath(),
+            $interfacePath = $this->moduleInterfacePath()
+        );
 
-				$this->componentConfig => $this->positiveDouble($this->componentConfig, [
+        // then
+        $this->assertSame($commandResult, Command::SUCCESS);
 
-					"getTemplateEntries" => [ServicesComponentEntry::class]
-				])
-			];
-		}
+        if (!is_null($onCloneSuccess)) {
 
-		protected function assertSimpleCloneModule (callable $onCloneSuccess = null):void {
+            $onCloneSuccess($modulePath);
+        }
 
-			$this->replaceTemplateEntries();
+        $this->assertNotEmptyDirectory($modulePath, true); // this inexplicably fails on random occassions
 
-			$commandResult = $this->runSimpleCloneCommand( // given
+        $this->assertSavedFileNames([$interfacePath]);
+    }
 
-				$modulePath = $this->getModulePath(),
+    protected function runSimpleCloneCommand(string $modulePath, string $interfacePath): int
+    {
 
-				$interfacePath = $this->moduleInterfacePath()
-			);
+        if (file_exists($modulePath)) {
 
-			// then
-			$this->assertSame($commandResult, Command::SUCCESS );
+            $this->getFilesystemReader()->emptyDirectory($modulePath);
+        }
 
-			if (!is_null($onCloneSuccess))
+        if (file_exists($interfacePath)) {
 
-				$onCloneSuccess($modulePath);
+            unlink($interfacePath);
+        }
 
-			$this->assertNotEmptyDirectory($modulePath, true); // this inexplicably fails on random occassions
+        return $this->executeCloneCommand(); // when
+    }
 
-			$this->assertSavedFileNames([$interfacePath]);
-		}
+    protected function executeCloneCommand(array $commandOptions = []): int
+    {
 
-		protected function runSimpleCloneCommand (string $modulePath, string $interfacePath):int {
+        $command = $this->consoleRunner->findHandler(
+            CloneModuleCommand::commandSignature()
+        );
 
-			if (file_exists($modulePath))
+        return (new CommandTester($command))->execute(array_merge([
 
-				$this->getFilesystemReader()->emptyDirectory($modulePath);
-			
-			if (file_exists($interfacePath))
+            CloneModuleCommand::MODULE_NAME_ARGUMENT => $this->newModuleName,
 
-				unlink($interfacePath);
+            "--" . CloneModuleCommand::DESCRIPTOR_OPTION => $this->constructDescriptorName()
+        ], $commandOptions));
+    }
 
-			return $this->executeCloneCommand(); // when
-		}
+    /**
+     * Gets the path to potential new module
+    */
+    protected function getModulePath(): string
+    {
 
-		protected function executeCloneCommand (array $commandOptions = []):int {
+        return $this->getFilesystemReader()->getAbsolutePath(
+            $this->fileConfig->activeModulePath(),
+            "../" .$this->newModuleName
+        );
+    }
 
-			$command = $this->consoleRunner->findHandler(
+    protected function moduleInterfacePath(): string
+    {
 
-				CloneModuleCommand::commandSignature()
-			);
+        return implode("", [
 
-			return (new CommandTester($command))->execute(array_merge([
+            $this->fileConfig->getRootPath(),
 
-				CloneModuleCommand::MODULE_NAME_ARGUMENT => $this->newModuleName,
+            "Interactions", DIRECTORY_SEPARATOR,
 
-				"--" . CloneModuleCommand::DESCRIPTOR_OPTION => $this->constructDescriptorName()
-			], $commandOptions));
-		}
-		
-		/**
-		 * Gets the path to potential new module
-		*/
-		protected function getModulePath ():string {
+            $this->newModuleName, ".php"
+        ]);
+    }
 
-			return $this->getFilesystemReader()->getAbsolutePath(
+    protected function constructDescriptorName(): string
+    {
 
-				$this->fileConfig->activeModulePath(),
+        return implode("\\", [
 
-				"../" .$this->newModuleName
-			);
-		}
-		
-		protected function moduleInterfacePath ():string {
+            "\Suphle\Tests\Mocks\Modules", $this->newModuleName,
 
-			return implode("", [
-
-				$this->fileConfig->getRootPath(),
-
-				"Interactions", DIRECTORY_SEPARATOR,
-
-				$this->newModuleName, ".php"
-			]);
-		}
-
-		protected function constructDescriptorName ():string {
-
-			return implode("\\", [
-
-				"\Suphle\Tests\Mocks\Modules", $this->newModuleName,
-
-				"Meta", $this->newModuleName . "Descriptor"
-			]);
-		}
-	}
-?>
+            "Meta", $this->newModuleName . "Descriptor"
+        ]);
+    }
+}

@@ -1,71 +1,73 @@
 <?php
-	namespace Suphle\Tests\Unit\Hydration;
 
-	use Suphle\Hydration\{Container, ExternalPackageManagerHydrator, Structures\BaseInterfaceCollection};
+namespace Suphle\Tests\Unit\Hydration;
 
-	use Suphle\Contracts\Config\{ ModuleFiles, ContainerConfig};
+use Suphle\Hydration\{Container, ExternalPackageManagerHydrator, Structures\BaseInterfaceCollection};
 
-	use Suphle\Contracts\Hydration\ExternalPackageManager;
+use Suphle\Contracts\Config\{ ModuleFiles, ContainerConfig};
 
-	use Suphle\Config\AscendingHierarchy;
+use Suphle\Contracts\Hydration\ExternalPackageManager;
 
-	use Suphle\File\FileSystemReader;
+use Suphle\Config\AscendingHierarchy;
 
-	use Suphle\Testing\TestTypes\TestVirginContainer;
+use Suphle\File\FileSystemReader;
 
-	class ManagerHydratorTest extends TestVirginContainer {
+use Suphle\Testing\TestTypes\TestVirginContainer;
 
-		protected function getContainer ():Container {
+class ManagerHydratorTest extends TestVirginContainer
+{
+    protected function getContainer(): Container
+    {
 
-			$container = $this->positiveDouble(Container::class, [
+        $container = $this->positiveDouble(Container::class, [
 
-				"getDecorator" => $this->stubDecorator()
-			]);
+            "getDecorator" => $this->stubDecorator()
+        ]);
 
-			$this->bootContainer($container);
+        $this->bootContainer($container);
 
-			return $container;
-		}
+        return $container;
+    }
 
-		protected function injectBindings (Container $container):void {
+    protected function injectBindings(Container $container): void
+    {
 
-			$systemReader = $container->getClass(FileSystemReader::class);
+        $systemReader = $container->getClass(FileSystemReader::class);
 
-			$anchorPath = $systemReader->pathFromLevels(__DIR__, "Mocks/Modules/ModuleOne/Config", 2);
+        $anchorPath = $systemReader->pathFromLevels(__DIR__, "Mocks/Modules/ModuleOne/Config", 2);
 
-			$manager = $this->positiveDouble(ExternalPackageManager::class, []);
+        $manager = $this->positiveDouble(ExternalPackageManager::class, []);
 
-			$container->whenTypeAny()->needsAny([
+        $container->whenTypeAny()->needsAny([
 
-				ContainerConfig::class => $this->positiveDouble(ContainerConfig::class, [
+            ContainerConfig::class => $this->positiveDouble(ContainerConfig::class, [
 
-					"getExternalHydrators" => [
+                "getExternalHydrators" => [
 
-						$manager::class
-					]
-				]),
+                    $manager::class
+                ]
+            ]),
 
-				ModuleFiles::class => new AscendingHierarchy($anchorPath, "\Suphle\Tests\Mocks\Modules\ModuleOne\\", $systemReader)
-			]);
-		}
+            ModuleFiles::class => new AscendingHierarchy($anchorPath, "\Suphle\Tests\Mocks\Modules\ModuleOne\\", $systemReader)
+        ]);
+    }
 
-		public function test_can_set_bridge_package_manager () {
+    public function test_can_set_bridge_package_manager()
+    {
 
-			$container = $this->getContainer();
+        $container = $this->getContainer();
 
-			// given
-			$this->injectBindings($container);
+        // given
+        $this->injectBindings($container);
 
-			$container->setInterfaceHydrator(
+        $container->setInterfaceHydrator(
+            $this->positiveDouble(BaseInterfaceCollection::class, [])::class
+        );
 
-				$this->positiveDouble(BaseInterfaceCollection::class, [])::class
-			);
+        $sut = new ExternalPackageManagerHydrator($container);
 
-			$sut = new ExternalPackageManagerHydrator($container);
+        $container->setExternalContainerManager($sut); // when
 
-			$container->setExternalContainerManager($sut); // when
-
-			$this->assertTrue($sut->hasManagers()); // then
-		}
-	}
-?>
+        $this->assertTrue($sut->hasManagers()); // then
+    }
+}

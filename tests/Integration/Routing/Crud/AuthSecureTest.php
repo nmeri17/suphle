@@ -1,53 +1,61 @@
 <?php
-	namespace Suphle\Tests\Integration\Routing\Crud;
 
-	use Suphle\Contracts\Config\Router;
+namespace Suphle\Tests\Integration\Routing\Crud;
 
-	use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
+use Suphle\Contracts\Config\Router;
 
-	use Suphle\Testing\{Condiments\BaseDatabasePopulator, TestTypes\ModuleLevelTest};
+use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
 
-	use Suphle\Testing\Proxies\{SecureUserAssertions, WriteOnlyContainer};
+use Suphle\Testing\{Condiments\BaseDatabasePopulator, TestTypes\ModuleLevelTest};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Routes\Crud\AuthenticateCrudCollection, Config\RouterMock};
+use Suphle\Testing\Proxies\{SecureUserAssertions, WriteOnlyContainer};
 
-	class AuthSecureTest extends ModuleLevelTest {
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Routes\Crud\AuthenticateCrudCollection, Config\RouterMock};
 
-		use BaseDatabasePopulator, SecureUserAssertions;
+class AuthSecureTest extends ModuleLevelTest
+{
+    use BaseDatabasePopulator;
+    use SecureUserAssertions;
 
-		protected function getModules():array {
+    protected function getModules(): array
+    {
 
-			return [
-				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+        return [
+            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-					$container->replaceWithMock(Router::class, RouterMock::class, [
+                $container->replaceWithMock(
+                    Router::class,
+                    RouterMock::class,
+                    [
 
-							"browserEntryRoute" => AuthenticateCrudCollection::class
-						]
-					);
-				})
-			];
-		}
+                        "browserEntryRoute" => AuthenticateCrudCollection::class
+                    ]
+                );
+            })
+        ];
+    }
 
-		protected function getActiveEntity ():string {
+    protected function getActiveEntity(): string
+    {
 
-			return EloquentUser::class;
-		}
+        return EloquentUser::class;
+    }
 
-		public function test_no_authenticated_user_throws_error () {
+    public function test_no_authenticated_user_throws_error()
+    {
 
-			$this->get("/secure-some/edit/5") // when
+        $this->get("/secure-some/edit/5") // when
 
-			->assertUnauthorized(); // then
-		}
+        ->assertUnauthorized(); // then
+    }
 
-		public function test_with_authentication_throws_no_error () {
+    public function test_with_authentication_throws_no_error()
+    {
 
-			$this->actingAs($this->replicator->getRandomEntity()); // given
+        $this->actingAs($this->replicator->getRandomEntity()); // given
 
-			$this->get("/secure-some/edit/5") // when
+        $this->get("/secure-some/edit/5") // when
 
-			->assertOk(); // then
-		}
-	}
-?>
+        ->assertOk(); // then
+    }
+}

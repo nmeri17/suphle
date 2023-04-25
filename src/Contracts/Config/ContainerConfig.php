@@ -1,15 +1,15 @@
 <?php
-	namespace Suphle\Contracts\Config;
 
-	use Suphle\Contracts\Hydration\ExternalPackageManager;
+namespace Suphle\Contracts\Config;
 
-	interface ContainerConfig extends ConfigMarker {
+use Suphle\Contracts\Hydration\ExternalPackageManager;
 
-		public function containerLogFile ():string;
+interface ContainerConfig extends ConfigMarker
+{
+    public function containerLogFile(): string;
 
-		/**
-		 * @return string<ExternalPackageManager>[]
-		*/
-		public function getExternalHydrators ():array;
-	}
-?>
+    /**
+     * @return string<ExternalPackageManager>[]
+    */
+    public function getExternalHydrators(): array;
+}

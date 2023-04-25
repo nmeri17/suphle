@@ -1,62 +1,68 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Auth;
 
-	use Suphle\Routing\{BaseCollection, PreMiddlewareRegistry, CollectionMetaFunnel, Decorators\HandlingCoordinator};
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Auth;
 
-	use Suphle\Auth\RequestScrutinizers\AuthorizeMetaFunnel;
+use Suphle\Routing\{BaseCollection, PreMiddlewareRegistry, CollectionMetaFunnel, Decorators\HandlingCoordinator};
 
-	use Suphle\Response\Format\Json;
+use Suphle\Auth\RequestScrutinizers\AuthorizeMetaFunnel;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\EmploymentEditCoordinator;
+use Suphle\Response\Format\Json;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Authorization\Paths\{EmploymentEditRule, AdminRule};
+use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\EmploymentEditCoordinator;
 
-	#[HandlingCoordinator(EmploymentEditCoordinator::class)]
-	class UnlocksAuthorization1 extends BaseCollection {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Authorization\Paths\{EmploymentEditRule, AdminRule};
 
-		public function RETAIN () {
+#[HandlingCoordinator(EmploymentEditCoordinator::class)]
+class UnlocksAuthorization1 extends BaseCollection
+{
+    public function RETAIN()
+    {
 
-			$this->_httpGet(new Json("simpleResult"));
-		}
+        $this->_httpGet(new Json("simpleResult"));
+    }
 
-		public function ADDITIONAL__RULEh () {
+    public function ADDITIONAL__RULEh()
+    {
 
-			$this->_httpGet(new Json("simpleResult"));
-		}
+        $this->_httpGet(new Json("simpleResult"));
+    }
 
-		public function SECEDE () {
+    public function SECEDE()
+    {
 
-			$this->_httpGet(new Json("simpleResult"));
-		}
+        $this->_httpGet(new Json("simpleResult"));
+    }
 
-		public function GMULTI__EDITh_id () {
+    public function GMULTI__EDITh_id()
+    {
 
-			$this->_httpGet(new Json("getEmploymentDetails"));
-		}
+        $this->_httpGet(new Json("getEmploymentDetails"));
+    }
 
-		public function GMULTI__EDIT__UNAUTHh () {
+    public function GMULTI__EDIT__UNAUTHh()
+    {
 
-			$this->_httpGet(new Json("getEmploymentDetails"));
-		}
+        $this->_httpGet(new Json("getEmploymentDetails"));
+    }
 
-		public function PMULTI__EDITh_id () {
+    public function PMULTI__EDITh_id()
+    {
 
-			$this->_httpPut(new Json("updateEmploymentDetails"));
-		}
+        $this->_httpPut(new Json("updateEmploymentDetails"));
+    }
 
-		public function _preMiddleware (PreMiddlewareRegistry $registry):void {
+    public function _preMiddleware(PreMiddlewareRegistry $registry): void
+    {
 
-			$registry->tagPatterns(
+        $registry->tagPatterns(
+            new AuthorizeMetaFunnel(["GMULTI__EDITh_id"], EmploymentEditRule::class)
+        )
+        ->removeTag([
 
-				new AuthorizeMetaFunnel(["GMULTI__EDITh_id"], EmploymentEditRule::class)
-			)
-			->removeTag([
+            "SECEDE", "GMULTI__EDIT__UNAUTHh"
+        ], AuthorizeMetaFunnel::class, function (AuthorizeMetaFunnel $collector) {
 
-				"SECEDE", "GMULTI__EDIT__UNAUTHh"
-			], AuthorizeMetaFunnel::class, function (AuthorizeMetaFunnel $collector) {
-
-				return $collector->ruleClass == AdminRule::class;
-			});
-		}
-	}
-?>
+            return $collector->ruleClass == AdminRule::class;
+        });
+    }
+}

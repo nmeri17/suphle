@@ -1,26 +1,28 @@
 <?php
-	namespace Suphle\Middleware\Handlers;
 
-	use Suphle\Contracts\{Presentation\BaseRenderer, Routing\Middleware, Response\RendererManager};
+namespace Suphle\Middleware\Handlers;
 
-	use Suphle\Middleware\MiddlewareNexts;
+use Suphle\Contracts\{Presentation\BaseRenderer, Routing\Middleware, Response\RendererManager};
 
-	use Suphle\Request\PayloadStorage;
+use Suphle\Middleware\MiddlewareNexts;
 
-	class FinalHandlerWrapper implements Middleware {
+use Suphle\Request\PayloadStorage;
 
-		public function __construct (protected readonly RendererManager $rendererManager) {
+class FinalHandlerWrapper implements Middleware
+{
+    public function __construct(protected readonly RendererManager $rendererManager)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function process (PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler):BaseRenderer {
+    public function process(PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler): BaseRenderer
+    {
 
-			$this->rendererManager->handleValidRequest($payloadStorage);
+        $this->rendererManager->handleValidRequest($payloadStorage);
 
-			$this->rendererManager->afterRender();
+        $this->rendererManager->afterRender();
 
-			return $this->rendererManager->responseRenderer();
-		}
-	}
-?>
+        return $this->rendererManager->responseRenderer();
+    }
+}

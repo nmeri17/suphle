@@ -1,184 +1,202 @@
 <?php
-	namespace Suphle\Modules;
 
-	use Suphle\Contracts\Modules\{DescriptorInterface, ControllerModule};
+namespace Suphle\Modules;
 
-	use Suphle\Contracts\{Hydration\InterfaceCollection, Database\OrmDialect};
+use Suphle\Contracts\Modules\{DescriptorInterface, ControllerModule};
 
-	use Suphle\Hydration\{Container, ExternalPackageManagerHydrator};
+use Suphle\Contracts\{Hydration\InterfaceCollection, Database\OrmDialect};
 
-	use Suphle\Hydration\Structures\{BaseInterfaceCollection, ContainerBooter, ObjectDetails};
+use Suphle\Hydration\{Container, ExternalPackageManagerHydrator};
 
-	use Suphle\Exception\Explosives\DevError\UnexpectedModules;
+use Suphle\Hydration\Structures\{BaseInterfaceCollection, ContainerBooter, ObjectDetails};
 
-	abstract class ModuleDescriptor implements DescriptorInterface {
+use Suphle\Exception\Explosives\DevError\UnexpectedModules;
 
-		protected array $expatriates = [];
+abstract class ModuleDescriptor implements DescriptorInterface
+{
+    protected array $expatriates = [];
 
-		protected bool $hasPreparedExpatriates = false;
+    protected bool $hasPreparedExpatriates = false;
 
-		public function __construct (protected readonly Container $container) {
-			
-			//
-		}
+    public function __construct(protected readonly Container $container)
+    {
 
-		/**
-		 * @param {dependencies} [Interactions\Interface => new ModuleDescriptor]
-		*/
-		public function sendExpatriates(array $dependencies):DescriptorInterface {
+        //
+    }
 
-			$this->expatriates = $dependencies;
+    /**
+     * @param {dependencies} [Interactions\Interface => new ModuleDescriptor]
+    */
+    public function sendExpatriates(array $dependencies): DescriptorInterface
+    {
 
-			return $this;
-		}
+        $this->expatriates = $dependencies;
 
-		/**
-		 * @return Interfaces implemented by sibling modules that this module requires to function
-		*/
-		public function expatriateNames ():array {
+        return $this;
+    }
 
-			return [];
-		}
+    /**
+     * @return Interfaces implemented by sibling modules that this module requires to function
+    */
+    public function expatriateNames(): array
+    {
 
-		public function materialize () {
+        return [];
+    }
 
-			return $this->container->getClass($this->exportsImplements());
-		}
+    public function materialize()
+    {
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function exportsImplements ():string {
+        return $this->container->getClass($this->exportsImplements());
+    }
 
-			return ControllerModule::class;
-		}
+    /**
+     * {@inheritdoc}
+    */
+    public function exportsImplements(): string
+    {
 
-		/**
-		 * Binding is unnecessary here. Just return the pairs
-		*/
-		public function globalConcretes ():array {
+        return ControllerModule::class;
+    }
 
-			return [];
-		}
+    /**
+     * Binding is unnecessary here. Just return the pairs
+    */
+    public function globalConcretes(): array
+    {
 
-		/**
-		 * Bind objects to all or specific consumers. Or, trigger a component's booting by pulling it from the container
-		*/
-		protected function registerConcreteBindings ():void {
+        return [];
+    }
 
-			$bindings = $this->globalConcretes();
+    /**
+     * Bind objects to all or specific consumers. Or, trigger a component's booting by pulling it from the container
+    */
+    protected function registerConcreteBindings(): void
+    {
 
-			$this->container->whenTypeAny()->needsAny($bindings)
+        $bindings = $this->globalConcretes();
 
-			->getClass(OrmDialect::class); // without forcing an ORM hydration using our config, this module's laravel container will create a random, unconfigured db accessor object that will take the place of any existing connection
-		}
+        $this->container->whenTypeAny()->needsAny($bindings)
 
-		public function getContainer():Container {
-			
-			return $this->container;
-		}
+        ->getClass(OrmDialect::class); // without forcing an ORM hydration using our config, this module's laravel container will create a random, unconfigured db accessor object that will take the place of any existing connection
+    }
 
-		/**
-		 * @return Class implementing InterfaceCollection
-		*/
-		public function interfaceCollection ():string {
+    public function getContainer(): Container
+    {
 
-			return BaseInterfaceCollection::class;
-		}
+        return $this->container;
+    }
 
-		public function warmModuleContainer ():void {
+    /**
+     * @return Class implementing InterfaceCollection
+    */
+    public function interfaceCollection(): string
+    {
 
-			(new ContainerBooter($this->container ))
+        return BaseInterfaceCollection::class;
+    }
 
-			->initializeContainer($this->interfaceCollection());
-		}
+    public function warmModuleContainer(): void
+    {
 
-		public function getExpatriates ():array {
+        (new ContainerBooter($this->container))
 
-			$this->validateExpatriates();
+        ->initializeContainer($this->interfaceCollection());
+    }
 
-			$expatriates = array_filter($this->expatriates, function ($descriptor) {
+    public function getExpatriates(): array
+    {
 
-				return !$descriptor->expatriateHasPreparedExpatriates(); // prevent multiple boots
-			});
+        $this->validateExpatriates();
 
-			return $expatriates;
-		}
+        $expatriates = array_filter($this->expatriates, function ($descriptor) {
 
-		// this should be on an [ExpatriateManager], but that'll make all the loaded descriptors create new instances of that class
-		protected function validateExpatriates ():void {
+            return !$descriptor->expatriateHasPreparedExpatriates(); // prevent multiple boots
+        });
 
-			$this->deportUnexpected();
+        return $expatriates;
+    }
 
-			$this->assignModuleShells();
-		}
+    // this should be on an [ExpatriateManager], but that'll make all the loaded descriptors create new instances of that class
+    protected function validateExpatriates(): void
+    {
 
-		public function expatriateHasPreparedExpatriates ():bool {
+        $this->deportUnexpected();
 
-			return $this->hasPreparedExpatriates;
-		}
+        $this->assignModuleShells();
+    }
 
-		/**
-		 * Doesn't do any hydration; just statically verifies that both lists are compatible
-		*/
-		private function deportUnexpected ():void {
+    public function expatriateHasPreparedExpatriates(): bool
+    {
 
-			$given = array_keys($this->expatriates);
+        return $this->hasPreparedExpatriates;
+    }
 
-			$expected = $this->expatriateNames();
+    /**
+     * Doesn't do any hydration; just statically verifies that both lists are compatible
+    */
+    private function deportUnexpected(): void
+    {
 
-			$objectMeta = $this->container->getClass(ObjectDetails::class);
+        $given = array_keys($this->expatriates);
 
-			$expectedAbsent = array_filter($expected, function ($descriptorName) use ( $objectMeta) {
+        $expected = $this->expatriateNames();
 
-				foreach ($this->expatriates as $descriptor) {
+        $objectMeta = $this->container->getClass(ObjectDetails::class);
 
-					if ($objectMeta->stringInClassTree(
+        $expectedAbsent = array_filter($expected, function ($descriptorName) use ($objectMeta) {
 
-						$descriptor->exportsImplements(), $descriptorName
-					))
+            foreach ($this->expatriates as $descriptor) {
 
-						return false;
-				}
+                if ($objectMeta->stringInClassTree(
+                    $descriptor->exportsImplements(),
+                    $descriptorName
+                )) {
 
-				return true;
-			});
+                    return false;
+                }
+            }
 
-			$surplus = array_diff($given, $expected);
+            return true;
+        });
 
-			$incompatible = array_merge($expectedAbsent, $surplus);
+        $surplus = array_diff($given, $expected);
 
-			if (!empty($incompatible))
+        $incompatible = array_merge($expectedAbsent, $surplus);
 
-				throw new UnexpectedModules($incompatible, static::class);
-		}
+        if (!empty($incompatible)) {
 
-		private function assignModuleShells ():void {
+            throw new UnexpectedModules($incompatible, static::class);
+        }
+    }
 
-			$collection = $this->container->getClass($this->interfaceCollection());
+    private function assignModuleShells(): void
+    {
 
-			$collection->delegateHydrants ($this->expatriates);
-		}
+        $collection = $this->container->getClass($this->interfaceCollection());
 
-		/**
-		 * It expects [warmModuleContainer] to have been called first. Both calls aren't coupled together cuz both processes can occur at different times
-		*/
-		public function prepareToRun ():self {
+        $collection->delegateHydrants($this->expatriates);
+    }
 
-			if ($this->hasPreparedExpatriates)
+    /**
+     * It expects [warmModuleContainer] to have been called first. Both calls aren't coupled together cuz both processes can occur at different times
+    */
+    public function prepareToRun(): self
+    {
 
-				return $this; // avoid overwriting booted bindings
+        if ($this->hasPreparedExpatriates) {
 
-			$this->registerConcreteBindings(); // this has to come first, since it contains instances crucial to hydration of core objects
+            return $this;
+        } // avoid overwriting booted bindings
 
-			$this->container->setExternalContainerManager(
+        $this->registerConcreteBindings(); // this has to come first, since it contains instances crucial to hydration of core objects
 
-				new ExternalPackageManagerHydrator($this->container)
-			);
+        $this->container->setExternalContainerManager(
+            new ExternalPackageManagerHydrator($this->container)
+        );
 
-			$this->hasPreparedExpatriates = true;
+        $this->hasPreparedExpatriates = true;
 
-			return $this;
-		}
-	}
-?>
+        return $this;
+    }
+}

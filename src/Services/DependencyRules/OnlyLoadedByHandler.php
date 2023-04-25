@@ -1,33 +1,35 @@
 <?php
-	namespace Suphle\Services\DependencyRules;
 
-	use Suphle\Hydration\Container;
+namespace Suphle\Services\DependencyRules;
 
-	use Suphle\Exception\Explosives\DevError\UnacceptableDependency;
+use Suphle\Hydration\Container;
 
-	class OnlyLoadedByHandler extends BaseDependencyHandler {
+use Suphle\Exception\Explosives\DevError\UnacceptableDependency;
 
-		public function evaluateClass (string $className):void {
+class OnlyLoadedByHandler extends BaseDependencyHandler
+{
+    public function evaluateClass(string $className): void
+    {
 
-			foreach ($this->constructorDependencyTypes($className) as $dependencyType) {
-					
-				if (
-					$this->objectMeta->stringInClassTree(
+        foreach ($this->constructorDependencyTypes($className) as $dependencyType) {
 
-						$dependencyType, $this->argumentList[0]
-					) &&
+            if (
+                $this->objectMeta->stringInClassTree(
+                    $dependencyType,
+                    $this->argumentList[0]
+                ) &&
 
-					!$this->isPermittedParent(
+                !$this->isPermittedParent(
+                    $this->argumentList[1],
+                    $dependencyType
+                )
+            ) {
 
-						$this->argumentList[1], $dependencyType
-					)
-				)
-
-					throw new UnacceptableDependency (
-
-						$className, $dependencyType
-					);
-			}
-		}
-	}
-?>
+                throw new UnacceptableDependency(
+                    $className,
+                    $dependencyType
+                );
+            }
+        }
+    }
+}

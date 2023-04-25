@@ -1,15 +1,16 @@
 <?php
-	namespace Suphle\Routing\Structures;
 
-	use Suphle\Routing\CollectionMetaFunnel;
+namespace Suphle\Routing\Structures;
 
-	trait ReceivesMetaFunnel {
+use Suphle\Routing\CollectionMetaFunnel;
 
-		protected array $metaFunnels = [];
+trait ReceivesMetaFunnel
+{
+    protected array $metaFunnels = [];
 
-		public function addMetaFunnel (CollectionMetaFunnel $metaFunnel):void {
+    public function addMetaFunnel(CollectionMetaFunnel $metaFunnel): void
+    {
 
-			$this->metaFunnels[] = $metaFunnel;
-		}
-	}
-?>
+        $this->metaFunnels[] = $metaFunnel;
+    }
+}

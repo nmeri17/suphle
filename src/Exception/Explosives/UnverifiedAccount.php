@@ -1,13 +1,14 @@
 <?php
-	namespace Suphle\Exception\Explosives;
 
-	use Exception;
+namespace Suphle\Exception\Explosives;
 
-	class UnverifiedAccount extends Exception {
+use Exception;
 
-		public function __construct (public readonly string $verificationUrl) {
+class UnverifiedAccount extends Exception
+{
+    public function __construct(public readonly string $verificationUrl)
+    {
 
-			//
-		}
-	}
-?>
+        //
+    }
+}

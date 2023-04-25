@@ -1,17 +1,18 @@
 <?php
-	namespace Suphle\Response;
 
-	use Suphle\Contracts\Presentation\BaseRenderer;
+namespace Suphle\Response;
 
-	use Suphle\Request\RequestDetails;
+use Suphle\Contracts\Presentation\BaseRenderer;
 
-	use Suphle\Response\Format\Json;
+use Suphle\Request\RequestDetails;
 
-	trait SetJsonValidationError {
+use Suphle\Response\Format\Json;
 
-		public function shouldSetCode (RequestDetails $requestDetails, BaseRenderer $renderer):bool {
+trait SetJsonValidationError
+{
+    public function shouldSetCode(RequestDetails $requestDetails, BaseRenderer $renderer): bool
+    {
 
-			return $requestDetails->isApiRoute() || $renderer instanceof Json;
-		}
-	}
-?>
+        return $requestDetails->isApiRoute() || $renderer instanceof Json;
+    }
+}

@@ -1,20 +1,18 @@
 <?php
-	namespace Suphle\Auth\RequestScrutinizers;
 
-	use Suphle\Contracts\Auth\AuthStorage;
+namespace Suphle\Auth\RequestScrutinizers;
 
-	use Suphle\Routing\CollectionMetaFunnel;
+use Suphle\Contracts\Auth\AuthStorage;
 
-	class AuthenticateMetaFunnel extends CollectionMetaFunnel {
+use Suphle\Routing\CollectionMetaFunnel;
 
-		public function __construct (
+class AuthenticateMetaFunnel extends CollectionMetaFunnel
+{
+    public function __construct(
+        protected readonly array $activePatterns,
+        public readonly AuthStorage $authStorage
+    ) {
 
-			protected readonly array $activePatterns,
-
-			public readonly AuthStorage $authStorage
-		) {
-
-			//
-		}
-	}
-?>
+        //
+    }
+}

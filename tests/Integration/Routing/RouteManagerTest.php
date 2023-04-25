@@ -1,38 +1,40 @@
 <?php
-	namespace Suphle\Tests\Integration\Routing;
 
-	class RouteManagerTest extends TestsRouter {
+namespace Suphle\Tests\Integration\Routing;
 
-		/**
-		 * @dataProvider pathsToHandler
-		*/
-		public function test_route_matching ( string $handler, string $requestPath) {
+class RouteManagerTest extends TestsRouter
+{
+    /**
+     * @dataProvider pathsToHandler
+    */
+    public function test_route_matching(string $handler, string $requestPath)
+    {
 
-			$matchingRenderer = $this->fakeRequest($requestPath);
+        $matchingRenderer = $this->fakeRequest($requestPath);
 
-			$this->assertNotNull($matchingRenderer);
-			
-			// var_dump($matchingRenderer->getPath(), $requestPath, 30);
+        $this->assertNotNull($matchingRenderer);
 
-			$this->assertTrue($matchingRenderer->matchesHandler($handler));
-		}
+        // var_dump($matchingRenderer->getPath(), $requestPath, 30);
 
-		public function pathsToHandler ():array {
+        $this->assertTrue($matchingRenderer->matchesHandler($handler));
+    }
 
-			return [
-				[ "indexHandler", "/"],
+    public function pathsToHandler(): array
+    {
 
-				[ "plainSegment", "/segment"],
-				[ "plainSegment", "/segment/"],
+        return [
+            [ "indexHandler", "/"],
 
-				[ "simplePair", "/segment/5"],
-				[ "simplePair", "/segment/5/"],
+            [ "plainSegment", "/segment"],
+            [ "plainSegment", "/segment/"],
 
-				[ "hyphenatedSegments", "/segment-segment/5"],
-				[ "hyphenatedSegments", "/segment-segment/5/"],
+            [ "simplePair", "/segment/5"],
+            [ "simplePair", "/segment/5/"],
 
-				[ "underscoredSegments", "/segment_segment/5"]
-			];
-		}
-	}
-?>
+            [ "hyphenatedSegments", "/segment-segment/5"],
+            [ "hyphenatedSegments", "/segment-segment/5/"],
+
+            [ "underscoredSegments", "/segment_segment/5"]
+        ];
+    }
+}

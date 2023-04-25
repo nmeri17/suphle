@@ -1,33 +1,36 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Prefix;
 
-	use Suphle\Routing\{BaseCollection, PreMiddlewareRegistry, Decorators\HandlingCoordinator};
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Prefix;
 
-	use Suphle\Auth\RequestScrutinizers\AuthenticateMetaFunnel;
+use Suphle\Routing\{BaseCollection, PreMiddlewareRegistry, Decorators\HandlingCoordinator};
 
-	use Suphle\Response\Format\Json;
+use Suphle\Auth\RequestScrutinizers\AuthenticateMetaFunnel;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\MixedNestedSecuredController;
+use Suphle\Response\Format\Json;
 
-	#[HandlingCoordinator(MixedNestedSecuredController::class)]
-	class UnchainParentSecurity extends BaseCollection {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\MixedNestedSecuredController;
 
-		public function _preMiddleware (PreMiddlewareRegistry $registry):void {
+#[HandlingCoordinator(MixedNestedSecuredController::class)]
+class UnchainParentSecurity extends BaseCollection
+{
+    public function _preMiddleware(PreMiddlewareRegistry $registry): void
+    {
 
-			$registry->removeTag(
+        $registry->removeTag(
+            ["UNLINK"],
+            AuthenticateMetaFunnel::class
+        );
+    }
 
-				["UNLINK"], AuthenticateMetaFunnel::class
-			);
-		}
-		
-		public function UNLINK () {
-			
-			$this->_httpGet(new Json("handleUnlinked"));
-		}
-		
-		public function RETAIN__AUTHh () {
-			
-			$this->_httpGet(new Json("handleRetained"));
-		}
-	}
-?>
+    public function UNLINK()
+    {
+
+        $this->_httpGet(new Json("handleUnlinked"));
+    }
+
+    public function RETAIN__AUTHh()
+    {
+
+        $this->_httpGet(new Json("handleRetained"));
+    }
+}

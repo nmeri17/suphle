@@ -1,40 +1,43 @@
 <?php
-	namespace Suphle\Tests\Integration\Routing\Nested;
 
-	use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
+namespace Suphle\Tests\Integration\Routing\Nested;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Prefix\Secured\UpperCollection, Meta\ModuleOneDescriptor, Config\RouterMock};
+use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
-	use Suphle\Contracts\Config\Router;
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Prefix\Secured\UpperCollection, Meta\ModuleOneDescriptor, Config\RouterMock};
 
-	class PatternIndicatorTest extends ModuleLevelTest {
+use Suphle\Contracts\Config\Router;
 
-		protected function getModules ():array {
+class PatternIndicatorTest extends ModuleLevelTest
+{
+    protected function getModules(): array
+    {
 
-			return [
+        return [
 
-				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-					$container->replaceWithMock(Router::class, RouterMock::class, [
+                $container->replaceWithMock(Router::class, RouterMock::class, [
 
-						"browserEntryRoute" => UpperCollection::class
-					]);
-				})
-			];
-		}
+                    "browserEntryRoute" => UpperCollection::class
+                ]);
+            })
+        ];
+    }
 
-		public function test_nested_route_can_unlink_auth () {
+    public function test_nested_route_can_unlink_auth()
+    {
 
-			$this->get("/prefix/unlink") // when
+        $this->get("/prefix/unlink") // when
 
-			->assertOk(); // then
-		}
+        ->assertOk(); // then
+    }
 
-		public function test_nested_route_accesses_parent_auth () {
+    public function test_nested_route_accesses_parent_auth()
+    {
 
-			$this->get("/prefix/retain-auth") // when
+        $this->get("/prefix/retain-auth") // when
 
-			->assertUnauthorized(); // then
-		}
-	}
-?>
+        ->assertUnauthorized(); // then
+    }
+}

@@ -1,10 +1,10 @@
 <?php
-	namespace Suphle\Contracts\Requests;
 
-	use Suphle\Request\PayloadStorage;
+namespace Suphle\Contracts\Requests;
 
-	interface RequestEventsListener {
+use Suphle\Request\PayloadStorage;
 
-		public function handleRefreshEvent (PayloadStorage $payloadStorage):void;
-	}
-?>
+interface RequestEventsListener
+{
+    public function handleRefreshEvent(PayloadStorage $payloadStorage): void;
+}

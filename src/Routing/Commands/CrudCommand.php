@@ -1,75 +1,79 @@
 <?php
-	namespace Suphle\Routing\Commands;
 
-	use Suphle\Console\BaseCliCommand;
+namespace Suphle\Routing\Commands;
 
-	use Suphle\Routing\Crud\ResourceBootstrapper;
+use Suphle\Console\BaseCliCommand;
 
-	use Symfony\Component\Console\{Output\OutputInterface, Command\Command};
+use Suphle\Routing\Crud\ResourceBootstrapper;
 
-	use Symfony\Component\Console\Input\{InputInterface, InputArgument, InputOption};
+use Symfony\Component\Console\{Output\OutputInterface, Command\Command};
 
-	use Throwable;
+use Symfony\Component\Console\Input\{InputInterface, InputArgument, InputOption};
 
-	class CrudCommand extends BaseCliCommand {
+use Throwable;
 
-		public const RESOURCE_NAME_ARGUMENT = "resource_name",
+class CrudCommand extends BaseCliCommand
+{
+    public const RESOURCE_NAME_ARGUMENT = "resource_name",
 
-		IS_API_OPTION = "is_api";
+    IS_API_OPTION = "is_api";
 
-		protected function configure ():void {
+    protected function configure(): void
+    {
 
-			parent::configure();
+        parent::configure();
 
-			$this->addArgument(
+        $this->addArgument(
+            self::RESOURCE_NAME_ARGUMENT,
+            InputArgument::REQUIRED,
+            "Name of resource e.g. Post"
+        );
 
-				self::RESOURCE_NAME_ARGUMENT, InputArgument::REQUIRED, "Name of resource e.g. Post"
-			);
+        $this->addOption(
+            self::IS_API_OPTION,
+            "i",
+            InputOption::VALUE_NONE,
+            "Dictates Coordinator type whether view files will be outputted"
+        );
+    }
 
-			$this->addOption(
-				self::IS_API_OPTION, "i",
+    public static function commandSignature(): string
+    {
 
-				InputOption::VALUE_NONE, "Dictates Coordinator type whether view files will be outputted"
-			);
-		}
+        return "route:crud";
+    }
 
-		public static function commandSignature ():string {
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
 
-			return "route:crud";
-		}
+        $resourceName = $input->getArgument(self::RESOURCE_NAME_ARGUMENT);
 
-		protected function execute (InputInterface $input, OutputInterface $output):int {
+        $bootstrapperService = $this->getExecutionContainer(
+            $input->getOption(self::HYDRATOR_MODULE_OPTION)
+        )->getClass(ResourceBootstrapper::class);
 
-			$resourceName = $input->getArgument(self::RESOURCE_NAME_ARGUMENT);
+        try {
 
-			$bootstrapperService = $this->getExecutionContainer(
+            if (!$bootstrapperService->outputResourceTemplates(
+                $resourceName,
+                $input->getOption(self::IS_API_OPTION)
+            )
+            ) {
+                return Command::FAILURE;
+            }
 
-				$input->getOption(self::HYDRATOR_MODULE_OPTION)
-			)->getClass(ResourceBootstrapper::class);
+            $output->writeln("Elements for Resource '$resourceName' outputted successfully");
 
-			try {
+            return Command::SUCCESS;
+        } catch (Throwable $exception) {
 
-				if (!$bootstrapperService->outputResourceTemplates(
+            $exceptionOutput = "Unable to output elements for resource '$resourceName':\n". $exception;
 
-						$resourceName, $input->getOption(self::IS_API_OPTION)
-					)
-				)
-					return Command::FAILURE;
+            echo($exceptionOutput); // leaving this in since writeln doesn't work in tests
 
-				$output->writeln("Elements for Resource '$resourceName' outputted successfully");
+            $output->writeln($exceptionOutput);
 
-				return Command::SUCCESS;
-			}
-			catch (Throwable $exception) {
-
-				$exceptionOutput = "Unable to output elements for resource '$resourceName':\n". $exception;
-
-				echo( $exceptionOutput); // leaving this in since writeln doesn't work in tests
-				
-				$output->writeln($exceptionOutput);
-
-				return Command::INVALID;
-			}
-		}
-	}
-?>
+            return Command::INVALID;
+        }
+    }
+}

@@ -1,22 +1,24 @@
 <?php
-	namespace Suphle\IO\Cache;
 
-	use Suphle\Contracts\IO\EnvAccessor;
+namespace Suphle\IO\Cache;
 
-	use Suphle\Hydration\BaseInterfaceLoader;
+use Suphle\Contracts\IO\EnvAccessor;
 
-	use Suphle\Adapters\Cache\PredisAdapter;
+use Suphle\Hydration\BaseInterfaceLoader;
 
-	class AdapterLoader extends BaseInterfaceLoader {
+use Suphle\Adapters\Cache\PredisAdapter;
 
-		public function afterBind ($initialized):void {
+class AdapterLoader extends BaseInterfaceLoader
+{
+    public function afterBind($initialized): void
+    {
 
-			$initialized->setupClient();
-		}
+        $initialized->setupClient();
+    }
 
-		public function concreteName ():string {
+    public function concreteName(): string
+    {
 
-			return PredisAdapter::class;
-		}
-	}
-?>
+        return PredisAdapter::class;
+    }
+}

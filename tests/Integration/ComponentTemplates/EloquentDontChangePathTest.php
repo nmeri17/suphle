@@ -1,89 +1,97 @@
 <?php
-	namespace Suphle\Tests\Integration\ComponentTemplates;
 
-	use Suphle\Contracts\Config\{ComponentTemplates, Database};
+namespace Suphle\Tests\Integration\ComponentTemplates;
 
-	use Suphle\File\FolderCloner;
+use Suphle\Contracts\Config\{ComponentTemplates, Database};
 
-	use Suphle\Hydration\Container;
+use Suphle\File\FolderCloner;
 
-	use Suphle\ComponentTemplates\{ComponentEjector, Commands\InstallComponentCommand};
+use Suphle\Hydration\Container;
 
-	use Suphle\Adapters\Orms\Eloquent\ComponentEntry as EloquentComponentEntry;
+use Suphle\ComponentTemplates\{ComponentEjector, Commands\InstallComponentCommand};
 
-	use Suphle\Testing\{ TestTypes\InstallComponentTest, Proxies\WriteOnlyContainer};
+use Suphle\Adapters\Orms\Eloquent\ComponentEntry as EloquentComponentEntry;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
+use Suphle\Testing\{ TestTypes\InstallComponentTest, Proxies\WriteOnlyContainer};
 
-	use Suphle\Tests\Mocks\Interactions\ModuleOne;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
-	class EloquentDontChangePathTest extends InstallComponentTest {
+use Suphle\Tests\Mocks\Interactions\ModuleOne;
 
-		protected function getModules ():array {
+class EloquentDontChangePathTest extends InstallComponentTest
+{
+    protected function getModules(): array
+    {
 
-			return [
-				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+        return [
+            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-					$config = ComponentTemplates::class;
+                $config = ComponentTemplates::class;
 
-					$container->replaceWithMock($config, $config, [
+                $container->replaceWithMock($config, $config, [
 
-						"getTemplateEntries" => [
+                    "getTemplateEntries" => [
 
-							$this->componentEntry()
-						]
-					]);
-				})
-			];
-		}
+                        $this->componentEntry()
+                    ]
+                ]);
+            })
+        ];
+    }
 
-		protected function componentEntry ():string {
+    protected function componentEntry(): string
+    {
 
-			return EloquentComponentEntry::class;
-		}
+        return EloquentComponentEntry::class;
+    }
 
-		protected function getCommandOptions (array $otherOverrides = []):array {
+    protected function getCommandOptions(array $otherOverrides = []): array
+    {
 
-			return array_merge([
+        return array_merge([
 
-				InstallComponentCommand::HYDRATOR_MODULE_OPTION => ModuleOne::class,
+            InstallComponentCommand::HYDRATOR_MODULE_OPTION => ModuleOne::class,
 
-				"--" .InstallComponentCommand::OVERWRITE_OPTION => [null] // without this, it won't try to eject
-			], $otherOverrides);
-		}
+            "--" .InstallComponentCommand::OVERWRITE_OPTION => [null] // without this, it won't try to eject
+        ], $otherOverrides);
+    }
 
-		protected function componentIsInstalled ():bool { // prevent it from overwriting our contents
+    protected function componentIsInstalled(): bool // prevent it from overwriting our contents
+    {return false;
+    }
 
-			return false;
-		}
+    public function test_writes_to_default_component_path()
+    {
 
-		public function test_writes_to_default_component_path () {
+        $ejectorName = FolderCloner::class;
 
-			$ejectorName = FolderCloner::class;
+        $this->massProvide([
 
-			$this->massProvide([
+            $ejectorName => $this->replaceConstructorArguments(
+                $ejectorName,
+                [],
+                [],
+                [
 
-				$ejectorName => $this->replaceConstructorArguments(
-					$ejectorName, [], [], [
+                "transferFolder" => [1, [ // then
 
-					"transferFolder" => [1, [ // then
+                    $this->anything(),
 
-						$this->anything(),
+                    $this->getDefaultInstallLocation()
+                ]]
+                ]
+            )
+        ]);
 
-						$this->getDefaultInstallLocation()
-					]]
-				])
-			]);
+        // when
+        $this->assertInstalledComponent($this->getCommandOptions(), true);
+    }
 
-			// when
-			$this->assertInstalledComponent($this->getCommandOptions(), true);
-		}
+    protected function getDefaultInstallLocation(): string
+    {
 
-		protected function getDefaultInstallLocation ():string {
+        return $this->getContainer()->getClass(Database::class)
 
-			return $this->getContainer()->getClass(Database::class)
-
-			->componentInstallPath();
-		}
-	}
-?>
+        ->componentInstallPath();
+    }
+}

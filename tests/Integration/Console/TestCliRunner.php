@@ -1,43 +1,43 @@
 <?php
-	namespace Suphle\Tests\Integration\Console;
 
-	use Suphle\Contracts\Config\Console;
+namespace Suphle\Tests\Integration\Console;
 
-	use Suphle\Testing\{TestTypes\CommandLineTest, Proxies\WriteOnlyContainer};
+use Suphle\Contracts\Config\Console;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Commands\AltersConcreteCommand, Concretes\BCounter};
+use Suphle\Testing\{TestTypes\CommandLineTest, Proxies\WriteOnlyContainer};
 
-	use Suphle\Tests\Mocks\Modules\ModuleTwo\Meta\ModuleTwoDescriptor;
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Commands\AltersConcreteCommand, Concretes\BCounter};
 
-	use Symfony\Component\Console\Tester\CommandTester;
+use Suphle\Tests\Mocks\Modules\ModuleTwo\Meta\ModuleTwoDescriptor;
 
-	abstract class TestCliRunner extends CommandLineTest {
+use Symfony\Component\Console\Tester\CommandTester;
 
-		protected string $sutName = AltersConcreteCommand::class,
+abstract class TestCliRunner extends CommandLineTest
+{
+    protected string $sutName = AltersConcreteCommand::class;
+    protected string $bCounter = BCounter::class;
 
-  		$bCounter = BCounter::class;
+    protected function runAltersConcrete(): int
+    {
 
-		protected function runAltersConcrete ():int {
+        $command = $this->consoleRunner->findHandler(
+            AltersConcreteCommand::commandSignature()
+        );
 
-			$command = $this->consoleRunner->findHandler(
+        $commandTester = new CommandTester($command);
 
-				AltersConcreteCommand::commandSignature()
-			);
+        return $commandTester->execute([
 
-			$commandTester = new CommandTester($command);
+            AltersConcreteCommand::NEW_VALUE_ARGUMENT => 8
+        ]);
+    }
 
-			return $commandTester->execute([
+    protected function mockBCounter(int $numTimes): BCounter
+    {
 
-				AltersConcreteCommand::NEW_VALUE_ARGUMENT => 8
-			]);
-		}
+        return $this->positiveDouble($this->bCounter, [], [
 
-		protected function mockBCounter (int $numTimes):BCounter {
-		
-			return $this->positiveDouble($this->bCounter, [], [
-
-				"setCount" => [$numTimes, [$this->anything()]]
-			]);
-		}
-	}
-?>
+            "setCount" => [$numTimes, [$this->anything()]]
+        ]);
+    }
+}

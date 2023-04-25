@@ -1,10 +1,10 @@
 <?php
-	namespace Suphle\Modules;
 
-	use Suphle\Contracts\App\ControllerModule;
+namespace Suphle\Modules;
 
-	class ControllerModuleApi implements ControllerModule {
+use Suphle\Contracts\App\ControllerModule;
 
-		//
-	}
-?>
+class ControllerModuleApi implements ControllerModule
+{
+    //
+}

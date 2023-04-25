@@ -1,18 +1,20 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\SubServiceLocation;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\BCounter;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\SubServiceLocation;
 
-	class UnknownUserLandHydrator extends HydratorConsumer {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\BCounter;
 
-		public function getParentsBCounter ():BCounter {
+class UnknownUserLandHydrator extends HydratorConsumer
+{
+    public function getParentsBCounter(): BCounter
+    {
 
-			return $this->container->getClass(BCounter::class, true);
-		}
+        return $this->container->getClass(BCounter::class, true);
+    }
 
-		public function getSelfBCounter ():BCounter {
+    public function getSelfBCounter(): BCounter
+    {
 
-			return $this->container->getClass(BCounter::class); // unable to see x or y
-		}
-	}
-?>
+        return $this->container->getClass(BCounter::class); // unable to see x or y
+    }
+}

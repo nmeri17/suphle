@@ -1,108 +1,114 @@
 <?php
-	namespace Suphle\Tests\Integration\ComponentTemplates;
 
-	use Suphle\Contracts\Config\ComponentTemplates;
+namespace Suphle\Tests\Integration\ComponentTemplates;
 
-	use Suphle\Hydration\Container;
+use Suphle\Contracts\Config\ComponentTemplates;
 
-	use Suphle\ComponentTemplates\Commands\InstallComponentCommand;
+use Suphle\Hydration\Container;
 
-	use Suphle\Adapters\Orms\Eloquent\ComponentEntry as EloquentComponentEntry;
+use Suphle\ComponentTemplates\Commands\InstallComponentCommand;
 
-	use Suphle\Testing\{TestTypes\CommandLineTest, Proxies\WriteOnlyContainer};
+use Suphle\Adapters\Orms\Eloquent\ComponentEntry as EloquentComponentEntry;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
+use Suphle\Testing\{TestTypes\CommandLineTest, Proxies\WriteOnlyContainer};
 
-	use Suphle\Tests\Mocks\Interactions\ModuleOne;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
-	use Symfony\Component\Console\{Command\Command, Tester\CommandTester};
+use Suphle\Tests\Mocks\Interactions\ModuleOne;
 
-	class GenericComponentTest extends CommandLineTest {
+use Symfony\Component\Console\{Command\Command, Tester\CommandTester};
 
-		protected array $treasuredComponents = [
+class GenericComponentTest extends CommandLineTest
+{
+    protected array $treasuredComponents = [
 
-			EloquentComponentEntry::class
-		];
+        EloquentComponentEntry::class
+    ];
 
-		protected ?array $componentList = null;
+    protected ?array $componentList = null;
 
-		protected function getModules ():array {
+    protected function getModules(): array
+    {
 
-			return [new ModuleOneDescriptor(new Container)];
-		}
+        return [new ModuleOneDescriptor(new Container())];
+    }
 
-		public function test_can_install_all_components () {
+    public function test_can_install_all_components()
+    {
 
-			$config = ComponentTemplates::class;
+        $config = ComponentTemplates::class;
 
-			$this->massProvide([ // given
+        $this->massProvide([ // given
 
-				$config => $this->positiveDouble($config, [
+            $config => $this->positiveDouble($config, [
 
-					"getTemplateEntries" => $this->getComponentList()
-				])
-			]);
+                "getTemplateEntries" => $this->getComponentList()
+            ])
+        ]);
 
-			$command = $this->consoleRunner->findHandler(
+        $command = $this->consoleRunner->findHandler(
+            InstallComponentCommand::commandSignature()
+        );
 
-				InstallComponentCommand::commandSignature()
-			);
+        $result = (new CommandTester($command))
 
-			$result = (new CommandTester($command))
+        ->execute([ // when
 
-			->execute([ // when
+            InstallComponentCommand::HYDRATOR_MODULE_OPTION => ModuleOne::class
+        ]);
 
-				InstallComponentCommand::HYDRATOR_MODULE_OPTION => ModuleOne::class
-			]);
+        $this->assertSame(Command::SUCCESS, $result); // sanity check
 
-			$this->assertSame(Command::SUCCESS, $result); // sanity check
+        $this->assertInstalledAll();
+    }
 
-			$this->assertInstalledAll();
-		}
+    protected function getComponentList(): array
+    {
 
-		protected function getComponentList ():array {
+        if (!is_null($this->componentList)) {
 
-			if (!is_null($this->componentList))
+            return $this->componentList;
+        }
 
-				return $this->componentList;
+        $defaultList = $this->getContainer()->getClass(ComponentTemplates::class)
 
-			$defaultList = $this->getContainer()->getClass(ComponentTemplates::class)
+        ->getTemplateEntries();
 
-			->getTemplateEntries();
+        foreach ($this->treasuredComponents as $entryName) {
 
-			foreach ($this->treasuredComponents as $entryName) {
+            $index = array_search($entryName, $defaultList);
 
-				$index = array_search($entryName, $defaultList);
+            if ($index !== false) {
+                unset($defaultList[$index]);
+            }
+        }
 
-				if ($index !== false) unset($defaultList[$index]);
-			}
+        return $this->componentList = $defaultList;
+    }
 
-			return $this->componentList = $defaultList;
-		}
+    protected function assertInstalledAll(): void
+    {
 
-		protected function assertInstalledAll ():void {
+        $this->assertSame( // then
 
-			$this->assertSame( // then
+            count($this->getComponentList()),
+            count($this->getInstalledComponents())
+        );
+    }
 
-				count($this->getComponentList()),
+    protected function getInstalledComponents(): array
+    {
 
-				count($this->getInstalledComponents())
-			);
-		}
+        $container = $this->getContainer();
 
-		protected function getInstalledComponents ():array {
+        $componentInstances = array_map(function ($entry) use ($container) {
 
-			$container = $this->getContainer();
+            return $container->getClass($entry);
+        }, $this->getComponentList());
 
-			$componentInstances = array_map(function ($entry) use ($container) {
+        return array_filter($componentInstances, function ($entry) {
 
-				return $container->getClass($entry);
-			}, $this->getComponentList());
-
-			return array_filter($componentInstances, function ($entry) {
-
-				return $entry->hasBeenEjected();
-			});
-		}
-	}
-?>
+            return $entry->hasBeenEjected();
+        });
+    }
+}

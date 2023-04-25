@@ -1,35 +1,37 @@
 <?php
-	namespace Suphle\Tests\Integration\Events;
 
-	use Suphle\Tests\Integration\Events\BaseTypes\EventTestCreator;
+namespace Suphle\Tests\Integration\Events;
 
-	use Suphle\Tests\Mocks\Interactions\ModuleOne;
+use Suphle\Tests\Integration\Events\BaseTypes\EventTestCreator;
 
-	use Suphle\Tests\Mocks\Modules\ModuleThree\{Meta\ModuleThreeDescriptor, Events\EventsHandler};
+use Suphle\Tests\Mocks\Interactions\ModuleOne;
 
-	class CascadeExternalTest extends EventTestCreator {
+use Suphle\Tests\Mocks\Modules\ModuleThree\{Meta\ModuleThreeDescriptor, Events\EventsHandler};
 
-		protected string $eventReceiverName = EventsHandler::class;
+class CascadeExternalTest extends EventTestCreator
+{
+    protected string $eventReceiverName = EventsHandler::class;
 
-		protected function setModuleThree ():void {
+    protected function setModuleThree(): void
+    {
 
-			$this->moduleThree = $this->bindMockedEventReceiver(ModuleThreeDescriptor::class)
-			->sendExpatriates([
+        $this->moduleThree = $this->bindMockedEventReceiver(ModuleThreeDescriptor::class)
+        ->sendExpatriates([
 
-				ModuleOne::class => $this->moduleOne
-			]);
-		}
+            ModuleOne::class => $this->moduleOne
+        ]);
+    }
 
-		public function test_local_emit_cascades_to_external () {
+    public function test_local_emit_cascades_to_external()
+    {
 
-			$this->createMockEventReceiver([ // then
+        $this->createMockEventReceiver([ // then
 
-				"handleExternalRebound" => [1, [false]]
-			]);
+            "handleExternalRebound" => [1, [false]]
+        ]);
 
-			$this->parentSetUp(); // given
+        $this->parentSetUp(); // given
 
-			$this->getModuleOne()->multiModuleCascadeEvent(false); // when
-		}
-	}
-?>
+        $this->getModuleOne()->multiModuleCascadeEvent(false); // when
+    }
+}

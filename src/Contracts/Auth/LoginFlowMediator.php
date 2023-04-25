@@ -1,14 +1,14 @@
 <?php
-	namespace Suphle\Contracts\Auth;
 
-	use Suphle\Contracts\Presentation\BaseRenderer;
+namespace Suphle\Contracts\Auth;
 
-	interface LoginFlowMediator {
+use Suphle\Contracts\Presentation\BaseRenderer;
 
-		public function successRenderer ():BaseRenderer;
+interface LoginFlowMediator
+{
+    public function successRenderer(): BaseRenderer;
 
-		public function failedRenderer ():BaseRenderer;
+    public function failedRenderer(): BaseRenderer;
 
-		public function getLoginService ():LoginActions;
-	}
-?>
+    public function getLoginService(): LoginActions;
+}

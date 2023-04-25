@@ -1,10 +1,10 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares\Collectors;
 
-	use Suphle\Routing\CollectionMetaFunnel;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares\Collectors;
 
-	class BlankCollectionMetaFunnel extends CollectionMetaFunnel {
+use Suphle\Routing\CollectionMetaFunnel;
 
-		//
-	}
-?>
+class BlankCollectionMetaFunnel extends CollectionMetaFunnel
+{
+    //
+}

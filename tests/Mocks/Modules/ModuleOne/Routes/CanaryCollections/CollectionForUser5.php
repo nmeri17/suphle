@@ -1,18 +1,19 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\CanaryCollections;
 
-	use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\CanaryCollections;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\CanaryController;
+use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
 
-	use Suphle\Response\Format\Json;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\CanaryController;
 
-	#[HandlingCoordinator(CanaryController::class)]
-	class CollectionForUser5 extends BaseCollection {
+use Suphle\Response\Format\Json;
 
-		public function SAME__URLh () {
+#[HandlingCoordinator(CanaryController::class)]
+class CollectionForUser5 extends BaseCollection
+{
+    public function SAME__URLh()
+    {
 
-			$this->_httpGet(new Json("user5Handler"));
-		}
-	}
-?>
+        $this->_httpGet(new Json("user5Handler"));
+    }
+}

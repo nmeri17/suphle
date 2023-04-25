@@ -1,22 +1,24 @@
 <?php
-	namespace _database_namespace;
 
-	use Suphle\Adapters\Orms\Eloquent\Models\User as ParentUser;
+namespace _database_namespace;
 
-	use _database_namespace\Factories\UserFactory;
+use Suphle\Adapters\Orms\Eloquent\Models\User as ParentUser;
 
-	use Illuminate\Database\Eloquent\Factories\Factory;
+use _database_namespace\Factories\UserFactory;
 
-	class User extends ParentUser {
+use Illuminate\Database\Eloquent\Factories\Factory;
 
-		public static function migrationFolders ():array {
+class User extends ParentUser
+{
+    public static function migrationFolders(): array
+    {
 
-			return [__DIR__ . DIRECTORY_SEPARATOR . "Migrations"];
-		}
+        return [__DIR__ . DIRECTORY_SEPARATOR . "Migrations"];
+    }
 
-		protected static function newFactory ():Factory {
+    protected static function newFactory(): Factory
+    {
 
-			return UserFactory::new();
-		}
-	}
-?>
+        return UserFactory::new();
+    }
+}

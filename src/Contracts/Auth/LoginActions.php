@@ -1,12 +1,13 @@
 <?php
-	namespace Suphle\Contracts\Auth;
 
-	interface LoginActions {
+namespace Suphle\Contracts\Auth;
 
-		public function compareCredentials ():bool;
+interface LoginActions
+{
+    public function compareCredentials(): bool;
 
-		// session/jwt values are set, depending on auth guard
-		public function successLogin ():iterable;
+    // session/jwt values are set, depending on auth guard
+    public function successLogin(): iterable;
 
-		public function failedLogin ():iterable;
-	}
+    public function failedLogin(): iterable;
+}

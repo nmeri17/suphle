@@ -1,34 +1,38 @@
 <?php
-	namespace Suphle\Auth\Renderers;
 
-	use Suphle\Contracts\Auth\{LoginFlowMediator, LoginActions};
+namespace Suphle\Auth\Renderers;
 
-	use Suphle\Contracts\Presentation\BaseRenderer;
+use Suphle\Contracts\Auth\{LoginFlowMediator, LoginActions};
 
-	use Suphle\Response\Format\Json;
+use Suphle\Contracts\Presentation\BaseRenderer;
 
-	use Suphle\Auth\Repositories\ApiAuthRepo;
+use Suphle\Response\Format\Json;
 
-	class ApiLoginMediator implements LoginFlowMediator {
+use Suphle\Auth\Repositories\ApiAuthRepo;
 
-		public function __construct(protected readonly ApiAuthRepo $authService) {
+class ApiLoginMediator implements LoginFlowMediator
+{
+    public function __construct(protected readonly ApiAuthRepo $authService)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function successRenderer ():BaseRenderer {
+    public function successRenderer(): BaseRenderer
+    {
 
-			return new Json( "successLogin");
-		}
+        return new Json("successLogin");
+    }
 
-		public function failedRenderer ():BaseRenderer {
+    public function failedRenderer(): BaseRenderer
+    {
 
-			return new Json( "failedLogin");
-		}
+        return new Json("failedLogin");
+    }
 
-		public function getLoginService ():LoginActions {
+    public function getLoginService(): LoginActions
+    {
 
-			return $this->authService;
-		}
-	}
-?>
+        return $this->authService;
+    }
+}

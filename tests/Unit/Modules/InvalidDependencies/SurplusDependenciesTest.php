@@ -1,39 +1,43 @@
 <?php
-	namespace Suphle\Tests\Unit\Modules\InvalidDependencies;
 
-	use Suphle\Hydration\Container;
+namespace Suphle\Tests\Unit\Modules\InvalidDependencies;
 
-	use Suphle\Exception\Explosives\DevError\UnexpectedModules;
+use Suphle\Hydration\Container;
 
-	use Suphle\Tests\Integration\Modules\ModuleDescriptor\DescriptorCollection;
+use Suphle\Exception\Explosives\DevError\UnexpectedModules;
 
-	use Suphle\Tests\Mocks\Interactions\{ModuleThree, ModuleOne};
+use Suphle\Tests\Integration\Modules\ModuleDescriptor\DescriptorCollection;
 
-	use Suphle\Tests\Mocks\Modules\ModuleTwo\Meta\ModuleTwoDescriptor;
+use Suphle\Tests\Mocks\Interactions\{ModuleThree, ModuleOne};
 
-	class SurplusDependenciesTest extends DescriptorCollection {
+use Suphle\Tests\Mocks\Modules\ModuleTwo\Meta\ModuleTwoDescriptor;
 
-		protected function setUp ():void {}
+class SurplusDependenciesTest extends DescriptorCollection
+{
+    protected function setUp(): void
+    {
+    }
 
-		protected function setModuleTwo ():void {
+    protected function setModuleTwo(): void
+    {
 
-			$this->moduleTwo = (new ModuleTwoDescriptor(new Container))
+        $this->moduleTwo = (new ModuleTwoDescriptor(new Container()))
 
-			->sendExpatriates([
+        ->sendExpatriates([
 
-				ModuleThree::class => $this->moduleThree,
+            ModuleThree::class => $this->moduleThree,
 
-				ModuleOne::class => $this->moduleOne
-			]);
-		}
+            ModuleOne::class => $this->moduleOne
+        ]);
+    }
 
-		public function test_will_reject_surplus_dependencies () {
+    public function test_will_reject_surplus_dependencies()
+    {
 
-			$this->expectException(UnexpectedModules::class); // then
+        $this->expectException(UnexpectedModules::class); // then
 
-			parent::setUp(); // when
+        parent::setUp(); // when
 
-			// given @see module creation
-		}
-	}
-?>
+        // given @see module creation
+    }
+}

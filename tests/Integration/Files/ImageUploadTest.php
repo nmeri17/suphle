@@ -1,107 +1,118 @@
 <?php
-	namespace Suphle\Tests\Integration\Files;
 
-	use Suphle\Contracts\Config\Router;
+namespace Suphle\Tests\Integration\Files;
 
-	use Suphle\Contracts\IO\Image\{InferiorOperationHandler, ThumbnailOperationHandler};
+use Suphle\Contracts\Config\Router;
 
-	use Suphle\Security\CSRF\CsrfGenerator;
+use Suphle\Contracts\IO\Image\{InferiorOperationHandler, ThumbnailOperationHandler};
 
-	use Suphle\Exception\Explosives\DevError\UnmodifiedImageException;
+use Suphle\Security\CSRF\CsrfGenerator;
 
-	use Suphle\Testing\{TestTypes\ModuleLevelTest, Condiments\FilesystemCleaner};
+use Suphle\Exception\Explosives\DevError\UnmodifiedImageException;
 
-	use Suphle\Testing\Proxies\{WriteOnlyContainer, Extensions\TestResponseBridge};
+use Suphle\Testing\{TestTypes\ModuleLevelTest, Condiments\FilesystemCleaner};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\ImageUploadCollection, Meta\ModuleOneDescriptor, Config\RouterMock};
+use Suphle\Testing\Proxies\{WriteOnlyContainer, Extensions\TestResponseBridge};
 
-	class ImageUploadTest extends ModuleLevelTest {
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\ImageUploadCollection, Meta\ModuleOneDescriptor, Config\RouterMock};
 
-		use FilesystemCleaner;
+class ImageUploadTest extends ModuleLevelTest
+{
+    use FilesystemCleaner;
 
-		private string $resourceOwner = "users";
+    private string $resourceOwner = "users";
 
-		protected bool $debugCaughtExceptions = true; // it's important to leave this in, otherwise the test, test_giving_no_operation_throws_error, will swallow error, causing test to "fail"
+    protected bool $debugCaughtExceptions = true; // it's important to leave this in, otherwise the test, test_giving_no_operation_throws_error, will swallow error, causing test to "fail"
 
-		protected function getModules ():array {
+    protected function getModules(): array
+    {
 
-			return [
+        return [
 
-				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-					$container->replaceWithMock(Router::class, RouterMock::class, [
+                $container->replaceWithMock(Router::class, RouterMock::class, [
 
-						"browserEntryRoute" => ImageUploadCollection::class
-					]);
-				})
-			];
-		}
+                    "browserEntryRoute" => ImageUploadCollection::class
+                ]);
+            })
+        ];
+    }
 
-		public function test_giving_no_operation_throws_error () {
+    public function test_giving_no_operation_throws_error()
+    {
 
-			$this->expectException(UnmodifiedImageException::class); // then
+        $this->expectException(UnmodifiedImageException::class); // then
 
-			$this->sendUploadRequest("/apply-none"); // when
-		}
+        $this->sendUploadRequest("/apply-none"); // when
+    }
 
-		public function test_can_save_multiple_operations () {
+    public function test_can_save_multiple_operations()
+    {
 
-			$response = $this->getDecodedResponse("/apply-all"); // when
+        $response = $this->getDecodedResponse("/apply-all"); // when
 
-			// then
-			foreach ([
+        // then
+        foreach ([
 
-				InferiorOperationHandler::OPERATION_NAME,
+            InferiorOperationHandler::OPERATION_NAME,
 
-				ThumbnailOperationHandler::OPERATION_NAME
-			] as $operation)
+            ThumbnailOperationHandler::OPERATION_NAME
+        ] as $operation) {
 
-				$this->assertArrayHasKey($operation, $response);
+            $this->assertArrayHasKey($operation, $response);
+        }
 
-			$this->assertSavedFiles(["*.*"], $response);
-		}
+        $this->assertSavedFiles(["*.*"], $response);
+    }
 
-		private function sendUploadRequest (string $url):TestResponseBridge {
+    private function sendUploadRequest(string $url): TestResponseBridge
+    {
 
-			return $this->postJson("/api/v1/$url", [ // using mirroring to bypass csrf errors
+        return $this->postJson(
+            "/api/v1/$url",
+            [ // using mirroring to bypass csrf errors
 
-					"belonging_resource" => $this->resourceOwner,
+                "belonging_resource" => $this->resourceOwner,
 
-					CsrfGenerator::TOKEN_FIELD => $this->getContainer()
+                CsrfGenerator::TOKEN_FIELD => $this->getContainer()
 
-					->getClass(CsrfGenerator::class)->newToken()
+                ->getClass(CsrfGenerator::class)->newToken()
 
-				], [], [
+            ],
+            [],
+            [
 
-					"profile_pic" => $this->saveFakeImage("portait.png", 450, 200, 300)
-				] // since file reading is generic, we aren't strictly concerned about key names. That should be enforced through the validator. We just lift anything that comes there since it doesn't make sense to post files without saving
-			);
-		}
+                "profile_pic" => $this->saveFakeImage("portait.png", 450, 200, 300)
+            ] // since file reading is generic, we aren't strictly concerned about key names. That should be enforced through the validator. We just lift anything that comes there since it doesn't make sense to post files without saving
+        );
+    }
 
-		public function test_saves_with_correct_name_format () {
+    public function test_saves_with_correct_name_format()
+    {
 
-			$operation = "thumbnail";
+        $operation = "thumbnail";
 
-			$decoded = $this->getDecodedResponse("/apply-crop"); // when
+        $decoded = $this->getDecodedResponse("/apply-crop"); // when
 
-			$this->assertArrayHasKey($operation, $decoded);
+        $this->assertArrayHasKey($operation, $decoded);
 
-			$imagePath = $decoded[$operation]["profile_pic"]; // spits given array back but with names instead of files
+        $imagePath = $decoded[$operation]["profile_pic"]; // spits given array back but with names instead of files
 
-			$pattern = $this->resourceOwner . "\\\\$operation\\\\".
+        $pattern = $this->resourceOwner . "\\\\$operation\\\\".
 
-			"\w+\.";
+        "\w+\.";
 
-			$matchResult = preg_match("/$pattern/", (string) $imagePath);
+        $matchResult = preg_match("/$pattern/", (string) $imagePath);
 
-			$this->assertSame(1, $matchResult); // then
-		}
+        $this->assertSame(1, $matchResult); // then
+    }
 
-		private function getDecodedResponse (string $url):array {
+    private function getDecodedResponse(string $url): array
+    {
 
-			$fullResponse = $this->sendUploadRequest($url);
+        $fullResponse = $this->sendUploadRequest($url);
 
-			return json_decode((string) $fullResponse->getContent(), true, 512, JSON_THROW_ON_ERROR);
-		}
-	}
-?>
+        return json_decode((string) $fullResponse->getContent(), true, 512, JSON_THROW_ON_ERROR);
+    }
+}

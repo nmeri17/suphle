@@ -1,12 +1,12 @@
 <?php
-	namespace Suphle\Contracts\Routing;
 
-	use Suphle\Contracts\Presentation\BaseRenderer;
+namespace Suphle\Contracts\Routing;
 
-	interface ExternalRouter {
+use Suphle\Contracts\Presentation\BaseRenderer;
 
-		public function canHandleRequest ():bool;
+interface ExternalRouter
+{
+    public function canHandleRequest(): bool;
 
-		public function convertToRenderer ():BaseRenderer;
-	}
-?>
+    public function convertToRenderer(): BaseRenderer;
+}

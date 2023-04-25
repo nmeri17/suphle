@@ -1,1040 +1,1138 @@
 <?php
-	namespace Suphle\Hydration;
-	
-	use Suphle\Hydration\Structures\{ProvisionUnit, NamespaceUnit, HydratedConcrete, ObjectDetails, ContainerTelescope, ArrayDetails};
 
-	use Suphle\Contracts\{Hydration\ClassHydrationBehavior, Config\ContainerConfig as IContainerConfig};
+namespace Suphle\Hydration;
 
-	use Suphle\Exception\Explosives\DevError\{InvalidImplementor, HydrationException};
+use Suphle\Hydration\Structures\{ProvisionUnit, NamespaceUnit, HydratedConcrete, ObjectDetails, ContainerTelescope, ArrayDetails};
 
-	use ReflectionMethod, ReflectionFunction, ReflectionType, ReflectionFunctionAbstract, ReflectionException, ReflectionEnum, UnitEnum;
+use Suphle\Contracts\{Hydration\ClassHydrationBehavior, Config\ContainerConfig as IContainerConfig};
 
-	class Container implements ClassHydrationBehavior {
+use Suphle\Exception\Explosives\DevError\{InvalidImplementor, HydrationException};
 
-		const UNIVERSAL_SELECTOR = "*",
+use ReflectionMethod;
+use ReflectionFunction;
+use ReflectionType;
+use ReflectionFunctionAbstract;
+use ReflectionException;
+use ReflectionEnum;
+use UnitEnum;
 
-		CLASS_CONSTRUCTOR = "__construct";
+class Container implements ClassHydrationBehavior
+{
+    public const UNIVERSAL_SELECTOR = "*",
 
-		protected array $provisionedNamespaces = [], // NamespaceUnit[]
+    CLASS_CONSTRUCTOR = "__construct";
 
-		$hydratingForStack = [], // String[]. Doubles as a dependency chain. @see [lastHydratedFor] for main usage
+    protected array $provisionedNamespaces = [];
+    protected array // NamespaceUnit[]
 
-		$internalMethodHydrate = [],
+    $hydratingForStack = [];
+    protected array // String[]. Doubles as a dependency chain. @see [lastHydratedFor] for main usage
 
-		$hydratedClassConsumers = []; // Used when [getMethodParameters] is called directly without going through instance methods such as [instantiateConcrete]
+    $internalMethodHydrate = [];
+    protected array $hydratedClassConsumers = []; // Used when [getMethodParameters] is called directly without going through instance methods such as [instantiateConcrete]
 
-		protected bool $hydratingArguments = false;
+    protected bool $hydratingArguments = false;
 
-		protected IContainerConfig $config;
+    protected IContainerConfig $config;
 
-		protected InterfaceHydrator $interfaceHydrator;
+    protected InterfaceHydrator $interfaceHydrator;
 
-		protected ExternalPackageManagerHydrator $externalContainers;
+    protected ExternalPackageManagerHydrator $externalContainers;
 
-		protected ?DecoratorHydrator $decorator = null;
+    protected ?DecoratorHydrator $decorator = null;
 
-		protected ObjectDetails $objectMeta;
+    protected ObjectDetails $objectMeta;
 
-		protected ?string $provisionContext, // the active Type before calling needs. Nullable since it's reset after a needsAny cycle
+    protected ?string $provisionContext;
+    protected ?string // the active Type before calling needs. Nullable since it's reset after a needsAny cycle
 
-		$provisionSpace; // same as above, but for namespaces
+    $provisionSpace; // same as above, but for namespaces
 
-		protected ?ContainerTelescope $telescope = null;
+    protected ?ContainerTelescope $telescope = null;
 
-		protected ArrayDetails $arrayMeta;
+    protected ArrayDetails $arrayMeta;
 
-		protected array $provisionedClasses = []; // ProvisionUnit[]
+    protected array $provisionedClasses = []; // ProvisionUnit[]
 
-		public function __construct () {
+    public function __construct()
+    {
 
-			$this->initializeUniversalProvision();
-		}
+        $this->initializeUniversalProvision();
+    }
 
-		public function initializeUniversalProvision ():void {
+    public function initializeUniversalProvision(): void
+    {
 
-			$this->provisionedClasses[self::UNIVERSAL_SELECTOR] = new ProvisionUnit(self::UNIVERSAL_SELECTOR);
-		}
-	
-		/**
-		 * Should be called when preparing container for use i.e. before the very first user facing getClass
-		*/
-		public function setExternalContainerManager (ExternalPackageManagerHydrator $externalContainers):void {
+        $this->provisionedClasses[self::UNIVERSAL_SELECTOR] = new ProvisionUnit(self::UNIVERSAL_SELECTOR);
+    }
 
-			$externalContainers->setManagers(
+    /**
+     * Should be called when preparing container for use i.e. before the very first user facing getClass
+    */
+    public function setExternalContainerManager(ExternalPackageManagerHydrator $externalContainers): void
+    {
 
-				$this->config->getExternalHydrators()
-			);
+        $externalContainers->setManagers(
+            $this->config->getExternalHydrators()
+        );
 
-			$this->externalContainers = $externalContainers;
-		}
+        $this->externalContainers = $externalContainers;
+    }
 
-		public function setInterfaceHydrator (string $collection):void {
+    public function setInterfaceHydrator(string $collection): void
+    {
 
-			$concrete = $this->instantiateConcrete($collection);
+        $concrete = $this->instantiateConcrete($collection);
 
-			$this->interfaceHydrator = new InterfaceHydrator($concrete, $this);
+        $this->interfaceHydrator = new InterfaceHydrator($concrete, $this);
 
-			/**
-			 * Setting config within the same method since it's impossible for config to be gotten if interface collection is absent
-			 * 
-			 * Using getClass instead of provideInterface to enable replacement of the config in tests
-			*/
-			$this->config = $this->getClass(IContainerConfig::class);
-		}
+        /**
+         * Setting config within the same method since it's impossible for config to be gotten if interface collection is absent
+         *
+         * Using getClass instead of provideInterface to enable replacement of the config in tests
+        */
+        $this->config = $this->getClass(IContainerConfig::class);
+    }
 
-		public function getInterfaceHydrator ():InterfaceHydrator {
+    public function getInterfaceHydrator(): InterfaceHydrator
+    {
 
-			return $this->interfaceHydrator;
-		}
+        return $this->interfaceHydrator;
+    }
 
-		public function protectRefreshPurge ():bool {
+    public function protectRefreshPurge(): bool
+    {
 
-			return true;
-		}
+        return true;
+    }
 
-		public function setTelescope (ContainerTelescope $telescope):void {
+    public function setTelescope(ContainerTelescope $telescope): void
+    {
 
-			$this->telescope = $telescope;
-		}
+        $this->telescope = $telescope;
+    }
 
-		/**
-		*	Looks for the given class in this order
-			*	1) pre-provisioned caller list
-			*	2) Provisions it afresh if an interface or recursively wires in its constructor dependencies
-		*
-		*	@param $fullName class-string<T>
-		* 
-		*	@param $includeSub bool. Regular provision: A wants B, but we give C sub-class of B. Sub-classes of A can't obtain B unless this parameter is used
-		* 
-		* @return T. A class instance, if found
-		*/
-		public function getClass (string $fullName, bool $includeSub = false) {
+    /**
+    *	Looks for the given class in this order
+        *	1) pre-provisioned caller list
+        *	2) Provisions it afresh if an interface or recursively wires in its constructor dependencies
+    *
+    *	@param $fullName class-string<T>
+    *
+    *	@param $includeSub bool. Regular provision: A wants B, but we give C sub-class of B. Sub-classes of A can't obtain B unless this parameter is used
+    *
+    * @return T. A class instance, if found
+    */
+    public function getClass(string $fullName, bool $includeSub = false)
+    {
 
-			$concrete = $this->decorateProvidedConcrete($fullName);
+        $concrete = $this->decorateProvidedConcrete($fullName);
 
-			if (!is_null($concrete)) return $concrete;
+        if (!is_null($concrete)) {
+            return $concrete;
+        }
 
-			if ($includeSub && $parent = $this->hydrateChildsParent($fullName))
+        if ($includeSub && $parent = $this->hydrateChildsParent($fullName)) {
 
-				return $parent;
+            return $parent;
+        }
 
-			if ( // container in augmentation mode?
-				isset($this->config, $this->externalContainers) && // will be null when trying to hydrate these objects themselves
+        if ( // container in augmentation mode?
+            isset($this->config, $this->externalContainers) && // will be null when trying to hydrate these objects themselves
 
-				!empty($this->config->getExternalHydrators()) &&
+            !empty($this->config->getExternalHydrators()) &&
 
-				$concrete = $this->externalContainers->findInManagers($fullName)
-			) {
+            $concrete = $this->externalContainers->findInManagers($fullName)
+        ) {
 
-				$this->saveWhenImplements($fullName, $concrete);
+            $this->saveWhenImplements($fullName, $concrete);
 
-				return $concrete;
-			}
+            return $concrete;
+        }
 
-			return $this->initializeHydratingForAction($fullName, function ($className) {
+        return $this->initializeHydratingForAction($fullName, function ($className) {
 
-				$this->setConsumer($className);
+            $this->setConsumer($className);
 
-				if ($this->objectMeta->isInterface($className))
+            if ($this->objectMeta->isInterface($className)) {
 
-					return $this->provideInterface($className);
+                return $this->provideInterface($className);
+            }
 
-				return $this->instantiateConcrete($className);
-			});
-		}
+            return $this->instantiateConcrete($className);
+        });
+    }
 
-		public function decorateProvidedConcrete (string $fullName) {
+    public function decorateProvidedConcrete(string $fullName)
+    {
 
-			if ($this->hydratingArguments) return;
+        if ($this->hydratingArguments) {
+            return;
+        }
 
-			$freshlyCreated = $this->initializeHydratingForAction($fullName, function ($className) {
+        $freshlyCreated = $this->initializeHydratingForAction($fullName, function ($className) {
 
-				return new HydratedConcrete(
-					$this->getProvidedConcrete($className),
+            return new HydratedConcrete(
+                $this->getProvidedConcrete($className),
+                $this->lastHydratedFor() // can't read this outside callback cuz it would've been unset by then
+            );
+        });
 
-					$this->lastHydratedFor() // can't read this outside callback cuz it would've been unset by then
-				);
-			});
+        $concrete = $freshlyCreated->getConcrete();
 
-			$concrete = $freshlyCreated->getConcrete();
+        if (is_null($concrete)) {
+            return;
+        }
 
-			if (is_null($concrete)) return;
+        return $this->decorateWhenInjecting(
+            $concrete,
+            $freshlyCreated->getCreatedFor()
+        );
+    }
 
-			return $this->decorateWhenInjecting(
+    private function decorateWhenInjecting(object $concrete, string $caller)
+    {
 
-				$concrete, $freshlyCreated->getCreatedFor()
-			);
-		}
+        $decorator = $this->getDecorator();
 
-		private function decorateWhenInjecting (object $concrete, string $caller) {
+        return $decorator ?
 
-			$decorator = $this->getDecorator();
+            $decorator->scopeInjecting($concrete, $caller) : // decorator runs on each fetch (rather than only once), since different callers result in different behavior
 
-			return $decorator ?
+            $concrete;
+    }
 
-				$decorator->scopeInjecting($concrete, $caller): // decorator runs on each fetch (rather than only once), since different callers result in different behavior
-					
-				$concrete;
-		}
+    public function getProvidedConcrete(string $fullName): ?object
+    {
 
-		public function getProvidedConcrete (string $fullName):?object {
+        $contentOwner = $originalOwner = $this->lastHydratedFor(); // prevent premature switching by not using [getRecursionContext] since we don't know yet whether [activeProvision] has it
 
-			$contentOwner = $originalOwner = $this->lastHydratedFor(); // prevent premature switching by not using [getRecursionContext] since we don't know yet whether [activeProvision] has it
+        $provisions = $this->provisionedClasses;
 
-			$provisions = $this->provisionedClasses;
+        if (is_null($originalOwner) ||
 
-			if (is_null($originalOwner) ||
+            !array_key_exists($originalOwner, $provisions)
+        ) {
 
-				!array_key_exists($originalOwner, $provisions)
-			)
+            $contentOwner = self::UNIVERSAL_SELECTOR;
+        }
 
-				$contentOwner = self::UNIVERSAL_SELECTOR;
+        $activeProvision = $provisions[$contentOwner];
 
-			$activeProvision = $provisions[$contentOwner];
+        if (!$activeProvision->hasConcrete($fullName) &&
 
-			if (!$activeProvision->hasConcrete($fullName) &&
+            $contentOwner != self::UNIVERSAL_SELECTOR
+        ) { // fallback
 
-				$contentOwner != self::UNIVERSAL_SELECTOR
-			) // fallback
+            $activeProvision = $provisions[self::UNIVERSAL_SELECTOR];
+        }
 
-				$activeProvision = $provisions[self::UNIVERSAL_SELECTOR];
+        if ($activeProvision->hasConcrete($fullName)) {
 
-			if ($activeProvision->hasConcrete($fullName)) {
+            $this->setConsumer($fullName, $originalOwner);
 
-				$this->setConsumer($fullName, $originalOwner);
+            if (!is_null($this->telescope)) {
 
-				if (!is_null($this->telescope))
+                $this->telescope->addReadConcretes(
+                    $contentOwner,
+                    $fullName
+                );
+            }
 
-					$this->telescope->addReadConcretes(
+            return $activeProvision->getConcrete($fullName);
+        }
 
-						$contentOwner, $fullName
-					);
+        if (!is_null($this->telescope) && !is_null($originalOwner)) {
 
-				return $activeProvision->getConcrete($fullName);
-			}
+            $this->telescope->addMissingConcrete(
+                $originalOwner,
+                $fullName
+            );
+        }
 
-			if (!is_null($this->telescope) && !is_null($originalOwner))
+        return null;
+    }
 
-				$this->telescope->addMissingConcrete(
+    /**
+    * Switches unit being provided to universal if it doesn't exist
+    * @return currently available provision unit
+    */
+    public function getRecursionContext(): ProvisionUnit
+    {
 
-					$originalOwner, $fullName
-				);
+        $hydrateFor = $this->lastHydratedFor();
 
-			return null;
-		}
+        $provisions = $this->provisionedClasses;
 
-		/**
-		* Switches unit being provided to universal if it doesn't exist
-		* @return currently available provision unit
-		*/
-		public function getRecursionContext ():ProvisionUnit {
+        if (is_null($hydrateFor)) {
 
-			$hydrateFor = $this->lastHydratedFor();
+            return $provisions[self::UNIVERSAL_SELECTOR];
+        }
 
-			$provisions = $this->provisionedClasses;
+        if (!array_key_exists($hydrateFor, $provisions)) {
 
-			if (is_null($hydrateFor))
+            if (!is_null($this->telescope)) {
 
-				return $provisions[self::UNIVERSAL_SELECTOR];
+                $this->telescope->addMissingContext($hydrateFor);
+            }
 
-			if (!array_key_exists($hydrateFor, $provisions) ) {
+            $hydrateFor = self::UNIVERSAL_SELECTOR;
+        }
 
-				if (!is_null($this->telescope))
+        return $provisions[$hydrateFor];
+    }
 
-					$this->telescope->addMissingContext($hydrateFor);
+    /**
+     * This tells us the class we are hydrating arguments for. This method along with ordering population of hydratingForStack (initializeHydratingFor) is the cradle of contextual binding
+    *
+    * If we're hydrating class A -> B, we want to get provisions for A, otherwise, we'll be looking through B's provisions instead of A. For the same reason, if A directly wants B using getClass, use A's provisions
+    *
+    * So we always set who we intend to be read from the list to -1 i.e. default index as penultimate.
+    */
+    public function lastHydratedFor(?int $index = null): ?string
+    {
 
-				$hydrateFor = self::UNIVERSAL_SELECTOR;
-			}
+        $stack = $this->hydratingForStack;
 
-			return $provisions[$hydrateFor];
-		}
+        if(empty($stack)) {
+            return null;
+        }
 
-		/**
-		 * This tells us the class we are hydrating arguments for. This method along with ordering population of hydratingForStack (initializeHydratingFor) is the cradle of contextual binding
-		* 
-		* If we're hydrating class A -> B, we want to get provisions for A, otherwise, we'll be looking through B's provisions instead of A. For the same reason, if A directly wants B using getClass, use A's provisions
-		* 
-		* So we always set who we intend to be read from the list to -1 i.e. default index as penultimate.
-		*/
-		public function lastHydratedFor (?int $index = null):?string {
+        $length = count($stack);
 
-			$stack = $this->hydratingForStack;
+        $activeIndex = $length - ($index ?? 1);
 
-			if(empty($stack) ) return null;
+        return $stack[$activeIndex];
+    }
 
-			$length = count($stack);
+    /**
+     * Records a class Dependent under each of its dependencies
+     * @param {fullname} Dependency
+     * @param {missingProvision} When present, we don't infer class Dependent but use this explicitly
+    */
+    private function setConsumer(string $fullName, string $missingProvision = null): void
+    {
 
-			$activeIndex = $length - ($index ?? 1);
+        $concreteHydratedFor = $missingProvision ?? $this->lastHydratedFor();
 
-			return $stack[$activeIndex];
-		}
+        if (is_null($concreteHydratedFor)) {
+            return;
+        }
 
-		/**
-		 * Records a class Dependent under each of its dependencies
-		 * @param {fullname} Dependency
-		 * @param {missingProvision} When present, we don't infer class Dependent but use this explicitly
-		*/
-		private function setConsumer (string $fullName, string $missingProvision = null):void {
+        if (!array_key_exists($fullName, $this->hydratedClassConsumers)) {
 
-			$concreteHydratedFor = $missingProvision ?? $this->lastHydratedFor();
+            $this->hydratedClassConsumers[$fullName] = [];
+        }
 
-			if (is_null($concreteHydratedFor)) return;
+        $isNotInterfaceLoading = $concreteHydratedFor != $fullName &&
+            !$this->objectMeta->stringInClassTree(
+                $fullName,
+                $concreteHydratedFor
+            ); // prevent recursive loop during purge
 
-			if (!array_key_exists($fullName, $this->hydratedClassConsumers))
+        $isNotConsumedAlready = !in_array(
+            $concreteHydratedFor,
+            $this->hydratedClassConsumers[$fullName]
+        );
 
-				$this->hydratedClassConsumers[$fullName] = [];
+        if ($isNotInterfaceLoading && $isNotConsumedAlready) {
 
-			$isNotInterfaceLoading = $concreteHydratedFor != $fullName && 
-				!$this->objectMeta->stringInClassTree(
+            $this->hydratedClassConsumers[$fullName][] = $concreteHydratedFor;
 
-					$fullName, $concreteHydratedFor
-				); // prevent recursive loop during purge
+            $this->dependOnConsumerParents($fullName, $concreteHydratedFor);
 
-			$isNotConsumedAlready = !in_array(
-					$concreteHydratedFor,
+            if (!is_null($this->telescope)) {
 
-					$this->hydratedClassConsumers[$fullName]
-				);
+                $this->telescope->setConsumerList($this->hydratedClassConsumers);
+            }
+        }
+    }
 
-			if ($isNotInterfaceLoading && $isNotConsumedAlready ) {
+    /**
+     * [dependent] has [dependency] as a dependency in its constructor, usually, the interface version of [dependency]
+    */
+    private function dependOnConsumerParents(string $dependency, string $dependent): void
+    {
 
-				$this->hydratedClassConsumers[$fullName][] = $concreteHydratedFor;
+        foreach (array_unique($this->hydratingForStack) as $potentialParent) {
 
-				$this->dependOnConsumerParents($fullName, $concreteHydratedFor);
+            $isParent = $potentialParent != $dependent &&
 
-				if (!is_null($this->telescope))
+            $this->objectMeta->stringInClassTree(
+                $dependent,
+                $potentialParent
+            );
 
-					$this->telescope->setConsumerList($this->hydratedClassConsumers);
-			}
-		}
+            if (!$isParent) {
+                continue;
+            }
 
-		/**
-		 * [dependent] has [dependency] as a dependency in its constructor, usually, the interface version of [dependency]
-		*/
-		private function dependOnConsumerParents (string $dependency, string $dependent):void {
+            $this->hydratedClassConsumers[$dependency][] = $potentialParent;
 
-			foreach (array_unique($this->hydratingForStack) as $potentialParent) {
+            if (!is_null($this->telescope)) {
 
-				$isParent = $potentialParent != $dependent &&
+                $this->telescope->addConsumerParent($potentialParent, $dependency);
+            }
+        }
+    }
 
-				$this->objectMeta->stringInClassTree(
+    /**
+     * Use caller's parent to hydrate dependency
+     *
+     * @return First provided parent of requested class or null
+    */
+    private function hydrateChildsParent(string $requestedClass)
+    {
 
-					$dependent, $potentialParent
-				);
+        return $this->initializeHydratingForAction($requestedClass, function ($className) {
 
-				if (!$isParent) continue;
+            $caller = $this->lastHydratedFor();
 
-				$this->hydratedClassConsumers[$dependency][] = $potentialParent;
+            $allSuperiors = array_keys($this->provisionedClasses);
 
-				if (!is_null($this->telescope))
+            $classSuperiors = array_merge(
+                class_parents($caller, true),
+                class_implements($caller, true)
+            );
 
-					$this->telescope->addConsumerParent($potentialParent, $dependency);
-			}
-		}
+            $matchingProvisions = array_intersect($classSuperiors, $allSuperiors);
 
-		/**
-		 * Use caller's parent to hydrate dependency
-		 * 
-		 * @return First provided parent of requested class or null
-		*/
-		private function hydrateChildsParent (string $requestedClass) {
+            if (empty($matchingProvisions)) {
+                return null;
+            }
 
-			return $this->initializeHydratingForAction($requestedClass, function ($className) {
+            $activeProvision = $this->provisionedClasses[
 
-				$caller = $this->lastHydratedFor();
+                current($matchingProvisions)
+            ];
 
-				$allSuperiors = array_keys($this->provisionedClasses);
+            if (!$activeProvision->hasConcrete($className)) {
+                return;
+            }
 
-				$classSuperiors = array_merge(
-					class_parents($caller, true),
+            $concrete = $activeProvision->getConcrete($className);
 
-					class_implements($caller, true)
-				);
+            return $this->decorateWhenInjecting($concrete, $caller);
+        });
+    }
 
-				$matchingProvisions = array_intersect($classSuperiors, $allSuperiors);
+    private function saveWhenImplements(string $interface, $concrete): void
+    {
 
-				if (empty($matchingProvisions) ) return null;
+        if (!($concrete instanceof $interface)) {
 
-				$activeProvision = $this->provisionedClasses[
+            throw InvalidImplementor::incompatibleParent(
+                $interface,
+                get_class($concrete)
+            );
+        }
 
-					current($matchingProvisions)
-				];
+        $this->storeConcrete($interface, $concrete);
+    }
 
-				if (!$activeProvision->hasConcrete($className)) return;
+    private function storeConcrete(string $fullName, $concrete): ProvisionUnit
+    {
 
-				$concrete = $activeProvision->getConcrete($className);
+        $callerProvision = $this->getRecursionContext();
 
-				return $this->decorateWhenInjecting($concrete, $caller);
-			});
-		}
+        if (!is_null($this->telescope)) {
 
-		private function saveWhenImplements (string $interface, $concrete):void {
+            $this->telescope->addStoredConcrete(
+                $callerProvision->getOwner(),
+                $fullName
+            );
+        }
 
-			if (!($concrete instanceof $interface))
+        return $callerProvision->addConcrete($fullName, $concrete);
+    }
 
-				throw InvalidImplementor::incompatibleParent(
+    /**
+     * Wrap any call that internally attempts to read from [lastHydratedFor] in this i.e. calls that do some hydration and need to know what context/provision they're being hydrated for
+    */
+    public function initializeHydratingForAction(string $fullName, callable $action)
+    {
 
-					$interface, get_class($concrete)
-				);
+        $pushedItems = $this->initializeHydratingFor($fullName);
 
-			$this->storeConcrete( $interface, $concrete);
-		}
+        $result = $action($fullName);
 
-		private function storeConcrete (string $fullName, $concrete):ProvisionUnit {
+        foreach ($pushedItems as $entity) {
 
-			$callerProvision = $this->getRecursionContext();
-			
-			if (!is_null($this->telescope))
+            $this->popHydratingFor($entity);
+        }
 
-				$this->telescope->addStoredConcrete(
+        return $result;
+    }
 
-					$callerProvision->getOwner(), $fullName
-				);
+    /**
+     * We use hydratingForStack primarily to pull penultimate item and attempt to use its context for hydrating dependencies, depending on the context the caller wants class in.
+     *
+     * @return Array of items pushed
+    */
+    protected function initializeHydratingFor(string $fullName): array
+    {
 
-			return $callerProvision->addConcrete($fullName, $concrete);
-		}
+        $toPop = [];
 
-		/**
-		 * Wrap any call that internally attempts to read from [lastHydratedFor] in this i.e. calls that do some hydration and need to know what context/provision they're being hydrated for
-		*/
-		public function initializeHydratingForAction (string $fullName, callable $action) {
+        $dependent = $this->lastHydratedFor();
 
-			$pushedItems = $this->initializeHydratingFor($fullName);
+        $isFirstCall = is_null($dependent);
 
-			$result = $action($fullName);
+        $this->pushHydratingFor($fullName);
 
-			foreach ($pushedItems as $entity)
+        $toPop[] = $fullName;
 
-				$this->popHydratingFor($entity);
+        if ($isFirstCall && !$this->hydratingArguments) { // should strictly work for getClass/service location. We don't want to push calls to getMethodParameter
 
-			return $result;
-		}
+            $hydrateFor = $this->lastCaller();
 
-		/**
-		 * We use hydratingForStack primarily to pull penultimate item and attempt to use its context for hydrating dependencies, depending on the context the caller wants class in.
-		 * 
-		 * @return Array of items pushed
-		*/
-		protected function initializeHydratingFor (string $fullName):array {
+            $this->pushHydratingFor($hydrateFor); // come last for -1
 
-			$toPop = [];
+            $toPop[] = $hydrateFor;
+        }
 
-			$dependent = $this->lastHydratedFor();
+        return $toPop;
+    }
 
-			$isFirstCall = is_null($dependent);
+    private function lastCaller(): string
+    {
 
-			$this->pushHydratingFor($fullName);
+        $stack = debug_backtrace(2); // 2=> ignore concrete objects and their args
 
-			$toPop[] = $fullName;
+        $caller = "class";
 
-			if ( $isFirstCall && !$this->hydratingArguments) { // should strictly work for getClass/service location. We don't want to push calls to getMethodParameter
+        foreach ($stack as $execution) {
 
-				$hydrateFor = $this->lastCaller();
+            if (array_key_exists($caller, $execution) && $execution[$caller] != get_class()) {
 
-				$this->pushHydratingFor($hydrateFor); // come last for -1
+                return $execution[$caller];
+            }
+        }
 
-				$toPop[] = $hydrateFor;
-			}
+        return ""; // will be empty when container is called in isolation i.e. without being wrapped by the objects that precede user-land e.g. in the outermost index script handling requests
+    }
 
-			return $toPop;
-		}
+    /**
+     * Updates the last element in the context hydrating stack, to that whose provision dependencies should be hydrated for
+    */
+    protected function pushHydratingFor(string $fullName): void
+    {
 
-		private function lastCaller ():string {
+        $this->hydratingForStack[] = $fullName;
+    }
 
-			$stack = debug_backtrace (2 ); // 2=> ignore concrete objects and their args
+    /**
+     * @param {completedHydration} To guarantee push-pop consistency. When the name of what is expected to be removed doesn't match the last item in stack, it indicates we're currently hydrating an interface (where its name differs from concretes involved). When this happens, we simply ignore popping our list since those concretes were not the ones that originally got pushed
+    */
+    private function popHydratingFor(string $completedHydration): void
+    {
 
-			$caller = "class";
+        $this->hydratingForStack = $this->arrayMeta->removeAtIndex(
+            $this->hydratingForStack,
+            $completedHydration
+        );
+    }
 
-			foreach ($stack as $execution)
+    /**
+     * @throws InvalidImplementor
+     *
+     * @return Concrete of the given [Interface] if it was bound
+    */
+    protected function provideInterface(string $interface)
+    {
 
-				if (array_key_exists($caller, $execution) && $execution[$caller] != get_class()) {
+        $caller = $this->lastHydratedFor(
+            $this->hydratingArguments ? 2 : null // setting as 2 since initializeHydratingFor() pushed $interface as penultimate and what we really want is the caller
+        );
 
-					return $execution[$caller];
-				}
+        if ($caller && $this->hasRenamedSpace($caller)) {
 
-			return ""; // will be empty when container is called in isolation i.e. without being wrapped by the objects that precede user-land e.g. in the outermost index script handling requests
-		}
+            $newIdentity = $this->relocateSpace($interface, $caller);
 
-		/**
-		 * Updates the last element in the context hydrating stack, to that whose provision dependencies should be hydrated for
-		*/
-		protected function pushHydratingFor (string $fullName):void {
+            $concrete = $this->instantiateConcrete($newIdentity);
+        } else {
 
-			$this->hydratingForStack[] = $fullName;
-		}
+            $concrete = $this->getInterfaceHydrator()->deriveConcrete($interface);
 
-		/**
-		 * @param {completedHydration} To guarantee push-pop consistency. When the name of what is expected to be removed doesn't match the last item in stack, it indicates we're currently hydrating an interface (where its name differs from concretes involved). When this happens, we simply ignore popping our list since those concretes were not the ones that originally got pushed
-		*/
-		private function popHydratingFor (string $completedHydration):void {
+            if (!is_null($concrete)) {
 
-			$this->hydratingForStack = $this->arrayMeta->removeAtIndex(
+                $this->saveWhenImplements($interface, $concrete);
+            }
+        }
 
-				$this->hydratingForStack, $completedHydration
-			);
-		}
+        if (is_null($concrete)) {
 
-		/**
-		 * @throws InvalidImplementor
-		 * 
-		 * @return Concrete of the given [Interface] if it was bound
-		*/
-		protected function provideInterface (string $interface) {
+            throw InvalidImplementor::missingParent(
+                $interface,
+                $caller,
+                $this->hydratingForStack
+            );
+        }
 
-			$caller = $this->lastHydratedFor(
+        return $concrete;
+    }
 
-				$this->hydratingArguments ? 2: null // setting as 2 since initializeHydratingFor() pushed $interface as penultimate and what we really want is the caller
-			);
+    private function hasRenamedSpace(string $caller): bool
+    {
 
-			if ($caller && $this->hasRenamedSpace($caller)) {
+        return array_key_exists(
+            $this->objectMeta->classNamespace($caller),
+            $this->provisionedNamespaces
+        );
+    }
 
-				$newIdentity = $this->relocateSpace($interface, $caller);
+    private function relocateSpace(string $dependency, string $caller): string
+    {
 
-				$concrete = $this->instantiateConcrete($newIdentity);
-			}
+        $callerSpace = $this->objectMeta->classNamespace($caller);
 
-			else {
+        $dependencySpace = $this->objectMeta->classNamespace($dependency);
 
-				$concrete = $this->getInterfaceHydrator()->deriveConcrete($interface);
+        foreach ($this->provisionedNamespaces[$callerSpace] as $spaceUnit) {
 
-				if (!is_null($concrete))
+            if ($spaceUnit->getSource() == $dependencySpace) {
 
-					$this->saveWhenImplements($interface, $concrete);
-			}
+                $newIdentity = $spaceUnit->getNewName(
+                    @end(explode("\\", $dependency))
+                );
 
-			if (is_null($concrete))
+                return $spaceUnit->getLocation() . "\\". $newIdentity;
+            }
+        }
+    }
 
-				throw InvalidImplementor::missingParent(
+    /**
+     * In comparison to [getClass], this neither checks cache nor for contextual provisions. It assumes it's called within a hydration context that has already set appropriate scopes in place i.e. not in isolation
+     *
+     *  All objects internally derived from this trigger decorators if any are applied
+    */
+    public function instantiateConcrete(string $fullName): object
+    {
 
-					$interface, $caller, $this->hydratingForStack
-				);
+        $freshlyCreated = $this->initializeHydratingForAction($fullName, function ($className) { // we need this double coating since we intend to read arguments later, and [lastHydratedFor] is expected to see a list of at least 2 items during argument reading
 
-			return $concrete;
-		}
+            if (method_exists($className, self::CLASS_CONSTRUCTOR)) { // note that this throws a fatal, uncatchable error when class is in an unparseable state like missing abstract method or contract implementation
 
-		private function hasRenamedSpace (string $caller):bool {
+                $concrete = $this->hydrateConcreteForCaller($className);
+            } else {
 
-			return array_key_exists(
-				$this->objectMeta->classNamespace($caller),
+                $decorator = $this->getDecorator();
 
-				$this->provisionedNamespaces
-			);
-		}
+                if (!is_null($decorator)) {
 
-		private function relocateSpace (string $dependency, string $caller):string {
+                    $decorator->scopeArguments($className, [], self::CLASS_CONSTRUCTOR);
+                }
 
-			$callerSpace = $this->objectMeta->classNamespace($caller);
-			
-			$dependencySpace = $this->objectMeta->classNamespace($dependency);
+                $concrete = new $className();
+            }
 
-			foreach ($this->provisionedNamespaces[$callerSpace] as $spaceUnit)
-				
-				if ($spaceUnit->getSource() == $dependencySpace) {
+            return new HydratedConcrete($concrete, $this->lastHydratedFor(
+                $this->hydratingArguments ? 3 : null // going by ordering in $this->initializeHydratingFor(), caller should live on -2. If it's read outside initializeHydratingForAction, value will be on -2. We read hydratingForStack in here since this is where it's at its most up to date. However, due to the extra coating of $this->initializeHydratingForAction(), caller gets pushed to -3
+            ));
+        });
 
-					$newIdentity = $spaceUnit->getNewName(
-						@end(explode("\\", $dependency))
-					);
+        $concrete = $freshlyCreated->getConcrete();
 
-					return $spaceUnit->getLocation() . "\\". $newIdentity;
-				}
-		}
+        $this->storeConcrete($fullName, $concrete);
 
-		/**
-		 * In comparison to [getClass], this neither checks cache nor for contextual provisions. It assumes it's called within a hydration context that has already set appropriate scopes in place i.e. not in isolation
-		 * 
-		 *  All objects internally derived from this trigger decorators if any are applied
-		*/
-		public function instantiateConcrete (string $fullName):object {
+        return $this->decorateWhenInjecting(
+            $concrete,
+            $freshlyCreated->getCreatedFor()
+        );
+    }
 
-			$freshlyCreated = $this->initializeHydratingForAction ($fullName, function ($className) { // we need this double coating since we intend to read arguments later, and [lastHydratedFor] is expected to see a list of at least 2 items during argument reading
+    public function hydrateConcreteForCaller(string $className): object
+    {
 
-				if (method_exists($className, self::CLASS_CONSTRUCTOR)) // note that this throws a fatal, uncatchable error when class is in an unparseable state like missing abstract method or contract implementation
+        $currentArgumentState = $this->hydratingArguments;
 
-					$concrete = $this->hydrateConcreteForCaller($className);
-				else {
+        $this->hydratingArguments = false; // we want this class and below call to be treated as first class citizen i.e. lastHydratedFor should not yield provisions for argument mode (-2)
 
-					$decorator = $this->getDecorator();
+        $dependencies = array_values($this->getMethodParameters(
+            self::CLASS_CONSTRUCTOR,
+            $className
+        ));
 
-					if (!is_null($decorator))
+        $this->hydratingArguments = $currentArgumentState;
 
-						$decorator->scopeArguments( $className, [], self::CLASS_CONSTRUCTOR);
+        return new $className(...$dependencies);
+    }
 
-					$concrete = new $className;
-				}
+    public function internalMethodGetParameters(string $className, callable $action)
+    {
 
-				return new HydratedConcrete ($concrete, $this->lastHydratedFor(
+        $this->internalMethodHydrate[] = $className;
 
-					$this->hydratingArguments? 3: null // going by ordering in $this->initializeHydratingFor(), caller should live on -2. If it's read outside initializeHydratingForAction, value will be on -2. We read hydratingForStack in here since this is where it's at its most up to date. However, due to the extra coating of $this->initializeHydratingForAction(), caller gets pushed to -3
-				));
-			});
+        $this->hydratingArguments = true;
 
-			$concrete = $freshlyCreated->getConcrete();
+        $result = $action($className);
 
-			$this->storeConcrete($fullName, $concrete);
+        unset($this->internalMethodHydrate[
 
-			return $this->decorateWhenInjecting(
+            array_search($className, $this->internalMethodHydrate)
+        ]);
 
-				$concrete, $freshlyCreated->getCreatedFor()
-			);
-		}
+        $this->hydratingArguments = false;
 
-		public function hydrateConcreteForCaller (string $className):object {
+        return $result;
+    }
 
-			$currentArgumentState = $this->hydratingArguments;
-			
-			$this->hydratingArguments = false; // we want this class and below call to be treated as first class citizen i.e. lastHydratedFor should not yield provisions for argument mode (-2)
-			
-			$dependencies = array_values( $this->getMethodParameters(
+    /**
+    *	Fetch appropriate dependencies for a callable's arguments
+    *
+    * @param {callable}:string|Closure
+    * @param {anchorClass}:string. The class the given method belongs to
+    * @param {skipDecoration}:array. To be used by argument-based decorators to break an inevitable recursive loop
+    *
+    * @return {Array} associative. Contains hydrated parameters to invoke given callable with
+    *
+    * @throws ReflectionException if method doesn't exist on class
+    */
+    public function getMethodParameters(
+        $callable,
+        string $anchorClass = null,
+        array $skipDecoration = [] // We're using a parameter rather than property for this to avoid disabling decorators throughout
+    ): array {
 
-				self::CLASS_CONSTRUCTOR, $className
-			));
+        $context = null;
 
-			$this->hydratingArguments = $currentArgumentState;
+        $pushedItems = [];
 
-			return new $className (...$dependencies);
-		}
+        if (is_null($anchorClass)) {
 
-		public function internalMethodGetParameters (string $className, callable $action) {
+            $reflectedCallable = new ReflectionFunction($callable);
+        } else {
 
-			$this->internalMethodHydrate[] = $className;
+            $reflectedCallable = new ReflectionMethod($anchorClass, $callable);
 
-			$this->hydratingArguments = true;
+            if (!$this->hydratingInternally($anchorClass)) {
 
-			$result = $action($className);
+                $this->hydratingArguments = true; // required for below call. Will be unset accordingly after hydrating arguments
 
-			unset($this->internalMethodHydrate[
+                $pushedItems = $this->initializeHydratingFor($anchorClass);
+            }
 
-				array_search($className, $this->internalMethodHydrate)
-			]);
+            $context = $this->getRecursionContext();
+        }
 
-			$this->hydratingArguments = false;
+        $dependencies = $this->populateDependencies($reflectedCallable, $context);
 
-			return $result;
-		}
+        if (is_null($anchorClass)) {
+            return $dependencies;
+        } elseif (!$this->hydratingInternally($anchorClass)) {
 
-		/**
-		*	Fetch appropriate dependencies for a callable's arguments
-		* 
-		* @param {callable}:string|Closure
-		* @param {anchorClass}:string. The class the given method belongs to
-		* @param {skipDecoration}:array. To be used by argument-based decorators to break an inevitable recursive loop
-		* 
-		* @return {Array} associative. Contains hydrated parameters to invoke given callable with
-		* 
-		* @throws ReflectionException if method doesn't exist on class
-		*/ 
-		public function getMethodParameters (
+            $this->hydratingArguments = false;
 
-			$callable, string $anchorClass = null,
+            foreach ($pushedItems as $entity) {
 
-			array $skipDecoration = [] // We're using a parameter rather than property for this to avoid disabling decorators throughout
-		):array {
+                $this->popHydratingFor($entity);
+            }
+        }
 
-			$context = null;
+        if (in_array($anchorClass, $skipDecoration)) {
 
-			$pushedItems = [];
+            return $dependencies;
+        }
 
-			if (is_null($anchorClass))
+        $decorator = $this->getDecorator();
 
-				$reflectedCallable = new ReflectionFunction($callable);
+        return $decorator ? $decorator->scopeArguments(
+            $anchorClass,
+            $dependencies,
+            $callable
+        ) : $dependencies;
+    }
 
-			else {
+    private function hydratingInternally(string $fullName): bool
+    {
 
-				$reflectedCallable = new ReflectionMethod($anchorClass, $callable);
+        return in_array($fullName, $this->internalMethodHydrate);
+    }
 
-				if (!$this->hydratingInternally($anchorClass)) {
+    public function populateDependencies(ReflectionFunctionAbstract $reflectedCallable, ?ProvisionUnit $callerProvision): array
+    {
 
-					$this->hydratingArguments = true; // required for below call. Will be unset accordingly after hydrating arguments
+        $dependencies = [];
 
-					$pushedItems = $this->initializeHydratingFor($anchorClass);
-				}
+        $callerIsClosure = $reflectedCallable->isClosure();
 
-				$context = $this->getRecursionContext();
-			}
+        foreach ($reflectedCallable->getParameters() as $parameter) {
 
-			$dependencies = $this->populateDependencies($reflectedCallable, $context);
+            $parameterName = $parameter->getName();
 
-			if (is_null($anchorClass)) return $dependencies;
+            $parameterType = $parameter->getType();
 
-			elseif (!$this->hydratingInternally($anchorClass)) {
+            if (!is_null($callerProvision)) {
 
-				$this->hydratingArguments = false;
+                $dependencies[$parameterName] = $this->hydrateProvidedParameter($callerProvision, $parameterType, $parameterName, $callerIsClosure);
+            } elseif (!is_null($parameterType)) {
 
-				foreach ($pushedItems as $entity)
+                $dependencies[$parameterName] = $this->hydrateUnprovidedParameter($parameterType, $callerIsClosure);
+            } elseif ($parameter->isOptional()) {
 
-					$this->popHydratingFor($entity);
-			}
+                $dependencies[$parameterName] = $parameter->getDefaultValue();
+            } else {
+                $dependencies[$parameterName] = null;
+            }
+        }
 
-			if (in_array($anchorClass, $skipDecoration))
+        return $dependencies;
+    }
 
-				return $dependencies;
+    /**
+     * Pulls out a provided instance of a dependency when present, or creates a fresh one
+     *
+     * @param {parameterType} Null for parameters that weren't typed
+     *
+     * @return mixed. Entity matching type at given parameter
+    */
+    private function hydrateProvidedParameter(ProvisionUnit $callerProvision, ?ReflectionType $parameterType, string $parameterName, bool $callerIsClosure)
+    {
 
-			$decorator = $this->getDecorator();
+        $universalProvision = $this->provisionedClasses[self::UNIVERSAL_SELECTOR];
 
-			return $decorator ? $decorator->scopeArguments(
+        if ($callerProvision->hasArgument($parameterName)) {
 
-				$anchorClass, $dependencies, $callable
-			): $dependencies;
-		}
+            $providedValue = $callerProvision->getArgument($parameterName);
+        } elseif ($universalProvision->hasArgument($parameterName)) {
 
-		private function hydratingInternally (string $fullName):bool {
+            $providedValue = $universalProvision->getArgument($parameterName);
+        } elseif (is_null($parameterType)) {
+            return null;
+        } else {
 
-			return in_array($fullName, $this->internalMethodHydrate);
-		}
+            $typeName = $parameterType->getName();
 
-		public function populateDependencies (ReflectionFunctionAbstract $reflectedCallable, ?ProvisionUnit $callerProvision):array {
+            if ($callerProvision->hasArgument($typeName)) {
 
-			$dependencies = [];
-			
-			$callerIsClosure = $reflectedCallable->isClosure();
+                $this->setConsumer($typeName);
 
-			foreach ($reflectedCallable->getParameters() as $parameter) {
+                $providedValue = $callerProvision->getArgument($typeName);
+            } elseif ($universalProvision->hasArgument($typeName)) {
 
-				$parameterName = $parameter->getName();
+                $this->setConsumer($typeName);
 
-				$parameterType = $parameter->getType();
+                $providedValue = $universalProvision->getArgument($typeName);
+            }
+        }
 
-				if (!is_null($callerProvision) )
+        if (isset($providedValue)) {
 
-					$dependencies[$parameterName] = $this->hydrateProvidedParameter($callerProvision, $parameterType, $parameterName, $callerIsClosure);
+            if (!is_null($this->telescope)) {
 
-				elseif (!is_null($parameterType))
+                $this->telescope->addReadArguments(
+                    $callerProvision->getOwner(),
+                    $parameterName,
+                    $providedValue
+                );
+            }
 
-					$dependencies[$parameterName] = $this->hydrateUnprovidedParameter($parameterType, $callerIsClosure);
-				
-				elseif ($parameter->isOptional() )
+            return $providedValue;
+        }
 
-					$dependencies[$parameterName] = $parameter->getDefaultValue();
+        if (!is_null($this->telescope)) {
 
-				else $dependencies[$parameterName] = null;
-			}
+            $this->telescope->addMissingArgument(
+                $callerProvision->getOwner(),
+                $parameterName
+            );
+        }
 
-			return $dependencies;
-		}
+        if (is_null($parameterType)) {
+            return null;
+        }
 
-		/**
-		 * Pulls out a provided instance of a dependency when present, or creates a fresh one
-		 * 
-		 * @param {parameterType} Null for parameters that weren't typed
-		 * 
-		 * @return mixed. Entity matching type at given parameter
-		*/
-		private function hydrateProvidedParameter (ProvisionUnit $callerProvision, ?ReflectionType $parameterType, string $parameterName, bool $callerIsClosure) {
+        return $this->hydrateUnprovidedParameter($parameterType, $callerIsClosure);
+    }
 
-			$universalProvision = $this->provisionedClasses[self::UNIVERSAL_SELECTOR];
+    /**
+     * @return mixed. Can be anything argument is typed to
+    */
+    private function hydrateUnprovidedParameter(ReflectionType $parameterType, bool $callerIsClosure)
+    {
 
-			if ($callerProvision->hasArgument($parameterName))
+        $typeName = $parameterType->getName();
 
-				$providedValue = $callerProvision->getArgument($parameterName);
+        if ($parameterType->isBuiltin()) {
 
-			elseif ($universalProvision->hasArgument($parameterName))
+            return $this->objectMeta->getScalarValue($typeName);
+        }
 
-				$providedValue = $universalProvision->getArgument($parameterName);
+        if (!in_array($typeName, $this->hydratingForStack)) {
 
-			else if (is_null($parameterType)) return null;
+            if ($this->objectMeta->stringInClassTree($typeName, UnitEnum::class)) {
 
-			else {
+                return (new ReflectionEnum($typeName))->getCases()[0]
 
-				$typeName = $parameterType->getName();
+                ->getValue();
+            }
 
-				if ($callerProvision->hasArgument($typeName)) {
+            if (!$callerIsClosure) {
 
-					$this->setConsumer($typeName);
+                $concrete = $this->internalMethodGetParameters($typeName, function ($className) {
 
-					$providedValue = $callerProvision->getArgument($typeName);
-				}
+                    return $this->getClass($className);
+                });
+            } else {
+                $concrete = $this->getClass($typeName);
+            } // there's no extra layer of called scope->given object (to get arguments for). We only have called scope in the stack; so, get immediate last item
 
-				else if ($universalProvision->hasArgument($typeName)) {
+            $this->setConsumer($typeName);
 
-					$this->setConsumer($typeName);
+            return $concrete;
+        }
 
-					$providedValue = $universalProvision->getArgument($typeName);
-				}
-			}
+        if ($this->objectMeta->isInterface($typeName)) {
 
-			if ( isset($providedValue)) {
+            throw new HydrationException("$typeName's concrete cannot depend on its dependency's concrete");
+        }
 
-				if (!is_null($this->telescope) )
+        $classNameArray = range("a", "z");
 
-					$this->telescope->addReadArguments(
+        shuffle($classNameArray);
 
-						$callerProvision->getOwner(), $parameterName, $providedValue
-					);
+        $newClassName = substr(implode("", $classNameArray), 3, 20);
 
-				return $providedValue;
-			}
+        $this->triggerCircularWarning(
+            $typeName,
+            $this->lastHydratedFor()
+        );
 
-			if (!is_null($this->telescope) )
+        return $this->genericFactory(
+            __DIR__ . DIRECTORY_SEPARATOR . "Templates" . DIRECTORY_SEPARATOR . "CircularBreaker.php",
+            [
+                "className" => $newClassName,
 
-				$this->telescope->addMissingArgument(
+                "target" => $typeName,
 
-					$callerProvision->getOwner(), $parameterName
-				);
+                "extends" => /*$isInterface ? "implements":*/ "extends"
+            ],
+            function ($types) use ($newClassName) {
 
-			if (is_null($parameterType)) return null;
+                return new $newClassName($types["target"], $this);
+            }
+        ); // A requests B and vice versa. If A makes the first call, we're returning a proxied/fake A to the B instance we pass to the real A
+    }
 
-			return $this->hydrateUnprovidedParameter($parameterType, $callerIsClosure);
-		}
+    public function triggerCircularWarning(string $calledClass, string $dependency): void
+    {
 
-		/**
-		 * @return mixed. Can be anything argument is typed to
-		*/
-		private function hydrateUnprovidedParameter (ReflectionType $parameterType, bool $callerIsClosure) {
+        trigger_error(
+            "Circular dependency detected. Hint: Compare $calledClass and $dependency",
+            E_USER_WARNING
+        );
+    }
 
-			$typeName = $parameterType->getName();
+    /**
+     * Since we can't var_dump while rr server is running
+    */
+    private function inProcessFileLogger(array $fields): void
+    {
 
-			if ( $parameterType->isBuiltin())
+        file_put_contents(
+            $this->config->containerLogFile(),
+            implode("\n", $fields) . "\n\n",
+            FILE_APPEND
+        );
+    }
 
-				return $this->objectMeta->getScalarValue($typeName);
+    public function whenType(string $toProvision): self
+    {
 
-			if (!in_array($typeName, $this->hydratingForStack) ) {
+        if (!array_key_exists($toProvision, $this->provisionedClasses)) {
 
-				if ($this->objectMeta->stringInClassTree($typeName, UnitEnum::class))
+            $this->provisionedClasses[$toProvision] = new ProvisionUnit($toProvision);
+        }
 
-					return (new ReflectionEnum($typeName))->getCases()[0]
+        $this->provisionContext = $toProvision;
 
-					->getValue();
+        return $this;
+    }
 
-				if (!$callerIsClosure )
+    public function whenTypeAny(): self
+    {
 
-					$concrete = $this->internalMethodGetParameters($typeName, function ($className) {
+        return $this->whenType(self::UNIVERSAL_SELECTOR);
+    }
 
-						return $this->getClass($className);
-					});
+    /**
+     * For service location
+    */
+    public function needs(array $dependencyList): self
+    {
 
-				else $concrete = $this->getClass($typeName); // there's no extra layer of called scope->given object (to get arguments for). We only have called scope in the stack; so, get immediate last item
+        if (is_null($this->provisionContext)) {
 
-				$this->setConsumer($typeName);
+            throw new HydrationException("Undefined provisionContext");
+        }
 
-				return $concrete;
-			}
+        if (!is_null($this->telescope)) {
 
-			if ($this->objectMeta->isInterface($typeName))
+            $this->telescope->addWrittenConcretes(
+                $this->provisionContext,
+                array_keys($dependencyList)
+            );
+        }
 
-				throw new HydrationException ("$typeName's concrete cannot depend on its dependency's concrete");
+        $this->provisionedClasses[$this->provisionContext]->updateConcretes($dependencyList);
 
-			$classNameArray = range("a", "z");
+        return $this;
+    }
 
-			shuffle($classNameArray);
+    public function needsAny(array $dependencyList): self
+    {
 
-			$newClassName = substr(implode("", $classNameArray), 3, 20);
+        $this->needs($dependencyList)
 
-			$this->triggerCircularWarning(
+        ->needsArguments($dependencyList);
 
-				$typeName, $this->lastHydratedFor()
-			);
+        $this->provisionContext = null;
 
-			return $this->genericFactory(
-				__DIR__ . DIRECTORY_SEPARATOR . "Templates" . DIRECTORY_SEPARATOR . "CircularBreaker.php", 
+        return $this;
+    }
 
-				[
-					"className" => $newClassName,
+    public function needsArguments(array $argumentList): self
+    {
 
-					"target" => $typeName,
+        if (is_null($this->provisionContext)) {
 
-					"extends" => /*$isInterface ? "implements":*/ "extends"
-				],
+            throw new HydrationException("Undefined provisionContext");
+        }
 
-				function ($types) use ($newClassName) {
+        if (!is_null($this->telescope)) {
 
-			    	return new $newClassName($types["target"], $this);
-				}
-			); // A requests B and vice versa. If A makes the first call, we're returning a proxied/fake A to the B instance we pass to the real A
-		}
+            $this->telescope->addWrittenArguments(
+                $this->provisionContext,
+                array_keys($argumentList)
+            );
+        }
 
-		public function triggerCircularWarning (string $calledClass, string $dependency):void {
+        $this->provisionedClasses[$this->provisionContext]->updateArguments($argumentList);
 
-			trigger_error(
-				"Circular dependency detected. Hint: Compare $calledClass and $dependency",
+        return $this;
+    }
 
-				E_USER_WARNING
-			);
-		}
+    public function whenSpace(string $callerNamespace): self
+    {
 
-		/**
-		 * Since we can't var_dump while rr server is running
-		*/
-		private function inProcessFileLogger (array $fields):void {
+        if (!array_key_exists($callerNamespace, $this->provisionedNamespaces)) {
 
-			file_put_contents(
-				$this->config->containerLogFile(),
+            $this->provisionedNamespaces[$callerNamespace] = [];
+        }
 
-				implode("\n", $fields) . "\n\n", FILE_APPEND
-			);
-		}
+        $this->provisionSpace = $callerNamespace;
 
-		public function whenType (string $toProvision):self {
+        return $this;
+    }
 
-			if (!array_key_exists($toProvision, $this->provisionedClasses))
+    public function renameServiceSpace(NamespaceUnit $unit): self
+    {
 
-				$this->provisionedClasses[$toProvision] = new ProvisionUnit($toProvision);
+        $this->provisionedNamespaces[$this->provisionSpace][] = $unit;
 
-			$this->provisionContext = $toProvision;
+        return $this;
+    }
 
-			return $this;
-		}
+    /**
+    *	@return Result of evaluating {constructor}
+    */
+    public function genericFactory(string $classPath, array $types, callable $constructor)
+    {
 
-		public function whenTypeAny ():self {
+        $genericContents = file_get_contents($classPath);
 
-			return $this->whenType(self::UNIVERSAL_SELECTOR);
-		}
+        foreach ($types as $placeholder => $type) {
 
-		/**
-		 * For service location
-		*/
-		public function needs (array $dependencyList):self {
+            $genericContents = str_replace("<$placeholder>", $type, $genericContents);
+        }
 
-			if (is_null ($this->provisionContext))
+        eval($genericContents);
 
-				throw new HydrationException("Undefined provisionContext");
+        return $constructor($types);
+    }
 
-				if (!is_null($this->telescope))
+    public function setEssentials(): void
+    {
 
-					$this->telescope->addWrittenConcretes(
-						$this->provisionContext,
+        $this->whenTypeAny()->needsAny([get_class() => $this]);
 
-						array_keys($dependencyList)
-					);
+        $this->objectMeta = new ObjectDetails($this);
 
-			$this->provisionedClasses[$this->provisionContext]->updateConcretes($dependencyList);
-			
-			return $this;
-		}
+        $this->arrayMeta = new ArrayDetails();
+    }
 
-		public function needsAny (array $dependencyList):self {
+    public function interiorDecorate(): void
+    {
 
-			$this->needs($dependencyList)
+        $this->decorator = $this->getClass(DecoratorHydrator::class);
+    }
 
-			->needsArguments($dependencyList);
+    /**
+     * Since this isn't injected, we're using this as inlet to stub out decorator when desired
+     *
+     * @return null when we're either hydrating interfaceCollection or the decorator itself
+    */
+    protected function getDecorator(): ?DecoratorHydrator
+    {
 
-			$this->provisionContext = null;
+        return $this->decorator;
+    }
 
-			return $this;
-		}
+    public function refreshClass(string $className): void
+    {
 
-		public function needsArguments (array $argumentList):self {
+        foreach ($this->provisionedClasses as $provisionContext) {
 
-			if (is_null ($this->provisionContext))
+            $cantRefreshForContext = !$provisionContext->hasAnywhere($className) ||
 
-				throw new HydrationException("Undefined provisionContext");
+            !$this->canClearClass($className);
 
-				if (!is_null($this->telescope))
+            if ($cantRefreshForContext) {
+                continue;
+            }
 
-					$this->telescope->addWrittenArguments(
-						$this->provisionContext,
+            if (!is_null($this->telescope)) {
 
-						array_keys($argumentList)
-					);
+                $this->telescope->addRefreshedEntities($className);
+            }
 
-			$this->provisionedClasses[$this->provisionContext]->updateArguments($argumentList);
-			
-			return $this;
-		}
+            $provisionContext->clearInProvision($className);
 
-		public function whenSpace(string $callerNamespace):self {
+            $consumers = $this->hydratedClassConsumers;
 
-			if (!array_key_exists($callerNamespace, $this->provisionedNamespaces))
+            if (!array_key_exists($className, $consumers)) {
+                continue;
+            }
 
-				$this->provisionedNamespaces[$callerNamespace] = [];
+            foreach (array_unique($consumers[ $className]) as $consumer) {
 
-			$this->provisionSpace = $callerNamespace;
+                $this->refreshClass($consumer);
+            }
+        }
+    }
 
-			return $this;
-		}
+    /**
+     * Still using an interface for this rather than a decorator since that's faster than reading attribute lists
+     */
+    private function canClearClass(string $className): bool
+    {
 
-		public function renameServiceSpace(NamespaceUnit $unit):self {
-			
-			$this->provisionedNamespaces[$this->provisionSpace][] = $unit;
+        return !$this->objectMeta->implementsInterface(
+            $className,
+            ClassHydrationBehavior::class
+        ) ||
 
-			return $this;
-		}
+        !$this->getProvidedConcrete($className)
 
-		/**
-		*	@return Result of evaluating {constructor}
-		*/
-		public function genericFactory (string $classPath, array $types, callable $constructor) {
+        ->protectRefreshPurge();
+    }
 
-			$genericContents = file_get_contents($classPath);
+    public function refreshMany(array $classes): void
+    {
 
-		    foreach ($types as $placeholder => $type)
+        foreach ($classes as $className) {
 
-		        $genericContents = str_replace("<$placeholder>", $type, $genericContents);
-
-		    eval($genericContents);
-
-		    return $constructor($types);
-		}
-
-		public function setEssentials ():void {
-
-			$this->whenTypeAny()->needsAny([get_class() => $this]);
-
-			$this->objectMeta = new ObjectDetails($this);
-
-			$this->arrayMeta = new ArrayDetails;
-		}
-
-		public function interiorDecorate ():void {
-
-			$this->decorator = $this->getClass(DecoratorHydrator::class);
-		}
-
-		/**
-		 * Since this isn't injected, we're using this as inlet to stub out decorator when desired
-		 * 
-		 * @return null when we're either hydrating interfaceCollection or the decorator itself
-		*/
-		protected function getDecorator ():?DecoratorHydrator {
-
-			return $this->decorator;
-		}
-
-		public function refreshClass (string $className):void {
-
-			foreach ($this->provisionedClasses as $provisionContext) {
-
-				$cantRefreshForContext = !$provisionContext->hasAnywhere($className) ||
-
-				!$this->canClearClass($className);
-
-				if ($cantRefreshForContext) continue;
-
-				if (!is_null($this->telescope))
-
-					$this->telescope->addRefreshedEntities($className);
-
-				$provisionContext->clearInProvision($className);
-
-				$consumers = $this->hydratedClassConsumers;
-
-				if (!array_key_exists($className, $consumers)) continue;
-
-				foreach (array_unique($consumers[ $className]) as $consumer)
-
-					$this->refreshClass($consumer);
-			}
-		}
-
-		/**
-		 * Still using an interface for this rather than a decorator since that's faster than reading attribute lists
-		 */
-		private function canClearClass ( string $className):bool {
-
-			return !$this->objectMeta->implementsInterface(
-
-				$className, ClassHydrationBehavior::class
-			) ||
-
-			!$this->getProvidedConcrete($className)
-
-			->protectRefreshPurge();
-		}
-
-		public function refreshMany (array $classes):void {
-
-			foreach ($classes as $className)
-
-				$this->refreshClass($className);
-		}
-	}
-?>
+            $this->refreshClass($className);
+        }
+    }
+}

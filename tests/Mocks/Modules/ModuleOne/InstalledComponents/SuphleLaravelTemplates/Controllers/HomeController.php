@@ -1,11 +1,12 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\InstalledComponents\SuphleLaravelTemplates\Controllers;
 
-	class HomeController extends DefaultController {
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\InstalledComponents\SuphleLaravelTemplates\Controllers;
 
-		public function entry () {
+class HomeController extends DefaultController
+{
+    public function entry()
+    {
 
-			return "Hello, Artisans!";
-		}
-	}
-?>
+        return "Hello, Artisans!";
+    }
+}

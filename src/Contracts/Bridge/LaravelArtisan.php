@@ -1,10 +1,10 @@
 <?php
-	namespace Suphle\Contracts\Bridge;
 
-	use Symfony\Component\Console\Output\OutputInterface;
+namespace Suphle\Contracts\Bridge;
 
-	interface LaravelArtisan {
+use Symfony\Component\Console\Output\OutputInterface;
 
-		public function invokeCommand ($command, OutputInterface $writeTo, array $parameters = []):int;
-	}
-?>
+interface LaravelArtisan
+{
+    public function invokeCommand($command, OutputInterface $writeTo, array $parameters = []): int;
+}

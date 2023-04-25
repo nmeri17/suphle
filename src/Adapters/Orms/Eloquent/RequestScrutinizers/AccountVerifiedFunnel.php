@@ -1,20 +1,17 @@
 <?php
-	namespace Suphle\Adapters\Orms\Eloquent\RequestScrutinizers;
 
-	use Suphle\Routing\CollectionMetaFunnel;
+namespace Suphle\Adapters\Orms\Eloquent\RequestScrutinizers;
 
-	class AccountVerifiedFunnel extends CollectionMetaFunnel {
+use Suphle\Routing\CollectionMetaFunnel;
 
-		public function __construct (
+class AccountVerifiedFunnel extends CollectionMetaFunnel
+{
+    public function __construct(
+        protected readonly array $activePatterns,
+        public readonly string $verificationUrl = "/accounts/verify",
+        public readonly string $verificationColumn = "email_verified_at"
+    ) {
 
-			protected readonly array $activePatterns,
-
-			public readonly string $verificationUrl = "/accounts/verify",
-
-			public readonly string $verificationColumn = "email_verified_at"
-		) {
-
-			//
-		}
-	}
-?>
+        //
+    }
+}

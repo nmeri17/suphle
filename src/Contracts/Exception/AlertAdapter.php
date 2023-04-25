@@ -1,11 +1,11 @@
 <?php
-	namespace Suphle\Contracts\Exception;
 
-	use Throwable;
+namespace Suphle\Contracts\Exception;
 
-	interface AlertAdapter {
+use Throwable;
 
-		// note: exception has a `getTraceAsString()`
-		public function broadcastException (Throwable $exception, $activePayload):void;
-	}
-?>
+interface AlertAdapter
+{
+    // note: exception has a `getTraceAsString()`
+    public function broadcastException(Throwable $exception, $activePayload): void;
+}

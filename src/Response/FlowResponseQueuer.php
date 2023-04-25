@@ -1,38 +1,37 @@
 <?php
-	namespace Suphle\Response;
 
-	use Suphle\Contracts\{Auth\AuthStorage, Presentation\BaseRenderer};
+namespace Suphle\Response;
 
-	use Suphle\Queues\AdapterManager;
+use Suphle\Contracts\{Auth\AuthStorage, Presentation\BaseRenderer};
 
-	use Suphle\Flows\{Jobs\RouteBranches, Structures\PendingFlowDetails};
+use Suphle\Queues\AdapterManager;
 
-	use Suphle\Modules\Structures\ActiveDescriptors;
+use Suphle\Flows\{Jobs\RouteBranches, Structures\PendingFlowDetails};
 
-	class FlowResponseQueuer {
+use Suphle\Modules\Structures\ActiveDescriptors;
 
-		public function __construct (
-			protected readonly AdapterManager $queueManager,
+class FlowResponseQueuer
+{
+    public function __construct(
+        protected readonly AdapterManager $queueManager,
+        protected readonly AuthStorage $authStorage,
+        protected readonly ActiveDescriptors $descriptorsHolder
+    ) {
 
-			protected readonly AuthStorage $authStorage,
+        //
+    }
 
-			protected readonly ActiveDescriptors $descriptorsHolder
-		) {
+    public function saveSubBranches(BaseRenderer $renderer): void
+    {
 
-			//
-		}
+        $this->queueManager->addTask(RouteBranches::class, [
 
-		public function saveSubBranches (BaseRenderer $renderer):void {
+            PendingFlowDetails::class => new PendingFlowDetails(
+                $renderer,
+                $this->authStorage
+            ),
 
-			$this->queueManager->addTask(RouteBranches::class, [
-				
-				PendingFlowDetails::class => new PendingFlowDetails(
-					
-					$renderer, $this->authStorage
-				),
-
-				ActiveDescriptors::class => $this->descriptorsHolder
-			]);
-		}
-	}
-?>
+            ActiveDescriptors::class => $this->descriptorsHolder
+        ]);
+    }
+}

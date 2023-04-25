@@ -1,44 +1,48 @@
 <?php
-	namespace Suphle\Exception;
 
-	use Suphle\Contracts\Services\CallInterceptors\ServiceErrorCatcher;
+namespace Suphle\Exception;
 
-	use Suphle\Queues\AdapterManager;
+use Suphle\Contracts\Services\CallInterceptors\ServiceErrorCatcher;
 
-	use Suphle\Exception\Jobs\DeferExceptionAlert;
+use Suphle\Queues\AdapterManager;
 
-	use Throwable;
+use Suphle\Exception\Jobs\DeferExceptionAlert;
 
-	class DetectedExceptionManager {
+use Throwable;
 
-		final const ALERTER_METHOD = "queueAlertAdapter";
+class DetectedExceptionManager
+{
+    final public const ALERTER_METHOD = "queueAlertAdapter";
 
-		public function __construct(protected readonly AdapterManager $queueManager) {
+    public function __construct(protected readonly AdapterManager $queueManager)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function detonateOrDiffuse (Throwable $exception, ServiceErrorCatcher $thrower, $payload):void {
+    public function detonateOrDiffuse(Throwable $exception, ServiceErrorCatcher $thrower, $payload): void
+    {
 
-			$rebounds = $thrower->rethrowAs();
+        $rebounds = $thrower->rethrowAs();
 
-			$exceptionName = $exception::class;
+        $exceptionName = $exception::class;
 
-			if (array_key_exists($exceptionName, $rebounds))
+        if (array_key_exists($exceptionName, $rebounds)) {
 
-				throw new $rebounds[$exceptionName];
+            throw new $rebounds[$exceptionName]();
+        }
 
-			$this->queueAlertAdapter($exception, $thrower->getDebugDetails());
-		}
+        $this->queueAlertAdapter($exception, $thrower->getDebugDetails());
+    }
 
-		public function queueAlertAdapter (Throwable $exception, $payload):void {
+    public function queueAlertAdapter(Throwable $exception, $payload): void
+    {
 
-			$this->queueManager->addTask(DeferExceptionAlert::class, [
+        $this->queueManager->addTask(DeferExceptionAlert::class, [
 
-				"explosive" => $exception,
+            "explosive" => $exception,
 
-				"activePayload" => $payload
-			]);
-		}
-	}
-?>
+            "activePayload" => $payload
+        ]);
+    }
+}

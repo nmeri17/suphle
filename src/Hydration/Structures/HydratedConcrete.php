@@ -1,21 +1,24 @@
 <?php
-	namespace Suphle\Hydration\Structures;
 
-	class HydratedConcrete {
+namespace Suphle\Hydration\Structures;
 
-		public function __construct(private $concrete, protected readonly string $createdFor) {
+class HydratedConcrete
+{
+    public function __construct(private $concrete, protected readonly string $createdFor)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function getCreatedFor ():string {
+    public function getCreatedFor(): string
+    {
 
-			return $this->createdFor;
-		}
+        return $this->createdFor;
+    }
 
-		public function getConcrete () {
+    public function getConcrete()
+    {
 
-			return $this->concrete;
-		}
-	}
-?>
+        return $this->concrete;
+    }
+}

@@ -1,74 +1,77 @@
 <?php
-	namespace Suphle\Hydration\Structures;
 
-	use Suphle\Hydration\Container;
+namespace Suphle\Hydration\Structures;
 
-	use ReflectionMethod;
+use Suphle\Hydration\Container;
 
-	class CallbackDetails {
+use ReflectionMethod;
 
-		public function __construct (
+class CallbackDetails
+{
+    public function __construct(
+        protected readonly Container $container
+    ) {
 
-			protected readonly Container $container
-		) {
+        //
+    }
 
-			//
-		}
+    /**
+     * Autowires each callback level
+     *
+     * @param {toBind} When present, callback will access its protected properties
+     *
+     * @return mixed. Any value returned that's not a callback
+    */
+    public function recursiveValueDerivation(callable $outerFunction, object $toBind = null)
+    {
 
-		/**
-		 * Autowires each callback level
-		 * 
-		 * @param {toBind} When present, callback will access its protected properties
-		 * 
-		 * @return mixed. Any value returned that's not a callback
-		*/
-		public function recursiveValueDerivation (callable $outerFunction, object $toBind = null) {
+        $parameters = $this->container->getMethodParameters($outerFunction);
 
-			$parameters = $this->container->getMethodParameters($outerFunction);
+        if (!is_null($toBind)) {
 
-			if (!is_null($toBind))
+            $outerFunction = $outerFunction->bindTo($toBind, $toBind /*access protected properties*/);
+        }
 
-				$outerFunction = $outerFunction->bindTo($toBind, $toBind /*access protected properties*/);
+        $result = call_user_func_array($outerFunction, $parameters);
 
-			$result = call_user_func_array($outerFunction, $parameters);
+        while (is_callable($result)) {
 
-			while (is_callable($result))
+            $result = $this->recursiveValueDerivation($result);
+        }
 
-				$result = $this->recursiveValueDerivation($result);
+        return $result;
+    }
 
-			return $result;
-		}
+    /**
+     * List starts with oldest rules i.e. those of the parents. Immediate rules will be at the end of the list
+     *
+     * @return ReflectionAttribute[]
+    */
+    public function getMethodAttributes(
+        string $className,
+        string $methodName,
+        string $filterToAttribute = null
+    ): array {
 
-		/**
-		 * List starts with oldest rules i.e. those of the parents. Immediate rules will be at the end of the list
-		 * 
-		 * @return ReflectionAttribute[]
-		*/
-		public function getMethodAttributes (
-			string $className, string $methodName,
+        $attributesList = [];
 
-			string $filterToAttribute = null
-		):array {
+        $inheritanceChain = array_filter(class_parents($className), function ($parent) use ($methodName) {
 
-			$attributesList = [];
+            return method_exists($parent, $methodName);
+        });
 
-			$inheritanceChain = array_filter(class_parents($className), function ($parent) use ($methodName) {
+        $inheritanceChain[] = $className;
 
-				return method_exists($parent, $methodName);
-			});
+        foreach ($inheritanceChain as $entry) {
 
-			$inheritanceChain[] = $className;
+            $attributesList = array_merge(
+                $attributesList,
+                (new ReflectionMethod($entry, $methodName))
 
-			foreach ($inheritanceChain as $entry)
+                ->getAttributes($filterToAttribute)
+            );
+        }
 
-				$attributesList = array_merge(
-
-					$attributesList, (new ReflectionMethod($entry, $methodName))
-
-					->getAttributes($filterToAttribute)
-				);
-
-			return $attributesList;
-		}
-	}
-?>
+        return $attributesList;
+    }
+}

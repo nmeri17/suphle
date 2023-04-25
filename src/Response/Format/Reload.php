@@ -1,39 +1,42 @@
 <?php
-	namespace Suphle\Response\Format;
 
-	use Suphle\Services\Decorators\VariableDependencies;
+namespace Suphle\Response\Format;
 
-	use Suphle\Request\PayloadStorage;
+use Suphle\Services\Decorators\VariableDependencies;
 
-	use Suphle\Contracts\Response\RendererManager;
+use Suphle\Request\PayloadStorage;
 
-	#[VariableDependencies([ "setRendererManager" ])]
-	class Reload extends BaseHtmlRenderer {
+use Suphle\Contracts\Response\RendererManager;
 
-		public const STATUS_CODE = 205; // Reset Content
+#[VariableDependencies([ "setRendererManager" ])]
+class Reload extends BaseHtmlRenderer
+{
+    public const STATUS_CODE = 205; // Reset Content
 
-		protected RendererManager $rendererManager;
+    protected RendererManager $rendererManager;
 
-		public function __construct(protected string $handler) {
+    public function __construct(protected string $handler)
+    {
 
-			$this->setHeaders(self::STATUS_CODE, [
+        $this->setHeaders(self::STATUS_CODE, [
 
-				PayloadStorage::CONTENT_TYPE_KEY => PayloadStorage::HTML_HEADER_VALUE
-			]);
-		}
+            PayloadStorage::CONTENT_TYPE_KEY => PayloadStorage::HTML_HEADER_VALUE
+        ]);
+    }
 
-		public function setRendererManager (RendererManager $rendererManager):void {
+    public function setRendererManager(RendererManager $rendererManager): void
+    {
 
-			$this->rendererManager = $rendererManager;
-		}
+        $this->rendererManager = $rendererManager;
+    }
 
-		public function render ():string {
+    public function render(): string
+    {
 
-			return $this->rendererManager
+        return $this->rendererManager
 
-			->invokePreviousRenderer($this->rawResponse)
+        ->invokePreviousRenderer($this->rawResponse)
 
-			->render();
-		}
-	}
-?>
+        ->render();
+    }
+}

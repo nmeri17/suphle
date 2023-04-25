@@ -1,79 +1,87 @@
 <?php
-	namespace Suphle\Routing;
 
-	use Suphle\Hydration\{Container, Structures\ObjectDetails};
+namespace Suphle\Routing;
 
-	use Suphle\Contracts\Routing\{CanaryGateway, RouteCollection};
+use Suphle\Hydration\{Container, Structures\ObjectDetails};
 
-	use Suphle\Contracts\Auth\AuthStorage;
+use Suphle\Contracts\Routing\{CanaryGateway, RouteCollection};
 
-	use Suphle\Exception\Explosives\DevError\InvalidImplementor;
+use Suphle\Contracts\Auth\AuthStorage;
 
-	class CanaryValidator {
+use Suphle\Exception\Explosives\DevError\InvalidImplementor;
 
-		protected array $allCanaries = [];
-  protected array $canaryInstances = [];
+class CanaryValidator
+{
+    protected array $allCanaries = [];
+    protected array $canaryInstances = [];
 
-		public function __construct(protected readonly Container $container, protected readonly ObjectDetails $objectMeta) {
+    public function __construct(protected readonly Container $container, protected readonly ObjectDetails $objectMeta)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function setCanaries (array $canaries):self {
+    public function setCanaries(array $canaries): self
+    {
 
-			$this->allCanaries = $canaries;
+        $this->allCanaries = $canaries;
 
-			return $this;
-		}
+        return $this;
+    }
 
-		public function collectionAuthStorage (AuthStorage $authStorage):self {
+    public function collectionAuthStorage(AuthStorage $authStorage): self
+    {
 
-			foreach ($this->allCanaries as $canaryName)
+        foreach ($this->allCanaries as $canaryName) {
 
-				$this->container->whenType($canaryName)->needsArguments([
+            $this->container->whenType($canaryName)->needsArguments([
 
-					AuthStorage::class => $authStorage
-				]);
+                AuthStorage::class => $authStorage
+            ]);
+        }
 
-			return $this;
-		}
+        return $this;
+    }
 
-		public function setValidCanaries ():self {
+    public function setValidCanaries(): self
+    {
 
-			$gatewayName = CanaryGateway::class;
+        $gatewayName = CanaryGateway::class;
 
-			$collectionInterface = RouteCollection::class;
+        $collectionInterface = RouteCollection::class;
 
-			array_walk($this->allCanaries, function ($canary) use ($gatewayName, $collectionInterface) {
+        array_walk($this->allCanaries, function ($canary) use ($gatewayName, $collectionInterface) {
 
-				if ( !$this->objectMeta->implementsInterface(
+            if (!$this->objectMeta->implementsInterface(
+                $canary,
+                $gatewayName
+            )) {
 
-					$canary, $gatewayName
-				))
+                throw InvalidImplementor::incompatibleParent($gatewayName, $canary);
+            }
 
-					throw InvalidImplementor::incompatibleParent($gatewayName, $canary);
+            $instance = $this->container->getClass($canary);
 
-				$instance = $this->container->getClass($canary);
+            $nextCollection = $instance->entryClass();
 
-				$nextCollection = $instance->entryClass();
+            if (!$this->objectMeta->implementsInterface(
+                $nextCollection,
+                $collectionInterface
+            )) {
 
-				if ( !$this->objectMeta->implementsInterface(
+                throw new InvalidImplementor($collectionInterface, $nextCollection);
+            }
 
-					$nextCollection, $collectionInterface
-				))
+            $this->canaryInstances[] = $instance;
 
-					throw new InvalidImplementor($collectionInterface, $nextCollection);
+        });
 
-				$this->canaryInstances[] = $instance;
+        return $this;
+    }
 
-			});
+    public function getCanaryInstances(): array
+    {
 
-			return $this;
-		}
-
-		public function getCanaryInstances ():array {
-
-			return $this->canaryInstances;
-		}
-	}
-?>
+        return $this->canaryInstances;
+    }
+}

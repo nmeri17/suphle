@@ -1,13 +1,15 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\InstalledComponents\SuphleLaravelTemplates\Controllers;
 
-	use Illuminate\Foundation\{Bus\DispatchesJobs, Auth\Access\AuthorizesRequests, Validation\ValidatesRequests};
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\InstalledComponents\SuphleLaravelTemplates\Controllers;
 
-	use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Foundation\{Bus\DispatchesJobs, Auth\Access\AuthorizesRequests, Validation\ValidatesRequests};
 
-	// replaces App\Http\Controllers\Controller, from a namespace we have no use for
-	class DefaultController extends BaseController {
+use Illuminate\Routing\Controller as BaseController;
 
-		use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
-	}
-?>
+// replaces App\Http\Controllers\Controller, from a namespace we have no use for
+class DefaultController extends BaseController
+{
+    use AuthorizesRequests;
+    use DispatchesJobs;
+    use ValidatesRequests;
+}

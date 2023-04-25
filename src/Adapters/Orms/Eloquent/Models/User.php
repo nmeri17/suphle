@@ -1,37 +1,42 @@
 <?php
-	namespace Suphle\Adapters\Orms\Eloquent\Models;
 
-	use Suphle\Contracts\Auth\UserContract;
+namespace Suphle\Adapters\Orms\Eloquent\Models;
 
-	abstract class User extends BaseModel implements UserContract { // not a component template since it should be extended rather than overwritten
+use Suphle\Contracts\Auth\UserContract;
 
-		/**
-		 * Their model doesn't type these properties
-		*/
-		protected $hidden = ["password"];
-		
-		protected $table = "users";
+abstract class User extends BaseModel implements UserContract
+{ // not a component template since it should be extended rather than overwritten
 
-		protected $guarded = ["id", "password"];
+    /**
+     * Their model doesn't type these properties
+    */
+    protected $hidden = ["password"];
 
-		public function getId () {
+    protected $table = "users";
 
-			return $this->id;
-		}
+    protected $guarded = ["id", "password"];
 
-		public function setId ($id):void {
+    public function getId()
+    {
 
-			$this->id = $id;
-		}
+        return $this->id;
+    }
 
-		public function getPassword () {
+    public function setId($id): void
+    {
 
-			return $this->password;
-		}
+        $this->id = $id;
+    }
 
-		public function findByPrimaryKey ($id, $columns = ['*']) {
+    public function getPassword()
+    {
 
-			return $this->find($id, $columns);
-		}
-	}
-?>
+        return $this->password;
+    }
+
+    public function findByPrimaryKey($id, $columns = ['*'])
+    {
+
+        return $this->find($id, $columns);
+    }
+}

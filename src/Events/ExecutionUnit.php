@@ -1,24 +1,27 @@
 <?php
-	namespace Suphle\Events;
 
-	class ExecutionUnit {
+namespace Suphle\Events;
 
-		function __construct(protected readonly string $eventName, protected readonly string $handlingMethod) {
+class ExecutionUnit
+{
+    public function __construct(protected readonly string $eventName, protected readonly string $handlingMethod)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function matchesEvent(string $eventName):bool {
-			
-			return $eventName ==  $this->eventName;
-		}
+    public function matchesEvent(string $eventName): bool
+    {
 
-		public function fire($hydratedHandler, $payload) {
-			
-			return call_user_func_array(
-				[$hydratedHandler, $this->handlingMethod ],
-				[$payload]
-			);
-		}
-	}
-?>
+        return $eventName ==  $this->eventName;
+    }
+
+    public function fire($hydratedHandler, $payload)
+    {
+
+        return call_user_func_array(
+            [$hydratedHandler, $this->handlingMethod ],
+            [$payload]
+        );
+    }
+}

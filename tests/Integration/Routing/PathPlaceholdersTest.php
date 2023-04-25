@@ -1,72 +1,76 @@
 <?php
-	namespace Suphle\Tests\Integration\Routing;
 
-	use Suphle\Routing\{PathPlaceholders, RouteManager, PatternIndicator, CollectionMethodToUrl};
+namespace Suphle\Tests\Integration\Routing;
 
-	use Suphle\Request\RequestDetails;
+use Suphle\Routing\{PathPlaceholders, RouteManager, PatternIndicator, CollectionMethodToUrl};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\BrowserNoPrefix;
+use Suphle\Request\RequestDetails;
 
-	class PathPlaceholdersTest extends TestsRouter {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\BrowserNoPrefix;
 
-		/**
-	     * @dataProvider pathsAndPlaceholders
-	     */
-		public function test_replaceInPattern (string $activePath, array $expectedPlaceholders) {
+class PathPlaceholdersTest extends TestsRouter
+{
+    /**
+     * @dataProvider pathsAndPlaceholders
+     */
+    public function test_replaceInPattern(string $activePath, array $expectedPlaceholders)
+    {
 
-			$this->setHttpParams($activePath);
+        $this->setHttpParams($activePath);
 
-			$sut = $this->getContainer()->getClass(PathPlaceholders::class);
+        $sut = $this->getContainer()->getClass(PathPlaceholders::class);
 
-			$this->buildRouter($sut) // given
+        $this->buildRouter($sut) // given
 
-			->findRenderer(); // when
+        ->findRenderer(); // when
 
-			$sut->exchangeTokenValues($activePath);
+        $sut->exchangeTokenValues($activePath);
 
-			$this->assertSame(
+        $this->assertSame(
+            $expectedPlaceholders,
+            $sut->getAllSegmentValues()
+        ); // then
+    }
 
-				$expectedPlaceholders, $sut->getAllSegmentValues()
-			); // then
-		}
+    public function pathsAndPlaceholders(): array
+    {
 
-		public function pathsAndPlaceholders ():array {
+        return [
+            ["/segment", []],
 
-			return [
-				["/segment", []],
+            ["/segment-segment/5", ["id" => "5"]],
 
-				["/segment-segment/5", ["id" => "5"]],
+            ["segment/5/segment/10", ["id" => "5", "id2" => "10"]]
+        ];
+    }
 
-				["segment/5/segment/10", ["id" => "5", "id2" => "10"]]
-			];
-		}
+    private function buildRouter(PathPlaceholders $pathPlaceholders): RouteManager
+    {
 
-		private function buildRouter (PathPlaceholders $pathPlaceholders):RouteManager {
+        $container = $this->getContainer();
 
-			$container = $this->getContainer();
+        return $this->replaceConstructorArguments(RouteManager::class, [ // pulling some dependencies from container so their constructors can run
 
-			return $this->replaceConstructorArguments (RouteManager::class, [ // pulling some dependencies from container so their constructors can run
+            "placeholderStorage" => $pathPlaceholders,
 
-				"placeholderStorage" => $pathPlaceholders,
+            "requestDetails" => $container->getClass(RequestDetails::class),
 
-				"requestDetails" => $container->getClass(RequestDetails::class),
+            "patternIndicator" => $this->negativeDouble(PatternIndicator::class),
 
-				"patternIndicator" => $this->negativeDouble(PatternIndicator::class),
+            "urlReplacer" => $container->getClass(CollectionMethodToUrl::class)
+        ], [
 
-				"urlReplacer" => $container->getClass(CollectionMethodToUrl::class)
-			], [
+            "entryRouteMap" => [BrowserNoPrefix::class]
+        ]);
+    }
 
-				"entryRouteMap" => [BrowserNoPrefix::class]
-			]);
-		}
+    public function test_can_extract_all_method_segments()
+    {
 
-		public function test_can_extract_all_method_segments () {
+        $sut = $this->getContainer()->getClass(CollectionMethodToUrl::class);
 
-			$sut = $this->getContainer()->getClass(CollectionMethodToUrl::class);
+        $segments = $sut->splitIntoSegments("SEGMENT/id/SEGMENT2/?(id2/?)?"); // when
 
-			$segments = $sut->splitIntoSegments("SEGMENT/id/SEGMENT2/?(id2/?)?"); // when
-
-			$this->assertSame(["SEGMENT", "id", "SEGMENT2", "id2"], $segments); // then
-		}
-	}
-?>
+        $this->assertSame(["SEGMENT", "id", "SEGMENT2", "id2"], $segments); // then
+    }
+}

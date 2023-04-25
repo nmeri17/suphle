@@ -1,68 +1,71 @@
 <?php
-	namespace Suphle\Testing\TestTypes;
 
-	use Suphle\Adapters\Console\SymfonyCli;
+namespace Suphle\Testing\TestTypes;
 
-	use Suphle\Console\{CliRunnerAccessor, CliRunner};
+use Suphle\Adapters\Console\SymfonyCli;
 
-	use Suphle\Hydration\Container;
+use Suphle\Console\{CliRunnerAccessor, CliRunner};
 
-	use Suphle\Contracts\Config\ModuleFiles;
+use Suphle\Hydration\Container;
 
-	use Suphle\Testing\Proxies\{Extensions\FrontDoor, ConfigureExceptionBridge};
+use Suphle\Contracts\Config\ModuleFiles;
 
-	use Suphle\Testing\Condiments\{ModuleReplicator, BaseModuleInteractor};
+use Suphle\Testing\Proxies\{Extensions\FrontDoor, ConfigureExceptionBridge};
 
-	abstract class CommandLineTest extends TestVirginContainer {
+use Suphle\Testing\Condiments\{ModuleReplicator, BaseModuleInteractor};
 
-		use ModuleReplicator, BaseModuleInteractor, ConfigureExceptionBridge {
+abstract class CommandLineTest extends TestVirginContainer
+{
+    use ModuleReplicator, BaseModuleInteractor, ConfigureExceptionBridge {
 
-			ConfigureExceptionBridge::setUp as mufflerSetup;
-		}
+        ConfigureExceptionBridge::setUp as mufflerSetup;
+    }
 
-		protected CliRunner $consoleRunner;
+    protected CliRunner $consoleRunner;
 
-		protected function setUp ():void {
+    protected function setUp(): void
+    {
 
-			$this->entrance = new FrontDoor(
-					
-				$this->modules = $this->getModules()
-			);
+        $this->entrance = new FrontDoor(
+            $this->modules = $this->getModules()
+        );
 
-			$this->provideTestEquivalents();
+        $this->provideTestEquivalents();
 
-			$this->monitorModuleContainers();
+        $this->monitorModuleContainers();
 
-			$runnerAccessor = new CliRunnerAccessor (
+        $runnerAccessor = new CliRunnerAccessor(
+            $this->entrance,
+            "SuphleTest",
+            true
+        );
 
-				$this->entrance, "SuphleTest", true
-			);
+        $runnerAccessor->forwardCommandsToRunner($this->getRunnerPath());
 
-			$runnerAccessor->forwardCommandsToRunner($this->getRunnerPath());
+        $this->consoleRunner = $runnerAccessor->getRunner();
 
-			$this->consoleRunner = $runnerAccessor->getRunner();
+        $this->mufflerSetup();
+    }
 
-			$this->mufflerSetup();
-		}
+    /**
+     * Necessary to override when testing commands that internally interact with the actual vendor path
+    */
+    protected function getRunnerPath(): string
+    {
 
-		/**
-		 * Necessary to override when testing commands that internally interact with the actual vendor path
-		*/
-		protected function getRunnerPath ():string {
+        return $this->getContainer()->getClass(ModuleFiles::class)
 
-			return $this->getContainer()->getClass(ModuleFiles::class)
+        ->getRootPath();
+    }
 
-			->getRootPath();
-		}
-		
-		/**
-		 * @return DescriptorInterface[]
-		 */
-		abstract protected function getModules ():array;
+    /**
+     * @return DescriptorInterface[]
+     */
+    abstract protected function getModules(): array;
 
-		protected function getContainer ():Container {
+    protected function getContainer(): Container
+    {
 
-			return current($this->modules)->getContainer();
-		}
-	}
-?>
+        return current($this->modules)->getContainer();
+    }
+}

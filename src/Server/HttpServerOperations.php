@@ -1,92 +1,94 @@
 <?php
-	namespace Suphle\Server;
 
-	use Suphle\Contracts\IO\EnvAccessor;
+namespace Suphle\Server;
 
-	use Exception;
+use Suphle\Contracts\IO\EnvAccessor;
 
-	class HttpServerOperations {
+use Exception;
 
-		protected string $projectRoot;
+class HttpServerOperations
+{
+    protected string $projectRoot;
 
-		public function __construct (
+    public function __construct(
+        protected readonly DependencySanitizer $sanitizer,
+        protected readonly VendorBin $vendorBin,
+        protected readonly PsalmWrapper $psalmWrapper,
+        protected readonly EnvAccessor $envAccessor
+    ) {
 
-			protected readonly DependencySanitizer $sanitizer,
+        //
+    }
 
-			protected readonly VendorBin $vendorBin,
+    public function sendRootPath(string $projectRoot, string $scannablePath): self
+    {
 
-			protected readonly PsalmWrapper $psalmWrapper,
+        $this->sanitizer->setExecutionPath(
+            $projectRoot. DIRECTORY_SEPARATOR. $scannablePath
+        );
 
-			protected readonly EnvAccessor $envAccessor
-		) {
+        $this->vendorBin->setRootPath($projectRoot);
 
-			//
-		}
+        $this->psalmWrapper
 
-		public function sendRootPath (string $projectRoot, string $scannablePath):self {
+        ->setExecutionPath($projectRoot, $scannablePath);
 
-			$this->sanitizer->setExecutionPath(
+        $this->projectRoot = $projectRoot;
 
-				$projectRoot. DIRECTORY_SEPARATOR. $scannablePath
-			);
+        return $this;
+    }
 
-			$this->vendorBin->setRootPath($projectRoot);
+    public function runStaticChecks(bool $autoRefactor, bool $isTestBuild): void
+    {
 
-			$this->psalmWrapper
+        if ($isTestBuild) {
+            return;
+        } // disabling scan cuz that takes quite a bit of time
 
-			->setExecutionPath($projectRoot, $scannablePath);
+        if ($this->psalmWrapper->analyzeErrorStatus([], $autoRefactor)) {
 
-			$this->projectRoot = $projectRoot;
+            return;
+        }
 
-			return $this;
-		}
+        $process = $this->psalmWrapper->getLastProcess();
 
-		public function runStaticChecks (bool $autoRefactor, bool $isTestBuild):void {
+        throw new Exception(
+            $process->getOutput(). "\n". $process->getErrorOutput()
+        );
+    }
 
-			if ($isTestBuild) return; // disabling scan cuz that takes quite a bit of time
+    public function restoreSanity(): void
+    {
 
-			if ($this->psalmWrapper->analyzeErrorStatus([], $autoRefactor))
+        $this->sanitizer->cleanseConsumers();
+    }
 
-				return;
+    public function startRRServer(?string $configPath): void
+    {
 
-			$process = $this->psalmWrapper->getLastProcess();
+        $commandOptions = ["serve"];
 
-			throw new Exception(
+        if (is_null($configPath)) {
 
-				$process->getOutput(). "\n". $process->getErrorOutput()
-			);
-		}
+            $configPath = $this->projectRoot. DIRECTORY_SEPARATOR.
 
-		public function restoreSanity ():void {
+            $this->envAccessor->getField("RR_CONFIG");
+        }
 
-			$this->sanitizer->cleanseConsumers();
-		}
+        $commandOptions = array_merge(
+            $commandOptions,
+            ["-c", $configPath]
+        );
 
-		public function startRRServer (?string $configPath):void {
+        $process = $this->vendorBin->setProcessArguments(VendorBin::RR_BINARY, $commandOptions, false);
 
-			$commandOptions = ["serve"];
+        $process->setTimeout(0); // run indefinitely
 
-			if (is_null($configPath))
+        $process->start();
 
-				$configPath = $this->projectRoot. DIRECTORY_SEPARATOR.
+        $process->wait(function ($type, $buffer) { // either this or a foreach loop is required for starting the long-running process
 
-				$this->envAccessor->getField("RR_CONFIG");
-
-			$commandOptions = array_merge(
-
-				$commandOptions, ["-c", $configPath]
-			);
-
-			$process = $this->vendorBin->setProcessArguments(VendorBin::RR_BINARY, $commandOptions, false);
-
-			$process->setTimeout(0); // run indefinitely
-
-			$process->start();
-
-			$process->wait(function ($type, $buffer) { // either this or a foreach loop is required for starting the long-running process
-
-				echo $buffer;
-			});
-		}
-	}
-?>
+            echo $buffer;
+        });
+    }
+}

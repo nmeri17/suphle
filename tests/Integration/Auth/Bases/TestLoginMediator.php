@@ -1,73 +1,81 @@
 <?php
-	namespace Suphle\Tests\Integration\Auth\Bases;
 
-	use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
+namespace Suphle\Tests\Integration\Auth\Bases;
 
-	use Suphle\Contracts\Auth\{ModuleLoginHandler, LoginActions, LoginFlowMediator};
+use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
 
-	use Suphle\Hydration\Container;
+use Suphle\Contracts\Auth\{ModuleLoginHandler, LoginActions, LoginFlowMediator};
 
-	use Suphle\Testing\{ Condiments\BaseDatabasePopulator, Proxies\SecureUserAssertions };
+use Suphle\Hydration\Container;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
+use Suphle\Testing\{ Condiments\BaseDatabasePopulator, Proxies\SecureUserAssertions };
 
-	/**
-	 * Used for testing login functionality using the raw collaborators i.e. without http responses, middleware, validation etc
-	*/
-	trait TestLoginMediator {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
-		use BaseDatabasePopulator, UserInserter, SecureUserAssertions;
+/**
+ * Used for testing login functionality using the raw collaborators i.e. without http responses, middleware, validation etc
+*/
+trait TestLoginMediator
+{
+    use BaseDatabasePopulator;
+    use UserInserter;
+    use SecureUserAssertions;
 
-		/**
-		 * These are used to determine whether login passed or failed
-		 * 
-		 * @return class-string LoginFlowMediator
-		*/
-		abstract protected function loginRendererName ():string;
+    /**
+     * These are used to determine whether login passed or failed
+     *
+     * @return class-string LoginFlowMediator
+    */
+    abstract protected function loginRendererName(): string;
 
-		/**
-		 * @return class-string LoginActions
-		*/
-		abstract protected function loginRepoService ():string;
+    /**
+     * @return class-string LoginActions
+    */
+    abstract protected function loginRepoService(): string;
 
-		protected function getActiveEntity ():string {
+    protected function getActiveEntity(): string
+    {
 
-			return EloquentUser::class;
-		}
+        return EloquentUser::class;
+    }
 
-		protected function getModules ():array {
+    protected function getModules(): array
+    {
 
-			return [
-				new ModuleOneDescriptor (new Container)
-			];
-		}
+        return [
+            new ModuleOneDescriptor(new Container())
+        ];
+    }
 
-		protected function evaluateLoginStatus ():void {
+    protected function evaluateLoginStatus(): void
+    {
 
-			$this->getContainer()->getClass(ModuleLoginHandler::class)
+        $this->getContainer()->getClass(ModuleLoginHandler::class)
 
-			->setResponseRenderer();
-		}
+        ->setResponseRenderer();
+    }
 
-		protected function bindAuthStatusObserver (int $successCount, int $failureCount):void {
+    protected function bindAuthStatusObserver(int $successCount, int $failureCount): void
+    {
 
-			$localLoginManager = $this->replaceConstructorArguments(
+        $localLoginManager = $this->replaceConstructorArguments(
+            $this->loginRendererName(),
+            [
 
-				$this->loginRendererName(), [
+                "authService" => $this->getContainer()->getClass($this->loginRepoService()) // injecting this since PHPUnit won't recursively hydrate dependencies and we need to evaluate the "comparer" property
+            ],
+            [],
+            [
 
-					"authService" => $this->getContainer()->getClass($this->loginRepoService()) // injecting this since PHPUnit won't recursively hydrate dependencies and we need to evaluate the "comparer" property
-				], [], [
+                "successRenderer" => [$successCount, []],
 
-					"successRenderer" => [$successCount, []],
+                "failedRenderer" => [$failureCount, []]
+            ]
+        );
 
-					"failedRenderer" => [$failureCount, []]
-				]
-			);
+        $this->massProvide([
 
-			$this->massProvide([
-
-				$this->loginRendererName() => $localLoginManager
-			]);
-		}
-	}
-?>
+            $this->loginRendererName() => $localLoginManager
+        ]);
+    }
+}

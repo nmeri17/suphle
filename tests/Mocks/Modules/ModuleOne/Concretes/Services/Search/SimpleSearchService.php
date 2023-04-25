@@ -1,13 +1,14 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\Search;
 
-	use Suphle\Services\Search\SimpleSearch;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\Search;
 
-	class SimpleSearchService extends SimpleSearch {
+use Suphle\Services\Search\SimpleSearch;
 
-		public function custom_filter ($model, $value) {
+class SimpleSearchService extends SimpleSearch
+{
+    public function custom_filter($model, $value)
+    {
 
-			return $model;
-		}	
-	}
-?>
+        return $model;
+    }
+}

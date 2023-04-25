@@ -1,38 +1,40 @@
 <?php
-	namespace Suphle\Tests\Integration\Routing\Mirror;
 
-	use Suphle\Contracts\Config\Router;
+namespace Suphle\Tests\Integration\Routing\Mirror;
 
-	use Suphle\Testing\Proxies\WriteOnlyContainer;
+use Suphle\Contracts\Config\Router;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{ Meta\ModuleOneDescriptor, Config\RouterMock};
+use Suphle\Testing\Proxies\WriteOnlyContainer;
 
-	use Suphle\Tests\Integration\Routing\TestsRouter;
+use Suphle\Tests\Mocks\Modules\ModuleOne\{ Meta\ModuleOneDescriptor, Config\RouterMock};
 
-	class MirrorDeactivatedTest extends TestsRouter {
+use Suphle\Tests\Integration\Routing\TestsRouter;
 
-		protected function getModules ():array {
+class MirrorDeactivatedTest extends TestsRouter
+{
+    protected function getModules(): array
+    {
 
-			return [
-				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+        return [
+            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-					$container->replaceWithMock(Router::class, RouterMock::class, [
+                $container->replaceWithMock(Router::class, RouterMock::class, [
 
-						"browserEntryRoute" => $this->getEntryCollection(),
+                    "browserEntryRoute" => $this->getEntryCollection(),
 
-						"mirrorsCollections" => false
-					]);
-				})
-			];
-		}
+                    "mirrorsCollections" => false
+                ]);
+            })
+        ];
+    }
 
-		public function test_disable_mirror_blocks_those_routes () {
+    public function test_disable_mirror_blocks_those_routes()
+    {
 
-			// given @see mock
+        // given @see mock
 
-			$matchingRenderer = $this->fakeRequest("/api/v1/segment"); // when
+        $matchingRenderer = $this->fakeRequest("/api/v1/segment"); // when
 
-			$this->assertNull($matchingRenderer); // then
-		}
-	}
-?>
+        $this->assertNull($matchingRenderer); // then
+    }
+}

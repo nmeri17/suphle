@@ -1,51 +1,54 @@
 <?php
-	namespace Suphle\Tests\Unit\Files;
 
-	use Suphle\Contracts\IO\Image\{ImageOptimiseOperation, ThumbnailOperationHandler};
+namespace Suphle\Tests\Unit\Files;
 
-	use Suphle\IO\Image\Jobs\AsyncImageProcessor;
+use Suphle\Contracts\IO\Image\{ImageOptimiseOperation, ThumbnailOperationHandler};
 
-	use Suphle\IO\Image\OptimizersManager;
+use Suphle\IO\Image\Jobs\AsyncImageProcessor;
 
-	use Suphle\Queues\AdapterManager;
+use Suphle\IO\Image\OptimizersManager;
 
-	use Suphle\Testing\{TestTypes\IsolatedComponentTest, Condiments\QueueInterceptor};
+use Suphle\Queues\AdapterManager;
 
-	use Suphle\Tests\Integration\Generic\CommonBinds;
+use Suphle\Testing\{TestTypes\IsolatedComponentTest, Condiments\QueueInterceptor};
 
-	class AsyncImageProcessorTest extends IsolatedComponentTest {
+use Suphle\Tests\Integration\Generic\CommonBinds;
 
-		use QueueInterceptor, CommonBinds;
+class AsyncImageProcessorTest extends IsolatedComponentTest
+{
+    use QueueInterceptor;
+    use CommonBinds;
 
-		public function test_task_calls_image_modifier () {
+    public function test_task_calls_image_modifier()
+    {
 
-			$this->replaceConstructorArguments(AsyncImageProcessor::class, [
+        $this->replaceConstructorArguments(AsyncImageProcessor::class, [
 
-				"operation" => $this->positiveDouble(ImageOptimiseOperation::class, [], [
+            "operation" => $this->positiveDouble(ImageOptimiseOperation::class, [], [
 
-					"getTransformed" => [1, []] // then
-				])
-			])->handle(); // when
-		}
+                "getTransformed" => [1, []] // then
+            ])
+        ])->handle(); // when
+    }
 
-		public function test_async_operations_are_queued () {
+    public function test_async_operations_are_queued()
+    {
 
-			$operationName = ThumbnailOperationHandler::class;
+        $operationName = ThumbnailOperationHandler::class;
 
-			$sut = $this->container->whenTypeAny()->needsAny([
+        $sut = $this->container->whenTypeAny()->needsAny([
 
-				$operationName => $this->positiveDouble($operationName, [// given
+            $operationName => $this->positiveDouble($operationName, [// given
 
-					"savesAsync" => true
-				])
-			])
-			->getClass(OptimizersManager::class);
-			
-			$sut->setImages([], "power_banks")->thumbnail(10, 10)
+                "savesAsync" => true
+            ])
+        ])
+        ->getClass(OptimizersManager::class);
 
-			->savedImageNames(); // when
+        $sut->setImages([], "power_banks")->thumbnail(10, 10)
 
-			$this->assertPushed(AsyncImageProcessor::class); // then
-		}
-	}
-?>
+        ->savedImageNames(); // when
+
+        $this->assertPushed(AsyncImageProcessor::class); // then
+    }
+}

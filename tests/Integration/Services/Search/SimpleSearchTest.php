@@ -1,99 +1,104 @@
 <?php
-	namespace Suphle\Tests\Integration\Services\Search;
 
-	use Suphle\Contracts\Database\OrmDialect;
+namespace Suphle\Tests\Integration\Services\Search;
 
-	use Suphle\Request\PayloadStorage;
+use Suphle\Contracts\Database\OrmDialect;
 
-	use Suphle\Testing\TestTypes\ModuleLevelTest;
+use Suphle\Request\PayloadStorage;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\Search\SimpleSearchService;
+use Suphle\Testing\TestTypes\ModuleLevelTest;
 
-	use Suphle\Tests\Integration\Services\ReplacesRequestPayload;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\Search\SimpleSearchService;
 
-	use stdClass;
+use Suphle\Tests\Integration\Services\ReplacesRequestPayload;
 
-	class SimpleSearchTest extends ModuleLevelTest {
+use stdClass;
 
-		use ReplacesRequestPayload;
+class SimpleSearchTest extends ModuleLevelTest
+{
+    use ReplacesRequestPayload;
 
-		protected object $model;
+    protected object $model;
 
-		protected array $baseQuery = ["q" => "jobs"];
+    protected array $baseQuery = ["q" => "jobs"];
 
-		public function setUp ():void {
+    public function setUp(): void
+    {
 
-			parent::setUp();
+        parent::setUp();
 
-			$this->model = new stdClass;
-		}
+        $this->model = new stdClass();
+    }
 
-		public function test_calls_class_methods_matching_queries () {
+    public function test_calls_class_methods_matching_queries()
+    {
 
-			$fieldValue = 3;
+        $fieldValue = 3;
 
-			$this->baseQuery["custom_filter"] = $fieldValue;
+        $this->baseQuery["custom_filter"] = $fieldValue;
 
-			$this->stubRequestObjects(3, $this->baseQuery); // given
-			
-			// then
-			$ormDialect = $this->negativeDouble(OrmDialect::class, [], [
+        $this->stubRequestObjects(3, $this->baseQuery); // given
 
-				"addWhereClause" => [$this->never(), [$this->anything()]]
-			]);
+        // then
+        $ormDialect = $this->negativeDouble(OrmDialect::class, [], [
 
-			$searchService = $this->getSearchService($ormDialect, [
+            "addWhereClause" => [$this->never(), [$this->anything()]]
+        ]);
 
-				"custom_filter" => [1, [ $this->model, $fieldValue]]
-			]);
+        $searchService = $this->getSearchService($ormDialect, [
 
-			$searchService->convertToQuery($this->model, ["q"]); // when
-		}
+            "custom_filter" => [1, [ $this->model, $fieldValue]]
+        ]);
 
-		public function test_skips_class_methods_not_matching_queries () {
+        $searchService->convertToQuery($this->model, ["q"]); // when
+    }
 
-			$fieldValue = "foo";
+    public function test_skips_class_methods_not_matching_queries()
+    {
 
-			$this->baseQuery["database_column"] = $fieldValue;
+        $fieldValue = "foo";
 
-			$this->stubRequestObjects(8, $this->baseQuery); // given
+        $this->baseQuery["database_column"] = $fieldValue;
 
-			$searchService = $this->getSearchService($this->negativeDouble(OrmDialect::class), [
+        $this->stubRequestObjects(8, $this->baseQuery); // given
 
-				"custom_filter" => [$this->never(), [
+        $searchService = $this->getSearchService($this->negativeDouble(OrmDialect::class), [
 
-					$this->model, $fieldValue
-				]]
-			]); // then
+            "custom_filter" => [$this->never(), [
 
-			$searchService->convertToQuery($this->model, ["q"]); // when
-		}
+                $this->model, $fieldValue
+            ]]
+        ]); // then
 
-		public function test_calls_ormDialect_when_sees_custom_method () {
+        $searchService->convertToQuery($this->model, ["q"]); // when
+    }
 
-			$this->baseQuery["database_column"] = "foo";
+    public function test_calls_ormDialect_when_sees_custom_method()
+    {
 
-			$this->stubRequestObjects(7, $this->baseQuery); // given
-			
-			$ormDialect = $this->negativeDouble(OrmDialect::class, [], [
+        $this->baseQuery["database_column"] = "foo";
 
-				"addWhereClause" => [$this->atLeastOnce(), [$this->anything()]]
-			]); // then
+        $this->stubRequestObjects(7, $this->baseQuery); // given
 
-			$this->getSearchService($ormDialect, [])
+        $ormDialect = $this->negativeDouble(OrmDialect::class, [], [
 
-			->convertToQuery($this->model, ["q"]); // when
-		}
+            "addWhereClause" => [$this->atLeastOnce(), [$this->anything()]]
+        ]); // then
 
-		protected function getSearchService (OrmDialect $ormDialect, array $mockMethods = []):SimpleSearchService {
+        $this->getSearchService($ormDialect, [])
 
-			$sut = $this->positiveDouble(SimpleSearchService::class, [], $mockMethods);
+        ->convertToQuery($this->model, ["q"]); // when
+    }
 
-			$sut->setPayloadStorage($this->getContainer()->getClass(PayloadStorage::class)); // Without this instance, PHPUnit will not recursively wire in dependencies, thereby missing out on requestDetails
+    protected function getSearchService(OrmDialect $ormDialect, array $mockMethods = []): SimpleSearchService
+    {
 
-			$sut->setOrmDialect($ormDialect);
+        $sut = $this->positiveDouble(SimpleSearchService::class, [], $mockMethods);
 
-			return $sut;
-		}
-	}
-?>
+        $sut->setPayloadStorage($this->getContainer()->getClass(PayloadStorage::class)); // Without this instance, PHPUnit will not recursively wire in dependencies, thereby missing out on requestDetails
+
+        $sut->setOrmDialect($ormDialect);
+
+        return $sut;
+    }
+}

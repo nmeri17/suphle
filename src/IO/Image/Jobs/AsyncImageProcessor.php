@@ -1,28 +1,29 @@
 <?php
-	namespace Suphle\IO\Image\Jobs;
 
-	use Suphle\Contracts\{Queues\Task, IO\Image\ImageOptimiseOperation, Exception\AlertAdapter};
+namespace Suphle\IO\Image\Jobs;
 
-	use Throwable;
+use Suphle\Contracts\{Queues\Task, IO\Image\ImageOptimiseOperation, Exception\AlertAdapter};
 
-	class AsyncImageProcessor implements Task {
+use Throwable;
 
-		public function __construct(protected readonly AlertAdapter $alerter, protected readonly ImageOptimiseOperation $operation) {
+class AsyncImageProcessor implements Task
+{
+    public function __construct(protected readonly AlertAdapter $alerter, protected readonly ImageOptimiseOperation $operation)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function handle ():void {
+    public function handle(): void
+    {
 
-			$operation = null;
-   try {
+        $operation = null;
+        try {
 
-				$this->operation->getTransformed();
-			}
-			catch (Throwable $exception) {
+            $this->operation->getTransformed();
+        } catch (Throwable $exception) {
 
-				$this->alerter->broadcastException($exception, $operation);
-			}
-		}
-	}
-?>
+            $this->alerter->broadcastException($exception, $operation);
+        }
+    }
+}

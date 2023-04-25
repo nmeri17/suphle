@@ -6,26 +6,27 @@ use Illuminate\Support\Facades\Schema;
 
 class EmploymentAddName extends Migration
 {
-	/**
-	 * Run the migrations.
-	 *
-	 * @return void
-	 */
-	public function up ():void {
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up(): void
+    {
 
-		Schema::table("employment", function (Blueprint $table) {
+        Schema::table("employment", function (Blueprint $table) {
 
-			$table->string("title", 160);
-		});
-	}
+            $table->string("title", 160);
+        });
+    }
 
-	/**
-	 * Reverse the migrations.
-	 *
-	 * @return void
-	 */
-	public function down()
-	{
-		Schema::dropColumns("employment", ["title"]);
-	}
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::dropColumns("employment", ["title"]);
+    }
 }

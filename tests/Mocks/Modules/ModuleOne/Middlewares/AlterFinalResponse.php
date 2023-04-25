@@ -1,24 +1,25 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares;
 
-	use Suphle\Contracts\{Presentation\BaseRenderer, Routing\Middleware};
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares;
 
-	use Suphle\Middleware\MiddlewareNexts;
+use Suphle\Contracts\{Presentation\BaseRenderer, Routing\Middleware};
 
-	use Suphle\Request\PayloadStorage;
+use Suphle\Middleware\MiddlewareNexts;
 
-	class AlterFinalResponse implements Middleware {
+use Suphle\Request\PayloadStorage;
 
-		public function process (PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler):BaseRenderer {
+class AlterFinalResponse implements Middleware
+{
+    public function process(PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler): BaseRenderer
+    {
 
-			$originalRenderer = $requestHandler->handle($payloadStorage);
+        $originalRenderer = $requestHandler->handle($payloadStorage);
 
-			$originalRenderer->setRawResponse(array_merge(
+        $originalRenderer->setRawResponse(array_merge(
+            $originalRenderer->getRawResponse(),
+            ["foo" => "baz"]
+        ));
 
-				$originalRenderer->getRawResponse(), ["foo" => "baz"]
-			));
-
-			return $originalRenderer;
-		}
-	}
-?>
+        return $originalRenderer;
+    }
+}

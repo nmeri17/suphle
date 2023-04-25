@@ -1,26 +1,27 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Crud;
 
-	use Suphle\Routing\{BaseCollection, PreMiddlewareRegistry, Decorators\HandlingCoordinator};
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Crud;
 
-	use Suphle\Auth\RequestScrutinizers\AuthenticateMetaFunnel;
+use Suphle\Routing\{BaseCollection, PreMiddlewareRegistry, Decorators\HandlingCoordinator};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\CrudCoordinator;
+use Suphle\Auth\RequestScrutinizers\AuthenticateMetaFunnel;
 
-	#[HandlingCoordinator(CrudCoordinator::class)]
-	class AuthenticateCrudCollection extends BaseCollection {
-		
-		public function SECURE__SOMEh () {
-			
-			$this->_crud("secure-some")->registerCruds();
-		}
+use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\CrudCoordinator;
 
-		public function _preMiddleware (PreMiddlewareRegistry $registry):void {
+#[HandlingCoordinator(CrudCoordinator::class)]
+class AuthenticateCrudCollection extends BaseCollection
+{
+    public function SECURE__SOMEh()
+    {
 
-			$registry->tagPatterns(
+        $this->_crud("secure-some")->registerCruds();
+    }
 
-				new AuthenticateMetaFunnel(["EDIT_id"], $this->authStorage)
-			);
-		}
-	}
-?>
+    public function _preMiddleware(PreMiddlewareRegistry $registry): void
+    {
+
+        $registry->tagPatterns(
+            new AuthenticateMetaFunnel(["EDIT_id"], $this->authStorage)
+        );
+    }
+}

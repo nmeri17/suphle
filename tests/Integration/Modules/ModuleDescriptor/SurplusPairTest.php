@@ -1,24 +1,25 @@
 <?php
-	namespace Suphle\Tests\Integration\Modules\ModuleDescriptor;
 
-	use Suphle\Hydration\Container;
+namespace Suphle\Tests\Integration\Modules\ModuleDescriptor;
 
-	use Suphle\Tests\Mocks\Interactions\{ModuleThree, ModuleOne };
+use Suphle\Hydration\Container;
 
-	use Suphle\Tests\Mocks\Modules\ModuleTwo\Meta\ModuleTwoDescriptor;
+use Suphle\Tests\Mocks\Interactions\{ModuleThree, ModuleOne };
 
-	class SurplusPairTest extends FailingCollection {
+use Suphle\Tests\Mocks\Modules\ModuleTwo\Meta\ModuleTwoDescriptor;
 
-		protected function setModuleTwo ():void {
+class SurplusPairTest extends FailingCollection
+{
+    protected function setModuleTwo(): void
+    {
 
-			$this->moduleTwo = (new ModuleTwoDescriptor(new Container))
+        $this->moduleTwo = (new ModuleTwoDescriptor(new Container()))
 
-			->sendExpatriates([
+        ->sendExpatriates([
 
-				ModuleThree::class => $this->moduleThree,
+            ModuleThree::class => $this->moduleThree,
 
-				ModuleOne::class => $this->moduleOne
-			]);
-		}
-	}
-?>
+            ModuleOne::class => $this->moduleOne
+        ]);
+    }
+}

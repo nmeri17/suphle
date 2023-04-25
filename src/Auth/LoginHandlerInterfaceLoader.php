@@ -1,36 +1,35 @@
 <?php
-	namespace Suphle\Auth;
 
-	use Suphle\Hydration\{BaseInterfaceLoader, Container};
+namespace Suphle\Auth;
 
-	use Suphle\Contracts\{Config\AuthContract, Auth\LoginFlowMediator};
+use Suphle\Hydration\{BaseInterfaceLoader, Container};
 
-	class LoginHandlerInterfaceLoader extends BaseInterfaceLoader {
+use Suphle\Contracts\{Config\AuthContract, Auth\LoginFlowMediator};
 
-		public function __construct (
+class LoginHandlerInterfaceLoader extends BaseInterfaceLoader
+{
+    public function __construct(
+        protected readonly Container $container,
+        protected readonly AuthContract $authContract
+    ) {
 
-			protected readonly Container $container,
+        //
+    }
 
-			protected readonly AuthContract $authContract
-		) {
+    public function concreteName(): string
+    {
 
-			//
-		}
+        return LoginRequestHandler::class;
+    }
 
-		public function concreteName ():string {
+    public function bindArguments(): array
+    {
 
-			return LoginRequestHandler::class;
-		}
+        return [
 
-		public function bindArguments ():array {
-
-			return [
-
-				LoginFlowMediator::class => $this->container->getClass(
-
-					$this->authContract->getLoginCollection()
-				) // passing collection as argument so the handler can receive a type-safe object
-			];
-		}
-	}
-?>
+            LoginFlowMediator::class => $this->container->getClass(
+                $this->authContract->getLoginCollection()
+            ) // passing collection as argument so the handler can receive a type-safe object
+        ];
+    }
+}

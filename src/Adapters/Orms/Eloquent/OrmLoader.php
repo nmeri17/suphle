@@ -1,76 +1,75 @@
 <?php
-	namespace Suphle\Adapters\Orms\Eloquent;
 
-	use Suphle\Hydration\{BaseInterfaceLoader, Container};
+namespace Suphle\Adapters\Orms\Eloquent;
 
-	use Suphle\Contracts\{ Config\AuthContract, Bridge\LaravelContainer, Database\OrmDialect, Auth\AuthStorage};
+use Suphle\Hydration\{BaseInterfaceLoader, Container};
 
-	use Suphle\Adapters\Orms\Eloquent\Models\BaseModel;
+use Suphle\Contracts\{ Config\AuthContract, Bridge\LaravelContainer, Database\OrmDialect, Auth\AuthStorage};
 
-	use Illuminate\Events\Dispatcher;
+use Suphle\Adapters\Orms\Eloquent\Models\BaseModel;
 
-	class OrmLoader extends BaseInterfaceLoader {
+use Illuminate\Events\Dispatcher;
 
-		public function __construct(
-			protected readonly AuthContract $authContract,
+class OrmLoader extends BaseInterfaceLoader
+{
+    public function __construct(
+        protected readonly AuthContract $authContract,
+        protected readonly AuthStorage $authStorage,
+        protected readonly LaravelContainer $laravelContainer,
+        protected readonly Container $container
+    ) {
 
-			protected readonly AuthStorage $authStorage,
+        //
+    }
 
-			protected readonly LaravelContainer $laravelContainer,
+    public function afterBind($initialized): void
+    {
 
-			protected readonly Container $container
-		) {
+        $this->laravelContainer->registerConcreteBindings($this->databaseBindings($initialized)); // implicitly sets connection
 
-			//
-		}
+        $client = $initialized->getNativeClient();
 
-		public function afterBind ($initialized):void {
+        $client->setEventDispatcher($this->laravelContainer->make(Dispatcher::class));
 
-			$this->laravelContainer->registerConcreteBindings($this->databaseBindings($initialized)); // implicitly sets connection
+        $client->bootEloquent(); // in addition to using the above to register observers below, this does the all important job of Model::setConnectionResolver for us
 
-			$client = $initialized->getNativeClient();
+        $this->injectHydrator($initialized); // just before giving this to the observers
 
-			$client->setEventDispatcher($this->laravelContainer->make(Dispatcher::class));
+        $initialized->registerObservers(
+            $this->authContract->getModelObservers(),
+            $this->authStorage
+        );
 
-			$client->bootEloquent(); // in addition to using the above to register observers below, this does the all important job of Model::setConnectionResolver for us
+        BaseModel::shouldBeStrict();
+    }
 
-			$this->injectHydrator($initialized); // just before giving this to the observers
+    public function concreteName(): string
+    {
 
-			$initialized->registerObservers(
+        return OrmBridge::class;
+    }
 
-				$this->authContract->getModelObservers(),
+    protected function databaseBindings(OrmDialect $initialized): array
+    {
 
-				$this->authStorage
-			);
+        return [
 
-			BaseModel::shouldBeStrict();
-		}
+            "db.connection" => $initialized->getConnection(),
 
-		public function concreteName ():string {
+            "db" => $initialized->getNativeClient()->getDatabaseManager()
+        ];
+    }
 
-			return OrmBridge::class;
-		}
+    protected function injectHydrator(OrmDialect $initialized): void
+    {
 
-		protected function databaseBindings (OrmDialect $initialized):array {
+        $authStorage = $this->authStorage;
 
-			return [
+        $authStorage->setHydrator($initialized->getUserHydrator());
 
-				"db.connection" => $initialized->getConnection(),
+        $this->container->whenTypeAny()->needsAny([
 
-				"db" => $initialized->getNativeClient()->getDatabaseManager()
-			];
-		}
-
-		protected function injectHydrator (OrmDialect $initialized):void {
-
-			$authStorage = $this->authStorage;
-
-			$authStorage->setHydrator($initialized->getUserHydrator());
-
-			$this->container->whenTypeAny()->needsAny([
-
-				AuthStorage::class => $authStorage
-			]);
-		}
-	}
-?>
+            AuthStorage::class => $authStorage
+        ]);
+    }
+}

@@ -1,79 +1,85 @@
 <?php
-	namespace Suphle\Bridge\Laravel\InterfaceLoaders;
 
-	use Suphle\Hydration\BaseInterfaceLoader;
+namespace Suphle\Bridge\Laravel\InterfaceLoaders;
 
-	use Suphle\Bridge\Laravel\{LaravelAppConcrete, ComponentEntry};
+use Suphle\Hydration\BaseInterfaceLoader;
 
-	use Suphle\Bridge\Laravel\Config\{ConfigLoader, ConfigFileFinder};
+use Suphle\Bridge\Laravel\{LaravelAppConcrete, ComponentEntry};
 
-	use Suphle\Contracts\Bridge\LaravelContainer;
+use Suphle\Bridge\Laravel\Config\{ConfigLoader, ConfigFileFinder};
 
-	use Illuminate\Support\Facades\Facade;
+use Suphle\Contracts\Bridge\LaravelContainer;
 
-	class LaravelAppLoader extends BaseInterfaceLoader {
+use Illuminate\Support\Facades\Facade;
 
-		public function __construct (
-			protected readonly ConfigLoader $configLoader,
+class LaravelAppLoader extends BaseInterfaceLoader
+{
+    public function __construct(
+        protected readonly ConfigLoader $configLoader,
+        protected readonly ComponentEntry $componentEntry
+    ) {
 
-			protected readonly ComponentEntry $componentEntry
-		) {
+        //
+    }
 
-			//
-		}
+    public function bindArguments(): array
+    {
 
-		public function bindArguments():array {
+        return [
 
-			return [
+            "basePath" => $this->getBasePath()
+        ];
+    }
 
-				"basePath" => $this->getBasePath()
-			];
-		}
+    public function concreteName(): string
+    {
 
-		public function concreteName ():string {
+        return LaravelAppConcrete::class;
+    }
 
-			return LaravelAppConcrete::class;
-		}
+    public function afterBind($initialized): void
+    {
 
-		public function afterBind ($initialized):void {
+        $this->injectBindings($initialized); // required for below call
 
-			$this->injectBindings($initialized); // required for below call
+        $initialized->overrideAppHelper();
 
-			$initialized->overrideAppHelper();
+        $this->attendToConfig($initialized);
 
-			$this->attendToConfig($initialized);
+        $initialized->runContainerBootstrappers();
+    }
 
-			$initialized->runContainerBootstrappers();
-		}
+    protected function injectBindings(LaravelContainer $laravelContainer): void
+    {
 
-		protected function injectBindings (LaravelContainer $laravelContainer):void {
-			
-			Facade::setFacadeApplication($laravelContainer);
+        Facade::setFacadeApplication($laravelContainer);
 
-			$laravelContainer->registerConcreteBindings($laravelContainer->concreteBinds());
+        $laravelContainer->registerConcreteBindings($laravelContainer->concreteBinds());
 
-			$laravelContainer->registerSimpleBindings($laravelContainer->simpleBinds());
-		}
+        $laravelContainer->registerSimpleBindings($laravelContainer->simpleBinds());
+    }
 
-		/**
-		  * Leaving this here instead of in app bootstrappers so:
-			* 1) we can inject custom loader
-			* 2) we deliberately want to avoid calling [bootstrap]
-		*/
-		protected function attendToConfig (LaravelContainer $laravelContainer):void {
+    /**
+      * Leaving this here instead of in app bootstrappers so:
+        * 1) we can inject custom loader
+        * 2) we deliberately want to avoid calling [bootstrap]
+    */
+    protected function attendToConfig(LaravelContainer $laravelContainer): void
+    {
 
-			$finder = new ConfigFileFinder;
+        $finder = new ConfigFileFinder();
 
-			$finder->loadConfigurationFiles($laravelContainer, $this->configLoader);
+        $finder->loadConfigurationFiles($laravelContainer, $this->configLoader);
 
-			foreach ($finder->getConfigNames($laravelContainer) as $fileName)
+        foreach ($finder->getConfigNames($laravelContainer) as $fileName) {
 
-				$this->configLoader->get($fileName); // using this to trigger whatever class overrides are available
-		}
+            $this->configLoader->get($fileName);
+        } // using this to trigger whatever class overrides are available
+    }
 
-		protected function getBasePath ():string {
+    protected function getBasePath(): string
+    {
 
-			return $this->componentEntry->userLandMirror();
-		}
-	}
-?>
+        return $this->componentEntry->userLandMirror();
+    }
+}

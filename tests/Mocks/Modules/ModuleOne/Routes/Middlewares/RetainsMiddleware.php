@@ -1,18 +1,19 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Middlewares;
 
-	use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Middlewares;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\BaseCoordinator;
+use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
 
-	use Suphle\Response\Format\Json;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\BaseCoordinator;
 
-	#[HandlingCoordinator(BaseCoordinator::class)]
-	class RetainsMiddleware extends BaseCollection {
+use Suphle\Response\Format\Json;
 
-		public function SEGMENT () {
+#[HandlingCoordinator(BaseCoordinator::class)]
+class RetainsMiddleware extends BaseCollection
+{
+    public function SEGMENT()
+    {
 
-			$this->_httpGet(new Json("plainSegment"));
-		}
-	}
-?>
+        $this->_httpGet(new Json("plainSegment"));
+    }
+}

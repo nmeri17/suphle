@@ -1,8 +1,9 @@
 <?php
-	namespace Suphle\Exception\Explosives;
 
-	use Exception;
+namespace Suphle\Exception\Explosives;
 
-	class UnauthorizedServiceAccess extends Exception {
-	}
-?>
+use Exception;
+
+class UnauthorizedServiceAccess extends Exception
+{
+}

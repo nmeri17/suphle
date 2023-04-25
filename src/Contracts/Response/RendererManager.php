@@ -1,35 +1,35 @@
 <?php
-	namespace Suphle\Contracts\Response;
 
-	use Suphle\Services\ServiceCoordinator;
+namespace Suphle\Contracts\Response;
 
-	use Suphle\Request\PayloadStorage;
+use Suphle\Services\ServiceCoordinator;
 
-	use Suphle\Contracts\Presentation\BaseRenderer;
+use Suphle\Request\PayloadStorage;
 
-	use Suphle\Exception\Explosives\{ValidationFailure, Generic\NoCompatibleValidator};
+use Suphle\Contracts\Presentation\BaseRenderer;
 
-	interface RendererManager {
+use Suphle\Exception\Explosives\{ValidationFailure, Generic\NoCompatibleValidator};
 
-		public function bootDefaultRenderer ():self;
+interface RendererManager
+{
+    public function bootDefaultRenderer(): self;
 
-		public function handleValidRequest (PayloadStorage $payloadStorage):BaseRenderer;
+    public function handleValidRequest(PayloadStorage $payloadStorage): BaseRenderer;
 
-		public function fetchHandlerParameters (
+    public function fetchHandlerParameters(
+        ServiceCoordinator $coodinator,
+        string $handlingMethod
+    ): array;
 
-			ServiceCoordinator $coodinator, string $handlingMethod
-		):array;
+    /**
+     * @throws ValidationFailure
+    */
+    public function mayBeInvalid(?BaseRenderer $renderer = null): self;
 
-		/**
-		 * @throws ValidationFailure
-		*/
-		public function mayBeInvalid (?BaseRenderer $renderer = null):self;
+    public function invokePreviousRenderer(array $toMerge = []): BaseRenderer;
 
-		public function invokePreviousRenderer (array $toMerge = []):BaseRenderer;
-
-		/**
-		 * @throws NoCompatibleValidator
-		*/
-		public function acquireValidatorStatus (ServiceCoordinator $coodinator, string $handlingMethod):bool;
-	}
-?>
+    /**
+     * @throws NoCompatibleValidator
+    */
+    public function acquireValidatorStatus(ServiceCoordinator $coodinator, string $handlingMethod): bool;
+}

@@ -1,28 +1,31 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\PayloadReaders;
 
-	use Suphle\Services\Structures\ModelfulPayload;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\PayloadReaders;
 
-	use Suphle\Tests\Mocks\Models\Eloquent\Employment;
+use Suphle\Services\Structures\ModelfulPayload;
 
-	class BaseEmploymentBuilder extends ModelfulPayload {
+use Suphle\Tests\Mocks\Models\Eloquent\Employment;
 
-		public function __construct (protected readonly Employment $blankEmployment) {
+class BaseEmploymentBuilder extends ModelfulPayload
+{
+    public function __construct(protected readonly Employment $blankEmployment)
+    {
 
-			//
-		}
+        //
+    }
 
-		protected function getBaseCriteria ():object {
+    protected function getBaseCriteria(): object
+    {
 
-			return $this->blankEmployment->where([
+        return $this->blankEmployment->where([
 
-				"id" => $this->payloadStorage->getKey("id")
-			]);
-		}
+            "id" => $this->payloadStorage->getKey("id")
+        ]);
+    }
 
-		protected function onlyFields ():array {
+    protected function onlyFields(): array
+    {
 
-			return ["id", "title"];
-		}
-	}
-?>
+        return ["id", "title"];
+    }
+}

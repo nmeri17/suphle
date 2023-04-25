@@ -1,50 +1,52 @@
 <?php
-	namespace Suphle\Exception\Diffusers;
 
-	use Suphle\Contracts\{Exception\ExceptionHandler, Presentation\BaseRenderer, Response\RendererManager};
+namespace Suphle\Exception\Diffusers;
 
-	use Suphle\Routing\RouteManager;
+use Suphle\Contracts\{Exception\ExceptionHandler, Presentation\BaseRenderer, Response\RendererManager};
 
-	use Suphle\Request\RequestDetails;
+use Suphle\Routing\RouteManager;
 
-	use Suphle\Exception\Explosives\EditIntegrityException;
+use Suphle\Request\RequestDetails;
 
-	use Throwable;
+use Suphle\Exception\Explosives\EditIntegrityException;
 
-	class StaleEditDiffuser implements ExceptionHandler {
+use Throwable;
 
-		private Throwable $renderer;
+class StaleEditDiffuser implements ExceptionHandler
+{
+    private Throwable $renderer;
 
-		public function __construct(
-			
-			protected readonly RendererManager $rendererManager
-		) {
+    public function __construct(
+        protected readonly RendererManager $rendererManager
+    ) {
 
-			//
-		}
+        //
+    }
 
-		/**
-		 * @param {origin} EditIntegrityException
-		*/
-		public function setContextualData (Throwable $origin):void {
+    /**
+     * @param {origin} EditIntegrityException
+    */
+    public function setContextualData(Throwable $origin): void
+    {
 
-			//
-		}
+        //
+    }
 
-		public function prepareRendererData ():void {
+    public function prepareRendererData(): void
+    {
 
-			$this->renderer = $this->rendererManager
+        $this->renderer = $this->rendererManager
 
-			->invokePreviousRenderer([
+        ->invokePreviousRenderer([
 
-				"errors" => [["message" => "Another user recently updated this resource"]]
-			])
-			->setHeaders(400, []);
-		}
+            "errors" => [["message" => "Another user recently updated this resource"]]
+        ])
+        ->setHeaders(400, []);
+    }
 
-		public function getRenderer ():BaseRenderer {
+    public function getRenderer(): BaseRenderer
+    {
 
-			return $this->renderer;
-		}
-	}
-?>
+        return $this->renderer;
+    }
+}

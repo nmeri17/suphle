@@ -1,18 +1,20 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes;
 
-	class BCounter {
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes;
 
-		protected $count = 0;
+class BCounter
+{
+    protected $count = 0;
 
-		public function getCount ():int {
+    public function getCount(): int
+    {
 
-			return $this->count;
-		}
+        return $this->count;
+    }
 
-		public function setCount (int $newCount):void {
+    public function setCount(int $newCount): void
+    {
 
-			$this->count = $newCount;
-		} 
-	}
-?>
+        $this->count = $newCount;
+    }
+}

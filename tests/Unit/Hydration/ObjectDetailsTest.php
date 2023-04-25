@@ -1,49 +1,49 @@
 <?php
-	namespace Suphle\Tests\Unit\Hydration;
 
-	use Suphle\Hydration\Structures\ObjectDetails;
+namespace Suphle\Tests\Unit\Hydration;
 
-	use Suphle\Testing\TestTypes\IsolatedComponentTest;
+use Suphle\Hydration\Structures\ObjectDetails;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\CConcrete;
+use Suphle\Testing\TestTypes\IsolatedComponentTest;
 
-	use ReflectionClass;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\CConcrete;
 
-	class ObjectDetailsTest extends IsolatedComponentTest {
+use ReflectionClass;
 
-		public function test_get_full_class_namespace () {
+class ObjectDetailsTest extends IsolatedComponentTest
+{
+    public function test_get_full_class_namespace()
+    {
 
-			$sut = $this->container->getClass(ObjectDetails::class);
+        $sut = $this->container->getClass(ObjectDetails::class);
 
-			$classPath = (new ReflectionClass(IsolatedComponentTest::class))
-			->getFileName(); // given
+        $classPath = (new ReflectionClass(IsolatedComponentTest::class))
+        ->getFileName(); // given
 
-			$derivedNamespace = $sut->classNameFromFile($classPath); // when
+        $derivedNamespace = $sut->classNameFromFile($classPath); // when
 
-			$this->assertSame( // then
+        $this->assertSame( // then
 
-				$derivedNamespace,
+            $derivedNamespace,
+            "Suphle\Testing\TestTypes\IsolatedComponentTest"
+        );
+    }
 
-				"Suphle\Testing\TestTypes\IsolatedComponentTest"
-			);
-		}
+    public function test_get_namespace_of_root_classes() // copy it there
+    {$sut = $this->container->getClass(ObjectDetails::class);
 
-		public function test_get_namespace_of_root_classes () { // copy it there
+        $classPath = (new ReflectionClass(CConcrete::class))
 
-			$sut = $this->container->getClass(ObjectDetails::class);
+        ->getFileName();
 
-			$classPath = (new ReflectionClass(CConcrete::class))
-			
-			->getFileName();
+        $directoryPath = dirname($classPath). DIRECTORY_SEPARATOR . "InRootNamespace.php"; // given
 
-			$directoryPath = dirname($classPath). DIRECTORY_SEPARATOR . "InRootNamespace.php"; // given
+        $derivedNamespace = $sut->classNameFromFile($directoryPath); // when
 
-			$derivedNamespace = $sut->classNameFromFile($directoryPath); // when
+        $this->assertSame( // then
 
-			$this->assertSame( // then
-
-				$derivedNamespace, "Suphle\InRootNamespace"
-			);
-		}
-	}
-?>
+            $derivedNamespace,
+            "Suphle\InRootNamespace"
+        );
+    }
+}

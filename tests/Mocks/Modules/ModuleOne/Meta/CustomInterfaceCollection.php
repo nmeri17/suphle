@@ -1,48 +1,50 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Meta;
 
-	use Suphle\Hydration\Structures\BaseInterfaceCollection;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Meta;
 
-	use Suphle\Contracts\Config\{Router, Laravel, Flows, Database};
+use Suphle\Hydration\Structures\BaseInterfaceCollection;
 
-	use Suphle\Contracts\{Events, Auth\UserContract, Presentation\HtmlParser};
+use Suphle\Contracts\Config\{Router, Laravel, Flows, Database};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Config\{RouterMock, LaravelMock, FlowMock, DatabaseMock};
+use Suphle\Contracts\{Events, Auth\UserContract, Presentation\HtmlParser};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Events\AssignListeners, Concretes\CustomBladeAdapter};
+use Suphle\Tests\Mocks\Modules\ModuleOne\Config\{RouterMock, LaravelMock, FlowMock, DatabaseMock};
 
-	use Suphle\Tests\Mocks\Interactions\ModuleOne;
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Events\AssignListeners, Concretes\CustomBladeAdapter};
 
-	use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
+use Suphle\Tests\Mocks\Interactions\ModuleOne;
 
-	class CustomInterfaceCollection extends BaseInterfaceCollection {
+use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
 
-		public function getConfigs ():array {
+class CustomInterfaceCollection extends BaseInterfaceCollection
+{
+    public function getConfigs(): array
+    {
 
-			return array_merge(parent::getConfigs(), [
+        return array_merge(parent::getConfigs(), [
 
-				Flows::class => FlowMock::class,
+            Flows::class => FlowMock::class,
 
-				Laravel::class => LaravelMock::class,
+            Laravel::class => LaravelMock::class,
 
-				Router::class => RouterMock::class,
+            Router::class => RouterMock::class,
 
-				Database::class => DatabaseMock::class
-			]);
-		}
+            Database::class => DatabaseMock::class
+        ]);
+    }
 
-		public function simpleBinds ():array {
+    public function simpleBinds(): array
+    {
 
-			return array_merge(parent::simpleBinds(), [
+        return array_merge(parent::simpleBinds(), [
 
-				ModuleOne::class => ModuleApi::class,
+            ModuleOne::class => ModuleApi::class,
 
-				Events::class => AssignListeners::class,
+            Events::class => AssignListeners::class,
 
-				HtmlParser::class => CustomBladeAdapter::class,
+            HtmlParser::class => CustomBladeAdapter::class,
 
-				UserContract::class => EloquentUser::class
-			]);
-		}
-	}
-?>
+            UserContract::class => EloquentUser::class
+        ]);
+    }
+}

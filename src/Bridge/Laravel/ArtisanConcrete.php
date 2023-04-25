@@ -1,22 +1,24 @@
 <?php
-	namespace Suphle\Bridge\Laravel;
 
-	use Suphle\Contracts\Bridge\{LaravelArtisan, LaravelContainer};
+namespace Suphle\Bridge\Laravel;
 
-	use Illuminate\{Console\Application, Events\Dispatcher};
+use Suphle\Contracts\Bridge\{LaravelArtisan, LaravelContainer};
 
-	use Symfony\Component\Console\Output\OutputInterface;
+use Illuminate\{Console\Application, Events\Dispatcher};
 
-	class ArtisanConcrete extends Application implements LaravelArtisan {
+use Symfony\Component\Console\Output\OutputInterface;
 
-		public function __construct (LaravelContainer $laravelContainer, Dispatcher $events, string $version) {
+class ArtisanConcrete extends Application implements LaravelArtisan
+{
+    public function __construct(LaravelContainer $laravelContainer, Dispatcher $events, string $version)
+    {
 
-			parent::__construct($laravelContainer, $events, $version);
-		}
+        parent::__construct($laravelContainer, $events, $version);
+    }
 
-		public function invokeCommand ($command, OutputInterface $writeTo, array $parameters = []):int {
+    public function invokeCommand($command, OutputInterface $writeTo, array $parameters = []): int
+    {
 
-			return $this->call($command, $parameters, $writeTo);
-		}
-	}
-?>
+        return $this->call($command, $parameters, $writeTo);
+    }
+}

@@ -1,55 +1,61 @@
 <?php
-	namespace Suphle\Auth\Renderers;
 
-	use Suphle\Contracts\Auth\{LoginFlowMediator, LoginActions};
+namespace Suphle\Auth\Renderers;
 
-	use Suphle\Contracts\Presentation\BaseRenderer;
+use Suphle\Contracts\Auth\{LoginFlowMediator, LoginActions};
 
-	use Suphle\Response\Format\{ Redirect, Reload};
+use Suphle\Contracts\Presentation\BaseRenderer;
 
-	use Suphle\Auth\Repositories\BrowserAuthRepo;
+use Suphle\Response\Format\{ Redirect, Reload};
 
-	use Suphle\Request\PayloadStorage;
+use Suphle\Auth\Repositories\BrowserAuthRepo;
 
-	class BrowserLoginMediator implements LoginFlowMediator {
+use Suphle\Request\PayloadStorage;
 
-		protected string $successDestination = "/";
+class BrowserLoginMediator implements LoginFlowMediator
+{
+    protected string $successDestination = "/";
 
-		public function __construct(protected readonly BrowserAuthRepo $authService) {
+    public function __construct(protected readonly BrowserAuthRepo $authService)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function successRenderer ():BaseRenderer {
+    public function successRenderer(): BaseRenderer
+    {
 
-			$defaultPath = $this->successDestination;
+        $defaultPath = $this->successDestination;
 
-			return new Redirect( "successLogin", function (PayloadStorage $payloadStorage) use ($defaultPath) {
+        return new Redirect("successLogin", function (PayloadStorage $payloadStorage) use ($defaultPath) {
 
-				if (!$payloadStorage->hasKey("path"))
+            if (!$payloadStorage->hasKey("path")) {
 
-					return $defaultPath;
+                return $defaultPath;
+            }
 
-				$path = $payloadStorage->getKey("path");
+            $path = $payloadStorage->getKey("path");
 
-				$queryPart = $payloadStorage->getKey("query");
+            $queryPart = $payloadStorage->getKey("query");
 
-				if (!empty($queryPart))
+            if (!empty($queryPart)) {
 
-					$path .= "?" . $queryPart;
+                $path .= "?" . $queryPart;
+            }
 
-				return $path;
-			});
-		}
+            return $path;
+        });
+    }
 
-		public function failedRenderer ():BaseRenderer {
+    public function failedRenderer(): BaseRenderer
+    {
 
-			return new Reload( "failedLogin");
-		}
+        return new Reload("failedLogin");
+    }
 
-		public function getLoginService ():LoginActions {
+    public function getLoginService(): LoginActions
+    {
 
-			return $this->authService;
-		}
-	}
-?>
+        return $this->authService;
+    }
+}

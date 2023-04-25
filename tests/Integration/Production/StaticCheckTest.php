@@ -1,53 +1,57 @@
 <?php
-	namespace Suphle\Tests\Integration\Production;
 
-	use Suphle\Hydration\Container;
+namespace Suphle\Tests\Integration\Production;
 
-	use Suphle\Server\PsalmWrapper;
+use Suphle\Hydration\Container;
 
-	use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\RealVendorPath};
+use Suphle\Server\PsalmWrapper;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
+use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\RealVendorPath};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\StaticChecks\ContainsError;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
-	use ReflectionClass;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\StaticChecks\ContainsError;
 
-	class StaticCheckTest extends ModuleLevelTest {
+use ReflectionClass;
 
-		use RealVendorPath;
+class StaticCheckTest extends ModuleLevelTest
+{
+    use RealVendorPath;
 
-		protected function getModules ():array {
+    protected function getModules(): array
+    {
 
-			return [new ModuleOneDescriptor(new Container)];
-		}
+        return [new ModuleOneDescriptor(new Container())];
+    }
 
-		protected function getClassPath (string $className):string {
+    protected function getClassPath(string $className): string
+    {
 
-			return (new ReflectionClass($className))->getFileName();
-		}
+        return (new ReflectionClass($className))->getFileName();
+    }
 
-		protected function getPsalmWrapper ():PsalmWrapper {
+    protected function getPsalmWrapper(): PsalmWrapper
+    {
 
-			$wrapper = $this->getContainer()->getClass(PsalmWrapper::class);
+        $wrapper = $this->getContainer()->getClass(PsalmWrapper::class);
 
-			$wrapper->setExecutionPath($this->getVendorParent(), "Modules");
+        $wrapper->setExecutionPath($this->getVendorParent(), "Modules");
 
-			return $wrapper;
-		}
+        return $wrapper;
+    }
 
-		public function test_file_with_error_returns_false () {
+    public function test_file_with_error_returns_false()
+    {
 
-			$this->setOutputCallback(fn () => null); // mute output/report by psalm process
+        $this->setOutputCallback(fn () => null); // mute output/report by psalm process
 
-			$scanStatus = $this->getPsalmWrapper()->analyzeErrorStatus( // when
+        $scanStatus = $this->getPsalmWrapper()->analyzeErrorStatus( // when
 
-				[$this->getClassPath(ContainsError::class)], // given
+            [$this->getClassPath(ContainsError::class)], // given
 
-				false // important to run in this mode since we can't set a path to a specific file; thus, it'll attempt to repair everything
-			);
+            false // important to run in this mode since we can't set a path to a specific file; thus, it'll attempt to repair everything
+        );
 
-			$this->assertFalse($scanStatus); // then
-		}
-	}
-?>
+        $this->assertFalse($scanStatus); // then
+    }
+}

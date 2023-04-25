@@ -1,57 +1,62 @@
 <?php
-	namespace Suphle\Tests\Integration\Modules;
 
-	use Suphle\Security\CSRF\CsrfGenerator;
+namespace Suphle\Tests\Integration\Modules;
 
-	use Suphle\Contracts\Config\Router;
+use Suphle\Security\CSRF\CsrfGenerator;
 
-	use Suphle\Exception\Explosives\ValidationFailure;
+use Suphle\Contracts\Config\Router;
 
-	use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
+use Suphle\Exception\Explosives\ValidationFailure;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock, Routes\ValidatorCollection, Coordinators\ValidatorCoordinator};
+use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
-	class InjectGoodMockDuringBuildTest extends ModuleLevelTest {
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock, Routes\ValidatorCollection, Coordinators\ValidatorCoordinator};
 
-		// protected bool $debugCaughtExceptions = true;
+class InjectGoodMockDuringBuildTest extends ModuleLevelTest
+{
+    // protected bool $debugCaughtExceptions = true;
 
-		protected int $indicator = 0;
+    protected int $indicator = 0;
 
-		protected function getModules ():array {
+    protected function getModules(): array
+    {
 
-			return [
+        return [
 
-				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-					$container->replaceWithMock(Router::class, RouterMock::class, [
+                $container->replaceWithMock(Router::class, RouterMock::class, [
 
-						"browserEntryRoute" => ValidatorCollection::class
-					])
-					->replaceWithMock(ValidatorCoordinator::class, 
+                    "browserEntryRoute" => ValidatorCollection::class
+                ])
+                ->replaceWithMock(
+                    ValidatorCoordinator::class,
+                    ValidatorCoordinator::class,
+                    [
 
-						ValidatorCoordinator::class, [
+                        "handleGet" => $this->returnCallback(function () {
 
-							"handleGet" => $this->returnCallback(function () {
+                            $this->indicator = 10;
 
-								$this->indicator = 10;
+                            return [];
+                        })
+                    ],
+                    [
 
-								return [];
-							})
-						], [
+                    "handleGet" => [0, []] // then // if that method actually runs, this ought to cause the test to fail
+                    ]
+                );
+            })
+        ];
+    }
 
-						"handleGet" => [0, []] // then // if that method actually runs, this ought to cause the test to fail
-					]);
-				})
-			];
-		}
+    public function test_build_level_mock_verifies()
+    {
 
-		public function test_build_level_mock_verifies () {
+        $this->assertSame($this->indicator, 0); // given
 
-			$this->assertSame($this->indicator, 0); // given
+        $this->get("/get-without")->assertStatus(500); // when // the internal PHPUnit failure causes response to return 500. If the mock is adjusted to verify one call, request no longer fails
 
-			$this->get("/get-without")->assertStatus(500); // when // the internal PHPUnit failure causes response to return 500. If the mock is adjusted to verify one call, request no longer fails
-
-			$this->assertSame($this->indicator, 10); // then 2 // if it doesn't run, this fails
-		}
-	}
-?>
+        $this->assertSame($this->indicator, 10); // then 2 // if it doesn't run, this fails
+    }
+}

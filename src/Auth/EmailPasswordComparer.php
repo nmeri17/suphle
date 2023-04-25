@@ -1,55 +1,60 @@
 <?php
-	namespace Suphle\Auth;
 
-	use Suphle\Contracts\Database\OrmDialect;
+namespace Suphle\Auth;
 
-	use Suphle\Contracts\Auth\{UserContract, ColumnPayloadComparer, UserHydrator as HydratorContract};
+use Suphle\Contracts\Database\OrmDialect;
 
-	use Suphle\Request\PayloadStorage;
+use Suphle\Contracts\Auth\{UserContract, ColumnPayloadComparer, UserHydrator as HydratorContract};
 
-	class EmailPasswordComparer implements ColumnPayloadComparer {
+use Suphle\Request\PayloadStorage;
 
-		protected HydratorContract $userHydrator;
+class EmailPasswordComparer implements ColumnPayloadComparer
+{
+    protected HydratorContract $userHydrator;
 
-		protected ?UserContract $user;
+    protected ?UserContract $user;
 
-		protected string $columnIdentifier = "email";
+    protected string $columnIdentifier = "email";
 
-		public function __construct (OrmDialect $ormDialect, protected readonly PayloadStorage $payloadStorage) {
+    public function __construct(OrmDialect $ormDialect, protected readonly PayloadStorage $payloadStorage)
+    {
 
-			$this->userHydrator = $ormDialect->getUserHydrator();
-		}
+        $this->userHydrator = $ormDialect->getUserHydrator();
+    }
 
-		protected function findMatchingUser ():?UserContract {
+    protected function findMatchingUser(): ?UserContract
+    {
 
-			return $this->userHydrator->findAtLogin([
+        return $this->userHydrator->findAtLogin([
 
-				$this->columnIdentifier => $this->payloadStorage->getKey($this->columnIdentifier)
-			]);
-		}
+            $this->columnIdentifier => $this->payloadStorage->getKey($this->columnIdentifier)
+        ]);
+    }
 
-		public function compare ():bool {
+    public function compare(): bool
+    {
 
-			$user = $this->findMatchingUser();
+        $user = $this->findMatchingUser();
 
-			$password = $this->payloadStorage->getKey("password");
+        $password = $this->payloadStorage->getKey("password");
 
-			if (
-				is_null($user) ||
+        if (
+            is_null($user) ||
 
-				!password_verify((string) $password, (string) $user->getPassword())
-			)
+            !password_verify((string) $password, (string) $user->getPassword())
+        ) {
 
-				return false;
+            return false;
+        }
 
-			$this->user = $user;
+        $this->user = $user;
 
-			return true;
-		}
+        return true;
+    }
 
-		public function getUser ():UserContract {
+    public function getUser(): UserContract
+    {
 
-			return $this->user;
-		}
-	}
-?>
+        return $this->user;
+    }
+}

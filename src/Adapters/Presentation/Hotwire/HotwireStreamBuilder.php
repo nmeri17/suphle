@@ -1,36 +1,37 @@
 <?php
-	namespace Suphle\Adapters\Presentation\Hotwire;
 
-	class HotwireStreamBuilder {
+namespace Suphle\Adapters\Presentation\Hotwire;
 
-		protected ?string $nodeContent = null;
+class HotwireStreamBuilder
+{
+    protected ?string $nodeContent = null;
 
-		public function __construct (
-			public readonly string $hotwireAction,
+    public function __construct(
+        public readonly string $hotwireAction,
+        public readonly string $targets
+    ) {
 
-			public readonly string $targets
-		) {
+        //
+    }
 
-			//
-		}
+    public function wrapContent(?string $nodeContent): self
+    {
 
-		public function wrapContent (?string $nodeContent):self {
+        $this->nodeContent = $nodeContent;
 
-			$this->nodeContent = $nodeContent;
+        return $this;
+    }
 
-			return $this;
-		}
+    public function __toString(): string
+    {
 
-		public function __toString ():string {
+        $wrappedContent = !is_null($this->nodeContent) ?
 
-			$wrappedContent = !is_null($this->nodeContent) ?
+            "<template>{$this->nodeContent}</template>" : "";
 
-				"<template>{$this->nodeContent}</template>": "";
-
-			return "<turbo-stream action='{$this->hotwireAction}' targets='{$this->targets}'>
+        return "<turbo-stream action='{$this->hotwireAction}' targets='{$this->targets}'>
 
 				$wrappedContent
 			</turbo-stream>";
-		}
-	}
-?>
+    }
+}

@@ -1,49 +1,52 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\_module_name\Meta;
 
-	use Suphle\Modules\ModuleDescriptor;
+namespace Suphle\Tests\Mocks\Modules\_module_name\Meta;
 
-	use Suphle\Contracts\Config\ModuleFiles;
+use Suphle\Modules\ModuleDescriptor;
 
-	use Suphle\Config\AscendingHierarchy;
+use Suphle\Contracts\Config\ModuleFiles;
 
-	use Suphle\File\FileSystemReader;
+use Suphle\Config\AscendingHierarchy;
 
-	use Suphle\Tests\Mocks\Interactions\_module_name;
+use Suphle\File\FileSystemReader;
 
-	class _module_nameDescriptor extends ModuleDescriptor {
+use Suphle\Tests\Mocks\Interactions\_module_name;
 
-		public function interfaceCollection ():string {
+class _module_nameDescriptor extends ModuleDescriptor
+{
+    public function interfaceCollection(): string
+    {
 
-			return CustomInterfaceCollection::class;
-		}
+        return CustomInterfaceCollection::class;
+    }
 
-		public function exportsImplements():string {
+    public function exportsImplements(): string
+    {
 
-			return _module_name::class;
-		}
+        return _module_name::class;
+    }
 
-		public function globalConcretes ():array {
+    public function globalConcretes(): array
+    {
 
-			return array_merge(parent::globalConcretes(), [
+        return array_merge(parent::globalConcretes(), [
 
-				ModuleFiles::class => new AscendingHierarchy(
-					
-					__DIR__, __NAMESPACE__,
+            ModuleFiles::class => new AscendingHierarchy(
+                __DIR__,
+                __NAMESPACE__,
+                $this->container->getClass(FileSystemReader::class)
+            )
+        ]);
+    }
 
-					$this->container->getClass(FileSystemReader::class)
-				)
-			]);
-		}
+    /**
+     * Remove this method after installation completes. Without components, the illuminate component won't boot and interrupt module creation
+    */
+    protected function registerConcreteBindings(): void
+    {
 
-		/**
-		 * Remove this method after installation completes. Without components, the illuminate component won't boot and interrupt module creation
-		*/
-		protected function registerConcreteBindings ():void {
+        $bindings = $this->globalConcretes();
 
-			$bindings = $this->globalConcretes();
-
-			$this->container->whenTypeAny()->needsAny($bindings);
-		}
-	}
-?>
+        $this->container->whenTypeAny()->needsAny($bindings);
+    }
+}

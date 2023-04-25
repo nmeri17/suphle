@@ -1,18 +1,18 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\PayloadReaders;
 
-	use Suphle\Services\Structures\ImagefulPayload;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\PayloadReaders;
 
-	class ImagePayloadReader extends ImagefulPayload {
+use Suphle\Services\Structures\ImagefulPayload;
 
-		protected function convertToDomainObject () {
+class ImagePayloadReader extends ImagefulPayload
+{
+    protected function convertToDomainObject()
+    {
 
-			return $this->imageOptimizer->setImages( // single endpoints with the need to handle multiple upload types should be split into as many ImagefulPayloads as necessary, for possible reuse
+        return $this->imageOptimizer->setImages( // single endpoints with the need to handle multiple upload types should be split into as many ImagefulPayloads as necessary, for possible reuse
 
-				$this->allFiles,
-
-				$this->payloadStorage->getKey("belonging_resource")
-			);
-		}
-	}
-?>
+            $this->allFiles,
+            $this->payloadStorage->getKey("belonging_resource")
+        );
+    }
+}

@@ -1,154 +1,171 @@
 <?php
-	namespace Suphle\Tests\Integration\Routing\Crud;
 
-	use Suphle\Routing\Commands\CrudCommand;
+namespace Suphle\Tests\Integration\Routing\Crud;
 
-	use Suphle\File\FolderCloner;
+use Suphle\Routing\Commands\CrudCommand;
 
-	use Suphle\Contracts\Config\ModuleFiles;
+use Suphle\File\FolderCloner;
 
-	use Suphle\Hydration\Container;
+use Suphle\Contracts\Config\ModuleFiles;
 
-	use Suphle\Console\BaseCliCommand;
+use Suphle\Hydration\Container;
 
-	use Suphle\Testing\TestTypes\CommandLineTest;
+use Suphle\Console\BaseCliCommand;
 
-	use Suphle\Tests\Integration\Generic\TestsModuleList;
+use Suphle\Testing\TestTypes\CommandLineTest;
 
-	use Suphle\Tests\Mocks\Interactions\ModuleThree;
+use Suphle\Tests\Integration\Generic\TestsModuleList;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Coordinators\FlavorCoordinator, PayloadReaders\BaseFlavorBuilder};
+use Suphle\Tests\Mocks\Interactions\ModuleThree;
 
-	use Suphle\Tests\Mocks\Modules\ModuleThree\{Coordinators\FlavorCoordinator as ModuleThreeCoordinator, PayloadReaders\BaseFlavorBuilder as ModuleThreeBuilder};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Coordinators\FlavorCoordinator, PayloadReaders\BaseFlavorBuilder};
 
-	use Suphle\Tests\Mocks\Models\Eloquent\Flavor;
+use Suphle\Tests\Mocks\Modules\ModuleThree\{Coordinators\FlavorCoordinator as ModuleThreeCoordinator, PayloadReaders\BaseFlavorBuilder as ModuleThreeBuilder};
 
-	use Symfony\Component\Console\{Command\Command, Tester\CommandTester};
+use Suphle\Tests\Mocks\Models\Eloquent\Flavor;
 
-	class CrudCommandTest extends CommandLineTest {
+use Symfony\Component\Console\{Command\Command, Tester\CommandTester};
 
-		use TestsModuleList;
+class CrudCommandTest extends CommandLineTest
+{
+    use TestsModuleList;
 
-		protected string $resourceName = "Flavor";
+    protected string $resourceName = "Flavor";
 
-		protected function setUp ():void {
+    protected function setUp(): void
+    {
 
-			$this->setModuleOne();
+        $this->setModuleOne();
 
-			$this->setModuleThree();
+        $this->setModuleThree();
 
-			parent::setUp();
+        parent::setUp();
 
-			$this->file = __DIR__ . "/test_file_" . sha1(uniqid(__METHOD__));
-		}
+        $this->file = __DIR__ . "/test_file_" . sha1(uniqid(__METHOD__));
+    }
 
-		protected function getModules ():array {
+    protected function getModules(): array
+    {
 
-			return [$this->moduleOne, $this->moduleThree];
-		}
+        return [$this->moduleOne, $this->moduleThree];
+    }
 
-		protected function tearDown ():void {
+    protected function tearDown(): void
+    {
 
-			$this->deleteCreatedResourceFiles();
-		}
+        $this->deleteCreatedResourceFiles();
+    }
 
-		protected function deleteCreatedResourceFiles (?Container $container = null):void {
+    protected function deleteCreatedResourceFiles(?Container $container = null): void
+    {
 
-			if (is_null($container)) $container = $this->getContainer();
+        if (is_null($container)) {
+            $container = $this->getContainer();
+        }
 
-			foreach (
-				$container->getClass(FolderCloner::class)
+        foreach (
+            $container->getClass(FolderCloner::class)
 
-				->getCopiedFiles() as $filePath
-			)
+            ->getCopiedFiles() as $filePath
+        ) {
 
-				if (file_exists($filePath)) unlink($filePath);
-		}
+            if (file_exists($filePath)) {
+                unlink($filePath);
+            }
+        }
+    }
 
-		public function test_correctly_parses_resource_templates () {
+    public function test_correctly_parses_resource_templates()
+    {
 
-			// given // the template files to be copied
+        // given // the template files to be copied
 
-			$this->assertSame($this->executeCrudCommand(), Command::SUCCESS ); // then
+        $this->assertSame($this->executeCrudCommand(), Command::SUCCESS); // then
 
-			$this->assertCreatedClasses([
+        $this->assertCreatedClasses([
 
-				FlavorCoordinator::class, BaseFlavorBuilder::class
-			]);
-		}
+            FlavorCoordinator::class, BaseFlavorBuilder::class
+        ]);
+    }
 
-		protected function executeCrudCommand (array $additionalArguments = []):int {
+    protected function executeCrudCommand(array $additionalArguments = []): int
+    {
 
-			$command = $this->consoleRunner->findHandler(
+        $command = $this->consoleRunner->findHandler(
+            CrudCommand::commandSignature()
+        );
 
-				CrudCommand::commandSignature()
-			);
+        return (new CommandTester($command))->execute(array_merge([ // when
 
-			return (new CommandTester($command))->execute(array_merge([ // when
+            CrudCommand::RESOURCE_NAME_ARGUMENT => $this->resourceName
+        ], $additionalArguments));
+    }
 
-				CrudCommand::RESOURCE_NAME_ARGUMENT => $this->resourceName
-			], $additionalArguments));
-		}
+    protected function assertCreatedClasses(array $classNames): void
+    {
 
-		protected function assertCreatedClasses (array $classNames):void {
+        $classesExist = false;
 
-			$classesExist = false;
+        foreach ($classNames as $className) {
 
-			foreach ($classNames as $className) {
+            if (!$classesExist = class_exists($className)) {
+                break;
+            }
+        }
 
-				if (!$classesExist = class_exists($className)) break;
-			}
+        $this->assertTrue($classesExist);
+    }
 
-			$this->assertTrue($classesExist);
-		}
+    public function test_writes_to_the_relevant_locations()
+    {
 
-		public function test_writes_to_the_relevant_locations () {
+        $this->executeCrudCommand();
 
-			$this->executeCrudCommand();
+        // then
+        $this->assertTrue(class_exists(Flavor::class));
 
-			// then
-			$this->assertTrue(class_exists(Flavor::class));
+        $this->assertFileExists($this->getSampleViewFile());
+    }
 
-			$this->assertFileExists($this->getSampleViewFile());
-		}
+    protected function getSampleViewFile(): string
+    {
 
-		protected function getSampleViewFile ():string {
+        $markupPath = $this->getContainer()
 
-			$markupPath = $this->getContainer()
+        ->getClass(ModuleFiles::class)->defaultViewPath();
 
-			->getClass(ModuleFiles::class)->defaultViewPath();
+        return implode(DIRECTORY_SEPARATOR, [
 
-			return implode(DIRECTORY_SEPARATOR, [
+            $markupPath, trim($this->resourceName, "\\"),
 
-				$markupPath, trim($this->resourceName, "\\"),
+            "create-form.blade.php"
+        ]);
+    }
 
-				"create-form.blade.php"
-			]);
-		}
+    public function test_api_option_doesnt_output_views()
+    {
 
-		public function test_api_option_doesnt_output_views () {
+        $this->executeCrudCommand([
 
-			$this->executeCrudCommand([
+            "--". CrudCommand::IS_API_OPTION => true
+        ]);
 
-				"--". CrudCommand::IS_API_OPTION => true
-			]);
+        $this->assertFileDoesNotExist($this->getSampleViewFile()); // then
+    }
 
-			$this->assertFileDoesNotExist($this->getSampleViewFile()); // then
-		}
+    public function test_with_module_name_writes_to_that_module()
+    {
 
-		public function test_with_module_name_writes_to_that_module () {
+        $this->executeCrudCommand([
 
-			$this->executeCrudCommand([
+            "--". BaseCliCommand::HYDRATOR_MODULE_OPTION => ModuleThree::class
+        ]);
 
-				"--". BaseCliCommand::HYDRATOR_MODULE_OPTION => ModuleThree::class
-			]);
+        $this->assertCreatedClasses([
 
-			$this->assertCreatedClasses([
+            ModuleThreeCoordinator::class, ModuleThreeBuilder::class
+        ]);
 
-				ModuleThreeCoordinator::class, ModuleThreeBuilder::class
-			]);
-
-			$this->deleteCreatedResourceFiles($this->getContainerFor(ModuleThree::class));
-		}
-	}
-?>
+        $this->deleteCreatedResourceFiles($this->getContainerFor(ModuleThree::class));
+    }
+}

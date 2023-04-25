@@ -1,55 +1,58 @@
 <?php
-	namespace Suphle\Adapters\Orms\Eloquent\Condiments;
 
-	use Suphle\Contracts\Auth\{ModelAuthorities, AuthStorage};
+namespace Suphle\Adapters\Orms\Eloquent\Condiments;
 
-	use Suphle\Hydration\Structures\ObjectDetails;
+use Suphle\Contracts\Auth\{ModelAuthorities, AuthStorage};
 
-	use Illuminate\Database\Eloquent\Relations\{HasOneOrMany, HasManyThrough};
+use Suphle\Hydration\Structures\ObjectDetails;
 
-	use ReflectionMethod;
+use Illuminate\Database\Eloquent\Relations\{HasOneOrMany, HasManyThrough};
 
-	abstract class BaseEloquentAuthorizer implements ModelAuthorities {
+use ReflectionMethod;
 
-		protected array $childrenTypes = [
+abstract class BaseEloquentAuthorizer implements ModelAuthorities
+{
+    protected array $childrenTypes = [
 
-			HasOneOrMany::class, HasManyThrough::class
-		];
+        HasOneOrMany::class, HasManyThrough::class
+    ];
 
-		public function __construct (protected readonly AuthStorage $authStorage, protected readonly ObjectDetails $objectMeta) {
+    public function __construct(protected readonly AuthStorage $authStorage, protected readonly ObjectDetails $objectMeta)
+    {
 
-			//
-		}
+        //
+    }
 
-		/**
-		 * @return string[] [method, names]
-		*/
-		protected function getChildrenMethods (string $modelName):array {
+    /**
+     * @return string[] [method, names]
+    */
+    protected function getChildrenMethods(string $modelName): array
+    {
 
-			$relationDetails = [];
+        $relationDetails = [];
 
-			foreach ($this->objectMeta->getPublicMethods($modelName) as $methodName) {
+        foreach ($this->objectMeta->getPublicMethods($modelName) as $methodName) {
 
-				$isInherited = (new ReflectionMethod($modelName, $methodName))->class != $modelName;
+            $isInherited = (new ReflectionMethod($modelName, $methodName))->class != $modelName;
 
-				$returnType = $this->objectMeta->methodReturnType(
+            $returnType = $this->objectMeta->methodReturnType(
+                $modelName,
+                $methodName
+            );
 
-					$modelName, $methodName
-				);
+            $isNotRelation = !array_intersect(
+                class_parents($returnType),
+                $this->childrenTypes
+            );
 
-				$isNotRelation = !array_intersect(
-				
-					class_parents($returnType), $this->childrenTypes
-				);
+            if ($isInherited || $isNotRelation) {
 
-				if ($isInherited || $isNotRelation)
+                continue;
+            }
 
-					continue;
+            $relationDetails[] = $methodName;
+        }
 
-				$relationDetails[] = $methodName;
-			}
-
-			return $relationDetails;
-		}
-	}
-?>
+        return $relationDetails;
+    }
+}

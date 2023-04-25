@@ -1,175 +1,193 @@
 <?php
-	namespace Suphle\Routing\Crud;
 
-	use Suphle\Contracts\Routing\{CrudBuilder, RouteCollection};
+namespace Suphle\Routing\Crud;
 
-	use Suphle\Contracts\Presentation\BaseRenderer;
+use Suphle\Contracts\Routing\{CrudBuilder, RouteCollection};
 
-	use Exception;
+use Suphle\Contracts\Presentation\BaseRenderer;
 
-	abstract class BaseBuilder implements CrudBuilder {
+use Exception;
 
-		final public const SHOW_CREATE = "showCreateForm",
+abstract class BaseBuilder implements CrudBuilder
+{
+    final public const SHOW_CREATE = "showCreateForm",
 
-		SAVE_NEW = "saveNew", SHOW_ALL = "showAll", SHOW_ONE = "showOne",
+    SAVE_NEW = "saveNew", SHOW_ALL = "showAll", SHOW_ONE = "showOne",
 
-		UPDATE_ONE = "updateOne", DELETE_ONE = "deleteOne",
+    UPDATE_ONE = "updateOne", DELETE_ONE = "deleteOne",
 
-		SHOW_SEARCH = "showSearchForm", SHOW_EDIT = "showEditForm",
+    SHOW_SEARCH = "showSearchForm", SHOW_EDIT = "showEditForm",
 
-		SEARCH_RESULTS = "getSearchResults";
+    SEARCH_RESULTS = "getSearchResults";
 
-		protected string $idPlaceholder = "id";
+    protected string $idPlaceholder = "id";
 
-		protected array $overwritable = [], $rendererMap = [],
+    protected array $overwritable = [];
+    protected array $rendererMap = [];
+    protected array $disabledHandlers = [];
+    protected array $validActions = [];
 
-		$disabledHandlers = [], $validActions = [];
+    protected RouteCollection $collection;
 
-		protected RouteCollection $collection;
+    public function registerCruds(): void
+    {
 
-		public function registerCruds ():void {
+        $createdRoutes = [];
 
-			$createdRoutes = [];
-			
-			foreach ($this->findActiveRenderers() as $getRenderer => $rendererDetails) {
+        foreach ($this->findActiveRenderers() as $getRenderer => $rendererDetails) {
 
-				if (array_key_exists($getRenderer, $this->overwritable) )
+            if (array_key_exists($getRenderer, $this->overwritable)) {
 
-					$renderer = $this->overwritable[$getRenderer];
+                $renderer = $this->overwritable[$getRenderer];
+            } else {
+                $renderer = $this->$getRenderer();
+            }
 
-				else $renderer = $this->$getRenderer();
+            $pattern = $this->$rendererDetails($renderer);
 
-				$pattern = $this->$rendererDetails($renderer);
+            $createdRoutes[$pattern] = $renderer;
+        }
 
-				$createdRoutes[$pattern] = $renderer;
-			}
-			
-			$this->collection->_setLastRegistered(
+        $this->collection->_setLastRegistered(
+            $this->collection->_getMethodSorter()->descendingKeys($createdRoutes)
+        );
+    }
 
-				$this->collection->_getMethodSorter()->descendingKeys($createdRoutes)
-			);
-		}
+    protected function findActiveRenderers(): array
+    {
 
-		protected function findActiveRenderers ():array {
+        return array_filter($this->allModifiers(), fn ($action) => in_array($action, $this->validActions) &&
 
-			return array_filter($this->allModifiers(), fn($action) => in_array($action, $this->validActions) &&
+            !in_array($action, $this->disabledHandlers), ARRAY_FILTER_USE_KEY);
+    }
 
-				!in_array($action, $this->disabledHandlers), ARRAY_FILTER_USE_KEY);
-		}
+    private function allModifiers(): array
+    {
 
-		private function allModifiers ():array {
+        return [
 
-			return [
+            self::SHOW_CREATE => "showCreateModifier",
 
-				self::SHOW_CREATE => "showCreateModifier",
+            self::SAVE_NEW => "saveNewModifier",
 
-				self::SAVE_NEW => "saveNewModifier",
+            self::SHOW_ALL => "showAllModifier",
 
-				self::SHOW_ALL => "showAllModifier",
+            self::SHOW_ONE => "showOneModifier",
 
-				self::SHOW_ONE => "showOneModifier",
+            self::UPDATE_ONE => "updateOneModifier",
 
-				self::UPDATE_ONE => "updateOneModifier",
+            self::DELETE_ONE => "deleteOneModifier",
 
-				self::DELETE_ONE => "deleteOneModifier",
+            self::SHOW_SEARCH => "showSearchModifier",
 
-				self::SHOW_SEARCH => "showSearchModifier",
+            self::SHOW_EDIT => "showEditModifier",
 
-				self::SHOW_EDIT => "showEditModifier",
+            self::SEARCH_RESULTS => "searchResultsModifier"
+        ];
+    }
 
-				self::SEARCH_RESULTS => "searchResultsModifier"
-			];
-		}
+    public function disableHandlers(array $handlers): self
+    {
 
-		public function disableHandlers (array $handlers):self {
+        $this->disabledHandlers = $handlers;
 
-			$this->disabledHandlers = $handlers;
+        return $this;
+    }
 
-			return $this;
-		}
+    public function setIdPlaceholder(string $placeholder): self
+    {
 
-		public function setIdPlaceholder (string $placeholder):self {
+        $this->idPlaceholder = $placeholder;
 
-			$this->idPlaceholder = $placeholder;
+        return $this;
+    }
 
-			return $this;
-		}
+    public function replaceRenderer(string $setterName, BaseRenderer $renderer): self
+    {
 
-		public function replaceRenderer (string $setterName, BaseRenderer $renderer):self {
+        if (!array_key_exists($setterName, $this->allModifiers())) {
 
-			if (!array_key_exists($setterName, $this->allModifiers()))
-				
-				throw new Exception ("Unknown renderer setter: '$setterName'");
-			
-			$this->overwritable[$setterName] = $renderer;
+            throw new Exception("Unknown renderer setter: '$setterName'");
+        }
 
-			return $this;
-		}
+        $this->overwritable[$setterName] = $renderer;
 
-		protected function showCreateModifier (BaseRenderer $renderer):string {
+        return $this;
+    }
 
-			$renderer->setRouteMethod("get");
+    protected function showCreateModifier(BaseRenderer $renderer): string
+    {
 
-			return "CREATE";
-		}
+        $renderer->setRouteMethod("get");
 
-		protected function showEditModifier (BaseRenderer $renderer):string {
+        return "CREATE";
+    }
 
-			$renderer->setRouteMethod("get");
+    protected function showEditModifier(BaseRenderer $renderer): string
+    {
 
-			return "EDIT_". $this->idPlaceholder; // safe to pass id in url for gets but mutative operations should come with a payload
-		}
+        $renderer->setRouteMethod("get");
 
-		protected function saveNewModifier (BaseRenderer $renderer):string {
+        return "EDIT_". $this->idPlaceholder; // safe to pass id in url for gets but mutative operations should come with a payload
+    }
 
-			$renderer->setRouteMethod("post");
+    protected function saveNewModifier(BaseRenderer $renderer): string
+    {
 
-			return "SAVE";
-		}
+        $renderer->setRouteMethod("post");
 
-		protected function showAllModifier (BaseRenderer $renderer):string {
+        return "SAVE";
+    }
 
-			$renderer->setRouteMethod("get");
+    protected function showAllModifier(BaseRenderer $renderer): string
+    {
 
-			return "_index";
-		}
+        $renderer->setRouteMethod("get");
 
-		protected function showOneModifier (BaseRenderer $renderer):string {
+        return "_index";
+    }
 
-			$renderer->setRouteMethod("get");
+    protected function showOneModifier(BaseRenderer $renderer): string
+    {
 
-			return $this->idPlaceholder;
-		}
+        $renderer->setRouteMethod("get");
 
-		protected function updateOneModifier (BaseRenderer $renderer):string {
+        return $this->idPlaceholder;
+    }
 
-			$renderer->setRouteMethod("put");
+    protected function updateOneModifier(BaseRenderer $renderer): string
+    {
 
-			return "EDIT";
-		}
+        $renderer->setRouteMethod("put");
 
-		protected function deleteOneModifier (BaseRenderer $renderer):string {
+        return "EDIT";
+    }
 
-			$renderer->setRouteMethod("delete");
+    protected function deleteOneModifier(BaseRenderer $renderer): string
+    {
 
-			return "DELETE";
-		}
+        $renderer->setRouteMethod("delete");
 
-		private function registerSearchRoute (BaseRenderer $renderer):string {
+        return "DELETE";
+    }
 
-			$renderer->setRouteMethod("get");
+    private function registerSearchRoute(BaseRenderer $renderer): string
+    {
 
-			return "SEARCH";
-		}
+        $renderer->setRouteMethod("get");
 
-		protected function showSearchModifier (BaseRenderer $renderer):string {
+        return "SEARCH";
+    }
 
-			return $this->registerSearchRoute($renderer);
-		}
+    protected function showSearchModifier(BaseRenderer $renderer): string
+    {
 
-		protected function searchResultsModifier (BaseRenderer $renderer):string {
+        return $this->registerSearchRoute($renderer);
+    }
 
-			return $this->registerSearchRoute($renderer);
-		}
-	}
-?>
+    protected function searchResultsModifier(BaseRenderer $renderer): string
+    {
+
+        return $this->registerSearchRoute($renderer);
+    }
+}

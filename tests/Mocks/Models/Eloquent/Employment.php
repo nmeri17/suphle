@@ -1,43 +1,47 @@
 <?php
-	namespace Suphle\Tests\Mocks\Models\Eloquent;
 
-	use Suphle\Contracts\Services\Models\IntegrityModel;
+namespace Suphle\Tests\Mocks\Models\Eloquent;
 
-	use Suphle\Adapters\Orms\Eloquent\{Models\BaseModel, Condiments\EditIntegrity};
+use Suphle\Contracts\Services\Models\IntegrityModel;
 
-	use Suphle\Tests\Mocks\Models\Eloquent\Factories\EmploymentFactory;
+use Suphle\Adapters\Orms\Eloquent\{Models\BaseModel, Condiments\EditIntegrity};
 
-	use Illuminate\Database\Eloquent\{Factories\Factory, Relations\Relation};
+use Suphle\Tests\Mocks\Models\Eloquent\Factories\EmploymentFactory;
 
-	class Employment extends BaseModel implements IntegrityModel {
+use Illuminate\Database\Eloquent\{Factories\Factory, Relations\Relation};
 
-		use EditIntegrity;
+class Employment extends BaseModel implements IntegrityModel
+{
+    use EditIntegrity;
 
-		protected $table = "employment";
-  
-  		protected $casts = [
+    protected $table = "employment";
 
-			IntegrityModel::INTEGRITY_COLUMN => "datetime:Y-m-d H:i:s"
-		];
+    protected $casts = [
 
-		public function edit_history ():Relation {
+        IntegrityModel::INTEGRITY_COLUMN => "datetime:Y-m-d H:i:s"
+    ];
 
-			return $this->morphMany(EditHistory::class, "historical");
-		}
+    public function edit_history(): Relation
+    {
 
-		public function employer () {
+        return $this->morphMany(EditHistory::class, "historical");
+    }
 
-			return $this->belongsTo(Employer::class);
-		}
+    public function employer()
+    {
 
-		protected static function newFactory ():Factory {
+        return $this->belongsTo(Employer::class);
+    }
 
-			return EmploymentFactory::new();
-		}
+    protected static function newFactory(): Factory
+    {
 
-		public static function migrationFolders ():array {
+        return EmploymentFactory::new();
+    }
 
-			return [__DIR__ . DIRECTORY_SEPARATOR . "Migrations"];
-		}
-	}
-?>
+    public static function migrationFolders(): array
+    {
+
+        return [__DIR__ . DIRECTORY_SEPARATOR . "Migrations"];
+    }
+}

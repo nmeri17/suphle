@@ -1,52 +1,56 @@
 <?php
-	namespace Suphle\Tests\Integration\Services;
 
-	use Suphle\Hydration\Container;
+namespace Suphle\Tests\Integration\Services;
 
-	use Suphle\Routing\PathPlaceholders;
+use Suphle\Hydration\Container;
 
-	use Suphle\Request\{PayloadStorage, RequestDetails};
+use Suphle\Routing\PathPlaceholders;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
+use Suphle\Request\{PayloadStorage, RequestDetails};
 
-	trait ReplacesRequestPayload {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
-		protected function getModules ():array {
+trait ReplacesRequestPayload
+{
+    protected function getModules(): array
+    {
 
-			return [new ModuleOneDescriptor(new Container)];
-		}
+        return [new ModuleOneDescriptor(new Container())];
+    }
 
-		protected function stubRequestObjects (int $segmentValue, array $payload = [], array $requestStubs = []):void {
+    protected function stubRequestObjects(int $segmentValue, array $payload = [], array $requestStubs = []): void
+    {
 
-			$payloadStorage = $this->positiveDouble(PayloadStorage::class);
+        $payloadStorage = $this->positiveDouble(PayloadStorage::class);
 
-			$payloadStorage->mergePayload($payload);
+        $payloadStorage->mergePayload($payload);
 
-			$requestObjects = [
+        $requestObjects = [
 
-				PathPlaceholders::class => $this->positiveDouble(PathPlaceholders::class, [
+            PathPlaceholders::class => $this->positiveDouble(PathPlaceholders::class, [
 
-					"getSegmentValue" => $segmentValue
-				]),
-				PayloadStorage::class => $payloadStorage
-			];
+                "getSegmentValue" => $segmentValue
+            ]),
+            PayloadStorage::class => $payloadStorage
+        ];
 
-			if (!empty($requestStubs))
+        if (!empty($requestStubs)) {
 
-				$requestObjects[RequestDetails::class] = $this->positiveDouble(RequestDetails::class, $requestStubs);
+            $requestObjects[RequestDetails::class] = $this->positiveDouble(RequestDetails::class, $requestStubs);
+        }
 
-			$this->massProvide($requestObjects);
-		}
+        $this->massProvide($requestObjects);
+    }
 
-		protected function stubRequestMethod (string $httpMethod):array {
+    protected function stubRequestMethod(string $httpMethod): array
+    {
 
-			return [
+        return [
 
-				"matchesMethod" => $this->returnCallback(function ($subject) use ($httpMethod) {
+            "matchesMethod" => $this->returnCallback(function ($subject) use ($httpMethod) {
 
-					return $httpMethod == $subject;
-				})
-			];
-		}
-	}
-?>
+                return $httpMethod == $subject;
+            })
+        ];
+    }
+}

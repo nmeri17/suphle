@@ -1,147 +1,159 @@
 <?php
-	namespace Suphle\Tests\Integration\Routing\Crud;
 
-	use Suphle\Exception\Explosives\IncompatibleHttpMethod;
+namespace Suphle\Tests\Integration\Routing\Crud;
 
-	use Suphle\Security\CSRF\CsrfGenerator;
+use Suphle\Exception\Explosives\IncompatibleHttpMethod;
 
-	use Suphle\Testing\Condiments\BaseDatabasePopulator;
+use Suphle\Security\CSRF\CsrfGenerator;
 
-	use Suphle\Tests\Integration\Routing\TestsRouter;
+use Suphle\Testing\Condiments\BaseDatabasePopulator;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Crud\BasicRoutes;
+use Suphle\Tests\Integration\Routing\TestsRouter;
 
-	use Suphle\Tests\Mocks\Models\Eloquent\Employment;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Crud\BasicRoutes;
 
-	use Exception;
+use Suphle\Tests\Mocks\Models\Eloquent\Employment;
 
-	class GenericTest extends TestsRouter {
+use Exception;
 
-		use BaseDatabasePopulator {
+class GenericTest extends TestsRouter
+{
+    use BaseDatabasePopulator {
 
-			BaseDatabasePopulator::setUp as databaseAllSetup;
-		}
+        BaseDatabasePopulator::setUp as databaseAllSetup;
+    }
 
-		protected array $csrfField;
+    protected array $csrfField;
 
-		protected function setUp ():void {
+    protected function setUp(): void
+    {
 
-			$this::databaseAllSetup();
+        $this::databaseAllSetup();
 
-			$this->csrfField = [
+        $this->csrfField = [
 
-				CsrfGenerator::TOKEN_FIELD => $this->getContainer()
+            CsrfGenerator::TOKEN_FIELD => $this->getContainer()
 
-				->getClass(CsrfGenerator::class)->newToken()
-			];
-		}
+            ->getClass(CsrfGenerator::class)->newToken()
+        ];
+    }
 
-		protected function getActiveEntity ():string {
+    protected function getActiveEntity(): string
+    {
 
-			return Employment::class;
-		}
+        return Employment::class;
+    }
 
-		protected function getEntryCollection ():string {
+    protected function getEntryCollection(): string
+    {
 
-			return BasicRoutes::class;
-		}
+        return BasicRoutes::class;
+    }
 
-		public function test_can_find_all_routes () {
+    public function test_can_find_all_routes()
+    {
 
-			$this->dataProvider([
+        $this->dataProvider([
 
-				$this->allPathsAndHandlers(...)
-			], function (
-				string $requestPath, string $handler, string $httpMethod,
+            $this->allPathsAndHandlers(...)
+        ], function (
+            string $requestPath,
+            string $handler,
+            string $httpMethod,
+            $payload = null
+        ) {
 
-				$payload = null
-			) {
+            $matchingRenderer = $this->fakeRequest(
+                "/save-all/$requestPath",
+                $httpMethod,
+                $payload
+            );
 
-				$matchingRenderer = $this->fakeRequest(
+            $this->assertNotNull($matchingRenderer);
 
-					"/save-all/$requestPath", $httpMethod, $payload
-				);
+            $this->assertTrue($matchingRenderer->matchesHandler($handler));
+        });
+    }
 
-				$this->assertNotNull($matchingRenderer);
+    public function allPathsAndHandlers(): array
+    {
 
-				$this->assertTrue($matchingRenderer->matchesHandler($handler));
-			});
-		}
+        $payload = array_merge($this->csrfField, ["id" => 5]);
 
-		public function allPathsAndHandlers ():array {
+        return [
+            ["create", "showCreateForm", "get"],
 
-			$payload = array_merge($this->csrfField, ["id" => 5]);
+            [
+                "save", "saveNew", "post",
 
-			return [
-				["create", "showCreateForm", "get"],
+                array_merge($this->csrfField, [
 
-				[
-					"save", "saveNew", "post",
+                    "title" => "Will employ for a bag of nuts",
 
-					array_merge($this->csrfField, [
+                    "employer_id" => 1,
 
-						"title" => "Will employ for a bag of nuts",
+                    "salary" => 500_000
+                ])
+            ],
 
-						"employer_id" => 1,
+            ["", "showAll", "get"],
 
-						"salary" => 500_000
-					])
-				],
+            ["5", "showOne", "get"],
 
-				["", "showAll", "get"],
+            ["edit", "updateOne", "put", $payload],
 
-				["5", "showOne", "get"],
+            ["delete", "deleteOne", "delete", $payload],
 
-				["edit", "updateOne", "put", $payload],
+            ["search", "showSearchForm", "get"]
+        ];
+    }
 
-				["delete", "deleteOne", "delete", $payload],
+    public function test_can_disable_routes()
+    {
 
-				["search", "showSearchForm", "get"]
-			];
-		}
+        $this->expectException(IncompatibleHttpMethod::class); // then
 
-		public function test_can_disable_routes () {
+        // In the collection, we disabled explicit HTTP method "post";url "save", which would make this request be interpreted as HTTP method "get";url ".../id"
+        $this->fakeRequest("/disable-some/save", "post"); // when
+    }
 
-			$this->expectException(IncompatibleHttpMethod::class); // then
+    public function test_can_override_routes()
+    {
 
-			// In the collection, we disabled explicit HTTP method "post";url "save", which would make this request be interpreted as HTTP method "get";url ".../id"
-			$this->fakeRequest("/disable-some/save", "post"); // when
-		}
+        $matchingRenderer = $this->fakeRequest("/override/5"); // when
 
-		public function test_can_override_routes () {
+        $this->assertNotNull($matchingRenderer);
 
-			$matchingRenderer = $this->fakeRequest("/override/5"); // when
+        $this->assertTrue($matchingRenderer->matchesHandler("myOverride")); // then
+    }
 
-			$this->assertNotNull($matchingRenderer);
+    public function test_override_non_existent_throws_error()
+    {
 
-			$this->assertTrue($matchingRenderer->matchesHandler("myOverride")); // then
-		}
+        $this->expectException(Exception::class); // then
 
-		public function test_override_non_existent_throws_error () {
+        $this->fakeRequest("/non-existent/save"); // when
+    }
 
-			$this->expectException(Exception::class); // then
+    /**
+     * @dataProvider invalidCruds
+    */
+    public function test_correctly_fails_invalid_paths(string $requestPath)
+    {
 
-			$this->fakeRequest("/non-existent/save"); // when
-		}
+        $matchingRenderer = $this->fakeRequest("/save-all/$requestPath"); // when
 
-		/**
-		 * @dataProvider invalidCruds
-		*/
-		public function test_correctly_fails_invalid_paths (string $requestPath) {
+        $this->assertNull($matchingRenderer); // then // means 404
+    }
 
-			$matchingRenderer = $this->fakeRequest("/save-all/$requestPath"); // when
+    public function invalidCruds(): array
+    {
 
-			$this->assertNull($matchingRenderer); // then // means 404
-		}
+        return [
 
-		public function invalidCruds ():array {
+            ["/create"], // extra slash
 
-			return [
-
-				["/create"], // extra slash
-
-				["create/nmeri"]
-			];
-		}
-	}
-?>
+            ["create/nmeri"]
+        ];
+    }
+}

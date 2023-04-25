@@ -1,35 +1,37 @@
 <?php
-	namespace Suphle\Tests\Integration\Events;
 
-	use Suphle\Tests\Integration\Events\BaseTypes\EventTestCreator;
+namespace Suphle\Tests\Integration\Events;
 
-	use Suphle\Tests\Mocks\Interactions\ModuleOne;
+use Suphle\Tests\Integration\Events\BaseTypes\EventTestCreator;
 
-	use Suphle\Tests\Mocks\Modules\ModuleThree\{Meta\ModuleThreeDescriptor, Events\ReboundReceiver};
+use Suphle\Tests\Mocks\Interactions\ModuleOne;
 
-	class MultiModuleReboundTest extends EventTestCreator {
+use Suphle\Tests\Mocks\Modules\ModuleThree\{Meta\ModuleThreeDescriptor, Events\ReboundReceiver};
 
-		protected string $eventReceiverName = ReboundReceiver::class;
+class MultiModuleReboundTest extends EventTestCreator
+{
+    protected string $eventReceiverName = ReboundReceiver::class;
 
-		protected function setModuleThree ():void {
+    protected function setModuleThree(): void
+    {
 
-			$this->moduleThree = $this->bindMockedEventReceiver(ModuleThreeDescriptor::class)
-			->sendExpatriates([
+        $this->moduleThree = $this->bindMockedEventReceiver(ModuleThreeDescriptor::class)
+        ->sendExpatriates([
 
-				ModuleOne::class => $this->moduleOne
-			]);
-		}
+            ModuleOne::class => $this->moduleOne
+        ]);
+    }
 
-		public function test_local_emit_cascades_to_multiple_external () {
+    public function test_local_emit_cascades_to_multiple_external()
+    {
 
-			$this->createMockEventReceiver([
+        $this->createMockEventReceiver([
 
-				"handleMultiModuleRebound" => [1, []]
-			], []); // then
+            "handleMultiModuleRebound" => [1, []]
+        ], []); // then
 
-			$this->parentSetUp(); // given
+        $this->parentSetUp(); // given
 
-			$this->getModuleOne()->multiModuleCascadeEvent(true); // when
-		}
-	}
-?>
+        $this->getModuleOne()->multiModuleCascadeEvent(true); // when
+    }
+}

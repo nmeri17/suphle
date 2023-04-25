@@ -1,139 +1,142 @@
 <?php
-	namespace Suphle\Modules\Commands;
 
-	use Suphle\Console\BaseCliCommand;
+namespace Suphle\Modules\Commands;
 
-	use Suphle\Modules\ModuleCloneService;
+use Suphle\Console\BaseCliCommand;
 
-	use Suphle\ComponentTemplates\Commands\InstallComponentCommand;
+use Suphle\Modules\ModuleCloneService;
 
-	use Symfony\Component\Console\{Output\OutputInterface, Command\Command};
+use Suphle\ComponentTemplates\Commands\InstallComponentCommand;
 
-	use Symfony\Component\Console\Input\{InputInterface, InputArgument, InputOption};
+use Symfony\Component\Console\{Output\OutputInterface, Command\Command};
 
-	use Throwable;
+use Symfony\Component\Console\Input\{InputInterface, InputArgument, InputOption};
 
-	class CloneModuleCommand extends BaseCliCommand {
+use Throwable;
 
-		final public const MODULE_NAME_ARGUMENT = "new_module_name",
+class CloneModuleCommand extends BaseCliCommand
+{
+    final public const MODULE_NAME_ARGUMENT = "new_module_name",
 
-		DESCRIPTOR_OPTION = "module_descriptor",
+    DESCRIPTOR_OPTION = "module_descriptor",
 
-		DESTINATION_OPTION = "destination_path",
+    DESTINATION_OPTION = "destination_path",
 
-		SOURCE_OPTION = "template_source",
+    SOURCE_OPTION = "template_source",
 
-		ABSOLUTE_SOURCE_OPTION = "is_relative_source";
+    ABSOLUTE_SOURCE_OPTION = "is_relative_source";
 
-		protected static $defaultDescription = "Copy and rename contents of a folder into a module";
+    protected static $defaultDescription = "Copy and rename contents of a folder into a module";
 
-		protected function configure ():void {
+    protected function configure(): void
+    {
 
-			parent::configure();
+        parent::configure();
 
-			$this->addArgument(
-				self::MODULE_NAME_ARGUMENT, InputArgument::REQUIRED, "Module to create"
-			);
+        $this->addArgument(
+            self::MODULE_NAME_ARGUMENT,
+            InputArgument::REQUIRED,
+            "Module to create"
+        );
 
-			$this->addOption(
-				self::DESTINATION_OPTION, "d", InputOption::VALUE_REQUIRED,
+        $this->addOption(
+            self::DESTINATION_OPTION,
+            "d",
+            InputOption::VALUE_REQUIRED,
+            "Destination folder to write to"
+        ); // note argument ordering: options can't come before arguments
 
-				"Destination folder to write to"
-			); // note argument ordering: options can't come before arguments
+        $this->addOption(
+            self::ABSOLUTE_SOURCE_OPTION,
+            "i",
+            InputOption::VALUE_NONE,
+            "Set whether paths are relative or absolute"
+        );
 
-			$this->addOption(
-				self::ABSOLUTE_SOURCE_OPTION, "i",
+        $this->addOption(
+            self::DESCRIPTOR_OPTION,
+            "e",
+            InputOption::VALUE_REQUIRED,
+            "Descriptor presence will enable templates installation"
+        );
 
-				InputOption::VALUE_NONE, "Set whether paths are relative or absolute"
-			);
+        $this->addOption(
+            self::SOURCE_OPTION,
+            "t",
+            InputOption::VALUE_OPTIONAL,
+            "Folder structure to be mirrored",
+            "ModuleTemplate"
+        );
 
-			$this->addOption(
-				self::DESCRIPTOR_OPTION, "e",
+        $this->addOption(
+            InstallComponentCommand::COMPONENT_ARGS_OPTION,
+            "p",
+            InputOption::VALUE_REQUIRED,
+            "Arguments to pass to the components: foo=value uju=bar"
+        );
+    }
 
-				InputOption::VALUE_REQUIRED, "Descriptor presence will enable templates installation"
-			);
+    public static function commandSignature(): string
+    {
 
-			$this->addOption(
-				self::SOURCE_OPTION, "t",
+        return "modules:create";
+    }
 
-				InputOption::VALUE_OPTIONAL, "Folder structure to be mirrored",
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
 
-				"ModuleTemplate"
-			);
+        $moduleName = $input->getArgument(self::MODULE_NAME_ARGUMENT);
 
-			$this->addOption(
-				InstallComponentCommand::COMPONENT_ARGS_OPTION, "p",
+        try {
 
-				InputOption::VALUE_REQUIRED,
+            $clonerService = $this->getClonerService($input);
 
-				"Arguments to pass to the components: foo=value uju=bar"
-			);
-		}
+            $templatesStatus = Command::FAILURE;
 
-		public static function commandSignature ():string {
+            if ($clonerService->createModuleFolder($moduleName)) {
 
-			return "modules:create";
-		}
+                $templatesStatus = $clonerService->installModuleTemplates(
+                    $moduleName,
+                    $output,
+                    $input->getOption(self::DESCRIPTOR_OPTION),
+                    $input->getOption(InstallComponentCommand::COMPONENT_ARGS_OPTION)
+                );
+            }
 
-		protected function execute (InputInterface $input, OutputInterface $output):int {
+            if ($templatesStatus == Command::SUCCESS) {
 
-			$moduleName = $input->getArgument(self::MODULE_NAME_ARGUMENT);
+                $output->writeln("$moduleName module created successfully");
 
-			try {
+                return $templatesStatus;
+            }
 
-				$clonerService = $this->getClonerService($input);
+            return $templatesStatus;
+        } catch (Throwable $exception) {
 
-				$templatesStatus = Command::FAILURE;
+            $exceptionOutput = "$moduleName module creation incomplete:\n". $exception;
 
-				if ($clonerService->createModuleFolder($moduleName))
+            echo($exceptionOutput); // leaving this in since writeln doesn't work in tests
 
-					$templatesStatus = $clonerService->installModuleTemplates(
+            $output->writeln($exceptionOutput);
 
-						$moduleName, $output,
+            return Command::INVALID;
+        }
+    }
 
-						$input->getOption(self::DESCRIPTOR_OPTION),
+    protected function getClonerService(InputInterface $input): ModuleCloneService
+    {
 
-						$input->getOption(InstallComponentCommand::COMPONENT_ARGS_OPTION)
-					);
+        return $this->getExecutionContainer(
+            $input->getOption(self::HYDRATOR_MODULE_OPTION)
+        )->getClass(ModuleCloneService::class)
 
-				if ($templatesStatus == Command::SUCCESS) {
+        ->setConsoleDetails($this->executionPath, $this->moduleList)
 
-					$output->writeln("$moduleName module created successfully");
+        ->setCommandDetails(
+            $input->getOption(self::SOURCE_OPTION),
+            $input->getOption(self::ABSOLUTE_SOURCE_OPTION), // absence = false i.e relative
 
-					return $templatesStatus;
-				}
-				
-				return $templatesStatus;
-			}
-			catch (Throwable $exception) {
-
-				$exceptionOutput = "$moduleName module creation incomplete:\n". $exception;
-
-				echo( $exceptionOutput); // leaving this in since writeln doesn't work in tests
-				
-				$output->writeln($exceptionOutput);
-
-				return Command::INVALID;
-			}
-		}
-
-		protected function getClonerService (InputInterface $input):ModuleCloneService {
-
-			return $this->getExecutionContainer(
-
-				$input->getOption(self::HYDRATOR_MODULE_OPTION)
-			)->getClass(ModuleCloneService::class)
-
-			->setConsoleDetails($this->executionPath, $this->moduleList)
-
-			->setCommandDetails(
-
-				$input->getOption(self::SOURCE_OPTION),
-
-				$input->getOption(self::ABSOLUTE_SOURCE_OPTION), // absence = false i.e relative
-
-				$input->getOption(self::DESTINATION_OPTION)
-			);
-		}
-	}
-?>
+            $input->getOption(self::DESTINATION_OPTION)
+        );
+    }
+}

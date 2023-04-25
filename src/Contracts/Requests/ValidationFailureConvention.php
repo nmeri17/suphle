@@ -1,12 +1,12 @@
 <?php
-	namespace Suphle\Contracts\Requests;
 
-	use Suphle\Contracts\Presentation\BaseRenderer;
+namespace Suphle\Contracts\Requests;
 
-	use Suphle\Adapters\Presentation\Hotwire\Formats\BaseHotwireStream;
+use Suphle\Contracts\Presentation\BaseRenderer;
 
-	interface ValidationFailureConvention {
+use Suphle\Adapters\Presentation\Hotwire\Formats\BaseHotwireStream;
 
-		public function deriveFormPartial (BaseHotwireStream $renderer, array $failureDetails):BaseRenderer;
-	}
-?>
+interface ValidationFailureConvention
+{
+    public function deriveFormPartial(BaseHotwireStream $renderer, array $failureDetails): BaseRenderer;
+}

@@ -1,28 +1,32 @@
 <?php
-	namespace Suphle\Flows\Structures;
 
-	use Suphle\Contracts\Presentation\BaseRenderer;
+namespace Suphle\Flows\Structures;
 
-	class GeneratedUrlExecution {
+use Suphle\Contracts\Presentation\BaseRenderer;
 
-		public function __construct(protected string $requestPath, protected readonly BaseRenderer $renderer) {
+class GeneratedUrlExecution
+{
+    public function __construct(protected string $requestPath, protected readonly BaseRenderer $renderer)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function changeUrl (string $newPath):void {
+    public function changeUrl(string $newPath): void
+    {
 
-			$this->requestPath = $newPath;
-		}
+        $this->requestPath = $newPath;
+    }
 
-		public function getRenderer ():BaseRenderer {
+    public function getRenderer(): BaseRenderer
+    {
 
-			return $this->renderer;
-		}
+        return $this->renderer;
+    }
 
-		public function getRequestPath ():string {
+    public function getRequestPath(): string
+    {
 
-			return $this->requestPath;
-		}
-	}
-?>
+        return $this->requestPath;
+    }
+}

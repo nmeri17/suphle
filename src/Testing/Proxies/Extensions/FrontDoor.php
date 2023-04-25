@@ -1,27 +1,30 @@
 <?php
-	namespace Suphle\Testing\Proxies\Extensions;
 
-	use Suphle\Modules\ModuleHandlerIdentifier;
+namespace Suphle\Testing\Proxies\Extensions;
 
-	use Suphle\Hydration\Container;
+use Suphle\Modules\ModuleHandlerIdentifier;
 
-	class FrontDoor extends ModuleHandlerIdentifier {
+use Suphle\Hydration\Container;
 
-		public function __construct (array $descriptors) {
+class FrontDoor extends ModuleHandlerIdentifier
+{
+    public function __construct(array $descriptors)
+    {
 
-			$this->descriptorInstances = $descriptors;
+        $this->descriptorInstances = $descriptors;
 
-			parent::__construct();
-		}
-		
-		public function getModules ():array {
+        parent::__construct();
+    }
 
-			return $this->descriptorInstances;
-		}
+    public function getModules(): array
+    {
 
-		public function getActiveContainer ():Container {
+        return $this->descriptorInstances;
+    }
 
-			return parent::getActiveContainer();
-		}
-	}
-?>
+    public function getActiveContainer(): Container
+    {
+
+        return parent::getActiveContainer();
+    }
+}

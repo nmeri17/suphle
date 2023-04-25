@@ -1,15 +1,16 @@
 <?php
-	namespace Suphle\Tests\Integration\Modules\ModuleDescriptor;
 
-	use Suphle\Hydration\Container;
+namespace Suphle\Tests\Integration\Modules\ModuleDescriptor;
 
-	use Suphle\Tests\Mocks\Modules\ModuleTwo\Meta\ModuleTwoDescriptor;
+use Suphle\Hydration\Container;
 
-	class InadequatePairTest extends FailingCollection {
+use Suphle\Tests\Mocks\Modules\ModuleTwo\Meta\ModuleTwoDescriptor;
 
-		protected function setModuleTwo ():void {
+class InadequatePairTest extends FailingCollection
+{
+    protected function setModuleTwo(): void
+    {
 
-			$this->moduleTwo = (new ModuleTwoDescriptor(new Container));
-		}
-	}
-?>
+        $this->moduleTwo = (new ModuleTwoDescriptor(new Container()));
+    }
+}

@@ -1,36 +1,36 @@
 <?php
-	namespace Suphle\Contracts\Routing;
 
-	use Suphle\Routing\{MethodSorter, PreMiddlewareRegistry};
+namespace Suphle\Contracts\Routing;
 
-	use Suphle\Middleware\MiddlewareRegistry;
+use Suphle\Routing\{MethodSorter, PreMiddlewareRegistry};
 
-	interface RouteCollection {
+use Suphle\Middleware\MiddlewareRegistry;
 
-		final public const INDEX_METHOD = "_index";
-		
-		public function _prefixCurrent():string;
+interface RouteCollection
+{
+    final public const INDEX_METHOD = "_index";
 
-		public function _setParentPrefix (string $prefix):void;
+    public function _prefixCurrent(): string;
 
-		public function _getPrefixCollection ():?string;
+    public function _setParentPrefix(string $prefix): void;
 
-		public function _getPatterns():array;
+    public function _getPrefixCollection(): ?string;
 
-		public function _invokePattern (string $methodPattern):void;
+    public function _getPatterns(): array;
 
-		public function _assignMiddleware(MiddlewareRegistry $registry):void;
+    public function _invokePattern(string $methodPattern): void;
 
-		public function _preMiddleware (PreMiddlewareRegistry $patternIndicator):void;
+    public function _assignMiddleware(MiddlewareRegistry $registry): void;
 
-		public function _expectsCrud ():bool;
+    public function _preMiddleware(PreMiddlewareRegistry $patternIndicator): void;
 
-		public function _crud (string $markupPath, string $templatePath = null):CrudBuilder;
+    public function _expectsCrud(): bool;
 
-		public function _getLastRegistered ():array;
+    public function _crud(string $markupPath, string $templatePath = null): CrudBuilder;
 
-		public function _setLastRegistered (array $renderers):void;
+    public function _getLastRegistered(): array;
 
-		public function _getMethodSorter ():MethodSorter;
-	}
-?>
+    public function _setLastRegistered(array $renderers): void;
+
+    public function _getMethodSorter(): MethodSorter;
+}

@@ -1,45 +1,47 @@
 <?php
-	namespace Suphle\Tests\Integration\Middleware;
 
-	use Suphle\Contracts\Config\Router;
+namespace Suphle\Tests\Integration\Middleware;
 
-	use Suphle\Middleware\Handlers\FinalHandlerWrapper;
+use Suphle\Contracts\Config\Router;
 
-	use Suphle\Testing\{ TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer };
+use Suphle\Middleware\Handlers\FinalHandlerWrapper;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock, Middlewares\AltersPayloadStorage, Routes\Middlewares\PayloadCollection};
+use Suphle\Testing\{ TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer };
 
-	class AlterPayloadStorageTest extends ModuleLevelTest {
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock, Middlewares\AltersPayloadStorage, Routes\Middlewares\PayloadCollection};
 
-		protected string $modifierMiddleware = AltersPayloadStorage::class;
-		
-		protected function getModules():array {
+class AlterPayloadStorageTest extends ModuleLevelTest
+{
+    protected string $modifierMiddleware = AltersPayloadStorage::class;
 
-			return [
-				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+    protected function getModules(): array
+    {
 
-					$container->replaceWithMock(Router::class, RouterMock::class, [
+        return [
+            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-						"browserEntryRoute" => PayloadCollection::class,
+                $container->replaceWithMock(Router::class, RouterMock::class, [
 
-						"defaultMiddleware" => [
-							$this->modifierMiddleware,
+                    "browserEntryRoute" => PayloadCollection::class,
 
-							FinalHandlerWrapper::class
-						]
-					]);
-				})
-			];
-		}
+                    "defaultMiddleware" => [
+                        $this->modifierMiddleware,
 
-		// this works because of object references. Changes to payloadStorage within the middleware affect the one stored in container
-		public function test_container_must_not_provide_altered_payloadStorage () {
+                        FinalHandlerWrapper::class
+                    ]
+                ]);
+            })
+        ];
+    }
 
-			$response = $this->get("/all-payload"); // when
+    // this works because of object references. Changes to payloadStorage within the middleware affect the one stored in container
+    public function test_container_must_not_provide_altered_payloadStorage()
+    {
 
-			$middlewareInstance = $this->getContainer()->getClass($this->modifierMiddleware);
+        $response = $this->get("/all-payload"); // when
 
-			$response->assertJson($middlewareInstance->payloadUpdates()); // then
-		}
-	}
-?>
+        $middlewareInstance = $this->getContainer()->getClass($this->modifierMiddleware);
+
+        $response->assertJson($middlewareInstance->payloadUpdates()); // then
+    }
+}

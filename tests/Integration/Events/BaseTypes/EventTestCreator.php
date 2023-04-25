@@ -1,72 +1,80 @@
 <?php
-	namespace Suphle\Tests\Integration\Events\BaseTypes;
 
-	use Suphle\Contracts\Modules\DescriptorInterface;
+namespace Suphle\Tests\Integration\Events\BaseTypes;
 
-	use Suphle\Testing\Proxies\WriteOnlyContainer;
+use Suphle\Contracts\Modules\DescriptorInterface;
 
-	use Suphle\Tests\Integration\Modules\ModuleDescriptor\DescriptorCollection;
+use Suphle\Testing\Proxies\WriteOnlyContainer;
 
-	use Suphle\Tests\Mocks\Interactions\ModuleOne;
+use Suphle\Tests\Integration\Modules\ModuleDescriptor\DescriptorCollection;
 
-	class EventTestCreator extends DescriptorCollection {
+use Suphle\Tests\Mocks\Interactions\ModuleOne;
 
-		protected $payload = 5;
+class EventTestCreator extends DescriptorCollection
+{
+    protected $payload = 5;
 
-		protected object $doubledEventReceiver; // they're POPOs
+    protected object $doubledEventReceiver; // they're POPOs
 
-		protected string $eventReceiverName;
+    protected string $eventReceiverName;
 
-		// since we intend to manually trigger it in extending tests
-		protected function setUp ():void {}
+    // since we intend to manually trigger it in extending tests
+    protected function setUp(): void
+    {
+    }
 
-		protected function parentSetUp ():void {
+    protected function parentSetUp(): void
+    {
 
-			parent::setUp();
-		}
+        parent::setUp();
+    }
 
-		protected function getModuleOne ():ModuleOne {
+    protected function getModuleOne(): ModuleOne
+    {
 
-			return $this->getModuleFor(ModuleOne::class);
-		}
+        return $this->getModuleFor(ModuleOne::class);
+    }
 
-		/**
-		 * The receiver, [eventReceiverName], will be replaced in the listening module with a mock allowing us know whether it actually handled event
-		 * 
-		 * @param {descriptorName}: The module receiving the event to be emitted
-		 * 
-		 * @return new module with updates
-		*/
-		protected function bindMockedEventReceiver (string $descriptorName):DescriptorInterface {
+    /**
+     * The receiver, [eventReceiverName], will be replaced in the listening module with a mock allowing us know whether it actually handled event
+     *
+     * @param {descriptorName}: The module receiving the event to be emitted
+     *
+     * @return new module with updates
+    */
+    protected function bindMockedEventReceiver(string $descriptorName): DescriptorInterface
+    {
 
-			return $this->replicateModule($descriptorName, function(WriteOnlyContainer $container) {
+        return $this->replicateModule($descriptorName, function (WriteOnlyContainer $container) {
 
-				$container->replaceWithConcrete(
+            $container->replaceWithConcrete(
+                $this->eventReceiverName,
+                $this->doubledEventReceiver
+            );
+        });
+    }
 
-					$this->eventReceiverName, $this->doubledEventReceiver
-				);
-			});
-		}
+    /**
+     * Intended to be called before [setUp]
+    */
+    protected function createMockEventReceiver(array $mockMethods, array $constructorStubs = null): void
+    {
 
-		/**
-		 * Intended to be called before [setUp]
-		*/
-		protected function createMockEventReceiver (array $mockMethods, array $constructorStubs = null):void {
+        $this->doubledEventReceiver = $this->positiveDouble( // can't use [replaceConstructorArguments] since that requires container and that isn't available here
 
-			$this->doubledEventReceiver = $this->positiveDouble( // can't use [replaceConstructorArguments] since that requires container and that isn't available here
+            $this->eventReceiverName,
+            [],
+            $mockMethods,
+            $constructorStubs
+        );
+    }
 
-				$this->eventReceiverName, [],
+    protected function expectUpdatePayload(): array
+    {
 
-				$mockMethods, $constructorStubs
-			);
-		}
+        return [
 
-		protected function expectUpdatePayload ():array {
-
-			return [
-
-				"updatePayload" => [1, [$this->payload]]
-			];
-		}
-	}
-?>
+            "updatePayload" => [1, [$this->payload]]
+        ];
+    }
+}

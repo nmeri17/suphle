@@ -1,30 +1,32 @@
 <?php
-	namespace Suphle\Tests\Integration\Bridge\Laravel;
 
-	use Suphle\Hydration\Container;
+namespace Suphle\Tests\Integration\Bridge\Laravel;
 
-	use Suphle\Contracts\Bridge\LaravelContainer;
+use Suphle\Hydration\Container;
 
-	use Suphle\Testing\TestTypes\ModuleLevelTest;
+use Suphle\Contracts\Bridge\LaravelContainer;
 
-	use Illuminate\Contracts\Config\Repository as RepositoryContract;
+use Suphle\Testing\TestTypes\ModuleLevelTest;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
+use Illuminate\Contracts\Config\Repository as RepositoryContract;
 
-	class TestsConfig extends ModuleLevelTest {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
-		protected function getModules ():array {
+class TestsConfig extends ModuleLevelTest
+{
+    protected function getModules(): array
+    {
 
-			return [
-				new ModuleOneDescriptor (new Container)
-			];
-		}
+        return [
+            new ModuleOneDescriptor(new Container())
+        ];
+    }
 
-	    protected function getUnderlyingConfig ():RepositoryContract {
+    protected function getUnderlyingConfig(): RepositoryContract
+    {
 
-			return $this->getContainer()->getClass(LaravelContainer::class) // trigger config lifting
+        return $this->getContainer()->getClass(LaravelContainer::class) // trigger config lifting
 
-			->make("config");
-	    }
-	}
-?>
+        ->make("config");
+    }
+}

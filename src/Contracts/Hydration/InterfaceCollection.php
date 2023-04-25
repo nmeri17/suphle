@@ -1,16 +1,16 @@
 <?php
-	namespace Suphle\Contracts\Hydration;
 
-	interface InterfaceCollection {
+namespace Suphle\Contracts\Hydration;
 
-		public function getLoaders():array;
+interface InterfaceCollection
+{
+    public function getLoaders(): array;
 
-		public function simpleBinds():array;
+    public function simpleBinds(): array;
 
-		public function delegateHydrants (array $interfaces):void;
+    public function delegateHydrants(array $interfaces): void;
 
-		public function getDelegatedInstances ():array;
+    public function getDelegatedInstances(): array;
 
-		public function getConfigs ():array;
-	}
-?>
+    public function getConfigs(): array;
+}

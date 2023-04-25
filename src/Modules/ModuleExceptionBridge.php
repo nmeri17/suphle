@@ -1,175 +1,184 @@
 <?php
-	namespace Suphle\Modules;
 
-	use Suphle\Hydration\{Container, DecoratorHydrator, Structures\ObjectDetails};
+namespace Suphle\Modules;
 
-	use Suphle\Request\PayloadStorage;
+use Suphle\Hydration\{Container, DecoratorHydrator, Structures\ObjectDetails};
 
-	use Suphle\Exception\DetectedExceptionManager;
+use Suphle\Request\PayloadStorage;
 
-	use Suphle\Contracts\{Modules\HighLevelRequestHandler, Config\ExceptionInterceptor, Presentation\BaseRenderer, Hydration\ClassHydrationBehavior};
+use Suphle\Exception\DetectedExceptionManager;
 
-	use Suphle\Contracts\Exception\{FatalShutdownAlert, ExceptionHandler};
+use Suphle\Contracts\{Modules\HighLevelRequestHandler, Config\ExceptionInterceptor, Presentation\BaseRenderer, Hydration\ClassHydrationBehavior};
 
-	use Throwable, Exception;
+use Suphle\Contracts\Exception\{FatalShutdownAlert, ExceptionHandler};
 
-	class ModuleExceptionBridge implements HighLevelRequestHandler, ClassHydrationBehavior {
+use Throwable;
+use Exception;
 
-		protected ExceptionHandler $handler;
-  
-  		protected bool $handledExternally = false;
+class ModuleExceptionBridge implements HighLevelRequestHandler, ClassHydrationBehavior
+{
+    protected ExceptionHandler $handler;
 
-		public function __construct(
-			protected readonly Container $container,
+    protected bool $handledExternally = false;
 
-			protected readonly ExceptionInterceptor $config,
+    public function __construct(
+        protected readonly Container $container,
+        protected readonly ExceptionInterceptor $config,
+        protected readonly PayloadStorage $payloadStorage,
+        protected readonly DetectedExceptionManager $exceptionDetector,
+        protected readonly DecoratorHydrator $decoratorHydrator,
+        protected readonly ObjectDetails $objectMeta
+    ) {
 
-			protected readonly PayloadStorage $payloadStorage,
+        //
+    }
 
-			protected readonly DetectedExceptionManager $exceptionDetector,
+    public function hydrateHandler(Throwable $exception): void
+    {
 
-			protected readonly DecoratorHydrator $decoratorHydrator,
+        $handlers = $this->config->getHandlers();
 
-			protected readonly ObjectDetails $objectMeta
-		) {
+        $exceptionName = $exception::class;
 
-			//
-		}
+        if (array_key_exists($exceptionName, $handlers)) {
 
-		public function hydrateHandler (Throwable $exception):void {
+            $handlerName = $handlers[$exceptionName];
+        } else {
+            $handlerName = $this->exceptionFromParent($exceptionName, $handlers);
+        }
 
-			$handlers = $this->config->getHandlers();
+        $this->handler = $this->container->getClass($handlerName);
 
-			$exceptionName = $exception::class;
+        $this->handler->setContextualData($exception);
+    }
 
-			if (array_key_exists($exceptionName, $handlers))
+    /**
+     * Using this so exceptions can be stubbed and still caught by the bound handler
+    */
+    protected function exceptionFromParent(string $exceptionName, array $handlers): string
+    {
 
-				$handlerName = $handlers[$exceptionName];
-			
-			else $handlerName = $this->exceptionFromParent($exceptionName, $handlers);
+        foreach ($handlers as $exceptionParent => $handlerName) {
 
-			$this->handler = $this->container->getClass($handlerName);
-			
-			$this->handler->setContextualData($exception);
-		}
+            if ($this->objectMeta->stringInClassTree($exceptionName, $exceptionParent)) {
 
-		/**
-		 * Using this so exceptions can be stubbed and still caught by the bound handler
-		*/
-		protected function exceptionFromParent (string $exceptionName, array $handlers):string {
+                return $handlerName;
+            }
+        }
 
-			foreach ($handlers as $exceptionParent => $handlerName)
+        return $this->config->defaultHandler();
+    }
 
-				if ($this->objectMeta->stringInClassTree($exceptionName, $exceptionParent))
+    public function handlingRenderer(): ?BaseRenderer
+    {
 
-					return $handlerName;
+        $this->handler->prepareRendererData();
 
-			return $this->config->defaultHandler();
-		}
+        $this->handledExternally = true; // Causes it not to send out alerts except for uncatchable errors
 
-		public function handlingRenderer ():?BaseRenderer {
+        $renderer = $this->handler->getRenderer();
 
-			$this->handler->prepareRendererData();
+        return $this->decoratorHydrator->scopeInjecting(
+            $renderer,
+            self::class
+        );
+    }
 
-			$this->handledExternally = true; // Causes it not to send out alerts except for uncatchable errors
+    /**
+     * That this works correctly is untestable (after ModuleHandlerIdentifier::findExceptionRenderer fails)
+    */
+    public function epilogue(): void
+    {
 
-			$renderer = $this->handler->getRenderer();
+        register_shutdown_function(function () {
 
-			return $this->decoratorHydrator->scopeInjecting(
+            echo $this->shutdownRites();
+        });
+    }
 
-				$renderer, self::class
-			);
-		}
+    public function shutdownRites(): ?string
+    {
 
-		/**
-		 * That this works correctly is untestable (after ModuleHandlerIdentifier::findExceptionRenderer fails)
-		*/
-		public function epilogue ():void {
+        $lastError = error_get_last();
 
-			register_shutdown_function(function () {
+        if ($this->isFalsePositive($lastError) || $this->handledExternally) {
 
-				echo $this->shutdownRites();
-			});
-		}
+            return null;
+        } // no error. Just end of request
 
-		public function shutdownRites ():?string {
+        $stringifiedError = json_encode($lastError, JSON_PRETTY_PRINT);
 
-			$lastError = error_get_last();
+        try {
 
-			if ( $this->isFalsePositive($lastError) || $this->handledExternally)
+            return $this->gracefulShutdown($stringifiedError);
+        } catch (Throwable $exception) {
 
-				return null; // no error. Just end of request
+            return $this->disgracefulShutdown($stringifiedError, $exception);
+        }
+    }
 
-			$stringifiedError = json_encode($lastError, JSON_PRETTY_PRINT);
+    protected function isFalsePositive(?array $errorDetails): bool
+    {
 
-			try {
+        return is_null($errorDetails) ||
 
-				return $this->gracefulShutdown($stringifiedError);
-			}
-			catch (Throwable $exception) {
+        in_array($errorDetails["type"], [
 
-				return $this->disgracefulShutdown($stringifiedError, $exception);
-			}
-		}
+            E_NOTICE, E_USER_NOTICE, E_USER_WARNING, E_WARNING
+        ]);
+    }
 
-		protected function isFalsePositive (?array $errorDetails):bool {
+    /**
+     * The one place we never wanna be
+    */
+    public function disgracefulShutdown(string $errorDetails, Throwable $exception): string
+    {
 
-			return is_null($errorDetails) ||
+        $errorDetails .= \Wyrihaximus\throwable_json_encode($exception); // regular json_encode can't serialize throwables
 
-			in_array($errorDetails["type"], [
+        file_put_contents($this->config->shutdownLog(), $errorDetails, FILE_APPEND);
 
-				E_NOTICE, E_USER_NOTICE, E_USER_WARNING, E_WARNING
-			]);
-		}
+        $this->writeStatusCode(500);
 
-		/**
-		 * The one place we never wanna be
-		*/
-		public function disgracefulShutdown (string $errorDetails, Throwable $exception):string {
+        $alerter = $this->container->getClass(FatalShutdownAlert::class);
 
-			$errorDetails .= \Wyrihaximus\throwable_json_encode($exception); // regular json_encode can't serialize throwables
+        $alerter->setErrorAsJson($errorDetails);
 
-			file_put_contents($this->config->shutdownLog(), $errorDetails, FILE_APPEND);
+        $alerter->handle();
 
-			$this->writeStatusCode(500);
+        return $this->config->shutdownText();
+    }
 
-			$alerter = $this->container->getClass(FatalShutdownAlert::class);
+    public function gracefulShutdown(string $errorDetails): string
+    {
 
-			$alerter->setErrorAsJson($errorDetails);
+        $this->handler = $this->container->getClass($this->config->defaultHandler());
 
-			$alerter->handle();
+        $exception = new Exception($errorDetails); // this means this will have a fake trace
 
-			return $this->config->shutdownText();
-		}
+        $this->handler->setContextualData($exception);
 
-		public function gracefulShutdown (string $errorDetails):string {
+        $this->exceptionDetector->queueAlertAdapter($exception, $this->payloadStorage);
 
-			$this->handler = $this->container->getClass($this->config->defaultHandler());
+        $renderer = $this->decoratorHydrator->scopeInjecting(
+            $this->handlingRenderer(),
+            self::class
+        );
 
-			$exception = new Exception($errorDetails); // this means this will have a fake trace
-			
-			$this->handler->setContextualData($exception);
+        $this->writeStatusCode($renderer->getStatusCode());
 
-			$this->exceptionDetector->queueAlertAdapter($exception, $this->payloadStorage);
+        return $renderer->render();
+    }
 
-			$renderer = $this->decoratorHydrator->scopeInjecting(
+    public function writeStatusCode(int $statusCode): void
+    {
 
-				$this->handlingRenderer(), self::class
-			);
+        http_response_code($statusCode);
+    }
 
-			$this->writeStatusCode($renderer->getStatusCode());
+    public function protectRefreshPurge(): bool
+    {
 
-			return $renderer->render();
-		}
-
-		public function writeStatusCode (int $statusCode):void {
-
-			http_response_code($statusCode);
-		}
-
-		public function protectRefreshPurge ():bool {
-
-			return true; // in tests, this is provided before PayloadStorage, which is one of its dependencies
-		}
-	}
-?>
+        return true; // in tests, this is provided before PayloadStorage, which is one of its dependencies
+    }
+}

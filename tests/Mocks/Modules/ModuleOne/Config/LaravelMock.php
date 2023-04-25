@@ -1,31 +1,33 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Config;
 
-	use Suphle\Config\Laravel as ParentConfig;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Config;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\InstalledComponents\SuphleLaravelTemplates\ConfigLinks\{AppConfig, NestedConfig};
+use Suphle\Config\Laravel as ParentConfig;
 
-	class LaravelMock extends ParentConfig {
+use Suphle\Tests\Mocks\Modules\ModuleOne\InstalledComponents\SuphleLaravelTemplates\ConfigLinks\{AppConfig, NestedConfig};
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function configBridge ():array {
+class LaravelMock extends ParentConfig
+{
+    /**
+     * {@inheritdoc}
+    */
+    public function configBridge(): array
+    {
 
-			return [
+        return [
 
-				"app" => AppConfig::class,
+            "app" => AppConfig::class,
 
-				"nested" => NestedConfig::class
-			];
-		}
+            "nested" => NestedConfig::class
+        ];
+    }
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function registersRoutes ():bool {
+    /**
+     * {@inheritdoc}
+    */
+    public function registersRoutes(): bool
+    {
 
-			return true;
-		}
-	}
-?>
+        return true;
+    }
+}

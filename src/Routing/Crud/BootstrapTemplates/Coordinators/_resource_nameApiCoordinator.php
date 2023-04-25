@@ -1,24 +1,26 @@
 <?php
-	namespace _modules_shell\_module_name\Coordinators;
 
-	use Suphle\Services\ServiceCoordinator;
+namespace _modules_shell\_module_name\Coordinators;
 
-	use Suphle\Request\PayloadStorage;
+use Suphle\Services\ServiceCoordinator;
 
-	use _modules_shell\_module_name\PayloadReaders\Base_resource_nameBuilder;
+use Suphle\Request\PayloadStorage;
 
-	class _resource_nameApiCoordinator extends ServiceCoordinator {
+use _modules_shell\_module_name\PayloadReaders\Base_resource_nameBuilder;
 
-		use _resource_nameGenericCoordinator;
+class _resource_nameApiCoordinator extends ServiceCoordinator
+{
+    use _resource_nameGenericCoordinator;
 
-		public function __construct(protected readonly PayloadStorage $payloadStorage) {
+    public function __construct(protected readonly PayloadStorage $payloadStorage)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function getSearchResults ():iterable {
+    public function getSearchResults(): iterable
+    {
 
-			return [];
-		}
-	}
-?>
+        return [];
+    }
+}

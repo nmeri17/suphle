@@ -1,53 +1,54 @@
 <?php
-	namespace Suphle\Tests\Integration\Exception;
 
-	use Suphle\Hydration\Container;
+namespace Suphle\Tests\Integration\Exception;
 
-	use Suphle\Exception\Explosives\NotFoundException;
+use Suphle\Hydration\Container;
 
-	use Suphle\Request\PayloadStorage;
+use Suphle\Exception\Explosives\NotFoundException;
 
-	use Suphle\Response\Format\Markup;
+use Suphle\Request\PayloadStorage;
 
-	use Suphle\Contracts\{Config\ExceptionInterceptor, Modules\DescriptorInterface};
+use Suphle\Response\Format\Markup;
 
-	use Suphle\Testing\TestTypes\InvestigateSystemCrash;
+use Suphle\Contracts\{Config\ExceptionInterceptor, Modules\DescriptorInterface};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
+use Suphle\Testing\TestTypes\InvestigateSystemCrash;
 
-	use Exception;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
-	class TerminatedRequestTest extends InvestigateSystemCrash {
+use Exception;
 
-		protected function getModule ():DescriptorInterface {
+class TerminatedRequestTest extends InvestigateSystemCrash
+{
+    protected function getModule(): DescriptorInterface
+    {
 
-			return new ModuleOneDescriptor(new Container);
-		}
+        return new ModuleOneDescriptor(new Container());
+    }
 
-		public function test_exceptions_uses_assigned_handler () {
+    public function test_exceptions_uses_assigned_handler()
+    {
 
-			$this->assertExceptionUsesRenderer( // then
-			
-				new Markup("missingHandler", ""),
+        $this->assertExceptionUsesRenderer( // then
 
-				function (): never {
+            new Markup("missingHandler", ""),
+            function (): never {
 
-					throw new NotFoundException; // when
-				}
-			);
-		}
+                throw new NotFoundException(); // when
+            }
+        );
+    }
 
-		public function test_exceptions_without_assigned_handler_uses_default () {
+    public function test_exceptions_without_assigned_handler_uses_default()
+    {
 
-			$this->assertExceptionUsesRenderer( // then
-			
-				new Markup("genericHandler", "errors.default"),
+        $this->assertExceptionUsesRenderer( // then
 
-				function (): never {
+            new Markup("genericHandler", "errors.default"),
+            function (): never {
 
-					throw new Exception; // when
-				}
-			);
-		}
-	}
-?>
+                throw new Exception(); // when
+            }
+        );
+    }
+}

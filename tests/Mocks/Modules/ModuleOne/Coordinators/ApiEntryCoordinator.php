@@ -1,23 +1,26 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-	use Suphle\Services\ServiceCoordinator;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-	class ApiEntryCoordinator extends ServiceCoordinator {
+use Suphle\Services\ServiceCoordinator;
 
-		public function segmentHandler() {
+class ApiEntryCoordinator extends ServiceCoordinator
+{
+    public function segmentHandler()
+    {
 
-			//
-		}
+        //
+    }
 
-		public function simplePairOverride () {
+    public function simplePairOverride()
+    {
 
-			//
-		}
+        //
+    }
 
-		public function originalCascade () {
+    public function originalCascade()
+    {
 
-			return [];
-		}
-	}
-?>
+        return [];
+    }
+}

@@ -1,8 +1,8 @@
 <?php
-	namespace Suphle\Contracts\Config;
 
-	interface DecoratorProxy extends ConfigMarker {
+namespace Suphle\Contracts\Config;
 
-		public function getConfigClient ():object;
-	}
-?>
+interface DecoratorProxy extends ConfigMarker
+{
+    public function getConfigClient(): object;
+}

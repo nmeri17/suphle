@@ -1,10 +1,10 @@
 <?php
-	namespace Suphle\Middleware\Collectors;
 
-	use Suphle\Routing\CollectionMetaFunnel;
+namespace Suphle\Middleware\Collectors;
 
-	class JsonNegotiatorCollector extends CollectionMetaFunnel {
+use Suphle\Routing\CollectionMetaFunnel;
 
-		//
-	}
-?>
+class JsonNegotiatorCollector extends CollectionMetaFunnel
+{
+    //
+}

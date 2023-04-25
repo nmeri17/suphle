@@ -1,84 +1,91 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-	use Suphle\Services\{ServiceCoordinator, Decorators\ValidationRules};
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-	use Suphle\Request\PayloadStorage;
+use Suphle\Services\{ServiceCoordinator, Decorators\ValidationRules};
 
-	use Suphle\Routing\Crud\BrowserBuilder;
+use Suphle\Request\PayloadStorage;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\SystemModelEditMock1;
+use Suphle\Routing\Crud\BrowserBuilder;
 
-	use Suphle\Tests\Mocks\Models\Eloquent\Employment;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\SystemModelEditMock1;
 
-	class CrudCoordinator extends ServiceCoordinator {
+use Suphle\Tests\Mocks\Models\Eloquent\Employment;
 
-		public function __construct(
-			protected readonly SystemModelEditMock1 $editService,
+class CrudCoordinator extends ServiceCoordinator
+{
+    public function __construct(
+        protected readonly SystemModelEditMock1 $editService,
+        protected readonly PayloadStorage $payloadStorage
+    ) {
 
-			protected readonly PayloadStorage $payloadStorage
-		) {
+        //
+    }
 
-			//
-		}
+    public function showCreateForm()
+    {
 
-		public function showCreateForm() {
+        return [];
+    }
 
-			return [];
-		}
+    #[ValidationRules(["title" => "required"])]
+    public function saveNew()
+    {
 
-		#[ValidationRules(["title" => "required"])]
-		public function saveNew() {
+        $blankModel = new Employment();
 
-			$blankModel = new Employment;
+        return [
 
-			return [
+            BrowserBuilder::SAVE_NEW_KEY => $blankModel->create(
+                $this->payloadStorage->only([
 
-				BrowserBuilder::SAVE_NEW_KEY => $blankModel->create(
+                    "title", "employer_id", "salary"
+                ])
+            )
+        ];
+    }
 
-					$this->payloadStorage->only([
-					
-						"title", "employer_id", "salary"
-					])
-				)
-			];
-		}
+    public function showAll()
+    {
 
-		public function showAll() {
+        return [];
+    }
 
-			return [];
-		}
+    public function showOne()
+    {
 
-		public function showOne() {
+        return [];
+    }
 
-			return [];
-		}
+    #[ValidationRules(["id" => "required"])]
+    public function updateOne()
+    {
 
-		#[ValidationRules(["id" => "required"])]
-		public function updateOne() {
+        return [];
+    }
 
-			return [];
-		}
+    #[ValidationRules(["id" => "required"])]
+    public function deleteOne()
+    {
 
-		#[ValidationRules(["id" => "required"])]
-		public function deleteOne() {
+        return [];
+    }
 
-			return [];
-		}
+    public function showSearchForm()
+    {
 
-		public function showSearchForm () {
+        return [];
+    }
 
-			return [];
-		}
+    public function myOverride()
+    {
 
-		public function myOverride () {
+        return [];
+    }
 
-			return [];
-		}
+    public function showEditForm()
+    {
 
-		public function showEditForm () {
-
-			return [];
-		}
-	}
-?>
+        return [];
+    }
+}

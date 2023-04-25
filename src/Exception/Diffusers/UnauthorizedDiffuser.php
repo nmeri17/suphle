@@ -1,58 +1,59 @@
 <?php
-	namespace Suphle\Exception\Diffusers;
 
-	use Suphle\Contracts\Exception\ExceptionHandler;
+namespace Suphle\Exception\Diffusers;
 
-	use Suphle\Contracts\Presentation\{HtmlParser, BaseRenderer};
+use Suphle\Contracts\Exception\ExceptionHandler;
 
-	use Suphle\Request\RequestDetails;
+use Suphle\Contracts\Presentation\{HtmlParser, BaseRenderer};
 
-	use Suphle\Response\ModifiesRendererTemplate;
+use Suphle\Request\RequestDetails;
 
-	use Suphle\Exception\{ComponentEntry, Explosives\UnauthorizedServiceAccess};
+use Suphle\Response\ModifiesRendererTemplate;
 
-	use Throwable;
+use Suphle\Exception\{ComponentEntry, Explosives\UnauthorizedServiceAccess};
 
-	class UnauthorizedDiffuser implements ExceptionHandler {
+use Throwable;
 
-		public const ERRORS_PRESENCE = "authorization_failure_message";
+class UnauthorizedDiffuser implements ExceptionHandler
+{
+    use ModifiesRendererTemplate;
 
-		use ModifiesRendererTemplate;
+    public const ERRORS_PRESENCE = "authorization_failure_message";
 
-		protected string $newMarkupName = "authorization-failure";
+    protected string $newMarkupName = "authorization-failure";
 
-		public function __construct(
-			protected readonly ComponentEntry $componentEntry,
+    public function __construct(
+        protected readonly ComponentEntry $componentEntry,
+        protected readonly HtmlParser $htmlParser,
+        protected readonly BaseRenderer $renderer
+    ) {
 
-			protected readonly HtmlParser $htmlParser,
+        //
+    }
 
-			protected readonly BaseRenderer $renderer
-		) {
+    /**
+     * @param {origin} UnauthorizedServiceAccess
+    */
+    public function setContextualData(Throwable $origin): void
+    {
 
-			//
-		}
+        //
+    }
 
-		/**
-		 * @param {origin} UnauthorizedServiceAccess
-		*/
-		public function setContextualData (Throwable $origin):void {
+    public function prepareRendererData(): void
+    {
 
-			//
-		}
+        $this->setMarkupDetails();
 
-		public function prepareRendererData ():void {
+        $this->renderer->setRawResponse([
 
-			$this->setMarkupDetails();
+            self::ERRORS_PRESENCE => "Unauthorized"
+        ])->setHeaders(403, []);
+    }
 
-			$this->renderer->setRawResponse([
+    public function getRenderer(): BaseRenderer
+    {
 
-				self::ERRORS_PRESENCE => "Unauthorized"
-			])->setHeaders(403, []);
-		}
-
-		public function getRenderer ():BaseRenderer {
-
-			return $this->renderer;
-		}
-	}
-?>
+        return $this->renderer;
+    }
+}

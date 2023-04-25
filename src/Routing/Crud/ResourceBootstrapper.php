@@ -1,88 +1,79 @@
 <?php
-	namespace Suphle\Routing\Crud;
 
-	use Suphle\File\FolderCloner;
+namespace Suphle\Routing\Crud;
 
-	use Suphle\Contracts\Config\{Database, ModuleFiles};
+use Suphle\File\FolderCloner;
 
-	use Suphle\Contracts\{Modules\DescriptorInterface, Database\OrmDialect, Presentation\HtmlParser};
+use Suphle\Contracts\Config\{Database, ModuleFiles};
 
-	class ResourceBootstrapper {
+use Suphle\Contracts\{Modules\DescriptorInterface, Database\OrmDialect, Presentation\HtmlParser};
 
-		protected array $moduleList;
+class ResourceBootstrapper
+{
+    protected array $moduleList;
 
-		public function __construct (
+    public function __construct(
+        protected readonly Database $databaseConfig,
+        protected readonly DescriptorInterface $descriptor,
+        protected readonly ModuleFiles $fileConfig,
+        protected readonly OrmDialect $ormDialect,
+        protected readonly HtmlParser $htmlParser,
+        protected readonly FolderCloner $folderCloner
+    ) {
 
-			protected readonly Database $databaseConfig,
+        //
+    }
 
-			protected readonly DescriptorInterface $descriptor,
+    public function outputResourceTemplates(string $resourceName, ?bool $isApi): bool
+    {
 
-			protected readonly ModuleFiles $fileConfig,
+        $contentsReplacement = $this->getContentReplacements($resourceName);
 
-			protected readonly OrmDialect $ormDialect,
+        $this->folderCloner->setEntryReplacements(
+            $contentsReplacement,
+            $contentsReplacement,
+            $contentsReplacement
+        );
 
-			protected readonly HtmlParser $htmlParser,
+        $genericTransfer = $this->folderCloner->transferFolder(
+            __DIR__. DIRECTORY_SEPARATOR. "BootstrapTemplates",
+            $this->fileConfig->activeModulePath()
+        );
 
-			protected readonly FolderCloner $folderCloner
-		) {
+        $databaseTransfer = $this->folderCloner->transferFolder(
+            $this->ormDialect->crudFilesLocation(),
+            $this->databaseConfig->componentInstallPath()
+        );
 
-			//
-		}
+        if ($isApi) {
+            $viewTransfer = true;
+        } else {
+            $viewTransfer = $this->folderCloner->transferFolder(
+                $this->htmlParser->crudFilesLocation(),
+                $this->fileConfig->defaultViewPath(). $resourceName
+            );
+        }
 
-		public function outputResourceTemplates (string $resourceName, ?bool $isApi):bool {
+        return $genericTransfer && $databaseTransfer && $viewTransfer;
+    }
 
-			$contentsReplacement = $this->getContentReplacements($resourceName);
+    protected function getContentReplacements(string $resourceName): array
+    {
 
-			$this->folderCloner->setEntryReplacements(
+        return [
 
-				$contentsReplacement, $contentsReplacement,
+            "_module_name" => @end(explode(
+                "\\",
+                $this->descriptor->exportsImplements()
+            )),
 
-				$contentsReplacement
-			);
+            "_database_namespace" => $this->databaseConfig->componentInstallNamespace(),
 
-			$genericTransfer = $this->folderCloner->transferFolder(
+            "_resource_name" => $resourceName,
 
-				__DIR__. DIRECTORY_SEPARATOR. "BootstrapTemplates",
+            "_resource_route" => strtoupper($resourceName),
 
-				$this->fileConfig->activeModulePath()
-			);
-
-			$databaseTransfer = $this->folderCloner->transferFolder(
-
-				$this->ormDialect->crudFilesLocation(),
-
-				$this->databaseConfig->componentInstallPath()
-			);
-
-			if ($isApi) $viewTransfer = true;
-
-			else $viewTransfer = $this->folderCloner->transferFolder(
-
-				$this->htmlParser->crudFilesLocation(),
-
-				$this->fileConfig->defaultViewPath(). $resourceName
-			);
-
-			return $genericTransfer && $databaseTransfer && $viewTransfer;
-		}
-
-		protected function getContentReplacements (string $resourceName):array {
-
-			return [
-			
-				"_module_name" => @end(explode(
-
-					"\\", $this->descriptor->exportsImplements()
-				)),
-
-				"_database_namespace" => $this->databaseConfig->componentInstallNamespace(),
-
-				"_resource_name" => $resourceName,
-
-				"_resource_route" => strtoupper($resourceName),
-
-				"_modules_shell" => $this->fileConfig->modulesNamespace()
-			];
-		}
-	}
-?>
+            "_modules_shell" => $this->fileConfig->modulesNamespace()
+        ];
+    }
+}

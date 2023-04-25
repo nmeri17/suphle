@@ -1,48 +1,50 @@
 <?php
-	namespace Suphle\Routing;
 
-	use Suphle\Contracts\{Config\Router as RouterConfig, Presentation\BaseRenderer, Routing\ExternalRouter};
+namespace Suphle\Routing;
 
-	use Suphle\Hydration\Container;
+use Suphle\Contracts\{Config\Router as RouterConfig, Presentation\BaseRenderer, Routing\ExternalRouter};
 
-	class ExternalRouteMatcher {
+use Suphle\Hydration\Container;
 
-		protected ?ExternalRouter $activeHandler = null;
+class ExternalRouteMatcher
+{
+    protected ?ExternalRouter $activeHandler = null;
 
-		public function __construct(
-			protected readonly RouterConfig $config,
+    public function __construct(
+        protected readonly RouterConfig $config,
+        protected readonly Container $container
+    ) {
 
-			protected readonly Container $container
-		) {
+        //
+    }
 
-			//
-		}
+    public function shouldDelegateRouting(): bool
+    {
 
-		public function shouldDelegateRouting ():bool {
+        foreach ($this->config->externalRouters() as $manager) {
 
-			foreach ($this->config->externalRouters() as $manager) {
+            $instance = $this->container->getClass($manager);
 
-				$instance = $this->container->getClass($manager);
+            if ($instance->canHandleRequest()) {
 
-				if ($instance->canHandleRequest()) {
+                $this->activeHandler = $instance; // assumes that router has booted properly
 
-					$this->activeHandler = $instance; // assumes that router has booted properly
+                return true;
+            }
+        }
 
-					return true;
-				}
-			}
+        return false;
+    }
 
-			return false;
-		}
+    public function hasActiveHandler(): bool
+    {
 
-		public function hasActiveHandler ():bool {
+        return !is_null($this->activeHandler);
+    }
 
-			return !is_null($this->activeHandler);
-		}
+    public function getConvertedRenderer(): BaseRenderer
+    {
 
-		public function getConvertedRenderer ():BaseRenderer {
-
-			return $this->activeHandler->convertToRenderer();
-		}
-	}
-?>
+        return $this->activeHandler->convertToRenderer();
+    }
+}

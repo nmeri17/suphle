@@ -1,8 +1,8 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Interfaces;
 
-	interface CInterface {
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Interfaces;
 
-		public function getValue ():int;
-	}
-?>
+interface CInterface
+{
+    public function getValue(): int;
+}

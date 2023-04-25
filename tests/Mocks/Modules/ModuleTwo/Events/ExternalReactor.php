@@ -1,13 +1,14 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleTwo\Events;
 
-	class ExternalReactor {
+namespace Suphle\Tests\Mocks\Modules\ModuleTwo\Events;
 
-		private $payload;
+class ExternalReactor
+{
+    private $payload;
 
-		public function updatePayload ($payload):void {
+    public function updatePayload($payload): void
+    {
 
-			$this->payload = $payload;
-		}
-	}
-?>
+        $this->payload = $payload;
+    }
+}

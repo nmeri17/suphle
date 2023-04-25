@@ -1,23 +1,25 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Markup\Components;
 
-	use Illuminate\View\Component;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Markup\Components;
 
-	class AppLayout extends Component {
+use Illuminate\View\Component;
 
-		public function __construct (
-			protected $pageTitle, $scripts = null
-		) {
+class AppLayout extends Component
+{
+    public function __construct(
+        protected $pageTitle,
+        $scripts = null
+    ) {
 
-			//
-		}
+        //
+    }
 
-		public function render () {
+    public function render()
+    {
 
-			return view("layouts.app", [
+        return view("layouts.app", [
 
-				"pageTitle" => $this->pageTitle
-			]);
-		}
-	}
-?>
+            "pageTitle" => $this->pageTitle
+        ]);
+    }
+}

@@ -1,21 +1,23 @@
 <?php
-	namespace Suphle\Services\DependencyRules;
 
-	use Suphle\Exception\Explosives\DevError\UnacceptableDependency;
+namespace Suphle\Services\DependencyRules;
 
-	class ServicePreferenceHandler extends BaseDependencyHandler {
+use Suphle\Exception\Explosives\DevError\UnacceptableDependency;
 
-		public function evaluateClass (string $className):void {
+class ServicePreferenceHandler extends BaseDependencyHandler
+{
+    public function evaluateClass(string $className): void
+    {
 
-			foreach ($this->constructorDependencyTypes($className) as $dependencyType) {
+        foreach ($this->constructorDependencyTypes($className) as $dependencyType) {
 
-				if (!$this->isPermittedParent($this->argumentList, $dependencyType ))
+            if (!$this->isPermittedParent($this->argumentList, $dependencyType)) {
 
-					throw new UnacceptableDependency (
-
-						$className, $dependencyType
-					);
-			}
-		}
-	}
-?>
+                throw new UnacceptableDependency(
+                    $className,
+                    $dependencyType
+                );
+            }
+        }
+    }
+}

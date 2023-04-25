@@ -1,99 +1,103 @@
 <?php
-	namespace Suphle\Services\DecoratorHandlers;
 
-	use Suphle\Contracts\Hydration\ScopeHandlers\ModifyInjected;
+namespace Suphle\Services\DecoratorHandlers;
 
-	use Suphle\Contracts\Config\DecoratorProxy;
+use Suphle\Contracts\Hydration\ScopeHandlers\ModifyInjected;
 
-	use Suphle\Hydration\{Container, Structures\ObjectDetails};
+use Suphle\Contracts\Config\DecoratorProxy;
 
-	use Suphle\Services\Structures\SetsReflectionAttributes;
+use Suphle\Hydration\{Container, Structures\ObjectDetails};
 
-	use ProxyManager\{Factory\AccessInterceptorValueHolderFactory as AccessInterceptor, Proxy\AccessInterceptorInterface};
+use Suphle\Services\Structures\SetsReflectionAttributes;
 
-	/**
-	 * Helper class for handlers that want to wrap some/all methods
-	*/
-	abstract class BaseInjectionModifier implements ModifyInjected {
+use ProxyManager\{Factory\AccessInterceptorValueHolderFactory as AccessInterceptor, Proxy\AccessInterceptorInterface};
 
-		use SetsReflectionAttributes;
+/**
+ * Helper class for handlers that want to wrap some/all methods
+*/
+abstract class BaseInjectionModifier implements ModifyInjected
+{
+    use SetsReflectionAttributes;
 
-		protected array $methodHooks = [];
+    protected array $methodHooks = [];
 
-		public function __construct(
+    public function __construct(
+        protected readonly DecoratorProxy $proxyConfig,
+        protected readonly ObjectDetails $objectMeta
+    ) {
 
-			protected readonly DecoratorProxy $proxyConfig,
+        //
+    }
 
-			protected readonly ObjectDetails $objectMeta
-		) {
+    public function getMethodHooks(): array
+    {
 
-			//
-		}
+        return $this->methodHooks;
+    }
 
-		public function getMethodHooks ():array {
+    /**
+     * @return Object proxy
+    */
+    protected function allMethodAction(object $concrete, callable $action): AccessInterceptorInterface
+    {
 
-			return $this->methodHooks;
-		}
+        foreach (
+            $this->objectMeta->getPublicMethods($concrete::class)
 
-		/**
-		 * @return Object proxy
-		*/
-		protected function allMethodAction (object $concrete, callable $action):AccessInterceptorInterface {
+            as $methodName
+        ) {
 
-			foreach (
-				$this->objectMeta->getPublicMethods($concrete::class)
+            $this->methodHooks[$methodName] = $action;
+        }
 
-				as $methodName
-			)
+        return $this->getProxy($concrete);
+    }
 
-				$this->methodHooks[$methodName] = $action;
+    protected function getProxy(object $concrete): AccessInterceptorInterface
+    {
 
-			return $this->getProxy($concrete);
-		}
+        return (new AccessInterceptor(
+            $this->proxyConfig->getConfigClient()
+        ))
+        ->createProxy(
+            $concrete,
+            $this->convertActionsToHook($this->getMethodHooks())
+            // no argument 3 since we don't care about post hooks
+        );
+    }
 
-		protected function getProxy (object $concrete):AccessInterceptorInterface {
+    /**
+     * @param {baseActions} [method => function ($proxy, object $concrete, string $methodName, array $argumentList)]
+    */
+    private function convertActionsToHook(array $baseActions): array
+    {
 
-			return (new AccessInterceptor(
+        $hookers = [];
 
-				$this->proxyConfig->getConfigClient()
-			))
-			->createProxy( $concrete,
+        foreach ($baseActions as $hooker => $action) { // handlers with same method won't clash since we're using unique proxies for each handler
 
-				$this->convertActionsToHook( $this->getMethodHooks())
-				// no argument 3 since we don't care about post hooks
-			);
-		}
+            $hookers[$hooker] = function ($proxy, $concrete, $calledMethod, $parameters, &$earlyReturn) use ($action) { // hooker == calledMethod
 
-		/**
-		 * @param {baseActions} [method => function ($proxy, object $concrete, string $methodName, array $argumentList)]
-		*/
-		private function convertActionsToHook (array $baseActions):array {
+                $earlyReturn = true; // since handlers want to take responsibility of calling underlying concrete, not this library
 
-			$hookers = [];
+                return call_user_func_array($action, [
 
-			foreach ($baseActions as $hooker => $action) // handlers with same method won't clash since we're using unique proxies for each handler
+                    $proxy, $concrete,
 
-				$hookers[$hooker] = function ($proxy, $concrete, $calledMethod, $parameters, &$earlyReturn) use ($action) { // hooker == calledMethod
+                    $calledMethod, $parameters
+                ]);
+            };
+        }
 
-					$earlyReturn = true; // since handlers want to take responsibility of calling underlying concrete, not this library
+        return $hookers;
+    }
 
-					return call_user_func_array($action, [
+    protected function triggerOrigin(object $concrete, string $method, array $arguments)
+    {
 
-						$proxy, $concrete,
-
-						$calledMethod, $parameters
-					]);
-				};
-
-			return $hookers;
-		}
-
-		protected function triggerOrigin (object $concrete, string $method, array $arguments) {
-
-			return call_user_func_array(
-			
-				[$concrete, $method], $arguments
-			);
-		}
-	}
-?>
+        return call_user_func_array(
+            [$concrete, $method],
+            $arguments
+        );
+    }
+}

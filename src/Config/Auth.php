@@ -1,55 +1,62 @@
 <?php
-	namespace Suphle\Config;
 
-	use Suphle\Contracts\Config\AuthContract;
+namespace Suphle\Config;
 
-	use Suphle\Auth\Renderers\{BrowserLoginMediator, ApiLoginMediator};
+use Suphle\Contracts\Config\AuthContract;
 
-	use Suphle\Request\RequestDetails;
+use Suphle\Auth\Renderers\{BrowserLoginMediator, ApiLoginMediator};
 
-	class Auth implements AuthContract {
+use Suphle\Request\RequestDetails;
 
-		final public const API_LOGIN_PATH = "api/v1/login";
+class Auth implements AuthContract
+{
+    final public const API_LOGIN_PATH = "api/v1/login";
 
-		public function __construct(protected readonly RequestDetails $requestDetails) {
+    public function __construct(protected readonly RequestDetails $requestDetails)
+    {
 
-			//
-		}
+        //
+    }
 
-		protected function getLoginPaths ():array {
+    protected function getLoginPaths(): array
+    {
 
-			return [
-				$this->markupRedirect() => BrowserLoginMediator::class,
+        return [
+            $this->markupRedirect() => BrowserLoginMediator::class,
 
-				self::API_LOGIN_PATH => ApiLoginMediator::class
-			];
-		}
+            self::API_LOGIN_PATH => ApiLoginMediator::class
+        ];
+    }
 
-		public function getLoginCollection ():?string {
+    public function getLoginCollection(): ?string
+    {
 
-			foreach ($this->getLoginPaths() as $key => $renderer) {
+        foreach ($this->getLoginPaths() as $key => $renderer) {
 
-				if ($this->requestDetails->matchesPath($key))
+            if ($this->requestDetails->matchesPath($key)) {
 
-					return $renderer;
-			}
+                return $renderer;
+            }
+        }
 
-			return null;
-		}
+        return null;
+    }
 
-		public function isLoginRequest ():bool {
+    public function isLoginRequest(): bool
+    {
 
-			return $this->requestDetails->isPostRequest() && !is_null($this->getLoginCollection());
-		}
+        return $this->requestDetails->isPostRequest() && !is_null($this->getLoginCollection());
+    }
 
-		public function getModelObservers ():array {
+    public function getModelObservers(): array
+    {
 
-			return [];
-		}
+        return [];
+    }
 
-		public function markupRedirect ():string {
+    public function markupRedirect(): string
+    {
 
-			return "login";
-		}
-	}
-?>
+        return "login";
+    }
+}

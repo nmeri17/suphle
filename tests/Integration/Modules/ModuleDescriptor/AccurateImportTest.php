@@ -1,34 +1,35 @@
 <?php
-	namespace Suphle\Tests\Integration\Modules\ModuleDescriptor;
 
-	use Suphle\Tests\Mocks\Interactions\{ModuleThree, ModuleOne, ModuleTwo};
+namespace Suphle\Tests\Integration\Modules\ModuleDescriptor;
 
-	class AccurateImportTest extends DescriptorCollection {
+use Suphle\Tests\Mocks\Interactions\{ModuleThree, ModuleOne, ModuleTwo};
 
-		public function test_simple_import () {
+class AccurateImportTest extends DescriptorCollection
+{
+    public function test_simple_import()
+    {
 
-			$result = $this->getModuleFor(ModuleTwo::class)
+        $result = $this->getModuleFor(ModuleTwo::class)
 
-			->getShallowValue(); // when
+        ->getShallowValue(); // when
 
-			$moduleThree = $this->getModuleFor(ModuleThree::class);
+        $moduleThree = $this->getModuleFor(ModuleThree::class);
 
-			$this->assertSame($result, $moduleThree->getLocalValue()); // then
-		}
+        $this->assertSame($result, $moduleThree->getLocalValue()); // then
+    }
 
-		public function test_intermediary_module_can_access_nested_module_when_called_by_importer () {
-			
-			$moduleTwo = $this->getModuleFor(ModuleTwo::class);
+    public function test_intermediary_module_can_access_nested_module_when_called_by_importer()
+    {
 
-			$payload = 67;
+        $moduleTwo = $this->getModuleFor(ModuleTwo::class);
 
-			$moduleTwo->setNestedModuleValue($payload); // when
+        $payload = 67;
 
-			$this->assertSame(
-				$payload,
+        $moduleTwo->setNestedModuleValue($payload); // when
 
-				$this->getModuleFor(ModuleOne::class)->getBCounterValue()
-			); // then
-		}
-	}
-?>
+        $this->assertSame(
+            $payload,
+            $this->getModuleFor(ModuleOne::class)->getBCounterValue()
+        ); // then
+    }
+}

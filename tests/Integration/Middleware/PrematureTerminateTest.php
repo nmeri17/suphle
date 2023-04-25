@@ -1,40 +1,42 @@
 <?php
-	namespace Suphle\Tests\Integration\Middleware;
 
-	use Suphle\Contracts\Config\Router;
+namespace Suphle\Tests\Integration\Middleware;
 
-	use Suphle\Middleware\Handlers\FinalHandlerWrapper;
+use Suphle\Contracts\Config\Router;
 
-	use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
+use Suphle\Middleware\Handlers\FinalHandlerWrapper;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock};
+use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares\IgnoresLowerMiddleware;
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock};
 
-	class PrematureTerminateTest extends ModuleLevelTest {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares\IgnoresLowerMiddleware;
 
-		protected function getModules():array {
+class PrematureTerminateTest extends ModuleLevelTest
+{
+    protected function getModules(): array
+    {
 
-			return [
-				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+        return [
+            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-					$container->replaceWithMock(Router::class, RouterMock::class, [
+                $container->replaceWithMock(Router::class, RouterMock::class, [
 
-						"defaultMiddleware" => [
-							IgnoresLowerMiddleware::class,
+                    "defaultMiddleware" => [
+                        IgnoresLowerMiddleware::class,
 
-							FinalHandlerWrapper::class
-						]
-					]);
-				})
-			];
-		}
+                        FinalHandlerWrapper::class
+                    ]
+                ]);
+            })
+        ];
+    }
 
-		public function test_middleware_can_disrupt_those_below () {
+    public function test_middleware_can_disrupt_those_below()
+    {
 
-			$this->get("/segment") // when
+        $this->get("/segment") // when
 
-			->assertJson(["foo" => "bar"]); // then
-		}
-	}
-?>
+        ->assertJson(["foo" => "bar"]); // then
+    }
+}

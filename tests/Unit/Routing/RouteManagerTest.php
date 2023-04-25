@@ -1,231 +1,248 @@
 <?php
-	namespace Suphle\Tests\Unit\Routing;
 
-	use Suphle\Contracts\Routing\RouteCollection;
+namespace Suphle\Tests\Unit\Routing;
 
-	use Suphle\Routing\{RouteManager, Structures\PlaceholderCheck, CollectionMethodToUrl, PathPlaceholders};
+use Suphle\Contracts\Routing\RouteCollection;
 
-	use Suphle\Testing\{TestTypes\IsolatedComponentTest, Condiments\DirectHttpTest};
+use Suphle\Routing\{RouteManager, Structures\PlaceholderCheck, CollectionMethodToUrl, PathPlaceholders};
 
-	use Suphle\Tests\Integration\Generic\CommonBinds;
+use Suphle\Testing\{TestTypes\IsolatedComponentTest, Condiments\DirectHttpTest};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\{BrowserNoPrefix, Crud\AuthenticateCrudCollection};
+use Suphle\Tests\Integration\Generic\CommonBinds;
 
-	/**
-	 * Note: all urls passed to methods apart from [recursiveSearch] should have no surrounding slashes in order to match parsed patterns
-	*/
-	class RouteManagerTest extends IsolatedComponentTest {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\{BrowserNoPrefix, Crud\AuthenticateCrudCollection};
 
-		use DirectHttpTest, CommonBinds;
+/**
+ * Note: all urls passed to methods apart from [recursiveSearch] should have no surrounding slashes in order to match parsed patterns
+*/
+class RouteManagerTest extends IsolatedComponentTest
+{
+    use DirectHttpTest;
+    use CommonBinds;
 
-		protected bool $usesRealDecorator = false;
+    protected bool $usesRealDecorator = false;
 
-		private RouteManager $sut;
-		
-		private RouteCollection $collection;
-		
-		private string $sutName = RouteManager::class;
+    private RouteManager $sut;
 
-		protected function setUp ():void {
+    private RouteCollection $collection;
 
-			parent::setUp();
+    private string $sutName = RouteManager::class;
 
-			$this->sut = $this->container->getClass($this->sutName);
+    protected function setUp(): void
+    {
 
-			$this->collection = $this->container->getClass(BrowserNoPrefix::class);
-		}
+        parent::setUp();
 
-		public function test_can_match_multi_placeholders () {
+        $this->sut = $this->container->getClass($this->sutName);
 
-			$result = $this->sut->findMatchingMethod(
-			
-				"segment/5/segment/5", $this->collection->_getPatterns()
-			);
+        $this->collection = $this->container->getClass(BrowserNoPrefix::class);
+    }
 
-			$this->assertNotNull($result); // sanity check
+    public function test_can_match_multi_placeholders()
+    {
 
-			$this->assertSame(
+        $result = $this->sut->findMatchingMethod(
+            "segment/5/segment/5",
+            $this->collection->_getPatterns()
+        );
 
-				"SEGMENT_id_SEGMENT_id2", $result->getMethodName()
-			);
-		}
+        $this->assertNotNull($result); // sanity check
 
-		/**
-	     * @dataProvider regexFormData
-	     */
-		public function test_regex_form (string $methodName, string $regexVersion) {
+        $this->assertSame(
+            "SEGMENT_id_SEGMENT_id2",
+            $result->getMethodName()
+        );
+    }
 
-			$sut = $this->container->getClass(CollectionMethodToUrl::class);
+    /**
+     * @dataProvider regexFormData
+     */
+    public function test_regex_form(string $methodName, string $regexVersion)
+    {
 
-			$result = $sut->replacePlaceholders($methodName, RouteManager::PLACEHOLDER_REPLACEMENT);
+        $sut = $this->container->getClass(CollectionMethodToUrl::class);
 
-			$this->assertSame($regexVersion, $result->regexifiedUrl());
-		}
+        $result = $sut->replacePlaceholders($methodName, RouteManager::PLACEHOLDER_REPLACEMENT);
 
-		public function regexFormData ():array {
+        $this->assertSame($regexVersion, $result->regexifiedUrl());
+    }
 
-			$placeholder = RouteManager::PLACEHOLDER_REPLACEMENT;
+    public function regexFormData(): array
+    {
 
-			return [
-				[
-					"SEGMENT_id_SEGMENT_id2",
-					"SEGMENT/$placeholder/SEGMENT/$placeholder/?"
-				],
-				[
-					"SEGMENT_id", "SEGMENT/$placeholder/?"
-				]
-			];
-		}
+        $placeholder = RouteManager::PLACEHOLDER_REPLACEMENT;
 
-		public function test_patternPlaceholderDetails_returns_correctly_transformed () {
+        return [
+            [
+                "SEGMENT_id_SEGMENT_id2",
+                "SEGMENT/$placeholder/SEGMENT/$placeholder/?"
+            ],
+            [
+                "SEGMENT_id", "SEGMENT/$placeholder/?"
+            ]
+        ];
+    }
 
-			$result = $this->sut->patternPlaceholderDetails(
+    public function test_patternPlaceholderDetails_returns_correctly_transformed()
+    {
 
-				$this->collection->_getPatterns() // given 
-			); // when
+        $result = $this->sut->patternPlaceholderDetails(
+            $this->collection->_getPatterns() // given
+        ); // when
 
-			$placeholder = RouteManager::PLACEHOLDER_REPLACEMENT;
+        $placeholder = RouteManager::PLACEHOLDER_REPLACEMENT;
 
-			$this->assertEqualsCanonicalizing([
+        $this->assertEqualsCanonicalizing([
 
-				"SEGMENT/?",
+            "SEGMENT/?",
 
-				"SEGMENT/$placeholder/?",
+            "SEGMENT/$placeholder/?",
 
-				"SEGMENT-SEGMENT/$placeholder/?",
+            "SEGMENT-SEGMENT/$placeholder/?",
 
-				"SEGMENT_SEGMENT/$placeholder/?",
+            "SEGMENT_SEGMENT/$placeholder/?",
 
-				"SEGMENT/$placeholder/SEGMENT/$placeholder/?",
+            "SEGMENT/$placeholder/SEGMENT/$placeholder/?",
 
-				""
-			], array_column($result, "url")); // then
-		}
+            ""
+        ], array_column($result, "url")); // then
+    }
 
-		public function test_method_can_partly_match_path () {
+    public function test_method_can_partly_match_path()
+    {
 
-			$result = $this->sut->methodPartiallyMatchPattern(
-				"segment-segment/5/segment", // given
+        $result = $this->sut->methodPartiallyMatchPattern(
+            "segment-segment/5/segment", // given
 
-				$this->collection->_getPatterns()
-			); // when
+            $this->collection->_getPatterns()
+        ); // when
 
-			$expected = new PlaceholderCheck( "segment-segment/5/", "SEGMENT__SEGMENTh_id");
+        $expected = new PlaceholderCheck("segment-segment/5/", "SEGMENT__SEGMENTh_id");
 
-			$this->assertEquals($expected, $result); // then
-		}
+        $this->assertEquals($expected, $result); // then
+    }
 
-		public function test_findMatchingMethod_stops_at_literal_match () {
+    public function test_findMatchingMethod_stops_at_literal_match()
+    {
 
-			$sut = $this->positiveDouble($this->sutName, [], [
+        $sut = $this->positiveDouble($this->sutName, [], [
 
-				"methodPartiallyMatchPattern" => [0, []] // SEGMENT is the only literal pattern in collection
-			]); // then
+            "methodPartiallyMatchPattern" => [0, []] // SEGMENT is the only literal pattern in collection
+        ]); // then
 
-			$result = $sut->findMatchingMethod( // when 
+        $result = $sut->findMatchingMethod( // when
 
-				"segment", $this->collection->_getPatterns() // given
-			);
+            "segment",
+            $this->collection->_getPatterns() // given
+        );
 
-			$this->assertSame("SEGMENT", $result->getMethodName());
-		}
+        $this->assertSame("SEGMENT", $result->getMethodName());
+    }
 
-		public function test_findMatchingMethod_skips_when_not_literal () {
+    public function test_findMatchingMethod_skips_when_not_literal()
+    {
 
-			$patterns = $this->collection->_getPatterns();
+        $patterns = $this->collection->_getPatterns();
 
-			$sut = $this->positiveDouble($this->sutName, [], [
+        $sut = $this->positiveDouble($this->sutName, [], [
 
-				"methodPartiallyMatchPattern" => [(is_countable($patterns) ? count($patterns) : 0)-1, []] // omit SEGMENT, the only literal pattern in collection
-			]); // then
+            "methodPartiallyMatchPattern" => [(is_countable($patterns) ? count($patterns) : 0)-1, []] // omit SEGMENT, the only literal pattern in collection
+        ]); // then
 
-			foreach ($patterns as $method)
+        foreach ($patterns as $method) {
 
-				$sut->findMatchingMethod( // when 
+            $sut->findMatchingMethod( // when
 
-					$method, $patterns // given
-				);
-		}
+                $method,
+                $patterns // given
+            );
+        }
+    }
 
-		/**
-		 * @dataProvider pathToCollectionMethod
-		*/
-		public function test_findMatchingMethod_finds_correct_method (string $url, string $expectedMethod) {
+    /**
+     * @dataProvider pathToCollectionMethod
+    */
+    public function test_findMatchingMethod_finds_correct_method(string $url, string $expectedMethod)
+    {
 
-			$patterns = $this->collection->_getPatterns();
+        $patterns = $this->collection->_getPatterns();
 
-			$result = $this->sut->findMatchingMethod( // when 
+        $result = $this->sut->findMatchingMethod( // when
 
-				$url, $patterns // given
-			);
+            $url,
+            $patterns // given
+        );
 
-			$this->assertNotNull($result);
+        $this->assertNotNull($result);
 
-			$this->assertSame($expectedMethod, $result->getMethodName()); // then
-		}
+        $this->assertSame($expectedMethod, $result->getMethodName()); // then
+    }
 
-		public function pathToCollectionMethod ():array {
+    public function pathToCollectionMethod(): array
+    {
 
-			return [
-				[ "", "_index"],
+        return [
+            [ "", "_index"],
 
-				[ "segment", "SEGMENT"],
+            [ "segment", "SEGMENT"],
 
-				[ "segment/5", "SEGMENT_id"],
+            [ "segment/5", "SEGMENT_id"],
 
-				[ "segment-segment/5", "SEGMENT__SEGMENTh_id"],
+            [ "segment-segment/5", "SEGMENT__SEGMENTh_id"],
 
-				[ "segment_segment/5", "SEGMENT__SEGMENTu_id"],
+            [ "segment_segment/5", "SEGMENT__SEGMENTu_id"],
 
-				[ "segment/5/segment/5", "SEGMENT_id_SEGMENT_id2"]
-			];
-		}
+            [ "segment/5/segment/5", "SEGMENT_id_SEGMENT_id2"]
+        ];
+    }
 
-		/**
-		 * @dataProvider placeholderMethods
-		*/
-		public function test_injects_correct_placeholders_for_storage (string $urlPattern, string $methodPattern, array $expectedPlaceholders) {
+    /**
+     * @dataProvider placeholderMethods
+    */
+    public function test_injects_correct_placeholders_for_storage(string $urlPattern, string $methodPattern, array $expectedPlaceholders)
+    {
 
-			$placeholderStorage = $this->positiveDouble(PathPlaceholders::class, [], [
+        $placeholderStorage = $this->positiveDouble(PathPlaceholders::class, [], [
 
-				"foundSegments" => [1, [$expectedPlaceholders]] // then
-			]);
+            "foundSegments" => [1, [$expectedPlaceholders]] // then
+        ]);
 
-			$router = $this->replaceConstructorArguments ($this->sutName, [
+        $router = $this->replaceConstructorArguments($this->sutName, [
 
-				"placeholderStorage" => $placeholderStorage,
+            "placeholderStorage" => $placeholderStorage,
 
-				"urlReplacer" => $this->container->getClass(CollectionMethodToUrl::class)
-			]);
+            "urlReplacer" => $this->container->getClass(CollectionMethodToUrl::class)
+        ]);
 
-			$router->methodPartiallyMatchPattern(
+        $router->methodPartiallyMatchPattern(
+            $urlPattern,
+            [$methodPattern] // given
+        ); // when
+    }
 
-				$urlPattern, [$methodPattern] // given
-			); // when
-		}
+    public function placeholderMethods(): array
+    {
 
-		public function placeholderMethods ():array {
+        return [
+            ["segment-segment/5", "SEGMENT__SEGMENTh_id", ["id"]],
 
-			return [
-				["segment-segment/5", "SEGMENT__SEGMENTh_id", ["id"]],
+            ["segment/5/segment/5", "SEGMENT_id_SEGMENT_id2", ["id", "id2"]]
+        ];
+    }
 
-				["segment/5/segment/5", "SEGMENT_id_SEGMENT_id2", ["id", "id2"]]
-			];
-		}
+    public function test_crud_can_find_active_handler()
+    {
 
-		public function test_crud_can_find_active_handler () {
+        $sut = $this->container->getClass($this->sutName);
 
-			$sut = $this->container->getClass($this->sutName);
+        $collection = $this->container->getClass(AuthenticateCrudCollection::class);
 
-			$collection = $this->container->getClass(AuthenticateCrudCollection::class);
+        $collection->SECURE__SOMEh();
 
-			$collection->SECURE__SOMEh();
+        $possibleRenderers = $collection->_getLastRegistered();
 
-			$possibleRenderers = $collection->_getLastRegistered();
+        $methodName = $sut->findActiveCrud(array_keys($possibleRenderers), "edit/5"); // when
 
-			$methodName = $sut->findActiveCrud(array_keys($possibleRenderers), "edit/5"); // when
-
-			$this->assertSame("EDIT_id", $methodName); // then
-		}
-	}
-?>
+        $this->assertSame("EDIT_id", $methodName); // then
+    }
+}

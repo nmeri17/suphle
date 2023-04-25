@@ -1,161 +1,182 @@
 <?php
-	namespace Suphle\Events;
 
-	use Suphle\Hydration\Structures\ObjectDetails;
+namespace Suphle\Events;
 
-	use Suphle\Modules\ModuleDescriptor;
+use Suphle\Hydration\Structures\ObjectDetails;
 
-	use Suphle\Contracts\{Events, Modules\DescriptorInterface, Requests\RequestEventsListener};
+use Suphle\Modules\ModuleDescriptor;
 
-	use Suphle\Request\PayloadStorage;
+use Suphle\Contracts\{Events, Modules\DescriptorInterface, Requests\RequestEventsListener};
 
-	use Suphle\Services\Decorators\{BindsAsSingleton, VariableDependencies};
+use Suphle\Request\PayloadStorage;
 
-	use InvalidArgumentException;
+use Suphle\Services\Decorators\{BindsAsSingleton, VariableDependencies};
 
-	#[BindsAsSingleton(Events::class)]
-	#[VariableDependencies(["setModuleDescriptor", "setParentManager"])]
-	class EventManager implements Events {
+use InvalidArgumentException;
 
-		private const LOCAL_SCOPE = "local",
+#[BindsAsSingleton(Events::class)]
+#[VariableDependencies(["setModuleDescriptor", "setParentManager"])]
+class EventManager implements Events
+{
+    private const LOCAL_SCOPE = "local",
 
-		EXTERNAL_SCOPE = "external";
+    EXTERNAL_SCOPE = "external";
 
-		private ModuleLevelEvents $parentManager;
+    private ModuleLevelEvents $parentManager;
 
-		private DescriptorInterface $moduleDescriptor;
+    private DescriptorInterface $moduleDescriptor;
 
-		private array $localEmitters = [], $foreignListening = [];
+    private array $localEmitters = [];
+    private array $foreignListening = [];
 
-		public function __construct (protected readonly ObjectDetails $objectMeta) {
+    public function __construct(protected readonly ObjectDetails $objectMeta)
+    {
 
-			//
-		}
+        //
+    }
 
-		/**
-		 * @param {module}: Descriptor for the module where this handler will be emitting from. It's also not injected through the constructor since that would prevent its internal test i.e. during module binding stage, obviously, no descriptor is available
-		*/
-		public function setModuleDescriptor (DescriptorInterface $module):void {
+    /**
+     * @param {module}: Descriptor for the module where this handler will be emitting from. It's also not injected through the constructor since that would prevent its internal test i.e. during module binding stage, obviously, no descriptor is available
+    */
+    public function setModuleDescriptor(DescriptorInterface $module): void
+    {
 
-			$this->moduleDescriptor = $module;
-		}
+        $this->moduleDescriptor = $module;
+    }
 
-		/**
-		 * @param {parentManager}: Using a setter instead of a constructor for this to avoid circular dependency during hydration since that parent is the one who eventually hydrates this
-		*/
-		public function setParentManager ( ModuleLevelEvents $parentManager):void {
+    /**
+     * @param {parentManager}: Using a setter instead of a constructor for this to avoid circular dependency during hydration since that parent is the one who eventually hydrates this
+    */
+    public function setParentManager(ModuleLevelEvents $parentManager): void
+    {
 
-			$this->parentManager = $parentManager;
-		}
+        $this->parentManager = $parentManager;
+    }
 
-		protected function local (string $emittingEntity, string $handlingClass):EventSubscription {
-			
-			return $this->initializeHandlingScope(
+    protected function local(string $emittingEntity, string $handlingClass): EventSubscription
+    {
 
-				$this->localEmitters, $emittingEntity, $handlingClass
-			);
-		}
+        return $this->initializeHandlingScope(
+            $this->localEmitters,
+            $emittingEntity,
+            $handlingClass
+        );
+    }
 
-		protected function external(string $interaction, string $handlingClass):EventSubscription {
+    protected function external(string $interaction, string $handlingClass): EventSubscription
+    {
 
-			return $this->initializeHandlingScope(
+        return $this->initializeHandlingScope(
+            $this->foreignListening,
+            $interaction,
+            $handlingClass
+        );
+    }
 
-				$this->foreignListening, $interaction, $handlingClass
-			);
-		}
+    /**
+     * There's a distinction between local and external emitters because we don't wanna assume each client has a hard dependency on that interface. The client shouldn't care beyond the knowledge that such interface may emit such events if it exists
+    */
+    private function initializeHandlingScope(
+        array &$scope,
+        string $emitable,
+        string $handlingClass
+    ): EventSubscription {
 
-		/**
-		 * There's a distinction between local and external emitters because we don't wanna assume each client has a hard dependency on that interface. The client shouldn't care beyond the knowledge that such interface may emit such events if it exists
-		*/
-		private function initializeHandlingScope (
+        $errorMessage = "";
 
-			array &$scope, string $emitable, string $handlingClass
-		):EventSubscription {
+        if ($emitable == $handlingClass) {
 
-			$errorMessage = "";
+            $errorMessage = "Cannot listen to events emitted by '$emitable' on the same class";
+        }
 
-			if ($emitable == $handlingClass)
+        if (!empty($errorMessage)) {
 
-				$errorMessage = "Cannot listen to events emitted by '$emitable' on the same class";
+            throw new InvalidArgumentException($errorMessage);
+        }
 
-			if (!empty($errorMessage))
+        return $scope[$emitable] = new EventSubscription(
+            $handlingClass,
+            $this->moduleDescriptor->getContainer()
+        );
+    }
 
-				throw new InvalidArgumentException($errorMessage);
+    /**
+     * {@inheritdoc}
+     **/
+    public function emit(string $emitter, string $eventName, $payload = null): void
+    {
 
-			return $scope[$emitable] = new EventSubscription(
+        $localHandlers = $this->getLocalHandler($emitter);
 
-				$handlingClass, $this->moduleDescriptor->getContainer()
-			);
-		}
+        $moduleIdentifier = $this->moduleDescriptor->exportsImplements();
 
-		/**
-		 * {@inheritdoc}
-		 **/
-		public function emit(string $emitter, string $eventName, $payload = null):void {
+        $this->parentManager->triggerHandlers(
+            $emitter,
+            $localHandlers,
+            $eventName,
+            $payload
+        )
+        ->triggerExternalHandlers(
+            $moduleIdentifier,
+            $eventName,
+            $payload
+        ); // this means external listeners of this module can comfortably listen to the module exports interface rather than bothering about the specific entity emitting the event
+    }
 
-			$localHandlers = $this->getLocalHandler($emitter);
+    /**
+     * For each module, [parentManager] will request handlers matching currently evaluated module from this guy
+     *
+     **/
+    public function getExternalHandlers(string $evaluatedModule): ?EventSubscription
+    {
 
-			$moduleIdentifier = $this->moduleDescriptor->exportsImplements();
+        if ($this->objectMeta->stringInClassTree(
+            $evaluatedModule,
+            $this->moduleDescriptor->exportsImplements()
+        )) {
 
-			$this->parentManager->triggerHandlers(
+            return null;
+        }
 
-				$emitter, $localHandlers, $eventName, $payload
-			)
-			->triggerExternalHandlers(
+        return $this->findDecoupledEmitter(
+            $evaluatedModule,
+            $this->foreignListening
+        );
+    }
 
-				$moduleIdentifier, $eventName, $payload
-			); // this means external listeners of this module can comfortably listen to the module exports interface rather than bothering about the specific entity emitting the event
-		}
+    public function getLocalHandler(string $emitter): ?EventSubscription
+    {
 
-		/**
-		 * For each module, [parentManager] will request handlers matching currently evaluated module from this guy
-		 *
-		 **/
-		public function getExternalHandlers(string $evaluatedModule):?EventSubscription {
+        return $this->findDecoupledEmitter(
+            $emitter,
+            $this->localEmitters
+        );
+    }
 
-			if ($this->objectMeta->stringInClassTree(
+    /**
+     * we want to decouple the emitter from the interface consumers are subscribed to
+    */
+    private function findDecoupledEmitter(string $emitter, array $scope): ?EventSubscription
+    {
 
-				$evaluatedModule, $this->moduleDescriptor->exportsImplements()
-			))
+        foreach ($scope as $emitable => $details) {
 
-				return null;
+            if ($this->objectMeta->stringInClassTree(
+                $emitter,
+                $emitable
+            )) {
 
-			return $this->findDecoupledEmitter(
+                return $details;
+            }
+        }
+        return null;
+    }
 
-				$evaluatedModule, $this->foreignListening
-			);
-		}
+    public function registerListeners(): void
+    {
 
-		public function getLocalHandler (string $emitter):?EventSubscription {
+        $this->local(PayloadStorage::class, RequestEventsListener::class)
 
-			return $this->findDecoupledEmitter(
-
-				$emitter, $this->localEmitters
-			);
-		}
-
-		/**
-		 * we want to decouple the emitter from the interface consumers are subscribed to
-		*/
-		private function findDecoupledEmitter (string $emitter, array $scope):?EventSubscription {
-
-			foreach ($scope as $emitable => $details) {
-
-				if ($this->objectMeta->stringInClassTree(
-
-					$emitter, $emitable
-				))
-
-					return $details;
-			}
-			return null;
-		}
-
-		public function registerListeners ():void {
-
-			$this->local(PayloadStorage::class, RequestEventsListener::class)
-
-			->on(PayloadStorage::ON_REFRESH, "handleRefreshEvent");
-		}
-	}
-?>
+        ->on(PayloadStorage::ON_REFRESH, "handleRefreshEvent");
+    }
+}

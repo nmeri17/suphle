@@ -1,58 +1,66 @@
 <?php
-	namespace Suphle\Testing\Proxies\Extensions;
 
-	use Suphle\Middleware\{MiddlewareRegistry, PatternMiddleware};
+namespace Suphle\Testing\Proxies\Extensions;
 
-	class MiddlewareManipulator extends MiddlewareRegistry {
+use Suphle\Middleware\{MiddlewareRegistry, PatternMiddleware};
 
-		protected bool $stackAlwaysEmpty = false;
+class MiddlewareManipulator extends MiddlewareRegistry
+{
+    protected bool $stackAlwaysEmpty = false;
 
-		protected array $preExclude = [], $preInclude = [];
+    protected array $preExclude = [];
+    protected array $preInclude = [];
 
-		/**
-		 * Whenever router decides on the active pattern, it'll ultimately include middlewares applied here
-		 * 
-		 * We're using this instead of updating the default middleware list, since the eventual module may have custom config we are unwilling to override with whatever mock we'll set as default
-		 * 
-		 * @param {collectors} CollectionMetaFunnel[]
-		*/
-		public function addToActiveStack (array $collectors):void {
+    /**
+     * Whenever router decides on the active pattern, it'll ultimately include middlewares applied here
+     *
+     * We're using this instead of updating the default middleware list, since the eventual module may have custom config we are unwilling to override with whatever mock we'll set as default
+     *
+     * @param {collectors} CollectionMetaFunnel[]
+    */
+    public function addToActiveStack(array $collectors): void
+    {
 
-			$this->preInclude = $collectors;
-		}
+        $this->preInclude = $collectors;
+    }
 
-		public function disableAll ():void {
+    public function disableAll(): void
+    {
 
-			$this->stackAlwaysEmpty = true;
-		}
+        $this->stackAlwaysEmpty = true;
+    }
 
-		/** 
-		 * @param {collectorNames} CollectionMetaFunnel::class[]
-		*/
-		public function disableCollectors (array $collectorNames):void {
+    /**
+     * @param {collectorNames} CollectionMetaFunnel::class[]
+    */
+    public function disableCollectors(array $collectorNames): void
+    {
 
-			$this->preExclude = $collectorNames;
-		}
+        $this->preExclude = $collectorNames;
+    }
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function getRoutedFunnels ():array {
+    /**
+     * {@inheritdoc}
+    */
+    public function getRoutedFunnels(): array
+    {
 
-			if ($this->stackAlwaysEmpty) return [];
+        if ($this->stackAlwaysEmpty) {
+            return [];
+        }
 
-			$stack = $this->preInclude;
+        $stack = $this->preInclude;
 
-			$parentStack = parent::getRoutedFunnels();
+        $parentStack = parent::getRoutedFunnels();
 
-			foreach ($parentStack as $index => $collector) {
+        foreach ($parentStack as $index => $collector) {
 
-				if (in_array($collector::class, $this->preExclude))
+            if (in_array($collector::class, $this->preExclude)) {
 
-					unset($parentStack[$index]);
-			}
+                unset($parentStack[$index]);
+            }
+        }
 
-			return [...$stack, ...$parentStack];
-		}
-	}
-?>
+        return [...$stack, ...$parentStack];
+    }
+}

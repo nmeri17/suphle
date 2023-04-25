@@ -1,44 +1,46 @@
 <?php
-	namespace Suphle\Tests\Integration\Flows;
 
-	use Suphle\Flows\OuterFlowWrapper;
+namespace Suphle\Tests\Integration\Flows;
 
-	use Suphle\Contracts\Config\Router;
+use Suphle\Flows\OuterFlowWrapper;
 
-	use Suphle\Testing\{Proxies\WriteOnlyContainer, Condiments\EmittedEventsCatcher};
+use Suphle\Contracts\Config\Router;
 
-	use Suphle\Tests\Integration\Flows\Jobs\RouteBranches\JobFactory;
+use Suphle\Testing\{Proxies\WriteOnlyContainer, Condiments\EmittedEventsCatcher};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\FlowRoutes, Meta\ModuleOneDescriptor, Config\RouterMock};
+use Suphle\Tests\Integration\Flows\Jobs\RouteBranches\JobFactory;
 
-	class OuterFlowWrapperTest extends JobFactory {
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\FlowRoutes, Meta\ModuleOneDescriptor, Config\RouterMock};
 
-		use EmittedEventsCatcher;
+class OuterFlowWrapperTest extends JobFactory
+{
+    use EmittedEventsCatcher;
 
-		protected function getModules():array {
+    protected function getModules(): array
+    {
 
-			return [
+        return [
 
-				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-					$container->replaceWithMock(Router::class, RouterMock::class, [
+                $container->replaceWithMock(Router::class, RouterMock::class, [
 
-						"browserEntryRoute" => FlowRoutes::class
-					]);
-				})
-			];
-		}
- 
-		public function test_will_queueBranches_after_returning_flow_request() {
+                    "browserEntryRoute" => FlowRoutes::class
+                ]);
+            })
+        ];
+    }
 
-			// given
-			$this->originDataName = "flow_models";
+    public function test_will_queueBranches_after_returning_flow_request()
+    {
 
-			$this->flowUrl = "/initial-flow/id";
+        // given
+        $this->originDataName = "flow_models";
 
-			$this->handleDefaultPendingFlowDetails(); // when
+        $this->flowUrl = "/initial-flow/id";
 
-			$this->assertPushedToFlow("/flow-with-flow/5"); // then
-		}
-	}
-?>
+        $this->handleDefaultPendingFlowDetails(); // when
+
+        $this->assertPushedToFlow("/flow-with-flow/5"); // then
+    }
+}

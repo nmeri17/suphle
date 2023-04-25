@@ -1,15 +1,16 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\Selective;
 
-	use Suphle\Services\ServiceCoordinator;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\Selective;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\BlankUpdateless;
+use Suphle\Services\ServiceCoordinator;
 
-	class BlankUpdatelessController extends ServiceCoordinator {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\BlankUpdateless;
 
-		public function __construct(protected readonly BlankUpdateless $dependency) {
+class BlankUpdatelessController extends ServiceCoordinator
+{
+    public function __construct(protected readonly BlankUpdateless $dependency)
+    {
 
-			//
-		}
-	}
-?>
+        //
+    }
+}

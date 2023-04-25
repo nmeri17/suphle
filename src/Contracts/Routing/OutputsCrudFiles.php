@@ -1,11 +1,11 @@
 <?php
-	namespace Suphle\Contracts\Routing;
 
-	interface OutputsCrudFiles {
+namespace Suphle\Contracts\Routing;
 
-		/**
-		 * With trailing slash
-		*/
-		public function crudFilesLocation ():string;
-	}
-?>
+interface OutputsCrudFiles
+{
+    /**
+     * With trailing slash
+    */
+    public function crudFilesLocation(): string;
+}

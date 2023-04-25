@@ -1,23 +1,25 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleThree\Routes;
 
-	use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
+namespace Suphle\Tests\Mocks\Modules\ModuleThree\Routes;
 
-	use Suphle\Tests\Mocks\Modules\ModuleThree\Coordinators\BaseCoordinator;
+use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
 
-	use Suphle\Response\Format\Json;
+use Suphle\Tests\Mocks\Modules\ModuleThree\Coordinators\BaseCoordinator;
 
-	#[HandlingCoordinator(BaseCoordinator::class)]
-	class BrowserCollection extends BaseCollection {
-		
-		public function _prefixCurrent ():string {
-			
-			return "MODULE__THREEh";
-		}
+use Suphle\Response\Format\Json;
 
-		public function id () {
+#[HandlingCoordinator(BaseCoordinator::class)]
+class BrowserCollection extends BaseCollection
+{
+    public function _prefixCurrent(): string
+    {
 
-			$this->_httpGet(new Json("checkPlaceholder"));
-		}
-	}
-?>
+        return "MODULE__THREEh";
+    }
+
+    public function id()
+    {
+
+        $this->_httpGet(new Json("checkPlaceholder"));
+    }
+}

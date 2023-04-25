@@ -1,15 +1,16 @@
 <?php
-	namespace Suphle\Exception\Explosives\DevError;
 
-	use Suphle\Contracts\Exception\BroadcastableException;
+namespace Suphle\Exception\Explosives\DevError;
 
-	use Exception;
+use Suphle\Contracts\Exception\BroadcastableException;
 
-	class NoCompatibleValidator extends Exception implements BroadcastableException {
+use Exception;
 
-		public function __construct (string $coordinator, string $method) {
+class NoCompatibleValidator extends Exception implements BroadcastableException
+{
+    public function __construct(string $coordinator, string $method)
+    {
 
-			$this->message = "Unable to find request validator for the method '$coordinator::$method'";
-		}
-	}
-?>
+        $this->message = "Unable to find request validator for the method '$coordinator::$method'";
+    }
+}

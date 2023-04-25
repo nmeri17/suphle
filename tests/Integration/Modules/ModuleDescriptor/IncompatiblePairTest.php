@@ -1,35 +1,39 @@
 <?php
-	namespace Suphle\Tests\Integration\Modules\ModuleDescriptor;
 
-	use Suphle\Hydration\Container;
+namespace Suphle\Tests\Integration\Modules\ModuleDescriptor;
 
-	use Suphle\Exception\Explosives\DevError\UnexpectedModules;
+use Suphle\Hydration\Container;
 
-	use Suphle\Tests\Mocks\Interactions\{ModuleThree, ModuleTwo};
+use Suphle\Exception\Explosives\DevError\UnexpectedModules;
 
-	use Suphle\Tests\Mocks\Modules\ModuleTwo\Meta\ModuleTwoDescriptor;
+use Suphle\Tests\Mocks\Interactions\{ModuleThree, ModuleTwo};
 
-	class IncompatiblePairTest extends DescriptorCollection {
+use Suphle\Tests\Mocks\Modules\ModuleTwo\Meta\ModuleTwoDescriptor;
 
-		protected function setUp ():void {}
+class IncompatiblePairTest extends DescriptorCollection
+{
+    protected function setUp(): void
+    {
+    }
 
-		protected function setModuleTwo ():void {
+    protected function setModuleTwo(): void
+    {
 
-			$this->moduleTwo = (new ModuleTwoDescriptor(new Container))
+        $this->moduleTwo = (new ModuleTwoDescriptor(new Container()))
 
-			->sendExpatriates([
+        ->sendExpatriates([
 
-				ModuleThree::class => $this->moduleOne
-			]);
-		}
+            ModuleThree::class => $this->moduleOne
+        ]);
+    }
 
-		public function test_will_throw_unexpected_exception () {
+    public function test_will_throw_unexpected_exception()
+    {
 
-			$this->expectException(UnexpectedModules::class); // then
+        $this->expectException(UnexpectedModules::class); // then
 
-			parent::setUp();
+        parent::setUp();
 
-			$this->getModuleFor(ModuleTwo::class); // when
-		}
-	}
-?>
+        $this->getModuleFor(ModuleTwo::class); // when
+    }
+}

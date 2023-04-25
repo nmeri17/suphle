@@ -1,60 +1,64 @@
 <?php
-	namespace Suphle\Adapters\Orms\Eloquent;
 
-	use Suphle\ComponentTemplates\BaseComponentEntry;
+namespace Suphle\Adapters\Orms\Eloquent;
 
-	use Suphle\Contracts\Config\Database;
+use Suphle\ComponentTemplates\BaseComponentEntry;
 
-	use Suphle\File\FolderCloner;
+use Suphle\Contracts\Config\Database;
 
-	class ComponentEntry extends BaseComponentEntry {
+use Suphle\File\FolderCloner;
 
-		public const EJECT_NAMESPACE = "database_namespace";
+class ComponentEntry extends BaseComponentEntry
+{
+    public const EJECT_NAMESPACE = "database_namespace";
 
-		public function __construct (
-			protected readonly Database $databaseConfig,
+    public function __construct(
+        protected readonly Database $databaseConfig,
+        protected readonly FolderCloner $folderCloner
+    ) {
 
-			protected readonly FolderCloner $folderCloner
-		) {
+        //
+    }
 
-			//
-		}
+    public function uniqueName(): string
+    {
 
-		public function uniqueName ():string {
+        return ""; // replaced by value defined on databaseConfig
+    }
 
-			return ""; // replaced by value defined on databaseConfig
-		}
+    protected function templatesLocation(): string
+    {
 
-		protected function templatesLocation ():string {
+        return __DIR__ . DIRECTORY_SEPARATOR . "ComponentTemplates";
+    }
 
-			return __DIR__ . DIRECTORY_SEPARATOR . "ComponentTemplates";
-		}
+    /**
+     * {@inheritdoc}
+    */
+    public function userLandMirror(): string
+    {
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function userLandMirror ():string {
+        return $this->databaseConfig->componentInstallPath();
+    }
 
-			return $this->databaseConfig->componentInstallPath();
-		}
+    public function eject(): void
+    {
 
-		public function eject ():void {
+        $content = $this->getContentReplacements(); // using a method for it to be overridable
 
-			$content = $this->getContentReplacements(); // using a method for it to be overridable
+        $this->folderCloner->setEntryReplacements($content, [], $content)
+        ->transferFolder(
+            $this->templatesLocation(),
+            $this->userLandMirror()
+        );
+    }
 
-			$this->folderCloner->setEntryReplacements($content, [], $content)
-			->transferFolder(
+    protected function getContentReplacements(): array
+    {
 
-				$this->templatesLocation(), $this->userLandMirror()
-			);
-		}
+        return [
 
-		protected function getContentReplacements ():array {
-
-			return [
-			
-				"_". self::EJECT_NAMESPACE => $this->databaseConfig->componentInstallNamespace()
-			];
-		}
-	}
-?>
+            "_". self::EJECT_NAMESPACE => $this->databaseConfig->componentInstallNamespace()
+        ];
+    }
+}

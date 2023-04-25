@@ -1,22 +1,24 @@
 <?php
-	namespace Suphle\Tests\Integration\Auth;
 
-	use Suphle\Tests\Integration\Auth\Bases\BaseTestBrowserLoginMediator;
+namespace Suphle\Tests\Integration\Auth;
 
-	class SuccessBrowserLoginMediatorTest extends BaseTestBrowserLoginMediator {
+use Suphle\Tests\Integration\Auth\Bases\BaseTestBrowserLoginMediator;
 
-		protected function setUp ():void {
+class SuccessBrowserLoginMediatorTest extends BaseTestBrowserLoginMediator
+{
+    protected function setUp(): void
+    {
 
-			parent::setUp();
+        parent::setUp();
 
-			$this->sendCorrectRequest(self::LOGIN_PATH); // given
-		}
+        $this->sendCorrectRequest(self::LOGIN_PATH); // given
+    }
 
-		public function test_successLogin () {
+    public function test_successLogin()
+    {
 
-			$this->bindAuthStatusObserver(1, 0); // then
+        $this->bindAuthStatusObserver(1, 0); // then
 
-			$this->evaluateLoginStatus(); // when
-		}
-	}
-?>
+        $this->evaluateLoginStatus(); // when
+    }
+}

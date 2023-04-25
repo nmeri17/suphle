@@ -1,68 +1,71 @@
 <?php
-	namespace Suphle\Testing\Condiments;
 
-	use Suphle\Events\{EventSubscription, ModuleLevelEvents};
+namespace Suphle\Testing\Condiments;
 
-	trait EmittedEventsCatcher {
+use Suphle\Events\{EventSubscription, ModuleLevelEvents};
 
-		abstract protected function getModules ():array;
+trait EmittedEventsCatcher
+{
+    abstract protected function getModules(): array;
 
-		protected function assertHandledEvent (
+    protected function assertHandledEvent(
+        string $emitter,
+        string $eventName = null
+    ): void {
 
-			string $emitter, string $eventName = null
-		):void {
+        $subscription = $this->getEventSubscription($emitter);
 
-			$subscription = $this->getEventSubscription($emitter);
+        $this->assertNotNull(
+            $subscription,
+            "Failed to assert that '$emitter' fired any event"
+        );
 
-			$this->assertNotNull($subscription,
+        if (is_null($eventName)) {
+            return;
+        }
 
-				"Failed to assert that '$emitter' fired any event"
-			);
+        $this->assertNotEmpty(
+            $subscription->getMatchingUnits($eventName),
+            "Failed to assert that '$emitter' emitted an event named '$eventName'"
+        );
+    }
 
-			if (is_null($eventName)) return;
-			
-			$this->assertNotEmpty(
-				$subscription->getMatchingUnits($eventName),
+    protected function assertNotHandledEvent(string $emitter, string $eventName): void
+    {
 
-				"Failed to assert that '$emitter' emitted an event named '$eventName'"
-			);
-		}
+        $subscription = $this->getEventSubscription($emitter);
 
-		protected function assertNotHandledEvent (string $emitter, string $eventName):void {
+        if (is_null($subscription)) {
 
-			$subscription = $this->getEventSubscription($emitter);
+            $this->assertNull($subscription); // to avoid risky test
 
-			if (is_null($subscription)) {
+            return;
+        }
 
-				$this->assertNull($subscription); // to avoid risky test
+        $this->assertEmpty(
+            $subscription->getMatchingUnits($eventName),
+            "Did not expect '$emitter' to fire event '$eventName'"
+        );
+    }
 
-				return;
-			}
+    private function getEventSubscription(string $sender): ?EventSubscription
+    {
 
-			$this->assertEmpty(
-				$subscription->getMatchingUnits($eventName),
+        $allSent = $this->getContainer()
 
-				"Did not expect '$emitter' to fire event '$eventName'"
-			);
-		}
+        ->getClass(ModuleLevelEvents::class)->getFiredEvents();
 
-		private function getEventSubscription (string $sender):?EventSubscription {
+        if (array_key_exists($sender, $allSent)) {
 
-			$allSent = $this->getContainer()
+            $subscription = $allSent[$sender];
 
-			->getClass(ModuleLevelEvents::class)->getFiredEvents();
+            if (is_null($subscription)) { // was event fired without any paired handlers?
+                $subscription = new EventSubscription("", $this->getContainer());
+            } // so the asserters don't mistake false positive
 
-			if (array_key_exists($sender, $allSent)) {
+            return $subscription;
+        }
 
-				$subscription = $allSent[$sender];
-
-				if (is_null($subscription)) // was event fired without any paired handlers?
-					$subscription = new EventSubscription("", $this->getContainer()); // so the asserters don't mistake false positive
-
-				return $subscription;
-			}
-
-			return null;
-		}
-	}
-?>
+        return null;
+    }
+}

@@ -1,29 +1,30 @@
 <?php
-	namespace Suphle\Config;
 
-	use Suphle\Contracts\Config\Console as ConsoleContract;
+namespace Suphle\Config;
 
-	use Suphle\Bridge\Laravel\Cli\ArtisanCli;
+use Suphle\Contracts\Config\Console as ConsoleContract;
 
-	use Suphle\Modules\Commands\CloneModuleCommand;
+use Suphle\Bridge\Laravel\Cli\ArtisanCli;
 
-	use Suphle\ComponentTemplates\Commands\InstallComponentCommand;
+use Suphle\Modules\Commands\CloneModuleCommand;
 
-	use Suphle\Server\Commands\HttpServerCommand;
+use Suphle\ComponentTemplates\Commands\InstallComponentCommand;
 
-	use Suphle\Routing\Commands\CrudCommand;
+use Suphle\Server\Commands\HttpServerCommand;
 
-	class Console implements ConsoleContract {
+use Suphle\Routing\Commands\CrudCommand;
 
-		public function commandsList ():array {
+class Console implements ConsoleContract
+{
+    public function commandsList(): array
+    {
 
-			return [
-				ArtisanCli::class, CloneModuleCommand::class,
+        return [
+            ArtisanCli::class, CloneModuleCommand::class,
 
-				CrudCommand::class, HttpServerCommand::class,
+            CrudCommand::class, HttpServerCommand::class,
 
-				InstallComponentCommand::class
-			];
-		}
-	}
-?>
+            InstallComponentCommand::class
+        ];
+    }
+}

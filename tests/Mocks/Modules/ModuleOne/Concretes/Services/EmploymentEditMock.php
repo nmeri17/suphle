@@ -1,45 +1,47 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services;
 
-	use Suphle\Contracts\Services\CallInterceptors\MultiUserModelEdit;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services;
 
-	use Suphle\Contracts\Services\Models\IntegrityModel;
+use Suphle\Contracts\Services\CallInterceptors\MultiUserModelEdit;
 
-	use Suphle\Services\{UpdatefulService, Structures\BaseErrorCatcherService};
+use Suphle\Contracts\Services\Models\IntegrityModel;
 
-	use Suphle\Services\Decorators\{InterceptsCalls, VariableDependencies};
+use Suphle\Services\{UpdatefulService, Structures\BaseErrorCatcherService};
 
-	use Suphle\Tests\Mocks\Models\Eloquent\Employment;
+use Suphle\Services\Decorators\{InterceptsCalls, VariableDependencies};
 
-	#[InterceptsCalls(MultiUserModelEdit::class)]
-	#[VariableDependencies([
+use Suphle\Tests\Mocks\Models\Eloquent\Employment;
 
-		"setPayloadStorage", "setPlaceholderStorage"
-	])]
-	class EmploymentEditMock extends UpdatefulService implements MultiUserModelEdit {
+#[InterceptsCalls(MultiUserModelEdit::class)]
+#[VariableDependencies([
 
-		use BaseErrorCatcherService;
+    "setPayloadStorage", "setPlaceholderStorage"
+])]
+class EmploymentEditMock extends UpdatefulService implements MultiUserModelEdit
+{
+    use BaseErrorCatcherService;
 
-		public function __construct(private readonly Employment $blankModel) {
+    public function __construct(private readonly Employment $blankModel)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function getResource ():IntegrityModel {
+    public function getResource(): IntegrityModel
+    {
 
-			return $this->blankModel->find(
+        return $this->blankModel->find(
+            $this->pathPlaceholders->getSegmentValue("id")
+        );
+    }
 
-				$this->pathPlaceholders->getSegmentValue("id")
-			);
-		}
+    public function updateResource()
+    {
 
-		public function updateResource () {
+        return $this->blankModel->where([
 
-			return $this->blankModel->where([
-
-				"id" => $this->pathPlaceholders->getSegmentValue("id")
-			])
-			->update($this->payloadStorage->only(["salary"]));
-		}
-	}
-?>
+            "id" => $this->pathPlaceholders->getSegmentValue("id")
+        ])
+        ->update($this->payloadStorage->only(["salary"]));
+    }
+}

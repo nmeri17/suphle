@@ -1,16 +1,18 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes;
 
-	class CircularConstructor2 {
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes;
 
-		public function __construct(protected readonly CircularConstructor1 $dependency, protected readonly int $count) {
+class CircularConstructor2
+{
+    public function __construct(protected readonly CircularConstructor1 $dependency, protected readonly int $count)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function getCount ():int {
+    public function getCount(): int
+    {
 
-			return $this->count;
-		}
-	}
-?>
+        return $this->count;
+    }
+}

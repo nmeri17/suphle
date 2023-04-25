@@ -1,27 +1,29 @@
 <?php
-	namespace Suphle\Tests\Integration\Events;
 
-	use Suphle\Tests\Integration\Events\BaseTypes\TestLocalReceiver;
+namespace Suphle\Tests\Integration\Events;
 
-	class LocalPayloadTest extends TestLocalReceiver {
+use Suphle\Tests\Integration\Events\BaseTypes\TestLocalReceiver;
 
-		public function test_can_receive_emitted_payload () {
+class LocalPayloadTest extends TestLocalReceiver
+{
+    public function test_can_receive_emitted_payload()
+    {
 
-			$this->createMockEventReceiver($this->expectUpdatePayload()); // then
+        $this->createMockEventReceiver($this->expectUpdatePayload()); // then
 
-			$this->parentSetUp(); // given
+        $this->parentSetUp(); // given
 
-			$this->getModuleOne()->payloadEvent($this->payload); // when
-		}
+        $this->getModuleOne()->payloadEvent($this->payload); // when
+    }
 
-		// we listen on the parent, then a child emits
-		public function test_listeners_can_listen_to_subclass_emittor () {
+    // we listen on the parent, then a child emits
+    public function test_listeners_can_listen_to_subclass_emittor()
+    {
 
-			$this->createMockEventReceiver($this->expectUpdatePayload()); // then
+        $this->createMockEventReceiver($this->expectUpdatePayload()); // then
 
-			$this->parentSetUp(); // given
+        $this->parentSetUp(); // given
 
-			$this->getModuleOne()->sendExtendedEvent($this->payload); // when
-		}
-	}
-?>
+        $this->getModuleOne()->sendExtendedEvent($this->payload); // when
+    }
+}

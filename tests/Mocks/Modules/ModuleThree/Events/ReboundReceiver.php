@@ -1,11 +1,12 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleThree\Events;
 
-	class ReboundReceiver {
+namespace Suphle\Tests\Mocks\Modules\ModuleThree\Events;
 
-		public function handleMultiModuleRebound () {
-			
-			//
-		}
-	}
-?>
+class ReboundReceiver
+{
+    public function handleMultiModuleRebound()
+    {
+
+        //
+    }
+}

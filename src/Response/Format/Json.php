@@ -1,33 +1,36 @@
 <?php
-	namespace Suphle\Response\Format;
 
-	use Suphle\Request\PayloadStorage;
+namespace Suphle\Response\Format;
 
-	class Json extends GenericRenderer {
+use Suphle\Request\PayloadStorage;
 
-		protected bool $shouldDeferValidationFailure = false;
+class Json extends GenericRenderer
+{
+    protected bool $shouldDeferValidationFailure = false;
 
-		public function __construct(string $handler) {
+    public function __construct(string $handler)
+    {
 
-			$this->handler = $handler;
+        $this->handler = $handler;
 
-			$this->setHeaders(200, [
+        $this->setHeaders(200, [
 
-				PayloadStorage::CONTENT_TYPE_KEY => PayloadStorage::JSON_HEADER_VALUE
-			]);
-		}
+            PayloadStorage::CONTENT_TYPE_KEY => PayloadStorage::JSON_HEADER_VALUE
+        ]);
+    }
 
-		public function render():string {
+    public function render(): string
+    {
 
-			return $this->renderJson();
-		}
+        return $this->renderJson();
+    }
 
-		/**
-		 * {@inheritdoc}
-		 */
-		public function deferValidationContent ():bool {
+    /**
+     * {@inheritdoc}
+     */
+    public function deferValidationContent(): bool
+    {
 
-			return false;
-		}
-	}
-?>
+        return false;
+    }
+}

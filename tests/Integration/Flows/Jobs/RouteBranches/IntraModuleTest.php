@@ -1,111 +1,115 @@
 <?php
-	namespace Suphle\Tests\Integration\Flows\Jobs\RouteBranches;
 
-	use Suphle\Flows\{UmbrellaSaver, Structures\RouteUmbrella};
+namespace Suphle\Tests\Integration\Flows\Jobs\RouteBranches;
 
-	use Suphle\Flows\Structures\PendingFlowDetails;
+use Suphle\Flows\{UmbrellaSaver, Structures\RouteUmbrella};
 
-	use Suphle\Contracts\{IO\CacheManager, Config\Router, Presentation\BaseRenderer};
+use Suphle\Flows\Structures\PendingFlowDetails;
 
-	use Suphle\Testing\{Proxies\WriteOnlyContainer, Utilities\ArrayAssertions};
+use Suphle\Contracts\{IO\CacheManager, Config\Router, Presentation\BaseRenderer};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\OriginCollection, Meta\ModuleOneDescriptor, Config\RouterMock};
+use Suphle\Testing\{Proxies\WriteOnlyContainer, Utilities\ArrayAssertions};
 
-	class IntraModuleTest extends JobFactory {
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\OriginCollection, Meta\ModuleOneDescriptor, Config\RouterMock};
 
-		use ArrayAssertions;
+class IntraModuleTest extends JobFactory
+{
+    use ArrayAssertions;
 
-		private string $user5Url = "/user-content/5";
+    private string $user5Url = "/user-content/5";
 
-		protected function getModules():array {
+    protected function getModules(): array
+    {
 
-			return [
+        return [
 
-				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-					$container->replaceWithMock(Router::class, RouterMock::class, [
+                $container->replaceWithMock(Router::class, RouterMock::class, [
 
-						"browserEntryRoute" => OriginCollection::class
-					]);
-				})
-			];
-		}
+                    "browserEntryRoute" => OriginCollection::class
+                ]);
+            })
+        ];
+    }
 
-		public function test_stores_correct_data_in_cache () {
+    public function test_stores_correct_data_in_cache()
+    {
 
-			$this->dataProvider([
+        $this->dataProvider([
 
-				$this->contextParameters(...)
-			], function (PendingFlowDetails $context) {
+            $this->contextParameters(...)
+        ], function (PendingFlowDetails $context) {
 
-				// given => see setup
-				$this->makeRouteBranches($context)->handle(); // When
+            // given => see setup
+            $this->makeRouteBranches($context)->handle(); // When
 
-				$flowSaver = $this->container->getClass(UmbrellaSaver::class);
+            $flowSaver = $this->container->getClass(UmbrellaSaver::class);
 
-				$location = $flowSaver->getPatternLocation($this->user5Url);
-				
-				$umbrella = $flowSaver->getExistingUmbrella($location); // since it saves content for all given indexes, not just 5. This means that "/user-content/8" is available and will return 8
+            $location = $flowSaver->getPatternLocation($this->user5Url);
 
-				$this->assertNotNull($umbrella);
+            $umbrella = $flowSaver->getExistingUmbrella($location); // since it saves content for all given indexes, not just 5. This means that "/user-content/8" is available and will return 8
 
-				$this->assertAssocArraySubset(
+            $this->assertNotNull($umbrella);
 
-					[ "id" => 5],
-					
-					$this->extractResponse(
+            $this->assertAssocArraySubset(
+                [ "id" => 5],
+                $this->extractResponse(
+                    $umbrella,
+                    $context->getStoredUserId()
+                )
+            ); // then
+        });
+    }
 
-						$umbrella, $context->getStoredUserId()
-					)
-				); // then
-			});
-		}
+    /**
+     * The test this goes into doesn't do any auth related stuff. It is content with running the flow and expecting to find it in the cache
+     *
+     * @return [
+         * 	PendingFlowDetails => configured to match what we expect an origin url to populate a task with
+     * ]
+    */
+    public function contextParameters(): array
+    {
 
-		/**
-		 * The test this goes into doesn't do any auth related stuff. It is content with running the flow and expecting to find it in the cache
-		 * 
-		 * @return [
-			 * 	PendingFlowDetails => configured to match what we expect an origin url to populate a task with
-		 * ]
-		*/
-		public function contextParameters ():array {
+        return [
+            [$this->makePendingFlowDetails()],
 
-			return [
-				[$this->makePendingFlowDetails()],
+            [
+                $this->makePendingFlowDetails($this->contentOwner),
 
-				[
-					$this->makePendingFlowDetails($this->contentOwner),
+                $this->contentOwner
+            ]
+        ];
+    }
 
-					$this->contentOwner
-				]
-			];
-		}
+    private function extractResponse(RouteUmbrella $routeUmbrella, string $userId): array
+    {
 
-		private function extractResponse (RouteUmbrella $routeUmbrella, string $userId):array {
+        return $routeUmbrella->getUserPayload($userId)
 
-			return $routeUmbrella->getUserPayload($userId)
+        ->getRenderer()->getRawResponse();
+    }
 
-			->getRenderer()->getRawResponse();
-		}
+    public function test_will_be_handled_by_flow()
+    {
 
-		public function test_will_be_handled_by_flow () {
+        $this->dataProvider([
 
-			$this->dataProvider([
+            $this->contextParameters(...)
+        ], function (PendingFlowDetails $context) {
 
-				$this->contextParameters(...)
-			], function (PendingFlowDetails $context) {
+            // given => see dataProvider
+            $this->makeRouteBranches($context)->handle(); // When
 
-				// given => see dataProvider
-				$this->makeRouteBranches($context)->handle(); // When
-				
-				// then
-				$this->assertHandledByFlow($this->user5Url);
-			});
-		}
+            // then
+            $this->assertHandledByFlow($this->user5Url);
+        });
+    }
 
-		public function test_no_flow_does_nothing () {
+    public function test_no_flow_does_nothing()
+    {
 
-			$this->assertNotPushedToFlow("/no-flow");
-		}
-	}
-?>
+        $this->assertNotPushedToFlow("/no-flow");
+    }
+}

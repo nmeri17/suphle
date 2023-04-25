@@ -1,15 +1,16 @@
 <?php
-	namespace Suphle\Tests\Integration\Events\BaseTypes;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Events\LocalReceiver};
+namespace Suphle\Tests\Integration\Events\BaseTypes;
 
-	class TestLocalReceiver extends EventTestCreator {
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Events\LocalReceiver};
 
-		protected string $eventReceiverName = LocalReceiver::class;
+class TestLocalReceiver extends EventTestCreator
+{
+    protected string $eventReceiverName = LocalReceiver::class;
 
-		protected function setModuleOne ():void {
+    protected function setModuleOne(): void
+    {
 
-			$this->moduleOne = $this->bindMockedEventReceiver(ModuleOneDescriptor::class);
-		}
-	}
-?>
+        $this->moduleOne = $this->bindMockedEventReceiver(ModuleOneDescriptor::class);
+    }
+}

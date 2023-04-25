@@ -1,96 +1,103 @@
 <?php
-	namespace Suphle\Tests\Integration\Routing\Nested;
 
-	use Suphle\Hydration\Container;
+namespace Suphle\Tests\Integration\Routing\Nested;
 
-	use Suphle\Contracts\Config\Router;
+use Suphle\Hydration\Container;
 
-	use Suphle\Routing\{PatternIndicator, PreMiddlewareRegistry};
+use Suphle\Contracts\Config\Router;
 
-	use Suphle\Request\RequestDetails;
+use Suphle\Routing\{PatternIndicator, PreMiddlewareRegistry};
 
-	use Suphle\Middleware\MiddlewareRegistry;
+use Suphle\Request\RequestDetails;
 
-	use Suphle\Testing\{ TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer };
+use Suphle\Middleware\MiddlewareRegistry;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{ Meta\ModuleOneDescriptor, Config\RouterMock, Middlewares\Collectors\BlankCollectionMetaFunnel};
+use Suphle\Testing\{ TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer };
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Prefix\{ActualEntry, Secured\MisleadingEntry};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{ Meta\ModuleOneDescriptor, Config\RouterMock, Middlewares\Collectors\BlankCollectionMetaFunnel};
 
-	class MultiCollectionsTest extends ModuleLevelTest {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Prefix\{ActualEntry, Secured\MisleadingEntry};
 
-		private string $threeTierUrl = "/api/v2/first/middle/third";
+class MultiCollectionsTest extends ModuleLevelTest
+{
+    private string $threeTierUrl = "/api/v2/first/middle/third";
 
-		protected function getModules():array {
+    protected function getModules(): array
+    {
 
-			return [
+        return [
 
-				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-					$container->replaceWithMock(Router::class, RouterMock::class, [
+                $container->replaceWithMock(Router::class, RouterMock::class, [
 
-						"apiStack" => [
+                    "apiStack" => [
 
-							"v2" => MisleadingEntry::class,
+                        "v2" => MisleadingEntry::class,
 
-							"v1" => ActualEntry::class
-						]
-					]);
-				})
-			];
-		}
+                        "v1" => ActualEntry::class
+                    ]
+                ]);
+            })
+        ];
+    }
 
-		public function test_needs_recovery_from_misleading_trail () {
+    public function test_needs_recovery_from_misleading_trail()
+    {
 
-			$this->removeIndicatorResetter(); // given
+        $this->removeIndicatorResetter(); // given
 
-			$this->get($this->threeTierUrl) // when
+        $this->get($this->threeTierUrl) // when
 
-			// then
-			->assertUnauthorized(); // misleading authenticates while eventual doesn't. If this assertion fails, recovery functionality is redundant
+        // then
+        ->assertUnauthorized(); // misleading authenticates while eventual doesn't. If this assertion fails, recovery functionality is redundant
 
-			$this->assertUsedCollectorNames([BlankCollectionMetaFunnel::class]); // Misleading collection tags BlankCollectionMetaFunnel, but the eventual collection group doesn't
-		}
+        $this->assertUsedCollectorNames([BlankCollectionMetaFunnel::class]); // Misleading collection tags BlankCollectionMetaFunnel, but the eventual collection group doesn't
+    }
 
-		private function removeIndicatorResetter () {
+    private function removeIndicatorResetter()
+    {
 
-			$constructorStubs = [
+        $constructorStubs = [
 
-				MiddlewareRegistry::class => $this->positiveDouble(MiddlewareRegistry::class),
+            MiddlewareRegistry::class => $this->positiveDouble(MiddlewareRegistry::class),
 
-				PreMiddlewareRegistry::class => $this->positiveDouble(PreMiddlewareRegistry::class)
-			];
+            PreMiddlewareRegistry::class => $this->positiveDouble(PreMiddlewareRegistry::class)
+        ];
 
-			$this->massProvide(array_merge($constructorStubs, [ // also bind their stubs for any other collaborator to use those instances the indicator is writing to
+        $this->massProvide(array_merge($constructorStubs, [ // also bind their stubs for any other collaborator to use those instances the indicator is writing to
 
-				PatternIndicator::class => $this->getPatternIndicator($constructorStubs)
-			]));
-		}
+            PatternIndicator::class => $this->getPatternIndicator($constructorStubs)
+        ]));
+    }
 
-		protected function getPatternIndicator (array $constructorStubs):PatternIndicator {
+    protected function getPatternIndicator(array $constructorStubs): PatternIndicator
+    {
 
-			return $this->replaceConstructorArguments(
-				
-				PatternIndicator::class, array_merge($constructorStubs, [
+        return $this->replaceConstructorArguments(
+            PatternIndicator::class,
+            array_merge($constructorStubs, [
 
-					RequestDetails::class => $this->positiveDouble(RequestDetails::class, [ // it's impossible to know this object before a request. Besides, doing so will cause sut to get wiped while executing the test url
+                RequestDetails::class => $this->positiveDouble(RequestDetails::class, [ // it's impossible to know this object before a request. Besides, doing so will cause sut to get wiped while executing the test url
 
-						"isApiRoute" => true
-					])
-				]), [
+                    "isApiRoute" => true
+                ])
+            ]),
+            [
 
-				"resetIndications" => null
-			]);
-		}
+            "resetIndications" => null
+            ]
+        );
+    }
 
-		public function test_can_detach_quantities_after_each_entry_collection () {
+    public function test_can_detach_quantities_after_each_entry_collection()
+    {
 
-			$this->get($this->threeTierUrl) // when
+        $this->get($this->threeTierUrl) // when
 
-			// then
-			->assertOk();
+        // then
+        ->assertOk();
 
-			$this->assertDidntUseCollectorNames([BlankCollectionMetaFunnel::class]);
-		}
-	}
-?>
+        $this->assertDidntUseCollectorNames([BlankCollectionMetaFunnel::class]);
+    }
+}

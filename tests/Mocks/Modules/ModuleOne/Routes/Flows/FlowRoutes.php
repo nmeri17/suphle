@@ -1,53 +1,61 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Flows;
 
-	use Suphle\Flows\ControllerFlows;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Flows;
 
-	use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
+use Suphle\Flows\ControllerFlows;
 
-	use Suphle\Response\Format\Json;
+use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\FlowCoordinator;
+use Suphle\Response\Format\Json;
 
-	#[HandlingCoordinator(FlowCoordinator::class)]
-	class FlowRoutes extends BaseCollection {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\FlowCoordinator;
 
-		public function POSTS_id () {
+#[HandlingCoordinator(FlowCoordinator::class)]
+class FlowRoutes extends BaseCollection
+{
+    public function POSTS_id()
+    {
 
-			$this->_httpGet(new Json("getPostDetails"));
-		}
+        $this->_httpGet(new Json("getPostDetails"));
+    }
 
-		public function FLOW__WITH__FLOWh_id() {
+    public function FLOW__WITH__FLOWh_id()
+    {
 
-			$renderer = new Json("parentFlow");
+        $renderer = new Json("parentFlow");
 
-			$flow = new ControllerFlows;
+        $flow = new ControllerFlows();
 
-			$flow->linksTo("internal-flow/id", $flow
+        $flow->linksTo(
+            "internal-flow/id",
+            $flow
 
-				->previousResponse()->collectionNode("anchor")->pipeTo()
-			);
+            ->previousResponse()->collectionNode("anchor")->pipeTo()
+        );
 
-			$this->_httpGet($renderer->setFlow($flow));
-		}
+        $this->_httpGet($renderer->setFlow($flow));
+    }
 
-		public function INTERNAL__FLOWh_id () {
+    public function INTERNAL__FLOWh_id()
+    {
 
-			$this->_httpGet(new Json("handleChildFlow"));
-		}
+        $this->_httpGet(new Json("handleChildFlow"));
+    }
 
-		public function FLOW__TO__MODULE3h () {
+    public function FLOW__TO__MODULE3h()
+    {
 
-			$renderer = new Json("getsTenModels");
+        $renderer = new Json("getsTenModels");
 
-			$flow = new ControllerFlows;
+        $flow = new ControllerFlows();
 
-			$flow->linksTo("module-three/id", $flow
+        $flow->linksTo(
+            "module-three/id",
+            $flow
 
-				->previousResponse()->collectionNode("anchor")->pipeTo()
-			);
+            ->previousResponse()->collectionNode("anchor")->pipeTo()
+        );
 
-			$this->_httpGet($renderer->setFlow($flow));
-		}
-	}
-?>
+        $this->_httpGet($renderer->setFlow($flow));
+    }
+}

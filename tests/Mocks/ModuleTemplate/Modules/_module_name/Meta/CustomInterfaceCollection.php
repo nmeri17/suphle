@@ -1,30 +1,32 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\_module_name\Meta;
 
-	use Suphle\Hydration\Structures\BaseInterfaceCollection;
+namespace Suphle\Tests\Mocks\Modules\_module_name\Meta;
 
-	use Suphle\Contracts\Config\Router;
+use Suphle\Hydration\Structures\BaseInterfaceCollection;
 
-	use Suphle\Tests\Mocks\Modules\_module_name\Config\RouterMock;
+use Suphle\Contracts\Config\Router;
 
-	use ModulSuphle\Tests\Mocks\Interactions\_module_name;
+use Suphle\Tests\Mocks\Modules\_module_name\Config\RouterMock;
 
-	class CustomInterfaceCollection extends BaseInterfaceCollection {
+use ModulSuphle\Tests\Mocks\Interactions\_module_name;
 
-		public function getConfigs ():array {
-			
-			return array_merge(parent::getConfigs(), [
+class CustomInterfaceCollection extends BaseInterfaceCollection
+{
+    public function getConfigs(): array
+    {
 
-				Router::class => RouterMock::class
-			]);
-		}
+        return array_merge(parent::getConfigs(), [
 
-		public function simpleBinds ():array {
+            Router::class => RouterMock::class
+        ]);
+    }
 
-			return array_merge(parent::simpleBinds(), [
+    public function simpleBinds(): array
+    {
 
-				_module_name::class => ModuleApi::class
-			]);
-		}
-	}
-?>
+        return array_merge(parent::simpleBinds(), [
+
+            _module_name::class => ModuleApi::class
+        ]);
+    }
+}

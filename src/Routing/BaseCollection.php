@@ -1,207 +1,228 @@
 <?php
-	namespace Suphle\Routing;
 
-	use Suphle\Request\PathAuthorizationScrutinizer;
+namespace Suphle\Routing;
 
-	use Suphle\Routing\Crud\BrowserBuilder;
+use Suphle\Request\PathAuthorizationScrutinizer;
 
-	use Suphle\Middleware\MiddlewareRegistry;
+use Suphle\Routing\Crud\BrowserBuilder;
 
-	use Suphle\Contracts\{Presentation\BaseRenderer, Auth\AuthStorage};
+use Suphle\Middleware\MiddlewareRegistry;
 
-	use Suphle\Contracts\Routing\{RouteCollection, CrudBuilder};
+use Suphle\Contracts\{Presentation\BaseRenderer, Auth\AuthStorage};
 
-	use Exception;
+use Suphle\Contracts\Routing\{RouteCollection, CrudBuilder};
 
-	abstract class BaseCollection implements RouteCollection {
+use Exception;
 
-		protected string $collectionParent = BaseCollection::class; // this is set if this collection is used as prefix in another. Should be used while determining the prefix of that collection
+abstract class BaseCollection implements RouteCollection
+{
+    protected string $collectionParent = BaseCollection::class; // this is set if this collection is used as prefix in another. Should be used while determining the prefix of that collection
 
-		protected ?string $prefixClass = null, $parentPrefix = null;
+    protected ?string $prefixClass = null;
+    protected ?string $parentPrefix = null;
 
-		protected bool $crudMode = false;
+    protected bool $crudMode = false;
 
-		protected array $lastRegistered = [];
+    protected array $lastRegistered = [];
 
-		public function __construct(
+    public function __construct(
+        protected readonly CanaryValidator $canaryValidator,
+        protected readonly MethodSorter $methodSorter,
+        protected AuthStorage $authStorage
+    ) {
 
-			protected readonly CanaryValidator $canaryValidator,
+        //
+    }
 
-			protected readonly MethodSorter $methodSorter,
+    /**
+     * The same rules that apply to method patterns apply here: uppercase for literals, underscores with "h" for compound names etc
+    */
+    public function _prefixCurrent(): string
+    {
 
-			protected AuthStorage $authStorage
-		) {
+        return "";
+    }
 
-			//
-		}
-		
-		/**
-		 * The same rules that apply to method patterns apply here: uppercase for literals, underscores with "h" for compound names etc
-		*/
-		public function _prefixCurrent():string {
-			
-			return "";
-		}
+    public function _setParentPrefix(string $prefix): void
+    {
 
-		public function _setParentPrefix (string $prefix):void {
+        $this->parentPrefix = $prefix;
+    }
 
-			$this->parentPrefix = $prefix;
-		}
+    /**
+     * `registerCruds` must be called in the invoking method
+    */
+    public function _crud(string $markupPath, string $templatePath = null): CrudBuilder
+    {
 
-		/**
-		 * `registerCruds` must be called in the invoking method
-		*/
-		public function _crud (string $markupPath, string $templatePath = null):CrudBuilder {
+        $this->crudMode = true;
 
-			$this->crudMode = true;
+        return new BrowserBuilder($this, $markupPath, $templatePath);
+    }
 
-			return new BrowserBuilder($this, $markupPath, $templatePath );
-		}
+    public function _httpGet(BaseRenderer $renderer): self
+    {
 
-		public function _httpGet (BaseRenderer $renderer):self {
+        return $this->_register($renderer, "get");
+    }
 
-			return $this->_register($renderer, "get");
-		}
+    public function _httpPost(BaseRenderer $renderer): self
+    {
 
-		public function _httpPost (BaseRenderer $renderer):self {
+        return $this->_register($renderer, "post");
+    }
 
-			return $this->_register($renderer, "post");
-		}
+    public function _httpPut(BaseRenderer $renderer): self
+    {
 
-		public function _httpPut (BaseRenderer $renderer):self {
+        return $this->_register($renderer, "put");
+    }
 
-			return $this->_register($renderer, "put");
-		}
+    public function _httpDelete(BaseRenderer $renderer): self
+    {
 
-		public function _httpDelete (BaseRenderer $renderer):self {
+        return $this->_register($renderer, "delete");
+    }
 
-			return $this->_register($renderer, "delete");
-		}
+    private function _register(BaseRenderer $renderer, string $method): self
+    {
 
-		private function _register (BaseRenderer $renderer, string $method):self {
+        $renderer->setRouteMethod($method);
 
-			$renderer->setRouteMethod($method);
+        $this->lastRegistered = [$renderer];
 
-			$this->lastRegistered = [$renderer];
+        return $this;
+    }
 
-			return $this;
-		}
+    public function _getLastRegistered(): array
+    {
 
-		public function _getLastRegistered ():array {
+        return $this->lastRegistered;
+    }
 
-			return $this->lastRegistered;
-		}
+    public function _setLastRegistered(array $renderers): void
+    {
 
-		public function _setLastRegistered (array $renderers):void {
+        $this->lastRegistered = $renderers;
+    }
 
-			$this->lastRegistered = $renderers;
-		}
+    public function _prefixFor(string $routeClass): void
+    {
 
-		public function _prefixFor (string $routeClass):void {
+        $this->prefixClass = $routeClass;
+    }
 
-			$this->prefixClass = $routeClass;
-		}
+    /**
+     * Filter off methods that belong to this base, but first prepend prefixes to them where applicable so the manager dooesn't do that each time manually
+    */
+    public function _getPatterns(): array
+    {
 
-		/**
-		 * Filter off methods that belong to this base, but first prepend prefixes to them where applicable so the manager dooesn't do that each time manually
-		*/
-		public function _getPatterns():array {
+        $methods = array_diff(
+            get_class_methods($this),
+            get_class_methods($this->collectionParent) // using an explicit parent instead of automatically differentiating from parent methods to enable extension of route collections
+        );
 
-			$methods = array_diff(
+        return $this->methodSorter->descendingValues($this->prependPrefix($methods));
+    }
 
-				get_class_methods($this),
+    private function prependPrefix(array $patterns): array
+    {
 
-				get_class_methods($this->collectionParent) // using an explicit parent instead of automatically differentiating from parent methods to enable extension of route collections
-			);
+        return array_map(function ($name) {
 
-			return $this->methodSorter->descendingValues($this->prependPrefix($methods));
-		}
+            $prefix = $this->_prefixCurrent();
 
-		private function prependPrefix (array $patterns):array {
+            if (!empty($prefix)) {
 
-			return array_map(function($name) {
+                return $prefix . "_$name";
+            }
 
-				$prefix = $this->_prefixCurrent();
+            return $name;
+        }, $patterns);
+    }
 
-				if (!empty($prefix))
+    /**
+     * Antithesis of the [_getPatterns] to trim off prefix
+    */
+    public function _invokePattern(string $methodPattern): void
+    {
 
-					return $prefix . "_$name";
+        $prefix = $this->_prefixCurrent();
 
-				return $name;
-			}, $patterns);
-		}
+        if (!empty($prefix)) {
 
-		/**
-		 * Antithesis of the [_getPatterns] to trim off prefix
-		*/
-		public function _invokePattern (string $methodPattern):void {
+            $matches = preg_split("/". $prefix. "_/i", $methodPattern);
 
-			$prefix = $this->_prefixCurrent();
+            $methodPattern = $matches[1];
+        }
 
-			if (!empty($prefix)) {
+        $this->$methodPattern();
+    }
 
-				$matches = preg_split("/". $prefix. "_/i", $methodPattern);
+    public function _getMethodSorter(): MethodSorter
+    {
 
-				$methodPattern = $matches[1];
-			}
+        return $this->methodSorter;
+    }
 
-			$this->$methodPattern();
-		}
+    public function _assignMiddleware(MiddlewareRegistry $registry): void
+    {
+    }
 
-		public function _getMethodSorter ():MethodSorter {
+    public function _preMiddleware(PreMiddlewareRegistry $patternIndicator): void
+    {
+    }
 
-			return $this->methodSorter;
-		}
+    protected function _only(array $include): array
+    {
 
-		public function _assignMiddleware(MiddlewareRegistry $registry):void {}
+        return array_intersect(
+            $this->_getPatterns(),
+            $this->prependPrefix($include)
+        );
+    }
 
-		public function _preMiddleware (PreMiddlewareRegistry $patternIndicator):void {}
+    protected function _except(array $exclude): array
+    {
 
-		protected function _only(array $include):array {
-			
-			return array_intersect(
+        return array_diff(
+            $this->_getPatterns(),
+            $this->prependPrefix($exclude)
+        );
+    }
 
-				$this->_getPatterns(), $this->prependPrefix($include)
-			);
-		}
+    protected function _canaryEntry(array $canaries): void
+    {
 
-		protected function _except(array $exclude):array {
-			
-			return array_diff(
+        $validator = $this->canaryValidator;
 
-				$this->_getPatterns(), $this->prependPrefix($exclude)
-			);
-		}
+        $instances = $validator->setCanaries($canaries)
 
-		protected function _canaryEntry(array $canaries):void {
+        ->collectionAuthStorage($this->authStorage)
 
-			$validator = $this->canaryValidator;
+        ->setValidCanaries()->getCanaryInstances();
 
-			$instances = $validator->setCanaries($canaries)
+        foreach ($instances as $canary) {
 
-			->collectionAuthStorage($this->authStorage)
+            if ($canary->willLoad()) {
 
-			->setValidCanaries()->getCanaryInstances();
-			
-			foreach ($instances as $canary) {
+                $this->_prefixFor($canary->entryClass());
 
-				if ($canary->willLoad() ) {
+                break;
+            }
+        }
+    }
 
-					$this->_prefixFor($canary->entryClass());
+    public function _getPrefixCollection(): ?string
+    {
 
-					break;
-				}
-			}
-		}
+        return $this->prefixClass;
+    }
 
-		public function _getPrefixCollection ():?string {
+    public function _expectsCrud(): bool
+    {
 
-			return $this->prefixClass;
-		}
-
-		public function _expectsCrud ():bool {
-
-			return $this->crudMode;
-		}
-	}
-?>
+        return $this->crudMode;
+    }
+}

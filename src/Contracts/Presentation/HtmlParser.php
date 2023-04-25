@@ -1,12 +1,12 @@
 <?php
-	namespace Suphle\Contracts\Presentation;
 
-	use Suphle\Contracts\Routing\OutputsCrudFiles;
+namespace Suphle\Contracts\Presentation;
 
-	interface HtmlParser extends OutputsCrudFiles {
+use Suphle\Contracts\Routing\OutputsCrudFiles;
 
-		public function parseRenderer (RendersMarkup $renderer):string;
+interface HtmlParser extends OutputsCrudFiles
+{
+    public function parseRenderer(RendersMarkup $renderer): string;
 
-		public function findInPath (string $markupPath):void;
-	}
-?>
+    public function findInPath(string $markupPath): void;
+}

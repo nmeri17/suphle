@@ -1,40 +1,44 @@
 <?php
-	namespace Suphle\Tests\Integration\Modules;
 
-	use Suphle\Modules\{ModuleToRoute, ModuleInitializer};
+namespace Suphle\Tests\Integration\Modules;
 
-	use Suphle\Contracts\Modules\DescriptorInterface;
+use Suphle\Modules\{ModuleToRoute, ModuleInitializer};
 
-	use Suphle\Hydration\Container;
+use Suphle\Contracts\Modules\DescriptorInterface;
 
-	use Suphle\Tests\Integration\Modules\ModuleDescriptor\DescriptorCollection;
+use Suphle\Hydration\Container;
 
-	class ModuleToRouteTest extends DescriptorCollection {
+use Suphle\Tests\Integration\Modules\ModuleDescriptor\DescriptorCollection;
 
-		protected function moduleDidFindRoute (DescriptorInterface $descriptor):?ModuleInitializer {
+class ModuleToRouteTest extends DescriptorCollection
+{
+    protected function moduleDidFindRoute(DescriptorInterface $descriptor): ?ModuleInitializer
+    {
 
-			return $descriptor->getContainer()->getClass(ModuleToRoute::class)
+        return $descriptor->getContainer()->getClass(ModuleToRoute::class)
 
-			->findContext($this->modules); // given
-		}
+        ->findContext($this->modules); // given
+    }
 
-		protected function getModules ():array {
+    protected function getModules(): array
+    {
 
-			return [ $this->moduleOne, $this->moduleThree, $this->moduleTwo ];
-		}
-		
-		public function test_can_find_in_module_other_than_first () {
+        return [ $this->moduleOne, $this->moduleThree, $this->moduleTwo ];
+    }
 
-			$this->get("/module-two/5"); // when
+    public function test_can_find_in_module_other_than_first()
+    {
 
-			$this->assertNotNull($this->moduleDidFindRoute($this->moduleTwo)); // then
-		}
-		
-		public function test_none_will_be_found() {
+        $this->get("/module-two/5"); // when
 
-			$this->get("/non-existent/32"); // when
+        $this->assertNotNull($this->moduleDidFindRoute($this->moduleTwo)); // then
+    }
 
-			$this->assertNull($this->moduleDidFindRoute($this->moduleTwo)); // then
-		}
-	}
-?>
+    public function test_none_will_be_found()
+    {
+
+        $this->get("/non-existent/32"); // when
+
+        $this->assertNull($this->moduleDidFindRoute($this->moduleTwo)); // then
+    }
+}

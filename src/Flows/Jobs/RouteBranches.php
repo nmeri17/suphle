@@ -1,137 +1,146 @@
 <?php
-	namespace Suphle\Flows\Jobs;
 
-	use Suphle\Modules\{ModuleToRoute, ModulesBooter, Structures\ActiveDescriptors};
+namespace Suphle\Flows\Jobs;
 
-	use Suphle\Flows\{FlowHydrator, Structures\PendingFlowDetails, Previous\UnitNode};
+use Suphle\Modules\{ModuleToRoute, ModulesBooter, Structures\ActiveDescriptors};
 
-	use Suphle\Request\RequestDetails;
+use Suphle\Flows\{FlowHydrator, Structures\PendingFlowDetails, Previous\UnitNode};
 
-	use Suphle\Services\DecoratorHandlers\VariableDependenciesHandler;
+use Suphle\Request\RequestDetails;
 
-	use Suphle\Contracts\{Queues\Task, IO\CacheManager};
+use Suphle\Services\DecoratorHandlers\VariableDependenciesHandler;
 
-	class RouteBranches implements Task {
+use Suphle\Contracts\{Queues\Task, IO\CacheManager};
 
-		final public const FLOW_MECHANISMS = "flow_wildcards";
+class RouteBranches implements Task
+{
+    final public const FLOW_MECHANISMS = "flow_wildcards";
 
-		protected array $modules;
+    protected array $modules;
 
-		protected bool $wildcardNotExist = false;
+    protected bool $wildcardNotExist = false;
 
-		public function __construct(
-			protected readonly PendingFlowDetails $flowDetails,
+    public function __construct(
+        protected readonly PendingFlowDetails $flowDetails,
+        protected readonly ModuleToRoute $moduleFinder,
+        protected readonly FlowHydrator $hydrator,
+        protected readonly ModulesBooter $modulesBooter,
+        protected readonly ActiveDescriptors $descriptorsHolder,
+        protected readonly CacheManager $cacheManager
+    ) {
 
-			protected readonly ModuleToRoute $moduleFinder,
+        //
+    }
 
-			protected readonly FlowHydrator $hydrator,
+    public function handle(): void
+    {
 
-			protected readonly ModulesBooter $modulesBooter,
+        $outgoingRenderer = $this->flowDetails->getRenderer();
 
-			protected readonly ActiveDescriptors $descriptorsHolder,
+        if (!$outgoingRenderer->hasBranches()) {
+            return;
+        }
 
-			protected readonly CacheManager $cacheManager
-		) {
-			
-			//
-		}
+        $this->modules = $this->descriptorsHolder->getOriginalDescriptors();
 
-		public function handle ():void {
+        $this->modulesBooter->bootOuterModules($this->descriptorsHolder);
 
-			$outgoingRenderer = $this->flowDetails->getRenderer();
+        $outgoingRenderer->getFlow()
 
-			if (!$outgoingRenderer->hasBranches()) return;
+        ->eachBranch(function ($urlPattern, $structure) {
 
-			$this->modules = $this->descriptorsHolder->getOriginalDescriptors();
+            $mechanismPath = $this->getMechanismPath($urlPattern);
 
-			$this->modulesBooter->bootOuterModules($this->descriptorsHolder);
-			
-			$outgoingRenderer->getFlow()
+            if (!$this->patternMatchesMechanism($mechanismPath)) {
 
-			->eachBranch(function ($urlPattern, $structure) {
+                return;
+            } elseif ($this->wildcardNotExist) {
 
-				$mechanismPath = $this->getMechanismPath($urlPattern);
+                $this->setMechanismPath($mechanismPath);
+            }
 
-				if (!$this->patternMatchesMechanism($mechanismPath))
+            if (!$this->findManagerForPattern($urlPattern)) {
+                return;
+            } // invalid url
 
-					return;
+            $this->executeFlowBranch($urlPattern, $structure);
+        });
+    }
 
-				elseif ($this->wildcardNotExist)
+    // Each pattern can only have one mechanism. If it's saved without this consideration, attempting to read it later on will fail
+    protected function patternMatchesMechanism(string $mechanismPath): bool
+    {
 
-					$this->setMechanismPath($mechanismPath);
+        $patternMechanism = $this->cacheManager->getItem($mechanismPath);
 
-				if (!$this->findManagerForPattern( $urlPattern)) return; // invalid url
+        if (is_null($patternMechanism)) {
 
-				$this->executeFlowBranch($urlPattern, $structure);
-			});
-		}
+            return $this->wildcardNotExist = true;
+        }
 
-		// Each pattern can only have one mechanism. If it's saved without this consideration, attempting to read it later on will fail
-		protected function patternMatchesMechanism (string $mechanismPath):bool {
+        return $patternMechanism == $this->flowDetails->getAuthStorage();
+    }
 
-			$patternMechanism = $this->cacheManager->getItem($mechanismPath);
+    protected function getMechanismPath(string $urlPattern): string
+    {
 
-			if (is_null($patternMechanism))
+        return self::FLOW_MECHANISMS . "/" . trim($urlPattern, "/");
+    }
 
-				return $this->wildcardNotExist = true;
+    protected function setMechanismPath(string $mechanismPath): void
+    {
 
-			return $patternMechanism == $this->flowDetails->getAuthStorage();
-		}
+        $this->cacheManager->saveItem(
+            $mechanismPath,
+            $this->flowDetails->getAuthStorage()
+        );
+    }
 
-		protected function getMechanismPath (string $urlPattern):string {
+    /**
+     * Given the origin path stored a flow pointing to "sub-path/id", this tries to uproot the responseManager in the module containing that path
+    */
+    private function findManagerForPattern(string $pattern): bool
+    {
 
-			return self::FLOW_MECHANISMS . "/" . trim($urlPattern, "/");
-		}
+        RequestDetails::fromModules($this->modules, $pattern, "get");
 
-		protected function setMechanismPath (string $mechanismPath):void {
+        $moduleInitializer = $this->moduleFinder->findContext($this->modules);
 
-			$this->cacheManager->saveItem(
+        if (!is_null($moduleInitializer)) {
 
-				$mechanismPath, $this->flowDetails->getAuthStorage()
-			);
-		}
+            return true;
+        }
 
-		/**
-		 * Given the origin path stored a flow pointing to "sub-path/id", this tries to uproot the responseManager in the module containing that path
-		*/
-		private function findManagerForPattern (string $pattern):bool {
+        return false;
+    }
 
-			RequestDetails::fromModules($this->modules, $pattern, "get");
+    private function executeFlowBranch(string $urlPattern, UnitNode $structure): void
+    {
 
-			$moduleInitializer = $this->moduleFinder->findContext($this->modules);
+        $previousPayload = $this->flowDetails->getRenderer()
 
-			if (!is_null($moduleInitializer))
+        ->getRawResponse();
 
-				return true;
+        $this->hydrator->setRequestDetails(
+            $previousPayload,
+            $urlPattern
+        );
 
-			return false;
-		}
+        $this->setHydratorDependencies();
 
-		private function executeFlowBranch ( string $urlPattern, UnitNode $structure):void {
+        $this->hydrator->runNodes($structure, $this->flowDetails);
+    }
 
-			$previousPayload = $this->flowDetails->getRenderer()
+    private function setHydratorDependencies(): void
+    {
 
-			->getRawResponse();
+        $handler = $this->moduleFinder->getActiveModule()
 
-			$this->hydrator->setRequestDetails(
+        ->getContainer()->getClass(VariableDependenciesHandler::class);
 
-				$previousPayload, $urlPattern
-			);
+        foreach ($this->hydrator->dependencyMethods() as $methodName) {
 
-			$this->setHydratorDependencies();
-
-			$this->hydrator->runNodes( $structure, $this->flowDetails);
-		}
-
-		private function setHydratorDependencies ():void {
-
-			$handler = $this->moduleFinder->getActiveModule()
-
-			->getContainer()->getClass(VariableDependenciesHandler::class);
-
-			foreach ($this->hydrator->dependencyMethods() as $methodName)
-
-				$handler->executeDependencyMethod($methodName, $this->hydrator);
-		}
-	}
-?>
+            $handler->executeDependencyMethod($methodName, $this->hydrator);
+        }
+    }
+}

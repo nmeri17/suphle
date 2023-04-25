@@ -1,22 +1,23 @@
 <?php
-	namespace _database_namespace\Factories;
 
-	use _database_namespace\EditHistory;
+namespace _database_namespace\Factories;
 
-	use Illuminate\Database\Eloquent\Factories\Factory;
+use _database_namespace\EditHistory;
 
-	class EditHistoryFactory extends Factory {
+use Illuminate\Database\Eloquent\Factories\Factory;
 
-		protected $model = EditHistory::class;
+class EditHistoryFactory extends Factory
+{
+    protected $model = EditHistory::class;
 
-		public function definition ():array {
+    public function definition(): array
+    {
 
-			return [
+        return [
 
-				"user_id" => $this->faker->randomNumber(),
+            "user_id" => $this->faker->randomNumber(),
 
-				"payload" => json_encode(["foo" => "bar"])
-			];
-		}
-	}
-?>
+            "payload" => json_encode(["foo" => "bar"])
+        ];
+    }
+}

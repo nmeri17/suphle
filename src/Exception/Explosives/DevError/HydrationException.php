@@ -1,12 +1,12 @@
 <?php
-	namespace Suphle\Exception\Explosives\DevError;
 
-	use Suphle\Contracts\Exception\BroadcastableException;
+namespace Suphle\Exception\Explosives\DevError;
 
-	use Exception;
+use Suphle\Contracts\Exception\BroadcastableException;
 
-	class HydrationException extends Exception implements BroadcastableException {
+use Exception;
 
-		//
-	}
-?>
+class HydrationException extends Exception implements BroadcastableException
+{
+    //
+}

@@ -1,42 +1,45 @@
 <?php
-	namespace Suphle\Testing\Condiments;
 
-	use Suphle\Modules\ModuleDescriptor;
+namespace Suphle\Testing\Condiments;
 
-	use Suphle\Hydration\Container;
+use Suphle\Modules\ModuleDescriptor;
 
-	use Suphle\Testing\Proxies\WriteOnlyContainer;
+use Suphle\Hydration\Container;
 
-	trait ModuleReplicator {
+use Suphle\Testing\Proxies\WriteOnlyContainer;
 
-		/**
-		 * Is only usable on test types extending TestVirginContainer
-		*/
-		protected function replicateModule (
-			string $descriptor, callable $customizer,
+trait ModuleReplicator
+{
+    /**
+     * Is only usable on test types extending TestVirginContainer
+    */
+    protected function replicateModule(
+        string $descriptor,
+        callable $customizer,
+        bool $stubsDecorator = false,
+        array $descriptorStubs = []
+    ): ModuleDescriptor {
 
-			bool $stubsDecorator = false, array $descriptorStubs = []
-		):ModuleDescriptor {
+        if ($stubsDecorator) {
 
-			if ($stubsDecorator)
+            $container = $this->positiveDouble(Container::class, [
 
-				$container = $this->positiveDouble(Container::class, [
+                "getDecorator" => $this->stubDecorator()
+            ]);
+        } else {
+            $container = new Container();
+        }
 
-					"getDecorator" => $this->stubDecorator()
-				]);
+        $this->bootContainer($container);
 
-			else $container = new Container;
+        $writer = new WriteOnlyContainer($container); // using unique instances rather than a fixed one so test can make multiple calls to clone modules
 
-			$this->bootContainer($container);
+        $customizer($writer);
 
-			$writer = new WriteOnlyContainer($container); // using unique instances rather than a fixed one so test can make multiple calls to clone modules
-
-			$customizer($writer);
-
-			return $this->replaceConstructorArguments(
-
-				$descriptor, compact("container"), $descriptorStubs
-			);
-		}
-	}
-?>
+        return $this->replaceConstructorArguments(
+            $descriptor,
+            compact("container"),
+            $descriptorStubs
+        );
+    }
+}

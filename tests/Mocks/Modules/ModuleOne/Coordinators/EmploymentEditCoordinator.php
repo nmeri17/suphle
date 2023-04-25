@@ -1,41 +1,45 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-	use Suphle\Services\{ServiceCoordinator, Decorators\ValidationRules};
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Concretes\Services\EmploymentEditMock};
+use Suphle\Services\{ServiceCoordinator, Decorators\ValidationRules};
 
-	class EmploymentEditCoordinator extends ServiceCoordinator {
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Concretes\Services\EmploymentEditMock};
 
-		public function __construct(protected readonly EmploymentEditMock $editService) {
+class EmploymentEditCoordinator extends ServiceCoordinator
+{
+    public function __construct(protected readonly EmploymentEditMock $editService)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function simpleResult () {
+    public function simpleResult()
+    {
 
-			return [];
-		}
+        return [];
+    }
 
-		public function getEmploymentDetails () {
+    public function getEmploymentDetails()
+    {
 
-			return [
+        return [
 
-				"data" => $this->editService->getResource()
-			];
-		}
+            "data" => $this->editService->getResource()
+        ];
+    }
 
-		#[ValidationRules([
-			"id" => "required|numeric|exists:employment,id",
+    #[ValidationRules([
+        "id" => "required|numeric|exists:employment,id",
 
-			"salary" => "numeric|min:20000"
-		])]
-		public function updateEmploymentDetails ():iterable {
+        "salary" => "numeric|min:20000"
+    ])]
+    public function updateEmploymentDetails(): iterable
+    {
 
-			return [
+        return [
 
-				"message" => $this->editService->updateResource()
-			];
-		}
-	}
-?>
+            "message" => $this->editService->updateResource()
+        ];
+    }
+}

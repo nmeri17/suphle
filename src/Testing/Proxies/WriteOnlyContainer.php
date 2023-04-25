@@ -1,45 +1,48 @@
 <?php
-	namespace Suphle\Testing\Proxies;
 
-	use Suphle\Hydration\Container;
+namespace Suphle\Testing\Proxies;
 
-	use Suphle\Testing\Condiments\MockFacilitator;
+use Suphle\Hydration\Container;
 
-	use PHPUnit\Framework\TestCase;
+use Suphle\Testing\Condiments\MockFacilitator;
 
-	class WriteOnlyContainer extends TestCase { // so we can have access to the doubling methods
+use PHPUnit\Framework\TestCase;
 
-		use MockFacilitator;
+class WriteOnlyContainer extends TestCase
+{ // so we can have access to the doubling methods
 
-		public function __construct(protected readonly Container $container) {
+    use MockFacilitator;
 
-			//
-		}
+    public function __construct(protected readonly Container $container)
+    {
 
-		public function replaceWithMock (
-			string $interface, string $concrete, array $methodStubs,
+        //
+    }
 
-			array $mockMethods = [], bool $retainOtherMethods = true
-		):self {
+    public function replaceWithMock(
+        string $interface,
+        string $concrete,
+        array $methodStubs,
+        array $mockMethods = [],
+        bool $retainOtherMethods = true
+    ): self {
 
-			$doubleMode = $retainOtherMethods ? "positiveDouble":"negativeDouble";
+        $doubleMode = $retainOtherMethods ? "positiveDouble" : "negativeDouble";
 
-			return $this->replaceWithConcrete(
+        return $this->replaceWithConcrete(
+            $interface,
+            $this->$doubleMode($concrete, $methodStubs, $mockMethods)
+        );
+    }
 
-				$interface,
+    public function replaceWithConcrete(string $interface, object $concrete): self
+    {
 
-				$this->$doubleMode($concrete, $methodStubs, $mockMethods)
-			);
-		}
+        $this->container->whenTypeAny()->needsAny([
 
-		public function replaceWithConcrete (string $interface, object $concrete):self {
+            $interface => $concrete
+        ]);
 
-			$this->container->whenTypeAny()->needsAny([
-
-				$interface => $concrete
-			]);
-
-			return $this;
-		}
-	}
-?>
+        return $this;
+    }
+}

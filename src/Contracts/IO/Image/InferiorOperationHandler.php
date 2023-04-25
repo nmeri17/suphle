@@ -1,10 +1,10 @@
 <?php
-	namespace Suphle\Contracts\IO\Image;
 
-	interface InferiorOperationHandler extends ImageOptimiseOperation {
+namespace Suphle\Contracts\IO\Image;
 
-		public const OPERATION_NAME = "inferior";
+interface InferiorOperationHandler extends ImageOptimiseOperation
+{
+    public const OPERATION_NAME = "inferior";
 
-		public function setMaxSize (int $size):void;
-	}
-?>
+    public function setMaxSize(int $size): void;
+}

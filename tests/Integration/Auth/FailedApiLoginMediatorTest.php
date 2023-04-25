@@ -1,22 +1,24 @@
 <?php
-	namespace Suphle\Tests\Integration\Auth;
 
-	use Suphle\Tests\Integration\Auth\Bases\BaseTestApiLoginMediator;
+namespace Suphle\Tests\Integration\Auth;
 
-	class FailedApiLoginMediatorTest extends BaseTestApiLoginMediator {
+use Suphle\Tests\Integration\Auth\Bases\BaseTestApiLoginMediator;
 
-		protected function setUp ():void {
+class FailedApiLoginMediatorTest extends BaseTestApiLoginMediator
+{
+    protected function setUp(): void
+    {
 
-			parent::setUp();
+        parent::setUp();
 
-			$this->sendIncorrectRequest(self::LOGIN_PATH); // given
-		}
+        $this->sendIncorrectRequest(self::LOGIN_PATH); // given
+    }
 
-		public function test_failedLogin () {
+    public function test_failedLogin()
+    {
 
-			$this->bindAuthStatusObserver(0, 1); // then
+        $this->bindAuthStatusObserver(0, 1); // then
 
-			$this->evaluateLoginStatus(); // when
-		}
-	}
-?>
+        $this->evaluateLoginStatus(); // when
+    }
+}

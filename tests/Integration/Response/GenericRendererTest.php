@@ -1,45 +1,45 @@
 <?php
-	namespace Suphle\Tests\Integration\Response;
 
-	use Suphle\Response\Format\Json;
+namespace Suphle\Tests\Integration\Response;
 
-	use Suphle\Testing\TestTypes\IsolatedComponentTest;
+use Suphle\Response\Format\Json;
 
-	use Suphle\Tests\Integration\Generic\CommonBinds;
+use Suphle\Testing\TestTypes\IsolatedComponentTest;
 
-	use Illuminate\Support\Collection;
+use Suphle\Tests\Integration\Generic\CommonBinds;
 
-	class GenericRendererTest extends IsolatedComponentTest {
+use Illuminate\Support\Collection;
 
-		use CommonBinds;
+class GenericRendererTest extends IsolatedComponentTest
+{
+    use CommonBinds;
 
-		/**
-		 * @dataProvider existingResponses
-		*/
-		public function test_can_merge_content_into_renderer_body ($response, array $expectedShape) {
+    /**
+     * @dataProvider existingResponses
+    */
+    public function test_can_merge_content_into_renderer_body($response, array $expectedShape)
+    {
 
-			$newMessage = ["message" => "extra data"];
+        $newMessage = ["message" => "extra data"];
 
-			$renderer = (new Json(""))->setRawResponse($response); // given
+        $renderer = (new Json(""))->setRawResponse($response); // given
 
-			$renderer->forceArrayShape($newMessage); // when
+        $renderer->forceArrayShape($newMessage); // when
 
-			$this->assertSame(
+        $this->assertSame(
+            $renderer->getRawResponse(),
+            array_merge($expectedShape, $newMessage)
+        ); // then
+    }
 
-				$renderer->getRawResponse(),
+    public function existingResponses(): array
+    {
 
-				array_merge($expectedShape, $newMessage)
-			); // then
-		}
+        return [
 
-		public function existingResponses ():array {
+            [range(1, 5), range(1, 5)],
 
-			return [
-
-				[range(1, 5), range(1, 5)],
-
-				[new Collection, []]
-			];
-		}
-	}
-?>
+            [new Collection(), []]
+        ];
+    }
+}

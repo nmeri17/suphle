@@ -1,10 +1,10 @@
 <?php
-	namespace Suphle\Contracts\Auth;
 
-	interface ColumnPayloadComparer {
+namespace Suphle\Contracts\Auth;
 
-		public function compare ():bool;
+interface ColumnPayloadComparer
+{
+    public function compare(): bool;
 
-		public function getUser ():UserContract;
-	}
-?>
+    public function getUser(): UserContract;
+}

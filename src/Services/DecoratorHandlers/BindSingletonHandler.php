@@ -1,49 +1,49 @@
 <?php
-	namespace Suphle\Services\DecoratorHandlers;
 
-	use Suphle\Contracts\Hydration\ScopeHandlers\ModifyInjected;
+namespace Suphle\Services\DecoratorHandlers;
 
-	use Suphle\Hydration\{Container, Structures\ObjectDetails};
+use Suphle\Contracts\Hydration\ScopeHandlers\ModifyInjected;
 
-	use Suphle\Services\Structures\SetsReflectionAttributes;
+use Suphle\Hydration\{Container, Structures\ObjectDetails};
 
-	use Suphle\Exception\Explosives\DevError\InvalidImplementor;
+use Suphle\Services\Structures\SetsReflectionAttributes;
 
-	class BindSingletonHandler implements ModifyInjected {
+use Suphle\Exception\Explosives\DevError\InvalidImplementor;
 
-		use SetsReflectionAttributes;
+class BindSingletonHandler implements ModifyInjected
+{
+    use SetsReflectionAttributes;
 
-		public function __construct(
+    public function __construct(
+        protected readonly ObjectDetails $objectMeta,
+        protected readonly Container $container
+    ) {
 
-			protected readonly ObjectDetails $objectMeta,
+        //
+    }
 
-			protected readonly Container $container
-		) {
+    public function examineInstance(object $concrete, string $caller): object
+    {
 
-			//
-		}
+        $attribute = end($this->attributesList)->newInstance();
 
-		public function examineInstance (object $concrete, string $caller):object {
+        $concreteName = $concrete::class;
 
-			$attribute = end($this->attributesList)->newInstance();
+        $allegedParent = $attribute->entityIdentity ?? $concreteName;
 
-			$concreteName = $concrete::class;
+        if (!$this->objectMeta->stringInClassTree(
+            $concreteName,
+            $allegedParent
+        )) {
 
-			$allegedParent = $attribute->entityIdentity ?? $concreteName;
+            throw new InvalidImplementor($allegedParent, $concreteName);
+        }
 
-			if (!$this->objectMeta->stringInClassTree(
+        $this->container->whenTypeAny()->needsAny([
 
-				$concreteName, $allegedParent
-			))
+            $allegedParent => $concrete
+        ]);
 
-				throw new InvalidImplementor($allegedParent, $concreteName);
-
-			$this->container->whenTypeAny()->needsAny([
-
-				$allegedParent => $concrete
-			]);
-
-			return $concrete;
-		}
-	}
-?>
+        return $concrete;
+    }
+}

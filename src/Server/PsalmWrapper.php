@@ -1,83 +1,83 @@
 <?php
-	namespace Suphle\Server;
 
-	use Suphle\Contracts\Config\ModuleFiles;
+namespace Suphle\Server;
 
-	use Symfony\Component\Process\Process;
+use Suphle\Contracts\Config\ModuleFiles;
 
-	class PsalmWrapper {
+use Symfony\Component\Process\Process;
 
-		protected const COMMAND_NAME = "psalm";
+class PsalmWrapper
+{
+    protected const COMMAND_NAME = "psalm";
 
-		public const ALTER_COMMAND = "psalter";
+    public const ALTER_COMMAND = "psalter";
 
-		protected ?Process $lastProcess = null;
+    protected ?Process $lastProcess = null;
 
-		protected string $relativePathToScan;
+    protected string $relativePathToScan;
 
-		public function __construct (
+    public function __construct(
+        protected readonly ModuleFiles $fileConfig,
+        protected readonly VendorBin $vendorBin
+    ) {
 
-			protected readonly ModuleFiles $fileConfig,
+        //
+    }
 
-			protected readonly VendorBin $vendorBin
-		) {
+    public function setExecutionPath(string $path, string $relativePathToScan): void
+    {
 
-			//
-		}
+        $this->vendorBin->setRootPath($path);
 
-		public function setExecutionPath (string $path, string $relativePathToScan):void {
+        $this->relativePathToScan = $relativePathToScan;
+    }
 
-			$this->vendorBin->setRootPath($path);
+    public function getLastProcess(): ?Process
+    {
 
-			$this->relativePathToScan = $relativePathToScan;
-		}
+        return $this->lastProcess;
+    }
 
-		public function getLastProcess ():?Process {
+    public function analyzeErrorStatus(array $filePaths = [], bool $correctMistakes = false): bool
+    {
 
-			return $this->lastProcess;
-		}
+        if (!$correctMistakes) {
 
-		public function analyzeErrorStatus (array $filePaths = [], bool $correctMistakes = false):bool {
+            $processName = self::COMMAND_NAME;
 
-			if (!$correctMistakes) {
+            if (empty($filePaths)) {
 
-					$processName = self::COMMAND_NAME;
+                $filePaths = [
 
-				if (empty($filePaths))
+                    $this->fileConfig->getRootPath(). $this->relativePathToScan
+                ];
+            }
 
-					$filePaths = [
+            $commandOptions = [implode(" ", ($filePaths))];
+        } else {
 
-						$this->fileConfig->getRootPath(). $this->relativePathToScan
-					];
+            $processName = self::ALTER_COMMAND;
 
-				$commandOptions = [implode(" ", ($filePaths))];
-			}
+            $commandOptions = [
 
-			else {
+                "--issues=all",
 
-				$processName = self::ALTER_COMMAND;
+                "--allow-backwards-incompatible-changes=false",
 
-				$commandOptions = [
+                "--safe-types=true"
+            ];
+        }
 
-					"--issues=all",
+        $this->lastProcess = $this->vendorBin->setProcessArguments(
+            $processName,
+            $commandOptions
+        );
 
-					"--allow-backwards-incompatible-changes=false",
+        $this->lastProcess->run(function ($type, $buffer) {
 
-					"--safe-types=true"
-				];
-			}
+            echo $buffer;
+        });
 
-			$this->lastProcess = $this->vendorBin->setProcessArguments(
-
-				$processName, $commandOptions
-			);
-
-			$this->lastProcess->run(function ($type, $buffer) {
-
-				echo $buffer;
-			});
-
-			return $this->lastProcess->isSuccessful();
-		}
-	}
-?>
+        return $this->lastProcess->isSuccessful();
+    }
+}

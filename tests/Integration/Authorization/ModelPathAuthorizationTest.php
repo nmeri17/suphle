@@ -1,91 +1,98 @@
 <?php
-	namespace Suphle\Tests\Integration\Authorization;
 
-	use Suphle\Contracts\{Config\Router, Auth\UserContract};
+namespace Suphle\Tests\Integration\Authorization;
 
-	use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
+use Suphle\Contracts\{Config\Router, Auth\UserContract};
 
-	use Suphle\Testing\{TestTypes\ModuleLevelTest, Condiments\BaseDatabasePopulator};
+use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
 
-	use Suphle\Testing\Proxies\{WriteOnlyContainer, SecureUserAssertions};
+use Suphle\Testing\{TestTypes\ModuleLevelTest, Condiments\BaseDatabasePopulator};
 
-	use Suphle\Tests\Mocks\Models\Eloquent\{Employment, Employer};
+use Suphle\Testing\Proxies\{WriteOnlyContainer, SecureUserAssertions};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Auth\AuthorizeRoutes, Meta\ModuleOneDescriptor, Config\RouterMock};
+use Suphle\Tests\Mocks\Models\Eloquent\{Employment, Employer};
 
-	class ModelPathAuthorizationTest extends ModuleLevelTest {
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Auth\AuthorizeRoutes, Meta\ModuleOneDescriptor, Config\RouterMock};
 
-		use BaseDatabasePopulator, SecureUserAssertions {
+class ModelPathAuthorizationTest extends ModuleLevelTest
+{
+    use BaseDatabasePopulator, SecureUserAssertions {
 
-			BaseDatabasePopulator::setUp as databaseAllSetup;
-		}
+        BaseDatabasePopulator::setUp as databaseAllSetup;
+    }
 
-		protected const EDIT_PATH = "/admin/gmulti-edit/";
+    protected const EDIT_PATH = "/admin/gmulti-edit/";
 
-		protected Employment $employment;
-		
-		protected UserContract $admin;
-		
-		protected int $randomEmploymentId;
+    protected Employment $employment;
 
-		protected function setUp ():void {
+    protected UserContract $admin;
 
-			$this->databaseAllSetup();
+    protected int $randomEmploymentId;
 
-			$this->randomEmploymentId = $this->replicator->getRandomEntity()->id;
+    protected function setUp(): void
+    {
 
-			$this->employment = $this->replicator->modifyInsertion( // User must be an admin, otherwise the admin rule attached to the outer prefix will cause requests to fail
+        $this->databaseAllSetup();
 
-				1, [], function ($builder) {
+        $this->randomEmploymentId = $this->replicator->getRandomEntity()->id;
 
-					$employer = Employer::factory()
+        $this->employment = $this->replicator->modifyInsertion( // User must be an admin, otherwise the admin rule attached to the outer prefix will cause requests to fail
 
-					->for(EloquentUser::factory()->state([
+            1,
+            [],
+            function ($builder) {
 
-						"is_admin" => true
-					]))->create();
+                $employer = Employer::factory()
 
-					return $builder->for($employer);
-				}
-			)->first();
+                ->for(EloquentUser::factory()->state([
 
-			$this->admin = $this->employment->employer->user;
-		}
+                    "is_admin" => true
+                ]))->create();
 
-		protected function getModules ():array {
+                return $builder->for($employer);
+            }
+        )->first();
 
-			return [
-				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+        $this->admin = $this->employment->employer->user;
+    }
 
-					$container->replaceWithMock(Router::class, RouterMock::class, [
+    protected function getModules(): array
+    {
 
-						"browserEntryRoute" => AuthorizeRoutes::class
-					]);
-				})
-			];
-		}
+        return [
+            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-		protected function getActiveEntity ():string {
+                $container->replaceWithMock(Router::class, RouterMock::class, [
 
-			return Employment::class;
-		}
+                    "browserEntryRoute" => AuthorizeRoutes::class
+                ]);
+            })
+        ];
+    }
 
-		public function test_nested_can_add_more_locks () {
+    protected function getActiveEntity(): string
+    {
 
-			$this->actingAs($this->admin); // given
+        return Employment::class;
+    }
 
-			$this->get(self::EDIT_PATH . $this->employment->id) // when
+    public function test_nested_can_add_more_locks()
+    {
 
-			->assertOk(); // then
-		}
+        $this->actingAs($this->admin); // given
 
-		public function test_nested_missing_all_rules_fails () {
+        $this->get(self::EDIT_PATH . $this->employment->id) // when
 
-			$this->actingAs($this->admin); // given
+        ->assertOk(); // then
+    }
 
-			$this->get(self::EDIT_PATH . $this->randomEmploymentId) // when
+    public function test_nested_missing_all_rules_fails()
+    {
 
-			->assertForbidden(); // then
-		}
-	}
-?>
+        $this->actingAs($this->admin); // given
+
+        $this->get(self::EDIT_PATH . $this->randomEmploymentId) // when
+
+        ->assertForbidden(); // then
+    }
+}

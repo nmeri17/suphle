@@ -1,135 +1,144 @@
 <?php
-	namespace Suphle\File;
 
-	use Exception;
+namespace Suphle\File;
 
-	class FolderCloner {
+use Exception;
 
-		protected array $fileReplacements, $folderReplacements,
+class FolderCloner
+{
+    protected array $fileReplacements;
+    protected array $folderReplacements;
+    protected array $contentsReplacement;
+    protected array $copiedFiles = [];
 
-		$contentsReplacement, $copiedFiles = [];
+    public function __construct(protected readonly FileSystemReader $fileSystemReader)
+    {
 
-		public function __construct (protected readonly FileSystemReader $fileSystemReader) {
+        //
+    }
 
-			//
-		}
+    public function setEntryReplacements(
+        array $fileReplacements,
+        array $folderReplacements,
+        array $contentsReplacement
+    ): self {
 
-		public function setEntryReplacements (
-			array $fileReplacements, array $folderReplacements,
+        $this->fileReplacements = $fileReplacements;
 
-			array $contentsReplacement
-		):self {
+        $this->folderReplacements = $folderReplacements;
 
-			$this->fileReplacements = $fileReplacements;
+        $this->contentsReplacement = $contentsReplacement;
 
-			$this->folderReplacements = $folderReplacements;
+        return $this;
+    }
 
-			$this->contentsReplacement = $contentsReplacement;
+    public function transferFolder(string $sourceFolder, string $newDestination): bool
+    {
 
-			return $this;
-		}
+        $temporaryModulePath = dirname($sourceFolder). DIRECTORY_SEPARATOR . "temp_dir"; // using this so we don't iterate existing files at that destination
 
-		public function transferFolder (string $sourceFolder, string $newDestination):bool {
+        $this->fileSystemReader->deepCopy($sourceFolder, $temporaryModulePath);
 
-			$temporaryModulePath = dirname($sourceFolder). DIRECTORY_SEPARATOR . "temp_dir"; // using this so we don't iterate existing files at that destination
+        $this->nameContentChange($temporaryModulePath);
 
-			$this->fileSystemReader->deepCopy( $sourceFolder, $temporaryModulePath );
+        $this->renameEntryOnDisk($temporaryModulePath, $newDestination); // since we copied instead of moved, we have to do the actual moving from temp to permanent
 
-			$this->nameContentChange($temporaryModulePath);
+        return true;
+    }
 
-			$this->renameEntryOnDisk($temporaryModulePath, $newDestination); // since we copied instead of moved, we have to do the actual moving from temp to permanent
+    protected function nameContentChange(string $path): void
+    {
 
-			return true;
-		}
+        $this->fileSystemReader->iterateDirectory(
+            $path,
+            function ($directoryPath, $directoryName) {
 
-		protected function nameContentChange (string $path):void {
+                $this->nameContentChange($directoryPath);
+            },
+            function ($filePath, $fileName) {
 
-			$this->fileSystemReader->iterateDirectory(
+                $this->replaceFileContents($filePath);
 
-				$path, function ($directoryPath, $directoryName) {
+                $this->setEntryName($filePath, true);
+            },
+            function ($path) {
 
-					$this->nameContentChange($directoryPath);
-				},
+                $this->setEntryName($path, false);
+            }
+        );
+    }
 
-				function ($filePath, $fileName) {
+    protected function replaceFileContents(string $fileName): void
+    {
 
-					$this->replaceFileContents($filePath);
+        $contents = file_get_contents($fileName);
 
-					$this->setEntryName($filePath, true);
-				},
+        foreach ($this->contentsReplacement as $keyword => $replacement) {
 
-				function ($path) {
+            $contents = str_replace($keyword, $replacement, $contents);
+        }
 
-					$this->setEntryName($path, false);
-				}
-			);
-		}
+        file_put_contents($fileName, $contents);
+    }
 
-		protected function replaceFileContents (string $fileName):void {
+    /**
+     * Builds the new name for the entry and renames it at the temporary location*/
+    protected function setEntryName(string $entryPath, bool $isFile): void
+    {
 
-			$contents = file_get_contents($fileName);
+        if ($isFile) {
+            $keywords = $this->fileReplacements;
+        } else {
+            $keywords = $this->folderReplacements;
+        }
 
-			foreach ($this->contentsReplacement as $keyword => $replacement)
+        $newName = basename($entryPath); // change only this entry since the preceding/parent paths haven't been renamed on disk yet/don't exist
 
-				$contents = str_replace($keyword, $replacement, $contents);
+        foreach ($keywords as $keyword => $replacement) {
 
-			file_put_contents($fileName, $contents);
-		}
+            $newName = str_replace($keyword, $replacement, $newName);
+        }
 
-		/**
-		 * Builds the new name for the entry and renames it at the temporary location*/
-		protected function setEntryName (string $entryPath, bool $isFile):void {
+        $this->renameEntryOnDisk(
+            $entryPath,
+            dirname($entryPath) . DIRECTORY_SEPARATOR .$newName
+        );
+    }
 
-			if ($isFile) $keywords = $this->fileReplacements;
+    protected function renameEntryOnDisk(string $sourceFolder, string $newDestination): void
+    {
 
-			else $keywords = $this->folderReplacements;
+        $operationSuccess = false;
 
-			$newName = basename($entryPath); // change only this entry since the preceding/parent paths haven't been renamed on disk yet/don't exist
+        if (file_exists($sourceFolder)) {
 
-			foreach ($keywords as $keyword => $replacement)
+            if (@rename($sourceFolder, $newDestination)) {
 
-				$newName = str_replace($keyword, $replacement, $newName);
-			
-			$this->renameEntryOnDisk(
+                $operationSuccess = true;
+            }
+        } else {
+            throw new Exception("Attempt to rename non-existent folder: $sourceFolder");
+        }
 
-				$entryPath,
+        if ($operationSuccess) {
+            return;
+        }
 
-				dirname($entryPath) . DIRECTORY_SEPARATOR .$newName
-			);
-		}
+        $this->fileSystemReader->resetCopiedBatch();
 
-		protected function renameEntryOnDisk (string $sourceFolder, string $newDestination):void {
+        $this->fileSystemReader->deepCopy($sourceFolder, $newDestination);
 
-			$operationSuccess = false;
+        $this->copiedFiles = array_merge(
+            $this->copiedFiles,
+            $this->fileSystemReader->lastCopiedBatch()
+        );
 
-			if (file_exists($sourceFolder)) {
+        $this->fileSystemReader->emptyDirectory($sourceFolder);
+    }
 
-				if (@rename($sourceFolder, $newDestination))
+    public function getCopiedFiles(): array
+    {
 
-					$operationSuccess = true;
-			}
-
-			else throw new Exception("Attempt to rename non-existent folder: $sourceFolder");
-
-			if ($operationSuccess) return;
-
-			$this->fileSystemReader->resetCopiedBatch();
-
-			$this->fileSystemReader->deepCopy($sourceFolder, $newDestination);
-
-			$this->copiedFiles = array_merge(
-
-				$this->copiedFiles,
-
-				$this->fileSystemReader->lastCopiedBatch()
-			);
-			
-			$this->fileSystemReader->emptyDirectory($sourceFolder);
-		}
-
-		public function getCopiedFiles ():array {
-
-			return $this->copiedFiles;
-		}
-	}
-?>
+        return $this->copiedFiles;
+    }
+}

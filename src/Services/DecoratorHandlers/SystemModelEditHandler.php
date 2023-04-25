@@ -1,60 +1,63 @@
 <?php
-	namespace Suphle\Services\DecoratorHandlers;
 
-	use Suphle\Contracts\{Services\CallInterceptors\SystemModelEdit, Database\OrmDialect, Config\DecoratorProxy};
+namespace Suphle\Services\DecoratorHandlers;
 
-	use Suphle\Hydration\Structures\ObjectDetails;
+use Suphle\Contracts\{Services\CallInterceptors\SystemModelEdit, Database\OrmDialect, Config\DecoratorProxy};
 
-	use ProxyManager\Proxy\AccessInterceptorInterface;
+use Suphle\Hydration\Structures\ObjectDetails;
 
-	use Throwable;
+use ProxyManager\Proxy\AccessInterceptorInterface;
 
-	class SystemModelEditHandler extends BaseInjectionModifier {
+use Throwable;
 
-		public function __construct (
-			protected readonly OrmDialect $ormDialect,
+class SystemModelEditHandler extends BaseInjectionModifier
+{
+    public function __construct(
+        protected readonly OrmDialect $ormDialect,
+        protected readonly ErrorCatcherHandler $errorDecoratorHandler,
+        DecoratorProxy $proxyConfig,
+        ObjectDetails $objectMeta
+    ) {
 
-			protected readonly ErrorCatcherHandler $errorDecoratorHandler,
+        parent::__construct($proxyConfig, $objectMeta);
+    }
 
-			DecoratorProxy $proxyConfig, ObjectDetails $objectMeta
-		) {
+    /**
+     * @param {concrete} SystemModelEdit
+    */
+    public function examineInstance(object $concrete, string $caller): object
+    {
 
-			parent::__construct($proxyConfig, $objectMeta);
-		}
+        return $this->getProxy($concrete);
+    }
 
-		/**
-		 * @param {concrete} SystemModelEdit
-		*/
-		public function examineInstance (object $concrete, string $caller):object {
+    public function getMethodHooks(): array
+    {
 
-			return $this->getProxy($concrete);
-		}
+        return [
 
-		public function getMethodHooks ():array {
+            "updateModels" => $this->wrapUpdateModels(...)
+        ];
+    }
 
-			return [
+    public function wrapUpdateModels(
+        AccessInterceptorInterface $proxy,
+        SystemModelEdit $concrete,
+        string $methodName,
+        array $argumentList
+    ) {
 
-				"updateModels" => $this->wrapUpdateModels(...)
-			];
-		}
+        try {
 
-		public function wrapUpdateModels (
-			AccessInterceptorInterface $proxy, SystemModelEdit $concrete,
+            return $this->ormDialect->runTransaction(fn () => $concrete->updateModels(), $concrete->modelsToUpdate());
+        } catch (Throwable $exception) {
 
-			string $methodName, array $argumentList
-		) {
-
-			try {
-
-				return $this->ormDialect->runTransaction(fn() => $concrete->updateModels(), $concrete->modelsToUpdate());
-			}
-			catch (Throwable $exception) {
-
-				return $this->errorDecoratorHandler->attemptDiffuse(
-
-					$exception, $proxy, $concrete, $methodName
-				);
-			}
-		}
-	}
-?>
+            return $this->errorDecoratorHandler->attemptDiffuse(
+                $exception,
+                $proxy,
+                $concrete,
+                $methodName
+            );
+        }
+    }
+}

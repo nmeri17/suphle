@@ -1,11 +1,11 @@
 <?php
-	namespace Suphle\Services;
 
-	use Suphle\Services\Decorators\SecuresPostRequest;
+namespace Suphle\Services;
 
-	#[SecuresPostRequest]
-	class ServiceCoordinator {
+use Suphle\Services\Decorators\SecuresPostRequest;
 
-		//
-	}
-?>
+#[SecuresPostRequest]
+class ServiceCoordinator
+{
+    //
+}

@@ -1,91 +1,91 @@
 <?php
-	namespace Suphle\Middleware;
 
-	use Suphle\Hydration\Container;
+namespace Suphle\Middleware;
 
-	use Suphle\Request\PayloadStorage;
+use Suphle\Hydration\Container;
 
-	use Suphle\Contracts\{Presentation\BaseRenderer, Config\Router as RouterConfig};
+use Suphle\Request\PayloadStorage;
 
-	class MiddlewareQueue {
+use Suphle\Contracts\{Presentation\BaseRenderer, Config\Router as RouterConfig};
 
-		protected array $mergedStack = [], $routedCollectors = [];
+class MiddlewareQueue
+{
+    protected array $mergedStack = [];
+    protected array $routedCollectors = [];
 
-		public function __construct (
+    public function __construct(
+        MiddlewareRegistry $registry,
+        protected readonly PayloadStorage $payloadStorage,
+        protected readonly RouterConfig $routerConfig,
+        protected readonly Container $container
+    ) {
 
-			MiddlewareRegistry $registry,
+        $this->routedCollectors = $registry->getRoutedFunnels();
+    }
 
-			protected readonly PayloadStorage $payloadStorage,
+    public function runStack(): BaseRenderer
+    {
 
-			protected readonly RouterConfig $routerConfig,
+        if (empty($this->mergedStack)) {
+            $this->setMergedStack();
+        }
 
-			protected readonly Container $container
-		) {
+        $mergedStack = $this->mergedStack; // copy to avoid mutating the main stack with array_shift
 
-			$this->routedCollectors = $registry->getRoutedFunnels();
-		}
+        $outermost = array_shift($mergedStack);
 
-		public function runStack ():BaseRenderer {
+        return $outermost->process(
+            $this->payloadStorage,
+            $this->getHandlerChain($mergedStack)
+        );
+    }
 
-			if (empty($this->mergedStack)) $this->setMergedStack();
+    protected function setMergedStack(): void
+    {
 
-			$mergedStack = $this->mergedStack; // copy to avoid mutating the main stack with array_shift
+        $routedHandlers = [];
 
-			$outermost = array_shift($mergedStack);
+        foreach ($this->routedCollectors as $collector) {
 
-			return $outermost->process(
-				$this->payloadStorage,
+            $handlerName = $this->routerConfig->collectorHandlers()[$collector::class];
 
-				$this->getHandlerChain($mergedStack)
-			);
-		}
+            $handler = $this->container->getClass($handlerName); // since multiple instances can exist for those patterns down the collection trie, a handler may be called up more than once, as well
 
-		protected function setMergedStack ():void  {
-			
-			$routedHandlers = [];
+            $handler->addMetaFunnel($collector);
 
-			foreach ($this->routedCollectors as $collector) {
+            $routedHandlers[] = $handler;
+        }
 
-				$handlerName = $this->routerConfig->collectorHandlers()[$collector::class];
+        $this->mergedStack = array_merge( // any temporary ones attached to route precede the defaults
+            $routedHandlers,
+            array_map(
+                fn (string $name) => $this->container->getClass($name),
+                $this->routerConfig->defaultMiddleware()
+            )
+        );
+    }
 
-				$handler = $this->container->getClass($handlerName); // since multiple instances can exist for those patterns down the collection trie, a handler may be called up more than once, as well
+    /**
+     *  convert each middleware to a request interface carrying the next one so triggering each one creates a chain effect till the last one
+     * @param {accumNexts} null for the final handler since there's none below it
+     * @return null for the last handler in the chain
+    */
+    private function getHandlerChain(array $middlewareList, MiddlewareNexts $accumNexts = null): ?MiddlewareNexts
+    {
 
-				$handler->addMetaFunnel($collector);
+        if (empty($middlewareList)) {
+            return $accumNexts;
+        }
 
-				$routedHandlers[] = $handler;
-			}
+        $lastMiddleware = array_pop($middlewareList); // we're reading from behind so that last item on the list is what is passed to the caller, and thus, is first to be evaluated on our way down the rabbit hole
 
-			$this->mergedStack = array_merge( // any temporary ones attached to route precede the defaults
-				$routedHandlers,
+        $nextHandler = new MiddlewareNexts($lastMiddleware, $accumNexts);
 
-				array_map(
-
-					fn(string $name) => $this->container->getClass($name),
-
-					$this->routerConfig->defaultMiddleware()
-				)
-			);
-		}
-
-		/**
-		 *  convert each middleware to a request interface carrying the next one so triggering each one creates a chain effect till the last one
-		 * @param {accumNexts} null for the final handler since there's none below it
-		 * @return null for the last handler in the chain
-		*/
-		private function getHandlerChain (array $middlewareList, MiddlewareNexts $accumNexts = null):?MiddlewareNexts {
-
-			if (empty($middlewareList)) return $accumNexts;
-			
-			$lastMiddleware = array_pop($middlewareList); // we're reading from behind so that last item on the list is what is passed to the caller, and thus, is first to be evaluated on our way down the rabbit hole
-
-			$nextHandler = new MiddlewareNexts($lastMiddleware, $accumNexts);
-
-			// [1,2,4] => [4(2(1(cur, null), cur), cur)]
-			/* [1,2,4] => 1,[2,4]
-			[2,4] => 2,[4]
-			[4] = each level injests its predecessor
-			*/
-			return $this->getHandlerChain($middlewareList, $nextHandler);
-		}
-	}
-?>
+        // [1,2,4] => [4(2(1(cur, null), cur), cur)]
+        /* [1,2,4] => 1,[2,4]
+        [2,4] => 2,[4]
+        [4] = each level injests its predecessor
+        */
+        return $this->getHandlerChain($middlewareList, $nextHandler);
+    }
+}

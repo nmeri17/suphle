@@ -1,107 +1,119 @@
 <?php
-	namespace Suphle\Routing\Crud;
 
-	use Suphle\Routing\MethodSorter;
+namespace Suphle\Routing\Crud;
 
-	use Suphle\Response\Format\{Markup, Redirect, Reload};
+use Suphle\Routing\MethodSorter;
 
-	use Suphle\Contracts\{Routing\RouteCollection, Presentation\BaseRenderer};
+use Suphle\Response\Format\{Markup, Redirect, Reload};
 
-	/**
-	 * A list of renderer setting methods
-	*/
-	class BrowserBuilder extends BaseBuilder {
+use Suphle\Contracts\{Routing\RouteCollection, Presentation\BaseRenderer};
 
-		public const SAVE_NEW_KEY = "resource";
+/**
+ * A list of renderer setting methods
+*/
+class BrowserBuilder extends BaseBuilder
+{
+    public const SAVE_NEW_KEY = "resource";
 
-		private string $markupPath, // relative markup path for this resource. The absolute path is derived by htmlParser
+    private string $markupPath;
+    private string // relative markup path for this resource. The absolute path is derived by htmlParser
 
-		$templatePath;
+    $templatePath;
 
-		protected array $validActions = [
+    protected array $validActions = [
 
-			self::SHOW_CREATE, self::SAVE_NEW, self::SHOW_ALL,
+        self::SHOW_CREATE, self::SAVE_NEW, self::SHOW_ALL,
 
-			self::SHOW_ONE, self::UPDATE_ONE, self::DELETE_ONE,
+        self::SHOW_ONE, self::UPDATE_ONE, self::DELETE_ONE,
 
-			self::SHOW_SEARCH, self::SHOW_EDIT
-		];
-		
-		public function __construct(RouteCollection $collection, string $markupPath, string $templatePath = null) {
+        self::SHOW_SEARCH, self::SHOW_EDIT
+    ];
 
-			$this->collection = $collection;
+    public function __construct(RouteCollection $collection, string $markupPath, string $templatePath = null)
+    {
 
-			$this->markupPath = $markupPath . DIRECTORY_SEPARATOR;
+        $this->collection = $collection;
 
-			$this->templatePath = $templatePath ? $templatePath . DIRECTORY_SEPARATOR : $this->markupPath;
-		}
+        $this->markupPath = $markupPath . DIRECTORY_SEPARATOR;
 
-		protected function showCreateForm ():BaseRenderer {
+        $this->templatePath = $templatePath ? $templatePath . DIRECTORY_SEPARATOR : $this->markupPath;
+    }
 
-			return $this->getMarkupRenderer(__FUNCTION__, "create-form");
-		}
+    protected function showCreateForm(): BaseRenderer
+    {
 
-		protected function showEditForm ():BaseRenderer {
+        return $this->getMarkupRenderer(__FUNCTION__, "create-form");
+    }
 
-			return $this->getMarkupRenderer(__FUNCTION__, "edit-form");
-		}
+    protected function showEditForm(): BaseRenderer
+    {
 
-		/**
-		 * Redirect to "/resource/new_id"
-		*/
-		public function saveNew ():BaseRenderer {
+        return $this->getMarkupRenderer(__FUNCTION__, "edit-form");
+    }
 
-			$prefix = rtrim($this->markupPath, DIRECTORY_SEPARATOR);
+    /**
+     * Redirect to "/resource/new_id"
+    */
+    public function saveNew(): BaseRenderer
+    {
 
-			return new Redirect(__FUNCTION__, fn() => function () use ($prefix) {
+        $prefix = rtrim($this->markupPath, DIRECTORY_SEPARATOR);
 
-					if (!array_key_exists(self::SAVE_NEW_KEY, $this->rawResponse))
+        return new Redirect(__FUNCTION__, fn () => function () use ($prefix) {
 
-						return false;
-					
-					return "/$prefix/" .
+            if (!array_key_exists(self::SAVE_NEW_KEY, $this->rawResponse)) {
 
-					$this->rawResponse[self::SAVE_NEW_KEY]->id; // assumes the controller returns an array containing this key
-				});
-		}
+                return false;
+            }
 
-		protected function showAll ():BaseRenderer {
+            return "/$prefix/" .
 
-			return $this->getMarkupRenderer(__FUNCTION__, "show-all");
-		}
+            $this->rawResponse[self::SAVE_NEW_KEY]->id; // assumes the controller returns an array containing this key
+        });
+    }
 
-		protected function showOne ():BaseRenderer {
+    protected function showAll(): BaseRenderer
+    {
 
-			return $this->getMarkupRenderer(__FUNCTION__, "show-one");
-		}
+        return $this->getMarkupRenderer(__FUNCTION__, "show-all");
+    }
 
-		protected function updateOne ():BaseRenderer {
+    protected function showOne(): BaseRenderer
+    {
 
-			return new Reload(__FUNCTION__);
-		}
+        return $this->getMarkupRenderer(__FUNCTION__, "show-one");
+    }
 
-		protected function deleteOne ():BaseRenderer {
+    protected function updateOne(): BaseRenderer
+    {
 
-			$prefix = $this->collection->_prefixCurrent();
+        return new Reload(__FUNCTION__);
+    }
 
-			return new Redirect(__FUNCTION__, fn() => "$prefix/");
-		}
+    protected function deleteOne(): BaseRenderer
+    {
 
-		/**
-		 * It's assumed that the same page where the form lives is where results will be displayed
-		*/
-		protected function showSearchForm ():BaseRenderer {
+        $prefix = $this->collection->_prefixCurrent();
 
-			return $this->getMarkupRenderer(__FUNCTION__, "show-search-form");
-		}
+        return new Redirect(__FUNCTION__, fn () => "$prefix/");
+    }
 
-		private function getMarkupRenderer (string $handler, string $fileName):Markup {
+    /**
+     * It's assumed that the same page where the form lives is where results will be displayed
+    */
+    protected function showSearchForm(): BaseRenderer
+    {
 
-			return new Markup(
-				$handler, $this->markupPath . $fileName,
+        return $this->getMarkupRenderer(__FUNCTION__, "show-search-form");
+    }
 
-				$this->templatePath . $fileName
-			);
-		}
-	}
-?>
+    private function getMarkupRenderer(string $handler, string $fileName): Markup
+    {
+
+        return new Markup(
+            $handler,
+            $this->markupPath . $fileName,
+            $this->templatePath . $fileName
+        );
+    }
+}

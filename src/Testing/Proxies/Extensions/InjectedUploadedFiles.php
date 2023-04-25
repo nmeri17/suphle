@@ -1,23 +1,25 @@
 <?php
-	namespace Suphle\Testing\Proxies\Extensions;
 
-	use Suphle\Contracts\Requests\FileInputReader;
+namespace Suphle\Testing\Proxies\Extensions;
 
-	use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Suphle\Contracts\Requests\FileInputReader;
 
-	class InjectedUploadedFiles implements FileInputReader {
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
-		/**
-		 * @param {fileMap} UploadedFile[]
-		*/
-		public function __construct(protected readonly array $fileMap) {
+class InjectedUploadedFiles implements FileInputReader
+{
+    /**
+     * @param {fileMap} UploadedFile[]
+    */
+    public function __construct(protected readonly array $fileMap)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function getFileObjects ():array {
+    public function getFileObjects(): array
+    {
 
-			return $this->fileMap;
-		}
-	}
-?>
+        return $this->fileMap;
+    }
+}

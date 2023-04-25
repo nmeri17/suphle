@@ -1,62 +1,62 @@
 <?php
-	namespace Suphle\Exception;
 
-	use Throwable;
+namespace Suphle\Exception;
 
-	class ErrorFileWriter {
+use Throwable;
 
-		/**
-		 * @param $uncatchableFile Full file paths
-		*/
-		public function __construct(protected readonly string $uncatchableFile, protected readonly string $catchableFile) {
+class ErrorFileWriter
+{
+    /**
+     * @param $uncatchableFile Full file paths
+    */
+    public function __construct(protected readonly string $uncatchableFile, protected readonly string $catchableFile)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function setUncatchableHandlers ():self {
+    public function setUncatchableHandlers(): self
+    {
 
-			$newLine = ",\n";
+        $newLine = ",\n";
 
-			set_error_handler(function($errCode, $errMessage) use ($newLine) {
+        set_error_handler(function ($errCode, $errMessage) use ($newLine) {
 
-				file_put_contents(
+            file_put_contents(
+                $this->uncatchableFile,
+                $errMessage . $newLine,
+                FILE_APPEND
+            );
+        });
 
-					$this->uncatchableFile, $errMessage . $newLine,
+        set_exception_handler(function ($exception) use ($newLine) {
 
-					FILE_APPEND
-				);
-			});
+            file_put_contents(
+                $this->uncatchableFile,
+                $exception->getMessage() . $newLine,
+                FILE_APPEND
+            );
+        });
 
-			set_exception_handler(function ($exception) use ($newLine) {
+        return $this;
+    }
 
-				file_put_contents(
+    public function attemptOperation(callable $action)
+    {
 
-					$this->uncatchableFile,
+        try {
 
-					$exception->getMessage() . $newLine, FILE_APPEND
-				);
-			});
+            return $action();
 
-			return $this;
-		}
+            restore_error_handler();
 
-		public function attemptOperation (callable $action) {
-		
-			try {
+            restore_exception_handler();
+        } catch (Throwable $exception) {
 
-				return $action();
-
-				restore_error_handler();
-
-				restore_exception_handler();
-			}
-			catch (Throwable $exception) {
-
-				file_put_contents(
-
-					$this->catchableFile, $exception->getMessage()
-				);
-			}
-		}
-	}
-?>
+            file_put_contents(
+                $this->catchableFile,
+                $exception->getMessage()
+            );
+        }
+    }
+}

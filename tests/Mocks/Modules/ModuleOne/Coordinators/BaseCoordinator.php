@@ -1,45 +1,52 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-	use Suphle\Services\ServiceCoordinator;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{PayloadReaders\ImagePayloadReader, Concretes\ARequiresBCounter};
+use Suphle\Services\ServiceCoordinator;
 
-	class BaseCoordinator extends ServiceCoordinator {
+use Suphle\Tests\Mocks\Modules\ModuleOne\{PayloadReaders\ImagePayloadReader, Concretes\ARequiresBCounter};
 
-		public function indexHandler () {
+class BaseCoordinator extends ServiceCoordinator
+{
+    public function indexHandler()
+    {
 
-			return ["message" => "Hello World!"];
-		}
+        return ["message" => "Hello World!"];
+    }
 
-		public function plainSegment () {
+    public function plainSegment()
+    {
 
-			return ["message" => "plain Segment"];
-		}
+        return ["message" => "plain Segment"];
+    }
 
-		public function simplePair () {
+    public function simplePair()
+    {
 
-			//
-		}
+        //
+    }
 
-		public function hyphenatedSegments () {
+    public function hyphenatedSegments()
+    {
 
-			//
-		}
+        //
+    }
 
-		public function underscoredSegments () {
+    public function underscoredSegments()
+    {
 
-			//
-		}
+        //
+    }
 
-		public function multiPlaceholders () {
+    public function multiPlaceholders()
+    {
 
-			//
-		}
+        //
+    }
 
-		public function incorrectActionInjection (ImagePayloadReader $payload, ARequiresBCounter $aRequires):array {
+    public function incorrectActionInjection(ImagePayloadReader $payload, ARequiresBCounter $aRequires): array
+    {
 
-			return [];
-		}
-	}
-?>
+        return [];
+    }
+}

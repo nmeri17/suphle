@@ -1,20 +1,22 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\SubServiceLocation;
 
-	use Suphle\Hydration\Container;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\SubServiceLocation;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\BCounter;
+use Suphle\Hydration\Container;
 
-	class HydratorConsumer {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\BCounter;
 
-		public function __construct(protected Container $container) {
+class HydratorConsumer
+{
+    public function __construct(protected Container $container)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function getSuperB ():BCounter {
+    public function getSuperB(): BCounter
+    {
 
-			return $this->container->getClass(BCounter::class); // unable to see y
-		}
-	}
-?>
+        return $this->container->getClass(BCounter::class); // unable to see y
+    }
+}

@@ -1,97 +1,106 @@
 <?php
-	namespace Suphle\Config;
 
-	use Suphle\Contracts\Config\Router as RouterConfig;
+namespace Suphle\Config;
 
-	use Suphle\Middleware\Handlers\{FinalHandlerWrapper, CsrfMiddleware, JsonNegotiator};
+use Suphle\Contracts\Config\Router as RouterConfig;
 
-	use Suphle\Middleware\Collectors\JsonNegotiatorCollector;
+use Suphle\Middleware\Handlers\{FinalHandlerWrapper, CsrfMiddleware, JsonNegotiator};
 
-	use Suphle\Auth\RequestScrutinizers\{AuthenticateMetaFunnel, AuthenticateHandler, AuthorizeMetaFunnel, PathAuthorizationScrutinizer};
+use Suphle\Middleware\Collectors\JsonNegotiatorCollector;
 
-	use Suphle\Adapters\Orms\Eloquent\RequestScrutinizers\{AccountVerifiedFunnel, UserIsVerified};
+use Suphle\Auth\RequestScrutinizers\{AuthenticateMetaFunnel, AuthenticateHandler, AuthorizeMetaFunnel, PathAuthorizationScrutinizer};
 
-	use Suphle\Auth\Storage\TokenStorage;
+use Suphle\Adapters\Orms\Eloquent\RequestScrutinizers\{AccountVerifiedFunnel, UserIsVerified};
 
-	use Suphle\Bridge\Laravel\Routing\ModuleRouteMatcher;
+use Suphle\Auth\Storage\TokenStorage;
 
-	class Router implements RouterConfig {
+use Suphle\Bridge\Laravel\Routing\ModuleRouteMatcher;
 
-		public function apiPrefix():string {
+class Router implements RouterConfig
+{
+    public function apiPrefix(): string
+    {
 
-			return "api";
-		}
+        return "api";
+    }
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function apiStack ():array {
+    /**
+     * {@inheritdoc}
+    */
+    public function apiStack(): array
+    {
 
-			return [];
-		}
+        return [];
+    }
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function browserEntryRoute ():?string {
+    /**
+     * {@inheritdoc}
+    */
+    public function browserEntryRoute(): ?string
+    {
 
-			return null;
-		}
+        return null;
+    }
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function defaultMiddleware():array {
+    /**
+     * {@inheritdoc}
+    */
+    public function defaultMiddleware(): array
+    {
 
-			return [
-				CsrfMiddleware::class,
-				
-				FinalHandlerWrapper::class
-			];
-		}
+        return [
+            CsrfMiddleware::class,
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function collectorHandlers ():array {
+            FinalHandlerWrapper::class
+        ];
+    }
 
-			return [
+    /**
+     * {@inheritdoc}
+    */
+    public function collectorHandlers(): array
+    {
 
-				JsonNegotiatorCollector::class => JsonNegotiator::class,
-			];
-		}
+        return [
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function scrutinizerHandlers ():array {
+            JsonNegotiatorCollector::class => JsonNegotiator::class,
+        ];
+    }
 
-			return [
+    /**
+     * {@inheritdoc}
+    */
+    public function scrutinizerHandlers(): array
+    {
 
-				AccountVerifiedFunnel::class => UserIsVerified::class,
+        return [
 
-				AuthenticateMetaFunnel::class => AuthenticateHandler::class,
+            AccountVerifiedFunnel::class => UserIsVerified::class,
 
-				AuthorizeMetaFunnel::class => PathAuthorizationScrutinizer::class
-			];
-		}
+            AuthenticateMetaFunnel::class => AuthenticateHandler::class,
 
-		public function mirrorsCollections ():bool {
+            AuthorizeMetaFunnel::class => PathAuthorizationScrutinizer::class
+        ];
+    }
 
-			return false;
-		}
+    public function mirrorsCollections(): bool
+    {
 
-		public function mirrorAuthenticator ():string {
+        return false;
+    }
 
-			return TokenStorage::class;
-		}
+    public function mirrorAuthenticator(): string
+    {
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function externalRouters ():array {
+        return TokenStorage::class;
+    }
 
-			return [ModuleRouteMatcher::class];
-		}
-	}
-?>
+    /**
+     * {@inheritdoc}
+    */
+    public function externalRouters(): array
+    {
+
+        return [ModuleRouteMatcher::class];
+    }
+}

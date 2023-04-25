@@ -1,22 +1,22 @@
 <?php
-	use Suphle\Server\ModuleWorkerAccessor;
 
-	use Suphle\Tests\Mocks\PublishedTestModules;
+use Suphle\Server\ModuleWorkerAccessor;
 
-	require_once "vendor/autoload.php";
+use Suphle\Tests\Mocks\PublishedTestModules;
 
-	/**
-	 * This is for use when handling traditional requests i.e. without RR
-	*/
-	$handlerIdentifier = new PublishedTestModules;
+require_once "vendor/autoload.php";
 
-	echo("Booting Modules...\n");
+/**
+ * This is for use when handling traditional requests i.e. without RR
+*/
+$handlerIdentifier = new PublishedTestModules();
 
-	$accessor = (new ModuleWorkerAccessor($handlerIdentifier, false))
+echo("Booting Modules...\n");
 
-	->buildIdentifier();
+$accessor = (new ModuleWorkerAccessor($handlerIdentifier, false))
 
-	echo("Listening for requests...\n");
+->buildIdentifier();
 
-	$accessor->getQueueWorker()->processTasks();
-?>
+echo("Listening for requests...\n");
+
+$accessor->getQueueWorker()->processTasks();

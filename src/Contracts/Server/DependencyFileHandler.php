@@ -1,10 +1,10 @@
 <?php
-	namespace Suphle\Contracts\Server;
 
-	interface DependencyFileHandler {
+namespace Suphle\Contracts\Server;
 
-		public function evaluateClass (string $className):void;
+interface DependencyFileHandler
+{
+    public function evaluateClass(string $className): void;
 
-		public function setRunArguments (array $argumentList):void;
-	}
-?>
+    public function setRunArguments(array $argumentList): void;
+}

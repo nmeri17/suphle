@@ -1,21 +1,24 @@
 <?php
-	namespace Suphle\Routing\Structures;
 
-	class PlaceholderCheck {
+namespace Suphle\Routing\Structures;
 
-		public function __construct(protected readonly string $routeState, protected readonly string $methodName) {
+class PlaceholderCheck
+{
+    public function __construct(protected readonly string $routeState, protected readonly string $methodName)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function getMethodName ():string {
+    public function getMethodName(): string
+    {
 
-			return $this->methodName;
-		}
+        return $this->methodName;
+    }
 
-		public function getRouteState ():string {
+    public function getRouteState(): string
+    {
 
-			return $this->routeState;
-		}
-	}
-?>
+        return $this->routeState;
+    }
+}

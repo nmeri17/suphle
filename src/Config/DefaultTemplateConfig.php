@@ -1,29 +1,30 @@
 <?php
-	namespace Suphle\Config;
 
-	use Suphle\Contracts\Config\ComponentTemplates;
+namespace Suphle\Config;
 
-	use Suphle\Exception\ComponentEntry as ExceptionComponentEntry;
+use Suphle\Contracts\Config\ComponentTemplates;
 
-	use Suphle\Bridge\Laravel\ComponentEntry as LaravelComponentEntry;
+use Suphle\Exception\ComponentEntry as ExceptionComponentEntry;
 
-	use Suphle\Adapters\Orms\Eloquent\ComponentEntry as EloquentComponentEntry;
+use Suphle\Bridge\Laravel\ComponentEntry as LaravelComponentEntry;
 
-	use Suphle\Services\ComponentEntry as ServicesComponentEntry;
+use Suphle\Adapters\Orms\Eloquent\ComponentEntry as EloquentComponentEntry;
 
-	class DefaultTemplateConfig implements ComponentTemplates {
+use Suphle\Services\ComponentEntry as ServicesComponentEntry;
 
-		public function getTemplateEntries ():array {
+class DefaultTemplateConfig implements ComponentTemplates
+{
+    public function getTemplateEntries(): array
+    {
 
-			return [
-				ExceptionComponentEntry::class,
+        return [
+            ExceptionComponentEntry::class,
 
-				LaravelComponentEntry::class,
+            LaravelComponentEntry::class,
 
-				EloquentComponentEntry::class,
+            EloquentComponentEntry::class,
 
-				ServicesComponentEntry::class
-			];
-		}
-	}
-?>
+            ServicesComponentEntry::class
+        ];
+    }
+}

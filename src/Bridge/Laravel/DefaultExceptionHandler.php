@@ -1,30 +1,34 @@
 <?php
-	namespace Suphle\Bridge\Laravel;
 
-	use Illuminate\Contracts\Debug\ExceptionHandler;
+namespace Suphle\Bridge\Laravel;
 
-	use Throwable;
+use Illuminate\Contracts\Debug\ExceptionHandler;
 
-	class DefaultExceptionHandler implements ExceptionHandler {
+use Throwable;
 
-		public function report (Throwable $exception) {
+class DefaultExceptionHandler implements ExceptionHandler
+{
+    public function report(Throwable $exception)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function shouldReport(Throwable $e) {
+    public function shouldReport(Throwable $e)
+    {
 
-			return true;
-		}
+        return true;
+    }
 
-		public function render ($request, Throwable $exception): never {
+    public function render($request, Throwable $exception): never
+    {
 
-			throw $exception;
-		}
+        throw $exception;
+    }
 
-		public function renderForConsole ($output, Throwable $exception): never {
+    public function renderForConsole($output, Throwable $exception): never
+    {
 
-			throw $exception;
-		}
-	}
-?>
+        throw $exception;
+    }
+}

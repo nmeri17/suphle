@@ -1,36 +1,38 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleTwo\Meta;
 
-	use Suphle\Hydration\Structures\BaseInterfaceCollection;
+namespace Suphle\Tests\Mocks\Modules\ModuleTwo\Meta;
 
-	use Suphle\Contracts\{Events, Config\Router, Auth\UserContract};
+use Suphle\Hydration\Structures\BaseInterfaceCollection;
 
-	use Suphle\Tests\Mocks\Modules\ModuleTwo\{Config\RouterMock, Events\AssignListeners};
+use Suphle\Contracts\{Events, Config\Router, Auth\UserContract};
 
-	use Suphle\Tests\Mocks\Interactions\ModuleTwo;
+use Suphle\Tests\Mocks\Modules\ModuleTwo\{Config\RouterMock, Events\AssignListeners};
 
-	use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
+use Suphle\Tests\Mocks\Interactions\ModuleTwo;
 
-	class CustomInterfaceCollection extends BaseInterfaceCollection {
+use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
 
-		public function getConfigs ():array {
-			
-			return array_merge(parent::getConfigs(), [
+class CustomInterfaceCollection extends BaseInterfaceCollection
+{
+    public function getConfigs(): array
+    {
 
-				Router::class => RouterMock::class
-			]);
-		}
+        return array_merge(parent::getConfigs(), [
 
-		public function simpleBinds ():array {
+            Router::class => RouterMock::class
+        ]);
+    }
 
-			return array_merge(parent::simpleBinds(), [
+    public function simpleBinds(): array
+    {
 
-				ModuleTwo::class => ModuleApi::class,
+        return array_merge(parent::simpleBinds(), [
 
-				Events::class => AssignListeners::class,
+            ModuleTwo::class => ModuleApi::class,
 
-				UserContract::class => EloquentUser::class
-			]);
-		}
-	}
-?>
+            Events::class => AssignListeners::class,
+
+            UserContract::class => EloquentUser::class
+        ]);
+    }
+}

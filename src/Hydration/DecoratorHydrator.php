@@ -1,125 +1,133 @@
 <?php
-	namespace Suphle\Hydration;
 
-	use Suphle\Contracts\Hydration\DecoratorChain;
+namespace Suphle\Hydration;
 
-	use Suphle\Contracts\Hydration\ScopeHandlers\{ModifiesArguments, ModifyInjected};
+use Suphle\Contracts\Hydration\DecoratorChain;
 
-	use Suphle\Hydration\Structures\ObjectDetails;
+use Suphle\Contracts\Hydration\ScopeHandlers\{ModifiesArguments, ModifyInjected};
 
-	use Suphle\Services\Decorators\BindsAsSingleton;
-	
-	class DecoratorHydrator {
+use Suphle\Hydration\Structures\ObjectDetails;
 
-		protected array $allScopes, $argumentScope, $injectScope;
+use Suphle\Services\Decorators\BindsAsSingleton;
 
-		public function __construct (
-			protected readonly Container $container,
+class DecoratorHydrator
+{
+    protected array $allScopes;
+    protected array $argumentScope;
+    protected array $injectScope;
 
-			DecoratorChain $allScopes,
+    public function __construct(
+        protected readonly Container $container,
+        DecoratorChain $allScopes,
+        protected readonly ObjectDetails $objectMeta
+    ) {
 
-			protected readonly ObjectDetails $objectMeta
-		) {
+        $this->allScopes = $allScopes->allScopes();
 
-			$this->allScopes = $allScopes->allScopes();
+        $this->assignScopes();
+    }
 
-			$this->assignScopes();
-		}
+    public function assignScopes(): void
+    {
 
-		public function assignScopes ():void {
+        $this->argumentScope = array_filter($this->allScopes, function ($handler) {
 
-			$this->argumentScope = array_filter($this->allScopes, function ($handler) {
+            return $this->objectMeta->implementsInterface(
+                $handler,
+                ModifiesArguments::class
+            );
+        });
 
-				return $this->objectMeta->implementsInterface(
+        $this->injectScope = array_filter($this->allScopes, function ($handler) {
 
-					$handler, ModifiesArguments::class
-				);
-			});
+            return $this->objectMeta->implementsInterface(
+                $handler,
+                ModifyInjected::class
+            );
+        });
+    }
 
-			$this->injectScope = array_filter($this->allScopes, function ($handler) {
+    public function scopeArguments(string $entityName, array $argumentList, string $methodName): array
+    {
 
-				return $this->objectMeta->implementsInterface(
+        $scope = $this->argumentScope;
 
-					$handler, ModifyInjected::class
-				);
-			});
-		}
+        $container = $this->container;
 
-		public function scopeArguments (string $entityName, array $argumentList, string $methodName):array {
+        $relevantDecors = $this->getRelevantDecors($scope, $entityName);
 
-			$scope = $this->argumentScope;
+        if (empty($relevantDecors)) {
+            return $argumentList;
+        }
 
-			$container = $this->container;
+        $hasConstructor = false;
 
-			$relevantDecors = $this->getRelevantDecors($scope, $entityName);
+        if ($methodName == Container::CLASS_CONSTRUCTOR) {
 
-			if (empty($relevantDecors)) return $argumentList;
+            $hasConstructor = true;
 
-			$hasConstructor = false;
+            $concrete = $this->objectMeta->noConstructor($entityName);
+        } else {
+            $concrete = $container->getClass($entityName);
+        }
 
-			if ($methodName == Container::CLASS_CONSTRUCTOR) {
+        foreach ($relevantDecors as $decoratorName => $attributes) {
 
-				$hasConstructor = true;
+            $handler = $container->getClass($scope[$decoratorName]);
 
-				$concrete = $this->objectMeta->noConstructor($entityName);
-			}
+            $handler->setAttributesList($attributes);
 
-			else $concrete = $container->getClass($entityName);
+            if ($hasConstructor) {
 
-			foreach ($relevantDecors as $decoratorName => $attributes) {
+                $argumentList = $handler->transformConstructor($concrete, $argumentList);
+            } else {
+                $argumentList = $handler->transformMethods($concrete, $argumentList, $methodName);
+            }
+        }
 
-				$handler = $container->getClass($scope[$decoratorName]);
+        return $argumentList;
+    }
 
-				$handler->setAttributesList($attributes);
+    /**
+     * @return Array. Relevant decorators and active attributes
+    */
+    public function getRelevantDecors(array $context, string $search): array
+    {
 
-				if ($hasConstructor)
+        $attributes = $this->objectMeta->getClassAttributes($search);
 
-					$argumentList = $handler->transformConstructor ($concrete, $argumentList);
+        $attributeToHandler = [];
 
-				else $argumentList = $handler->transformMethods($concrete, $argumentList, $methodName);
-			}
+        foreach ($context as $decoratorName => $handler) {
 
-			return $argumentList;
-		}
+            foreach ($attributes as $attribute) {
 
-		/**
-		 * @return Array. Relevant decorators and active attributes
-		*/
-		public function getRelevantDecors (array $context, string $search):array {
+                if ($attribute->getName() == $decoratorName) {
 
-			$attributes = $this->objectMeta->getClassAttributes($search);
+                    $attributeToHandler[$decoratorName][] = $attribute;
+                }
+            }
+        }
 
-			$attributeToHandler = [];
+        return $attributeToHandler;
+    }
 
-			foreach ($context as $decoratorName => $handler) {
+    public function scopeInjecting(object $concrete, string $caller)
+    {
 
-				foreach ($attributes as $attribute) {
-					
-					if ($attribute->getName() == $decoratorName)
+        $scope = $this->injectScope;
 
-						$attributeToHandler[$decoratorName][] = $attribute;
-				}
-			}
+        $relevantDecors = $this->getRelevantDecors($scope, $concrete::class);
 
-			return $attributeToHandler;
-		}
+        foreach ($relevantDecors as $decorator => $attributes) {
 
-		public function scopeInjecting (object $concrete, string $caller) {
+            $handler = $this->container->getClass($scope[$decorator]);
 
-			$scope = $this->injectScope;
+            $handler->setAttributesList($attributes);
 
-			$relevantDecors = $this->getRelevantDecors($scope, $concrete::class);
+            $concrete = $handler->examineInstance($concrete, $caller);
+        }
 
-			foreach ($relevantDecors as $decorator => $attributes) {
-
-				$handler = $this->container->getClass($scope[$decorator]);
-
-				$handler->setAttributesList($attributes);
-
-				$concrete = $handler->examineInstance($concrete, $caller);
-			}
-
-			return $concrete;
-		}
-	}
-?>
+        return $concrete;
+    }
+}

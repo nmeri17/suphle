@@ -1,217 +1,243 @@
 <?php
-	namespace Suphle\Modules;
 
-	use Suphle\Hydration\Container;
+namespace Suphle\Modules;
 
-	use Suphle\Hydration\Structures\{ContainerBooter, BaseInterfaceCollection};
+use Suphle\Hydration\Container;
 
-	use Suphle\Modules\Structures\ActiveDescriptors;
+use Suphle\Hydration\Structures\{ContainerBooter, BaseInterfaceCollection};
 
-	use Suphle\Flows\OuterFlowWrapper;
+use Suphle\Modules\Structures\ActiveDescriptors;
 
-	use Suphle\Contracts\Config\{AuthContract, Flows as FlowConfig};
+use Suphle\Flows\OuterFlowWrapper;
 
-	use Suphle\Contracts\{ Auth\ModuleLoginHandler, Presentation\BaseRenderer, Response\RendererManager};
+use Suphle\Contracts\Config\{AuthContract, Flows as FlowConfig};
 
-	use Suphle\Contracts\Modules\{HighLevelRequestHandler, DescriptorInterface};
+use Suphle\Contracts\{ Auth\ModuleLoginHandler, Presentation\BaseRenderer, Response\RendererManager};
 
-	use Suphle\Events\ModuleLevelEvents;
+use Suphle\Contracts\Modules\{HighLevelRequestHandler, DescriptorInterface};
 
-	use Suphle\Exception\Explosives\{ValidationFailure, NotFoundException};
+use Suphle\Events\ModuleLevelEvents;
 
-	use Suphle\Request\RequestDetails;
+use Suphle\Exception\Explosives\{ValidationFailure, NotFoundException};
 
-	use Throwable;
+use Suphle\Request\RequestDetails;
 
-	abstract class ModuleHandlerIdentifier {
+use Throwable;
 
-		protected HighLevelRequestHandler $identifiedHandler;
+abstract class ModuleHandlerIdentifier
+{
+    protected HighLevelRequestHandler $identifiedHandler;
 
-		protected ?DescriptorInterface $routedModule = null;
+    protected ?DescriptorInterface $routedModule = null;
 
-		protected ?Container $container = null;
+    protected ?Container $container = null;
 
-		protected array $descriptorInstances;
+    protected array $descriptorInstances;
 
-		protected ActiveDescriptors $descriptorsHolder;
+    protected ActiveDescriptors $descriptorsHolder;
 
-		public function __construct () {
+    public function __construct()
+    {
 
-			$this->setTitularContainer();
-		}
+        $this->setTitularContainer();
+    }
 
-		protected function setTitularContainer ():void {
+    protected function setTitularContainer(): void
+    {
 
-			$this->descriptorInstances = $this->getModules();
+        $this->descriptorInstances = $this->getModules();
 
-			if (empty($this->descriptorInstances)) return;
+        if (empty($this->descriptorInstances)) {
+            return;
+        }
 
-			$this->descriptorsHolder = new ActiveDescriptors($this->descriptorInstances);
+        $this->descriptorsHolder = new ActiveDescriptors($this->descriptorInstances);
 
-			$this->container = $this->descriptorsHolder->firstOriginalContainer();
+        $this->container = $this->descriptorsHolder->firstOriginalContainer();
 
-			$this->container->setEssentials();
-		}
-		
-		abstract protected function getModules():array;
+        $this->container->setEssentials();
+    }
 
-		public function bootModules ():void {
+    abstract protected function getModules(): array;
 
-			$this->container->getClass(ModulesBooter::class)
+    public function bootModules(): void
+    {
 
-			->bootOuterModules($this->descriptorsHolder);
-		}
+        $this->container->getClass(ModulesBooter::class)
 
-		public function setRequestPath (string $requestPath, string $httpMethod = null):void {
+        ->bootOuterModules($this->descriptorsHolder);
+    }
 
-			RequestDetails::fromModules(
+    public function setRequestPath(string $requestPath, string $httpMethod = null): void
+    {
 
-				$this->descriptorInstances, $requestPath, $httpMethod
-			);
-		}
+        RequestDetails::fromModules(
+            $this->descriptorInstances,
+            $requestPath,
+            $httpMethod
+        );
+    }
 
-		/**
-		 * @param {writeHeaders}:bool. When false, we assume response is not being outputted to browser or is piped to another process that will write them
-		*/
-		public function diffuseSetResponse (bool $writeHeaders = true):void {
+    /**
+     * @param {writeHeaders}:bool. When false, we assume response is not being outputted to browser or is piped to another process that will write them
+    */
+    public function diffuseSetResponse(bool $writeHeaders = true): void
+    {
 
-			$this->freshExceptionBridge()->epilogue();
+        $this->freshExceptionBridge()->epilogue();
 
-			try {
+        try {
 
-				$this->respondFromHandler();
-			}
-			catch (Throwable $exception) {
+            $this->respondFromHandler();
+        } catch (Throwable $exception) {
 
-				$this->findExceptionRenderer($exception);
-			}
+            $this->findExceptionRenderer($exception);
+        }
 
-			if ($writeHeaders) $this->transferHeaders();
-		}
+        if ($writeHeaders) {
+            $this->transferHeaders();
+        }
+    }
 
-		private function freshExceptionBridge ():ModuleExceptionBridge {
+    private function freshExceptionBridge(): ModuleExceptionBridge
+    {
 
-			return $this->getActiveContainer()->getClass(ModuleExceptionBridge::class);
-		}
-		
-		/**
-		 * Each of the request handlers should update this class with the underlying renderer they're pulling a response from
-		*/
-		public function respondFromHandler ():BaseRenderer {
+        return $this->getActiveContainer()->getClass(ModuleExceptionBridge::class);
+    }
 
-			$container = $this->container;
+    /**
+     * Each of the request handlers should update this class with the underlying renderer they're pulling a response from
+    */
+    public function respondFromHandler(): BaseRenderer
+    {
 
-			if ($container->getClass(FlowConfig::class)->isEnabled()) {
+        $container = $this->container;
 
-				$wrapper = $container->getClass(OuterFlowWrapper::class);
+        if ($container->getClass(FlowConfig::class)->isEnabled()) {
 
-				if ($wrapper->canHandle())
+            $wrapper = $container->getClass(OuterFlowWrapper::class);
 
-					return $this->flowRequestHandler($wrapper);
-			}
+            if ($wrapper->canHandle()) {
 
-			if ($routedRenderer = $this->handleGenericRequest())
+                return $this->flowRequestHandler($wrapper);
+            }
+        }
 
-				return $routedRenderer;
+        if ($routedRenderer = $this->handleGenericRequest()) {
 
-			if ( $container->getClass(AuthContract::class)->isLoginRequest())
+            return $routedRenderer;
+        }
 
-				return $this->handleLoginRequest();
+        if ($container->getClass(AuthContract::class)->isLoginRequest()) {
 
-			throw new NotFoundException;
-		}
+            return $this->handleLoginRequest();
+        }
 
-		public function handleLoginRequest ():BaseRenderer {
+        throw new NotFoundException();
+    }
 
-			$loginHandler = $this->getLoginHandler();
+    public function handleLoginRequest(): BaseRenderer
+    {
 
-			if (!$loginHandler->isValidRequest())
+        $loginHandler = $this->getLoginHandler();
 
-				throw new ValidationFailure($loginHandler);
+        if (!$loginHandler->isValidRequest()) {
 
-			$this->identifiedHandler = $loginHandler;
+            throw new ValidationFailure($loginHandler);
+        }
 
-			$loginHandler->setResponseRenderer()->processLoginRequest();
+        $this->identifiedHandler = $loginHandler;
 
-			return $loginHandler->handlingRenderer();
-		}
+        $loginHandler->setResponseRenderer()->processLoginRequest();
 
-		public function getLoginHandler ():ModuleLoginHandler {
+        return $loginHandler->handlingRenderer();
+    }
 
-			return $this->container->getClass(ModuleLoginHandler::class);
-		}
+    public function getLoginHandler(): ModuleLoginHandler
+    {
 
-		public function handleGenericRequest ():?BaseRenderer {
+        return $this->container->getClass(ModuleLoginHandler::class);
+    }
 
-			$moduleRouter = $this->container->getClass(ModuleToRoute::class); // pulling from a container so tests can replace properties on the singleton
+    public function handleGenericRequest(): ?BaseRenderer
+    {
 
-			$initializer = $moduleRouter->findContext($this->descriptorInstances);
+        $moduleRouter = $this->container->getClass(ModuleToRoute::class); // pulling from a container so tests can replace properties on the singleton
 
-			if (!$initializer) return null;
+        $initializer = $moduleRouter->findContext($this->descriptorInstances);
 
-			$this->identifiedHandler = $initializer;
+        if (!$initializer) {
+            return null;
+        }
 
-			$this->routedModule = $moduleRouter->getActiveModule();
+        $this->identifiedHandler = $initializer;
 
-			$initializer->fullRequestProtocols(
+        $this->routedModule = $moduleRouter->getActiveModule();
 
-				$this->getActiveContainer()->getClass(
-				
-					RendererManager::class
-				)
-			)->setHandlingRenderer();
+        $initializer->fullRequestProtocols(
+            $this->getActiveContainer()->getClass(
+                RendererManager::class
+            )
+        )->setHandlingRenderer();
 
-			return $initializer->handlingRenderer();
-		}
+        return $initializer->handlingRenderer();
+    }
 
-		public function flowRequestHandler (OuterFlowWrapper $wrapper):BaseRenderer {
+    public function flowRequestHandler(OuterFlowWrapper $wrapper): BaseRenderer
+    {
 
-			$this->identifiedHandler = $wrapper;
+        $this->identifiedHandler = $wrapper;
 
-			$renderer = $wrapper->handlingRenderer();
-			
-			$wrapper->afterRender($renderer->render());
+        $renderer = $wrapper->handlingRenderer();
 
-			$wrapper->emptyFlow();
+        $wrapper->afterRender($renderer->render());
 
-			return $renderer;
-		}
+        $wrapper->emptyFlow();
 
-		public function findExceptionRenderer (Throwable $exception):void {
+        return $renderer;
+    }
 
-			$this->identifiedHandler = $this->freshExceptionBridge(); // from currently active container after routing may have occured
+    public function findExceptionRenderer(Throwable $exception): void
+    {
 
-			$this->identifiedHandler->hydrateHandler($exception);
-		}
+        $this->identifiedHandler = $this->freshExceptionBridge(); // from currently active container after routing may have occured
 
-		public function underlyingRenderer ():BaseRenderer {
+        $this->identifiedHandler->hydrateHandler($exception);
+    }
 
-			return $this->identifiedHandler->handlingRenderer();
-		}
+    public function underlyingRenderer(): BaseRenderer
+    {
 
-		protected function transferHeaders ():void {
+        return $this->identifiedHandler->handlingRenderer();
+    }
 
-			$renderer = $this->underlyingRenderer();
+    protected function transferHeaders(): void
+    {
 
-			http_response_code($renderer->getStatusCode());
+        $renderer = $this->underlyingRenderer();
 
-			foreach ($renderer->getHeaders() as $name => $value)
+        http_response_code($renderer->getStatusCode());
 
-				header("$name: $value");
-		}
+        foreach ($renderer->getHeaders() as $name => $value) {
 
-		protected function getActiveContainer ():Container {
+            header("$name: $value");
+        }
+    }
 
-			if (!is_null($this->routedModule))
+    protected function getActiveContainer(): Container
+    {
 
-				return $this->routedModule->getContainer();
+        if (!is_null($this->routedModule)) {
 
-			return $this->container;
-		}
+            return $this->routedModule->getContainer();
+        }
 
-		public function firstContainer ():?Container {
+        return $this->container;
+    }
 
-			return $this->container;
-		}
-	}
-?>
+    public function firstContainer(): ?Container
+    {
+
+        return $this->container;
+    }
+}

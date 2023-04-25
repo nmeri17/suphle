@@ -1,51 +1,50 @@
 <?php
-	namespace Suphle\Auth\RequestScrutinizers;
 
-	use Suphle\Hydration\Container;
+namespace Suphle\Auth\RequestScrutinizers;
 
-	use Suphle\Routing\{PatternIndicator, Structures\BaseScrutinizerHandler};
+use Suphle\Hydration\Container;
 
-	use Suphle\Contracts\{Auth\AuthStorage, Config\Router as RouterConfig};
+use Suphle\Routing\{PatternIndicator, Structures\BaseScrutinizerHandler};
 
-	use Suphle\Exception\Explosives\Unauthenticated;
+use Suphle\Contracts\{Auth\AuthStorage, Config\Router as RouterConfig};
 
-	class AuthenticateHandler extends BaseScrutinizerHandler {
+use Suphle\Exception\Explosives\Unauthenticated;
 
-		public function __construct (
+class AuthenticateHandler extends BaseScrutinizerHandler
+{
+    public function __construct(
+        protected readonly Container $container,
+        protected readonly PatternIndicator $patternIndicator,
+        protected readonly RouterConfig $routerConfig
+    ) {
 
-			protected readonly Container $container,
+        //
+    }
 
-			protected readonly PatternIndicator $patternIndicator,
+    /**
+     * It'll override the default authStorage method provided
+     *
+     * @throws Unauthenticated
+    */
+    public function scrutinizeRequest(): void
+    {
 
-			protected readonly RouterConfig $routerConfig
-		) {
+        if ($this->patternIndicator->shouldMirror()) {
 
-			//
-		}
+            $routedMechanism = $this->container->getClass(
+                $this->routerConfig->mirrorAuthenticator()
+            );
+        } else {
+            $routedMechanism = end($this->metaFunnels)->authStorage;
+        }
 
-		/**
-		 * It'll override the default authStorage method provided
-		 * 
-		 * @throws Unauthenticated
-		*/
-		public function scrutinizeRequest ():void {
+        if (is_null($routedMechanism->getId())) {
 
-			if ( $this->patternIndicator->shouldMirror())
+            throw new Unauthenticated($routedMechanism);
+        }
 
-				$routedMechanism = $this->container->getClass(
+        $this->container->whenTypeAny()
 
-					$this->routerConfig->mirrorAuthenticator()
-				);
-
-			else $routedMechanism = end($this->metaFunnels)->authStorage;
-
-			if ( is_null($routedMechanism->getId()))
-
-				throw new Unauthenticated($routedMechanism);
-
-			$this->container->whenTypeAny()
-
-			->needsAny([ AuthStorage::class => $routedMechanism]);
-		}
-	}
-?>
+        ->needsAny([ AuthStorage::class => $routedMechanism]);
+    }
+}

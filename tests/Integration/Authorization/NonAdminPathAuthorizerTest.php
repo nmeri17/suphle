@@ -1,55 +1,60 @@
 <?php
-	namespace Suphle\Tests\Integration\Authorization;
 
-	use Suphle\Routing\PreMiddlewareRegistry;
+namespace Suphle\Tests\Integration\Authorization;
 
-	class NonAdminPathAuthorizerTest extends TestPathAuthorizer {
+use Suphle\Routing\PreMiddlewareRegistry;
 
-		private $user;
+class NonAdminPathAuthorizerTest extends TestPathAuthorizer
+{
+    private $user;
 
-		protected function setUser ():void {
+    protected function setUser(): void
+    {
 
-			$this->user = $this->makeUser();
-		}
+        $this->user = $this->makeUser();
+    }
 
-		public function test_absent_authorization_fails () {
+    public function test_absent_authorization_fails()
+    {
 
-			$this->actingAs($this->user); // given
+        $this->actingAs($this->user); // given
 
-			$this->get("/admin-entry"); // when
+        $this->get("/admin-entry"); // when
 
-			$this->assertFalse($this->authorizationSuccess()); // then
-		}
+        $this->assertFalse($this->authorizationSuccess()); // then
+    }
 
-		public function test_absent_nested_authorization_fails () {
+    public function test_absent_nested_authorization_fails()
+    {
 
-			$this->actingAs($this->user); // given
+        $this->actingAs($this->user); // given
 
-			$this->get("/admin/retain"); // when
+        $this->get("/admin/retain"); // when
 
-			$this->assertFalse($this->authorizationSuccess()); // then
-		}
+        $this->assertFalse($this->authorizationSuccess()); // then
+    }
 
-		public function test_unlock_works () {
+    public function test_unlock_works()
+    {
 
-			$this->actingAs($this->user); // given
+        $this->actingAs($this->user); // given
 
-			$this->get("/admin/secede"); // when
+        $this->get("/admin/secede"); // when
 
-			$this->assertTrue($this->authorizationSuccess()); // then
-		}
+        $this->assertTrue($this->authorizationSuccess()); // then
+    }
 
-		public function test_unlock_returns_empty_rule_list () {
+    public function test_unlock_returns_empty_rule_list()
+    {
 
-			$this->actingAs($this->user); // given
+        $this->actingAs($this->user); // given
 
-			$this->get("/admin/secede"); // when
+        $this->get("/admin/secede"); // when
 
-			$routedFunnels = $this->getContainer()->getClass(PreMiddlewareRegistry::class)
+        $routedFunnels = $this->getContainer()->getClass(PreMiddlewareRegistry::class)
 
-			->getRoutedFunnels();
+        ->getRoutedFunnels();
 
-			$this->assertEmpty($routedFunnels); // then
-		}
-	}
-?>
+        $this->assertEmpty($routedFunnels); // then
+    }
+}

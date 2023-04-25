@@ -1,24 +1,26 @@
 <?php
-	namespace Suphle\Tests\Integration\Auth\Bases;
 
-	use Suphle\Auth\{Renderers\BrowserLoginMediator, Repositories\BrowserAuthRepo};
+namespace Suphle\Tests\Integration\Auth\Bases;
 
-	use Suphle\Testing\TestTypes\ModuleLevelTest;
+use Suphle\Auth\{Renderers\BrowserLoginMediator, Repositories\BrowserAuthRepo};
 
-	class BaseTestBrowserLoginMediator extends ModuleLevelTest {
+use Suphle\Testing\TestTypes\ModuleLevelTest;
 
-		use TestLoginMediator;
+class BaseTestBrowserLoginMediator extends ModuleLevelTest
+{
+    use TestLoginMediator;
 
-		final const LOGIN_PATH = "/login";
+    final public const LOGIN_PATH = "/login";
 
-		protected function loginRendererName ():string {
+    protected function loginRendererName(): string
+    {
 
-			return BrowserLoginMediator::class;
-		}
+        return BrowserLoginMediator::class;
+    }
 
-		protected function loginRepoService ():string {
+    protected function loginRepoService(): string
+    {
 
-			return BrowserAuthRepo::class;
-		}
-	}
-?>
+        return BrowserAuthRepo::class;
+    }
+}

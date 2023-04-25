@@ -1,81 +1,84 @@
 <?php
-	namespace Suphle\Tests\Integration\Bridge\Laravel;
 
-	use Suphle\Contracts\{Bridge\LaravelContainer, Config\Router};
+namespace Suphle\Tests\Integration\Bridge\Laravel;
 
-	use Suphle\Security\CSRF\CsrfGenerator;
+use Suphle\Contracts\{Bridge\LaravelContainer, Config\Router};
 
-	use Suphle\Request\PayloadStorage;
+use Suphle\Security\CSRF\CsrfGenerator;
 
-	use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
+use Suphle\Request\PayloadStorage;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock, Routes\ValidatorCollection};
+use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
-	use Illuminate\Http\Request as LaravelRequest;
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock, Routes\ValidatorCollection};
 
-	class RequestEventTest extends ModuleLevelTest {
+use Illuminate\Http\Request as LaravelRequest;
 
-		protected bool $debugCaughtExceptions = true;
+class RequestEventTest extends ModuleLevelTest
+{
+    protected bool $debugCaughtExceptions = true;
 
-		protected function getModules ():array {
+    protected function getModules(): array
+    {
 
-			return [
+        return [
 
-				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-					$container->replaceWithMock(Router::class, RouterMock::class, [
-			
-						"browserEntryRoute" => ValidatorCollection::class
-					]);
-				})
-			];
-		}
+                $container->replaceWithMock(Router::class, RouterMock::class, [
 
-		public function test_their_container_sees_change_in_our_requests () {
+                    "browserEntryRoute" => ValidatorCollection::class
+                ]);
+            })
+        ];
+    }
 
-			// given
-			$url1 = "get-without";
+    public function test_their_container_sees_change_in_our_requests()
+    {
 
-			$url2 = "post-with-json";
+        // given
+        $url1 = "get-without";
 
-			$payload = ["foo" => "udu bunch"];
+        $url2 = "post-with-json";
 
-			$this->get("/$url1"); // when
+        $payload = ["foo" => "udu bunch"];
 
-			$requestObject = $this->getTheirRequest();
+        $this->get("/$url1"); // when
 
-			$this->assertSame($url1, $requestObject->path($url1)); // then 1
+        $requestObject = $this->getTheirRequest();
 
-			$this->post("/$url2", array_merge([
+        $this->assertSame($url1, $requestObject->path($url1)); // then 1
 
-				CsrfGenerator::TOKEN_FIELD => $this->getContainer()
+        $this->post("/$url2", array_merge([
 
-				->getClass(CsrfGenerator::class)->newToken()
-			], $payload)) // when
+            CsrfGenerator::TOKEN_FIELD => $this->getContainer()
 
-			->assertOk(); // sanity check
+            ->getClass(CsrfGenerator::class)->newToken()
+        ], $payload)) // when
 
-			$requestObject = $this->getTheirRequest();
+        ->assertOk(); // sanity check
 
-			// then
-			$this->assertSame($url2, $requestObject->path($url2));
+        $requestObject = $this->getTheirRequest();
 
-			$this->assertSame($payload["foo"], $requestObject->get("foo"));
-		}
+        // then
+        $this->assertSame($url2, $requestObject->path($url2));
 
-		protected function getTheirRequest ():LaravelRequest {
+        $this->assertSame($payload["foo"], $requestObject->get("foo"));
+    }
 
-			$container = $this->getContainer();
+    protected function getTheirRequest(): LaravelRequest
+    {
 
-			$payloadStorage = $container->getClass(PayloadStorage::class);
+        $container = $this->getContainer();
 
-			$payloadStorage->setRefreshMode(true);
+        $payloadStorage = $container->getClass(PayloadStorage::class);
 
-			$payloadStorage->indicateRefresh();
+        $payloadStorage->setRefreshMode(true);
 
-			return $container->getClass(LaravelContainer::class)
+        $payloadStorage->indicateRefresh();
 
-			->make(LaravelContainer::INCOMING_REQUEST_KEY);
-		}
-	}
-?>
+        return $container->getClass(LaravelContainer::class)
+
+        ->make(LaravelContainer::INCOMING_REQUEST_KEY);
+    }
+}

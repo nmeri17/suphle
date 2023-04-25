@@ -1,24 +1,26 @@
 <?php
-	namespace Suphle\Config;
 
-	use Suphle\Contracts\Config\Laravel as LaravelConfigContract;
+namespace Suphle\Config;
 
-	class Laravel implements LaravelConfigContract {
+use Suphle\Contracts\Config\Laravel as LaravelConfigContract;
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function configBridge ():array {
+class Laravel implements LaravelConfigContract
+{
+    /**
+     * {@inheritdoc}
+    */
+    public function configBridge(): array
+    {
 
-			return [];
-		}
+        return [];
+    }
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function registersRoutes ():bool {
+    /**
+     * {@inheritdoc}
+    */
+    public function registersRoutes(): bool
+    {
 
-			return false;
-		}
-	}
-?>
+        return false;
+    }
+}

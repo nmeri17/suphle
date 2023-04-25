@@ -1,74 +1,79 @@
 <?php
-	namespace Suphle\Exception\Diffusers;
 
-	use Suphle\Contracts\{Exception\ExceptionHandler, Presentation\BaseRenderer};
+namespace Suphle\Exception\Diffusers;
 
-	use Suphle\Request\RequestDetails;
+use Suphle\Contracts\{Exception\ExceptionHandler, Presentation\BaseRenderer};
 
-	use Suphle\Response\Format\{Json, Redirect};
+use Suphle\Request\RequestDetails;
 
-	use Throwable;
+use Suphle\Response\Format\{Json, Redirect};
 
-	class UnverifiedAccountDiffuser implements ExceptionHandler {
+use Throwable;
 
-		protected string $verificationUrl;
+class UnverifiedAccountDiffuser implements ExceptionHandler
+{
+    protected string $verificationUrl;
 
-		protected BaseRenderer $renderer;
+    protected BaseRenderer $renderer;
 
-		public function __construct (
+    public function __construct(
+        protected readonly RequestDetails $requestDetails
+    ) {
 
-			protected readonly RequestDetails $requestDetails
-		) {
+        //
+    }
 
-			//
-		}
+    public function setContextualData(Throwable $origin): void
+    {
 
-		public function setContextualData (Throwable $origin):void {
+        $this->verificationUrl = $origin->verificationUrl;
+    }
 
-			$this->verificationUrl = $origin->verificationUrl;
-		}
+    /**
+    * {@inheritdoc}
+    */
+    public function prepareRendererData(): void
+    {
 
-		/**
-		* {@inheritdoc}
-		*/
-		public function prepareRendererData ():void {
+        if ($this->requestDetails->isApiRoute()) {
 
-			if ($this->requestDetails->isApiRoute())
+            $this->renderer = $this->getTokenRenderer();
+        } else {
+            $this->renderer = $this->getSessionRenderer();
+        }
+    }
 
-				$this->renderer = $this->getTokenRenderer();
+    public function getRenderer(): BaseRenderer
+    {
 
-			else $this->renderer = $this->getSessionRenderer();
-		}
+        return $this->renderer;
+    }
 
-		public function getRenderer ():BaseRenderer {
+    protected function getTokenRenderer(): BaseRenderer
+    {
 
-			return $this->renderer;
-		}
+        $renderer = new Json("");
 
-		protected function getTokenRenderer ():BaseRenderer {
+        $renderer->setRawResponse([
 
-			$renderer = new Json("");
+            "message" => "User be verified. Visit ". $this->verificationUrl . " to begin"
+        ]);
 
-			$renderer->setRawResponse([
+        $renderer->setHeaders(400, []);
 
-				"message" => "User be verified. Visit ". $this->verificationUrl . " to begin"
-			]);
-			
-			$renderer->setHeaders(400, []);
+        return $renderer;
+    }
 
-			return $renderer;
-		}
+    protected function getSessionRenderer(): BaseRenderer
+    {
 
-		protected function getSessionRenderer ():BaseRenderer {
+        $verificationPath = $this->verificationUrl;
 
-			$verificationPath = $this->verificationUrl;
+        $renderer = new Redirect("", function () use ($verificationPath) {
 
-			$renderer = new Redirect("", function () use ($verificationPath) {
+            return $verificationPath;
+        });
 
-				return $verificationPath;
-			});
-
-			return $renderer;
-		}
-	}
-?>
+        return $renderer;
+    }
+}

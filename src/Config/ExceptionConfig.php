@@ -1,53 +1,58 @@
 <?php
-	namespace Suphle\Config;
 
-	use Suphle\Contracts\Config\{ExceptionInterceptor, ModuleFiles};
+namespace Suphle\Config;
 
-	use Suphle\Exception\Explosives\{EditIntegrityException, NotFoundException, Unauthenticated, UnauthorizedServiceAccess, UnverifiedAccount, ValidationFailure};
+use Suphle\Contracts\Config\{ExceptionInterceptor, ModuleFiles};
 
-	use Suphle\Exception\Diffusers\{GenericDiffuser, NotFoundDiffuser, ValidationFailureDiffuser, UnauthorizedDiffuser, UnauthenticatedDiffuser, StaleEditDiffuser, UnverifiedAccountDiffuser};
+use Suphle\Exception\Explosives\{EditIntegrityException, NotFoundException, Unauthenticated, UnauthorizedServiceAccess, UnverifiedAccount, ValidationFailure};
 
-	class ExceptionConfig implements ExceptionInterceptor {
+use Suphle\Exception\Diffusers\{GenericDiffuser, NotFoundDiffuser, ValidationFailureDiffuser, UnauthorizedDiffuser, UnauthenticatedDiffuser, StaleEditDiffuser, UnverifiedAccountDiffuser};
 
-		public function __construct(protected readonly ModuleFiles $fileConfig) {
+class ExceptionConfig implements ExceptionInterceptor
+{
+    public function __construct(protected readonly ModuleFiles $fileConfig)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function getHandlers ():array {
+    public function getHandlers(): array
+    {
 
-			return [
+        return [
 
-				EditIntegrityException::class => StaleEditDiffuser::class,
+            EditIntegrityException::class => StaleEditDiffuser::class,
 
-				NotFoundException::class => NotFoundDiffuser::class,
+            NotFoundException::class => NotFoundDiffuser::class,
 
-				Unauthenticated::class => UnauthenticatedDiffuser::class,
+            Unauthenticated::class => UnauthenticatedDiffuser::class,
 
-				UnauthorizedServiceAccess::class => UnauthorizedDiffuser::class,
+            UnauthorizedServiceAccess::class => UnauthorizedDiffuser::class,
 
-				UnverifiedAccount::class => UnverifiedAccountDiffuser::class,
+            UnverifiedAccount::class => UnverifiedAccountDiffuser::class,
 
-				ValidationFailure::class => ValidationFailureDiffuser::class
-			];
-		}
+            ValidationFailure::class => ValidationFailureDiffuser::class
+        ];
+    }
 
-		public function defaultHandler ():string {
+    public function defaultHandler(): string
+    {
 
-			return GenericDiffuser::class;
-		}
+        return GenericDiffuser::class;
+    }
 
-		public function shutdownLog ():string {
+    public function shutdownLog(): string
+    {
 
-			return $this->fileConfig->activeModulePath() . "shutdown-log.txt";
-		}
+        return $this->fileConfig->activeModulePath() . "shutdown-log.txt";
+    }
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function shutdownText ():string {
+    /**
+     * {@inheritdoc}
+    */
+    public function shutdownText(): string
+    {
 
-			return "Unable to handle this request :( But not to worry; our engineers are on top of the situation";
-		}
-	}
-?>
+        return "Unable to handle this request :( But not to worry; our engineers are on top of the situation";
+    }
+}

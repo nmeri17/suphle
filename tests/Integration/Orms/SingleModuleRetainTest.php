@@ -1,145 +1,149 @@
 <?php
-	namespace Suphle\Tests\Integration\Orms;
 
-	use Suphle\Contracts\{Services\Models\IntegrityModel, Config\Router};
+namespace Suphle\Tests\Integration\Orms;
 
-	use Suphle\Services\DecoratorHandlers\MultiUserEditHandler;
+use Suphle\Contracts\{Services\Models\IntegrityModel, Config\Router};
 
-	use Suphle\Security\CSRF\CsrfGenerator;
+use Suphle\Services\DecoratorHandlers\MultiUserEditHandler;
 
-	use Suphle\Testing\{Condiments\BaseDatabasePopulator, TestTypes\ModuleLevelTest};
+use Suphle\Security\CSRF\CsrfGenerator;
 
-	use Suphle\Testing\Proxies\{WriteOnlyContainer, SecureUserAssertions};
+use Suphle\Testing\{Condiments\BaseDatabasePopulator, TestTypes\ModuleLevelTest};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock, Routes\Auth\UnlocksAuthorization1};
+use Suphle\Testing\Proxies\{WriteOnlyContainer, SecureUserAssertions};
 
-	use Suphle\Tests\Mocks\Models\Eloquent\Employment;
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock, Routes\Auth\UnlocksAuthorization1};
 
-	// this group of tests should run together rather than individually
-	class SingleModuleRetainTest extends ModuleLevelTest {
+use Suphle\Tests\Mocks\Models\Eloquent\Employment;
 
-		use BaseDatabasePopulator, SecureUserAssertions {
+// this group of tests should run together rather than individually
+class SingleModuleRetainTest extends ModuleLevelTest
+{
+    use BaseDatabasePopulator, SecureUserAssertions {
 
-			BaseDatabasePopulator::setUp as databaseAllSetup;
-		}
+        BaseDatabasePopulator::setUp as databaseAllSetup;
+    }
 
-		private const TABLE_NAME = "employment";
+    private const TABLE_NAME = "employment";
 
-		private Employment $lastInserted;
-		
-		private array $updatePayload = ["salary" => 850_000];
+    private Employment $lastInserted;
 
-		protected bool $debugCaughtExceptions = true;
+    private array $updatePayload = ["salary" => 850_000];
 
-		protected bool $muffleExceptionBroadcast = false;
+    protected bool $debugCaughtExceptions = true;
 
-		protected function setUp ():void {
+    protected bool $muffleExceptionBroadcast = false;
 
-			$this->databaseAllSetup();
+    protected function setUp(): void
+    {
 
-			$this->lastInserted = $this->replicator->getRandomEntity();
-		}
+        $this->databaseAllSetup();
 
-		protected function getActiveEntity ():string {
+        $this->lastInserted = $this->replicator->getRandomEntity();
+    }
 
-			return Employment::class;
-		}
+    protected function getActiveEntity(): string
+    {
 
-		protected function getModules():array {
+        return Employment::class;
+    }
 
-			return [
+    protected function getModules(): array
+    {
 
-				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+        return [
 
-					$container->replaceWithMock(Router::class, RouterMock::class, [
+            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-						"browserEntryRoute" => UnlocksAuthorization1::class
-					]);
-				})
-			];
-		}
+                $container->replaceWithMock(Router::class, RouterMock::class, [
 
-		public function test_retains_seeded_data_after_request ():array {
+                    "browserEntryRoute" => UnlocksAuthorization1::class
+                ]);
+            })
+        ];
+    }
 
-			$seededAmount = $this->replicator->getCount(); // given
+    public function test_retains_seeded_data_after_request(): array
+    {
 
-			// for the edit history bits
-			$this->actingAs($this->lastInserted->employer->user);
+        $seededAmount = $this->replicator->getCount(); // given
 
-			$this->assertSuccessfulEditUpdate(); // when
+        // for the edit history bits
+        $this->actingAs($this->lastInserted->employer->user);
 
-			// then
-			$this->assertSame(
+        $this->assertSuccessfulEditUpdate(); // when
 
-				$seededAmount, $this->replicator->getCount()
-			); // still visible
+        // then
+        $this->assertSame(
+            $seededAmount,
+            $this->replicator->getCount()
+        ); // still visible
 
-			$modifiedRows = $this->replicator->getSpecificEntities(
+        $modifiedRows = $this->replicator->getSpecificEntities(
+            100,
+            array_merge($this->updatePayload, [
 
-				100, array_merge($this->updatePayload, [
+                "id" => $this->lastInserted->id // the main assertion here -- that this row is retained
+            ])
+        );
 
-					"id" => $this->lastInserted->id // the main assertion here -- that this row is retained
-				])
-			);
+        $this->assertCount(1, $modifiedRows); // fetch 100 and assert that truly, one was modified
 
-			$this->assertCount(1, $modifiedRows); // fetch 100 and assert that truly, one was modified
+        return [
 
-			return [
+            "previous_request_id" => $this->lastInserted->id, // since {lastInserted} would've been overriden by the next iteration
+            "started_with" => $seededAmount - $this->getInitialCount()
+        ];
+    }
 
-				"previous_request_id" => $this->lastInserted->id, // since {lastInserted} would've been overriden by the next iteration
-				"started_with" => $seededAmount - $this->getInitialCount()
-			];
-		}
+    protected function assertSuccessfulEditUpdate(): void
+    {
 
-		protected function assertSuccessfulEditUpdate ():void {
+        $csrfToken = $this->getContainer()->getClass(CsrfGenerator::class)
+        ->newToken();
 
-			$csrfToken = $this->getContainer()->getClass(CsrfGenerator::class)
-			->newToken();
+        $this->put(
+            "/pmulti-edit/" . $this->lastInserted->id,
+            array_merge($this->updatePayload, [
 
-			$this->put(
+                CsrfGenerator::TOKEN_FIELD => $csrfToken,
 
-				"/pmulti-edit/" . $this->lastInserted->id,
+                MultiUserEditHandler::INTEGRITY_KEY => $this->lastInserted
+                ->toArray()[IntegrityModel::INTEGRITY_COLUMN] // force casting from carbon type to string
+            ])
+        ) // when
+        ->assertJsonPath("message", 1); // sanity check // update success
+    }
 
-				array_merge($this->updatePayload, [
+    /**
+     * Passes because the test's transaction is expected to be rolled back after test completes
+     *
+     * @depends test_retains_seeded_data_after_request
+    */
+    public function test_rolls_back_preceding_test_updates(array $testDetails): int
+    {
 
-					CsrfGenerator::TOKEN_FIELD => $csrfToken,
+        $this->databaseApi->assertDatabaseMissing(
+            self::TABLE_NAME,
+            array_merge($this->updatePayload, [
 
-					MultiUserEditHandler::INTEGRITY_KEY => $this->lastInserted
-					->toArray()[IntegrityModel::INTEGRITY_COLUMN] // force casting from carbon type to string
-				])
-			) // when
-			->assertJsonPath("message", 1); // sanity check // update success
-		}
+                "id" => $testDetails["previous_request_id"]
+            ])
+        );
 
-		/**
-		 * Passes because the test's transaction is expected to be rolled back after test completes
-		 * 
-		 * @depends test_retains_seeded_data_after_request
-		*/
-		public function test_rolls_back_preceding_test_updates (array $testDetails):int {
+        return $testDetails["started_with"];
+    }
 
-			$this->databaseApi->assertDatabaseMissing(
+    /**
+     * @depends test_rolls_back_preceding_test_updates
+    */
+    public function test_will_not_see_leftover_from_previous_seedings(int $startedWith)
+    {
 
-				self::TABLE_NAME, array_merge($this->updatePayload, [
+        $this->assertSame(// then
 
-					"id" => $testDetails["previous_request_id"]
-				])
-			);
-
-			return $testDetails["started_with"];
-		}
-
-		/**
-		 * @depends test_rolls_back_preceding_test_updates
-		*/
-		public function test_will_not_see_leftover_from_previous_seedings (int $startedWith) {
-
-			$this->assertSame(// then
-
-				$startedWith + $this->getInitialCount(),
-
-				$this->replicator->getCount()
-			);
-		}
-	}
-?>
+            $startedWith + $this->getInitialCount(),
+            $this->replicator->getCount()
+        );
+    }
+}

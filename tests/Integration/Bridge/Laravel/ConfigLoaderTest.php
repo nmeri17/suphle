@@ -1,84 +1,92 @@
 <?php
-	namespace Suphle\Tests\Integration\Bridge\Laravel;
 
-	use Suphle\Contracts\Config\Laravel;
+namespace Suphle\Tests\Integration\Bridge\Laravel;
 
-	use Suphle\Testing\Proxies\WriteOnlyContainer;
+use Suphle\Contracts\Config\Laravel;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\LaravelMock};
+use Suphle\Testing\Proxies\WriteOnlyContainer;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\InstalledComponents\SuphleLaravelTemplates\ConfigLinks\{AppConfig, NestedConfig};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\LaravelMock};
 
-	/**
-	 * The idea demonstrated here is to compare results from the [RepositoryContract] given to laravel, and the one gotten after hydrating the object paired to that config i.e. [app => appOOP], we compare the results of [RepositoryContract] with directly calling [appOOP]
-	*/
-	class ConfigLoaderTest extends TestsConfig {
+use Suphle\Tests\Mocks\Modules\ModuleOne\InstalledComponents\SuphleLaravelTemplates\ConfigLinks\{AppConfig, NestedConfig};
 
-		protected function getModules ():array {
+/**
+ * The idea demonstrated here is to compare results from the [RepositoryContract] given to laravel, and the one gotten after hydrating the object paired to that config i.e. [app => appOOP], we compare the results of [RepositoryContract] with directly calling [appOOP]
+*/
+class ConfigLoaderTest extends TestsConfig
+{
+    protected function getModules(): array
+    {
 
-			return [
-				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+        return [
+            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-					$container->replaceWithMock(
+                $container->replaceWithMock(
+                    Laravel::class,
+                    LaravelMock::class,
+                    []
+                );
+            })
+        ];
+    }
 
-						Laravel::class, LaravelMock::class, []
-					);
-				})
-			];
-		}
+    public function test_their_config_can_get_ours()
+    {
 
-		public function test_their_config_can_get_ours () {
+        $sut = $this->getUnderlyingConfig(); // when
 
-			$sut = $this->getUnderlyingConfig(); // when
+        $ourConfig = new AppConfig($sut->get("app"));
 
-			$ourConfig = new AppConfig($sut->get("app"));
+        $newName = $ourConfig->name();
 
-			$newName = $ourConfig->name();
+        $this->assertSame($newName, $sut->get("app.name")); // then
+    }
 
-			$this->assertSame($newName, $sut->get("app.name")); // then
-	    }
+    public function test_will_receive_config_contents()
+    {
 
-		public function test_will_receive_config_contents () {
+        $sut = $this->getUnderlyingConfig(); // when
 
-			$sut = $this->getUnderlyingConfig(); // when
+        $contents = $this->getNativeValues(NestedConfig::class);
 
-			$contents = $this->getNativeValues(NestedConfig::class);
+        $this->assertSame($contents, $sut->get("nested")); // then
+    }
 
-			$this->assertSame($contents, $sut->get("nested")); // then
-	    }
+    public function test_can_get_nested_config_values()
+    {
 
-		public function test_can_get_nested_config_values () {
+        $sut = $this->getUnderlyingConfig(); // when
 
-			$sut = $this->getUnderlyingConfig(); // when
+        $value = $this->getContainer()->getClass(NestedConfig::class)->first_level()->second_level()->value();
 
-			$value = $this->getContainer()->getClass(NestedConfig::class)->first_level()->second_level()->value();
+        $this->assertSame($value, $sut->get("nested.first_level.second_level.value")); // then
+    }
 
-			$this->assertSame($value, $sut->get("nested.first_level.second_level.value")); // then
-	    }
+    public function test_fallsback_to_theirs_when_missing_property()
+    {
 
-		public function test_fallsback_to_theirs_when_missing_property () {
+        $sut = $this->getUnderlyingConfig(); // when
 
-			$sut = $this->getUnderlyingConfig(); // when
+        $value = $this->getNativeValues(NestedConfig::class)["foo"];
 
-			$value = $this->getNativeValues(NestedConfig::class)["foo"];
+        $this->assertSame($value, $sut->get("nested.foo")); // then
+    }
 
-			$this->assertSame($value, $sut->get("nested.foo")); // then
-	    }
+    private function getNativeValues(string $className): array
+    {
 
-	    private function getNativeValues (string $className):array {
+        return $this->getContainer()->getClass($className)
 
-			return $this->getContainer()->getClass($className)
+        ->getNativeValues();
+    }
 
-			->getNativeValues();
-		}
+    public function test_fallsback_to_theirs_when_missing_link()
+    {
 
-		public function test_fallsback_to_theirs_when_missing_link () {
+        $sut = $this->getUnderlyingConfig(); // when
 
-			$sut = $this->getUnderlyingConfig(); // when
+        $value = "example.com";
 
-			$value = "example.com";
-
-			$this->assertSame($value, $sut->get("unavailable.link")); // then
-	    }
-	}
-?>
+        $this->assertSame($value, $sut->get("unavailable.link")); // then
+    }
+}

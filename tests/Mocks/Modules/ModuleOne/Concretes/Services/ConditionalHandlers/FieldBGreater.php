@@ -1,10 +1,12 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\ConditionalHandlers;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Interfaces\GreaterFields;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\ConditionalHandlers;
 
-	class FieldBGreater implements GreaterFields {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Interfaces\GreaterFields;
 
-		public function plow () {}
-	}
-?>
+class FieldBGreater implements GreaterFields
+{
+    public function plow()
+    {
+    }
+}

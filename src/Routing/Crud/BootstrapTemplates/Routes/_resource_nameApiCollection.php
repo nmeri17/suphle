@@ -1,16 +1,17 @@
 <?php
-	namespace _modules_shell\_module_name\Routes;
 
-	use Suphle\Routing\{BaseApiCollection, Decorators\HandlingCoordinator};
+namespace _modules_shell\_module_name\Routes;
 
-	use _modules_shell\_module_name\Coordinators\_resource_nameApiCoordinator;
+use Suphle\Routing\{BaseApiCollection, Decorators\HandlingCoordinator};
 
-	#[HandlingCoordinator(_resource_nameApiCoordinator::class)]
-	class _resource_nameApiCollection extends BaseApiCollection {
+use _modules_shell\_module_name\Coordinators\_resource_nameApiCoordinator;
 
-		public function _resource_route () {
+#[HandlingCoordinator(_resource_nameApiCoordinator::class)]
+class _resource_nameApiCollection extends BaseApiCollection
+{
+    public function _resource_route()
+    {
 
-			$this->_crudJson()->registerCruds();
-		}
-	}
-?>
+        $this->_crudJson()->registerCruds();
+    }
+}

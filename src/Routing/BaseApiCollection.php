@@ -1,33 +1,31 @@
 <?php
-	namespace Suphle\Routing;
 
-	use Suphle\Contracts\Routing\{ApiRouteCollection, CrudBuilder};
+namespace Suphle\Routing;
 
-	use Suphle\Auth\Storage\TokenStorage;
+use Suphle\Contracts\Routing\{ApiRouteCollection, CrudBuilder};
 
-	use Suphle\Routing\Crud\ApiBuilder;
+use Suphle\Auth\Storage\TokenStorage;
 
-	class BaseApiCollection extends BaseCollection implements ApiRouteCollection {
+use Suphle\Routing\Crud\ApiBuilder;
 
-		protected string $collectionParent = BaseApiCollection::class;
+class BaseApiCollection extends BaseCollection implements ApiRouteCollection
+{
+    protected string $collectionParent = BaseApiCollection::class;
 
-		public function __construct (
-			
-			protected readonly CanaryValidator $canaryValidator,
+    public function __construct(
+        protected readonly CanaryValidator $canaryValidator,
+        protected readonly MethodSorter $methodSorter,
+        TokenStorage $authStorage
+    ) {
 
-			protected readonly MethodSorter $methodSorter,
+        $this->authStorage = $authStorage;
+    }
 
-			TokenStorage $authStorage
-		) {
+    public function _crudJson(): CrudBuilder
+    {
 
-			$this->authStorage = $authStorage;
-		}
+        $this->crudMode = true;
 
-		public function _crudJson ():CrudBuilder {
-
-			$this->crudMode = true;
-
-			return new ApiBuilder($this );
-		}
-	}
-?>
+        return new ApiBuilder($this);
+    }
+}

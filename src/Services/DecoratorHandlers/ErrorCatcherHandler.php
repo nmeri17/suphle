@@ -1,102 +1,109 @@
 <?php
-	namespace Suphle\Services\DecoratorHandlers;
 
-	use Suphle\Contracts\{Services\CallInterceptors\ServiceErrorCatcher, Config\DecoratorProxy};
+namespace Suphle\Services\DecoratorHandlers;
 
-	use Suphle\Exception\DetectedExceptionManager;
+use Suphle\Contracts\{Services\CallInterceptors\ServiceErrorCatcher, Config\DecoratorProxy};
 
-	use Suphle\Hydration\Structures\ObjectDetails;
+use Suphle\Exception\DetectedExceptionManager;
 
-	use ProxyManager\{Factory\NullObjectFactory, Proxy\AccessInterceptorInterface};
+use Suphle\Hydration\Structures\ObjectDetails;
 
-	use ReflectionClass, Throwable;
+use ProxyManager\{Factory\NullObjectFactory, Proxy\AccessInterceptorInterface};
 
-	/**
-	 * Any decorator composed of this handler must extend ServiceErrorCatcher
-	*/
-	class ErrorCatcherHandler extends BaseInjectionModifier {
+use ReflectionClass;
+use Throwable;
 
-		public function __construct (
-			protected readonly DetectedExceptionManager $exceptionDetector,
+/**
+ * Any decorator composed of this handler must extend ServiceErrorCatcher
+*/
+class ErrorCatcherHandler extends BaseInjectionModifier
+{
+    public function __construct(
+        protected readonly DetectedExceptionManager $exceptionDetector,
+        ObjectDetails $objectMeta,
+        DecoratorProxy $proxyConfig
+    ) {
 
-			ObjectDetails $objectMeta, DecoratorProxy $proxyConfig
-		) {
+        parent::__construct($proxyConfig, $objectMeta);
+    }
 
-			parent::__construct($proxyConfig, $objectMeta);
-		}
+    /**
+     * {@inheritdoc}
+    */
+    public function examineInstance(object $concrete, string $caller): object
+    {
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function examineInstance (object $concrete, string $caller):object {
+        return $this->allMethodAction(
+            $concrete,
+            $this->safeCallMethod(...)
+        );
+    }
 
-			return $this->allMethodAction($concrete,
+    /**
+     * @param {proxy} Object received by the caller. Any changes that will be read at that end or mutation expected to be performed on the object should be done on this object. But under no circumstance should {methodName} be invoked on it as that will launch a recursive loop
+    */
+    public function safeCallMethod(
+        AccessInterceptorInterface $proxy,
+        object $concrete,
+        string $methodName,
+        array $argumentList
+    ) {
 
-				$this->safeCallMethod(...)
-			);
-		}
+        try {
 
-		/**
-		 * @param {proxy} Object received by the caller. Any changes that will be read at that end or mutation expected to be performed on the object should be done on this object. But under no circumstance should {methodName} be invoked on it as that will launch a recursive loop
-		*/
-		public function safeCallMethod (
-			AccessInterceptorInterface $proxy, object $concrete,
+            return $this->triggerOrigin($concrete, $methodName, $argumentList);
+        } catch (Throwable $exception) {
 
-			string $methodName, array $argumentList
-		) {
+            return $this->attemptDiffuse($exception, $proxy, $concrete, $methodName);
+        }
+    }
 
-			try {
+    public function attemptDiffuse(
+        Throwable $exception,
+        AccessInterceptorInterface $proxy,
+        ServiceErrorCatcher $concrete,
+        string $method
+    ) {
 
-				return $this->triggerOrigin($concrete, $methodName, $argumentList);
-			}
-			catch (Throwable $exception) {
+        $this->exceptionDetector->detonateOrDiffuse(
+            $exception,
+            $concrete,
+            $concrete->getDebugDetails()
+        );
 
-				return $this->attemptDiffuse($exception, $proxy, $concrete, $methodName);
-			}
-		}
+        $proxy->didHaveErrors($method);
 
-		public function attemptDiffuse (
-			Throwable $exception, AccessInterceptorInterface $proxy,
+        $callerResponse = $concrete->failureState($method);
 
-			ServiceErrorCatcher $concrete, string $method
-		) {
+        return $callerResponse ??
 
-			$this->exceptionDetector->detonateOrDiffuse(
+        $this->buildFailureContent($concrete, $method);
+    }
 
-				$exception, $concrete, $concrete->getDebugDetails()
-			);
+    /**
+     * @return A base value matching return type of method in question
+    */
+    private function buildFailureContent(ServiceErrorCatcher $concrete, string $method)
+    {
 
-			$proxy->didHaveErrors($method);
+        $objectMeta = $this->objectMeta;
 
-			$callerResponse = $concrete->failureState($method);
+        $returnType = $objectMeta->methodReturnType(
+            $concrete::class,
+            $method
+        );
 
-			return $callerResponse ??
+        if (is_null($returnType)) {
+            return null;
+        }
 
-			$this->buildFailureContent($concrete, $method);
-		}
+        if ($objectMeta->returnsBuiltIn($concrete::class, $method)) {
 
-		/**
-		 * @return A base value matching return type of method in question
-		*/
-		private function buildFailureContent (ServiceErrorCatcher $concrete, string $method) {
+            return $objectMeta->getScalarValue($returnType);
+        }
 
-			$objectMeta = $this->objectMeta;
-
-			$returnType = $objectMeta->methodReturnType(
-
-				$concrete::class, $method
-			);
-
-			if (is_null($returnType)) return null;
-			
-			if ( $objectMeta->returnsBuiltIn($concrete::class, $method))
-
-				return $objectMeta->getScalarValue($returnType);
-
-			return (new NullObjectFactory(
-
-				$this->proxyConfig->getConfigClient()
-			))->createProxy($returnType);
-		}
-	}
-?>
+        return (new NullObjectFactory(
+            $this->proxyConfig->getConfigClient()
+        ))->createProxy($returnType);
+    }
+}

@@ -1,61 +1,69 @@
 <?php
-	namespace Suphle\Services\Structures;
 
-	use Suphle\Services\Decorators\VariableDependencies;
+namespace Suphle\Services\Structures;
 
-	use Suphle\Routing\PathPlaceholders;
+use Suphle\Services\Decorators\VariableDependencies;
 
-	use Suphle\Request\PayloadStorage;
+use Suphle\Routing\PathPlaceholders;
 
-	/**
-	 * @requires VariableDependencies
-	*/
-	trait BaseErrorCatcherService {
+use Suphle\Request\PayloadStorage;
 
-		protected ?string $erroneousMethod = null;
+/**
+ * @requires VariableDependencies
+*/
+trait BaseErrorCatcherService
+{
+    protected ?string $erroneousMethod = null;
 
-		protected PayloadStorage $payloadStorage;
+    protected PayloadStorage $payloadStorage;
 
-		protected PathPlaceholders $pathPlaceholders;
+    protected PathPlaceholders $pathPlaceholders;
 
-		public function rethrowAs ():array {
+    public function rethrowAs(): array
+    {
 
-			return [];
-		}
+        return [];
+    }
 
-		public function failureState (string $method) {
+    public function failureState(string $method)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function lastErrorMethod ():?string {
+    public function lastErrorMethod(): ?string
+    {
 
-			return $this->erroneousMethod;
-		}
+        return $this->erroneousMethod;
+    }
 
-		public function didHaveErrors (string $method):void {
+    public function didHaveErrors(string $method): void
+    {
 
-			$this->erroneousMethod = $method;
-		}
+        $this->erroneousMethod = $method;
+    }
 
-		public function matchesErrorMethod (string $method):bool {
+    public function matchesErrorMethod(string $method): bool
+    {
 
-			return $method == $this->erroneousMethod;
-		}
+        return $method == $this->erroneousMethod;
+    }
 
-		public function getDebugDetails () {
+    public function getDebugDetails()
+    {
 
-			return $this->payloadStorage->fullPayload();
-		}
+        return $this->payloadStorage->fullPayload();
+    }
 
-		public function setPayloadStorage (PayloadStorage $payloadStorage):void {
+    public function setPayloadStorage(PayloadStorage $payloadStorage): void
+    {
 
-			$this->payloadStorage = $payloadStorage;
-		}
+        $this->payloadStorage = $payloadStorage;
+    }
 
-		public function setPlaceholderStorage (PathPlaceholders $pathPlaceholders):void {
+    public function setPlaceholderStorage(PathPlaceholders $pathPlaceholders): void
+    {
 
-			$this->pathPlaceholders = $pathPlaceholders;
-		}
-	}
-?>
+        $this->pathPlaceholders = $pathPlaceholders;
+    }
+}

@@ -1,28 +1,29 @@
 <?php
-	namespace _database_namespace\Factories;
 
-	use _database_namespace\User as EloquentUser;
+namespace _database_namespace\Factories;
 
-	use Illuminate\Database\Eloquent\Factories\Factory;
+use _database_namespace\User as EloquentUser;
 
-	use DateTime;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
-	class UserFactory extends Factory {
+use DateTime;
 
-		protected $model = EloquentUser::class;
+class UserFactory extends Factory
+{
+    protected $model = EloquentUser::class;
 
-		public function definition ():array {
+    public function definition(): array
+    {
 
-			return [
+        return [
 
-				"email" => $this->faker->unique()->safeEmail(),
-				
-				"password" => password_hash("nmeri", PASSWORD_DEFAULT),
+            "email" => $this->faker->unique()->safeEmail(),
 
-				"email_verified_at" => new DateTime,
+            "password" => password_hash("nmeri", PASSWORD_DEFAULT),
 
-				"is_admin" => $this->faker->boolean()
-			];
-		}
-	}
-?>
+            "email_verified_at" => new DateTime(),
+
+            "is_admin" => $this->faker->boolean()
+        ];
+    }
+}

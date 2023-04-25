@@ -1,18 +1,20 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\InstalledComponents\SuphleLaravelTemplates\ConfigLinks\Structures;
 
-	use Suphle\Bridge\Laravel\Config\BaseConfigLink;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\InstalledComponents\SuphleLaravelTemplates\ConfigLinks\Structures;
 
-	class SecondLevel extends BaseConfigLink {
+use Suphle\Bridge\Laravel\Config\BaseConfigLink;
 
-		public function name ():string {
+class SecondLevel extends BaseConfigLink
+{
+    public function name(): string
+    {
 
-			return "Look, an override!";
-		}
+        return "Look, an override!";
+    }
 
-		public function value ():int {
+    public function value(): int
+    {
 
-			return $this->nativeValues["value"];
-		}
-	}
-?>
+        return $this->nativeValues["value"];
+    }
+}

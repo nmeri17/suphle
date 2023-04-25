@@ -1,25 +1,28 @@
 <?php
-	namespace Suphle\Bridge\Laravel;
 
-	use Suphle\ComponentTemplates\BaseComponentEntry;
+namespace Suphle\Bridge\Laravel;
 
-	class ComponentEntry extends BaseComponentEntry {
+use Suphle\ComponentTemplates\BaseComponentEntry;
 
-		public function uniqueName ():string {
+class ComponentEntry extends BaseComponentEntry
+{
+    public function uniqueName(): string
+    {
 
-			return "SuphleLaravelTemplates";
-		}
+        return "SuphleLaravelTemplates";
+    }
 
-		protected function templatesLocation ():string {
+    protected function templatesLocation(): string
+    {
 
-			return __DIR__ . DIRECTORY_SEPARATOR . "ComponentTemplates";
-		}
+        return __DIR__ . DIRECTORY_SEPARATOR . "ComponentTemplates";
+    }
 
-		public function eject ():void {
+    public function eject(): void
+    {
 
-			parent::eject();
+        parent::eject();
 
-			@mkdir($this->userLandMirror(). "bootstrap/cache");
-		}
-	}
-?>
+        @mkdir($this->userLandMirror(). "bootstrap/cache");
+    }
+}

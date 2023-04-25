@@ -1,14 +1,14 @@
 <?php
-	namespace Suphle\Contracts\Auth;
 
-	use Suphle\Contracts\{ Modules\HighLevelRequestHandler, Requests\ValidationEvaluator};
+namespace Suphle\Contracts\Auth;
 
-	interface ModuleLoginHandler extends HighLevelRequestHandler, ValidationEvaluator {
+use Suphle\Contracts\{ Modules\HighLevelRequestHandler, Requests\ValidationEvaluator};
 
-		public function isValidRequest ():bool;
+interface ModuleLoginHandler extends HighLevelRequestHandler, ValidationEvaluator
+{
+    public function isValidRequest(): bool;
 
-		public function setResponseRenderer ():self;
+    public function setResponseRenderer(): self;
 
-		public function processLoginRequest ():void;
-	}
-?>
+    public function processLoginRequest(): void;
+}

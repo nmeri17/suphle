@@ -1,20 +1,22 @@
 <?php
-	namespace Suphle\Testing\Proxies\Extensions;
 
-	use Suphle\Contracts\IO\Session as SessionContract;
+namespace Suphle\Testing\Proxies\Extensions;
 
-	use Illuminate\{Testing\TestResponse, Http\Response};
+use Suphle\Contracts\IO\Session as SessionContract;
 
-	class TestResponseBridge extends TestResponse {
+use Illuminate\{Testing\TestResponse, Http\Response};
 
-		public function __construct (Response $response, protected readonly SessionContract $sessionClient) {
+class TestResponseBridge extends TestResponse
+{
+    public function __construct(Response $response, protected readonly SessionContract $sessionClient)
+    {
 
-			parent::__construct($response);
-		}
+        parent::__construct($response);
+    }
 
-		protected function session () {
+    protected function session()
+    {
 
-			return $this->sessionClient;
-		}
-	}
-?>
+        return $this->sessionClient;
+    }
+}

@@ -1,19 +1,20 @@
 <?php
-	namespace Suphle\Tests\Integration\IO;
 
-	use Suphle\Contracts\IO\MailClient;
+namespace Suphle\Tests\Integration\IO;
 
-	use Suphle\Testing\TestTypes\IsolatedComponentTest;
+use Suphle\Contracts\IO\MailClient;
 
-	use Suphle\Tests\Integration\Generic\CommonBinds;
+use Suphle\Testing\TestTypes\IsolatedComponentTest;
 
-	class MailerTest extends IsolatedComponentTest {
+use Suphle\Tests\Integration\Generic\CommonBinds;
 
-		use CommonBinds;
+class MailerTest extends IsolatedComponentTest
+{
+    use CommonBinds;
 
-		public function test_smtp_can_connect () {
+    public function test_smtp_can_connect()
+    {
 
-			$this->assertNotNull($this->container->getClass(MailClient::class));
-		}
-	}
-?>
+        $this->assertNotNull($this->container->getClass(MailClient::class));
+    }
+}

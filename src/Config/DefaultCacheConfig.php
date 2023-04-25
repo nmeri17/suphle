@@ -1,25 +1,27 @@
 <?php
-	namespace Suphle\Config;
 
-	use Suphle\Contracts\{Config\CacheClient, IO\EnvAccessor};
+namespace Suphle\Config;
 
-	class DefaultCacheConfig implements CacheClient {
+use Suphle\Contracts\{Config\CacheClient, IO\EnvAccessor};
 
-		public function __construct(protected readonly EnvAccessor $envAccessor) {
+class DefaultCacheConfig implements CacheClient
+{
+    public function __construct(protected readonly EnvAccessor $envAccessor)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function getCredentials ():array {
+    public function getCredentials(): array
+    {
 
-			return [
+        return [
 
-				"scheme" => "tcp",
+            "scheme" => "tcp",
 
-				"host" => $this->envAccessor->getField("REDIS_HOST"),
+            "host" => $this->envAccessor->getField("REDIS_HOST"),
 
-				"port" => $this->envAccessor->getField("REDIS_PORT")
-			];
-		}
-	}
-?>
+            "port" => $this->envAccessor->getField("REDIS_PORT")
+        ];
+    }
+}

@@ -1,16 +1,17 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleThree\Config;
 
-	use Suphle\Config\DefaultFlowConfig;
+namespace Suphle\Tests\Mocks\Modules\ModuleThree\Config;
 
-	class FlowMock extends DefaultFlowConfig {
+use Suphle\Config\DefaultFlowConfig;
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function isEnabled ():bool {
+class FlowMock extends DefaultFlowConfig
+{
+    /**
+     * {@inheritdoc}
+    */
+    public function isEnabled(): bool
+    {
 
-			return true;
-		}
-	}
-?>
+        return true;
+    }
+}

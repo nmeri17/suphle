@@ -1,26 +1,27 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Prefix\Secured;
 
-	use Suphle\Routing\{BaseCollection, PreMiddlewareRegistry, Decorators\HandlingCoordinator};
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Prefix\Secured;
 
-	use Suphle\Auth\RequestScrutinizers\AuthenticateMetaFunnel;
+use Suphle\Routing\{BaseCollection, PreMiddlewareRegistry, Decorators\HandlingCoordinator};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Prefix\UnchainParentSecurity, Coordinators\BaseCoordinator};
+use Suphle\Auth\RequestScrutinizers\AuthenticateMetaFunnel;
 
-	#[HandlingCoordinator(BaseCoordinator::class)]
-	class UpperCollection extends BaseCollection {
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Prefix\UnchainParentSecurity, Coordinators\BaseCoordinator};
 
-		public function _preMiddleware (PreMiddlewareRegistry $registry):void {
+#[HandlingCoordinator(BaseCoordinator::class)]
+class UpperCollection extends BaseCollection
+{
+    public function _preMiddleware(PreMiddlewareRegistry $registry): void
+    {
 
-			$registry->tagPatterns(
+        $registry->tagPatterns(
+            new AuthenticateMetaFunnel(["PREFIX"], $this->authStorage)
+        );
+    }
 
-				new AuthenticateMetaFunnel(["PREFIX"], $this->authStorage)
-			);
-		}
-		
-		public function PREFIX () {
-			
-			$this->_prefixFor(UnchainParentSecurity::class);
-		}
-	}
-?>
+    public function PREFIX()
+    {
+
+        $this->_prefixFor(UnchainParentSecurity::class);
+    }
+}

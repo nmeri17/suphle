@@ -1,13 +1,13 @@
 <?php
-	namespace Suphle\Contracts\Hydration;
 
-	interface ExternalPackageManager {
+namespace Suphle\Contracts\Hydration;
 
-		public function canProvide (string $fullName):bool;
+interface ExternalPackageManager
+{
+    public function canProvide(string $fullName): bool;
 
-		/**
-		 * @return Instance of requested argument
-		*/
-		public function manageService (string $fullName);
-	}
-?>
+    /**
+     * @return Instance of requested argument
+    */
+    public function manageService(string $fullName);
+}

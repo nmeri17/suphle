@@ -1,13 +1,13 @@
 <?php
-	namespace Suphle\Contracts\Hydration\ScopeHandlers;
 
-	interface ModifyInjected {
+namespace Suphle\Contracts\Hydration\ScopeHandlers;
 
-		/**
-		 * @return wrapped object for the caller
-		*/
-		public function examineInstance (object $concrete, string $caller):object;
+interface ModifyInjected
+{
+    /**
+     * @return wrapped object for the caller
+    */
+    public function examineInstance(object $concrete, string $caller): object;
 
-		public function setAttributesList (array $attributes):void;
-	}
-?>
+    public function setAttributesList(array $attributes): void;
+}

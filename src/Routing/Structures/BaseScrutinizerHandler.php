@@ -1,10 +1,10 @@
 <?php
-	namespace Suphle\Routing\Structures;
 
-	abstract class BaseScrutinizerHandler {
+namespace Suphle\Routing\Structures;
 
-		use ReceivesMetaFunnel;
+abstract class BaseScrutinizerHandler
+{
+    use ReceivesMetaFunnel;
 
-		abstract public function scrutinizeRequest ():void;
-	}
-?>
+    abstract public function scrutinizeRequest(): void;
+}

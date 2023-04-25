@@ -1,33 +1,34 @@
 <?php
-	namespace Suphle\Tests\Integration\Services\DependencySanitization;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\BaseCoordinator;
+namespace Suphle\Tests\Integration\Services\DependencySanitization;
 
-	use InvalidArgumentException;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\BaseCoordinator;
 
-	class ActionArgumentsTest extends TestSanitization {
+use InvalidArgumentException;
 
-		protected const COORDINATOR_NAME = BaseCoordinator::class;
+class ActionArgumentsTest extends TestSanitization
+{
+    protected const COORDINATOR_NAME = BaseCoordinator::class;
 
-		protected function setSanitizationPath ():void {
+    protected function setSanitizationPath(): void
+    {
 
-			$this->sanitizer->setExecutionPath($this->getClassDir(self::COORDINATOR_NAME));
-		}
+        $this->sanitizer->setExecutionPath($this->getClassDir(self::COORDINATOR_NAME));
+    }
 
-		public function test_action_method_rejects_unwanted_dependencies () {
+    public function test_action_method_rejects_unwanted_dependencies()
+    {
 
-			$this->expectException(InvalidArgumentException::class); // then
+        $this->expectException(InvalidArgumentException::class); // then
 
-			$this->expectExceptionMessageMatches(
+        $this->expectExceptionMessageMatches(
+            $this->escapeClassName(self::COORDINATOR_NAME)
+        );
 
-				$this->escapeClassName(self::COORDINATOR_NAME)
-			);
+        // given 1 @see setSanitizationPath
 
-			// given 1 @see setSanitizationPath
-			
-			$this->sanitizer->coordinatorActionMethods(); // given 2
+        $this->sanitizer->coordinatorActionMethods(); // given 2
 
-			$this->sanitizer->cleanseConsumers(); // when
-		}
-	}
-?>
+        $this->sanitizer->cleanseConsumers(); // when
+    }
+}

@@ -1,58 +1,61 @@
 <?php
-	namespace Suphle\Tests\Unit\Flows;
 
-	use Suphle\Flows\{FlowHydrator, Structures\RouteUserNode, Previous\SingleNode};
+namespace Suphle\Tests\Unit\Flows;
 
-	use Suphle\Testing\TestTypes\IsolatedComponentTest;
+use Suphle\Flows\{FlowHydrator, Structures\RouteUserNode, Previous\SingleNode};
 
-	use Suphle\Tests\Integration\Generic\CommonBinds;
+use Suphle\Testing\TestTypes\IsolatedComponentTest;
 
-	use DateTime;
+use Suphle\Tests\Integration\Generic\CommonBinds;
 
-	class FlowConfigTest extends IsolatedComponentTest {
+use DateTime;
 
-		use CommonBinds;
+class FlowConfigTest extends IsolatedComponentTest
+{
+    use CommonBinds;
 
-	 	private $hydrator;
-   private $unitNode;
+    private $hydrator;
+    private $unitNode;
 
-		public function setUp ():void {
+    public function setUp(): void
+    {
 
-			parent::setUp();
+        parent::setUp();
 
-			$this->hydrator = $this->container->getClass(FlowHydrator::class); // we don't wanna replace any of the methods
+        $this->hydrator = $this->container->getClass(FlowHydrator::class); // we don't wanna replace any of the methods
 
-			$this->unitNode = new SingleNode("data");
-		}
+        $this->unitNode = new SingleNode("data");
+    }
 
-		public function test_setMaxHitsHydrator () {
+    public function test_setMaxHitsHydrator()
+    {
 
-			// given
-			$callback = fn() => 5;
+        // given
+        $callback = fn () => 5;
 
-			$this->unitNode->setMaxHits($callback);
+        $this->unitNode->setMaxHits($callback);
 
-			$sut = $this->positiveDouble(RouteUserNode::class, [], [// then
+        $sut = $this->positiveDouble(RouteUserNode::class, [], [// then
 
-				"setMaxHitsHydrator" => [1, [$callback]]
-			]);
+            "setMaxHitsHydrator" => [1, [$callback]]
+        ]);
 
-			$this->hydrator->runNodeConfigs( $sut, $this->unitNode); // when
-		}
+        $this->hydrator->runNodeConfigs($sut, $this->unitNode); // when
+    }
 
-		public function test_setExpiresAtHydrator () {
+    public function test_setExpiresAtHydrator()
+    {
 
-			// given
-			$callback = fn() => new DateTime;
+        // given
+        $callback = fn () => new DateTime();
 
-			$this->unitNode->setTTL($callback);
+        $this->unitNode->setTTL($callback);
 
-			$sut = $this->positiveDouble(RouteUserNode::class, [], [ // then
+        $sut = $this->positiveDouble(RouteUserNode::class, [], [ // then
 
-				"setExpiresAtHydrator" => [1, [$callback]]
-			]);
+            "setExpiresAtHydrator" => [1, [$callback]]
+        ]);
 
-			$this->hydrator->runNodeConfigs( $sut, $this->unitNode); // when
-		}
-	}
-?>
+        $this->hydrator->runNodeConfigs($sut, $this->unitNode); // when
+    }
+}

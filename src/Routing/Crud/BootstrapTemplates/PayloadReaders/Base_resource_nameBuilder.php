@@ -1,28 +1,31 @@
 <?php
-	namespace _modules_shell\_module_name\PayloadReaders;
 
-	use Suphle\Services\Structures\ModelfulPayload;
+namespace _modules_shell\_module_name\PayloadReaders;
 
-	use _database_namespace\_resource_name;
+use Suphle\Services\Structures\ModelfulPayload;
 
-	class Base_resource_nameBuilder extends ModelfulPayload {
+use _database_namespace\_resource_name;
 
-		public function __construct (protected readonly _resource_name $blankModel) {
+class Base_resource_nameBuilder extends ModelfulPayload
+{
+    public function __construct(protected readonly _resource_name $blankModel)
+    {
 
-			//
-		}
+        //
+    }
 
-		protected function getBaseCriteria ():object {
+    protected function getBaseCriteria(): object
+    {
 
-			return $this->blankModel->where([
+        return $this->blankModel->where([
 
-				"id" => $this->payloadStorage->getKey("id")
-			]);
-		}
+            "id" => $this->payloadStorage->getKey("id")
+        ]);
+    }
 
-		protected function onlyFields ():array {
+    protected function onlyFields(): array
+    {
 
-			return ["id", "title"];
-		}
-	}
-?>
+        return ["id", "title"];
+    }
+}

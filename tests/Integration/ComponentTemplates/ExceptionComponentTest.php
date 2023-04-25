@@ -1,121 +1,135 @@
 <?php
-	namespace Suphle\Tests\Integration\ComponentTemplates;
 
-	use Suphle\Contracts\Config\ComponentTemplates;
+namespace Suphle\Tests\Integration\ComponentTemplates;
 
-	use Suphle\Hydration\Container;
+use Suphle\Contracts\Config\ComponentTemplates;
 
-	use Suphle\ComponentTemplates\{ComponentEjector, Commands\InstallComponentCommand};
+use Suphle\Hydration\Container;
 
-	use Suphle\Exception\ComponentEntry as ExceptionComponentEntry;
+use Suphle\ComponentTemplates\{ComponentEjector, Commands\InstallComponentCommand};
 
-	use Suphle\Testing\{ TestTypes\InstallComponentTest, Proxies\WriteOnlyContainer};
+use Suphle\Exception\ComponentEntry as ExceptionComponentEntry;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
+use Suphle\Testing\{ TestTypes\InstallComponentTest, Proxies\WriteOnlyContainer};
 
-	use Suphle\Tests\Mocks\Interactions\ModuleOne;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
-	class ExceptionComponentTest extends InstallComponentTest {
+use Suphle\Tests\Mocks\Interactions\ModuleOne;
 
-		protected Container $container;
+class ExceptionComponentTest extends InstallComponentTest
+{
+    protected Container $container;
 
-		protected function setUp ():void {
+    protected function setUp(): void
+    {
 
-			parent::setUp();
+        parent::setUp();
 
-			$this->container = $this->getContainer();
-		}
+        $this->container = $this->getContainer();
+    }
 
-		protected function getModules ():array {
+    protected function getModules(): array
+    {
 
-			return [
-				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+        return [
+            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-					$config = ComponentTemplates::class;
+                $config = ComponentTemplates::class;
 
-					$container->replaceWithMock($config, $config, [
+                $container->replaceWithMock($config, $config, [
 
-						"getTemplateEntries" => [
+                    "getTemplateEntries" => [
 
-							$this->componentEntry()
-						]
-					]);
-				})
-			];
-		}
+                        $this->componentEntry()
+                    ]
+                ]);
+            })
+        ];
+    }
 
-		protected function componentEntry ():string {
+    protected function componentEntry(): string
+    {
 
-			return ExceptionComponentEntry::class;
-		}
+        return ExceptionComponentEntry::class;
+    }
 
-		public function test_can_install_component () {
+    public function test_can_install_component()
+    {
 
-			$this->assertInstalledComponent($this->getCommandOptions());
-		}
+        $this->assertInstalledComponent($this->getCommandOptions());
+    }
 
-		public function test_will_not_override_existing () {
+    public function test_will_not_override_existing()
+    {
 
-			$entryClass = $this->componentEntry();
+        $entryClass = $this->componentEntry();
 
-			$commandOptions = $this->getCommandOptions();
+        $commandOptions = $this->getCommandOptions();
 
-			$this->assertInstalledComponent($commandOptions); // given
+        $this->assertInstalledComponent($commandOptions); // given
 
-			$parameters = $this->container->getMethodParameters(
+        $parameters = $this->container->getMethodParameters(
+            Container::CLASS_CONSTRUCTOR,
+            $entryClass
+        );
 
-				Container::CLASS_CONSTRUCTOR, $entryClass
-			);
+        $this->massProvide([
 
-			$this->massProvide([
+            $entryClass => $this->replaceConstructorArguments(
+                $entryClass,
+                $parameters,
+                [],
+                [
 
-				$entryClass => $this->replaceConstructorArguments(
+                "eject" => [0, []] // then
+                ]
+            )
+        ]);
 
-					$entryClass, $parameters, [], [
+        $this->runInstallComponent($commandOptions); // when
+    }
 
-					"eject" => [0, []] // then
-				])
-			]);
+    /**
+     * @dataProvider overrideOptions
+    */
+    public function test_override_option_unserializes_properly(array $customOptions, ?array $depositArguments)
+    {
 
-			$this->runInstallComponent($commandOptions); // when
-		}
+        $methodName = "depositFiles";
 
-		/**
-		 * @dataProvider overrideOptions
-		*/
-		public function test_override_option_unserializes_properly (array $customOptions, ?array $depositArguments) {
+        $ejectorName = ComponentEjector::class;
 
-			$methodName = "depositFiles";
+        $this->container->whenTypeAny()->needsAny([
 
-			$ejectorName = ComponentEjector::class;
+            $ejectorName => $this->replaceConstructorArguments(
+                $ejectorName,
+                [],
+                [
+                    $methodName => true // given
+                ],
+                [
 
-			$this->container->whenTypeAny()->needsAny([
+                $methodName => [1, [$depositArguments]] // then
+                ]
+            )
+        ]);
 
-				$ejectorName => $this->replaceConstructorArguments(
-					$ejectorName, [], [
-						$methodName => true // given
-				], [
+        $commandOptions = $this->getCommandOptions($customOptions);
 
-					$methodName => [1, [$depositArguments]] // then
-				])
-			]);
+        // when
+        $this->assertInstalledComponent($commandOptions, true);
 
-			$commandOptions = $this->getCommandOptions($customOptions);
+        $this->container->refreshClass($ejectorName); // flush mock
 
-			// when
-			$this->assertInstalledComponent($commandOptions, true);
+        $this->runInstallComponent($commandOptions); // re-set the files there since the previous command didn't write anything to disk, while above assertInstalledComponent deleted them
+    }
 
-			$this->container->refreshClass($ejectorName); // flush mock
+    protected function getCommandOptions(array $otherOverrides = []): array
+    {
 
-			$this->runInstallComponent( $commandOptions); // re-set the files there since the previous command didn't write anything to disk, while above assertInstalledComponent deleted them
-		}
+        return array_merge([
 
-		protected function getCommandOptions (array $otherOverrides = []):array {
-
-			return array_merge([
-
-				InstallComponentCommand::HYDRATOR_MODULE_OPTION => ModuleOne::class
-			], $otherOverrides);
-		}
-	}
-?>
+            InstallComponentCommand::HYDRATOR_MODULE_OPTION => ModuleOne::class
+        ], $otherOverrides);
+    }
+}

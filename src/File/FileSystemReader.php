@@ -1,183 +1,201 @@
 <?php
-	namespace Suphle\File;
 
-	use FilesystemIterator, Throwable;
+namespace Suphle\File;
 
-	class FileSystemReader {
+use FilesystemIterator;
+use Throwable;
 
-		protected array $filesFinalDestination = [];
+class FileSystemReader
+{
+    protected array $filesFinalDestination = [];
 
-		/**
-		 * Traverse {currentWorkingDirectory} backwards, for the number of levels given by dots in {relativePath}
-		 * 
-		 * @param {relativePath}: Expects a location relative to given absolute path 
-		 * @param {currentWorkingDirectory}: Absolute path to use as anchor for the operation
-		 * @return Normalized path to {relativePath} without trailing slash
-		*/
-		public function getAbsolutePath (string $currentWorkingDirectory, string $relativePath):string {
+    /**
+     * Traverse {currentWorkingDirectory} backwards, for the number of levels given by dots in {relativePath}
+     *
+     * @param {relativePath}: Expects a location relative to given absolute path
+     * @param {currentWorkingDirectory}: Absolute path to use as anchor for the operation
+     * @return Normalized path to {relativePath} without trailing slash
+    */
+    public function getAbsolutePath(string $currentWorkingDirectory, string $relativePath): string
+    {
 
-			$allSegments = explode("../", $relativePath);
+        $allSegments = explode("../", $relativePath);
 
-			return $this->pathFromLevels($currentWorkingDirectory,
+        return $this->pathFromLevels(
+            $currentWorkingDirectory,
+            end($allSegments),
+            count($allSegments)-1
+        );
+    }
 
-				end($allSegments), count($allSegments)-1
-			);
-		}
+    public function getFileName(string $filePath): string
+    {
 
-		public function getFileName (string $filePath):string {
+        preg_match("/([\w-]+\.\w+)$/", $filePath, $matches);
 
-			preg_match("/([\w-]+\.\w+)$/", $filePath, $matches);
+        return $matches[1];
+    }
 
-			return $matches[1];
-		}
+    /**
+     * Same as [getAbsolutePath], but the levels are given beforehand instead of being calculated
+    */
+    public function pathFromLevels(string $currentWorkingDirectory, string $intendedPath, int $upLevels): string
+    {
 
-		/**
-		 * Same as [getAbsolutePath], but the levels are given beforehand instead of being calculated
-		*/
-		public function pathFromLevels (string $currentWorkingDirectory, string $intendedPath, int $upLevels):string {
+        if ($upLevels > 0) {
 
-			if ($upLevels > 0)
+            $absoluteDirectory = dirname($currentWorkingDirectory, $upLevels);
+        } // since dirname already goes one level up
 
-				$absoluteDirectory = dirname($currentWorkingDirectory, $upLevels); // since dirname already goes one level up
+        else {
+            $absoluteDirectory = $currentWorkingDirectory;
+        }
 
-			else $absoluteDirectory = $currentWorkingDirectory;
+        return $absoluteDirectory . DIRECTORY_SEPARATOR .
 
-			return $absoluteDirectory . DIRECTORY_SEPARATOR .
+        $intendedPath;
+    }
 
-			$intendedPath;
-		}
+    public function ensureDirectoryExists(string $fullPath, bool $isFile = true): void
+    {
 
-		public function ensureDirectoryExists (string $fullPath, bool $isFile = true):void {
+        if ($isFile) {
+            $newFolder = dirname($fullPath);
+        } else {
+            $newFolder = $fullPath;
+        }
 
-			if ($isFile) $newFolder = dirname($fullPath);
+        if (!file_exists($newFolder)) {
 
-			else $newFolder = $fullPath;
+            mkdir($newFolder, 0755, true);
+        } // 3rd argument = create parents if they don't exist
+    }
 
-			if (!file_exists($newFolder))
+    /**
+     * Use for more robust handling of paths that can come from different sources
+    */
+    public function noTrailingSlash(string $path): string
+    {
 
-				mkdir($newFolder, 0755, true); // 3rd argument = create parents if they don't exist
-		}
+        preg_match("/(.+?)[\\/\\\\]*$/", $path, $matches); // actually => \/\\ i.e. any back or forward slash
 
-		/**
-		 * Use for more robust handling of paths that can come from different sources
-		*/
-		public function noTrailingSlash (string $path):string {
+        return $matches[1];
+    }
 
-			preg_match("/(.+?)[\\/\\\\]*$/", $path, $matches); // actually => \/\\ i.e. any back or forward slash
+    public function lastCopiedBatch(): array
+    {
 
-			return $matches[1];
-		}
+        return $this->filesFinalDestination;
+    }
 
-		public function lastCopiedBatch ():array {
+    public function resetCopiedBatch(): void
+    {
 
-			return $this->filesFinalDestination;
-		}
+        $this->filesFinalDestination = [];
+    }
 
-		public function resetCopiedBatch ():void {
+    /**
+     * @param {onDirectory} has to be recursive for this method to function as expected
+    */
+    public function iterateDirectory(
+        string $path,
+        callable $onDirectory,
+        callable $onFile,
+        callable $onCompletion = null
+    ): void {
 
-			$this->filesFinalDestination = [];
-		}
+        foreach (new FilesystemIterator($path) as $childEntry) {
 
-		/**
-		 * @param {onDirectory} has to be recursive for this method to function as expected
-		*/
-		public function iterateDirectory (
+            $fullPath = $childEntry->getPathName();
 
-			string $path, callable $onDirectory, callable $onFile,
+            $entryName = $childEntry->getBaseName();
 
-			callable $onCompletion = null
-		):void {
+            if ($childEntry->isDir()) {
 
-			foreach (new FilesystemIterator($path) as $childEntry) {
+                $onDirectory($fullPath, $entryName);
+            }
 
-				$fullPath = $childEntry->getPathName();
+            if ($childEntry->isFile()) {
 
-				$entryName = $childEntry->getBaseName();
+                $onFile($fullPath, $entryName);
+            }
+        }
 
-				if ($childEntry->isDir())
+        if (!is_null($onCompletion)) {
 
-					$onDirectory($fullPath, $entryName);
+            $onCompletion($path);
+        }
+    }
 
-				if ($childEntry->isFile())
+    public function deepCopy(string $sourceFolder, string $currentDestination): void
+    {
 
-					$onFile($fullPath, $entryName);
-			}
+        $currentDestination = $this->noTrailingSlash($currentDestination);
 
-			if (!is_null($onCompletion))
+        $this->iterateDirectory(
+            $sourceFolder,
+            function ($sourcePath, $sourceName) use ($currentDestination) {
 
-				$onCompletion($path);
-		}
+                $newDestination = $currentDestination . DIRECTORY_SEPARATOR . $sourceName;
 
-		public function deepCopy (string $sourceFolder, string $currentDestination):void {
+                $this->ensureDirectoryExists($newDestination, false);
 
-			$currentDestination = $this->noTrailingSlash($currentDestination);
+                $this->deepCopy($sourcePath, $newDestination);
+            },
+            function ($filePath, $fileName) use ($currentDestination) {
 
-			$this->iterateDirectory(
+                $newDestination = $currentDestination . DIRECTORY_SEPARATOR . $fileName; // in a folder containing folders and files, the files will be read first, which means destination path is expected to exist otherwise copy won't work
 
-				$sourceFolder,
+                $this->ensureDirectoryExists($newDestination, true);
 
-				function ($sourcePath, $sourceName) use ($currentDestination) {
+                $this->filesFinalDestination[] = $newDestination;
 
-					$newDestination = $currentDestination . DIRECTORY_SEPARATOR . $sourceName;
+                copy($filePath, $newDestination);
+            }
+        );
+    }
 
-					$this->ensureDirectoryExists($newDestination, false);
+    public function emptyDirectory(string $path): void
+    {
 
-					$this->deepCopy($sourcePath, $newDestination);
-				},
-				function ($filePath, $fileName) use ($currentDestination) {
+        $this->iterateDirectory(
+            $path,
+            function ($directoryPath, $directoryName) {
 
-					$newDestination = $currentDestination . DIRECTORY_SEPARATOR . $fileName; // in a folder containing folders and files, the files will be read first, which means destination path is expected to exist otherwise copy won't work
+                $this->emptyDirectory($directoryPath);
+            },
+            function ($fullPath, $fileName) {
 
-					$this->ensureDirectoryExists($newDestination, true);
+                unlink($fullPath);
+            },
+            function ($fullPath) {
 
-					$this->filesFinalDestination[] = $newDestination;
+                $this->safeDeleteDirectory($fullPath);
+            }
+        );
+    }
 
-					copy($filePath, $newDestination);
-				}
-			);
-		}
+    protected function safeDeleteDirectory(string $directoryPath): void
+    {
 
-		public function emptyDirectory (string $path):void {
+        try {
 
-			$this->iterateDirectory(
+            if (file_exists($directoryPath)) { // it's possible for it to have been renamed or deleted by a preceding operation
 
-				$path, function ($directoryPath, $directoryName) {
+                rmdir($directoryPath);
+            } else {
+                trigger_error("Attempt to delete non-existent folder: $directoryPath", E_USER_WARNING);
+            }
+        } catch (Throwable $exception) {
 
-					$this->emptyDirectory($directoryPath);
-				},
+            if (stripos($exception->getMessage(), "directory not empty") === false) {
 
-				function ($fullPath, $fileName) {
+                throw $exception;
+            }
 
-					unlink($fullPath);
-				},
+            // var_dump(151, "retrying folder delete $directoryPath");
 
-				function ($fullPath) {
-
-					$this->safeDeleteDirectory($fullPath);
-				}
-			);
-		}
-
-		protected function safeDeleteDirectory (string $directoryPath):void {
-
-			try {
-
-				if (file_exists($directoryPath)) // it's possible for it to have been renamed or deleted by a preceding operation
-
-					rmdir($directoryPath);
-
-				else trigger_error("Attempt to delete non-existent folder: $directoryPath", E_USER_WARNING);
-			}
-			catch (Throwable $exception) {
-
-				if (stripos($exception->getMessage(), "directory not empty") === false)
-
-					throw $exception;
-
-				// var_dump(151, "retrying folder delete $directoryPath");
-
-				$this->emptyDirectory($directoryPath); // maybe names have been changed. Keep emptying until path doesn't exist
-			}
-		}
-	}
-?>
+            $this->emptyDirectory($directoryPath); // maybe names have been changed. Keep emptying until path doesn't exist
+        }
+    }
+}

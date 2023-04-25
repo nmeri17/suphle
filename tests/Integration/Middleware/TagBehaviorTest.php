@@ -1,103 +1,108 @@
 <?php
-	namespace Suphle\Tests\Integration\Middleware;
 
-	use Suphle\Contracts\Config\Router;
+namespace Suphle\Tests\Integration\Middleware;
 
-	use Suphle\Request\PayloadStorage;
+use Suphle\Contracts\Config\Router;
 
-	use Suphle\Response\Format\Json;
+use Suphle\Request\PayloadStorage;
 
-	use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
+use Suphle\Response\Format\Json;
 
-	use Suphle\Tests\Integration\Middleware\Helpers\MocksMiddleware;
+use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Routes\Middlewares\MultiTagSamePattern, Config\RouterMock};
+use Suphle\Tests\Integration\Middleware\Helpers\MocksMiddleware;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares\{BlankMiddlewareHandler, BlankMiddleware2Handler, BlankMiddleware3Handler};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Routes\Middlewares\MultiTagSamePattern, Config\RouterMock};
 
-	class TagBehaviorTest extends ModuleLevelTest {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares\{BlankMiddlewareHandler, BlankMiddleware2Handler, BlankMiddleware3Handler};
 
-		use MocksMiddleware;
-		
-		protected function getModules():array {
+class TagBehaviorTest extends ModuleLevelTest
+{
+    use MocksMiddleware;
 
-			return [
+    protected function getModules(): array
+    {
 
-				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+        return [
 
-					$container->replaceWithMock(Router::class, RouterMock::class, [
+            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-						"browserEntryRoute" => MultiTagSamePattern::class
-					]);
-				})
-			];
-		}
- 
-		public function test_multi_patterns_to_tag_should_work () {
+                $container->replaceWithMock(Router::class, RouterMock::class, [
 
-			// given => @see [getModules]
-			// then 
-			$this->provideMiddleware([
+                    "browserEntryRoute" => MultiTagSamePattern::class
+                ]);
+            })
+        ];
+    }
 
-				BlankMiddlewareHandler::class => $this->getMiddlewareMock(BlankMiddlewareHandler::class, 1),
+    public function test_multi_patterns_to_tag_should_work()
+    {
 
-				BlankMiddleware2Handler::class => $this->getMiddlewareMock(BlankMiddleware2Handler::class, 0)
-			]);
+        // given => @see [getModules]
+        // then
+        $this->provideMiddleware([
 
-			$this->get("/first-single"); // when
-		}
+            BlankMiddlewareHandler::class => $this->getMiddlewareMock(BlankMiddlewareHandler::class, 1),
 
-		public function test_parent_tag_affects_child () {
+            BlankMiddleware2Handler::class => $this->getMiddlewareMock(BlankMiddleware2Handler::class, 0)
+        ]);
 
-			// given => @see [getModules]
-			// then 
-			$this->provideMiddleware([
+        $this->get("/first-single"); // when
+    }
 
-				BlankMiddlewareHandler::class => $this->getMiddlewareMock(BlankMiddlewareHandler::class, 1),
+    public function test_parent_tag_affects_child()
+    {
 
-				BlankMiddleware2Handler::class => $this->getMiddlewareMock(BlankMiddleware2Handler::class, 0)
-			]);
+        // given => @see [getModules]
+        // then
+        $this->provideMiddleware([
 
-			$this->get("/fifth-single/segment"); // when
-		}
+            BlankMiddlewareHandler::class => $this->getMiddlewareMock(BlankMiddlewareHandler::class, 1),
 
-		public function test_can_untag_patterns () {
+            BlankMiddleware2Handler::class => $this->getMiddlewareMock(BlankMiddleware2Handler::class, 0)
+        ]);
 
-			// given => @see [getModules]
-			// then 
-			$this->provideMiddleware([
+        $this->get("/fifth-single/segment"); // when
+    }
 
-				BlankMiddleware3Handler::class => $this->getMiddlewareMock(BlankMiddleware3Handler::class, 0)
-			]);
+    public function test_can_untag_patterns()
+    {
 
-			$this->get("/fourth-single/second-untag"); // when
-		}
+        // given => @see [getModules]
+        // then
+        $this->provideMiddleware([
 
-		public function test_final_middleware_has_no_request_handler () {
+            BlankMiddleware3Handler::class => $this->getMiddlewareMock(BlankMiddleware3Handler::class, 0)
+        ]);
 
-			$middlewareList = $this->getContainer()->getClass(Router::class)
+        $this->get("/fourth-single/second-untag"); // when
+    }
 
-			->defaultMiddleware();
+    public function test_final_middleware_has_no_request_handler()
+    {
 
-			$lastMiddleware = end($middlewareList);
+        $middlewareList = $this->getContainer()->getClass(Router::class)
 
-			$this->provideMiddleware([
+        ->defaultMiddleware();
 
-				$lastMiddleware => $this->positiveDouble($lastMiddleware, [
+        $lastMiddleware = end($middlewareList);
 
-					"process" => $this->replaceConstructorArguments(Json::class, [])
-				], [
+        $this->provideMiddleware([
 
-					"process" => [1, [
+            $lastMiddleware => $this->positiveDouble($lastMiddleware, [
 
-						$this->callback(fn($subject) => $subject instanceof PayloadStorage),
+                "process" => $this->replaceConstructorArguments(Json::class, [])
+            ], [
 
-						$this->equalTo(null)
-					]]
-				]) // then
-			]);
+                "process" => [1, [
 
-			$this->get("/first-single"); // when
-		}
-	}
-?>
+                    $this->callback(fn ($subject) => $subject instanceof PayloadStorage),
+
+                    $this->equalTo(null)
+                ]]
+            ]) // then
+        ]);
+
+        $this->get("/first-single"); // when
+    }
+}

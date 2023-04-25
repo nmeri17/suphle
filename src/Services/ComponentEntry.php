@@ -1,18 +1,20 @@
 <?php
-	namespace Suphle\Services;
 
-	use Suphle\ComponentTemplates\BaseComponentEntry;
+namespace Suphle\Services;
 
-	class ComponentEntry extends BaseComponentEntry {
+use Suphle\ComponentTemplates\BaseComponentEntry;
 
-		public function uniqueName ():string {
+class ComponentEntry extends BaseComponentEntry
+{
+    public function uniqueName(): string
+    {
 
-			return "SuphleServicesTemplates";
-		}
+        return "SuphleServicesTemplates";
+    }
 
-		protected function templatesLocation ():string {
+    protected function templatesLocation(): string
+    {
 
-			return __DIR__ . DIRECTORY_SEPARATOR . "ComponentTemplates";
-		}
-	}
-?>
+        return __DIR__ . DIRECTORY_SEPARATOR . "ComponentTemplates";
+    }
+}

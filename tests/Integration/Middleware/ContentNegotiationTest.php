@@ -1,38 +1,40 @@
 <?php
-	namespace Suphle\Tests\Integration\Middleware;
 
-	use Suphle\Contracts\Config\Router;
+namespace Suphle\Tests\Integration\Middleware;
 
-	use Suphle\Request\PayloadStorage;
+use Suphle\Contracts\Config\Router;
 
-	use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
+use Suphle\Request\PayloadStorage;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Middlewares\MultiTagSamePattern, Meta\ModuleOneDescriptor, Config\RouterMock};
+use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
-	class ContentNegotiationTest extends ModuleLevelTest {
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Middlewares\MultiTagSamePattern, Meta\ModuleOneDescriptor, Config\RouterMock};
 
-		protected function getModules ():array {
+class ContentNegotiationTest extends ModuleLevelTest
+{
+    protected function getModules(): array
+    {
 
-			return [
-				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+        return [
+            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-					$container->replaceWithMock(Router::class, RouterMock::class, [
+                $container->replaceWithMock(Router::class, RouterMock::class, [
 
-						"browserEntryRoute" => MultiTagSamePattern::class
-					]);
-				})
-			];
-		}
+                    "browserEntryRoute" => MultiTagSamePattern::class
+                ]);
+            })
+        ];
+    }
 
-		public function test_changes_response_type () {
+    public function test_changes_response_type()
+    {
 
-			// given => @see module injection
+        // given => @see module injection
 
-			$this->get("/negotiate", [], [
+        $this->get("/negotiate", [], [
 
-				PayloadStorage::ACCEPTS_KEY => PayloadStorage::JSON_HEADER_VALUE
-			]) // when
-			->assertJson(["message" => "plain Segment"]); // then
-		}
-	}
-?>
+            PayloadStorage::ACCEPTS_KEY => PayloadStorage::JSON_HEADER_VALUE
+        ]) // when
+        ->assertJson(["message" => "plain Segment"]); // then
+    }
+}

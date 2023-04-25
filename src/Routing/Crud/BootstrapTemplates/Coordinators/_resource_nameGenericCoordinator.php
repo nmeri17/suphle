@@ -1,50 +1,54 @@
 <?php
-	namespace _modules_shell\_module_name\Coordinators;
 
-	use Suphle\Services\Decorators\ValidationRules;
+namespace _modules_shell\_module_name\Coordinators;
 
-	use Suphle\Routing\Crud\BrowserBuilder;
+use Suphle\Services\Decorators\ValidationRules;
 
-	use _database_namespace\_resource_name;
+use Suphle\Routing\Crud\BrowserBuilder;
 
-	use _modules_shell\_module_name\PayloadReaders\Base_resource_nameBuilder;
+use _database_namespace\_resource_name;
 
-	trait _resource_nameGenericCoordinator {
+use _modules_shell\_module_name\PayloadReaders\Base_resource_nameBuilder;
 
-		#[ValidationRules(["title" => "required"])]
-		public function saveNew():iterable {
+trait _resource_nameGenericCoordinator
+{
+    #[ValidationRules(["title" => "required"])]
+    public function saveNew(): iterable
+    {
 
-			$blankModel = new _resource_name;
+        $blankModel = new _resource_name();
 
-			return [
+        return [
 
-				BrowserBuilder::SAVE_NEW_KEY => $blankModel->create(
+            BrowserBuilder::SAVE_NEW_KEY => $blankModel->create(
+                $this->payloadStorage->only(["title"])
+            )
+        ];
+    }
 
-					$this->payloadStorage->only(["title"])
-				)
-			];
-		}
+    public function showAll(): iterable
+    {
 
-		public function showAll():iterable {
+        return [];
+    }
 
-			return [];
-		}
+    public function showOne(Base_resource_nameBuilder $_resource_nameBuilder): iterable
+    {
 
-		public function showOne (Base_resource_nameBuilder $_resource_nameBuilder):iterable {
+        return [];
+    }
 
-			return [];
-		}
+    #[ValidationRules(["id" => "required"])]
+    public function updateOne(Base_resource_nameBuilder $_resource_nameBuilder): iterable
+    {
 
-		#[ValidationRules(["id" => "required"])]
-		public function updateOne (Base_resource_nameBuilder $_resource_nameBuilder):iterable {
+        return [];
+    }
 
-			return [];
-		}
+    #[ValidationRules(["id" => "required"])]
+    public function deleteOne(): iterable
+    {
 
-		#[ValidationRules(["id" => "required"])]
-		public function deleteOne():iterable {
-
-			return [];
-		}
-	}
-?>
+        return [];
+    }
+}

@@ -1,44 +1,45 @@
 <?php
-	namespace Suphle\Tests\Integration\Middleware;
 
-	use Suphle\Middleware\Handlers\FinalHandlerWrapper;
+namespace Suphle\Tests\Integration\Middleware;
 
-	use Suphle\Request\PayloadStorage;
+use Suphle\Middleware\Handlers\FinalHandlerWrapper;
 
-	use Suphle\Response\RoutedRendererManager;
+use Suphle\Request\PayloadStorage;
 
-	use Suphle\Contracts\Response\RendererManager;
+use Suphle\Response\RoutedRendererManager;
 
-	use Suphle\Testing\TestTypes\IsolatedComponentTest;
+use Suphle\Contracts\Response\RendererManager;
 
-	use Suphle\Tests\Integration\Generic\CommonBinds;
+use Suphle\Testing\TestTypes\IsolatedComponentTest;
 
-	class FinalHandlerWrapperTest extends IsolatedComponentTest {
+use Suphle\Tests\Integration\Generic\CommonBinds;
 
-		use CommonBinds;
+class FinalHandlerWrapperTest extends IsolatedComponentTest
+{
+    use CommonBinds;
 
-		public function test_extracts_from_response_manager () {
+    public function test_extracts_from_response_manager()
+    {
 
-			$mockManager = $this->positiveDouble(RoutedRendererManager::class, [], [ // then
+        $mockManager = $this->positiveDouble(RoutedRendererManager::class, [], [ // then
 
-				"handleValidRequest" => [1, [$this->callback(fn($subject) => $subject instanceof PayloadStorage)]],
+            "handleValidRequest" => [1, [$this->callback(fn ($subject) => $subject instanceof PayloadStorage)]],
 
-				"afterRender" => [1, []],
+            "afterRender" => [1, []],
 
-				"responseRenderer" => [1, []]
-			]);
+            "responseRenderer" => [1, []]
+        ]);
 
-			$this->container->whenTypeAny()->needsAny([
+        $this->container->whenTypeAny()->needsAny([
 
-				RendererManager::class => $mockManager
-			]); // given
+            RendererManager::class => $mockManager
+        ]); // given
 
-			$this->container->getClass(FinalHandlerWrapper::class)
+        $this->container->getClass(FinalHandlerWrapper::class)
 
-			->process(
-				$this->positiveDouble(PayloadStorage::class),
-				null
-			); // when
-		}
-	}
-?>
+        ->process(
+            $this->positiveDouble(PayloadStorage::class),
+            null
+        ); // when
+    }
+}

@@ -1,33 +1,34 @@
 <?php
-	namespace Suphle\Adapters\Orms\Eloquent\Migrations;
 
-	use Illuminate\Database\{Migrations\Migration, Schema\Blueprint};
+namespace Suphle\Adapters\Orms\Eloquent\Migrations;
 
-	use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\{Migrations\Migration, Schema\Blueprint};
 
-	return new class extends Migration {
+use Illuminate\Support\Facades\Schema;
 
-		public function up ():void {
+return new class () extends Migration {
+    public function up(): void
+    {
 
-			Schema::create("users", function (Blueprint $table) {
+        Schema::create("users", function (Blueprint $table) {
 
-				$table->id();
+            $table->id();
 
-				$table->string("email", 70)->unique();
+            $table->string("email", 70)->unique();
 
-				$table->timestamp("email_verified_at");
+            $table->timestamp("email_verified_at");
 
-				$table->string("password", 90);
+            $table->string("password", 90);
 
-				$table->boolean("is_admin")->default(false);
+            $table->boolean("is_admin")->default(false);
 
-				$table->timestampsTz();
-			});
-		}
+            $table->timestampsTz();
+        });
+    }
 
-		public function down ():void {
+    public function down(): void
+    {
 
-			Schema::drop("users");
-		}
-	};
-?>
+        Schema::drop("users");
+    }
+};

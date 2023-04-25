@@ -1,15 +1,16 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\InstalledComponents\SuphleLaravelTemplates\ConfigLinks;
 
-	use Suphle\Bridge\Laravel\Config\BaseConfigLink;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\InstalledComponents\SuphleLaravelTemplates\ConfigLinks;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\InstalledComponents\SuphleLaravelTemplates\ConfigLinks\Structures\FirstLevel;
+use Suphle\Bridge\Laravel\Config\BaseConfigLink;
 
-	class NestedConfig extends BaseConfigLink {
+use Suphle\Tests\Mocks\Modules\ModuleOne\InstalledComponents\SuphleLaravelTemplates\ConfigLinks\Structures\FirstLevel;
 
-		public function first_level ():FirstLevel {
+class NestedConfig extends BaseConfigLink
+{
+    public function first_level(): FirstLevel
+    {
 
-			return new FirstLevel($this->nativeValues["first_level"]);
-		}
-	}
-?>
+        return new FirstLevel($this->nativeValues["first_level"]);
+    }
+}

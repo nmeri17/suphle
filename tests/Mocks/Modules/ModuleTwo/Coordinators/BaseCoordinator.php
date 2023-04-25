@@ -1,13 +1,14 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleTwo\Coordinators;
 
-	use Suphle\Services\ServiceCoordinator;
+namespace Suphle\Tests\Mocks\Modules\ModuleTwo\Coordinators;
 
-	class BaseCoordinator extends ServiceCoordinator {
+use Suphle\Services\ServiceCoordinator;
 
-		public function checkPlaceholder () {
+class BaseCoordinator extends ServiceCoordinator
+{
+    public function checkPlaceholder()
+    {
 
-			return [];
-		}
-	}
-?>
+        return [];
+    }
+}

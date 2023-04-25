@@ -1,12 +1,12 @@
 <?php
-	namespace Suphle\Exception\Explosives\DevError;
 
-	use Suphle\Contracts\Exception\BroadcastableException;
+namespace Suphle\Exception\Explosives\DevError;
 
-	use Exception;
+use Suphle\Contracts\Exception\BroadcastableException;
 
-	class UnmodifiedImageException extends Exception implements BroadcastableException {
+use Exception;
 
-		//
-	}
-?>
+class UnmodifiedImageException extends Exception implements BroadcastableException
+{
+    //
+}

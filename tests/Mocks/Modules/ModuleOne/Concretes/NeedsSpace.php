@@ -1,18 +1,20 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Interfaces\RewriteSpace;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes;
 
-	class NeedsSpace {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Interfaces\RewriteSpace;
 
-		public function __construct(protected readonly RewriteSpace $contract) {
+class NeedsSpace
+{
+    public function __construct(protected readonly RewriteSpace $contract)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function getConcreteValue():int {
+    public function getConcreteValue(): int
+    {
 
-			return $this->contract->getValue();
-		}
-	}
-?>
+        return $this->contract->getValue();
+    }
+}

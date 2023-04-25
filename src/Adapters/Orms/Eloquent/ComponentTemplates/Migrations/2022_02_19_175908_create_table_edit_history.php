@@ -1,31 +1,32 @@
 <?php
-	namespace _database_namespace\Migrations;
 
-	use Illuminate\Database\{Migrations\Migration, Schema\Blueprint};
+namespace _database_namespace\Migrations;
 
-	use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\{Migrations\Migration, Schema\Blueprint};
 
-	return new class extends Migration {
+use Illuminate\Support\Facades\Schema;
 
-		public function up ():void {
+return new class () extends Migration {
+    public function up(): void
+    {
 
-			Schema::create("edit_history", function (Blueprint $table) {
+        Schema::create("edit_history", function (Blueprint $table) {
 
-				$table->id();
+            $table->id();
 
-				$table->morphs("historical");
+            $table->morphs("historical");
 
-				// $table->foreignIdFor(User::class); // connect to the appropriate user
+            // $table->foreignIdFor(User::class); // connect to the appropriate user
 
-				$table->json("payload");
+            $table->json("payload");
 
-				$table->timestampsTz();
-			});
-		}
+            $table->timestampsTz();
+        });
+    }
 
-		public function down ():void {
+    public function down(): void
+    {
 
-			Schema::drop("edit_history");
-		}
-	};
-?>
+        Schema::drop("edit_history");
+    }
+};

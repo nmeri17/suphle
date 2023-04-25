@@ -1,22 +1,24 @@
 <?php
-	namespace Suphle\Hydration\Structures;
 
-	use Suphle\Hydration\Container;
+namespace Suphle\Hydration\Structures;
 
-	class ContainerBooter {
+use Suphle\Hydration\Container;
 
-		public function __construct(protected readonly Container $container) {
+class ContainerBooter
+{
+    public function __construct(protected readonly Container $container)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function initializeContainer (string $interfaceList):void {
+    public function initializeContainer(string $interfaceList): void
+    {
 
-			$this->container->setEssentials();
+        $this->container->setEssentials();
 
-			$this->container->setInterfaceHydrator($interfaceList);
+        $this->container->setInterfaceHydrator($interfaceList);
 
-			$this->container->interiorDecorate();
-		}
-	}
-?>
+        $this->container->interiorDecorate();
+    }
+}

@@ -1,11 +1,11 @@
 <?php
-	namespace Suphle\Services\Decorators;
 
-	use Attribute;
+namespace Suphle\Services\Decorators;
 
-	#[Attribute(Attribute::TARGET_CLASS)]
-	class SecuresPostRequest {
+use Attribute;
 
-		//
-	}
-?>
+#[Attribute(Attribute::TARGET_CLASS)]
+class SecuresPostRequest
+{
+    //
+}

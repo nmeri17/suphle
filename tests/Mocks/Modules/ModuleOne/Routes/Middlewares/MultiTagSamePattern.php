@@ -1,51 +1,55 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Middlewares;
 
-	use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Middlewares;
 
-	use Suphle\Middleware\{MiddlewareRegistry, Collectors\JsonNegotiatorCollector};
+use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\BaseCoordinator;
+use Suphle\Middleware\{MiddlewareRegistry, Collectors\JsonNegotiatorCollector};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares\Collectors\{BlankCollectionMetaFunnel, BlankMiddleware3Collector};
+use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\BaseCoordinator;
 
-	use Suphle\Response\Format\{Json, Markup};
+use Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares\Collectors\{BlankCollectionMetaFunnel, BlankMiddleware3Collector};
 
-	#[HandlingCoordinator(BaseCoordinator::class)]
-	class MultiTagSamePattern extends BaseCollection {
+use Suphle\Response\Format\{Json, Markup};
 
-		public function FIRST__SINGLEh () {
+#[HandlingCoordinator(BaseCoordinator::class)]
+class MultiTagSamePattern extends BaseCollection
+{
+    public function FIRST__SINGLEh()
+    {
 
-			$this->_httpGet(new Json("plainSegment"));
-		}
+        $this->_httpGet(new Json("plainSegment"));
+    }
 
-		public function FOURTH__SINGLEh () {
+    public function FOURTH__SINGLEh()
+    {
 
-			$this->_prefixFor(UntagsMiddleware::class);
-		}
+        $this->_prefixFor(UntagsMiddleware::class);
+    }
 
-		public function FIFTH__SINGLEh () {
+    public function FIFTH__SINGLEh()
+    {
 
-			$this->_prefixFor(RetainsMiddleware::class);
-		}
+        $this->_prefixFor(RetainsMiddleware::class);
+    }
 
-		public function NEGOTIATE () {
+    public function NEGOTIATE()
+    {
 
-			$this->_httpGet(new Markup("plainSegment", "generic.negotiated-content"));
-		}
+        $this->_httpGet(new Markup("plainSegment", "generic.negotiated-content"));
+    }
 
-		public function _assignMiddleware (MiddlewareRegistry $registry):void {
+    public function _assignMiddleware(MiddlewareRegistry $registry): void
+    {
 
-			$registry->tagPatterns(
-				new BlankCollectionMetaFunnel([
+        $registry->tagPatterns(
+            new BlankCollectionMetaFunnel([
 
-					"FIRST__SINGLEh", "FIFTH__SINGLEh"
-				])
-			)->tagPatterns(
-
-				new BlankMiddleware3Collector([ "FOURTH__SINGLEh"])
-			)
-			->tagPatterns(new JsonNegotiatorCollector(["NEGOTIATE"]));
-		}
-	}
-?>
+                "FIRST__SINGLEh", "FIFTH__SINGLEh"
+            ])
+        )->tagPatterns(
+            new BlankMiddleware3Collector([ "FOURTH__SINGLEh"])
+        )
+        ->tagPatterns(new JsonNegotiatorCollector(["NEGOTIATE"]));
+    }
+}

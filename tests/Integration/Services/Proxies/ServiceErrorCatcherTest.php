@@ -1,86 +1,93 @@
 <?php
-	namespace Suphle\Tests\Integration\Services\Proxies;
 
-	use Suphle\Hydration\Container;
+namespace Suphle\Tests\Integration\Services\Proxies;
 
-	use Suphle\Request\PayloadStorage;
+use Suphle\Hydration\Container;
 
-	use Suphle\Exception\Explosives\NotFoundException;
+use Suphle\Request\PayloadStorage;
 
-	use Suphle\Contracts\Modules\DescriptorInterface;
+use Suphle\Exception\Explosives\NotFoundException;
 
-	use Suphle\Testing\TestTypes\InvestigateSystemCrash;
+use Suphle\Contracts\Modules\DescriptorInterface;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Concretes\Services\DatalessErrorThrower, Meta\ModuleOneDescriptor};
+use Suphle\Testing\TestTypes\InvestigateSystemCrash;
 
-	class ServiceErrorCatcherTest extends InvestigateSystemCrash {
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Concretes\Services\DatalessErrorThrower, Meta\ModuleOneDescriptor};
 
-		private string $serviceName = DatalessErrorThrower::class;
-  private $container;
-  private $payloadStorage;
+class ServiceErrorCatcherTest extends InvestigateSystemCrash
+{
+    private string $serviceName = DatalessErrorThrower::class;
+    private $container;
+    private $payloadStorage;
 
-		protected function setUp ():void {
+    protected function setUp(): void
+    {
 
-			parent::setUp();
+        parent::setUp();
 
-			$this->container = $this->getContainer();
+        $this->container = $this->getContainer();
 
-			$this->payloadStorage = $this->container->getClass(PayloadStorage::class);
-		}
+        $this->payloadStorage = $this->container->getClass(PayloadStorage::class);
+    }
 
-		protected function getModule ():DescriptorInterface {
+    protected function getModule(): DescriptorInterface
+    {
 
-			return new ModuleOneDescriptor (new Container);
-		}
+        return new ModuleOneDescriptor(new Container());
+    }
 
-		public function test_failed_call_returns_default_type () {
+    public function test_failed_call_returns_default_type()
+    {
 
-			$default = 0;
+        $default = 0;
 
-			$operationResult = $this->container->getClass($this->serviceName)
+        $operationResult = $this->container->getClass($this->serviceName)
 
-			->notCaughtInternally(); // when
+        ->notCaughtInternally(); // when
 
-			$this->assertSame($default, $operationResult); // then
-		}
+        $this->assertSame($default, $operationResult); // then
+    }
 
-		/**
-		 * @dataProvider failureStateMethods
-		*/
-		public function test_failureState_replaces_return_value_on_error (string $methodName) {
+    /**
+     * @dataProvider failureStateMethods
+    */
+    public function test_failureState_replaces_return_value_on_error(string $methodName)
+    {
 
-			$sut = $this->container->getClass($this->serviceName);
+        $sut = $this->container->getClass($this->serviceName);
 
-			$result = $this->assertWontBroadcast($sut->$methodName(...)); // when
+        $result = $this->assertWontBroadcast($sut->$methodName(...)); // when
 
-			// then
-			$this->assertSame($methodName, $result);
+        // then
+        $this->assertSame($methodName, $result);
 
-			$this->assertTrue($sut->matchesErrorMethod($methodName));
-		}
+        $this->assertTrue($sut->matchesErrorMethod($methodName));
+    }
 
-		protected function broadcasterArguments ():array {
+    protected function broadcasterArguments(): array
+    {
 
-			return [
+        return [
 
-				"payloadStorage" => $this->payloadStorage
-			];
-		}
+            "payloadStorage" => $this->payloadStorage
+        ];
+    }
 
-		public function failureStateMethods ():array {
+    public function failureStateMethods(): array
+    {
 
-			return [
-				["deliberateError"],
+        return [
+            ["deliberateError"],
 
-				["deliberateException"]
-			];
-		}
+            ["deliberateException"]
+        ];
+    }
 
-		public function test_can_rethrow_exceptions () {
+    public function test_can_rethrow_exceptions()
+    {
 
-			$this->expectException(NotFoundException::class); // then
+        $this->expectException(NotFoundException::class); // then
 
-			$this->container->getClass($this->serviceName)->terminateRequest(); // when
-		}
-	}
-?>
+        $this->container->getClass($this->serviceName)->terminateRequest(); // when
+    }
+}

@@ -1,39 +1,37 @@
 <?php
-	namespace Suphle\Request;
 
-	use Suphle\Contracts\{Bridge\LaravelContainer, Requests\RequestEventsListener, Config\Laravel as LaravelConfigContract};
+namespace Suphle\Request;
 
-	use Suphle\Hydration\Container;
+use Suphle\Contracts\{Bridge\LaravelContainer, Requests\RequestEventsListener, Config\Laravel as LaravelConfigContract};
 
-	class DefaultRequestListener implements RequestEventsListener {
+use Suphle\Hydration\Container;
 
-		public function __construct (
+class DefaultRequestListener implements RequestEventsListener
+{
+    public function __construct(
+        protected readonly Container $container,
+        protected readonly RequestDetails $requestDetails,
+        protected readonly LaravelConfigContract $laravelConfig
+    ) {
 
-			protected readonly Container $container,
+        //
+    }
 
-			protected readonly RequestDetails $requestDetails,
+    public function handleRefreshEvent(PayloadStorage $payloadStorage): void
+    {
 
-			protected readonly LaravelConfigContract $laravelConfig
-		) {
+        if (!$this->laravelConfig->registersRoutes()) {
+            return;
+        }
 
-			//
-		}
+        $laravelContainer = $this->container->getClass(LaravelContainer::class);
 
-		public function handleRefreshEvent (PayloadStorage $payloadStorage):void {
-
-			if (!$this->laravelConfig->registersRoutes()) return;
-
-			$laravelContainer = $this->container->getClass(LaravelContainer::class);
-
-			$laravelContainer->instance(
-
-				LaravelContainer::INCOMING_REQUEST_KEY,
-
-				$laravelContainer->provideRequest(
-
-					$this->requestDetails, $payloadStorage
-				)
-			);
-		}
-	}
-?>
+        $laravelContainer->instance(
+            LaravelContainer::INCOMING_REQUEST_KEY,
+            $laravelContainer->provideRequest(
+                $this->requestDetails,
+                $payloadStorage
+            )
+        );
+    }
+}

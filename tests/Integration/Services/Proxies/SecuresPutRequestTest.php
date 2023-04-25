@@ -1,28 +1,30 @@
 <?php
-	namespace Suphle\Tests\Integration\Services\Proxies;
 
-	use Suphle\Testing\TestTypes\ModuleLevelTest;
+namespace Suphle\Tests\Integration\Services\Proxies;
 
-	use Suphle\Exception\Explosives\DevError\MissingPostDecorator;
+use Suphle\Testing\TestTypes\ModuleLevelTest;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\ValidatorCoordinator;
+use Suphle\Exception\Explosives\DevError\MissingPostDecorator;
 
-	use Suphle\Tests\Integration\Services\ReplacesRequestPayload;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\ValidatorCoordinator;
 
-	class SecuresPutRequestTest extends ModuleLevelTest {
+use Suphle\Tests\Integration\Services\ReplacesRequestPayload;
 
-		use ReplacesRequestPayload;
+class SecuresPutRequestTest extends ModuleLevelTest
+{
+    use ReplacesRequestPayload;
 
-		public function test_missing_types_throws_errors () {
+    public function test_missing_types_throws_errors()
+    {
 
-			$this->expectException(MissingPostDecorator::class); // then
+        $this->expectException(MissingPostDecorator::class); // then
 
-			$this->stubRequestObjects(
+        $this->stubRequestObjects(
+            7,
+            [],
+            $this->stubRequestMethod("put")
+        ); // given
 
-				7, [], $this->stubRequestMethod("put")
-			); // given
-
-			$this->getContainer()->getClass(ValidatorCoordinator::class); // when
-		}
-	}
-?>
+        $this->getContainer()->getClass(ValidatorCoordinator::class); // when
+    }
+}

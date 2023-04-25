@@ -1,15 +1,16 @@
 <?php
-	namespace Suphle\Request;
 
-	use Suphle\Contracts\Auth\AuthStorage;
+namespace Suphle\Request;
 
-	abstract class RouteRule {
+use Suphle\Contracts\Auth\AuthStorage;
 
-		public function __construct(protected AuthStorage $authStorage) {
+abstract class RouteRule
+{
+    public function __construct(protected AuthStorage $authStorage)
+    {
 
-			//
-		}
+        //
+    }
 
-		abstract public function permit ():bool;
-	}
-?>
+    abstract public function permit(): bool;
+}

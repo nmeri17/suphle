@@ -1,13 +1,14 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\InstalledComponents\SuphleLaravelTemplates\ConfigLinks\Structures;
 
-	use Suphle\Bridge\Laravel\Config\BaseConfigLink;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\InstalledComponents\SuphleLaravelTemplates\ConfigLinks\Structures;
 
-	class FirstLevel extends BaseConfigLink {
+use Suphle\Bridge\Laravel\Config\BaseConfigLink;
 
-		public function second_level ():SecondLevel {
+class FirstLevel extends BaseConfigLink
+{
+    public function second_level(): SecondLevel
+    {
 
-			return new SecondLevel($this->nativeValues["second_level"]);
-		}
-	}
-?>
+        return new SecondLevel($this->nativeValues["second_level"]);
+    }
+}

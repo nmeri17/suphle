@@ -1,92 +1,96 @@
 <?php
-	namespace Suphle\Tests\Integration\Auth;
 
-	use Suphle\Hydration\Container;
+namespace Suphle\Tests\Integration\Auth;
 
-	use Suphle\Contracts\Auth\{ModuleLoginHandler, LoginFlowMediator};
+use Suphle\Hydration\Container;
 
-	use Suphle\Contracts\Presentation\BaseRenderer;
+use Suphle\Contracts\Auth\{ModuleLoginHandler, LoginFlowMediator};
 
-	use Suphle\Auth\{LoginRequestHandler, Renderers\BrowserLoginMediator};
+use Suphle\Contracts\Presentation\BaseRenderer;
 
-	use Suphle\Exception\Explosives\ValidationFailure;
+use Suphle\Auth\{LoginRequestHandler, Renderers\BrowserLoginMediator};
 
-	use Suphle\Testing\{Condiments\DirectHttpTest, TestTypes\ModuleLevelTest};
+use Suphle\Exception\Explosives\ValidationFailure;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
+use Suphle\Testing\{Condiments\DirectHttpTest, TestTypes\ModuleLevelTest};
 
-	class LoginRequestHandlerTest extends ModuleLevelTest {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
-		use DirectHttpTest;
+class LoginRequestHandlerTest extends ModuleLevelTest
+{
+    use DirectHttpTest;
 
-		final const LOGIN_PATH = "/login";
+    final public const LOGIN_PATH = "/login";
 
-		private string $email = "foo@nmeri.com";
+    private string $email = "foo@nmeri.com";
 
-		public function getModules ():array {
+    public function getModules(): array
+    {
 
-			return [
-				
-				new ModuleOneDescriptor(new Container)
-			];
-		}
+        return [
 
-		public function test_invalid_payload_terminates_request () {
+            new ModuleOneDescriptor(new Container())
+        ];
+    }
 
-			$this->expectException(ValidationFailure::class); // then
+    public function test_invalid_payload_terminates_request()
+    {
 
-			$this->setJsonParams(self::LOGIN_PATH, [ // not necessary to set request method since we call the method directly, skipping the check; but using it all the same to avoid ambiguity on test's veracity
+        $this->expectException(ValidationFailure::class); // then
 
-				"email" => $this->email
-			], "post"); // given
+        $this->setJsonParams(self::LOGIN_PATH, [ // not necessary to set request method since we call the method directly, skipping the check; but using it all the same to avoid ambiguity on test's veracity
 
-			$this->entrance->handleLoginRequest(); // when
-		}
+            "email" => $this->email
+        ], "post"); // given
 
-		public function test_valid_payload_tries_getting_response () {
+        $this->entrance->handleLoginRequest(); // when
+    }
 
-			$this->setJsonParams(self::LOGIN_PATH, [
+    public function test_valid_payload_tries_getting_response()
+    {
 
-				"email" => $this->email,
+        $this->setJsonParams(self::LOGIN_PATH, [
 
-				"password" => "alphon123"
-			], "post"); // given
+            "email" => $this->email,
 
-			$this->massProvide([
+            "password" => "alphon123"
+        ], "post"); // given
 
-				ModuleLoginHandler::class => $this->buildLoginHandler() // then
-			]);
+        $this->massProvide([
 
-			$this->entrance->handleLoginRequest(); // when
-		}
+            ModuleLoginHandler::class => $this->buildLoginHandler() // then
+        ]);
 
-		private function buildLoginHandler ():ModuleLoginHandler {
+        $this->entrance->handleLoginRequest(); // when
+    }
 
-			$concreteName = LoginRequestHandler::class;
+    private function buildLoginHandler(): ModuleLoginHandler
+    {
 
-			$container = $this->getContainer();
+        $concreteName = LoginRequestHandler::class;
 
-			$renderer = $container->getClass(BrowserLoginMediator::class);
+        $container = $this->getContainer();
 
-			$arguments = $container->whenType($concreteName)
+        $renderer = $container->getClass(BrowserLoginMediator::class);
 
-			->needsArguments([
+        $arguments = $container->whenType($concreteName)
 
-				LoginFlowMediator::class => $renderer
-			])->getMethodParameters(
+        ->needsArguments([
 
-				Container::CLASS_CONSTRUCTOR, $concreteName
-			);
+            LoginFlowMediator::class => $renderer
+        ])->getMethodParameters(
+            Container::CLASS_CONSTRUCTOR,
+            $concreteName
+        );
 
-			return $this->replaceConstructorArguments($concreteName, $arguments, [
+        return $this->replaceConstructorArguments($concreteName, $arguments, [
 
-				"setResponseRenderer" => $this->returnSelf(),
+            "setResponseRenderer" => $this->returnSelf(),
 
-				"handlingRenderer" => $this->negativeDouble(BaseRenderer::class)
-			], [
+            "handlingRenderer" => $this->negativeDouble(BaseRenderer::class)
+        ], [
 
-				"processLoginRequest" => [1, []]
-			]);
-		}
-	}
-?>
+            "processLoginRequest" => [1, []]
+        ]);
+    }
+}

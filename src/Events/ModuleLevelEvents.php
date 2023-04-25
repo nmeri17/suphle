@@ -1,90 +1,103 @@
 <?php
-	namespace Suphle\Events;
 
-	use Suphle\Contracts\{Events, Modules\DescriptorInterface};
+namespace Suphle\Events;
 
-	use Suphle\Hydration\Container;
+use Suphle\Contracts\{Events, Modules\DescriptorInterface};
 
-	use Suphle\Modules\Structures\ActiveDescriptors;
+use Suphle\Hydration\Container;
 
-	class ModuleLevelEvents {
+use Suphle\Modules\Structures\ActiveDescriptors;
 
-		protected array $subscriberLog = [], // this is where subscribers to the immediate last fired external event reside
+class ModuleLevelEvents
+{
+    protected array $subscriberLog = [];
+    protected array // this is where subscribers to the immediate last fired external event reside
 
-		$eventManagers = [], $firedEvents = [];
+    $eventManagers = [];
+    protected array $firedEvents = [];
 
-		public function bootReactiveLogger (ActiveDescriptors $descriptorsHolder):void {
+    public function bootReactiveLogger(ActiveDescriptors $descriptorsHolder): void
+    {
 
-			foreach (
-				$descriptorsHolder->getOriginalDescriptors()
+        foreach (
+            $descriptorsHolder->getOriginalDescriptors()
 
-				as $descriptor
-			) {
+            as $descriptor
+        ) {
 
-				$descriptorApi = $descriptor->exportsImplements();
+            $descriptorApi = $descriptor->exportsImplements();
 
-				if (array_key_exists($descriptorApi, $this->eventManagers)) // the essence of keying by module name is to prevent multiple manager watching while recursively binding modules and their expatriates
+            if (array_key_exists($descriptorApi, $this->eventManagers)) { // the essence of keying by module name is to prevent multiple manager watching while recursively binding modules and their expatriates
 
-					continue;
+                continue;
+            }
 
-				$container = $descriptor->getContainer();
+            $container = $descriptor->getContainer();
 
-				$container->whenTypeAny()->needsAny([ // bind before hydrating
+            $container->whenTypeAny()->needsAny([ // bind before hydrating
 
-					ModuleLevelEvents::class => $this
-				]);
+                ModuleLevelEvents::class => $this
+            ]);
 
-				$this->eventManagers[$descriptorApi] = $manager = $container->getClass(Events::class);
+            $this->eventManagers[$descriptorApi] = $manager = $container->getClass(Events::class);
 
-				$manager->registerListeners();
-			}
-		}
+            $manager->registerListeners();
+        }
+    }
 
-		public function triggerExternalHandlers (string $emittor, string $eventName, $payload):void {
+    public function triggerExternalHandlers(string $emittor, string $eventName, $payload): void
+    {
 
-			$subscriberLog = [];
+        $subscriberLog = [];
 
-			foreach ($this->eventManagers as $manager) {
-				
-				if ($subscribers = $manager->getExternalHandlers($emittor))
+        foreach ($this->eventManagers as $manager) {
 
-					$subscriberLog[] = $subscribers;
-			}
-			
-			foreach ($subscriberLog as $subscription)
+            if ($subscribers = $manager->getExternalHandlers($emittor)) {
 
-				$this->triggerHandlers(
+                $subscriberLog[] = $subscribers;
+            }
+        }
 
-					$emittor, $subscription, $eventName, $payload
-				);
-		}
+        foreach ($subscriberLog as $subscription) {
 
-		public function triggerHandlers (
+            $this->triggerHandlers(
+                $emittor,
+                $subscription,
+                $eventName,
+                $payload
+            );
+        }
+    }
 
-			string $sender, ?EventSubscription $subscription,
+    public function triggerHandlers(
+        string $sender,
+        ?EventSubscription $subscription,
+        string $eventName,
+        $payload
+    ): self {
 
-			string $eventName, $payload
-		):self {
+        $this->firedEvents[$sender] = $subscription; // even though event won't be handled, by logging it all the same, we can verify later that it was emitted
 
-			$this->firedEvents[$sender] = $subscription; // even though event won't be handled, by logging it all the same, we can verify later that it was emitted
+        if (is_null($subscription)) {
+            return $this;
+        } // no handlers attached to given scope
 
-			if (is_null($subscription)) return $this; // no handlers attached to given scope
-			
-			$hydratedHandler = $subscription->getListener();
+        $hydratedHandler = $subscription->getListener();
 
-			foreach ($subscription->getMatchingUnits($eventName) as $unit)
-				
-				$unit->fire($hydratedHandler, $payload);
+        foreach ($subscription->getMatchingUnits($eventName) as $unit) {
 
-			return $this;
-		}
+            $unit->fire($hydratedHandler, $payload);
+        }
 
-		/**
-		 * Used only in tests and should be a test-only class but that would hamper DX such that that observer class must be bound during all module builds, since event binding is part of module booting sequence. May be worth it if there were more methods
-		*/
-		public function getFiredEvents ():array {
+        return $this;
+    }
 
-			return $this->firedEvents;
-		}
-	}
-?>
+    /**
+     * Used only in tests and should be a test-only class but that would hamper DX such that that observer class must be bound during all module builds, since event binding is part of module booting sequence. May be worth it if there were more methods
+    */
+    public function getFiredEvents(): array
+    {
+
+        return $this->firedEvents;
+    }
+}

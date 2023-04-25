@@ -1,33 +1,34 @@
 <?php
-	namespace Suphle\IO\Image\SaveClients;
 
-	use Suphle\Contracts\{IO\Image\ImageLocator, Config\ModuleFiles};
+namespace Suphle\IO\Image\SaveClients;
 
-	use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Suphle\Contracts\{IO\Image\ImageLocator, Config\ModuleFiles};
 
-	class LocalSaver implements ImageLocator {
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
-		private $storagePath;
+class LocalSaver implements ImageLocator
+{
+    private $storagePath;
 
-		public function __construct (ModuleFiles $fileConfig) {
+    public function __construct(ModuleFiles $fileConfig)
+    {
 
-			$this->storagePath = $fileConfig->getImagePath();
-		}
+        $this->storagePath = $fileConfig->getImagePath();
+    }
 
-		public function resolveName (
-			UploadedFile $file, string $operationName,
+    public function resolveName(
+        UploadedFile $file,
+        string $operationName,
+        string $resourceName
+    ): string {
 
-			string $resourceName
-		):string {
+        $imageName = uniqid(). session_id() . time();
 
-			$imageName = uniqid(). session_id() . time();
+        $withExtension = $imageName. "." . $file->guessExtension();
 
-			$withExtension = $imageName. "." . $file->guessExtension();
+        return $this->storagePath . implode(DIRECTORY_SEPARATOR, [
 
-			return $this->storagePath . implode(DIRECTORY_SEPARATOR, [
-
-				$resourceName, $operationName, $withExtension
-			]);
-		}
-	}
-?>
+            $resourceName, $operationName, $withExtension
+        ]);
+    }
+}

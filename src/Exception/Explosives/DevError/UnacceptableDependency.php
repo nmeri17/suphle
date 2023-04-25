@@ -1,15 +1,16 @@
 <?php
-	namespace Suphle\Exception\Explosives\DevError;
 
-	use Suphle\Contracts\Exception\BroadcastableException;
+namespace Suphle\Exception\Explosives\DevError;
 
-	use Exception;
+use Suphle\Contracts\Exception\BroadcastableException;
 
-	class UnacceptableDependency extends Exception implements BroadcastableException {
+use Exception;
 
-		public function __construct (string $importer, string $dependency) {
+class UnacceptableDependency extends Exception implements BroadcastableException
+{
+    public function __construct(string $importer, string $dependency)
+    {
 
-			$this->message = $importer ." is forbidden from depending on ". $dependency;
-		}
-	}
-?>
+        $this->message = $importer ." is forbidden from depending on ". $dependency;
+    }
+}

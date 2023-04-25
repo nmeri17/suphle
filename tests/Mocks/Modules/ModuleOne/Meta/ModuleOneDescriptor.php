@@ -1,39 +1,44 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Meta;
 
-	use Suphle\Modules\ModuleDescriptor;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Meta;
 
-	use Suphle\Contracts\Config\ModuleFiles;
+use Suphle\Modules\ModuleDescriptor;
 
-	use Suphle\File\FileSystemReader;
+use Suphle\Contracts\Config\ModuleFiles;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Config\FilesMock;
+use Suphle\File\FileSystemReader;
 
-	use Suphle\Tests\Mocks\Interactions\ModuleOne;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Config\FilesMock;
 
-	class ModuleOneDescriptor extends ModuleDescriptor {
+use Suphle\Tests\Mocks\Interactions\ModuleOne;
 
-		public function exportsImplements():string {
+class ModuleOneDescriptor extends ModuleDescriptor
+{
+    public function exportsImplements(): string
+    {
 
-			return ModuleOne::class;
-		}
+        return ModuleOne::class;
+    }
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function interfaceCollection ():string {
+    /**
+     * {@inheritdoc}
+    */
+    public function interfaceCollection(): string
+    {
 
-			return CustomInterfaceCollection::class;
-		}
+        return CustomInterfaceCollection::class;
+    }
 
-		public function globalConcretes ():array {
+    public function globalConcretes(): array
+    {
 
-			return array_merge(parent::globalConcretes(), [
+        return array_merge(parent::globalConcretes(), [
 
-				ModuleFiles::class => new FilesMock(__DIR__, __NAMESPACE__,
-
-					$this->container->getClass(FileSystemReader::class))
-			]);
-		}
-	}
-?>
+            ModuleFiles::class => new FilesMock(
+                __DIR__,
+                __NAMESPACE__,
+                $this->container->getClass(FileSystemReader::class)
+            )
+        ]);
+    }
+}

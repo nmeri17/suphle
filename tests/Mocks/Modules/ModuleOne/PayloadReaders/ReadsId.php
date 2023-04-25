@@ -1,15 +1,16 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\PayloadReaders;
 
-	use Suphle\Services\Structures\ModellessPayload;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\PayloadReaders;
 
-	class ReadsId extends ModellessPayload {
+use Suphle\Services\Structures\ModellessPayload;
 
-		protected function convertToDomainObject () {
+class ReadsId extends ModellessPayload
+{
+    protected function convertToDomainObject()
+    {
 
-			$this->pathPlaceholders->allNumericToPositive();
+        $this->pathPlaceholders->allNumericToPositive();
 
-			return $this->pathPlaceholders->getSegmentValue("id");
-		}
-	}
-?>
+        return $this->pathPlaceholders->getSegmentValue("id");
+    }
+}

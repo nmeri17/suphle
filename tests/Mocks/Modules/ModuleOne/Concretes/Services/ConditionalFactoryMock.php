@@ -1,41 +1,46 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services;
 
-	use Suphle\Services\ConditionalFactory;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Interfaces\GreaterFields;
+use Suphle\Services\ConditionalFactory;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\ConditionalHandlers\{FieldBGreater, FieldAGreater, BothFieldsEqual};
+use Suphle\Tests\Mocks\Modules\ModuleOne\Interfaces\GreaterFields;
 
-	class ConditionalFactoryMock extends ConditionalFactory {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\ConditionalHandlers\{FieldBGreater, FieldAGreater, BothFieldsEqual};
 
-		protected function manufacturerMethod ():string {
+class ConditionalFactoryMock extends ConditionalFactory
+{
+    protected function manufacturerMethod(): string
+    {
 
-			return "greatestFields";
-		}
+        return "greatestFields";
+    }
 
-		protected function greatestFields (int $fieldA, int $fieldB, int $fieldC):void {
+    protected function greatestFields(int $fieldA, int $fieldB, int $fieldC): void
+    {
 
-			$this->whenCase($this->caseACondition(...), FieldAGreater::class, $fieldA, $fieldB)
+        $this->whenCase($this->caseACondition(...), FieldAGreater::class, $fieldA, $fieldB)
 
-			->whenCase($this->caseBCondition(...), FieldBGreater::class, $fieldB, $fieldA)
+        ->whenCase($this->caseBCondition(...), FieldBGreater::class, $fieldB, $fieldA)
 
-			->finally( BothFieldsEqual::class, $fieldC);
-		}
+        ->finally(BothFieldsEqual::class, $fieldC);
+    }
 
-		protected function getInterface ():string {
+    protected function getInterface(): string
+    {
 
-			return GreaterFields::class;
-		}
+        return GreaterFields::class;
+    }
 
-		public function caseACondition (int $fieldA, int $fieldB):bool {
+    public function caseACondition(int $fieldA, int $fieldB): bool
+    {
 
-			return $fieldA > $fieldB;
-		}
+        return $fieldA > $fieldB;
+    }
 
-		public function caseBCondition (int $fieldB, int $fieldA):bool {
+    public function caseBCondition(int $fieldB, int $fieldA): bool
+    {
 
-			return $fieldB > $fieldA;
-		}
-	}
-?>
+        return $fieldB > $fieldA;
+    }
+}

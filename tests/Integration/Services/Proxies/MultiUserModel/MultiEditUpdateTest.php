@@ -1,102 +1,108 @@
 <?php
-	namespace Suphle\Tests\Integration\Services\Proxies\MultiUserModel;
 
-	use Suphle\Services\DecoratorHandlers\MultiUserEditHandler;
+namespace Suphle\Tests\Integration\Services\Proxies\MultiUserModel;
 
-	use Suphle\Contracts\Services\Models\IntegrityModel;
+use Suphle\Services\DecoratorHandlers\MultiUserEditHandler;
 
-	use Suphle\Exception\Explosives\EditIntegrityException;
+use Suphle\Contracts\Services\Models\IntegrityModel;
 
-	use Suphle\Testing\{TestTypes\ModuleLevelTest, Condiments\BaseDatabasePopulator};
+use Suphle\Exception\Explosives\EditIntegrityException;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\{EmploymentEditMock, EmploymentEditError};
+use Suphle\Testing\{TestTypes\ModuleLevelTest, Condiments\BaseDatabasePopulator};
 
-	use Suphle\Tests\Mocks\Models\Eloquent\Employment;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\{EmploymentEditMock, EmploymentEditError};
 
-	use Suphle\Tests\Integration\Services\ReplacesRequestPayload;
+use Suphle\Tests\Mocks\Models\Eloquent\Employment;
 
-	use DateTime, DateInterval;
+use Suphle\Tests\Integration\Services\ReplacesRequestPayload;
 
-	class MultiEditUpdateTest extends ModuleLevelTest {
+use DateTime;
+use DateInterval;
 
-		use BaseDatabasePopulator, ReplacesRequestPayload {
+class MultiEditUpdateTest extends ModuleLevelTest
+{
+    use BaseDatabasePopulator, ReplacesRequestPayload {
 
-			BaseDatabasePopulator::setUp as databaseAllSetup;
-		}
+        BaseDatabasePopulator::setUp as databaseAllSetup;
+    }
 
-		private Employment $lastInserted;
-		
-		private string $modelName = Employment::class,
-		
-		$sutName = EmploymentEditMock::class;
+    private Employment $lastInserted;
 
-		protected function setUp ():void { // continue by running tests
+    private string $modelName = Employment::class;
 
-			$this->databaseAllSetup();
+    private string $sutName = EmploymentEditMock::class;
 
-			$this->lastInserted = $this->replicator->getRandomEntity();
-		}
+    protected function setUp(): void // continue by running tests
+    {$this->databaseAllSetup();
 
-		public function test_missing_key_on_update_throws_error () {
+        $this->lastInserted = $this->replicator->getRandomEntity();
+    }
 
-			$this->expectException(EditIntegrityException::class); // then
+    public function test_missing_key_on_update_throws_error()
+    {
 
-			$this->stubRequestObjects(5);
+        $this->expectException(EditIntegrityException::class); // then
 
-			$sut = $this->getContainer()->getClass($this->sutName);
+        $this->stubRequestObjects(5);
 
-			$sut->updateResource(); // when
-		}
+        $sut = $this->getContainer()->getClass($this->sutName);
 
-		protected function getActiveEntity ():string {
+        $sut->updateResource(); // when
+    }
 
-			return $this->modelName;
-		}
+    protected function getActiveEntity(): string
+    {
 
-		public function test_last_updater_invalidates_for_all_viewers () {
+        return $this->modelName;
+    }
 
-			$this->expectException(EditIntegrityException::class); // then
+    public function test_last_updater_invalidates_for_all_viewers()
+    {
 
-			$threeMinutesAgo = (new DateTime)->sub(new DateInterval("PT3M"))
+        $this->expectException(EditIntegrityException::class); // then
 
-			->format(MultiUserEditHandler::DATE_FORMAT);
+        $threeMinutesAgo = (new DateTime())->sub(new DateInterval("PT3M"))
 
-			// given
-			$modelId = $this->lastInserted->id;
+        ->format(MultiUserEditHandler::DATE_FORMAT);
 
-			$this->stubRequestObjects($modelId, [
+        // given
+        $modelId = $this->lastInserted->id;
 
-				MultiUserEditHandler::INTEGRITY_KEY => $threeMinutesAgo,
+        $this->stubRequestObjects($modelId, [
 
-				"name" => "ujunwa", "id" => $modelId
-			]);
+            MultiUserEditHandler::INTEGRITY_KEY => $threeMinutesAgo,
 
-			// when
-			$sut = $this->getContainer()->getClass($this->sutName); // to wrap in decorator
+            "name" => "ujunwa", "id" => $modelId
+        ]);
 
-			for ($i = 0; $i < 2; $i++) $sut->updateResource(); // first request updates integrityKey. Next iteration should fail
-		}
+        // when
+        $sut = $this->getContainer()->getClass($this->sutName); // to wrap in decorator
 
-		public function test_update_can_withstand_errors () {
+        for ($i = 0; $i < 2; $i++) {
+            $sut->updateResource();
+        } // first request updates integrityKey. Next iteration should fail
+    }
 
-			$columnName = IntegrityModel::INTEGRITY_COLUMN;
+    public function test_update_can_withstand_errors()
+    {
 
-			$modelId = $this->lastInserted->id;
+        $columnName = IntegrityModel::INTEGRITY_COLUMN;
 
-			$this->stubRequestObjects($modelId, [
+        $modelId = $this->lastInserted->id;
 
-				MultiUserEditHandler::INTEGRITY_KEY => $this->lastInserted->$columnName,
+        $this->stubRequestObjects($modelId, [
 
-				"name" => "ujunwa",
+            MultiUserEditHandler::INTEGRITY_KEY => $this->lastInserted->$columnName,
 
-				"id" => $modelId
-			]);
+            "name" => "ujunwa",
 
-			$result = $this->getContainer()->getClass(EmploymentEditError::class)
+            "id" => $modelId
+        ]);
 
-			->updateResource(); // when
+        $result = $this->getContainer()->getClass(EmploymentEditError::class)
 
-			$this->assertSame("boo!", $result); // then
-		}
-	}
-?>
+        ->updateResource(); // when
+
+        $this->assertSame("boo!", $result); // then
+    }
+}

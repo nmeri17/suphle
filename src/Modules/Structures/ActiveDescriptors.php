@@ -1,39 +1,45 @@
 <?php
-	namespace Suphle\Modules\Structures;
 
-	use Suphle\Hydration\Container;
+namespace Suphle\Modules\Structures;
 
-	use Suphle\Contracts\Modules\DescriptorInterface;
+use Suphle\Hydration\Container;
 
-	/**
-	 * Using this to avoid pulling ModuleHandlerIdentifier into lower level classes just to access app modules
-	*/
-	class ActiveDescriptors {
+use Suphle\Contracts\Modules\DescriptorInterface;
 
-		public function __construct(protected readonly array $originalDescriptors) {
+/**
+ * Using this to avoid pulling ModuleHandlerIdentifier into lower level classes just to access app modules
+*/
+class ActiveDescriptors
+{
+    public function __construct(protected readonly array $originalDescriptors)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function firstOriginalContainer ():Container {
+    public function firstOriginalContainer(): Container
+    {
 
-			return current($this->originalDescriptors)->getContainer();
-		}
+        return current($this->originalDescriptors)->getContainer();
+    }
 
-		public function getOriginalDescriptors ():array {
+    public function getOriginalDescriptors(): array
+    {
 
-			return $this->originalDescriptors;
-		}
+        return $this->originalDescriptors;
+    }
 
-		public function findMatchingExports (string $moduleInterface):?DescriptorInterface {
+    public function findMatchingExports(string $moduleInterface): ?DescriptorInterface
+    {
 
-			foreach ($this->originalDescriptors as $descriptor)
+        foreach ($this->originalDescriptors as $descriptor) {
 
-				if ($moduleInterface == $descriptor->exportsImplements())
+            if ($moduleInterface == $descriptor->exportsImplements()) {
 
-					return $descriptor;
+                return $descriptor;
+            }
+        }
 
-			return null;
-		}
-	}
-?>
+        return null;
+    }
+}

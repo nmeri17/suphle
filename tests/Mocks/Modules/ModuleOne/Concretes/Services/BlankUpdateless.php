@@ -1,30 +1,34 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services;
 
-	use Suphle\Services\UpdatelessService;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services;
 
-	use Suphle\Contracts\Auth\AuthStorage;
+use Suphle\Services\UpdatelessService;
 
-	// these methods are redundant to the class btw
-	class BlankUpdateless extends UpdatelessService {
+use Suphle\Contracts\Auth\AuthStorage;
 
-		public function __construct(protected readonly AuthStorage $authStorage) {
+// these methods are redundant to the class btw
+class BlankUpdateless extends UpdatelessService
+{
+    public function __construct(protected readonly AuthStorage $authStorage)
+    {
 
-		}
+    }
 
-		public function getUserId ():?string {
+    public function getUserId(): ?string
+    {
 
-			return $this->authStorage->getId();
-		}
+        return $this->authStorage->getId();
+    }
 
-		public function modelsToUpdate ():array {
+    public function modelsToUpdate(): array
+    {
 
-			return [];
-		}
+        return [];
+    }
 
-		public function initializeUpdateModels ($baseModel):void {
+    public function initializeUpdateModels($baseModel): void
+    {
 
-			//
-		}
-	}
-?>
+        //
+    }
+}

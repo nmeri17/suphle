@@ -1,7 +1,6 @@
 <?php
 
-	return [
+return [
 
-		"link" => "example.com"
-	];
-?>
+    "link" => "example.com"
+];

@@ -1,62 +1,64 @@
 <?php
-	namespace _modules_shell\_module_name\Coordinators;
 
-	use Suphle\Services\ServiceCoordinator;
+namespace _modules_shell\_module_name\Coordinators;
 
-	use Suphle\Request\PayloadStorage;
+use Suphle\Services\ServiceCoordinator;
 
-	use Suphle\Security\CSRF\CsrfGenerator;
+use Suphle\Request\PayloadStorage;
 
-	use Suphle\Contracts\IO\Session;
+use Suphle\Security\CSRF\CsrfGenerator;
 
-	use Suphle\Exception\Diffusers\ValidationFailureDiffuser;
+use Suphle\Contracts\IO\Session;
 
-	use _modules_shell\_module_name\PayloadReaders\Base_resource_nameBuilder;
+use Suphle\Exception\Diffusers\ValidationFailureDiffuser;
 
-	class _resource_nameCoordinator extends ServiceCoordinator {
+use _modules_shell\_module_name\PayloadReaders\Base_resource_nameBuilder;
 
-		use _resource_nameGenericCoordinator;
+class _resource_nameCoordinator extends ServiceCoordinator
+{
+    use _resource_nameGenericCoordinator;
 
-		public function __construct (
+    public function __construct(
+        protected readonly PayloadStorage $payloadStorage,
+        protected readonly CsrfGenerator $csrf,
+        protected readonly Session $sessionClient
+    ) {
 
-			protected readonly PayloadStorage $payloadStorage,
+        //
+    }
 
-			protected readonly CsrfGenerator $csrf,
+    public function showCreateForm(): iterable
+    {
 
-			protected readonly Session $sessionClient
-		) {
+        return $this->copyValidationErrors([
 
-			//
-		}
+            CsrfGenerator::TOKEN_FIELD => $this->csrf->newToken()
+        ]);
+    }
 
-		public function showCreateForm ():iterable {
+    protected function copyValidationErrors(array $payload): array
+    {
 
-			return $this->copyValidationErrors([
+        if ($this->sessionClient->hasOldInput(ValidationFailureDiffuser::ERRORS_PRESENCE)) {
 
-				CsrfGenerator::TOKEN_FIELD => $this->csrf->newToken()
-			]);
-		}
+            foreach (ValidationFailureDiffuser::FAILURE_KEYS as $key) {
 
-		protected function copyValidationErrors (array $payload):array {
+                $payload[$key] = $this->sessionClient->getOldInput($key);
+            }
+        }
 
-			if ($this->sessionClient->hasOldInput(ValidationFailureDiffuser::ERRORS_PRESENCE)) {
+        return $payload;
+    }
 
-				foreach (ValidationFailureDiffuser::FAILURE_KEYS as $key)
+    public function showSearchForm(): iterable
+    {
 
-					$payload[$key] = $this->sessionClient->getOldInput($key);
-			}
+        return [];
+    }
 
-			return $payload;
-		}
+    public function showEditForm(Base_resource_nameBuilder $_resource_nameBuilder): iterable
+    {
 
-		public function showSearchForm ():iterable {
-
-			return [];
-		}
-
-		public function showEditForm (Base_resource_nameBuilder $_resource_nameBuilder):iterable {
-
-			return [];
-		}
-	}
-?>
+        return [];
+    }
+}

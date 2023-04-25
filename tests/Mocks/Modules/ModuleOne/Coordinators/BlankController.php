@@ -1,10 +1,10 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-	use Suphle\Services\ServiceCoordinator;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-	class BlankController extends ServiceCoordinator {
+use Suphle\Services\ServiceCoordinator;
 
-		//
-	}
-?>
+class BlankController extends ServiceCoordinator
+{
+    //
+}

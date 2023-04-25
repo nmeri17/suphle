@@ -1,14 +1,14 @@
 <?php
-	namespace Suphle\Contracts\Routing;
 
-	use Suphle\Contracts\Presentation\BaseRenderer;
+namespace Suphle\Contracts\Routing;
 
-	use Suphle\Request\PayloadStorage;
+use Suphle\Contracts\Presentation\BaseRenderer;
 
-	use Suphle\Middleware\MiddlewareNexts;
+use Suphle\Request\PayloadStorage;
 
-	interface Middleware {
+use Suphle\Middleware\MiddlewareNexts;
 
-		public function process (PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler):BaseRenderer;
-	}
-?>
+interface Middleware
+{
+    public function process(PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler): BaseRenderer;
+}

@@ -1,54 +1,57 @@
 <?php
-	namespace Suphle\Tests\Integration\Services\DependencySanitization;
 
-	use Suphle\Hydration\{Container, Structures\ObjectDetails};
+namespace Suphle\Tests\Integration\Services\DependencySanitization;
 
-	use Suphle\Server\DependencySanitizer;
+use Suphle\Hydration\{Container, Structures\ObjectDetails};
 
-	use Suphle\Testing\TestTypes\IsolatedComponentTest;
+use Suphle\Server\DependencySanitizer;
 
-	use Suphle\Tests\Integration\Generic\CommonBinds;
+use Suphle\Testing\TestTypes\IsolatedComponentTest;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
+use Suphle\Tests\Integration\Generic\CommonBinds;
 
-	abstract class TestSanitization extends IsolatedComponentTest {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
-		use CommonBinds;
+abstract class TestSanitization extends IsolatedComponentTest
+{
+    use CommonBinds;
 
-		protected DependencySanitizer $sanitizer;
+    protected DependencySanitizer $sanitizer;
 
-		protected ObjectDetails $objectMeta;
+    protected ObjectDetails $objectMeta;
 
-		protected function setUp ():void {
+    protected function setUp(): void
+    {
 
-			parent::setUp();
+        parent::setUp();
 
-			$container = $this->getContainer();
+        $container = $this->getContainer();
 
-			$this->sanitizer = $container->getClass(DependencySanitizer::class);
+        $this->sanitizer = $container->getClass(DependencySanitizer::class);
 
-			$this->objectMeta = $container->getClass(ObjectDetails::class);
+        $this->objectMeta = $container->getClass(ObjectDetails::class);
 
-			$this->setSanitizationPath();
-		}
+        $this->setSanitizationPath();
+    }
 
-		/*protected function getModules ():array {
+    /*protected function getModules ():array {
 
-			return [new ModuleOneDescriptor(new Container)];
-		}*/
+        return [new ModuleOneDescriptor(new Container)];
+    }*/
 
-		abstract protected function setSanitizationPath ():void;
+    abstract protected function setSanitizationPath(): void;
 
-		protected function getClassDir (string $className):string {
+    protected function getClassDir(string $className): string
+    {
 
-			return dirname($this->objectMeta->getReflectedClass($className)
+        return dirname($this->objectMeta->getReflectedClass($className)
 
-			->getFileName());
-		}
+        ->getFileName());
+    }
 
-		protected function escapeClassName (string $className):string {
+    protected function escapeClassName(string $className): string
+    {
 
-			return "/". str_replace("\\", "\\\\", $className) . "/";
-		}
-	}
-?>
+        return "/". str_replace("\\", "\\\\", $className) . "/";
+    }
+}

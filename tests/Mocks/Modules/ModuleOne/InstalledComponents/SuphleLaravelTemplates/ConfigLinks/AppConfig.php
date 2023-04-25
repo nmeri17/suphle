@@ -1,13 +1,14 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\InstalledComponents\SuphleLaravelTemplates\ConfigLinks;
 
-	use Suphle\Bridge\Laravel\Config\BaseConfigLink;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\InstalledComponents\SuphleLaravelTemplates\ConfigLinks;
 
-	class AppConfig extends BaseConfigLink {
+use Suphle\Bridge\Laravel\Config\BaseConfigLink;
 
-		public function name ():string {
+class AppConfig extends BaseConfigLink
+{
+    public function name(): string
+    {
 
-			return "Look, an override!";
-		}
-	}
-?>
+        return "Look, an override!";
+    }
+}

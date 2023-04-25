@@ -1,8 +1,8 @@
 <?php
-	namespace Suphle\Services;
 
-	class UpdatefulService {
+namespace Suphle\Services;
 
-		//
-	}
-?>
+class UpdatefulService
+{
+    //
+}

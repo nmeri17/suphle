@@ -1,28 +1,30 @@
 <?php
-	namespace Suphle\Services\Structures;
 
-	use Suphle\Contracts\Requests\FileInputReader;
+namespace Suphle\Services\Structures;
 
-	use Suphle\IO\Image\OptimizersManager;
+use Suphle\Contracts\Requests\FileInputReader;
 
-	use Suphle\Services\Decorators\VariableDependencies;
+use Suphle\IO\Image\OptimizersManager;
 
-	#[VariableDependencies([
+use Suphle\Services\Decorators\VariableDependencies;
 
-		"setPayloadStorage", "setInputReader"
-	])]
-	abstract class ImagefulPayload extends ModellessPayload {
+#[VariableDependencies([
 
-		protected array $allFiles;
+    "setPayloadStorage", "setInputReader"
+])]
+abstract class ImagefulPayload extends ModellessPayload
+{
+    protected array $allFiles;
 
-		public function __construct (protected OptimizersManager $imageOptimizer) {
+    public function __construct(protected OptimizersManager $imageOptimizer)
+    {
 
-			// default optimizer. can be replaced
-		}
+        // default optimizer. can be replaced
+    }
 
-		public function setInputReader (FileInputReader $inputReader):void {
+    public function setInputReader(FileInputReader $inputReader): void
+    {
 
-			$this->allFiles = $inputReader->getFileObjects();
-		}
-	}
-?>
+        $this->allFiles = $inputReader->getFileObjects();
+    }
+}

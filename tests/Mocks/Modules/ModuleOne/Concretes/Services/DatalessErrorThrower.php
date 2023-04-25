@@ -1,59 +1,67 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services;
 
-	use Suphle\Contracts\Services\CallInterceptors\ServiceErrorCatcher;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services;
 
-	use Suphle\Services\Decorators\{InterceptsCalls, VariableDependencies};
+use Suphle\Contracts\Services\CallInterceptors\ServiceErrorCatcher;
 
-	use Suphle\Services\Structures\BaseErrorCatcherService;
+use Suphle\Services\Decorators\{InterceptsCalls, VariableDependencies};
 
-	use Suphle\Exception\Explosives\NotFoundException;
+use Suphle\Services\Structures\BaseErrorCatcherService;
 
-	use Exception, InvalidArgumentException;
+use Suphle\Exception\Explosives\NotFoundException;
 
-	#[InterceptsCalls]
-	#[VariableDependencies([
+use Exception;
+use InvalidArgumentException;
 
-		"setPayloadStorage", "setPlaceholderStorage"
-	])]
-	class DatalessErrorThrower implements ServiceErrorCatcher {
+#[InterceptsCalls]
+#[VariableDependencies([
 
-		use BaseErrorCatcherService;
+    "setPayloadStorage", "setPlaceholderStorage"
+])]
+class DatalessErrorThrower implements ServiceErrorCatcher
+{
+    use BaseErrorCatcherService;
 
-		public function rethrowAs ():array {
+    public function rethrowAs(): array
+    {
 
-			return [
-				InvalidArgumentException::class => NotFoundException::class
-			];
-		}
+        return [
+            InvalidArgumentException::class => NotFoundException::class
+        ];
+    }
 
-		public function failureState (string $method) {
+    public function failureState(string $method)
+    {
 
-			if (in_array($method, [ "deliberateError", "deliberateException"]))
+        if (in_array($method, [ "deliberateError", "deliberateException"])) {
 
-				return $method;
-		}
+            return $method;
+        }
+    }
 
-		public function notCaughtInternally ():int {
+    public function notCaughtInternally(): int
+    {
 
-			return undefinedFunction();
-		}
+        return undefinedFunction();
+    }
 
-		public function deliberateError ():string {
+    public function deliberateError(): string
+    {
 
-			trigger_error("error_msg");
+        trigger_error("error_msg");
 
-			return "I'm shy";
-		}
+        return "I'm shy";
+    }
 
-		public function deliberateException () {
+    public function deliberateException()
+    {
 
-			throw new Exception;
-		}
+        throw new Exception();
+    }
 
-		public function terminateRequest () {
+    public function terminateRequest()
+    {
 
-			throw new InvalidArgumentException;
-		}
-	}
-?>
+        throw new InvalidArgumentException();
+    }
+}

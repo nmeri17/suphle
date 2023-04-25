@@ -1,8 +1,8 @@
 <?php
-	namespace Suphle\Contracts\Database;
 
-	interface OrmTester {
+namespace Suphle\Contracts\Database;
 
-		public function getConnection ($connection = null);
-	}
-?>
+interface OrmTester
+{
+    public function getConnection($connection = null);
+}

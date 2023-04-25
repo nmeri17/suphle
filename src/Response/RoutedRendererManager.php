@@ -1,219 +1,228 @@
 <?php
-	namespace Suphle\Response;
 
-	use Suphle\Modules\ModuleDescriptor;
+namespace Suphle\Response;
 
-	use Suphle\Hydration\{Container, DecoratorHydrator, Structures\CallbackDetails};
+use Suphle\Modules\ModuleDescriptor;
 
-	use Suphle\Services\ServiceCoordinator;
+use Suphle\Hydration\{Container, DecoratorHydrator, Structures\CallbackDetails};
 
-	use Suphle\Services\Decorators\{BindsAsSingleton, ValidationRules};
+use Suphle\Services\ServiceCoordinator;
 
-	use Suphle\Contracts\{Presentation\BaseRenderer, IO\Session, Requests\ValidationEvaluator};
+use Suphle\Services\Decorators\{BindsAsSingleton, ValidationRules};
 
-	use Suphle\Contracts\Response\{BaseResponseManager, RendererManager};
+use Suphle\Contracts\{Presentation\BaseRenderer, IO\Session, Requests\ValidationEvaluator};
 
-	use Suphle\Response\Format\Redirect;
+use Suphle\Contracts\Response\{BaseResponseManager, RendererManager};
 
-	use Suphle\Request\{ PayloadStorage, RequestDetails, ValidatorManager};
+use Suphle\Response\Format\Redirect;
 
-	use Suphle\Exception\Explosives\{ValidationFailure, DevError\NoCompatibleValidator};
+use Suphle\Request\{ PayloadStorage, RequestDetails, ValidatorManager};
 
-	#[BindsAsSingleton(RendererManager::class)]
-	class RoutedRendererManager implements RendererManager, BaseResponseManager, ValidationEvaluator {
+use Suphle\Exception\Explosives\{ValidationFailure, DevError\NoCompatibleValidator};
 
-		use SetJsonValidationError;
+#[BindsAsSingleton(RendererManager::class)]
+class RoutedRendererManager implements RendererManager, BaseResponseManager, ValidationEvaluator
+{
+    use SetJsonValidationError;
 
-		public const PREVIOUS_GET_URL = "PREVIOUS_GET_URL";
+    public const PREVIOUS_GET_URL = "PREVIOUS_GET_URL";
 
-		protected array $handlerParameters;
+    protected array $handlerParameters;
 
-		protected ValidatorManager $validatorManager;
-			
-		public function __construct (
+    protected ValidatorManager $validatorManager;
 
-			protected readonly Container $container,
+    public function __construct(
+        protected readonly Container $container,
+        protected readonly BaseRenderer $renderer,
+        protected readonly Session $sessionClient,
+        protected readonly FlowResponseQueuer $flowQueuer,
+        protected readonly RequestDetails $requestDetails,
+        protected readonly CallbackDetails $callbackDetails
+    ) {
 
-			protected readonly BaseRenderer $renderer,
+        //
+    }
 
-			protected readonly Session $sessionClient,
+    public function responseRenderer(): BaseRenderer
+    {
 
-			protected readonly FlowResponseQueuer $flowQueuer,
+        return $this->renderer;
+    }
 
-			protected readonly RequestDetails $requestDetails,
+    public function afterRender($data = null): void
+    {
 
-			protected readonly CallbackDetails $callbackDetails
-		) {
+        if ($this->renderer->hasBranches()) {// the first organic request needs to trigger the flows below it
 
-			//
-		}
+            $this->flowQueuer->saveSubBranches($this->renderer);
+        }
+    }
 
-		public function responseRenderer ():BaseRenderer {
+    public function bootDefaultRenderer(): self
+    {
 
-			return $this->renderer;
-		}
+        $this->handlerParameters = $this->fetchHandlerParameters(
+            $this->renderer->getCoordinator(),
+            $this->renderer->getHandler()
+        );
 
-		public function afterRender ($data = null):void {
+        return $this;
+    }
 
-			if ($this->renderer->hasBranches())// the first organic request needs to trigger the flows below it
+    public function handleValidRequest(PayloadStorage $payloadStorage): BaseRenderer
+    {
 
-				$this->flowQueuer->saveSubBranches($this->renderer);
-		}
+        if ($this->shouldStoreRenderer()) {
 
-		public function bootDefaultRenderer ():self {
+            $this->sessionClient->setValue(
+                self::PREVIOUS_GET_URL,
+                $this->requestDetails->getPath()
+            );
+        }
 
-			$this->handlerParameters = $this->fetchHandlerParameters(
-				$this->renderer->getCoordinator(),
+        return $this->renderer->invokeActionHandler($this->handlerParameters);
+    }
 
-				$this->renderer->getHandler()
-			);
+    protected function shouldStoreRenderer(): bool
+    {
 
-			return $this;
-		}
+        return $this->requestDetails->isGetRequest() &&
 
-		public function handleValidRequest (PayloadStorage $payloadStorage):BaseRenderer {
+        !$this->requestDetails->isApiRoute();
+    }
 
-			if ($this->shouldStoreRenderer()) {
+    /**
+     * Checks for whether current or previous should be renedered, depending on currently active renderer
+     *
+     * Expects current request to contain same placeholder values used for executing that preceding request
+    */
+    public function invokePreviousRenderer(array $toMerge = []): BaseRenderer
+    {
 
-				$this->sessionClient->setValue(
+        if (!$this->renderer->deferValidationContent()) {// if current request is something like json, write validation errors to it
 
-					self::PREVIOUS_GET_URL, $this->requestDetails->getPath()
-				);
-			}
+            $previousRenderer = $this->renderer;
 
-			return $this->renderer->invokeActionHandler($this->handlerParameters);
-		}
+            $previousRenderer->forceArrayShape($toMerge);
+        } else {
 
-		protected function shouldStoreRenderer ():bool {
+            $previousUrl = $this->sessionClient->getValue(self::PREVIOUS_GET_URL);
 
-			return $this->requestDetails->isGetRequest() &&
+            $previousRenderer = new Redirect("", fn () => $previousUrl);
 
-			!$this->requestDetails->isApiRoute();
-		}
+            foreach ($toMerge as $key => $value) {
 
-		/**
-		 * Checks for whether current or previous should be renedered, depending on currently active renderer
-		 * 
-		 * Expects current request to contain same placeholder values used for executing that preceding request
-		*/
-		public function invokePreviousRenderer (array $toMerge = []):BaseRenderer {
+                $this->sessionClient->setFlashValue($key, $value);
+            }
 
-			if (!$this->renderer->deferValidationContent()) {// if current request is something like json, write validation errors to it
+            $decoratorHydrator = $this->container->getClass(DecoratorHydrator::class);
 
-				$previousRenderer = $this->renderer;
-			
-				$previousRenderer->forceArrayShape($toMerge);
-			}
-			else {
+            $decoratorHydrator->scopeInjecting(
+                $previousRenderer,
+                self::class
+            );
+        }
 
-				$previousUrl = $this->sessionClient->getValue(self::PREVIOUS_GET_URL);
+        return $previousRenderer;
+    }
 
-				$previousRenderer = new Redirect("", fn () => $previousUrl);
+    public function fetchHandlerParameters(
+        ServiceCoordinator $coodinator,
+        string $handlingMethod
+    ): array {
 
-				foreach ($toMerge as $key => $value)
+        return $this->container
 
-					$this->sessionClient->setFlashValue($key, $value);
+        ->getMethodParameters($handlingMethod, $coodinator::class);
+    }
 
-				$decoratorHydrator = $this->container->getClass(DecoratorHydrator::class);
+    /**
+     * {@inheritdoc}
+    */
+    public function mayBeInvalid(?BaseRenderer $renderer = null): self
+    {
 
-				$decoratorHydrator->scopeInjecting(
+        if (is_null($renderer)) {
+            $renderer = $this->renderer;
+        }
 
-					$previousRenderer, self::class
-				);
-			}
+        $shouldValidate = $this->acquireValidatorStatus(
+            $renderer->getCoordinator(),
+            $renderer->getHandler()
+        );
 
-			return $previousRenderer;
-		}
+        if ($shouldValidate) {
 
-		public function fetchHandlerParameters (
+            if (!$this->validatorManager->isValidated()) {
 
-			ServiceCoordinator $coodinator, string $handlingMethod
-		):array {
+                throw new ValidationFailure($this);
+            }
 
-			return $this->container
+            $this->sessionClient->resetOldInput(); // discard any validation errors
+        }
 
-			->getMethodParameters($handlingMethod, $coodinator::class);
-		}
+        return $this;
+    }
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function mayBeInvalid (?BaseRenderer $renderer = null):self {
+    /**
+     * {@inheritdoc}
+    */
+    public function acquireValidatorStatus(ServiceCoordinator $coodinator, string $handlingMethod): bool
+    {
 
-			if (is_null($renderer)) $renderer = $this->renderer;
-			
-			$shouldValidate = $this->acquireValidatorStatus(
+        $attributesList = $this->callbackDetails->getMethodAttributes(
+            $coodinator::class,
+            $handlingMethod,
+            ValidationRules::class
+        );
 
-				$renderer->getCoordinator(), $renderer->getHandler()
-			);
+        if ($this->eligibleToValidate(
+            $coodinator::class,
+            $handlingMethod,
+            $attributesList
+        )) {
 
-			if ($shouldValidate) {
+            $this->validatorManager = $this->container->getClass(ValidatorManager::class); // lazily setting this since it incurs a ton of hydration irrelevant to every request
 
-				if (!$this->validatorManager->isValidated())
+            $this->validatorManager->setActionRules(
+                end($attributesList)->newInstance()->rules // use only the latest
+            );
 
-					throw new ValidationFailure($this);
+            return true;
+        }
 
-				$this->sessionClient->resetOldInput(); // discard any validation errors
-			}
+        return false;
+    }
 
-			return $this;
-		}
+    protected function eligibleToValidate(
+        string $coodinatorName,
+        string $handlingMethod,
+        array $attributesList
+    ): bool {
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function acquireValidatorStatus (ServiceCoordinator $coodinator, string $handlingMethod):bool {
+        if (!empty($attributesList)) {
+            return true;
+        }
 
-			$attributesList = $this->callbackDetails->getMethodAttributes(
+        if ($this->requestDetails->isGetRequest()) {
+            return false;
+        }
 
-				$coodinator::class, $handlingMethod,
+        throw new NoCompatibleValidator(
+            $coodinatorName,
+            $handlingMethod
+        );
+    }
 
-				ValidationRules::class
-			);
+    public function getValidatorErrors(): array
+    {
 
-			if ($this->eligibleToValidate(
+        return $this->validatorManager->validationErrors();
+    }
 
-				$coodinator::class, $handlingMethod, $attributesList
-			)) {
+    public function validationRenderer(array $failureDetails): BaseRenderer
+    {
 
-				$this->validatorManager = $this->container->getClass(ValidatorManager::class); // lazily setting this since it incurs a ton of hydration irrelevant to every request
-
-				$this->validatorManager->setActionRules(
-
-					end($attributesList)->newInstance()->rules // use only the latest
-				);
-
-				return true;
-			}
-
-			return false;
-		}
-
-		protected function eligibleToValidate (
-
-			string $coodinatorName, string $handlingMethod,
-
-			array $attributesList
-		):bool { 
-
-			if (!empty($attributesList)) return true;
-
-			if ($this->requestDetails->isGetRequest()) return false;
-
-			throw new NoCompatibleValidator(
-
-				$coodinatorName, $handlingMethod
-			);
-		}
-
-		public function getValidatorErrors ():array {
-
-			return $this->validatorManager->validationErrors();
-		}
-
-		public function validationRenderer (array $failureDetails):BaseRenderer {
-
-			return $this->invokePreviousRenderer($failureDetails);
-		}
-	}
-?>
+        return $this->invokePreviousRenderer($failureDetails);
+    }
+}

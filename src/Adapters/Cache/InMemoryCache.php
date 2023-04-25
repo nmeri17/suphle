@@ -1,55 +1,66 @@
 <?php
-	namespace Suphle\Adapters\Cache;
 
-	use Suphle\Contracts\IO\CacheManager;
+namespace Suphle\Adapters\Cache;
 
-	use Exception;
+use Suphle\Contracts\IO\CacheManager;
 
-	class InMemoryCache implements CacheManager {
+use Exception;
 
-		protected array $store = [], $tags = [];
+class InMemoryCache implements CacheManager
+{
+    protected array $store = [];
+    protected array $tags = [];
 
-		public function setupClient ():void {
+    public function setupClient(): void
+    {
 
-			// error 404: no client to setup
-		}
+        // error 404: no client to setup
+    }
 
-		public function getItem (string $key, callable $storeOnAbsence = null) {
+    public function getItem(string $key, callable $storeOnAbsence = null)
+    {
 
-			if (array_key_exists($key, $this->store))
+        if (array_key_exists($key, $this->store)) {
 
-				return $this->store[$key];
+            return $this->store[$key];
+        }
 
-			if (is_null($storeOnAbsence)) return;
+        if (is_null($storeOnAbsence)) {
+            return;
+        }
 
-			$toStore = $storeOnAbsence();
+        $toStore = $storeOnAbsence();
 
-			if (is_null($toStore))
+        if (is_null($toStore)) {
 
-				throw new Exception("Cache data source cannot return null");
+            throw new Exception("Cache data source cannot return null");
+        }
 
-			$this->saveItem($key, $toStore);
+        $this->saveItem($key, $toStore);
 
-			return $toStore;
-		}
+        return $toStore;
+    }
 
-		public function saveItem (string $key, $data):void {
+    public function saveItem(string $key, $data): void
+    {
 
-			$this->store[$key] = $data;
-		}
+        $this->store[$key] = $data;
+    }
 
-		public function tagItem (string $key, $data):void {
+    public function tagItem(string $key, $data): void
+    {
 
-			if (!array_key_exists($key, $this->tags))
+        if (!array_key_exists($key, $this->tags)) {
 
-				$this->tags[$key] = [];
+            $this->tags[$key] = [];
+        }
 
-			$this->tags[$key][] = $data;
-		}
+        $this->tags[$key][] = $data;
+    }
 
-		public function deleteItem (string $key) {
+    public function deleteItem(string $key)
+    {
 
-			unset($this->store[$key]);
-		}
-	}
-?>
+        unset($this->store[$key]);
+    }
+}

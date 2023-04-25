@@ -1,33 +1,33 @@
 <?php
-	namespace Suphle\Routing\Structures;
 
-	use Suphle\Routing\CollectionMetaFunnel;
+namespace Suphle\Routing\Structures;
 
-	use Closure;
+use Suphle\Routing\CollectionMetaFunnel;
 
-	class CollectionMetaExclusion {
+use Closure;
 
-		public function __construct (
+class CollectionMetaExclusion
+{
+    public function __construct(
+        protected readonly string $funnelName,
+        protected readonly ?Closure $matcher = null
+    ) {
 
-			protected readonly string $funnelName,
+        //
+    }
 
-			protected readonly ?Closure $matcher = null
-		) {
+    public function shouldExclude(CollectionMetaFunnel $collector): bool
+    {
 
-			//
-		}
+        $matchesType = $collector instanceof $this->funnelName;
 
-		public function shouldExclude (CollectionMetaFunnel $collector):bool {
+        $matcherResult = true;
 
-			$matchesType = $collector instanceof $this->funnelName;
+        if (!is_null($this->matcher)) {
 
-			$matcherResult = true;
+            $matcherResult = call_user_func_array($this->matcher, [$collector]);
+        }
 
-			if (!is_null($this->matcher))
-
-				$matcherResult = call_user_func_array($this->matcher, [$collector]);
-
-			return $matchesType && $matcherResult;
-		}
-	}
-?>
+        return $matchesType && $matcherResult;
+    }
+}

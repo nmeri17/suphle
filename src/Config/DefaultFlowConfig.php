@@ -1,29 +1,31 @@
 <?php
-	namespace Suphle\Config;
 
-	use Suphle\Contracts\Config\Flows;
+namespace Suphle\Config;
 
-	use Illuminate\Support\Collection as LaravelCollection;
+use Suphle\Contracts\Config\Flows;
 
-	class DefaultFlowConfig implements Flows {
+use Illuminate\Support\Collection as LaravelCollection;
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function contentTypeIdentifier ():array {
+class DefaultFlowConfig implements Flows
+{
+    /**
+     * {@inheritdoc}
+    */
+    public function contentTypeIdentifier(): array
+    {
 
-			return [
-				
-				LaravelCollection::class => "getQueueableClass"
-			];
-		}
+        return [
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function isEnabled ():bool {
+            LaravelCollection::class => "getQueueableClass"
+        ];
+    }
 
-			return false;
-		}
-	}
-?>
+    /**
+     * {@inheritdoc}
+    */
+    public function isEnabled(): bool
+    {
+
+        return false;
+    }
+}

@@ -1,24 +1,26 @@
 <?php
-	namespace Suphle\Tests\Integration\Modules\ModuleDescriptor;
 
-	use Suphle\Exception\Explosives\DevError\UnexpectedModules;
+namespace Suphle\Tests\Integration\Modules\ModuleDescriptor;
 
-	use Suphle\Tests\Mocks\Interactions\ModuleTwo;
+use Suphle\Exception\Explosives\DevError\UnexpectedModules;
 
-	abstract class FailingCollection extends DescriptorCollection {
+use Suphle\Tests\Mocks\Interactions\ModuleTwo;
 
-		protected function setUp ():void {
+abstract class FailingCollection extends DescriptorCollection
+{
+    protected function setUp(): void
+    {
 
-			//
-		}
+        //
+    }
 
-		public function test_will_throw_errors () {
+    public function test_will_throw_errors()
+    {
 
-			$this->expectException(UnexpectedModules::class); // then
+        $this->expectException(UnexpectedModules::class); // then
 
-			parent::setUp();
+        parent::setUp();
 
-			$this->getModuleFor(ModuleTwo::class); // when
-		}
-	}
-?>
+        $this->getModuleFor(ModuleTwo::class); // when
+    }
+}

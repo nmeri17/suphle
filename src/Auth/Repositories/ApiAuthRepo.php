@@ -1,35 +1,34 @@
 <?php
-	namespace Suphle\Auth\Repositories;
 
-	use Suphle\Auth\Storage\TokenStorage;
+namespace Suphle\Auth\Repositories;
 
-	use Suphle\Contracts\Auth\ColumnPayloadComparer;
+use Suphle\Auth\Storage\TokenStorage;
 
-	use Suphle\Services\Decorators\ValidationRules;
+use Suphle\Contracts\Auth\ColumnPayloadComparer;
 
-	class ApiAuthRepo extends BaseAuthRepo {
+use Suphle\Services\Decorators\ValidationRules;
 
-		public function __construct (
+class ApiAuthRepo extends BaseAuthRepo
+{
+    public function __construct(
+        protected readonly ColumnPayloadComparer $comparer,
+        protected readonly TokenStorage $authStorage
+    ) {
 
-			protected readonly ColumnPayloadComparer $comparer,
+        //
+    }
 
-			protected readonly TokenStorage $authStorage
-		) { 
-			
-			//
-		}
+    #[ValidationRules([
+        "email" => "required|email",
 
-		#[ValidationRules([
-			"email" => "required|email",
+        "password" => "required|alpha_num|min:5"
+    ])]
+    public function successLogin(): iterable
+    {
 
-			"password" => "required|alpha_num|min:5"
-		])]
-		public function successLogin ():iterable {
+        return [
 
-			return [
-
-				"token" => $this->startSessionForCompared()
-			];
-		}
-	}
-?>
+            "token" => $this->startSessionForCompared()
+        ];
+    }
+}

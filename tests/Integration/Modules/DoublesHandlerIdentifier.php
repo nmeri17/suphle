@@ -1,43 +1,45 @@
 <?php
-	namespace Suphle\Tests\Integration\Modules;
 
-	use Suphle\Modules\ModuleHandlerIdentifier;
+namespace Suphle\Tests\Integration\Modules;
 
-	use Suphle\Contracts\Presentation\BaseRenderer;
+use Suphle\Modules\ModuleHandlerIdentifier;
 
-	trait DoublesHandlerIdentifier {
+use Suphle\Contracts\Presentation\BaseRenderer;
 
-		protected BaseRenderer $dummyRenderer;
+trait DoublesHandlerIdentifier
+{
+    protected BaseRenderer $dummyRenderer;
 
-		protected function setDummyRenderer ():void {
+    protected function setDummyRenderer(): void
+    {
 
-			$this->dummyRenderer = $this->positiveDouble(BaseRenderer::class, [
+        $this->dummyRenderer = $this->positiveDouble(BaseRenderer::class, [
 
-				"getRawResponse" => [],
+            "getRawResponse" => [],
 
-				"getStatusCode" => 200
-			]);
-		}
+            "getStatusCode" => 200
+        ]);
+    }
 
-		protected function getHandlerIdentifier (array $stubMethods, array $mockMethods = []):ModuleHandlerIdentifier {
+    protected function getHandlerIdentifier(array $stubMethods, array $mockMethods = []): ModuleHandlerIdentifier
+    {
 
-			$identifier = $this->replaceConstructorArguments(
+        $identifier = $this->replaceConstructorArguments(
+            ModuleHandlerIdentifier::class,
+            [],
+            array_merge([
 
-				ModuleHandlerIdentifier::class, [],
+                "getModules" => $this->modules,
 
-				array_merge([
+                "handleGenericRequest" => $this->dummyRenderer
+            ], $stubMethods),
+            $mockMethods,
+            true,
+            true,
+            true,
+            true
+        );
 
-					"getModules" => $this->modules,
-
-					"handleGenericRequest" => $this->dummyRenderer
-				], $stubMethods),
-
-				$mockMethods,
-
-				true, true, true, true
-			);
-
-			return $identifier;
-		}
-	}
-?>
+        return $identifier;
+    }
+}

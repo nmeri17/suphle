@@ -1,26 +1,27 @@
 <?php
-	namespace Suphle\Hydration\Structures;
 
-	use Suphle\Contracts\Hydration\DecoratorChain;
+namespace Suphle\Hydration\Structures;
 
-	use Suphle\Services\Decorators\{ SecuresPostRequest, VariableDependencies, BindsAsSingleton, InterceptsCalls};
+use Suphle\Contracts\Hydration\DecoratorChain;
 
-	use Suphle\Services\DecoratorHandlers\{ SecuresPostRequestHandler, VariableDependenciesHandler, BindSingletonHandler, CallInterceptorProxy};
+use Suphle\Services\Decorators\{ SecuresPostRequest, VariableDependencies, BindsAsSingleton, InterceptsCalls};
 
-	class BaseDecorators implements DecoratorChain {
+use Suphle\Services\DecoratorHandlers\{ SecuresPostRequestHandler, VariableDependenciesHandler, BindSingletonHandler, CallInterceptorProxy};
 
-		public function allScopes ():array {
+class BaseDecorators implements DecoratorChain
+{
+    public function allScopes(): array
+    {
 
-			return [
+        return [
 
-				BindsAsSingleton::class => BindSingletonHandler::class,
+            BindsAsSingleton::class => BindSingletonHandler::class,
 
-				InterceptsCalls::class => CallInterceptorProxy::class,
+            InterceptsCalls::class => CallInterceptorProxy::class,
 
-				SecuresPostRequest::class => SecuresPostRequestHandler::class,
+            SecuresPostRequest::class => SecuresPostRequestHandler::class,
 
-				VariableDependencies::class => VariableDependenciesHandler::class
-			];
-		}
-	}
-?>
+            VariableDependencies::class => VariableDependenciesHandler::class
+        ];
+    }
+}

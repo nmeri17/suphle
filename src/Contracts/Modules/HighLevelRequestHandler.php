@@ -1,10 +1,10 @@
 <?php
-	namespace Suphle\Contracts\Modules;
 
-	use Suphle\Contracts\Presentation\BaseRenderer;
+namespace Suphle\Contracts\Modules;
 
-	interface HighLevelRequestHandler {
+use Suphle\Contracts\Presentation\BaseRenderer;
 
-		public function handlingRenderer ():?BaseRenderer;
-	}
-?>
+interface HighLevelRequestHandler
+{
+    public function handlingRenderer(): ?BaseRenderer;
+}

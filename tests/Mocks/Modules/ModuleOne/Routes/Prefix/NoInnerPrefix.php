@@ -1,18 +1,19 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Prefix;
 
-	use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Prefix;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\NestedController;
+use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
 
-	use Suphle\Response\Format\Json;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\NestedController;
 
-	#[HandlingCoordinator(NestedController::class)]
-	class NoInnerPrefix extends BaseCollection {
-		
-		public function WITHOUT () {
-			
-			$this->_httpGet(new Json("noInner"));
-		}
-	}
-?>
+use Suphle\Response\Format\Json;
+
+#[HandlingCoordinator(NestedController::class)]
+class NoInnerPrefix extends BaseCollection
+{
+    public function WITHOUT()
+    {
+
+        $this->_httpGet(new Json("noInner"));
+    }
+}

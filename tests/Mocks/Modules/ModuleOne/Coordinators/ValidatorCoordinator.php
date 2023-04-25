@@ -1,24 +1,27 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-	use Suphle\Services\{ServiceCoordinator, Decorators\ValidationRules};
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-	class ValidatorCoordinator extends ServiceCoordinator {
+use Suphle\Services\{ServiceCoordinator, Decorators\ValidationRules};
 
-		public function handleGet () {
+class ValidatorCoordinator extends ServiceCoordinator
+{
+    public function handleGet()
+    {
 
-			return ["message" => "mercy"];
-		}
+        return ["message" => "mercy"];
+    }
 
-		public function postNoValidator () {
+    public function postNoValidator()
+    {
 
-			//
-		}
+        //
+    }
 
-		#[ValidationRules(["foo" => "required"])]
-		public function postWithValidator () {
+    #[ValidationRules(["foo" => "required"])]
+    public function postWithValidator()
+    {
 
-			return [];
-		}
-	}
-?>
+        return [];
+    }
+}

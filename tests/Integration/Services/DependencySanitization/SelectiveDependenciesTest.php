@@ -1,43 +1,45 @@
 <?php
-	namespace Suphle\Tests\Integration\Services\DependencySanitization;
 
-	use Suphle\Exception\Explosives\DevError\UnacceptableDependency;
+namespace Suphle\Tests\Integration\Services\DependencySanitization;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\Selective\ForbiddenDependencyController;
+use Suphle\Exception\Explosives\DevError\UnacceptableDependency;
 
-	class SelectiveDependenciesTest extends TestSanitization {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\Selective\ForbiddenDependencyController;
 
-		protected const FORBIDDEN = ForbiddenDependencyController::class;
+class SelectiveDependenciesTest extends TestSanitization
+{
+    protected const FORBIDDEN = ForbiddenDependencyController::class;
 
-		protected function setSanitizationPath ():void {
+    protected function setSanitizationPath(): void
+    {
 
-			$this->sanitizer->setExecutionPath($this->getClassDir(self::FORBIDDEN));
-		}
+        $this->sanitizer->setExecutionPath($this->getClassDir(self::FORBIDDEN));
+    }
 
-		public function test_unknown_type_throws_errors () {
+    public function test_unknown_type_throws_errors()
+    {
 
-			// then
-			$this->expectException(UnacceptableDependency::class);
+        // then
+        $this->expectException(UnacceptableDependency::class);
 
-			$this->expectExceptionMessageMatches(
+        $this->expectExceptionMessageMatches(
+            $this->escapeClassName(self::FORBIDDEN)
+        );
 
-				$this->escapeClassName(self::FORBIDDEN)
-			);
+        // given 1 @see setSanitizationPath
 
-			// given 1 @see setSanitizationPath
-			
-			$this->sanitizer->coordinatorConstructor(); // given 2
+        $this->sanitizer->coordinatorConstructor(); // given 2
 
-			$this->sanitizer->cleanseConsumers(); // when
-		}
+        $this->sanitizer->cleanseConsumers(); // when
+    }
 
-		public function test_filter_bad_type_runs_successfully () {
-			
-			$this->sanitizer->coordinatorConstructor([self::FORBIDDEN]); // given
+    public function test_filter_bad_type_runs_successfully()
+    {
 
-			$this->sanitizer->cleanseConsumers(); // when
+        $this->sanitizer->coordinatorConstructor([self::FORBIDDEN]); // given
 
-			$this->assertTrue(true);
-		}
-	}
-?>
+        $this->sanitizer->cleanseConsumers(); // when
+
+        $this->assertTrue(true);
+    }
+}

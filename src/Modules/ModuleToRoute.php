@@ -1,67 +1,69 @@
 <?php
-	namespace Suphle\Modules;
 
-	use Suphle\Contracts\Modules\DescriptorInterface;
+namespace Suphle\Modules;
 
-	use Suphle\Services\Decorators\BindsAsSingleton;
+use Suphle\Contracts\Modules\DescriptorInterface;
 
-	use Throwable;
+use Suphle\Services\Decorators\BindsAsSingleton;
 
-	/**
-	 * Manager/wrapper around [ModuleInitializer]
-	*/
-	#[BindsAsSingleton]
-	class ModuleToRoute {
+use Throwable;
 
-		protected ?DescriptorInterface $activeDescriptor = null;
-		
-		public function findContext (array $descriptors):?ModuleInitializer {
-			
-			foreach ($descriptors as $descriptor) {
+/**
+ * Manager/wrapper around [ModuleInitializer]
+*/
+#[BindsAsSingleton]
+class ModuleToRoute
+{
+    protected ?DescriptorInterface $activeDescriptor = null;
 
-				$context = $this->safeSearchRoute( $descriptor);
-				
-				if ($context->didFindRoute()) {
+    public function findContext(array $descriptors): ?ModuleInitializer
+    {
 
-					$this->activeDescriptor = $descriptor;
+        foreach ($descriptors as $descriptor) {
 
-					return $context;
-				}
-			}
+            $context = $this->safeSearchRoute($descriptor);
 
-			return null;
-		}
+            if ($context->didFindRoute()) {
 
-		/**
-		 * @throws Throwable
-		*/
-		protected function safeSearchRoute (DescriptorInterface $descriptor):ModuleInitializer {
+                $this->activeDescriptor = $descriptor;
 
-			try {
+                return $context;
+            }
+        }
 
-				$initializer = $descriptor->getContainer()
+        return null;
+    }
 
-				->getClass(ModuleInitializer::class);
+    /**
+     * @throws Throwable
+    */
+    protected function safeSearchRoute(DescriptorInterface $descriptor): ModuleInitializer
+    {
 
-				return $initializer->assignRoute();
-			}
-			catch (Throwable $exception) {
+        try {
 
-				$descriptorName = $descriptor::class;
+            $initializer = $descriptor->getContainer()
 
-				/*echo implode("\n", [
-					"Error encountered during attempt to find route on descriptor '$descriptorName':",
+            ->getClass(ModuleInitializer::class);
 
-					$exception
-				]);*/
+            return $initializer->assignRoute();
+        } catch (Throwable $exception) {
 
-				throw $exception;
-			}
-		}
-		
-		public function getActiveModule ():?DescriptorInterface {
+            $descriptorName = $descriptor::class;
 
-			return $this->activeDescriptor;
-		}
-	}
-?>
+            /*echo implode("\n", [
+                "Error encountered during attempt to find route on descriptor '$descriptorName':",
+
+                $exception
+            ]);*/
+
+            throw $exception;
+        }
+    }
+
+    public function getActiveModule(): ?DescriptorInterface
+    {
+
+        return $this->activeDescriptor;
+    }
+}

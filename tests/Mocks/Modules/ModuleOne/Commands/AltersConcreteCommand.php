@@ -1,44 +1,48 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Commands;
 
-	use Suphle\Console\BaseCliCommand;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Commands;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\BCounter;
+use Suphle\Console\BaseCliCommand;
 
-	use Symfony\Component\Console\{Output\OutputInterface, Command\Command};
+use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\BCounter;
 
-	use Symfony\Component\Console\Input\{InputInterface, InputArgument};
+use Symfony\Component\Console\{Output\OutputInterface, Command\Command};
 
-	class AltersConcreteCommand extends BaseCliCommand {
+use Symfony\Component\Console\Input\{InputInterface, InputArgument};
 
-		final public const NEW_VALUE_ARGUMENT = "new_value";
+class AltersConcreteCommand extends BaseCliCommand
+{
+    final public const NEW_VALUE_ARGUMENT = "new_value";
 
-		protected function configure ():void {
+    protected function configure(): void
+    {
 
-			parent::configure();
+        parent::configure();
 
-			$this->addArgument(
-				
-				self::NEW_VALUE_ARGUMENT, InputArgument::REQUIRED, "Value to update concrete to"
-			);
-		}
+        $this->addArgument(
+            self::NEW_VALUE_ARGUMENT,
+            InputArgument::REQUIRED,
+            "Value to update concrete to"
+        );
+    }
 
-		public static function commandSignature ():string {
+    public static function commandSignature(): string
+    {
 
-			return "test:alters_concrete";
-		}
+        return "test:alters_concrete";
+    }
 
-		public function execute (InputInterface $input, OutputInterface $output):int {
+    public function execute(InputInterface $input, OutputInterface $output): int
+    {
 
-			$moduleInterface = $input->getOption(self::HYDRATOR_MODULE_OPTION);
+        $moduleInterface = $input->getOption(self::HYDRATOR_MODULE_OPTION);
 
-			$this->getExecutionContainer($moduleInterface)->getClass(BCounter::class)
+        $this->getExecutionContainer($moduleInterface)->getClass(BCounter::class)
 
-			->setCount($input->getArgument(self::NEW_VALUE_ARGUMENT));
+        ->setCount($input->getArgument(self::NEW_VALUE_ARGUMENT));
 
-			$output->writeln("Operation completed successfully");
+        $output->writeln("Operation completed successfully");
 
-			return Command::SUCCESS; // Command::SUCCESS/FAILURE/INVALID
-		}
-	}
-?>
+        return Command::SUCCESS; // Command::SUCCESS/FAILURE/INVALID
+    }
+}

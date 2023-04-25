@@ -1,21 +1,22 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleTwo\Events;
 
-	use Suphle\Events\EventManager;
+namespace Suphle\Tests\Mocks\Modules\ModuleTwo\Events;
 
-	use Suphle\Tests\Mocks\Modules\ModuleTwo\Events\ExternalReactor;
+use Suphle\Events\EventManager;
 
-	use Suphle\Tests\Mocks\Interactions\ModuleOne;
+use Suphle\Tests\Mocks\Modules\ModuleTwo\Events\ExternalReactor;
 
-	class AssignListeners extends EventManager {
+use Suphle\Tests\Mocks\Interactions\ModuleOne;
 
-		public function registerListeners():void {
+class AssignListeners extends EventManager
+{
+    public function registerListeners(): void
+    {
 
-			parent::registerListeners();
-			
-			$this->external(ModuleOne::class, ExternalReactor::class)
-			
-			->on(ModuleOne::DEFAULT_EVENT, "updatePayload");
-		}
-	}
-?>
+        parent::registerListeners();
+
+        $this->external(ModuleOne::class, ExternalReactor::class)
+
+        ->on(ModuleOne::DEFAULT_EVENT, "updatePayload");
+    }
+}

@@ -1,52 +1,57 @@
 <?php
-	namespace Suphle\Flows\Structures;
 
-	use Suphle\Contracts\{Auth\AuthStorage, Presentation\BaseRenderer};
+namespace Suphle\Flows\Structures;
 
-	use Suphle\Flows\OuterFlowWrapper;
+use Suphle\Contracts\{Auth\AuthStorage, Presentation\BaseRenderer};
 
-	/**
-	 * This is what is received from the currently handled request. It is stored and during handling later, specifics of the flow are extracted and handled
-	*/
-	class PendingFlowDetails {
+use Suphle\Flows\OuterFlowWrapper;
 
-		private $userId;
+/**
+ * This is what is received from the currently handled request. It is stored and during handling later, specifics of the flow are extracted and handled
+*/
+class PendingFlowDetails
+{
+    private $userId;
 
-		public function __construct(protected readonly BaseRenderer $renderer, protected readonly AuthStorage $authStorage) {
+    public function __construct(protected readonly BaseRenderer $renderer, protected readonly AuthStorage $authStorage)
+    {
 
-			$this->getUserId(); // trigger property storage before task serialization
-		}
+        $this->getUserId(); // trigger property storage before task serialization
+    }
 
-		public function getStoredUserId ():string {
+    public function getStoredUserId(): string
+    {
 
-			return $this->userId;
-		}
+        return $this->userId;
+    }
 
-		public function getRenderer ():BaseRenderer {
-			
-			return $this->renderer;
-		}
+    public function getRenderer(): BaseRenderer
+    {
 
-		/**
-		* Whether a sub-flow or transition from organic flow, all flow queueing is triggered by a user request. This argument is that user
-		*/
-		protected function getUserId ():string {
+        return $this->renderer;
+    }
 
-			if (is_null($this->userId)) {
+    /**
+    * Whether a sub-flow or transition from organic flow, all flow queueing is triggered by a user request. This argument is that user
+    */
+    protected function getUserId(): string
+    {
 
-				$user = $this->authStorage->getUser();
-				
-				$this->userId = !is_null($user) ? strval($user->getId()) :
+        if (is_null($this->userId)) {
 
-				OuterFlowWrapper::ALL_USERS;
-			}
+            $user = $this->authStorage->getUser();
 
-			return $this->userId;
-		}
+            $this->userId = !is_null($user) ? strval($user->getId()) :
 
-		public function getAuthStorage ():string {
+            OuterFlowWrapper::ALL_USERS;
+        }
 
-			return $this->authStorage::class;
-		}
-	}
-?>
+        return $this->userId;
+    }
+
+    public function getAuthStorage(): string
+    {
+
+        return $this->authStorage::class;
+    }
+}

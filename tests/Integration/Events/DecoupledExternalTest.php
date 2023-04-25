@@ -1,32 +1,34 @@
 <?php
-	namespace Suphle\Tests\Integration\Events;
 
-	use Suphle\Tests\Integration\Events\BaseTypes\EventTestCreator;
+namespace Suphle\Tests\Integration\Events;
 
-	use Suphle\Tests\Mocks\Interactions\{ModuleOne, ModuleTwo, ModuleThree};
+use Suphle\Tests\Integration\Events\BaseTypes\EventTestCreator;
 
-	use Suphle\Tests\Mocks\Modules\ModuleTwo\{Meta\ModuleTwoDescriptor, Events\ExternalReactor};
+use Suphle\Tests\Mocks\Interactions\{ModuleOne, ModuleTwo, ModuleThree};
 
-	class DecoupledExternalTest extends EventTestCreator {
+use Suphle\Tests\Mocks\Modules\ModuleTwo\{Meta\ModuleTwoDescriptor, Events\ExternalReactor};
 
-		protected string $eventReceiverName = ExternalReactor::class;
+class DecoupledExternalTest extends EventTestCreator
+{
+    protected string $eventReceiverName = ExternalReactor::class;
 
-		protected function setModuleTwo ():void {
+    protected function setModuleTwo(): void
+    {
 
-			$this->moduleTwo = $this->bindMockedEventReceiver(ModuleTwoDescriptor::class)
-			->sendExpatriates([
+        $this->moduleTwo = $this->bindMockedEventReceiver(ModuleTwoDescriptor::class)
+        ->sendExpatriates([
 
-				ModuleThree::class => $this->moduleThree
-			]);
-		}
+            ModuleThree::class => $this->moduleThree
+        ]);
+    }
 
-		public function test_can_listen_to_unimported_external () {
+    public function test_can_listen_to_unimported_external()
+    {
 
-			$this->createMockEventReceiver($this->expectUpdatePayload(), []); // then
+        $this->createMockEventReceiver($this->expectUpdatePayload(), []); // then
 
-			$this->parentSetUp(); // given
+        $this->parentSetUp(); // given
 
-			$this->getModuleFor(ModuleOne::class)->payloadEvent($this->payload); // when
-		}
-	}
-?>
+        $this->getModuleFor(ModuleOne::class)->payloadEvent($this->payload); // when
+    }
+}

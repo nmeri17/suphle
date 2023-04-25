@@ -1,18 +1,19 @@
 <?php
-	namespace Suphle\Request;
 
-	use Suphle\Contracts\Requests\FileInputReader;
+namespace Suphle\Request;
 
-	use Symfony\Component\HttpFoundation\{Request, File\UploadedFile};
+use Suphle\Contracts\Requests\FileInputReader;
 
-	class NativeFileReader implements FileInputReader {
+use Symfony\Component\HttpFoundation\{Request, File\UploadedFile};
 
-		/**
-		 * @return UploadedFile, Ensure that this matches what we create within file-upload tests. @see \Suphle\Testing\Condiments\FilesystemCleaner
-		*/
-		public function getFileObjects ():array {
+class NativeFileReader implements FileInputReader
+{
+    /**
+     * @return UploadedFile, Ensure that this matches what we create within file-upload tests. @see \Suphle\Testing\Condiments\FilesystemCleaner
+    */
+    public function getFileObjects(): array
+    {
 
-			return Request::createFromGlobals()->files->all();
-		}
-	}
-?>
+        return Request::createFromGlobals()->files->all();
+    }
+}

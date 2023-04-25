@@ -1,82 +1,90 @@
 <?php
-	namespace Suphle\Auth\Storage;
 
-	use Suphle\Contracts\IO\Session;
+namespace Suphle\Auth\Storage;
 
-	use Suphle\Contracts\Config\AuthContract;
+use Suphle\Contracts\IO\Session;
 
-	class SessionStorage extends BaseAuthStorage {
+use Suphle\Contracts\Config\AuthContract;
 
-		protected string $identifierKey = "suphle_user_id",
+class SessionStorage extends BaseAuthStorage
+{
+    protected string $identifierKey = "suphle_user_id";
+    protected string $previousUserKey = "previous_user";
 
-		$previousUserKey = "previous_user";
-  
-  		protected bool $isImpersonating = false;
+    protected bool $isImpersonating = false;
 
-		public function __construct(protected readonly Session $sessionClient) {
+    public function __construct(protected readonly Session $sessionClient)
+    {
 
-			//
-		}
+        //
+    }
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function startSession (string $value):string {
+    /**
+     * {@inheritdoc}
+    */
+    public function startSession(string $value): string
+    {
 
-			if (!$this->isImpersonating) { // protection against session fixation
+        if (!$this->isImpersonating) { // protection against session fixation
 
-				$this->logout();
+            $this->logout();
 
-				$this->sessionClient->prolongSession();
-			}
+            $this->sessionClient->prolongSession();
+        }
 
-			$this->sessionClient->setValue($this->identifierKey, $value);
+        $this->sessionClient->setValue($this->identifierKey, $value);
 
-			return $this->getId(); // trigger resumption
-		}
+        return $this->getId(); // trigger resumption
+    }
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function resumeSession ():void {
+    /**
+     * {@inheritdoc}
+    */
+    public function resumeSession(): void
+    {
 
-			$this->identifier = $this->sessionClient->getValue($this->identifierKey);
-		}
+        $this->identifier = $this->sessionClient->getValue($this->identifierKey);
+    }
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function imitate (string $value):string {
+    /**
+     * {@inheritdoc}
+    */
+    public function imitate(string $value): string
+    {
 
-			$this->setPreviousUser();
+        $this->setPreviousUser();
 
-			$this->isImpersonating = true;
+        $this->isImpersonating = true;
 
-			return parent::imitate($value);
-		}
+        return parent::imitate($value);
+    }
 
-		protected function setPreviousUser ():void {
+    protected function setPreviousUser(): void
+    {
 
-			if (!$this->hasActiveAdministrator())
+        if (!$this->hasActiveAdministrator()) {
 
-				$this->sessionClient->setValue($this->previousUserKey, $this->identifier);
-		}
+            $this->sessionClient->setValue($this->previousUserKey, $this->identifier);
+        }
+    }
 
-		public function getPreviousUser ():?string {
+    public function getPreviousUser(): ?string
+    {
 
-			return $this->sessionClient->getValue($this->previousUserKey);
-		}
+        return $this->sessionClient->getValue($this->previousUserKey);
+    }
 
-		public function hasActiveAdministrator ():bool {
+    public function hasActiveAdministrator(): bool
+    {
 
-			return $this->sessionClient->hasKey($this->previousUserKey);
-		}
+        return $this->sessionClient->hasKey($this->previousUserKey);
+    }
 
-		public function logout ():void {
+    public function logout(): void
+    {
 
-			parent::logout();
+        parent::logout();
 
-			$this->sessionClient->reset();
-		}
-	}
-?>
+        $this->sessionClient->reset();
+    }
+}

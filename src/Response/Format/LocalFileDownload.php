@@ -1,81 +1,86 @@
 <?php
-	namespace Suphle\Response\Format;
 
-	use Suphle\Request\PayloadStorage;
+namespace Suphle\Response\Format;
 
-	use Symfony\Component\HttpFoundation\File\{File, Exception\FileException};
+use Suphle\Request\PayloadStorage;
 
-	use Closure;
+use Symfony\Component\HttpFoundation\File\{File, Exception\FileException};
 
-	class LocalFileDownload extends Redirect {
+use Closure;
 
-		public function __construct(
+class LocalFileDownload extends Redirect
+{
+    public function __construct(
+        protected string $handler,
+        protected Closure $deriveFilePath,
+        protected ?Closure $fallbackRedirect = null
+    ) {
 
-			protected string $handler, protected Closure $deriveFilePath,
+        $this->statusCode = 200;
+    }
 
-			protected ?Closure $fallbackRedirect = null
-		) {
+    protected function serializableProperties(): array
+    {
 
-			$this->statusCode = 200;
-		}
+        return [ "deriveFilePath", "fallbackRedirect" ];
+    }
 
-		protected function serializableProperties ():array {
+    public function render(): string
+    {
 
-			return [ "deriveFilePath", "fallbackRedirect" ];
-		}
+        $fileObject = $this->getFileObject();
 
-		public function render ():string {
-			
-			$fileObject = $this->getFileObject();
+        if (is_null($fileObject)) {
+            return "";
+        }
 
-			if (is_null($fileObject)) return "";
+        $this->setDownloadHeaders($fileObject);
 
-			$this->setDownloadHeaders($fileObject);
+        return $fileObject->getContent();
+    }
 
-			return $fileObject->getContent();
-		}
+    /**
+     * @throws FileException
+    */
+    protected function getFileObject(): ?File
+    {
 
-		/**
-		 * @throws FileException
-		*/
-		protected function getFileObject ():?File {
+        try {
 
-			try {
+            return new File(
+                $this->callbackDetails->recursiveValueDerivation(
+                    $this->deriveFilePath,
+                    $this
+                )
+            );
+        } catch (FileException $exception) {
 
-				return new File(
+            if (is_null($this->fallbackRedirect)) {
+                throw $exception;
+            }
 
-					$this->callbackDetails->recursiveValueDerivation(
+            $this->statusCode = 404;
 
-						$this->deriveFilePath, $this
-					)
-				);
-			}
-			catch (FileException $exception) {
+            $this->renderRedirect($this->fallbackRedirect);
 
-				if (is_null($this->fallbackRedirect)) throw $exception;
+            return null;
+        }
+    }
 
-				$this->statusCode = 404;
+    protected function setDownloadHeaders(File $fileObject): void
+    {
 
-				$this->renderRedirect($this->fallbackRedirect);
+        $fileName = $fileObject->getFileName();
 
-				return null;
-			}
-		}
+        $this->headers = array_merge($this->headers, [
 
-		protected function setDownloadHeaders (File $fileObject):void {
+            PayloadStorage::CONTENT_TYPE_KEY => $fileObject->getMimeType(),
 
-			$fileName = $fileObject->getFileName();
+            "Content-Disposition" => "attachment; filename='$fileName'",
 
-			$this->headers = array_merge($this->headers, [
+            "Content-Length" => mb_strlen($fileObject->getContent()),
 
-				PayloadStorage::CONTENT_TYPE_KEY => $fileObject->getMimeType(),
-
-				"Content-Disposition" => "attachment; filename='$fileName'",
-
-				"Content-Length" => mb_strlen($fileObject->getContent()),
-
-				"Connection" => "Keep-Alive"
-			]);
-		}
-	}
-?>
+            "Connection" => "Keep-Alive"
+        ]);
+    }
+}

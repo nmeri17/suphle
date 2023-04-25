@@ -1,36 +1,40 @@
 <?php
-	namespace Suphle\Adapters\Queues;
 
-	use Suphle\Contracts\Queues\Adapter;
+namespace Suphle\Adapters\Queues;
 
-	use Suphle\Hydration\Container;
+use Suphle\Contracts\Queues\Adapter;
 
-	abstract class BaseQueueAdapter implements Adapter {
+use Suphle\Hydration\Container;
 
-		protected string $activeQueueName;
+abstract class BaseQueueAdapter implements Adapter
+{
+    protected string $activeQueueName;
 
-		protected $client; // set from `configureNative`, 
+    protected $client; // set from `configureNative`,
 
-		public function __construct (protected readonly Container $container) {
+    public function __construct(protected readonly Container $container)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function setActiveQueue (string $queueName):void {
+    public function setActiveQueue(string $queueName): void
+    {
 
-			$this->activeQueueName = $queueName;
-		}
+        $this->activeQueueName = $queueName;
+    }
 
-		public function getNativeClient () {
+    public function getNativeClient()
+    {
 
-			return $this->client;
-		}
+        return $this->client;
+    }
 
-		protected function hydrateTask (string $taskName, array $argumentList):object {
+    protected function hydrateTask(string $taskName, array $argumentList): object
+    {
 
-			return $this->container->whenType($taskName)
+        return $this->container->whenType($taskName)
 
-			->needsArguments($argumentList)->getClass($taskName);
-		}
-	}
-?>
+        ->needsArguments($argumentList)->getClass($taskName);
+    }
+}

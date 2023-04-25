@@ -1,161 +1,171 @@
 <?php
-	namespace Suphle\Tests\Integration\Flows\Jobs\UpdateCountDelete;
 
-	use Suphle\Contracts\{Config\Router, Auth\AuthStorage};
+namespace Suphle\Tests\Integration\Flows\Jobs\UpdateCountDelete;
 
-	use Suphle\Flows\{OuterFlowWrapper, Jobs\UpdateCountDelete};
+use Suphle\Contracts\{Config\Router, Auth\AuthStorage};
 
-	use Suphle\Flows\Structures\{AccessContext, RouteUserNode, RouteUmbrella};
+use Suphle\Flows\{OuterFlowWrapper, Jobs\UpdateCountDelete};
 
-	use Suphle\Hydration\Structures\ObjectDetails;
+use Suphle\Flows\Structures\{AccessContext, RouteUserNode, RouteUmbrella};
 
-	use Suphle\Response\Format\Json;
+use Suphle\Hydration\Structures\ObjectDetails;
 
-	use Suphle\Services\ServiceCoordinator;
+use Suphle\Response\Format\Json;
 
-	use Suphle\Testing\Proxies\WriteOnlyContainer;
+use Suphle\Services\ServiceCoordinator;
 
-	use Suphle\Tests\Integration\Flows\Jobs\RouteBranches\JobFactory;
+use Suphle\Testing\Proxies\WriteOnlyContainer;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{ Routes\Flows\FlowRoutes, Meta\ModuleOneDescriptor, Config\RouterMock };
+use Suphle\Tests\Integration\Flows\Jobs\RouteBranches\JobFactory;
 
-	use DateTime, DateInterval;
+use Suphle\Tests\Mocks\Modules\ModuleOne\{ Routes\Flows\FlowRoutes, Meta\ModuleOneDescriptor, Config\RouterMock };
 
-	class FlowRoutesUpdateCountTest extends JobFactory {
+use DateTime;
+use DateInterval;
 
-		private string $resourceUrl = "/posts/5";
-  private $aMinuteBehind;
+class FlowRoutesUpdateCountTest extends JobFactory
+{
+    private string $resourceUrl = "/posts/5";
+    private $aMinuteBehind;
 
-		public function setUp ():void {
+    public function setUp(): void
+    {
 
-			parent::setUp();
+        parent::setUp();
 
-			$this->aMinuteBehind = (new DateTime)->sub(new DateInterval("PT1M"));
-		}
+        $this->aMinuteBehind = (new DateTime())->sub(new DateInterval("PT1M"));
+    }
 
-		protected function getModules():array {
+    protected function getModules(): array
+    {
 
-			return [
+        return [
 
-				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-					$container->replaceWithMock(Router::class, RouterMock::class, [
+                $container->replaceWithMock(Router::class, RouterMock::class, [
 
-						"browserEntryRoute" => FlowRoutes::class
-					]);
-				})
-			];
-		}
-		
-		public function test_empties_cache_entry () {
+                    "browserEntryRoute" => FlowRoutes::class
+                ]);
+            })
+        ];
+    }
 
-			$this->handleUpdateCountDelete(); // given and when
+    public function test_empties_cache_entry()
+    {
 
-			$this->assertNotHandledByFlow($this->resourceUrl); // then
-		}
+        $this->handleUpdateCountDelete(); // given and when
 
-		private function handleUpdateCountDelete ():void {
+        $this->assertNotHandledByFlow($this->resourceUrl); // then
+    }
 
-			$this->makeUpdateCountDelete($this->makeAccessContext(
-				
-				$this->replaceConstructorArguments( RouteUserNode::class , $this->userNodeArguments())
-			))->handle(); // will push it into cache storage since hit is still =0
+    private function handleUpdateCountDelete(): void
+    {
 
-			$this->get($this->resourceUrl); // push delete task to queue
+        $this->makeUpdateCountDelete($this->makeAccessContext(
+            $this->replaceConstructorArguments(RouteUserNode::class, $this->userNodeArguments())
+        ))->handle(); // will push it into cache storage since hit is still =0
 
-			$this->processQueuedTasks(); // execute delete task
-		}
+        $this->get($this->resourceUrl); // push delete task to queue
 
-		private function userNodeArguments ():array {
+        $this->processQueuedTasks(); // execute delete task
+    }
 
-			return [
+    private function userNodeArguments(): array
+    {
 
-				"renderer" => $this->replaceConstructorArguments (Json::class, [], [
+        return [
 
-					"getCoordinator" => $this->positiveDouble(ServiceCoordinator::class)
-				])
-			];
-		}
+            "renderer" => $this->replaceConstructorArguments(Json::class, [], [
 
-		private function makeAccessContext (RouteUserNode $unitPayload):AccessContext {
+                "getCoordinator" => $this->positiveDouble(ServiceCoordinator::class)
+            ])
+        ];
+    }
 
-			$container = $this->getContainer();
+    private function makeAccessContext(RouteUserNode $unitPayload): AccessContext
+    {
 
-			$objectMeta = $container->getClass(ObjectDetails::class);
+        $container = $this->getContainer();
 
-			$routeUmbrella = new RouteUmbrella ($this->resourceUrl, $objectMeta);
+        $objectMeta = $container->getClass(ObjectDetails::class);
 
-			$routeUmbrella->setAuthMechanism($container->getClass(AuthStorage::class)::class);
+        $routeUmbrella = new RouteUmbrella($this->resourceUrl, $objectMeta);
 
-			return new AccessContext(
-				$this->resourceUrl, $unitPayload,
+        $routeUmbrella->setAuthMechanism($container->getClass(AuthStorage::class)::class);
 
-				$routeUmbrella,
+        return new AccessContext(
+            $this->resourceUrl,
+            $unitPayload,
+            $routeUmbrella,
+            OuterFlowWrapper::ALL_USERS
+        );
+    }
 
-				OuterFlowWrapper::ALL_USERS
-			); 
-		}
+    private function makeUpdateCountDelete($dependency): UpdateCountDelete
+    {
 
-		private function makeUpdateCountDelete ($dependency):UpdateCountDelete {
+        $jobName = UpdateCountDelete::class;
 
-			$jobName = UpdateCountDelete::class;
+        return $this->getContainer()->whenType($jobName)
 
-			return $this->getContainer()->whenType($jobName)
+        ->needsArguments([ $dependency::class => $dependency ])
 
-			->needsArguments([ $dependency::class => $dependency ])
-			
-			->getClass($jobName);
-		}
-		
-		public function test_wont_empty_cache_entry () {
+        ->getClass($jobName);
+    }
 
-			$this->makeUpdateCountDelete($this->makeAccessContext(
-				$this->replaceConstructorArguments(
+    public function test_wont_empty_cache_entry()
+    {
 
-					RouteUserNode::class, $this->userNodeArguments(),
+        $this->makeUpdateCountDelete($this->makeAccessContext(
+            $this->replaceConstructorArguments(
+                RouteUserNode::class,
+                $this->userNodeArguments(),
+                ["getMaxHits" => 2]
+            ) // default [getExpiresAt] + this should retain the node
+        ))->handle(); // given
 
-					["getMaxHits" => 2]
-				) // default [getExpiresAt] + this should retain the node
-			))->handle(); // given
+        $this->assertHandledByFlow($this->resourceUrl); // when
 
-			$this->assertHandledByFlow($this->resourceUrl); // when
+        $this->assertHandledByFlow($this->resourceUrl); // then
+    }
 
-			$this->assertHandledByFlow($this->resourceUrl); // then
-		}
-		
-		public function test_expired_node_wont_be_handled_by_flow () {
+    public function test_expired_node_wont_be_handled_by_flow()
+    {
 
-			$this->dataProvider([
+        $this->dataProvider([
 
-				$this->expiredContexts(...)
-			], function (RouteUserNode $payload) {
+            $this->expiredContexts(...)
+        ], function (RouteUserNode $payload) {
 
-				$this->makeUpdateCountDelete( $this->makeAccessContext($payload))->handle(); // given
+            $this->makeUpdateCountDelete($this->makeAccessContext($payload))->handle(); // given
 
-				$this->assertNotHandledByFlow($this->resourceUrl); // then
-			});
-		}
+            $this->assertNotHandledByFlow($this->resourceUrl); // then
+        });
+    }
 
-		public function expiredContexts ():array {
+    public function expiredContexts(): array
+    {
 
-			return [
-				[
-					$this->replaceConstructorArguments(RouteUserNode::class, $this->userNodeArguments(),
+        return [
+            [
+                $this->replaceConstructorArguments(
+                    RouteUserNode::class,
+                    $this->userNodeArguments(),
+                    [
 
-						[
+                    "getMaxHits" => 200,
 
-						"getMaxHits" => 200,
+                    "getExpiresAt" => $this->aMinuteBehind
+                    ]
+                )
+            ],
+            [
+                $this->replaceConstructorArguments(RouteUserNode::class, $this->userNodeArguments(), [
 
-						"getExpiresAt" => $this->aMinuteBehind
-					])
-				],
-				[
-					$this->replaceConstructorArguments(RouteUserNode::class, $this->userNodeArguments(), [
-
-						"getExpiresAt" => $this->aMinuteBehind
-					])
-				]
-			];
-		}
-	}
-?>
+                    "getExpiresAt" => $this->aMinuteBehind
+                ])
+            ]
+        ];
+    }
+}

@@ -1,26 +1,27 @@
 <?php
-	namespace Suphle\Adapters\Orms\Eloquent\Models;
 
-	use Illuminate\Database\Eloquent\Model;
+namespace Suphle\Adapters\Orms\Eloquent\Models;
 
-	use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
+use Illuminate\Database\Eloquent\Model;
 
-	abstract class BaseModel extends Model {
+use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 
-		use HasFactory;
+abstract class BaseModel extends Model
+{
+    use HasFactory;
 
-		protected $guarded = ["id"];
+    protected $guarded = ["id"];
 
-		abstract protected static function newFactory ():Factory; // we can't use a common interface for all adapters, since they'll have different way of setting factories
+    abstract protected static function newFactory(): Factory; // we can't use a common interface for all adapters, since they'll have different way of setting factories
 
-		public static function __callStatic($method, $parameters) {
-			
-			return null;
-		}
+    public static function __callStatic($method, $parameters)
+    {
 
-		/**
-		 * Allows us group feature-related migrations across multiple models/tables together
-		*/
-		abstract public static function migrationFolders ():array;
-	}
-?>
+        return null;
+    }
+
+    /**
+     * Allows us group feature-related migrations across multiple models/tables together
+    */
+    abstract public static function migrationFolders(): array;
+}

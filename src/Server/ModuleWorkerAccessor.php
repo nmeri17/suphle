@@ -1,178 +1,189 @@
 <?php
-	namespace Suphle\Server;
 
-	use Suphle\Modules\ModuleHandlerIdentifier;
+namespace Suphle\Server;
 
-	use Suphle\Contracts\{Presentation\BaseRenderer, Queues\Adapter as QueueAdapter};
+use Suphle\Modules\ModuleHandlerIdentifier;
 
-	use Spiral\RoadRunner\{Worker, Http\PSR7Worker};
+use Suphle\Contracts\{Presentation\BaseRenderer, Queues\Adapter as QueueAdapter};
 
-	use Nyholm\Psr7\Factory\Psr17Factory;
+use Spiral\RoadRunner\{Worker, Http\PSR7Worker};
 
-	use Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory;
+use Nyholm\Psr7\Factory\Psr17Factory;
 
-	use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+use Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory;
 
-	use Psr\Http\Message\{ServerRequestInterface, ResponseInterface};
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
-	use Throwable;
+use Psr\Http\Message\{ServerRequestInterface, ResponseInterface};
 
-	/**
-	 * RoadRunner will spin this up multiple times for each worker it has to create to service a request type
-	*/
-	class ModuleWorkerAccessor {
+use Throwable;
 
-		private PSR7Worker $httpWorker;
+/**
+ * RoadRunner will spin this up multiple times for each worker it has to create to service a request type
+*/
+class ModuleWorkerAccessor
+{
+    private PSR7Worker $httpWorker;
 
-		protected QueueAdapter $queueWorker;
+    protected QueueAdapter $queueWorker;
 
-		public function __construct (
-			protected readonly ModuleHandlerIdentifier $handlerIdentifier,
-			
-			protected readonly bool $isHttpMode
-		) {
+    public function __construct(
+        protected readonly ModuleHandlerIdentifier $handlerIdentifier,
+        protected readonly bool $isHttpMode
+    ) {
 
-			//
-		}
+        //
+    }
 
-		public function runInSandbox (callable $serverAction, callable $onServerError = null):void {
+    public function runInSandbox(callable $serverAction, callable $onServerError = null): void
+    {
 
-			try {
+        try {
 
-				$serverAction($this);
-			}
-			catch (Throwable $exception) {
+            $serverAction($this);
+        } catch (Throwable $exception) {
 
-				if (!is_null($onServerError))
+            if (!is_null($onServerError)) {
 
-					$onServerError($exception);
+                $onServerError($exception);
+            }
 
-				$worker = $this->getHttpWorker();
+            $worker = $this->getHttpWorker();
 
-				$worker->waitRequest(); // to get headers
+            $worker->waitRequest(); // to get headers
 
-				$worker->getWorker()->error($exception->getMessage());
-			}
-		}
+            $worker->getWorker()->error($exception->getMessage());
+        }
+    }
 
-		public function buildIdentifier ():self {
+    public function buildIdentifier(): self
+    {
 
-			$this->handlerIdentifier->bootModules();
+        $this->handlerIdentifier->bootModules();
 
-			return $this;
-		}
+        return $this;
+    }
 
-		public function setActiveWorker ():self {
+    public function setActiveWorker(): self
+    {
 
-			if ($this->isHttpMode)
+        if ($this->isHttpMode) {
 
-				$this->httpWorker = $this->getHttpWorker();
+            $this->httpWorker = $this->getHttpWorker();
+        } else {
+            $this->queueWorker = $this->getQueueWorker();
+        }
 
-			else $this->queueWorker = $this->getQueueWorker();
+        return $this;
+    }
 
-			return $this;
-		}
+    protected function getHttpWorker(): PSR7Worker
+    {
 
-		protected function getHttpWorker ():PSR7Worker {
+        $psrFactory = new Psr17Factory();
 
-			$psrFactory = new Psr17Factory;
+        return new PSR7Worker(
+            Worker::create(),
+            $psrFactory,
+            $psrFactory,
+            $psrFactory
+        );
+    }
 
-			return new PSR7Worker(
+    public function getQueueWorker(): QueueAdapter
+    {
 
-				Worker::create(), $psrFactory, $psrFactory, $psrFactory
-			);
-		}
+        return $this->handlerIdentifier
 
-		public function getQueueWorker ():QueueAdapter {
+        ->firstContainer()->getClass(QueueAdapter::class);
+    }
 
-			return $this->handlerIdentifier
+    /**
+     * It's only safe to start outputing things from this point, after workers have been setup
+    */
+    public function openEventLoop(): void
+    {
 
-			->firstContainer()->getClass(QueueAdapter::class);
-		}
+        if ($this->isHttpMode) {
+            $this->processHttpTasks();
+        } else {
+            $this->queueWorker->processTasks();
+        }
+    }
 
-		/**
-		 * It's only safe to start outputing things from this point, after workers have been setup
-		*/
-		public function openEventLoop ():void {
+    protected function processHttpTasks(): void
+    {
 
-			if ($this->isHttpMode) $this->processHttpTasks();
+        while ($newRequest = $this->httpWorker->waitRequest()) {
 
-			else $this->queueWorker->processTasks();
-		}
+            try {
 
-		protected function processHttpTasks ():void {
+                $this->flushHttpResponse($newRequest);
+            } catch (Throwable $exception) { // only roadRunner specific errors are expected here, since our own errors are fully handled internally
 
-			while ($newRequest = $this->httpWorker->waitRequest()) {
+                $this->httpWorker->getWorker()->error(
+                    $exception->getMessage(). "\n".
 
-				try {
+                    $exception->getTraceAsString()
+                );
+            }
+        }
+    }
 
-					$this->flushHttpResponse($newRequest);
-				}
-				catch (Throwable $exception) { // only roadRunner specific errors are expected here, since our own errors are fully handled internally
+    protected function flushHttpResponse(?ServerRequestInterface $newRequest): void
+    {
 
-					$this->httpWorker->getWorker()->error(
+        $_POST = $newRequest->getParsedBody() ?? []; // this is the only way to retrieve payload. Any attempt outside this object sees everything as empty. Using POST instead of passing it all the way down to payloadStorage, since it's the only usage with that requirement; moreover, downward interacts with requestDetail, not payloadStorage
 
-						$exception->getMessage(). "\n".
+        $renderer = $this->getRequestRenderer(
+            $newRequest->getRequestTarget(),
+            false
+        );
 
-						$exception->getTraceAsString()
-					);
-				}
-			}
-		}
+        $this->httpWorker->respond(
+            $this->getPsrResponse($renderer)
+        );
+    }
 
-		protected function flushHttpResponse (?ServerRequestInterface $newRequest):void {
+    public function getRequestRenderer(string $urlPattern, bool $outputHeaders): BaseRenderer
+    {
 
-			$_POST = $newRequest->getParsedBody() ?? []; // this is the only way to retrieve payload. Any attempt outside this object sees everything as empty. Using POST instead of passing it all the way down to payloadStorage, since it's the only usage with that requirement; moreover, downward interacts with requestDetail, not payloadStorage
+        $this->handlerIdentifier->setRequestPath($urlPattern);
 
-			$renderer = $this->getRequestRenderer(
+        $this->handlerIdentifier->diffuseSetResponse($outputHeaders);
 
-				$newRequest->getRequestTarget(), false
-			);
+        return $this->handlerIdentifier->underlyingRenderer();
+    }
 
-			$this->httpWorker->respond(
+    protected function getPsrResponse(BaseRenderer $renderer): ResponseInterface
+    {
 
-				$this->getPsrResponse($renderer)
-			);
-		}
+        $symfonyResponse = new SymfonyResponse(
+            $renderer->render(),
+            $renderer->getStatusCode(),
+            $renderer->getHeaders()
+        );
 
-		public function getRequestRenderer (string $urlPattern, bool $outputHeaders):BaseRenderer {
+        $psr17Factory = new Psr17Factory();
 
-			$this->handlerIdentifier->setRequestPath($urlPattern);
+        $psrHttpFactory = new PsrHttpFactory($psr17Factory, $psr17Factory, $psr17Factory, $psr17Factory);
 
-			$this->handlerIdentifier->diffuseSetResponse($outputHeaders);
+        return $psrHttpFactory->createResponse($symfonyResponse);
+    }
 
-			return $this->handlerIdentifier->underlyingRenderer();
-		}
+    public function safeSetupWorker(): void
+    {
 
-		protected function getPsrResponse (BaseRenderer $renderer):ResponseInterface {
+        $this->runInSandbox(function ($accessor) {
 
-			$symfonyResponse = new SymfonyResponse(
+            $this->buildIdentifier()->setActiveWorker()
 
-				$renderer->render(), $renderer->getStatusCode(),
+            ->openEventLoop();
+        }, function (Throwable $exception): never {
 
-				$renderer->getHeaders()
-			);
-			
-			$psr17Factory = new Psr17Factory;
+            var_dump("Failing worker alert", $exception); // if we get here, it means loop terminated/request failed and rr is restarting another one for us
 
-			$psrHttpFactory = new PsrHttpFactory($psr17Factory, $psr17Factory, $psr17Factory, $psr17Factory);
-
-			return $psrHttpFactory->createResponse($symfonyResponse);
-		}
-
-		public function safeSetupWorker ():void {
-
-			$this->runInSandbox(function ($accessor) {
-
-				$this->buildIdentifier()->setActiveWorker()
-
-				->openEventLoop();
-			}, function (Throwable $exception): never {
-					
-				var_dump("Failing worker alert", $exception); // if we get here, it means loop terminated/request failed and rr is restarting another one for us
-
-				throw $exception;
-			});
-		}
-	}
-?>
+            throw $exception;
+        });
+    }
+}

@@ -1,10 +1,10 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Enums;
 
-	enum PureEnum {
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Enums;
 
-		case UJU;
+enum PureEnum
+{
+    case UJU;
 
-		case AGNES;
-	}
-?>
+    case AGNES;
+}

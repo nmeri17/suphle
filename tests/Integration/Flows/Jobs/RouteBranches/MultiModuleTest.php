@@ -1,46 +1,48 @@
 <?php
-	namespace Suphle\Tests\Integration\Flows\Jobs\RouteBranches;
 
-	use Suphle\Contracts\Config\Router;
+namespace Suphle\Tests\Integration\Flows\Jobs\RouteBranches;
 
-	use Suphle\Testing\Proxies\WriteOnlyContainer;
+use Suphle\Contracts\Config\Router;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\FlowRoutes, Config\RouterMock};
+use Suphle\Testing\Proxies\WriteOnlyContainer;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\FlowRoutes, Config\RouterMock};
 
-	class MultiModuleTest extends JobFactory {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
-		protected function getModules():array {
+class MultiModuleTest extends JobFactory
+{
+    protected function getModules(): array
+    {
 
-			return [
+        return [
 
-				$this->moduleOne, $this->moduleThree
-			];
-		}
+            $this->moduleOne, $this->moduleThree
+        ];
+    }
 
-		protected function setModuleOne ():void {
+    protected function setModuleOne(): void
+    {
 
-			$this->moduleOne = $this->replicateModule(
-				ModuleOneDescriptor::class,
+        $this->moduleOne = $this->replicateModule(
+            ModuleOneDescriptor::class,
+            function (WriteOnlyContainer $container) {
 
-				function (WriteOnlyContainer $container) {
+                $container->replaceWithMock(Router::class, RouterMock::class, [
 
-					$container->replaceWithMock(Router::class, RouterMock::class, [
+                    "browserEntryRoute" => FlowRoutes::class
+                ]);
+            }
+        );
+    }
 
-						"browserEntryRoute" => FlowRoutes::class
-					]);
-				}
-			);
-		}
-		
-		public function test_handle_flows_in_other_modules () {
+    public function test_handle_flows_in_other_modules()
+    {
 
-			$this->get("/flow-to-module3"); // given
+        $this->get("/flow-to-module3"); // given
 
-			$this->processQueuedTasks(); // when
+        $this->processQueuedTasks(); // when
 
-			$this->assertHandledByFlow("/module-three/5"); // then
-		}
-	}
-?>
+        $this->assertHandledByFlow("/module-three/5"); // then
+    }
+}

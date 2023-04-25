@@ -1,104 +1,114 @@
 <?php
-	namespace Suphle\Bridge\Laravel\Config;
 
-	use Suphle\Hydration\Container;
+namespace Suphle\Bridge\Laravel\Config;
 
-	use Suphle\Contracts\Config\Laravel;
+use Suphle\Hydration\Container;
 
-	use Suphle\Services\Decorators\BindsAsSingleton;
+use Suphle\Contracts\Config\Laravel;
 
-	use Illuminate\Config\Repository;
+use Suphle\Services\Decorators\BindsAsSingleton;
 
-	#[BindsAsSingleton]
-	class ConfigLoader extends Repository {
+use Illuminate\Config\Repository;
 
-		protected array $pathSegments = [];
+#[BindsAsSingleton]
+class ConfigLoader extends Repository
+{
+    protected array $pathSegments = [];
 
-		/**
-		 * Even though we don't receive $this->items in the constructor like the parent, LaravelAppLoader manually triggers the process by injecting/setting each config
-		*/
-	    public function __construct(
+    /**
+     * Even though we don't receive $this->items in the constructor like the parent, LaravelAppLoader manually triggers the process by injecting/setting each config
+    */
+    public function __construct(
+        protected readonly Laravel $laravelConfig,
+        protected readonly Container $container
+    ) {
 
-	    	protected readonly Laravel $laravelConfig,
+        //
+    }
 
-	    	protected readonly Container $container
-	    ) {
+    /**
+     * Any call by their config function to access value in a file should defer to their paired OOP counterpart
+    */
+    public function get($key, $default = null)
+    {
 
-	    	//
-	    }
+        if (is_array($key)) {
 
-	    /**
-	     * Any call by their config function to access value in a file should defer to their paired OOP counterpart
-	    */
-		public function get($key, $default = null) {
+            return $this->getMany($key);
+        }
 
-	        if (is_array($key))
+        $this->pathSegments = explode(".", $key);
 
-	            return $this->getMany($key);
+        $name = array_shift($this->pathSegments);
 
-			$this->pathSegments = explode(".", $key);
+        if ($configClass = $this->findEquivalent($name)) {
 
-	        $name = array_shift($this->pathSegments);
+            $property = $this->findProperty($this->getConfigConcrete($configClass, $name));
 
-	        if ($configClass = $this->findEquivalent($name)) {
+            if (!is_null($property)) {
+                return $property;
+            }
+        }
 
-	        	$property = $this->findProperty($this->getConfigConcrete($configClass, $name));
+        return parent::get($key, $default);
+    }
 
-	        	if (!is_null($property)) return $property;
-	        }
+    private function findEquivalent(string $name): ?string
+    {
 
-	        return parent::get( $key, $default);
-	    }
+        $bridge = $this->laravelConfig->configBridge();
 
-	    private function findEquivalent (string $name):?string {
+        if (array_key_exists($name, $bridge)) {
 
-	        $bridge = $this->laravelConfig->configBridge();
+            return $bridge[$name];
+        }
 
-	        if (array_key_exists($name, $bridge))
+        return null;
+    }
 
-	        	return $bridge[$name];
+    /**
+     * @return mixed. Result of calling methods on the config
+    */
+    private function findProperty(BaseConfigLink $config)
+    {
 
-	        return null;
-	    }
+        $currentContext = null;
 
-	    /**
-	     * @return mixed. Result of calling methods on the config
-	    */
-	    private function findProperty (BaseConfigLink $config) {
+        foreach ($this->pathSegments as $segment) {
 
-	    	$currentContext = null;
+            if (!method_exists($config, $segment)) {
+                return null;
+            }
 
-	    	foreach ($this->pathSegments as $segment) {
+            if (is_null($currentContext)) {
 
-	    		if (!method_exists($config, $segment)) return null;
+                $currentContext = $config->$segment();
+            } else {
+                $currentContext = $currentContext->$segment();
+            }
+        }
 
-	    		if (is_null($currentContext))
-	    		
-	    			$currentContext = $config->$segment();
+        return $currentContext;
+    }
 
-	    		else $currentContext = $currentContext->$segment();
-	    	}
+    private function getConfigConcrete(string $className, string $configName): BaseConfigLink
+    {
 
-	    	return $currentContext;
-	    }
+        return $this->container->whenType($className)
 
-	    private function getConfigConcrete (string $className, string $configName):BaseConfigLink {
+        ->needsArguments([
 
-	    	return $this->container->whenType($className)
+            "nativeValues" => parent::get($configName)
 
-	    	->needsArguments([
+        ])->getClass($className);
+    }
 
-	    		"nativeValues" => parent::get($configName)
-	    	
-	    	])->getClass($className);
-	    }
+    /**
+     *  @todo override [getMany]
+    */
+    public function getMany($keys): array
+    {
 
-	    /**
-	     *  @todo override [getMany]
-	    */
-	    public function getMany ($keys):array {
-
-	    	return [];
-	    }
-	}
-?>
+        return [];
+    }
+}

@@ -1,283 +1,298 @@
 <?php
-	namespace Suphle\Tests\Unit\Flows;
 
-	use Suphle\Contracts\{Modules\DescriptorInterface, Response\RendererManager};
+namespace Suphle\Tests\Unit\Flows;
 
-	use Suphle\Flows\{FlowHydrator, Previous\CollectionNode};
+use Suphle\Contracts\{Modules\DescriptorInterface, Response\RendererManager};
 
-	use Suphle\Flows\Structures\{RangeContext, ServiceContext, GeneratedUrlExecution};
+use Suphle\Flows\{FlowHydrator, Previous\CollectionNode};
 
-	use Suphle\Hydration\DecoratorHydrator;
+use Suphle\Flows\Structures\{RangeContext, ServiceContext, GeneratedUrlExecution};
 
-	use Suphle\Response\RoutedRendererManager;
+use Suphle\Hydration\DecoratorHydrator;
 
-	use Suphle\Testing\TestTypes\IsolatedComponentTest;
+use Suphle\Response\RoutedRendererManager;
 
-	use Suphle\Tests\Integration\Generic\CommonBinds;
+use Suphle\Testing\TestTypes\IsolatedComponentTest;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Concretes\FlowService, Meta\ModuleOneDescriptor};
+use Suphle\Tests\Integration\Generic\CommonBinds;
 
-	class HandlersTest extends IsolatedComponentTest {
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Concretes\FlowService, Meta\ModuleOneDescriptor};
 
-	 	use FlowData, CommonBinds {
+class HandlersTest extends IsolatedComponentTest
+{
+    use FlowData, CommonBinds {
 
-	 		CommonBinds::concreteBinds as commonConcretes;
-	 	}
+        CommonBinds::concreteBinds as commonConcretes;
+    }
 
-		private string $flowService = FlowService::class;
-  private string $sutName = FlowHydrator::class;
+    private string $flowService = FlowService::class;
+    private string $sutName = FlowHydrator::class;
 
-		public function setUp ():void {
+    public function setUp(): void
+    {
 
-			parent::setUp();
+        parent::setUp();
 
-			$this->indexes = $this->getIndexes();
-		}
+        $this->indexes = $this->getIndexes();
+    }
 
-		protected function concreteBinds ():array {
+    protected function concreteBinds(): array
+    {
 
-			return array_merge($this->commonConcretes(), [
+        return array_merge($this->commonConcretes(), [
 
-				DescriptorInterface::class => $this->replaceConstructorArguments(ModuleOneDescriptor::class, [])
-			]);
-		}
+            DescriptorInterface::class => $this->replaceConstructorArguments(ModuleOneDescriptor::class, [])
+        ]);
+    }
 
-		public function test_pipeTo() {
+    public function test_pipeTo()
+    {
 
-			$indexes = $this->indexes; // given
+        $indexes = $this->indexes; // given
 
-			$indexesCount = is_countable($indexes) ? count($indexes) : 0;
+        $indexesCount = is_countable($indexes) ? count($indexes) : 0;
 
-			$unitNode = $this->createCollectionNode();
+        $unitNode = $this->createCollectionNode();
 
-			// then
-			$sut = $this->mockFlowHydrator([
-				
-				"updatePlaceholders" => [$indexesCount, [
+        // then
+        $sut = $this->mockFlowHydrator([
 
-					$this->callback(function($subject) use ($indexes, $unitNode) {
+            "updatePlaceholders" => [$indexesCount, [
 
-						$id = $subject[$unitNode->getLeafName()];
+                $this->callback(function ($subject) use ($indexes, $unitNode) {
 
-						return in_array($id, $indexes);
-					})
-				]],
+                    $id = $subject[$unitNode->getLeafName()];
 
-				"executeGeneratedUrl" => [$indexesCount, []]
-			]);
+                    return in_array($id, $indexes);
+                })
+            ]],
 
-			// when
-			$sut->handlePipe($indexes, 1, $unitNode);
-		}
+            "executeGeneratedUrl" => [$indexesCount, []]
+        ]);
 
-		private function mockFlowHydrator ( array $mocks):FlowHydrator {
+        // when
+        $sut->handlePipe($indexes, 1, $unitNode);
+    }
 
-			$mocks = array_merge(["executeGeneratedUrl" => [1, []]], $mocks);
+    private function mockFlowHydrator(array $mocks): FlowHydrator
+    {
 
-			$hydrator = $this->replaceConstructorArguments(
+        $mocks = array_merge(["executeGeneratedUrl" => [1, []]], $mocks);
 
-				$this->sutName, [], [
+        $hydrator = $this->replaceConstructorArguments(
+            $this->sutName,
+            [],
+            [
 
-					"updatePlaceholders" => $this->returnSelf(),
+                "updatePlaceholders" => $this->returnSelf(),
 
-					"updatePayloadStorage" => $this->returnSelf(),
+                "updatePayloadStorage" => $this->returnSelf(),
 
-					"executeGeneratedUrl" => $this->positiveDouble(GeneratedUrlExecution::class)
-				], $mocks
-			);
+                "executeGeneratedUrl" => $this->positiveDouble(GeneratedUrlExecution::class)
+            ],
+            $mocks
+        );
 
-			return $this->container->whenTypeAny()->needsAny([
+        return $this->container->whenTypeAny()->needsAny([
 
-				$this->sutName => $hydrator
-			])->getClass($this->sutName); // for the decoration
-		}
+            $this->sutName => $hydrator
+        ])->getClass($this->sutName); // for the decoration
+    }
 
-		/**
-	     * @dataProvider getPageNumbers
-	     */
-		public function test_handleQuerySegmentAlter(int $pageNumber) {
+    /**
+     * @dataProvider getPageNumbers
+     */
+    public function test_handleQuerySegmentAlter(int $pageNumber)
+    {
 
-			// given
-			$queryUpdate = ["page_number" => $pageNumber];
+        // given
+        $queryUpdate = ["page_number" => $pageNumber];
 
-			// then
-			$sut = $this->mockFlowHydrator([
+        // then
+        $sut = $this->mockFlowHydrator([
 
-				"updatePayloadStorage" => [1, [$queryUpdate]]
-			]);
+            "updatePayloadStorage" => [1, [$queryUpdate]]
+        ]);
 
-			// when
-			$sut->handleQuerySegmentAlter( // suppose next page is 2 according to current outgoing request, flow runs and stores for 2
+        // when
+        $sut->handleQuerySegmentAlter( // suppose next page is 2 according to current outgoing request, flow runs and stores for 2
 
-				"/posts/?" . http_build_query($queryUpdate)
-			);
-		}
+            "/posts/?" . http_build_query($queryUpdate)
+        );
+    }
 
-		public function getPageNumbers ():array {
+    public function getPageNumbers(): array
+    {
 
-			return [[2], [3]];
-		}
+        return [[2], [3]];
+    }
 
-		public function test_fromService_returns_service_call_result() {
+    public function test_fromService_returns_service_call_result()
+    {
 
-			$sut = $this->getHydratorForService(); // given
+        $sut = $this->getHydratorForService(); // given
 
-			$result = $sut->handleServiceSource(null, $this->getServiceContext(), $this->createCollectionNode() ); // when
+        $result = $sut->handleServiceSource(null, $this->getServiceContext(), $this->createCollectionNode()); // when
 
-			$flowServiceInstance = $this->container->getClass($this->flowService);
+        $flowServiceInstance = $this->container->getClass($this->flowService);
 
-			$this->assertSame(
-				$result,
+        $this->assertSame(
+            $result,
+            $flowServiceInstance->customHandlePrevious([
 
-				$flowServiceInstance->customHandlePrevious([
-					
-					"data" => $this->indexesToModels()
-				])
-			); // then
-		}
+                "data" => $this->indexesToModels()
+            ])
+        ); // then
+    }
 
-		private function getHydratorForService (array $mockMethods = []):FlowHydrator {
+    private function getHydratorForService(array $mockMethods = []): FlowHydrator
+    {
 
-			$hydrator = $this->positiveDouble($this->sutName, [
+        $hydrator = $this->positiveDouble($this->sutName, [
 
-				"getNodeFromPrevious" => $this->payloadFromPrevious()
-			], $mockMethods);
+            "getNodeFromPrevious" => $this->payloadFromPrevious()
+        ], $mockMethods);
 
-			$hydrator->setContainer($this->container);
+        $hydrator->setContainer($this->container);
 
-			return $this->container->whenTypeAny()->needsAny([
+        return $this->container->whenTypeAny()->needsAny([
 
-				RendererManager::class => $this->positiveDouble(RoutedRendererManager::class)
-			])->getClass(DecoratorHydrator::class)
+            RendererManager::class => $this->positiveDouble(RoutedRendererManager::class)
+        ])->getClass(DecoratorHydrator::class)
 
-			->scopeInjecting($hydrator, self::class);
-		}
+        ->scopeInjecting($hydrator, self::class);
+    }
 
-		public function test_fromService_doesnt_edit_request_or_trigger_controller() {
+    public function test_fromService_doesnt_edit_request_or_trigger_controller()
+    {
 
-			$sut = $this->getHydratorForService([ // then
+        $sut = $this->getHydratorForService([ // then
 
-				"executeGeneratedUrl" => [0, []],
+            "executeGeneratedUrl" => [0, []],
 
-				"updatePlaceholders" => [0, []],
-			]);
+            "updatePlaceholders" => [0, []],
+        ]);
 
-			$sut->handleServiceSource( // when
+        $sut->handleServiceSource( // when
 
-				null, $this->getServiceContext(),
+            null,
+            $this->getServiceContext(),
+            $this->createCollectionNode() // given
+        );
+    }
 
-				$this->createCollectionNode() // given
-			);
-		}
+    public function test_fromService_passes_previous_payload()
+    {
 
-		public function test_fromService_passes_previous_payload() {
+        $this->container->whenTypeAny()->needsAny([ // given
 
-			$this->container->whenTypeAny()->needsAny([ // given
+            $this->flowService => $this->positiveDouble($this->flowService, [], [
 
-				$this->flowService => $this->positiveDouble($this->flowService, [], [
+                "customHandlePrevious" => [1, [
 
-					"customHandlePrevious" => [1, [
+                    $this->payloadFromPrevious()
+                ]]
+            ]) // then
+        ]);
 
-						$this->payloadFromPrevious()
-					]]
-				]) // then
-			]);
+        // when
+        $this->getHydratorForService()->handleServiceSource(
+            null,
+            $this->getServiceContext(),
+            $this->createCollectionNode()
+        );
+    }
 
-			// when
-			$this->getHydratorForService()->handleServiceSource(
-				
-				null, $this->getServiceContext(),
+    private function getServiceContext(): ServiceContext
+    {
 
-				$this->createCollectionNode()
-			);
-		}
+        return new ServiceContext($this->flowService, "customHandlePrevious");
+    }
 
-		private function getServiceContext ():ServiceContext {
+    public function test_handleAsOne()
+    {
 
-			return new ServiceContext($this->flowService, "customHandlePrevious");
-		}
+        $indexes = $this->indexes;
 
-		public function test_handleAsOne () {
+        $requestProperty = "ids"; // given
 
-			$indexes = $this->indexes;
+        // then
+        $sut = $this->mockFlowHydrator([
 
-			$requestProperty = "ids"; // given
+            "updatePlaceholders" => [1, [
 
-			// then
-			$sut = $this->mockFlowHydrator([
+                [$requestProperty => implode(",", $indexes) ]
+            ]]
+        ]);
 
-				"updatePlaceholders" => [1, [
+        // when
+        $sut->handleAsOne($indexes, $requestProperty);
+    }
 
-					[$requestProperty => implode(",", $indexes) ]
-				]]
-			]);
+    /**
+     * @dataProvider getRegularRanges
+    */
+    public function test_handleRange(RangeContext $range)
+    {
 
-			// when
-			$sut->handleAsOne($indexes, $requestProperty);
-		}
+        $range = new RangeContext();
 
-		/**
-		 * @dataProvider getRegularRanges
-		*/
-		public function test_handleRange (RangeContext $range) {
+        $indexes = $this->indexes; // given
 
-			$range = new RangeContext;
+        // then
+        $sut = $this->mockFlowHydrator([
 
-			$indexes = $this->indexes; // given
+            "updatePlaceholders" => [1, [
+                [
+                    $range->getParameterMax() => max($indexes),
 
-			// then
-			$sut = $this->mockFlowHydrator([
+                    $range->getParameterMin() => min($indexes)
+                ]
+            ]]
+        ]);
 
-				"updatePlaceholders" => [1, [
-					[
-						$range->getParameterMax() => max($indexes),
+        // when
+        $sut->handleRange($indexes, $range);
+    }
 
-						$range->getParameterMin() => min($indexes)
-					]
-				]]
-			]);
+    public function getRegularRanges(): array
+    {
 
-			// when
-			$sut->handleRange($indexes, $range);
-		}
+        return [
+            [new RangeContext()],
+            [new RangeContext(null, "min_value")]
+        ];
+    }
 
-		public function getRegularRanges ():array {
+    public function test_handleDateRange()
+    {
 
-			return [
-				[new RangeContext],
-				[new RangeContext(null, "min_value")]
-			];
-		}
+        $range = new RangeContext();
 
-		public function test_handleDateRange () {
+        $maxDate = "2021-12-09";
 
-			$range = new RangeContext;
+        $minDate = "2021-01-15";
 
-			$maxDate = "2021-12-09";
+        $dates = [
 
-			$minDate = "2021-01-15";
+            "2021-07-17", $maxDate, "2021-08-15", // deliberately scatter them
 
-			$dates = [
+            $minDate, "2021-07-01"
+        ]; // given
 
-				"2021-07-17", $maxDate, "2021-08-15", // deliberately scatter them
+        // then
+        $sut = $this->mockFlowHydrator([
 
-				$minDate, "2021-07-01"
-			]; // given
+            "updatePlaceholders" => [1, [
+                [
+                    $range->getParameterMax() => $maxDate,
 
-			// then
-			$sut = $this->mockFlowHydrator([
+                    $range->getParameterMin() => $minDate
+                ]
+            ]]
+        ]);
 
-				"updatePlaceholders" => [1, [
-					[
-						$range->getParameterMax() => $maxDate,
-
-						$range->getParameterMin() => $minDate
-					]
-				]]
-			]);
-
-			// when
-			$sut->handleDateRange($dates, $range);
-		}
-	}
-?>
+        // when
+        $sut->handleDateRange($dates, $range);
+    }
+}

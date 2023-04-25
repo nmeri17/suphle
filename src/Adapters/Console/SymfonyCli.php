@@ -1,22 +1,24 @@
 <?php
-	namespace Suphle\Adapters\Console;
 
-	use Suphle\Contracts\ConsoleClient;
+namespace Suphle\Adapters\Console;
 
-	use Suphle\Console\BaseCliCommand;
+use Suphle\Contracts\ConsoleClient;
 
-	use Symfony\Component\Console\Application;
+use Suphle\Console\BaseCliCommand;
 
-	class SymfonyCli extends Application implements ConsoleClient {
+use Symfony\Component\Console\Application;
 
-		public function addCommand (BaseCliCommand $command) {
+class SymfonyCli extends Application implements ConsoleClient
+{
+    public function addCommand(BaseCliCommand $command)
+    {
 
-			$this->add ($command);
-		}
+        $this->add($command);
+    }
 
-		public function findCommand (string $name) {
+    public function findCommand(string $name)
+    {
 
-			return $this->find($name);
-		}
-	}
-?>
+        return $this->find($name);
+    }
+}

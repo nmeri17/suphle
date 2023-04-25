@@ -1,21 +1,24 @@
 <?php
-	namespace Suphle\Routing\Structures;
 
-	class MethodPlaceholders {
+namespace Suphle\Routing\Structures;
 
-		public function __construct(protected readonly string $regexified, protected readonly array $placeholders) {
+class MethodPlaceholders
+{
+    public function __construct(protected readonly string $regexified, protected readonly array $placeholders)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function getPlaceholders ():array {
+    public function getPlaceholders(): array
+    {
 
-			return $this->placeholders;
-		}
+        return $this->placeholders;
+    }
 
-		public function regexifiedUrl ():string {
+    public function regexifiedUrl(): string
+    {
 
-			return $this->regexified;
-		}
-	}
-?>
+        return $this->regexified;
+    }
+}

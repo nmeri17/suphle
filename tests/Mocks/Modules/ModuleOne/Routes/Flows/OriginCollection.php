@@ -1,116 +1,135 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Flows;
 
-	use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Flows;
 
-	use Suphle\Response\Format\Json;
+use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
 
-	use Suphle\Flows\{ControllerFlows, Structures\ServiceContext};
+use Suphle\Response\Format\Json;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\FlowCoordinator;
+use Suphle\Flows\{ControllerFlows, Structures\ServiceContext};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\FlowService;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\FlowCoordinator;
 
-	#[HandlingCoordinator(FlowCoordinator::class)]
-	class OriginCollection extends BaseCollection {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\FlowService;
 
-		protected string $queryNodeHolder = "next_page_url";
+#[HandlingCoordinator(FlowCoordinator::class)]
+class OriginCollection extends BaseCollection
+{
+    protected string $queryNodeHolder = "next_page_url";
 
-		public function COMBINE__FLOWSh() {
+    public function COMBINE__FLOWSh()
+    {
 
-			$renderer = new Json("handleCombined");
+        $renderer = new Json("handleCombined");
 
-			$flow = new ControllerFlows;
+        $flow = new ControllerFlows();
 
-			$flow->linksTo("paged-data", $flow
+        $flow->linksTo(
+            "paged-data",
+            $flow
 
-				->previousResponse()->getNode($this->queryNodeHolder)
+            ->previousResponse()->getNode($this->queryNodeHolder)
 
-				->altersQuery()
-			)
-			->linksTo("categories/id", $flow->previousResponse()->collectionNode("data") // assumes we're coming from "/categories"
+            ->altersQuery()
+        )
+        ->linksTo(
+            "categories/id",
+            $flow->previousResponse()->collectionNode("data") // assumes we're coming from "/categories"
 
-				->pipeTo(),
-			);
+            ->pipeTo(),
+        );
 
-			$this->_httpGet($renderer->setFlow($flow));
-		}
+        $this->_httpGet($renderer->setFlow($flow));
+    }
 
-		public function SINGLE__NODEh() {
+    public function SINGLE__NODEh()
+    {
 
-			$renderer = new Json("handleSingleNode");
+        $renderer = new Json("handleSingleNode");
 
-			$flow = new ControllerFlows;
+        $flow = new ControllerFlows();
 
-			$flow->linksTo("paged-data", $flow
+        $flow->linksTo(
+            "paged-data",
+            $flow
 
-				->previousResponse()->getNode($this->queryNodeHolder)
+            ->previousResponse()->getNode($this->queryNodeHolder)
 
-				->altersQuery()
-			);
+            ->altersQuery()
+        );
 
-			$this->_httpGet($renderer->setFlow($flow));
-		}
+        $this->_httpGet($renderer->setFlow($flow));
+    }
 
-		public function FROM__SERVICEh() {
+    public function FROM__SERVICEh()
+    {
 
-			$renderer = new Json("handleFromService");
+        $renderer = new Json("handleFromService");
 
-			$flow = new ControllerFlows;
+        $flow = new ControllerFlows();
 
-			$serviceContext = new ServiceContext(FlowService::class, "customHandlePrevious");
+        $serviceContext = new ServiceContext(FlowService::class, "customHandlePrevious");
 
-			$flow->linksTo("orders/sort/id/id2", $flow->previousResponse()
+        $flow->linksTo(
+            "orders/sort/id/id2",
+            $flow->previousResponse()
 
-				->collectionNode("store.id")
+            ->collectionNode("store.id")
 
-				->setFromService($serviceContext)
+            ->setFromService($serviceContext)
 
-				->inRange() // has a parameterised and date variant
-				// try using any other collection based method aside ranges
-				// after adding them, update [flroutest->getOriginUrls]
-			);
+            ->inRange() // has a parameterised and date variant
+            // try using any other collection based method aside ranges
+            // after adding them, update [flroutest->getOriginUrls]
+        );
 
-			$this->_httpGet($renderer->setFlow($flow));
-		}
+        $this->_httpGet($renderer->setFlow($flow));
+    }
 
-		public function PIPE__TOh() {
+    public function PIPE__TOh()
+    {
 
-			$renderer = new Json("handlePipeTo");
+        $renderer = new Json("handlePipeTo");
 
-			$flow = new ControllerFlows;
+        $flow = new ControllerFlows();
 
-			$flow->linksTo("categories/id", $flow->previousResponse()
-				->collectionNode("data") // assumes we're coming from "/categories"
+        $flow->linksTo(
+            "categories/id",
+            $flow->previousResponse()
+            ->collectionNode("data") // assumes we're coming from "/categories"
 
-				->pipeTo(),
-			);
-			
-			$this->_httpGet($renderer->setFlow($flow));
-		}
+            ->pipeTo(),
+        );
 
-		public function ONE__OFh() {
+        $this->_httpGet($renderer->setFlow($flow));
+    }
 
-			$renderer = new Json("handleOneOf");
+    public function ONE__OFh()
+    {
 
-			$flow = new ControllerFlows;
+        $renderer = new Json("handleOneOf");
 
-			$flow->linksTo("store/id", $flow->previousResponse()->collectionNode("data", "product_name")
+        $flow = new ControllerFlows();
 
-				->asOne()
-			);
-			
-			$this->_httpGet($renderer->setFlow($flow));
-		}
+        $flow->linksTo(
+            "store/id",
+            $flow->previousResponse()->collectionNode("data", "product_name")
 
-		public function NO__FLOWh() {
+            ->asOne()
+        );
 
-			$this->_httpGet(new Json("noFlowHandler"));
-		}
+        $this->_httpGet($renderer->setFlow($flow));
+    }
 
-		public function USER__CONTENTh_id () {
+    public function NO__FLOWh()
+    {
 
-			$this->_httpGet(new Json("readFlowPayload"));
-		}
-	}
-?>
+        $this->_httpGet(new Json("noFlowHandler"));
+    }
+
+    public function USER__CONTENTh_id()
+    {
+
+        $this->_httpGet(new Json("readFlowPayload"));
+    }
+}

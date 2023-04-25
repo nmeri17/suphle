@@ -1,8 +1,8 @@
 <?php
-	namespace Suphle\Contracts\Queues;
 
-	interface Task {
+namespace Suphle\Contracts\Queues;
 
-		public function handle ():void;
-	}
-?>
+interface Task
+{
+    public function handle(): void;
+}

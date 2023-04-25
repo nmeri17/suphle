@@ -1,183 +1,188 @@
 <?php
-	namespace Suphle\Hydration\Structures;
 
-	use Suphle\Contracts\Hydration\{InterfaceCollection, DecoratorChain};
+namespace Suphle\Hydration\Structures;
 
-	use Suphle\Contracts\{Events, Presentation\HtmlParser, Queues\Adapter as QueueAdapter, Modules\ControllerModule, Response\RendererManager };
+use Suphle\Contracts\Hydration\{InterfaceCollection, DecoratorChain};
 
-	use Suphle\Contracts\Exception\{FatalShutdownAlert, AlertAdapter};
+use Suphle\Contracts\{Events, Presentation\HtmlParser, Queues\Adapter as QueueAdapter, Modules\ControllerModule, Response\RendererManager };
 
-	use Suphle\Contracts\IO\{Session, MailClient, EnvAccessor, CacheManager};
+use Suphle\Contracts\Exception\{FatalShutdownAlert, AlertAdapter};
 
-	use Suphle\Contracts\Requests\{RequestValidator, FileInputReader, ValidationFailureConvention, RequestEventsListener};
+use Suphle\Contracts\IO\{Session, MailClient, EnvAccessor, CacheManager};
 
-	use Suphle\Contracts\Database\{OrmDialect, OrmReplicator, OrmTester, EntityDetails};
+use Suphle\Contracts\Requests\{RequestValidator, FileInputReader, ValidationFailureConvention, RequestEventsListener};
 
-	use Suphle\Contracts\Bridge\{LaravelContainer, LaravelArtisan};
+use Suphle\Contracts\Database\{OrmDialect, OrmReplicator, OrmTester, EntityDetails};
 
-	use Suphle\Contracts\Auth\{AuthStorage, ModuleLoginHandler, ColumnPayloadComparer};
+use Suphle\Contracts\Bridge\{LaravelContainer, LaravelArtisan};
 
-	use Suphle\Contracts\Config\{AuthContract, Database, DecoratorProxy, ExceptionInterceptor, ComponentTemplates, Laravel as LaravelConfig, Console as ConsoleContract, Flows as FlowConfig, ContainerConfig as IContainerConfig, CacheClient as CacheConfig};
+use Suphle\Contracts\Auth\{AuthStorage, ModuleLoginHandler, ColumnPayloadComparer};
 
-	use Suphle\Contracts\IO\Image\{ImageThumbnailClient, InferiorImageClient, ImageLocator, InferiorOperationHandler, ThumbnailOperationHandler};
+use Suphle\Contracts\Config\{AuthContract, Database, DecoratorProxy, ExceptionInterceptor, ComponentTemplates, Laravel as LaravelConfig, Console as ConsoleContract, Flows as FlowConfig, ContainerConfig as IContainerConfig, CacheClient as CacheConfig};
 
-	use Suphle\IO\Image\{InterfaceLoaders\ImageThumbnailLoader, SaveClients\LocalSaver};
+use Suphle\Contracts\IO\Image\{ImageThumbnailClient, InferiorImageClient, ImageLocator, InferiorOperationHandler, ThumbnailOperationHandler};
 
-	use Suphle\IO\Image\Operations\{DefaultInferiorHandler, DefaultThumbnailHandler};
+use Suphle\IO\Image\{InterfaceLoaders\ImageThumbnailLoader, SaveClients\LocalSaver};
 
-	use Suphle\IO\{Mailing\MailClientLoader, Env\DatabaseEnvReader};
+use Suphle\IO\Image\Operations\{DefaultInferiorHandler, DefaultThumbnailHandler};
 
-	use Suphle\IO\Cache\AdapterLoader as CacheAdapterLoader;
+use Suphle\IO\{Mailing\MailClientLoader, Env\DatabaseEnvReader};
 
-	use Suphle\Auth\{LoginHandlerInterfaceLoader, EmailPasswordComparer, Storage\SessionStorage};
+use Suphle\IO\Cache\AdapterLoader as CacheAdapterLoader;
 
-	use Suphle\Adapters\Orms\Eloquent\{ UserEntityLoader, ModelReplicator, OrmLoader, DatabaseTester as EloquentTester, Models\ModelDetail};
+use Suphle\Auth\{LoginHandlerInterfaceLoader, EmailPasswordComparer, Storage\SessionStorage};
 
-	use Suphle\Adapters\Image\Optimizers\NativeReducerClient;
+use Suphle\Adapters\Orms\Eloquent\{ UserEntityLoader, ModelReplicator, OrmLoader, DatabaseTester as EloquentTester, Models\ModelDetail};
 
-	use Suphle\Adapters\{Exception\Bugsnag, Session\NativeSession};
+use Suphle\Adapters\Image\Optimizers\NativeReducerClient;
 
-	use Suphle\Adapters\Presentation\Hotwire\FailureConventions\HttpMethodValidationConvention;
+use Suphle\Adapters\{Exception\Bugsnag, Session\NativeSession};
 
-	use Suphle\Adapters\Presentation\Blade\DefaultBladeAdapter;
+use Suphle\Adapters\Presentation\Hotwire\FailureConventions\HttpMethodValidationConvention;
 
-	use Suphle\Queues\AdapterLoader as QueueAdapterLoader;
+use Suphle\Adapters\Presentation\Blade\DefaultBladeAdapter;
 
-	use Suphle\Request\{ValidatorLoader, NativeFileReader, DefaultRequestListener};
+use Suphle\Queues\AdapterLoader as QueueAdapterLoader;
 
-	use Suphle\Config\{Auth, Laravel, ExceptionConfig, Console as CliConsole, PDOMysqlKeys, DefaultFlowConfig, ProxyManagerConfig, DefaultCacheConfig, DefaultTemplateConfig, ContainerConfig};
+use Suphle\Request\{ValidatorLoader, NativeFileReader, DefaultRequestListener};
 
-	use Suphle\Modules\ControllerModuleApi;
+use Suphle\Config\{Auth, Laravel, ExceptionConfig, Console as CliConsole, PDOMysqlKeys, DefaultFlowConfig, ProxyManagerConfig, DefaultCacheConfig, DefaultTemplateConfig, ContainerConfig};
 
-	use Suphle\Events\EventManager;
+use Suphle\Modules\ControllerModuleApi;
 
-	use Suphle\Bridge\Laravel\InterfaceLoaders\{LaravelAppLoader, ArtisanLoader};
+use Suphle\Events\EventManager;
 
-	use Suphle\Response\RoutedRendererManager;
+use Suphle\Bridge\Laravel\InterfaceLoaders\{LaravelAppLoader, ArtisanLoader};
 
-	use Suphle\Exception\Jobs\MailShutdownAlert;
+use Suphle\Response\RoutedRendererManager;
 
-	use Psr\Http\Client\ClientInterface as OutgoingRequest;
+use Suphle\Exception\Jobs\MailShutdownAlert;
 
-	use GuzzleHttp\Client as GuzzleClient;
+use Psr\Http\Client\ClientInterface as OutgoingRequest;
 
-	class BaseInterfaceCollection implements InterfaceCollection {
+use GuzzleHttp\Client as GuzzleClient;
 
-		protected array $delegateInstances = [];
+class BaseInterfaceCollection implements InterfaceCollection
+{
+    protected array $delegateInstances = [];
 
-		public function getLoaders():array {
+    public function getLoaders(): array
+    {
 
-			return [
+        return [
 
-				CacheManager::class => CacheAdapterLoader::class,
+            CacheManager::class => CacheAdapterLoader::class,
 
-				ImageThumbnailClient::class => ImageThumbnailLoader::class,
+            ImageThumbnailClient::class => ImageThumbnailLoader::class,
 
-				LaravelContainer::class => LaravelAppLoader::class,
+            LaravelContainer::class => LaravelAppLoader::class,
 
-				LaravelArtisan::class => ArtisanLoader::class,
+            LaravelArtisan::class => ArtisanLoader::class,
 
-				MailClient::class => MailClientLoader::class,
+            MailClient::class => MailClientLoader::class,
 
-				ModuleLoginHandler::class => LoginHandlerInterfaceLoader::class,
-				
-				OrmDialect::class => OrmLoader::class,
+            ModuleLoginHandler::class => LoginHandlerInterfaceLoader::class,
 
-				QueueAdapter::class => QueueAdapterLoader::class,
+            OrmDialect::class => OrmLoader::class,
 
-				RequestValidator::class => ValidatorLoader::class
-			];
-		}
+            QueueAdapter::class => QueueAdapterLoader::class,
 
-		public function simpleBinds():array {
+            RequestValidator::class => ValidatorLoader::class
+        ];
+    }
 
-			return [
+    public function simpleBinds(): array
+    {
 
-				AlertAdapter::class => Bugsnag::class,
+        return [
 
-				AuthStorage::class => SessionStorage::class,
+            AlertAdapter::class => Bugsnag::class,
 
-				ColumnPayloadComparer::class => EmailPasswordComparer::class,
+            AuthStorage::class => SessionStorage::class,
 
-				ControllerModule::class => ControllerModuleApi::class,
+            ColumnPayloadComparer::class => EmailPasswordComparer::class,
 
-				DecoratorChain::class => BaseDecorators::class,
+            ControllerModule::class => ControllerModuleApi::class,
 
-				EntityDetails::class => ModelDetail::class,
+            DecoratorChain::class => BaseDecorators::class,
 
-				EnvAccessor::class => DatabaseEnvReader::class,
+            EntityDetails::class => ModelDetail::class,
 
-				Events::class => EventManager::class,
+            EnvAccessor::class => DatabaseEnvReader::class,
 
-				FatalShutdownAlert::class => MailShutdownAlert::class,
+            Events::class => EventManager::class,
 
-				FileInputReader::class => NativeFileReader::class,
+            FatalShutdownAlert::class => MailShutdownAlert::class,
 
-				HtmlParser::class => DefaultBladeAdapter::class,
+            FileInputReader::class => NativeFileReader::class,
 
-				ImageLocator::class => LocalSaver::class,
+            HtmlParser::class => DefaultBladeAdapter::class,
 
-				InferiorOperationHandler::class => DefaultInferiorHandler::class,
+            ImageLocator::class => LocalSaver::class,
 
-				InferiorImageClient::class => NativeReducerClient::class,
+            InferiorOperationHandler::class => DefaultInferiorHandler::class,
 
-				OutgoingRequest::class => GuzzleClient::class,
+            InferiorImageClient::class => NativeReducerClient::class,
 
-				OrmReplicator::class => ModelReplicator::class,
+            OutgoingRequest::class => GuzzleClient::class,
 
-				OrmTester::class => EloquentTester::class,
+            OrmReplicator::class => ModelReplicator::class,
 
-				RendererManager::class => RoutedRendererManager::class,
+            OrmTester::class => EloquentTester::class,
 
-				RequestEventsListener::class => DefaultRequestListener::class,
+            RendererManager::class => RoutedRendererManager::class,
 
-				Session::class => NativeSession::class,
+            RequestEventsListener::class => DefaultRequestListener::class,
 
-				ThumbnailOperationHandler::class => DefaultThumbnailHandler::class,
+            Session::class => NativeSession::class,
 
-				ValidationFailureConvention::class => HttpMethodValidationConvention::class
-			];
-		}
+            ThumbnailOperationHandler::class => DefaultThumbnailHandler::class,
 
-		/**
-		 * Interfaces given here are telling the hydrator that they have another way of materializing (aside from simply hydrating concrete like for everyone else)
-		 * 
-		 * @param {interfaces} Assoc array of interfaces and their concretes
-		*/
-		public function delegateHydrants (array $interfaces):void {
+            ValidationFailureConvention::class => HttpMethodValidationConvention::class
+        ];
+    }
 
-			$this->delegateInstances = $interfaces;
-		}
+    /**
+     * Interfaces given here are telling the hydrator that they have another way of materializing (aside from simply hydrating concrete like for everyone else)
+     *
+     * @param {interfaces} Assoc array of interfaces and their concretes
+    */
+    public function delegateHydrants(array $interfaces): void
+    {
 
-		public function getDelegatedInstances ():array {
+        $this->delegateInstances = $interfaces;
+    }
 
-			return $this->delegateInstances;
-		}
+    public function getDelegatedInstances(): array
+    {
 
-		public function getConfigs ():array {
-			
-			return [
+        return $this->delegateInstances;
+    }
 
-				AuthContract::class => Auth::class,
+    public function getConfigs(): array
+    {
 
-				CacheConfig::class => DefaultCacheConfig::class,
+        return [
 
-				ComponentTemplates::class => DefaultTemplateConfig::class,
+            AuthContract::class => Auth::class,
 
-				ConsoleContract::class => CliConsole::class,
+            CacheConfig::class => DefaultCacheConfig::class,
 
-				IContainerConfig::class => ContainerConfig::class,
+            ComponentTemplates::class => DefaultTemplateConfig::class,
 
-				Database::class => PDOMysqlKeys::class,
+            ConsoleContract::class => CliConsole::class,
 
-				DecoratorProxy::class => ProxyManagerConfig::class,
+            IContainerConfig::class => ContainerConfig::class,
 
-				ExceptionInterceptor::class => ExceptionConfig::class,
+            Database::class => PDOMysqlKeys::class,
 
-				FlowConfig::class => DefaultFlowConfig::class,
+            DecoratorProxy::class => ProxyManagerConfig::class,
 
-				LaravelConfig::class => Laravel::class
-			];
-		}
-	}
-?>
+            ExceptionInterceptor::class => ExceptionConfig::class,
+
+            FlowConfig::class => DefaultFlowConfig::class,
+
+            LaravelConfig::class => Laravel::class
+        ];
+    }
+}

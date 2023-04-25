@@ -1,51 +1,53 @@
 <?php
-	namespace Suphle\Services\DecoratorHandlers;
 
-	use Suphle\Contracts\Hydration\ScopeHandlers\ModifyInjected;
+namespace Suphle\Services\DecoratorHandlers;
 
-	use Suphle\Hydration\Container;
+use Suphle\Contracts\Hydration\ScopeHandlers\ModifyInjected;
 
-	use Suphle\Services\Structures\SetsReflectionAttributes;
+use Suphle\Hydration\Container;
 
-	class VariableDependenciesHandler implements ModifyInjected {
+use Suphle\Services\Structures\SetsReflectionAttributes;
 
-		use SetsReflectionAttributes;
+class VariableDependenciesHandler implements ModifyInjected
+{
+    use SetsReflectionAttributes;
 
-		public function __construct(protected readonly Container $container) {
+    public function __construct(protected readonly Container $container)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function examineInstance (object $concrete, string $caller):object {
+    public function examineInstance(object $concrete, string $caller): object
+    {
 
-			foreach ($this->attributesList as $attributeMeta) {
-	
-				foreach (
+        foreach ($this->attributesList as $attributeMeta) {
 
-					$attributeMeta->newInstance()->dependencyMethods as
+            foreach (
 
-					$methodName
-				) {
+                $attributeMeta->newInstance()->dependencyMethods as
 
-					$this->executeDependencyMethod($methodName, $concrete);
-				}
-			}
+                $methodName
+            ) {
 
-			return $concrete;
-		}
+                $this->executeDependencyMethod($methodName, $concrete);
+            }
+        }
 
-		public function executeDependencyMethod (string $methodName, object $concrete):void {
+        return $concrete;
+    }
 
-			$concreteName = $concrete::class;
+    public function executeDependencyMethod(string $methodName, object $concrete): void
+    {
 
-			$parameters = $this->container->getMethodParameters(
-					
-				$methodName, $concreteName,
+        $concreteName = $concrete::class;
 
-				[$concreteName]
-			);
+        $parameters = $this->container->getMethodParameters(
+            $methodName,
+            $concreteName,
+            [$concreteName]
+        );
 
-			call_user_func_array([$concrete, $methodName], $parameters);
-		}
-	}
-?>
+        call_user_func_array([$concrete, $methodName], $parameters);
+    }
+}

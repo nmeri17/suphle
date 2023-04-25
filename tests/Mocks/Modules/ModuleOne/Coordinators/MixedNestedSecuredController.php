@@ -1,18 +1,20 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-	use Suphle\Services\ServiceCoordinator;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-	class MixedNestedSecuredController extends ServiceCoordinator {
+use Suphle\Services\ServiceCoordinator;
 
-		public function handleUnlinked() {
+class MixedNestedSecuredController extends ServiceCoordinator
+{
+    public function handleUnlinked()
+    {
 
-			return [];
-		}
+        return [];
+    }
 
-		public function handleRetained () {
+    public function handleRetained()
+    {
 
-			return [];
-		}
-	}
-?>
+        return [];
+    }
+}

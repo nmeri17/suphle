@@ -1,34 +1,38 @@
 <?php
-	namespace Suphle\Tests\Mocks\Models\Eloquent;
 
-	use Suphle\Tests\Mocks\Models\Eloquent\Factories\EmployerFactory;
+namespace Suphle\Tests\Mocks\Models\Eloquent;
 
-	use Suphle\Adapters\Orms\Eloquent\Models\BaseModel;
+use Suphle\Tests\Mocks\Models\Eloquent\Factories\EmployerFactory;
 
-	use Illuminate\Database\Eloquent\Factories\Factory;
+use Suphle\Adapters\Orms\Eloquent\Models\BaseModel;
 
-	class Employer extends BaseModel {
+use Illuminate\Database\Eloquent\Factories\Factory;
 
-		protected $table = "employer";
+class Employer extends BaseModel
+{
+    protected $table = "employer";
 
-		public function employments () {
+    public function employments()
+    {
 
-			return $this->hasMany(Employment::class);
-		}
+        return $this->hasMany(Employment::class);
+    }
 
-		public function user () {
+    public function user()
+    {
 
-			return $this->belongsTo(User::class);
-		}
+        return $this->belongsTo(User::class);
+    }
 
-		protected static function newFactory ():Factory {
+    protected static function newFactory(): Factory
+    {
 
-			return EmployerFactory::new();
-		}
+        return EmployerFactory::new();
+    }
 
-		public static function migrationFolders ():array {
+    public static function migrationFolders(): array
+    {
 
-			return [__DIR__ . DIRECTORY_SEPARATOR . "Migrations"];
-		}
-	}
-?>
+        return [__DIR__ . DIRECTORY_SEPARATOR . "Migrations"];
+    }
+}

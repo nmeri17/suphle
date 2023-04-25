@@ -1,97 +1,106 @@
 <?php
-	namespace Suphle\Testing\Condiments;
 
-	use Suphle\Contracts\IO\{Session, CacheManager};
+namespace Suphle\Testing\Condiments;
 
-	use Suphle\Contracts\Queues\Adapter as QueueAdapter;
+use Suphle\Contracts\IO\{Session, CacheManager};
 
-	use Suphle\Hydration\Container;
+use Suphle\Contracts\Queues\Adapter as QueueAdapter;
 
-	use Suphle\Modules\{ModuleHandlerIdentifier, Structures\ActiveDescriptors};
+use Suphle\Hydration\Container;
 
-	use Suphle\Server\ModuleWorkerAccessor;
+use Suphle\Modules\{ModuleHandlerIdentifier, Structures\ActiveDescriptors};
 
-	use Suphle\Adapters\{Session\InMemorySession, Cache\InMemoryCache};
+use Suphle\Server\ModuleWorkerAccessor;
 
-	use Suphle\Testing\Proxies\ExceptionBroadcasters;
+use Suphle\Adapters\{Session\InMemorySession, Cache\InMemoryCache};
 
-	trait BaseModuleInteractor {
+use Suphle\Testing\Proxies\ExceptionBroadcasters;
 
-		use ExceptionBroadcasters;
+trait BaseModuleInteractor
+{
+    use ExceptionBroadcasters;
 
-		protected array $modules; // making this accessible for traits down the line that will need identical instances of the modules this base type is working with
+    protected array $modules; // making this accessible for traits down the line that will need identical instances of the modules this base type is working with
 
-		protected ModuleHandlerIdentifier $entrance;
+    protected ModuleHandlerIdentifier $entrance;
 
-		protected function massProvide (array $provisions):void {
+    protected function massProvide(array $provisions): void
+    {
 
-			foreach ($this->modules as $descriptor) {
+        foreach ($this->modules as $descriptor) {
 
-				$container = $descriptor->getContainer();
+            $container = $descriptor->getContainer();
 
-				$container->refreshMany(array_keys($provisions));
+            $container->refreshMany(array_keys($provisions));
 
-				$container->whenTypeAny()->needsAny($provisions);
-			}
-		}
+            $container->whenTypeAny()->needsAny($provisions);
+        }
+    }
 
-		protected function firstModuleContainer ():Container {
+    protected function firstModuleContainer(): Container
+    {
 
-			return $this->entrance->firstContainer();
-		}
+        return $this->entrance->firstContainer();
+    }
 
-		protected function bootMockEntrance (ModuleHandlerIdentifier $entrance):void {
+    protected function bootMockEntrance(ModuleHandlerIdentifier $entrance): void
+    {
 
-			$this->monitorModuleContainers();
+        $this->monitorModuleContainers();
 
-			(new ModuleWorkerAccessor($entrance, true))
+        (new ModuleWorkerAccessor($entrance, true))
 
-			->buildIdentifier();
-		}
+        ->buildIdentifier();
+    }
 
-		protected function monitorModuleContainers ():void {
+    protected function monitorModuleContainers(): void
+    {
 
-			foreach ($this->modules as $descriptor)
+        foreach ($this->modules as $descriptor) {
 
-				$this->mayMonitorContainer($descriptor->getContainer());
-		}
+            $this->mayMonitorContainer($descriptor->getContainer());
+        }
+    }
 
-		protected function setRequestPath (string $requestPath, string $httpMethod):void {
+    protected function setRequestPath(string $requestPath, string $httpMethod): void
+    {
 
-			$this->entrance->setRequestPath($requestPath, $httpMethod);
-		}
+        $this->entrance->setRequestPath($requestPath, $httpMethod);
+    }
 
-		protected function provideTestEquivalents ():void {
+    protected function provideTestEquivalents(): void
+    {
 
-			$this->massProvide(array_merge([
+        $this->massProvide(array_merge([
 
-				CacheManager::class => new InMemoryCache,
-				
-				Session::class => new InMemorySession,
+            CacheManager::class => new InMemoryCache(),
 
-				QueueAdapter::class => $this->positiveDouble(QueueAdapter::class)
-			], $this->getExceptionDoubles()));
-		}
+            Session::class => new InMemorySession(),
 
-		/**
-		 * Doesn't return the descriptor but rather the concrete associated with inteface exported by given module
-		*/
-		protected function getModuleFor (string $interface):object {
+            QueueAdapter::class => $this->positiveDouble(QueueAdapter::class)
+        ], $this->getExceptionDoubles()));
+    }
 
-			return (new ActiveDescriptors($this->modules))
+    /**
+     * Doesn't return the descriptor but rather the concrete associated with inteface exported by given module
+    */
+    protected function getModuleFor(string $interface): object
+    {
 
-			->findMatchingExports($interface)
+        return (new ActiveDescriptors($this->modules))
 
-			->materialize();
-		}
+        ->findMatchingExports($interface)
 
-		protected function getContainerFor (string $interface):Container {
+        ->materialize();
+    }
 
-			return (new ActiveDescriptors($this->modules))
+    protected function getContainerFor(string $interface): Container
+    {
 
-			->findMatchingExports($interface)
+        return (new ActiveDescriptors($this->modules))
 
-			->getContainer();
-		}
-	}
-?>
+        ->findMatchingExports($interface)
+
+        ->getContainer();
+    }
+}

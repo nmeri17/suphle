@@ -1,40 +1,43 @@
 <?php
-	namespace Suphle\Tests\Integration\Routing\Nested;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Prefix\OuterCollection, Coordinators\BlankController};
+namespace Suphle\Tests\Integration\Routing\Nested;
 
-	use Suphle\Tests\Integration\Routing\TestsRouter;
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Prefix\OuterCollection, Coordinators\BlankController};
 
-	class PlainPrefixTest extends TestsRouter {
+use Suphle\Tests\Integration\Routing\TestsRouter;
 
-		protected function getEntryCollection ():string {
+class PlainPrefixTest extends TestsRouter
+{
+    protected function getEntryCollection(): string
+    {
 
-			return OuterCollection::class;
-		}
+        return OuterCollection::class;
+    }
 
-		public function test_nested_route_changes_handling_class () {
+    public function test_nested_route_changes_handling_class()
+    {
 
-			$entry = $this->getContainer()->getClass($this->getEntryCollection());
+        $entry = $this->getContainer()->getClass($this->getEntryCollection());
 
-			$matchingRenderer = $this->fakeRequest("/outer/use-method/without"); // when
+        $matchingRenderer = $this->fakeRequest("/outer/use-method/without"); // when
 
-			$this->assertNotNull($matchingRenderer);
+        $this->assertNotNull($matchingRenderer);
 
-			$controller = $matchingRenderer->getCoordinator();
+        $controller = $matchingRenderer->getCoordinator();
 
-			$this->assertNotEquals(
+        $this->assertNotEquals(
+            $controller::class,
+            BlankController::class
+        ); // then
+    }
 
-				$controller::class, BlankController::class
-			); // then
-		}
+    public function test_method_name_overwrites_internal_prefix()
+    {
 
-		public function test_method_name_overwrites_internal_prefix () {
+        $matchingRenderer = $this->fakeRequest("/outer/ignore-internal/with"); // when
 
-			$matchingRenderer = $this->fakeRequest("/outer/ignore-internal/with"); // when
+        $this->assertNotNull($matchingRenderer);
 
-			$this->assertNotNull($matchingRenderer);
-
-			$this->assertTrue($matchingRenderer->matchesHandler("hasInner")); // then
-		}
-	}
-?>
+        $this->assertTrue($matchingRenderer->matchesHandler("hasInner")); // then
+    }
+}

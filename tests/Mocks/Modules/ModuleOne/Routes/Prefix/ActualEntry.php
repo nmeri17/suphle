@@ -1,15 +1,16 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Prefix;
 
-	use Suphle\Routing\BaseCollection;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Prefix;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Prefix\IntermediaryToThird;
+use Suphle\Routing\BaseCollection;
 
-	class ActualEntry extends BaseCollection {
-		
-		public function FIRST () {
-			
-			$this->_prefixFor(IntermediaryToThird::class);
-		}
-	}
-?>
+use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Prefix\IntermediaryToThird;
+
+class ActualEntry extends BaseCollection
+{
+    public function FIRST()
+    {
+
+        $this->_prefixFor(IntermediaryToThird::class);
+    }
+}

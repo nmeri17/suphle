@@ -1,29 +1,32 @@
 <?php
-	namespace _database_namespace;
 
-	use Suphle\Adapters\Orms\Eloquent\Models\BaseModel;
+namespace _database_namespace;
 
-	use _database_namespace\Factories\EditHistoryFactory;
+use Suphle\Adapters\Orms\Eloquent\Models\BaseModel;
 
-	use Illuminate\Database\Eloquent\Factories\Factory;
+use _database_namespace\Factories\EditHistoryFactory;
 
-	class EditHistory extends BaseModel {
+use Illuminate\Database\Eloquent\Factories\Factory;
 
-		protected $table = "edit_history";
+class EditHistory extends BaseModel
+{
+    protected $table = "edit_history";
 
-		public function historical () {
+    public function historical()
+    {
 
-			return $this->morphTo();
-		}
+        return $this->morphTo();
+    }
 
-		protected static function newFactory ():Factory {
+    protected static function newFactory(): Factory
+    {
 
-			return EditHistoryFactory::new();
-		}
+        return EditHistoryFactory::new();
+    }
 
-		public static function migrationFolders ():array {
+    public static function migrationFolders(): array
+    {
 
-			return [__DIR__ . DIRECTORY_SEPARATOR . "Migrations"];
-		}
-	}
-?>
+        return [__DIR__ . DIRECTORY_SEPARATOR . "Migrations"];
+    }
+}

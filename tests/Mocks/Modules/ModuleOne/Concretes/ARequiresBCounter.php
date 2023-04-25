@@ -1,47 +1,54 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes;
 
-	use Suphle\Hydration\Container;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Interfaces\CInterface;
+use Suphle\Hydration\Container;
 
-	class ARequiresBCounter {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Interfaces\CInterface;
 
-		private $cInterface;
+class ARequiresBCounter
+{
+    private $cInterface;
 
-		public function __construct(protected BCounter $b1, protected readonly string $primitive) {
+    public function __construct(protected BCounter $b1, protected readonly string $primitive)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function getConstructorB ():BCounter {
+    public function getConstructorB(): BCounter
+    {
 
-			return $this->b1;
-		}
+        return $this->b1;
+    }
 
-		public function getInternalB ( Container $container):BCounter {
+    public function getInternalB(Container $container): BCounter
+    {
 
-			return $container->getClass(BCounter::class);
-		}
+        return $container->getClass(BCounter::class);
+    }
 
-		public function getPrimitive ():string {
+    public function getPrimitive(): string
+    {
 
-			return $this->primitive;
-		}
+        return $this->primitive;
+    }
 
-		public function receiveBCounter (BCounter $injected):void {
+    public function receiveBCounter(BCounter $injected): void
+    {
 
-			$this->b1 = $injected;
-		}
+        $this->b1 = $injected;
+    }
 
-		public function receiveProvidedInterface (CInterface $injected):void {
+    public function receiveProvidedInterface(CInterface $injected): void
+    {
 
-			$this->cInterface = $injected;
-		}
+        $this->cInterface = $injected;
+    }
 
-		public function getCInterface():CInterface {
+    public function getCInterface(): CInterface
+    {
 
-			return $this->cInterface;
-		}
-	}
-?>
+        return $this->cInterface;
+    }
+}

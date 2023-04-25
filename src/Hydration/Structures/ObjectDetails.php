@@ -1,221 +1,246 @@
 <?php
-	namespace Suphle\Hydration\Structures;
 
-	use Suphle\Hydration\Container;
+namespace Suphle\Hydration\Structures;
 
-	use Suphle\Exception\Explosives\DevError\HydrationException;
+use Suphle\Hydration\Container;
 
-	use ReflectionClass, ReflectionException, ReflectionMethod, ReflectionType;
+use Suphle\Exception\Explosives\DevError\HydrationException;
 
-	class ObjectDetails {
+use ReflectionClass;
+use ReflectionException;
+use ReflectionMethod;
+use ReflectionType;
 
-		public function __construct (protected readonly Container $container) {
+class ObjectDetails
+{
+    public function __construct(protected readonly Container $container)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function getReflectedClass (string $className):ReflectionClass {
+    public function getReflectedClass(string $className): ReflectionClass
+    {
 
-			try {
+        try {
 
-				return new ReflectionClass($className);
-			}
-			catch (ReflectionException $exception) {
+            return new ReflectionClass($className);
+        } catch (ReflectionException $exception) {
 
-				$message = "Unable to hydrate ". $this->container->lastHydratedFor() .  // in order to decouple problematic concretes from their consumers and give the error more context
-				": ". $exception->getMessage();
+            $message = "Unable to hydrate ". $this->container->lastHydratedFor() .  // in order to decouple problematic concretes from their consumers and give the error more context
+            ": ". $exception->getMessage();
 
-				$hint = "Hint: Cross-check its dependencies";
+            $hint = "Hint: Cross-check its dependencies";
 
-				throw new HydrationException("$message. $hint");
-			}
-		}
+            throw new HydrationException("$message. $hint");
+        }
+    }
 
-		public function isInterface (string $entityName):bool {
+    public function isInterface(string $entityName): bool
+    {
 
-			return $this->getReflectedClass($entityName)->isInterface();
-		}
+        return $this->getReflectedClass($entityName)->isInterface();
+    }
 
-		public function classNamespace (string $entityName):string {
-			
-			return $this->getReflectedClass($entityName)->getNamespaceName();
-		}
+    public function classNamespace(string $entityName): string
+    {
 
-		public function implementsInterface (string $target, string $interface):bool {
+        return $this->getReflectedClass($entityName)->getNamespaceName();
+    }
 
-			return in_array( $interface, class_implements($target) );
-		}
+    public function implementsInterface(string $target, string $interface): bool
+    {
 
-		private function getReturnType (string $className, string $method):?ReflectionType {
+        return in_array($interface, class_implements($target));
+    }
 
-			return (new ReflectionMethod($className, $method))
+    private function getReturnType(string $className, string $method): ?ReflectionType
+    {
 
-			->getReturnType();
-		}
+        return (new ReflectionMethod($className, $method))
 
-		public function methodReturnType (string $className, string $method):?string {
+        ->getReturnType();
+    }
 
-			$type = $this->getReturnType($className, $method);
+    public function methodReturnType(string $className, string $method): ?string
+    {
 
-			if ($type) {
+        $type = $this->getReturnType($className, $method);
 
-				$typeName = $type->getName();
+        if ($type) {
 
-				if ($type->isBuiltin()) return $typeName;
+            $typeName = $type->getName();
 
-				return "\\$typeName"; // adding forward slash so it can be used in other contexts without escaping
-			}
+            if ($type->isBuiltin()) {
+                return $typeName;
+            }
 
-			return null;
-		}
+            return "\\$typeName"; // adding forward slash so it can be used in other contexts without escaping
+        }
 
-		public function returnsBuiltIn (string $className, string $method):bool {
+        return null;
+    }
 
-			$type = $this->getReturnType($className, $method);
+    public function returnsBuiltIn(string $className, string $method): bool
+    {
 
-			return $type ? $type->isBuiltin() : false;
-		}
+        $type = $this->getReturnType($className, $method);
 
-		public function stringInClassTree (string $childClass, string $parent):bool {
+        return $type ? $type->isBuiltin() : false;
+    }
 
-			return $this->implementsInterface($childClass, $parent) ||
+    public function stringInClassTree(string $childClass, string $parent): bool
+    {
 
-			is_a($childClass, $parent, true); // argument 3 = accept string
-		}
+        return $this->implementsInterface($childClass, $parent) ||
 
-		public function getScalarValue (string $typeName) {
+        is_a($childClass, $parent, true); // argument 3 = accept string
+    }
 
-			$initial = null;
+    public function getScalarValue(string $typeName)
+    {
 
-			if ($typeName == "mixed") 
+        $initial = null;
 
-				throw new HydrationException("Use more specific types, not $typeName");
+        if ($typeName == "mixed") {
 
-			settype($initial, $typeName);
+            throw new HydrationException("Use more specific types, not $typeName");
+        }
 
-			return $initial;
-		}
+        settype($initial, $typeName);
 
-		/**
-		 * @return interfaces on {interfaceList} that {entityName} actually implements
-		*/
-		public function parentInterfaceMatches (string $entityName, array $interfaceList ):array {
+        return $initial;
+    }
 
-			return array_intersect(
+    /**
+     * @return interfaces on {interfaceList} that {entityName} actually implements
+    */
+    public function parentInterfaceMatches(string $entityName, array $interfaceList): array
+    {
 
-				$interfaceList, class_implements($entityName)
-			);
-		}
+        return array_intersect(
+            $interfaceList,
+            class_implements($entityName)
+        );
+    }
 
-		public function getValueType ($value):string {
+    public function getValueType($value): string
+    {
 
-			return is_object($value)? $value::class : gettype($value);
-		}
+        return is_object($value) ? $value::class : gettype($value);
+    }
 
-		public function getPublicMethods (string $className):array {
+    public function getPublicMethods(string $className): array
+    {
 
-			$methods = array_filter(
-				get_class_methods($className),
+        $methods = array_filter(
+            get_class_methods($className),
+            function ($methodName) use ($className) {
 
-				function ($methodName) use ($className) {
+                return (new ReflectionMethod($className, $methodName))
 
-					return (new ReflectionMethod($className, $methodName))
+                ->isPublic();
+            }
+        );
 
-					->isPublic();
-				}
-			);
+        unset($methods[
 
-			unset($methods[
-				
-				array_search(Container::CLASS_CONSTRUCTOR, $methods)
-			]);
+            array_search(Container::CLASS_CONSTRUCTOR, $methods)
+        ]);
 
-			return $methods;
-		}
+        return $methods;
+    }
 
-		/**
-		 * Avoids calling its constructor
-		 * 
-		 * @return class instance
-		*/
-		public function noConstructor (string $className):object {
+    /**
+     * Avoids calling its constructor
+     *
+     * @return class instance
+    */
+    public function noConstructor(string $className): object
+    {
 
-			return $this->getReflectedClass($className)
+        return $this->getReflectedClass($className)
 
-			->newInstanceWithoutConstructor();
-		}
+        ->newInstanceWithoutConstructor();
+    }
 
-		/**
-		 * The native method returns only attribute applied on the class itself
-		*/
-		public function getClassAttributes (string $className, string $filterToAttribute = null):array {
+    /**
+     * The native method returns only attribute applied on the class itself
+    */
+    public function getClassAttributes(string $className, string $filterToAttribute = null): array
+    {
 
-			$attributesList = [];
+        $attributesList = [];
 
-			$inheritanceChain = class_parents($className);
+        $inheritanceChain = class_parents($className);
 
-			$inheritanceChain[] = $className;
+        $inheritanceChain[] = $className;
 
-			foreach ($inheritanceChain as $entry)
+        foreach ($inheritanceChain as $entry) {
 
-				$attributesList = array_merge(
+            $attributesList = array_merge(
+                $attributesList,
+                $this->getReflectedClass($entry)
 
-					$attributesList, $this->getReflectedClass($entry)
+                ->getAttributes($filterToAttribute)
+            );
+        }
 
-					->getAttributes($filterToAttribute)
-				);
+        return $attributesList;
+    }
 
-			return $attributesList;
-		}
+    /**
+    * @return FQCN or "" if no class is found in file
+    */
+    public function classNameFromFile(string $fileName): ?string
+    {
 
-		/**
-		* @return FQCN or "" if no class is found in file
-		*/
-		public function classNameFromFile (string $fileName):?string {
+        if (!preg_match("/\.php$/", $fileName)) {
+            return null;
+        }
 
-			if (!preg_match("/\.php$/", $fileName)) return null;
+        $tokens = token_get_all(file_get_contents($fileName));
 
-			$tokens = token_get_all(file_get_contents($fileName));
-			
-			$namespace = "";
-			
-			for ($index = 0; isset($tokens[$index]); $index++) {
-				
-				if (!isset($tokens[$index][0])) continue;
+        $namespace = "";
 
-				if (
-					T_NAMESPACE === $tokens[$index][0] && // the word "namespace"
+        for ($index = 0; isset($tokens[$index]); $index++) {
 
-					T_WHITESPACE === $tokens[$index + 1][0]
-				) {
+            if (!isset($tokens[$index][0])) {
+                continue;
+            }
 
-					$actualNamespace = $tokens[$index + 2][0];
+            if (
+                T_NAMESPACE === $tokens[$index][0] && // the word "namespace"
 
-					$fullNamespace = T_NAME_QUALIFIED === $actualNamespace;
+                T_WHITESPACE === $tokens[$index + 1][0]
+            ) {
 
-					$inRootNamespace = T_STRING === $actualNamespace; // the above doesn't match single word namespaces
+                $actualNamespace = $tokens[$index + 2][0];
 
-					if ($fullNamespace || $inRootNamespace) {
+                $fullNamespace = T_NAME_QUALIFIED === $actualNamespace;
 
-						$namespace = $tokens[$index + 2][1]; // token content
-						
-						$index += 2; // Continue iteration from next section (uses or class)
-					}
-				}
-				
-				if (
-					T_CLASS === $tokens[$index][0] &&
-					
-					T_WHITESPACE === $tokens[$index + 1][0] &&
-					
-					T_STRING === $tokens[$index + 2][0]
-				) {
-					return $namespace. "\\".$tokens[$index + 2][1];
-					// Skip "class" keyword, whitespaces, and actual classname
-				}
-			}
+                $inRootNamespace = T_STRING === $actualNamespace; // the above doesn't match single word namespaces
 
-			return null;
-		}
-	}
-?>
+                if ($fullNamespace || $inRootNamespace) {
+
+                    $namespace = $tokens[$index + 2][1]; // token content
+
+                    $index += 2; // Continue iteration from next section (uses or class)
+                }
+            }
+
+            if (
+                T_CLASS === $tokens[$index][0] &&
+
+                T_WHITESPACE === $tokens[$index + 1][0] &&
+
+                T_STRING === $tokens[$index + 2][0]
+            ) {
+                return $namespace. "\\".$tokens[$index + 2][1];
+                // Skip "class" keyword, whitespaces, and actual classname
+            }
+        }
+
+        return null;
+    }
+}

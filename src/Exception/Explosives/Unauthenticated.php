@@ -1,20 +1,22 @@
 <?php
-	namespace Suphle\Exception\Explosives;
 
-	use Suphle\Contracts\Auth\AuthStorage;
+namespace Suphle\Exception\Explosives;
 
-	use Exception;
+use Suphle\Contracts\Auth\AuthStorage;
 
-	class Unauthenticated extends Exception {
+use Exception;
 
-		public function __construct(protected readonly AuthStorage $storage) {
+class Unauthenticated extends Exception
+{
+    public function __construct(protected readonly AuthStorage $storage)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function storageMechanism ():AuthStorage {
+    public function storageMechanism(): AuthStorage
+    {
 
-			return $this->storage;
-		}
-	}
-?>
+        return $this->storage;
+    }
+}

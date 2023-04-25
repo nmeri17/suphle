@@ -1,8 +1,8 @@
 <?php
-	namespace Suphle\Contracts\Server;
 
-	interface OnStartup {
+namespace Suphle\Contracts\Server;
 
-		public function runOperations (string $executionPath, array $commandOptions):void;
-	}
-?>
+interface OnStartup
+{
+    public function runOperations(string $executionPath, array $commandOptions): void;
+}

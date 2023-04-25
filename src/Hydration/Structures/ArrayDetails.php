@@ -1,20 +1,21 @@
 <?php
-	namespace Suphle\Hydration\Structures;
 
-	class ArrayDetails {
+namespace Suphle\Hydration\Structures;
 
-		public function removeAtIndex (array $removeFrom, string $toRemove):array {
+class ArrayDetails
+{
+    public function removeAtIndex(array $removeFrom, string $toRemove): array
+    {
 
-			$index = array_search($toRemove, $removeFrom);
+        $index = array_search($toRemove, $removeFrom);
 
-			if (isset($removeFrom[$index])) {
+        if (isset($removeFrom[$index])) {
 
-				unset($removeFrom[$index]);
-	
-				$removeFrom = array_values($removeFrom);
-			}
+            unset($removeFrom[$index]);
 
-			return $removeFrom;
-		}
-	}
-?>
+            $removeFrom = array_values($removeFrom);
+        }
+
+        return $removeFrom;
+    }
+}

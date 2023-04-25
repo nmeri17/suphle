@@ -1,59 +1,64 @@
 <?php
-	namespace Suphle\Tests\Integration\Generic;
 
-	use Suphle\Hydration\Container;
+namespace Suphle\Tests\Integration\Generic;
 
-	use Suphle\Tests\Mocks\Interactions\{ModuleThree, ModuleOne, ModuleTwo};
+use Suphle\Hydration\Container;
 
-	use Suphle\Tests\Mocks\Modules\{ModuleTwo\Meta\ModuleTwoDescriptor, ModuleThree\Meta\ModuleThreeDescriptor, ModuleOne\Meta\ModuleOneDescriptor};
+use Suphle\Tests\Mocks\Interactions\{ModuleThree, ModuleOne, ModuleTwo};
 
-	trait TestsModuleList {
+use Suphle\Tests\Mocks\Modules\{ModuleTwo\Meta\ModuleTwoDescriptor, ModuleThree\Meta\ModuleThreeDescriptor, ModuleOne\Meta\ModuleOneDescriptor};
 
-		protected $moduleOne;
-  protected $moduleTwo;
-  protected $moduleThree;
+trait TestsModuleList
+{
+    protected $moduleOne;
+    protected $moduleTwo;
+    protected $moduleThree;
 
-		protected function setAllDescriptors ():void {
+    protected function setAllDescriptors(): void
+    {
 
-			$this->setModuleOne();
+        $this->setModuleOne();
 
-			$this->setModuleThree();
+        $this->setModuleThree();
 
-			$this->setModuleTwo();
-		}
+        $this->setModuleTwo();
+    }
 
-		protected function getAllDescriptors ():array {
+    protected function getAllDescriptors(): array
+    {
 
-			return [
-				$this->moduleOne, $this->moduleTwo,
+        return [
+            $this->moduleOne, $this->moduleTwo,
 
-				$this->moduleThree
-			];
-		}
+            $this->moduleThree
+        ];
+    }
 
-		protected function setModuleThree ():void {
+    protected function setModuleThree(): void
+    {
 
-			$this->moduleThree = (new ModuleThreeDescriptor(new Container))
+        $this->moduleThree = (new ModuleThreeDescriptor(new Container()))
 
-			->sendExpatriates([
+        ->sendExpatriates([
 
-				ModuleOne::class => $this->moduleOne
-			]);
-		}
+            ModuleOne::class => $this->moduleOne
+        ]);
+    }
 
-		protected function setModuleOne ():void {
+    protected function setModuleOne(): void
+    {
 
-			$this->moduleOne = new ModuleOneDescriptor(new Container);
-		}
+        $this->moduleOne = new ModuleOneDescriptor(new Container());
+    }
 
-		protected function setModuleTwo ():void {
+    protected function setModuleTwo(): void
+    {
 
-			$this->moduleTwo = (new ModuleTwoDescriptor(new Container))
+        $this->moduleTwo = (new ModuleTwoDescriptor(new Container()))
 
-			->sendExpatriates([
+        ->sendExpatriates([
 
-				ModuleThree::class => $this->moduleThree
-			]);
-		}
-	}
-?>
+            ModuleThree::class => $this->moduleThree
+        ]);
+    }
+}

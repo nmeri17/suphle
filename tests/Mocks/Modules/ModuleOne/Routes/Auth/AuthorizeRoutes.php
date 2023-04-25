@@ -1,36 +1,38 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Auth;
 
-	use Suphle\Routing\{BaseCollection, PreMiddlewareRegistry, Decorators\HandlingCoordinator};
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Auth;
 
-	use Suphle\Auth\RequestScrutinizers\AuthorizeMetaFunnel;
+use Suphle\Routing\{BaseCollection, PreMiddlewareRegistry, Decorators\HandlingCoordinator};
 
-	use Suphle\Response\Format\Json;
+use Suphle\Auth\RequestScrutinizers\AuthorizeMetaFunnel;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Coordinators\BaseCoordinator, Authorization\Paths\AdminRule};
+use Suphle\Response\Format\Json;
 
-	#[HandlingCoordinator(BaseCoordinator::class)]
-	class AuthorizeRoutes extends BaseCollection {
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Coordinators\BaseCoordinator, Authorization\Paths\AdminRule};
 
-		public function ADMIN__ENTRYh () {
+#[HandlingCoordinator(BaseCoordinator::class)]
+class AuthorizeRoutes extends BaseCollection
+{
+    public function ADMIN__ENTRYh()
+    {
 
-			$this->_httpGet(new Json("plainSegment"));
-		}
+        $this->_httpGet(new Json("plainSegment"));
+    }
 
-		public function ADMIN () {
+    public function ADMIN()
+    {
 
-			$this->_prefixFor(UnlocksAuthorization1::class);
-		}
+        $this->_prefixFor(UnlocksAuthorization1::class);
+    }
 
-		public function _preMiddleware (PreMiddlewareRegistry $registry):void {
+    public function _preMiddleware(PreMiddlewareRegistry $registry): void
+    {
 
-			$registry->tagPatterns(
-
-				new AuthorizeMetaFunnel(
-
-					["ADMIN__ENTRYh", "ADMIN"], AdminRule::class
-				)
-			);
-		}
-	}
-?>
+        $registry->tagPatterns(
+            new AuthorizeMetaFunnel(
+                ["ADMIN__ENTRYh", "ADMIN"],
+                AdminRule::class
+            )
+        );
+    }
+}

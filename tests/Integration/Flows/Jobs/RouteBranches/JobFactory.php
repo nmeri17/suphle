@@ -1,145 +1,158 @@
 <?php
-	namespace Suphle\Tests\Integration\Flows\Jobs\RouteBranches;
 
-	use Suphle\Flows\{ ControllerFlows, Jobs\RouteBranches, Structures\PendingFlowDetails};
+namespace Suphle\Tests\Integration\Flows\Jobs\RouteBranches;
 
-	use Suphle\Contracts\{Auth\UserContract, Presentation\BaseRenderer, Database\OrmDialect};
+use Suphle\Flows\{ ControllerFlows, Jobs\RouteBranches, Structures\PendingFlowDetails};
 
-	use Suphle\Hydration\Container;
+use Suphle\Contracts\{Auth\UserContract, Presentation\BaseRenderer, Database\OrmDialect};
 
-	use Suphle\Response\Format\Json;
+use Suphle\Hydration\Container;
 
-	use Suphle\Testing\Condiments\{QueueInterceptor, BaseDatabasePopulator};
+use Suphle\Response\Format\Json;
 
-	use Suphle\Testing\Proxies\SecureUserAssertions;
+use Suphle\Testing\Condiments\{QueueInterceptor, BaseDatabasePopulator};
 
-	use Suphle\Tests\Integration\Modules\ModuleDescriptor\DescriptorCollection;
+use Suphle\Testing\Proxies\SecureUserAssertions;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Coordinators\FlowCoordinator, Concretes\Services\DummyModels};
+use Suphle\Tests\Integration\Modules\ModuleDescriptor\DescriptorCollection;
 
-	use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Coordinators\FlowCoordinator, Concretes\Services\DummyModels};
 
-	/**
-	 * This doesn't send the originating requests. It helps for mocking the task of an originated flow, executing that task, then verifying its behavior under certain conditions
-	*/
-	abstract class JobFactory extends DescriptorCollection {
+use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
 
-		use QueueInterceptor, BaseDatabasePopulator, SecureUserAssertions {
+/**
+ * This doesn't send the originating requests. It helps for mocking the task of an originated flow, executing that task, then verifying its behavior under certain conditions
+*/
+abstract class JobFactory extends DescriptorCollection
+{
+    use QueueInterceptor, BaseDatabasePopulator, SecureUserAssertions {
 
-			BaseDatabasePopulator::setUp as databaseAllSetup;
-		}
+        BaseDatabasePopulator::setUp as databaseAllSetup;
+    }
 
-		protected Container $container;
-		
-		protected EloquentUser $contentOwner, $contentVisitor;
-		
-		protected string $userUrl = "/user-content/5", // corresponds to the content generated after using [flowUrl] to create a context
-		$flowUrl = "user-content/id", // this is expected to exist in one of the module entry collections
-		$originDataName = "all_users",
+    protected Container $container;
 
-		$rendererController = FlowCoordinator::class;
+    protected EloquentUser $contentOwner;
 
-		protected function setUp ():void {
+    protected EloquentUser $contentVisitor;
 
-			$this->databaseAllSetup();
+    protected string $userUrl = "/user-content/5";
 
-			$this->catchQueuedTasks();
+    protected string // corresponds to the content generated after using [flowUrl] to create a context
+    $flowUrl = "user-content/id";
 
-			$this->container = $this->firstModuleContainer();
+    protected string // this is expected to exist in one of the module entry collections
+    $originDataName = "all_users";
 
-			[$this->contentOwner, $this->contentVisitor] = $this
+    protected string $rendererController = FlowCoordinator::class;
 
-			->replicator->getRandomEntities(2); // we'll visit as one of them
-		}
+    protected function setUp(): void
+    {
 
-		protected function getActiveEntity ():string {
+        $this->databaseAllSetup();
 
-			return EloquentUser::class;
-		}
+        $this->catchQueuedTasks();
 
-		protected function getInitialCount ():int {
+        $this->container = $this->firstModuleContainer();
 
-			return 5;
-		}
+        [$this->contentOwner, $this->contentVisitor] = $this
 
-		/**
-		 * Stub out the renderer for an imaginary previous request before the flow one we are about to make
-		*/
-		protected function getPrecedingRenderer ():BaseRenderer {
+        ->replicator->getRandomEntities(2); // we'll visit as one of them
+    }
 
-			return $this->positiveDouble (Json::class, [
+    protected function getActiveEntity(): string
+    {
 
-				"getRawResponse" => [
+        return EloquentUser::class;
+    }
 
-					$this->originDataName => (new DummyModels)->fetchModels() // the list the flow is gonna iterate over
-				],
+    protected function getInitialCount(): int
+    {
 
-				"getFlow" => $this->constructFlow(),
+        return 5;
+    }
 
-				"getCoordinator" => $this->positiveDouble($this->rendererController)
+    /**
+     * Stub out the renderer for an imaginary previous request before the flow one we are about to make
+    */
+    protected function getPrecedingRenderer(): BaseRenderer
+    {
 
-			], [], ["handler" => "preloaded"]);
-		}
+        return $this->positiveDouble(Json::class, [
 
-		protected function constructFlow ():ControllerFlows {
+            "getRawResponse" => [
 
-			$flow = new ControllerFlows;
+                $this->originDataName => (new DummyModels())->fetchModels() // the list the flow is gonna iterate over
+            ],
 
-			return $flow->linksTo($this->flowUrl, $flow->previousResponse()
-				
-				->collectionNode($this->originDataName)->pipeTo(),
-			);
-		}
+            "getFlow" => $this->constructFlow(),
 
-		protected function makeRouteBranches (PendingFlowDetails $context):RouteBranches {
+            "getCoordinator" => $this->positiveDouble($this->rendererController)
 
-			$jobName = RouteBranches::class;
+        ], [], ["handler" => "preloaded"]);
+    }
 
-			$jobInstance = $this->container->whenType($jobName)
+    protected function constructFlow(): ControllerFlows
+    {
 
-			->needsArguments([ PendingFlowDetails::class => $context ])
+        $flow = new ControllerFlows();
 
-			->getClass($jobName);
+        return $flow->linksTo(
+            $this->flowUrl,
+            $flow->previousResponse()
 
-			$this->container->refreshClass($jobName);
+            ->collectionNode($this->originDataName)->pipeTo(),
+        );
+    }
 
-			return $jobInstance;
-		}
+    protected function makeRouteBranches(PendingFlowDetails $context): RouteBranches
+    {
 
-		protected function makePendingFlowDetails (?UserContract $user = null, string $storageName = null):PendingFlowDetails {
+        $jobName = RouteBranches::class;
 
-			$storage = $this->getAuthStorage($storageName);
+        $jobInstance = $this->container->whenType($jobName)
 
-			if (!is_null($user)) {
+        ->needsArguments([ PendingFlowDetails::class => $context ])
 
-				$storage->startSession($user->getId()); // creates a collection of 10 models in preceding renderer, then assigns the given user as their owner in the flow we are going to make
-			
-				$storage->setHydrator($this->container->getClass(
+        ->getClass($jobName);
 
-					OrmDialect::class
-				)->getUserHydrator());
-			}
-			
-			else $storage->logout();
+        $this->container->refreshClass($jobName);
 
-			return new PendingFlowDetails(
+        return $jobInstance;
+    }
 
-				$this->getPrecedingRenderer(),
+    protected function makePendingFlowDetails(?UserContract $user = null, string $storageName = null): PendingFlowDetails
+    {
 
-				$storage
-			);
-		}
+        $storage = $this->getAuthStorage($storageName);
 
-		/**
-		 * Push in user-content/1-10, the amount returned from previous payload
-		*/
-		protected function handleDefaultPendingFlowDetails ():PendingFlowDetails {
+        if (!is_null($user)) {
 
-			$context = $this->makePendingFlowDetails();
+            $storage->startSession($user->getId()); // creates a collection of 10 models in preceding renderer, then assigns the given user as their owner in the flow we are going to make
 
-			$this->makeRouteBranches($context)->handle();
+            $storage->setHydrator($this->container->getClass(
+                OrmDialect::class
+            )->getUserHydrator());
+        } else {
+            $storage->logout();
+        }
 
-			return $context;
-		}
-	}
-?>
+        return new PendingFlowDetails(
+            $this->getPrecedingRenderer(),
+            $storage
+        );
+    }
+
+    /**
+     * Push in user-content/1-10, the amount returned from previous payload
+    */
+    protected function handleDefaultPendingFlowDetails(): PendingFlowDetails
+    {
+
+        $context = $this->makePendingFlowDetails();
+
+        $this->makeRouteBranches($context)->handle();
+
+        return $context;
+    }
+}

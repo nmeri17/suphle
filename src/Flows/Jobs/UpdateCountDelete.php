@@ -1,50 +1,48 @@
 <?php
-	namespace Suphle\Flows\Jobs;
 
-	use Suphle\Flows\{OuterFlowWrapper, UmbrellaSaver, Structures\AccessContext};
+namespace Suphle\Flows\Jobs;
 
-	use Suphle\Contracts\{IO\CacheManager, Queues\Task};
+use Suphle\Flows\{OuterFlowWrapper, UmbrellaSaver, Structures\AccessContext};
 
-	/**
-	 * This job runs after one of the possible renderers stored for a path has been accessed
-	*/
-	class UpdateCountDelete implements Task {
+use Suphle\Contracts\{IO\CacheManager, Queues\Task};
 
-		public function __construct(
+/**
+ * This job runs after one of the possible renderers stored for a path has been accessed
+*/
+class UpdateCountDelete implements Task
+{
+    public function __construct(
+        protected readonly AccessContext $theAccessed,
+        protected readonly UmbrellaSaver $flowSaver
+    ) {
 
-			protected readonly AccessContext $theAccessed,
+        //
+    }
 
-			protected readonly UmbrellaSaver $flowSaver
-		) {
+    public function handle(): void
+    {
 
-			//
-		}
+        $accessed = $this->theAccessed;
 
-		public function handle ():void {
+        $routeUmbrella = $accessed->getRouteUmbrella();
 
-			$accessed = $this->theAccessed;
+        $accessingUser = $accessed->getUser();
 
-			$routeUmbrella = $accessed->getRouteUmbrella();
+        $mainFlow = $accessed->getRouteUserNode();
 
-			$accessingUser = $accessed->getUser();
+        $urlPattern = $accessed->getPath();
 
-			$mainFlow = $accessed->getRouteUserNode();
+        $hits = $mainFlow->currentHits();
 
-			$urlPattern = $accessed->getPath();
+        if ($hits >= $mainFlow->getMaxHits($accessingUser, $urlPattern)-1) { // this task only runs when a flow has been accessed. If maxHits = 0, we don't want to access it on the next visit
 
-			$hits = $mainFlow->currentHits();
+            $routeUmbrella->clearUser($accessingUser);
+        } else {
+            $mainFlow->incrementHits();
 
-			if ($hits >= $mainFlow->getMaxHits( $accessingUser, $urlPattern )-1) // this task only runs when a flow has been accessed. If maxHits = 0, we don't want to access it on the next visit
+            $routeUmbrella->addUser($accessingUser, $mainFlow);
+        }
 
-				$routeUmbrella->clearUser($accessingUser);
-
-			else {
-				$mainFlow->incrementHits();
-
-				$routeUmbrella->addUser($accessingUser, $mainFlow);
-			}
-
-			$this->flowSaver->updateUmbrella($urlPattern, $routeUmbrella);
-		}
-	}
-?>
+        $this->flowSaver->updateUmbrella($urlPattern, $routeUmbrella);
+    }
+}

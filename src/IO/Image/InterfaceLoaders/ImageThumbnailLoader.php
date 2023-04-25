@@ -1,20 +1,22 @@
 <?php
-	namespace Suphle\IO\Image\InterfaceLoaders;
 
-	use Suphle\Hydration\BaseInterfaceLoader;
+namespace Suphle\IO\Image\InterfaceLoaders;
 
-	use Suphle\Adapters\Image\Optimizers\ImagineClient;
+use Suphle\Hydration\BaseInterfaceLoader;
 
-	class ImageThumbnailLoader extends BaseInterfaceLoader {
+use Suphle\Adapters\Image\Optimizers\ImagineClient;
 
-		public function afterBind ( $initialized):void {
+class ImageThumbnailLoader extends BaseInterfaceLoader
+{
+    public function afterBind($initialized): void
+    {
 
-			$initialized->setupClient();
-		}
+        $initialized->setupClient();
+    }
 
-		public function concreteName ():string {
+    public function concreteName(): string
+    {
 
-			return ImagineClient::class;
-		}
-	}
-?>
+        return ImagineClient::class;
+    }
+}

@@ -1,27 +1,30 @@
 <?php
-	namespace Suphle\Middleware\Handlers;
 
-	use Suphle\Middleware\{MiddlewareNexts, CollectibleMiddlewareHandler};
+namespace Suphle\Middleware\Handlers;
 
-	use Suphle\Request\PayloadStorage;
+use Suphle\Middleware\{MiddlewareNexts, CollectibleMiddlewareHandler};
 
-	use Suphle\Contracts\Presentation\{MirrorableRenderer, BaseRenderer};
+use Suphle\Request\PayloadStorage;
 
-	/**
-	 * This seems like a far simpler alternative to route mirroring. But middleware only runs after routing. Moreover, this doesn't offer the flexibility of overriding mirrored routes
-	*/
-	class JsonNegotiator extends CollectibleMiddlewareHandler {
+use Suphle\Contracts\Presentation\{MirrorableRenderer, BaseRenderer};
 
-		public function __construct(protected readonly BaseRenderer $activeRenderer) {
-		}
+/**
+ * This seems like a far simpler alternative to route mirroring. But middleware only runs after routing. Moreover, this doesn't offer the flexibility of overriding mirrored routes
+*/
+class JsonNegotiator extends CollectibleMiddlewareHandler
+{
+    public function __construct(protected readonly BaseRenderer $activeRenderer)
+    {
+    }
 
-		public function process (PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler):BaseRenderer {
+    public function process(PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler): BaseRenderer
+    {
 
-			if ($this->activeRenderer instanceof MirrorableRenderer && $payloadStorage->acceptsJson())
+        if ($this->activeRenderer instanceof MirrorableRenderer && $payloadStorage->acceptsJson()) {
 
-				$this->activeRenderer->setWantsJson();
+            $this->activeRenderer->setWantsJson();
+        }
 
-			return $requestHandler->handle($payloadStorage);
-		}
-	}
-?>
+        return $requestHandler->handle($payloadStorage);
+    }
+}

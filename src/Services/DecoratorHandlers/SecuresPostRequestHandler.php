@@ -1,52 +1,52 @@
 <?php
-	namespace Suphle\Services\DecoratorHandlers;
 
-	use Suphle\Contracts\Services\CallInterceptors\{SystemModelEdit, MultiUserModelEdit};
+namespace Suphle\Services\DecoratorHandlers;
 
-	use Suphle\Hydration\Structures\ObjectDetails;
+use Suphle\Contracts\Services\CallInterceptors\{SystemModelEdit, MultiUserModelEdit};
 
-	use Suphle\Request\RequestDetails;
+use Suphle\Hydration\Structures\ObjectDetails;
 
-	use Suphle\Exception\Explosives\DevError\MissingPostDecorator;
+use Suphle\Request\RequestDetails;
 
-	class SecuresPostRequestHandler extends BaseArgumentModifier {
+use Suphle\Exception\Explosives\DevError\MissingPostDecorator;
 
-		protected array $postDecorators = [
+class SecuresPostRequestHandler extends BaseArgumentModifier
+{
+    protected array $postDecorators = [
 
-			SystemModelEdit::class, MultiUserModelEdit::class
-		];
+        SystemModelEdit::class, MultiUserModelEdit::class
+    ];
 
-		public function __construct (
+    public function __construct(
+        protected readonly RequestDetails $requestDetails,
+        ObjectDetails $objectMeta
+    ) {
 
-			protected readonly RequestDetails $requestDetails,
+        parent::__construct($objectMeta);
+    }
 
-			ObjectDetails $objectMeta
-		) {
+    public function transformConstructor(object $dummyInstance, array $arguments): array
+    {
 
-			parent::__construct($objectMeta);
-		}
+        if (!$this->requestDetails->matchesMethod("put")) {
 
-		public function transformConstructor (object $dummyInstance, array $arguments):array {
+            return $arguments;
+        }
 
-			if (!$this->requestDetails->matchesMethod("put"))
+        foreach ($arguments as $dependency) {
 
-				return $arguments;
+            foreach ($this->postDecorators as $decorator) {
 
-			foreach ($arguments as $dependency)
+                if (is_object($dependency) && $this->objectMeta->implementsInterface(
+                    $dependency::class,
+                    $decorator
+                )) {
 
-				foreach ($this->postDecorators as $decorator) {
+                    return $arguments;
+                }
+            }
+        }
 
-					if (is_object($dependency) && $this->objectMeta->implementsInterface(
-
-						$dependency::class,
-
-						$decorator
-					))
-
-						return $arguments;
-				}
-
-			throw new MissingPostDecorator($dummyInstance::class);
-		}
-	}
-?>
+        throw new MissingPostDecorator($dummyInstance::class);
+    }
+}

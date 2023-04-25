@@ -1,8 +1,8 @@
 <?php
-	namespace Suphle\Contracts\Routing;
 
-	interface ApiRouteCollection {
+namespace Suphle\Contracts\Routing;
 
-		public function _crudJson ():CrudBuilder;
-	}
-?>
+interface ApiRouteCollection
+{
+    public function _crudJson(): CrudBuilder;
+}

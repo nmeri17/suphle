@@ -1,94 +1,94 @@
 <?php
-	namespace Suphle\Exception\Diffusers;
 
-	use Suphle\Contracts\Exception\{ExceptionHandler, BroadcastableException};
+namespace Suphle\Exception\Diffusers;
 
-	use Suphle\Contracts\Presentation\{BaseRenderer, HtmlParser};
+use Suphle\Contracts\Exception\{ExceptionHandler, BroadcastableException};
 
-	use Suphle\Hydration\Container;
+use Suphle\Contracts\Presentation\{BaseRenderer, HtmlParser};
 
-	use Suphle\Response\ModifiesRendererTemplate;
+use Suphle\Hydration\Container;
 
-	use Suphle\Request\RequestDetails;
+use Suphle\Response\ModifiesRendererTemplate;
 
-	use Suphle\Response\Format\{ Markup, Json};
+use Suphle\Request\RequestDetails;
 
-	use Suphle\Exception\{ComponentEntry, DetectedExceptionManager};
+use Suphle\Response\Format\{ Markup, Json};
 
-	use Suphle\Exception\Explosives\DevError\InvalidImplementor;
+use Suphle\Exception\{ComponentEntry, DetectedExceptionManager};
 
-	use Throwable;
+use Suphle\Exception\Explosives\DevError\InvalidImplementor;
 
-	class GenericDiffuser implements ExceptionHandler {
+use Throwable;
 
-		use ModifiesRendererTemplate;
+class GenericDiffuser implements ExceptionHandler
+{
+    use ModifiesRendererTemplate;
 
-		protected Throwable $origin;
+    protected Throwable $origin;
 
-		protected string $newMarkupName = "default";
+    protected string $newMarkupName = "default";
 
-		public function __construct(
-			protected readonly RequestDetails $requestDetails,
+    public function __construct(
+        protected readonly RequestDetails $requestDetails,
+        protected readonly ComponentEntry $componentEntry,
+        protected readonly DetectedExceptionManager $exceptionDetector,
+        protected readonly Container $container,
+        protected readonly HtmlParser $htmlParser
+    ) {
 
-			protected readonly ComponentEntry $componentEntry,
+        //
+    }
 
-			protected readonly DetectedExceptionManager $exceptionDetector,
+    public function setContextualData(Throwable $origin): void
+    {
 
-			protected readonly Container $container,
+        $this->origin = $origin;
+    }
 
-			protected readonly HtmlParser $htmlParser
-		) {
+    public function prepareRendererData(): void
+    {
 
-			//
-		}
+        if ($this->origin instanceof BroadcastableException) {
 
-		public function setContextualData (Throwable $origin):void {
+            $this->exceptionDetector->queueAlertAdapter(
+                $this->origin,
+                $this->requestDetails->getPath()
+            );
+        }
 
-			$this->origin = $origin;
-		}
+        try {
 
-		public function prepareRendererData ():void {
+            $this->renderer = $this->container->getClass(BaseRenderer::class);
+        } catch (InvalidImplementor $exception) { // exception occured before routing completion
 
-			if ($this->origin instanceof BroadcastableException)
+            if ($this->requestDetails->isApiRoute()) {
 
-				$this->exceptionDetector->queueAlertAdapter(
+                $this->renderer = new Json("");
+            } else {
+                $this->renderer = new Markup("genericHandler", $this->newMarkupName);
+            }
+        }
 
-					$this->origin, $this->requestDetails->getPath()
-				);
+        $this->setMarkupDetails();
 
-			try {
+        $this->renderer->setRawResponse([
 
-				$this->renderer = $this->container->getClass(BaseRenderer::class);
-			}
-			catch (InvalidImplementor $exception) { // exception occured before routing completion
+            "exception" => $this->origin
+        ]);
 
-				if ($this->requestDetails->isApiRoute())
+        $incomingCode = $this->origin->getCode();
 
-					$this->renderer = new Json("");
+        $this->renderer->setHeaders(
+            (is_int($incomingCode) && $incomingCode > 100) ?
 
-				else $this->renderer = new Markup("genericHandler", $this->newMarkupName);
-			}
+            $incomingCode : 500,
+            []
+        );
+    }
 
-			$this->setMarkupDetails();
+    public function getRenderer(): BaseRenderer
+    {
 
-			$this->renderer->setRawResponse([
-
-				"exception" => $this->origin
-			]);
-
-			$incomingCode = $this->origin->getCode();
-
-			$this->renderer->setHeaders(
-
-				(is_int($incomingCode) && $incomingCode > 100) ?
-
-				$incomingCode: 500, []
-			);
-		}
-
-		public function getRenderer ():BaseRenderer {
-
-			return $this->renderer;
-		}
-	}
-?>
+        return $this->renderer;
+    }
+}

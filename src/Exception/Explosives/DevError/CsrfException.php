@@ -1,13 +1,14 @@
 <?php
-	namespace Suphle\Exception\Explosives\DevError;
 
-	use Exception;
+namespace Suphle\Exception\Explosives\DevError;
 
-	class CsrfException extends Exception {
+use Exception;
 
-		public function __construct () {
+class CsrfException extends Exception
+{
+    public function __construct()
+    {
 
-			$this->message = "Non-GET request missing CSRF token. Consider adding hidden token field";
-		}
-	}
-?>
+        $this->message = "Non-GET request missing CSRF token. Consider adding hidden token field";
+    }
+}

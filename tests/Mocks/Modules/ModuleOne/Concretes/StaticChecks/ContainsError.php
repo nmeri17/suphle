@@ -1,13 +1,14 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\StaticChecks;
 
-	class ContainsError {
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\StaticChecks;
 
-		public function echoTypo ():void {
+class ContainsError
+{
+    public function echoTypo(): void
+    {
 
-			$animal = "cat";
+        $animal = "cat";
 
-			echo $animalx;
-		}
-	}
-?>
+        echo $animalx;
+    }
+}

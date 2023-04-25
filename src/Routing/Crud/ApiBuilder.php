@@ -1,54 +1,61 @@
 <?php
-	namespace Suphle\Routing\Crud;
 
-	use Suphle\Response\Format\Json;
+namespace Suphle\Routing\Crud;
 
-	use Suphle\Contracts\{Routing\RouteCollection, Presentation\BaseRenderer};
+use Suphle\Response\Format\Json;
 
-	class ApiBuilder extends BaseBuilder {
+use Suphle\Contracts\{Routing\RouteCollection, Presentation\BaseRenderer};
 
-		protected array $validActions = [
+class ApiBuilder extends BaseBuilder
+{
+    protected array $validActions = [
 
-			self::SAVE_NEW, self::SHOW_ALL,
+        self::SAVE_NEW, self::SHOW_ALL,
 
-			self::SHOW_ONE, self::UPDATE_ONE, self::DELETE_ONE,
+        self::SHOW_ONE, self::UPDATE_ONE, self::DELETE_ONE,
 
-			self::SEARCH_RESULTS
-		];
-		
-		public function __construct(RouteCollection $collection) {
+        self::SEARCH_RESULTS
+    ];
 
-			$this->collection = $collection;
-		}
+    public function __construct(RouteCollection $collection)
+    {
 
-		protected function saveNew():BaseRenderer {
+        $this->collection = $collection;
+    }
 
-			return new Json(__FUNCTION__);
-		}
+    protected function saveNew(): BaseRenderer
+    {
 
-		protected function showAll():BaseRenderer {
+        return new Json(__FUNCTION__);
+    }
 
-			return new Json(__FUNCTION__);
-		}
+    protected function showAll(): BaseRenderer
+    {
 
-		protected function showOne():BaseRenderer {
+        return new Json(__FUNCTION__);
+    }
 
-			return new Json(__FUNCTION__);
-		}
+    protected function showOne(): BaseRenderer
+    {
 
-		protected function updateOne():BaseRenderer {
+        return new Json(__FUNCTION__);
+    }
 
-			return new Json(__FUNCTION__);
-		}
+    protected function updateOne(): BaseRenderer
+    {
 
-		protected function deleteOne():BaseRenderer {
+        return new Json(__FUNCTION__);
+    }
 
-			return new Json(__FUNCTION__);
-		}
+    protected function deleteOne(): BaseRenderer
+    {
 
-		protected function getSearchResults ():BaseRenderer {
+        return new Json(__FUNCTION__);
+    }
 
-			return new Json(__FUNCTION__);
-		}
-	}
-?>
+    protected function getSearchResults(): BaseRenderer
+    {
+
+        return new Json(__FUNCTION__);
+    }
+}

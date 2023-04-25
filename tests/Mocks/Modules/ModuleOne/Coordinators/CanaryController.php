@@ -1,28 +1,32 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-	use Suphle\Services\ServiceCoordinator;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-	class CanaryController extends ServiceCoordinator {
+use Suphle\Services\ServiceCoordinator;
 
-		public function user5Handler () {
+class CanaryController extends ServiceCoordinator
+{
+    public function user5Handler()
+    {
 
-			//
-		}
+        //
+    }
 
-		public function fooHandler ():array {
-			
-			return [];
-		}
+    public function fooHandler(): array
+    {
 
-		public function defaultHandler () {
-			
-			// 
-		}
+        return [];
+    }
 
-		public function defaultPlaceholder () {
+    public function defaultHandler()
+    {
 
-			//
-		}
-	}
-?>
+        //
+    }
+
+    public function defaultPlaceholder()
+    {
+
+        //
+    }
+}

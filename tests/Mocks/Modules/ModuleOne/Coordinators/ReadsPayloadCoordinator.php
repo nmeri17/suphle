@@ -1,20 +1,22 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-	use Suphle\Services\ServiceCoordinator;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-	use Suphle\Request\PayloadStorage;
+use Suphle\Services\ServiceCoordinator;
 
-	class ReadsPayloadCoordinator extends ServiceCoordinator {
+use Suphle\Request\PayloadStorage;
 
-		public function __construct(protected readonly PayloadStorage $payloadStorage) {
+class ReadsPayloadCoordinator extends ServiceCoordinator
+{
+    public function __construct(protected readonly PayloadStorage $payloadStorage)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function mirrorPayload () {
+    public function mirrorPayload()
+    {
 
-			return $this->payloadStorage->fullPayload();
-		}
-	}
-?>
+        return $this->payloadStorage->fullPayload();
+    }
+}

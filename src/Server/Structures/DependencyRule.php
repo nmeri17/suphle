@@ -1,38 +1,37 @@
 <?php
-	namespace Suphle\Server\Structures;
 
-	use Suphle\Hydration\Container;
+namespace Suphle\Server\Structures;
 
-	use Suphle\Contracts\Server\DependencyFileHandler;
+use Suphle\Hydration\Container;
 
-	use Closure;
+use Suphle\Contracts\Server\DependencyFileHandler;
 
-	class DependencyRule {
+use Closure;
 
-		public function __construct (
+class DependencyRule
+{
+    public function __construct(
+        protected readonly string $ruleHandler,
+        protected readonly Closure $filterClassName,
+        protected readonly array $argumentList
+    ) {
 
-			protected readonly string $ruleHandler, 
+        //
+    }
 
-			protected readonly Closure $filterClassName, 
+    public function shouldEvaluateClass(string $className): bool
+    {
 
-			protected readonly array $argumentList
-		) {
+        return call_user_func($this->filterClassName, $className);
+    }
 
-			//
-		}
+    public function extractHandler(Container $container): DependencyFileHandler
+    {
 
-		public function shouldEvaluateClass (string $className):bool {
+        $handler = $container->getClass($this->ruleHandler);
 
-			return call_user_func($this->filterClassName, $className);
-		}
+        $handler->setRunArguments($this->argumentList);
 
-		public function extractHandler (Container $container):DependencyFileHandler {
-
-			$handler = $container->getClass($this->ruleHandler);
-
-			$handler->setRunArguments($this->argumentList);
-
-			return $handler;
-		}
-	}
-?>
+        return $handler;
+    }
+}

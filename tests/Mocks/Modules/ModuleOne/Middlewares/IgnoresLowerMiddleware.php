@@ -1,19 +1,20 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares;
 
-	use Suphle\Contracts\{Presentation\BaseRenderer, Routing\Middleware};
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares;
 
-	use Suphle\Middleware\MiddlewareNexts;
+use Suphle\Contracts\{Presentation\BaseRenderer, Routing\Middleware};
 
-	use Suphle\Request\PayloadStorage;
+use Suphle\Middleware\MiddlewareNexts;
 
-	use Suphle\Response\Format\Json;
+use Suphle\Request\PayloadStorage;
 
-	class IgnoresLowerMiddleware implements Middleware {
+use Suphle\Response\Format\Json;
 
-		public function process (PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler):BaseRenderer {
+class IgnoresLowerMiddleware implements Middleware
+{
+    public function process(PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler): BaseRenderer
+    {
 
-			return (new Json(""))->setRawResponse(["foo" => "bar"]);
-		}
-	}
-?>
+        return (new Json(""))->setRawResponse(["foo" => "bar"]);
+    }
+}

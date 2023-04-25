@@ -1,52 +1,55 @@
 <?php
-	namespace Suphle\Testing\TestTypes;
 
-	use Suphle\Modules\ModuleDescriptor;
+namespace Suphle\Testing\TestTypes;
 
-	use Suphle\Hydration\Container;
+use Suphle\Modules\ModuleDescriptor;
 
-	use Suphle\Testing\Condiments\{ModuleReplicator, BaseModuleInteractor};
+use Suphle\Hydration\Container;
 
-	use Suphle\Testing\Proxies\{ModuleHttpTest, ConfigureExceptionBridge, Extensions\FrontDoor};
+use Suphle\Testing\Condiments\{ModuleReplicator, BaseModuleInteractor};
 
-	abstract class ModuleLevelTest extends TestVirginContainer {
+use Suphle\Testing\Proxies\{ModuleHttpTest, ConfigureExceptionBridge, Extensions\FrontDoor};
 
-		use ModuleReplicator, ConfigureExceptionBridge, ModuleHttpTest, BaseModuleInteractor {
+abstract class ModuleLevelTest extends TestVirginContainer
+{
+    use ModuleReplicator, ConfigureExceptionBridge, ModuleHttpTest, BaseModuleInteractor {
 
-			ConfigureExceptionBridge::setUp as mufflerSetup;
-		}
+        ConfigureExceptionBridge::setUp as mufflerSetup;
+    }
 
-		protected bool $useTestComponents = true;
+    protected bool $useTestComponents = true;
 
-		protected function setUp ():void {
+    protected function setUp(): void
+    {
 
-			$entrance = $this->entrance = new FrontDoor(
-				
-				/*
-				 Storing in an instance variable instead of reading directly from method so mutative methods can iterate and modify
+        $entrance = $this->entrance = new FrontDoor(
 
-				 Also, reading from getModules() with new ModuleDescriptor1 will return a new instance each time
-				*/
-				$this->modules = $this->getModules()
-			);
+            /*
+             Storing in an instance variable instead of reading directly from method so mutative methods can iterate and modify
 
-			if ($this->useTestComponents)
+             Also, reading from getModules() with new ModuleDescriptor1 will return a new instance each time
+            */
+            $this->modules = $this->getModules()
+        );
 
-				$this->provideTestEquivalents();
+        if ($this->useTestComponents) {
 
-			$this->bootMockEntrance($entrance);
+            $this->provideTestEquivalents();
+        }
 
-			$this->mufflerSetup(); // useTestComponents shouldn't prevent this because then, we can't even tell why request possibly failed
-		}
-		
-		/**
-		 * @return ModuleDescriptor[]
-		 */
-		abstract protected function getModules ():array;
+        $this->bootMockEntrance($entrance);
 
-		protected function getContainer ():Container {
+        $this->mufflerSetup(); // useTestComponents shouldn't prevent this because then, we can't even tell why request possibly failed
+    }
 
-			return $this->entrance->getActiveContainer();
-		}
-	}
-?>
+    /**
+     * @return ModuleDescriptor[]
+     */
+    abstract protected function getModules(): array;
+
+    protected function getContainer(): Container
+    {
+
+        return $this->entrance->getActiveContainer();
+    }
+}

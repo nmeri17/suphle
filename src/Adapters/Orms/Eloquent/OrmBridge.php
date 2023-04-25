@@ -1,144 +1,158 @@
 <?php
-	namespace Suphle\Adapters\Orms\Eloquent;
 
-	use Suphle\Hydration\Container;
+namespace Suphle\Adapters\Orms\Eloquent;
 
-	use Suphle\Contracts\{Database\OrmDialect, Config\Database, Bridge\LaravelContainer};
+use Suphle\Hydration\Container;
 
-	use Suphle\Services\Decorators\BindsAsSingleton;
+use Suphle\Contracts\{Database\OrmDialect, Config\Database, Bridge\LaravelContainer};
 
-	use Suphle\Contracts\Auth\{UserHydrator as HydratorContract, AuthStorage, UserContract};
+use Suphle\Services\Decorators\BindsAsSingleton;
 
-	use Illuminate\Database\{DatabaseManager, Capsule\Manager as CapsuleManager, Connection};
+use Suphle\Contracts\Auth\{UserHydrator as HydratorContract, AuthStorage, UserContract};
 
-	#[BindsAsSingleton(OrmDialect::class)]
-	class OrmBridge implements OrmDialect {
+use Illuminate\Database\{DatabaseManager, Capsule\Manager as CapsuleManager, Connection};
 
-		protected array $credentials = [];
-		
-		protected ?Connection $connection = null;
+#[BindsAsSingleton(OrmDialect::class)]
+class OrmBridge implements OrmDialect
+{
+    protected array $credentials = [];
 
-		protected ?CapsuleManager $nativeClient = null;
+    protected ?Connection $connection = null;
 
-		public function __construct (
+    protected ?CapsuleManager $nativeClient = null;
 
-			Database $config,
+    public function __construct(
+        Database $config,
+        protected readonly Container $container,
+        protected readonly LaravelContainer $laravelContainer
+    ) {
 
-			protected readonly Container $container,
+        $this->credentials = $config->getCredentials();
+    }
 
-			protected readonly LaravelContainer $laravelContainer
-		) {
+    /**
+     * @param {drivers} Assoc array with shape [name => [username, password, driver, database]]
+    */
+    public function setConnection(array $drivers = []): void
+    {
 
-			$this->credentials = $config->getCredentials();
-		}
+        $nativeClient = $this->nativeClient = new CapsuleManager();
 
-		/**
-		 * @param {drivers} Assoc array with shape [name => [username, password, driver, database]]
-		*/
-		public function setConnection (array $drivers = []):void {
+        if (empty($drivers)) {
+            $connections = $this->credentials;
+        } else {
+            $connections = $drivers;
+        }
 
-			$nativeClient = $this->nativeClient = new CapsuleManager;
+        foreach ($connections as $name => $credentials) {
 
-			if (empty($drivers)) $connections = $this->credentials;
+            $nativeClient->addConnection($credentials, $name);
+        }
 
-			else $connections = $drivers;
+        $this->connection = $nativeClient->getConnection();
+    }
 
-			foreach ($connections as $name => $credentials)
+    /**
+     * @return Connection
+    */
+    public function getConnection(): object
+    {
 
-				$nativeClient->addConnection($credentials, $name);
+        if (is_null($this->connection)) {
+            $this->setConnection();
+        }
 
-			$this->connection = $nativeClient->getConnection();
-		}
+        return $this->connection;
+    }
 
-		/**
-		 * @return Connection
-		*/
-		public function getConnection ():object {
+    /**
+     *	Obtain lock before running
+    */
+    public function runTransaction(callable $queries, array $lockModels = [], bool $hardLock = false)
+    {
 
-			if (is_null($this->connection)) $this->setConnection();
+        return $this->connection->transaction(function () use ($lockModels, $hardLock, $queries) {
 
-			return $this->connection;
-		}
+            $this->applyLock($lockModels, $hardLock);
 
-		/**
-		 *	Obtain lock before running
-		*/
-		public function runTransaction(callable $queries, array $lockModels = [], bool $hardLock = false) {
+            return $queries();
+        });
+    }
 
-			return $this->connection->transaction(function () use ($lockModels, $hardLock, $queries) {
+    public function applyLock(array $models, bool $isHard): void
+    {
 
-				$this->applyLock($lockModels, $hardLock);
+        $firstModel = current($models);
 
-				return $queries();
-			});
-		}
+        $modelName = $firstModel::class;
 
-		public function applyLock(array $models, bool $isHard):void {
+        $primaryField = $firstModel->getKeyName();
 
-			$firstModel = current($models);
+        $lockingMethod = $isHard ? "lockForUpdate" : "sharedLock";
 
-			$modelName = $firstModel::class;
+        (new $modelName())->$lockingMethod()->whereIn( // combine user query state into special locking builder to avoid applying update to all rows
 
-			$primaryField = $firstModel->getKeyName();
+            $primaryField,
+            array_map(fn ($model) => $model->$primaryField, $models)
+        )->get();
+    }
 
-			$lockingMethod = $isHard ? "lockForUpdate": "sharedLock";
+    /**
+     * {@inheritdoc}
+    */
+    public function registerObservers(array $observers, AuthStorage $authStorage): void
+    {
 
-			(new $modelName)->$lockingMethod()->whereIn( // combine user query state into special locking builder to avoid applying update to all rows
+        if (empty($observers)) {
+            return;
+        }
 
-				$primaryField, array_map(fn($model) => $model->$primaryField, $models)
-			)->get();
-		}
+        $this->laravelContainer->instance(AuthStorage::class, $authStorage); // guards in those observers will be relying on this contract
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function registerObservers (array $observers, AuthStorage $authStorage):void {
+        foreach ($observers as $model => $observer) {
 
-			if (empty($observers)) return;
+            $this->laravelContainer->bind($observer, function ($app) use ($observer) {
 
-			$this->laravelContainer->instance(AuthStorage::class, $authStorage); // guards in those observers will be relying on this contract
+                return $this->container->getClass($observer); // just to be on the safe side in case observer has bound entities
+            });
 
-			foreach ($observers as $model => $observer) {
+            $model::observe($observer); // even if we hydrate an instance, they'll still flatten it, anyway
+        }
+    }
 
-				$this->laravelContainer->bind($observer, function ($app) use ($observer) {
+    public function selectFields($builder, array $filters): object
+    {
 
-					return $this->container->getClass($observer); // just to be on the safe side in case observer has bound entities
-				});
+        return $builder->select($filters);
+    }
 
-				$model::observe($observer); // even if we hydrate an instance, they'll still flatten it, anyway
-			}
-		}
+    public function addWhereClause($model, array $constraints)
+    {
 
-		public function selectFields ($builder, array $filters):object {
+        return $model->where($constraints);
+    }
 
-			return $builder->select($filters);
-		}
+    public function getNativeClient(): object
+    {
 
-		public function addWhereClause( $model, array $constraints) {
+        return $this->nativeClient;
+    }
 
-			return $model->where($constraints);
-		}
+    public function getUserHydrator(): HydratorContract
+    {
 
-		public function getNativeClient ():object {
+        $hydrator = $this->container->getClass(UserHydrator::class);
 
-			return $this->nativeClient;
-		}
+        $hydrator->setUserModel(
+            $this->container->getClass(UserContract::class)
+        );
 
-		public function getUserHydrator ():HydratorContract {
+        return $hydrator;
+    }
 
-			$hydrator = $this->container->getClass(UserHydrator::class);
+    public function crudFilesLocation(): string
+    {
 
-			$hydrator->setUserModel(
-
-				$this->container->getClass(UserContract::class)
-			);
-
-			return $hydrator;
-		}
-
-		public function crudFilesLocation ():string {
-
-			return __DIR__ . DIRECTORY_SEPARATOR. "CrudModels". DIRECTORY_SEPARATOR;
-		}
-	}
-?>
+        return __DIR__ . DIRECTORY_SEPARATOR. "CrudModels". DIRECTORY_SEPARATOR;
+    }
+}

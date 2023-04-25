@@ -1,74 +1,74 @@
 <?php
-	namespace Suphle\Tests\Integration\Files;
 
-	use Suphle\File\FileSystemReader;
+namespace Suphle\Tests\Integration\Files;
 
-	use Suphle\Testing\TestTypes\IsolatedComponentTest;
+use Suphle\File\FileSystemReader;
 
-	use Suphle\Tests\Integration\Generic\CommonBinds;
+use Suphle\Testing\TestTypes\IsolatedComponentTest;
 
-	class FileSystemReaderTest extends IsolatedComponentTest {
+use Suphle\Tests\Integration\Generic\CommonBinds;
 
-		use CommonBinds;
+class FileSystemReaderTest extends IsolatedComponentTest
+{
+    use CommonBinds;
 
-		protected FileSystemReader $sut;
+    protected FileSystemReader $sut;
 
-		protected string $filePath = "Sibling/File.txt";
+    protected string $filePath = "Sibling/File.txt";
 
-		protected function setUp ():void {
+    protected function setUp(): void
+    {
 
-			parent::setUp();
+        parent::setUp();
 
-			$this->sut = new FileSystemReader;
-		}
+        $this->sut = new FileSystemReader();
+    }
 
-		public function test_normalizes_path_with_up_above_one () {
+    public function test_normalizes_path_with_up_above_one()
+    {
 
-			$this->assertSame(
+        $this->assertSame(
+            dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . $this->filePath,
+            $this->sut->getAbsolutePath(__DIR__, "../../" . $this->filePath)
+        );
+    }
 
-				dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . $this->filePath,
+    public function test_normalizes_path_with_one_up()
+    {
 
-				$this->sut->getAbsolutePath(__DIR__, "../../" . $this->filePath)
-			);
-		}
+        $this->assertSame(
+            dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . $this->filePath,
+            $this->sut->getAbsolutePath(__DIR__, "../" . $this->filePath) // integration/filePath
+        );
+    }
 
-		public function test_normalizes_path_with_one_up () {
+    public function test_normalizes_path_without_up()
+    {
 
-			$this->assertSame(
+        $this->assertSame(
+            __DIR__ . DIRECTORY_SEPARATOR . $this->filePath,
+            $this->sut->getAbsolutePath(__DIR__, $this->filePath)
+        );
+    }
 
-				dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . $this->filePath,
+    /**
+     * @dataProvider slashedAndUnslashed
+    */
+    public function test_slash_trimming(string $givenPath, string $expectedPath)
+    {
 
-				$this->sut->getAbsolutePath(__DIR__, "../" . $this->filePath) // integration/filePath
-			);
-		}
+        $this->assertSame($expectedPath, $this->sut->noTrailingSlash($givenPath));
+    }
 
-		public function test_normalizes_path_without_up () {
+    public function slashedAndUnslashed(): array
+    {
 
-			$this->assertSame(
+        return [
+            ["/foo/bar", "/foo/bar"],
 
-				__DIR__ . DIRECTORY_SEPARATOR . $this->filePath,
+            ["/foo/bar/", "/foo/bar"],
 
-				$this->sut->getAbsolutePath(__DIR__, $this->filePath)
-			);
-		}
-
-		/**
-		 * @dataProvider slashedAndUnslashed
-		*/
-		public function test_slash_trimming (string $givenPath, string $expectedPath) {
-
-			$this->assertSame($expectedPath, $this->sut->noTrailingSlash($givenPath));
-		}
-
-		public function slashedAndUnslashed ():array {
-
-			return [
-				["/foo/bar", "/foo/bar"],
-
-				["/foo/bar/", "/foo/bar"],
-
-				["\\foo\\bar\\", "\\foo\\bar"],
-			];
-		}
-	}
-?>
+            ["\\foo\\bar\\", "\\foo\\bar"],
+        ];
+    }
+}

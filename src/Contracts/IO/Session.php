@@ -1,26 +1,26 @@
 <?php
-	namespace Suphle\Contracts\IO;
 
-	interface Session {
-		
-		public function setValue (string $key, $value):void;
+namespace Suphle\Contracts\IO;
 
-		public function getValue (string $key);
+interface Session
+{
+    public function setValue(string $key, $value): void;
 
-		public function hasKey (string $key):bool;
+    public function getValue(string $key);
 
-		public function reset ():void;
+    public function hasKey(string $key): bool;
 
-		public function prolongSession (array $cookieOptions = []):void;
+    public function reset(): void;
 
-		public function hasOldInput (string $key):bool;
+    public function prolongSession(array $cookieOptions = []): void;
 
-		public function getOldInput (string $key);
+    public function hasOldInput(string $key): bool;
 
-		public function setFlashValue (string $key, $value):void;
+    public function getOldInput(string $key);
 
-		public function resetOldInput ():void;
+    public function setFlashValue(string $key, $value): void;
 
-		public function allSessionEntries ():array;
-	}
-?>
+    public function resetOldInput(): void;
+
+    public function allSessionEntries(): array;
+}

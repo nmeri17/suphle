@@ -1,121 +1,124 @@
 <?php
-	namespace Suphle\ComponentTemplates\Commands;
 
-	use Suphle\Console\BaseCliCommand;
+namespace Suphle\ComponentTemplates\Commands;
 
-	use Suphle\ComponentTemplates\ComponentEjector;
+use Suphle\Console\BaseCliCommand;
 
-	use Symfony\Component\Console\Output\OutputInterface;
+use Suphle\ComponentTemplates\ComponentEjector;
 
-	use Symfony\Component\Console\Input\{InputInterface, InputArgument, InputOption};
+use Symfony\Component\Console\Output\OutputInterface;
 
-	use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\{InputInterface, InputArgument, InputOption};
 
-	class InstallComponentCommand extends BaseCliCommand {
+use Symfony\Component\Console\Command\Command;
 
-		public const OVERWRITE_OPTION = "overwrite",
+class InstallComponentCommand extends BaseCliCommand
+{
+    public const OVERWRITE_OPTION = "overwrite",
 
-		COMPONENT_ARGS_OPTION = "misc_args";
+    COMPONENT_ARGS_OPTION = "misc_args";
 
-		protected static $defaultDescription = "Extract templates registered for given module";
+    protected static $defaultDescription = "Extract templates registered for given module";
 
-		protected bool $withModuleOption = false;
+    protected bool $withModuleOption = false;
 
-		public static function commandSignature ():string {
+    public static function commandSignature(): string
+    {
 
-			return "templates:install";
-		}
+        return "templates:install";
+    }
 
-		protected function configure ():void {
+    protected function configure(): void
+    {
 
-			parent::configure();
+        parent::configure();
 
-			$this->addArgument(
+        $this->addArgument(
+            self::HYDRATOR_MODULE_OPTION,
+            InputArgument::REQUIRED,
+            "Relative name of the Module interface where templates are to be ejected"
+        );
 
-				self::HYDRATOR_MODULE_OPTION, InputArgument::REQUIRED,
+        $this->addOption(
+            self::OVERWRITE_OPTION,
+            "o",
+            InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY,
+            "List of entries to override or empty to overwrite all",
+            [] // default value. Means option wasn't passed. When value = [null], option is present but has no value aka "all"
+        );
 
-				"Relative name of the Module interface where templates are to be ejected"
-			);
+        $this->addOption(
+            self::COMPONENT_ARGS_OPTION,
+            "p",
+            InputOption::VALUE_REQUIRED,
+            "Arguments to pass to the components: foo=value uju=bar"
+        );
+    }
 
-			$this->addOption(
-				self::OVERWRITE_OPTION, "o",
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
 
-				InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY,
+        $moduleInterface = $input->getArgument(self::HYDRATOR_MODULE_OPTION);
 
-				"List of entries to override or empty to overwrite all",
+        $result = $this->getExecutionContainer($moduleInterface)
 
-				[] // default value. Means option wasn't passed. When value = [null], option is present but has no value aka "all"
-			);
+        ->getClass(ComponentEjector::class)
 
-			$this->addOption(
-				self::COMPONENT_ARGS_OPTION, "p",
+        ->depositFiles(
+            $this->getOverwriteOption($input),
+            $this->getMiscArguments($input)
+        );
 
-				InputOption::VALUE_REQUIRED,
+        if ($result) {
 
-				"Arguments to pass to the components: foo=value uju=bar"
-			);
-		}
+            $output->writeln("Templates ejected successfully");
 
-		protected function execute (InputInterface $input, OutputInterface $output):int {
+            return Command::SUCCESS;
+        }
 
-			$moduleInterface = $input->getArgument(self::HYDRATOR_MODULE_OPTION);
+        return Command::FAILURE;
+    }
 
-			$result = $this->getExecutionContainer($moduleInterface)
+    /**
+     * @see option definition for legend
+    */
+    protected function getOverwriteOption(InputInterface $input): ?array
+    {
 
-			->getClass(ComponentEjector::class)
+        $givenValue = $input->getOption(self::OVERWRITE_OPTION);
 
-			->depositFiles(
-			
-				$this->getOverwriteOption($input),
+        if (is_array($givenValue)) {
 
-				$this->getMiscArguments($input)
-			);
+            if (empty($givenValue)) {
+                return null;
+            }
 
-			if ($result) {
+            return array_filter($givenValue); // empty string or no value will populate this with nulls
+        }
 
-				$output->writeln("Templates ejected successfully");
+        return $givenValue; // will never get here since option is declared as an array
+    }
 
-				return Command::SUCCESS;
-			}
+    protected function getMiscArguments(InputInterface $input): array
+    {
 
-			return Command::FAILURE;
-		}
+        $argumentList = $input->getOption(self::COMPONENT_ARGS_OPTION);
 
-		/**
-		 * @see option definition for legend
-		*/
-		protected function getOverwriteOption (InputInterface $input):?array {
+        if (is_null($argumentList)) {
+            return [];
+        }
 
-			$givenValue = $input->getOption(self::OVERWRITE_OPTION);
+        $valueRows = explode(" ", $argumentList);
 
-			if (is_array($givenValue) ) {
+        $keyValue = [];
 
-				if ( empty($givenValue)) return null;
+        foreach ($valueRows as $row) {
 
-				return array_filter($givenValue); // empty string or no value will populate this with nulls
-			}
+            $keyValuePair = explode("=", $row);
 
-			return $givenValue; // will never get here since option is declared as an array
-		}
+            $keyValue[$keyValuePair[0]] = $keyValuePair[1];
+        }
 
-		protected function getMiscArguments (InputInterface $input):array {
-
-			$argumentList = $input->getOption(self::COMPONENT_ARGS_OPTION);
-
-			if (is_null($argumentList)) return [];
-
-			$valueRows = explode(" ", $argumentList);
-
-			$keyValue = [];
-
-			foreach ($valueRows as $row) {
-
-				$keyValuePair = explode("=", $row);
-
-				$keyValue[$keyValuePair[0]] = $keyValuePair[1];
-			}
-
-			return $keyValue;
-		}
-	}
-?>
+        return $keyValue;
+    }
+}

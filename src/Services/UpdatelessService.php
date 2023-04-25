@@ -1,8 +1,8 @@
 <?php
-	namespace Suphle\Services;
 
-	class UpdatelessService {
+namespace Suphle\Services;
 
-		//
-	}
-?>
+class UpdatelessService
+{
+    //
+}

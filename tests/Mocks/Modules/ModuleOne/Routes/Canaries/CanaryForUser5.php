@@ -1,25 +1,28 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Canaries;
 
-	use Suphle\Contracts\{Routing\CanaryGateway, Auth\AuthStorage};
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Canaries;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\CanaryCollections\CollectionForUser5;
+use Suphle\Contracts\{Routing\CanaryGateway, Auth\AuthStorage};
 
-	class CanaryForUser5 implements CanaryGateway {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\CanaryCollections\CollectionForUser5;
 
-		public function __construct(protected readonly AuthStorage $authStorage) {
+class CanaryForUser5 implements CanaryGateway
+{
+    public function __construct(protected readonly AuthStorage $authStorage)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function willLoad ():bool {
+    public function willLoad(): bool
+    {
 
-			return $this->authStorage->getId() == 5;
-		}
+        return $this->authStorage->getId() == 5;
+    }
 
-		public function entryClass ():string {
+    public function entryClass(): string
+    {
 
-			return CollectionForUser5::class;
-		}
-	}
-?>
+        return CollectionForUser5::class;
+    }
+}

@@ -1,578 +1,601 @@
 <?php
-	namespace Suphle\Tests\Integration\Hotwire;
 
-	use Suphle\Contracts\{Requests\CoodinatorManager, Config\Router, Response\RendererManager, Presentation\HtmlParser};
+namespace Suphle\Tests\Integration\Hotwire;
 
-	use Suphle\Adapters\Presentation\Hotwire\{HotwireRendererManager, HotwireAsserter, Formats\BaseHotwireStream};
+use Suphle\Contracts\{Requests\CoodinatorManager, Config\Router, Response\RendererManager, Presentation\HtmlParser};
 
-	use Suphle\Adapters\Presentation\Blade\DefaultBladeAdapter;
+use Suphle\Adapters\Presentation\Hotwire\{HotwireRendererManager, HotwireAsserter, Formats\BaseHotwireStream};
 
-	use Suphle\Response\Format\{Reload, Redirect};
+use Suphle\Adapters\Presentation\Blade\DefaultBladeAdapter;
 
-	use Suphle\Security\CSRF\CsrfGenerator;
+use Suphle\Response\Format\{Reload, Redirect};
 
-	use Suphle\Request\PayloadStorage;
+use Suphle\Security\CSRF\CsrfGenerator;
 
-	use Suphle\Adapters\Orms\Eloquent\Models\ModelDetail;
+use Suphle\Request\PayloadStorage;
 
-	use Suphle\Exception\{Diffusers\ValidationFailureDiffuser, Explosives\ValidationFailure};
+use Suphle\Adapters\Orms\Eloquent\Models\ModelDetail;
 
-	use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer, Proxies\Extensions\TestResponseBridge, Condiments\BaseDatabasePopulator};
+use Suphle\Exception\{Diffusers\ValidationFailureDiffuser, Explosives\ValidationFailure};
 
-	use Suphle\Tests\Integration\Services\CoodinatorManager\HttpValidationTest;
+use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer, Proxies\Extensions\TestResponseBridge, Condiments\BaseDatabasePopulator};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\HotwireCollection, Meta\ModuleOneDescriptor, Config\RouterMock};
+use Suphle\Tests\Integration\Services\CoodinatorManager\HttpValidationTest;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\CustomInterfaceCollection;
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\HotwireCollection, Meta\ModuleOneDescriptor, Config\RouterMock};
 
-	use Suphle\Tests\Mocks\Models\Eloquent\Employment;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\CustomInterfaceCollection;
 
-	/**
-	* @\depends HttpValidationTest
-	*/
-	class BaseHotwireStreamTest extends ModuleLevelTest {
+use Suphle\Tests\Mocks\Models\Eloquent\Employment;
 
-		use BaseDatabasePopulator, HotwireAsserter {
+/**
+* @\depends HttpValidationTest
+*/
+class BaseHotwireStreamTest extends ModuleLevelTest
+{
+    use BaseDatabasePopulator, HotwireAsserter {
 
-			BaseDatabasePopulator::setUp as databaseAllSetup;
-		}
+        BaseDatabasePopulator::setUp as databaseAllSetup;
+    }
 
-		//protected bool $debugCaughtExceptions = true;
+    //protected bool $debugCaughtExceptions = true;
 
-		protected const INITIAL_URL = "/init-post",
+    protected const INITIAL_URL = "/init-post",
 
-		DUAL_REDIRECT = "/hotwire-redirect",
+    DUAL_REDIRECT = "/hotwire-redirect",
 
-		DUAL_RELOAD = "/hotwire-reload",
+    DUAL_RELOAD = "/hotwire-reload",
 
-		POST_METHOD = "post", PUT_METHOD = "put";
+    POST_METHOD = "post", PUT_METHOD = "put";
 
-		protected array $csrfField;
+    protected array $csrfField;
 
-		protected Employment $employment1, $employment2;
+    protected Employment $employment1;
+    protected Employment $employment2;
 
-		protected function setUp ():void {// $this->markTestSkipped();
+    protected function setUp(): void // $this->markTestSkipped();
+    {$this->databaseAllSetup();
 
-			$this->databaseAllSetup();
+        $this->csrfField = [
 
-			$this->csrfField = [
+            CsrfGenerator::TOKEN_FIELD => $this->getContainer()
 
-				CsrfGenerator::TOKEN_FIELD => $this->getContainer()
+            ->getClass(CsrfGenerator::class)->newToken()
+        ];
 
-				->getClass(CsrfGenerator::class)->newToken()
-			];
+        [$this->employment1, $this->employment2] = $this->replicator->getRandomEntities(2);
+    }
 
-			[$this->employment1, $this->employment2] = $this->replicator->getRandomEntities(2);
-		}
+    protected function getModules(): array
+    {
 
-		protected function getModules ():array {
+        $interfaceCollection = new class () extends CustomInterfaceCollection {
+            public function simpleBinds(): array
+            {
 
-			$interfaceCollection = new class extends CustomInterfaceCollection {
+                return array_merge(parent::simpleBinds(), [
 
-				public function simpleBinds ():array {
+                    RendererManager::class => HotwireRendererManager::class
+                ]);
+            }
+        };
 
-					return array_merge(parent::simpleBinds(), [
+        return [
 
-						RendererManager::class => HotwireRendererManager::class
-					]);
-				}
-			};
+            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-			return [
+                $container->replaceWithMock(Router::class, RouterMock::class, [
 
-				$this->replicateModule(ModuleOneDescriptor::class, function(WriteOnlyContainer $container) {
+                    "browserEntryRoute" => HotwireCollection::class
+                ]);
+            }, false, [
 
-					$container->replaceWithMock(Router::class, RouterMock::class, [
+                "interfaceCollection" => $interfaceCollection::class
+            ])
+        ];
+    }
 
-						"browserEntryRoute" => HotwireCollection::class
-					]);
-				}, false, [
+    protected function getActiveEntity(): string
+    {
 
-					"interfaceCollection" => $interfaceCollection::class
-				])
-			];
-		}
+        return Employment::class;
+    }
 
-		protected function getActiveEntity ():string {
+    /**
+     * @dataProvider userAgentHeaders
+     */
+    public function test_regular_renderer_failure_yields_non_hotwire_response(?string $agentHeader)
+    {
 
-			return Employment::class;
-		}
+        $this->sendFailRedirect(
+            "/regular-markup",
+            self::POST_METHOD,
+            $agentHeader
+        );
+    }
 
-		/**
-		 * @dataProvider userAgentHeaders
-		 */
-		public function test_regular_renderer_failure_yields_non_hotwire_response (?string $agentHeader) {
+    public function userAgentHeaders(): array
+    {
 
-			$this->sendFailRedirect(
+        return [
 
-				"/regular-markup", self::POST_METHOD, $agentHeader
-			);
-		}
+            [null], [BaseHotwireStream::TURBO_INDICATOR]
+        ];
+    }
 
-		public function userAgentHeaders ():array {
+    protected function sendFailRedirect(string $url, string $httpMethod, ?string $agentHeader = null): TestResponseBridge
+    {
 
-			return [
+        $this->get(self::INITIAL_URL);
 
-				[null], [BaseHotwireStream::TURBO_INDICATOR]
-			];
-		}
+        return $this->$httpMethod($url, array_merge($this->csrfField, [
 
-		protected function sendFailRedirect (string $url, string $httpMethod, ?string $agentHeader = null):TestResponseBridge {
+            "id" => $this->employment1->id,
 
-			$this->get(self::INITIAL_URL);
+            // given // missing id2 field
+        ]), [
 
-			return $this->$httpMethod($url, array_merge($this->csrfField, [
+            PayloadStorage::ACCEPTS_KEY => $agentHeader
+        ]) // when
+        // then
+        ->assertRedirect(self::INITIAL_URL);
+    }
+
+    public function urlsToHotwireRequests(): array
+    {
 
-				"id" => $this->employment1->id,
+        return [
 
-				// given // missing id2 field
-			]), [
+            [
+                self::DUAL_REDIRECT, self::POST_METHOD
+            ], [
+                self::DUAL_RELOAD, self::PUT_METHOD
+            ]
+        ];
+    }
+
+    /**
+     * @dataProvider urlsToHotwireRequests
+     */
+    public function test_regular_request_to_dual_failure_reverts_to_previous(string $url, string $httpMethod)
+    {
+
+        $this->sendFailRedirect($url, $httpMethod, "");
+    }
+
+    public function test_hotwire_to_dual_failure_filters_current()
+    {
+
+        $this->dataProvider([
+
+            $this->hotwireFailureContent(...)
+        ], function (
+            string $url,
+            string $httpMethod,
+            callable $outputAsserter
+        ) {
 
-				PayloadStorage::ACCEPTS_KEY => $agentHeader
-			]) // when
-			// then
-			->assertRedirect(self::INITIAL_URL);
-		}
+            $this->get(self::INITIAL_URL);
 
-		public function urlsToHotwireRequests ():array {
+            $response = $this->$httpMethod($url, array_merge($this->csrfField, [
 
-			return [
+                "id" => $this->employment1->id,
 
-				[
-					self::DUAL_REDIRECT, self::POST_METHOD
-				], [
-					self::DUAL_RELOAD, self::PUT_METHOD
-				]
-			];
-		}
+                // given // missing id2 field
+            ]), [
 
-		/**
-		 * @dataProvider urlsToHotwireRequests
-		 */
-		public function test_regular_request_to_dual_failure_reverts_to_previous (string $url, string $httpMethod) {
+                PayloadStorage::ACCEPTS_KEY => BaseHotwireStream::TURBO_INDICATOR
+            ]); // when
+            // then
+            $response->assertUnprocessable() // sanity check
 
-			$this->sendFailRedirect($url, $httpMethod, "");
-		}
+            ->assertHeader(
+                PayloadStorage::CONTENT_TYPE_KEY,
+                BaseHotwireStream::TURBO_INDICATOR
+            );
 
-		public function test_hotwire_to_dual_failure_filters_current () {
+            $outputAsserter($response);
+        });
+    }
 
-			$this->dataProvider([
-			
-				$this->hotwireFailureContent(...)
-			], function (
-				string $url, string $httpMethod, callable $outputAsserter
-			) {
+    public function hotwireFailureContent(): array
+    {
 
-				$this->get(self::INITIAL_URL);			
+        return [ // these frames/forms are expected to check the presence of validation errors and render them appropriately
+            [
+                self::DUAL_REDIRECT, self::POST_METHOD,
 
-				$response = $this->$httpMethod($url, array_merge($this->csrfField, [
+                function (TestResponseBridge $response) {
 
-					"id" => $this->employment1->id,
+                    $this->assertStreamNode(BaseHotwireStream::REPLACE_ACTION, "update-form"); // we set the route collection target generator to fallback to this in event of validation failure
 
-					// given // missing id2 field
-				]), [
+                    $this->assertEmploymentFormError(
+                        $response,
+                        BaseHotwireStream::REPLACE_ACTION,
+                        BaseHotwireStream::BEFORE_ACTION,
+                        $this->employment1 // these IDs should be considered implementation detail and don't really matter. They're determined by what's bound to the action's validator
+                    );
+                }
+            ], [
+                self::DUAL_RELOAD, self::PUT_METHOD,
 
-					PayloadStorage::ACCEPTS_KEY => BaseHotwireStream::TURBO_INDICATOR
-				]); // when
-				// then
-				$response->assertUnprocessable() // sanity check
+                function (TestResponseBridge $response) {
 
-				->assertHeader(
-					PayloadStorage::CONTENT_TYPE_KEY,
+                    $this->assertStreamNode(BaseHotwireStream::UPDATE_ACTION, "update-form");
 
-					BaseHotwireStream::TURBO_INDICATOR
-				);
+                    $this->assertEmploymentFormError(
+                        $response,
+                        BaseHotwireStream::UPDATE_ACTION,
+                        BaseHotwireStream::AFTER_ACTION,
+                        $this->employment1
+                    );
+                }
+            ]
+        ];
+    }
 
-				$outputAsserter($response);
-			});
-		}
+    protected function assertEmploymentFormError(
+        TestResponseBridge $response,
+        string $hotwireAction,
+        ?string $oppositeAction,
+        Employment $employment
+    ): void {
 
-		public function hotwireFailureContent ():array {
+        $response->assertSee(ucfirst($hotwireAction) . " form")
 
-			return [ // these frames/forms are expected to check the presence of validation errors and render them appropriately
-				[
-					self::DUAL_REDIRECT, self::POST_METHOD,
+        ->assertSee("Validation errors")
 
-					function (TestResponseBridge $response) {
+        ->assertSee(
+            "<input type=\"text\" name=\"id\" value=\"{$employment->id}\">",
+            false
+        )
+        ->assertSee(
+            "<input type=\"text\" name=\"id2\" value=\"\">",
+            false
+        )
+        ->assertDontSee(
+            "
+				<div id=\"from-handler\">{$employment->id}</div>",
+            false
+        );
 
-						$this->assertStreamNode(BaseHotwireStream::REPLACE_ACTION, "update-form"); // we set the route collection target generator to fallback to this in event of validation failure
+        if (!is_null($oppositeAction)) {
 
-						$this->assertEmploymentFormError(
-							$response, BaseHotwireStream::REPLACE_ACTION,
+            $response->assertDontSee(ucfirst($oppositeAction) . " form");
+        }
+    }
 
-							BaseHotwireStream::BEFORE_ACTION, $this->employment1 // these IDs should be considered implementation detail and don't really matter. They're determined by what's bound to the action's validator
-						);
-					}
-				], [
-					self::DUAL_RELOAD, self::PUT_METHOD,
+    public function hotwireFailureToParse(): array
+    {
 
-					function (TestResponseBridge $response) {
+        return [
 
-						$this->assertStreamNode(BaseHotwireStream::UPDATE_ACTION, "update-form");
+            [
+                self::DUAL_REDIRECT, self::POST_METHOD,
 
-						$this->assertEmploymentFormError(
-							$response, BaseHotwireStream::UPDATE_ACTION,
+                "hotwire/replace-fragment"
+            ], [
 
-							BaseHotwireStream::AFTER_ACTION, $this->employment1
-						);
-					}
-				]
-			];
-		}
+                self::DUAL_RELOAD, self::PUT_METHOD,
 
-		protected function assertEmploymentFormError (
+                "hotwire/update-fragment"
+            ]
+        ];
+    }
 
-			TestResponseBridge $response, string $hotwireAction,
+    public function test_hotwire_to_dual_failure_parses_only_one_partial()
+    {
 
-			?string $oppositeAction, Employment $employment
-		):void {
+        $this->dataProvider([
 
-			$response->assertSee(ucfirst($hotwireAction) . " form")
+            $this->hotwireFailureToParse(...)
+        ], function (
+            string $url,
+            string $httpMethod,
+            string $markupName
+        ) {
 
-			->assertSee("Validation errors")
+            $this->massProvide([
 
-			->assertSee(
-				"<input type=\"text\" name=\"id\" value=\"{$employment->id}\">", false
-			)
-			->assertSee(
-				"<input type=\"text\" name=\"id2\" value=\"\">", false
-			)
-			->assertDontSee("
-				<div id=\"from-handler\">{$employment->id}</div>", false
-			);
+                HtmlParser::class => $this->positiveDouble(DefaultBladeAdapter::class, [
 
-			if (!is_null($oppositeAction))
+                    "parseRenderer" => "page contents"
+                ], [
 
-				$response->assertDontSee(ucfirst($oppositeAction) . " form");
-		}
+                    "parseRenderer" => [1, [ // then
+                        $this->callback(function ($subject) use ($markupName) {
 
-		public function hotwireFailureToParse ():array {
+                            return str_contains($subject->getMarkupName(), $markupName);
+                        })
+                    ]]
+                ])
+            ]);
 
-			return [
+            $this->$httpMethod($url, array_merge($this->csrfField, [
 
-				[
-					self::DUAL_REDIRECT, self::POST_METHOD,
+                "id" => $this->employment1->id,
 
-					"hotwire/replace-fragment"
-				], [
+                // given // missing id2 field
+            ]), [
 
-					self::DUAL_RELOAD, self::PUT_METHOD,
+                PayloadStorage::ACCEPTS_KEY => BaseHotwireStream::TURBO_INDICATOR
+            ]); // when
+        });
+    }
 
-					"hotwire/update-fragment"
-				]
-			];
-		}
+    public function hotwireSuccessContent(): array
+    {
 
-		public function test_hotwire_to_dual_failure_parses_only_one_partial () {
+        $employment1Id = $this->employment1->id;
 
-			$this->dataProvider([
-			
-				$this->hotwireFailureToParse(...)
-			], function (
-				string $url, string $httpMethod, string $markupName
-			) {
+        $employment2Id = $this->employment2->id;
 
-				$this->massProvide([
+        return [
 
-					HtmlParser::class => $this->positiveDouble(DefaultBladeAdapter::class, [
+            [
+                self::DUAL_REDIRECT, self::POST_METHOD,
 
-						"parseRenderer" => "page contents"
-					], [
+                function (TestResponseBridge $response) use ($employment1Id, $employment2Id) {
 
-						"parseRenderer" => [1, [ // then
-							$this->callback(function ($subject) use ($markupName) {
+                    $this->assertStreamNode(BaseHotwireStream::REPLACE_ACTION, "employment_". $employment1Id);
 
-								return str_contains($subject->getMarkupName(), $markupName);
-							})
-						]]
-					])
-				]);
+                    $this->assertStreamNode(BaseHotwireStream::BEFORE_ACTION, "employment_". $employment2Id);
 
-				$this->$httpMethod($url, array_merge($this->csrfField, [
+                    $this->assertEmploymentSuccessContent(
+                        $response,
+                        BaseHotwireStream::REPLACE_ACTION,
+                        $this->employment2 // neither id or 2 should be present but we're testing with id2 since that's the name hard-coded in the asserter
+                    )->assertEmploymentSuccessContent(
+                        $response,
+                        BaseHotwireStream::BEFORE_ACTION,
+                        $this->employment2
+                    );
+                }
+            ], [
+                self::DUAL_RELOAD, self::PUT_METHOD,
 
-					"id" => $this->employment1->id,
+                function (TestResponseBridge $response) use ($employment1Id, $employment2Id) {
 
-					// given // missing id2 field
-				]), [
+                    $this->assertStreamNode(BaseHotwireStream::AFTER_ACTION, "employment_". $employment1Id);
 
-					PayloadStorage::ACCEPTS_KEY => BaseHotwireStream::TURBO_INDICATOR
-				]); // when
-			});
-		}
+                    $this->assertStreamNode(BaseHotwireStream::UPDATE_ACTION, "employment_". $employment2Id);
 
-		public function hotwireSuccessContent ():array {
+                    $this->assertEmploymentSuccessContent(
+                        $response,
+                        BaseHotwireStream::AFTER_ACTION,
+                        $this->employment2
+                    )->assertEmploymentSuccessContent(
+                        $response,
+                        BaseHotwireStream::UPDATE_ACTION,
+                        $this->employment2
+                    );
+                }
+            ]
+        ];
+    }
 
-			$employment1Id = $this->employment1->id;
+    protected function assertEmploymentSuccessContent(TestResponseBridge $response, string $hotwireAction, Employment $employment): self
+    {
 
-			$employment2Id = $this->employment2->id;
+        $response->assertSee(ucfirst($hotwireAction) . " form")
 
-			return [
+        ->assertDontSee("Validation errors")
 
-				[
-					self::DUAL_REDIRECT, self::POST_METHOD,
+        ->assertDontSee(
+            "<input type=\"text\" name=\"id2\" value=\"{$employment->id}\">",
+            false
+        ); // since it's not expected to have gone through validation handler
 
-					function (TestResponseBridge $response) use ($employment1Id, $employment2Id) {
+        return $this;
+    }
 
-						$this->assertStreamNode(BaseHotwireStream::REPLACE_ACTION, "employment_". $employment1Id);
+    public function test_hotwire_to_dual_success_yields_all()
+    {
 
-						$this->assertStreamNode(BaseHotwireStream::BEFORE_ACTION, "employment_". $employment2Id);
+        $this->dataProvider([
 
-						$this->assertEmploymentSuccessContent(
-							$response, BaseHotwireStream::REPLACE_ACTION,
+            $this->hotwireSuccessContent(...)
+        ], function (string $url, string $httpMethod, callable $outputAsserter) {
 
-							$this->employment2 // neither id or 2 should be present but we're testing with id2 since that's the name hard-coded in the asserter
-						)->assertEmploymentSuccessContent(
-							$response, BaseHotwireStream::BEFORE_ACTION,
+            $this->get(self::INITIAL_URL);
 
-							$this->employment2
-						);
-					}
-				], [
-					self::DUAL_RELOAD, self::PUT_METHOD,
+            $responseAsserter = $this->$httpMethod($url, array_merge($this->csrfField, [
 
-					function (TestResponseBridge $response) use ($employment1Id, $employment2Id) {
+                "id" => $this->employment1->id,
 
-						$this->assertStreamNode(BaseHotwireStream::AFTER_ACTION, "employment_". $employment1Id);
+                "id2" => $this->employment2->id
+            ]), [
 
-						$this->assertStreamNode(BaseHotwireStream::UPDATE_ACTION, "employment_". $employment2Id);
+                PayloadStorage::ACCEPTS_KEY => BaseHotwireStream::TURBO_INDICATOR
+            ]); // when
 
-						$this->assertEmploymentSuccessContent(
-							$response, BaseHotwireStream::AFTER_ACTION,
+            // then
+            $responseAsserter->assertHeader(
+                PayloadStorage::CONTENT_TYPE_KEY,
+                BaseHotwireStream::TURBO_INDICATOR
+            );
 
-							$this->employment2
-						)->assertEmploymentSuccessContent(
-							$response, BaseHotwireStream::UPDATE_ACTION,
+            $outputAsserter($responseAsserter);
+        });
+    }
 
-							$this->employment2
-						);
-					}
-				]
-			];
-		}
+    public function test_regular_request_to_dual_success_proceeds()
+    {
 
-		protected function assertEmploymentSuccessContent (TestResponseBridge $response, string $hotwireAction, Employment $employment):self {
+        $this->dataProvider([
 
-			$response->assertSee(ucfirst($hotwireAction) . " form")
+            $this->regularSuccessContent(...)
+        ], function (string $url, string $httpMethod, int $statusCode, array $expectedHeaders) {
 
-			->assertDontSee("Validation errors")
+            $this->get(self::INITIAL_URL);
 
-			->assertDontSee(
-				"<input type=\"text\" name=\"id2\" value=\"{$employment->id}\">", false
-			); // since it's not expected to have gone through validation handler
+            $response = $this->$httpMethod($url, array_merge($this->csrfField, [
 
-			return $this;
-		}
+                "id" => $this->employment1->id,
 
-		public function test_hotwire_to_dual_success_yields_all () {
+                "id2" => $this->employment2->id
+            ])) // when
+            // then
+            ->assertStatus($statusCode);
 
-			$this->dataProvider([
-			
-				$this->hotwireSuccessContent(...)
-			], function (string $url, string $httpMethod, callable $outputAsserter) {
+            foreach ($expectedHeaders as $header => $value) {
 
-				$this->get(self::INITIAL_URL);		
+                $response->assertHeader($header, $value);
+            }
+        });
+    }
 
-				$responseAsserter = $this->$httpMethod($url, array_merge($this->csrfField, [
+    public function regularSuccessContent(): array
+    {
 
-					"id" => $this->employment1->id,
+        return [
 
-					"id2" => $this->employment2->id
-				]), [
+            [
+                self::DUAL_REDIRECT, self::POST_METHOD,
 
-					PayloadStorage::ACCEPTS_KEY => BaseHotwireStream::TURBO_INDICATOR
-				]); // when
+                Redirect::STATUS_CODE,
+                [
+                    PayloadStorage::LOCATION_KEY => "/"
+                ]
+            ], [
+                self::DUAL_RELOAD, self::PUT_METHOD,
 
-				// then
-				$responseAsserter->assertHeader(
-					PayloadStorage::CONTENT_TYPE_KEY,
+                Reload::STATUS_CODE,
+                [
+                    PayloadStorage::CONTENT_TYPE_KEY => PayloadStorage::HTML_HEADER_VALUE
+                ]
+            ]
+        ];
+    }
 
-					BaseHotwireStream::TURBO_INDICATOR
-				);
+    /**
+     * Low-level to confirm actual behavior instead of relying on the user-facing asserter
+    */
+    public function test_dual_renderer_correctly_wraps_content()
+    {
 
-				$outputAsserter($responseAsserter);
-			});
-		}
+        $this->get(self::INITIAL_URL);
 
-		public function test_regular_request_to_dual_success_proceeds () {
+        $responseAsserter = $this->post(self::DUAL_REDIRECT, array_merge($this->csrfField, [
 
-			$this->dataProvider([
-			
-				$this->regularSuccessContent(...)
-			], function (string $url, string $httpMethod, int $statusCode, array $expectedHeaders) {
+            "id" => $this->employment1->id,
 
-				$this->get(self::INITIAL_URL);
+            "id2" => $this->employment2->id
+        ]), [
 
-				$response = $this->$httpMethod($url, array_merge($this->csrfField, [
+            PayloadStorage::ACCEPTS_KEY => BaseHotwireStream::TURBO_INDICATOR
+        ]); // when
 
-					"id" => $this->employment1->id,
+        $frameTarget = (new ModelDetail())->idFromModel($this->employment2); // we're testing against the "before" coordinator, which makes use of id2
 
-					"id2" => $this->employment2->id
-				])) // when
-				// then
-				->assertStatus($statusCode);
+        $hotwireAction = BaseHotwireStream::BEFORE_ACTION;
 
-				foreach ($expectedHeaders as $header => $value)
+        $upperCaseAction = ucfirst($hotwireAction). " form";
 
-					$response->assertHeader($header, $value);
-			});
-		}
+        // then
+        $responseAsserter->assertSee($upperCaseAction)
 
-		public function regularSuccessContent ():array {
+        ->assertSee($this->employment2->id)
 
-			return [
+        ->assertSee($this->employment2->title)
 
-				[
-					self::DUAL_REDIRECT, self::POST_METHOD,
+        ->assertSee(
+            "<turbo-stream action='$hotwireAction' targets='$frameTarget'>",
+            false
+        );
 
-					Redirect::STATUS_CODE,
-					[
-						PayloadStorage::LOCATION_KEY => "/"
-					]
-				], [
-					self::DUAL_RELOAD, self::PUT_METHOD,
+        $this->assertHotwireRedirect($responseAsserter);
+    }
 
-					Reload::STATUS_CODE,
-					[
-						PayloadStorage::CONTENT_TYPE_KEY => PayloadStorage::HTML_HEADER_VALUE
-					]
-				]
-			];
-		}
+    public function test_absence_of_create_node_falls_back_to_available_on_failure()
+    {
 
-		/**
-		 * Low-level to confirm actual behavior instead of relying on the user-facing asserter
-		*/
-		public function test_dual_renderer_correctly_wraps_content () {
+        $employment1Id = $this->employment1->id;
 
-			$this->get(self::INITIAL_URL);				
+        $this->get(self::INITIAL_URL);
 
-			$responseAsserter = $this->post(self::DUAL_REDIRECT, array_merge($this->csrfField, [
+        $response = $this->post("/no-replace-node", array_merge($this->csrfField, [
 
-				"id" => $this->employment1->id,
+            "id" => $employment1Id,
 
-				"id2" => $this->employment2->id
-			]), [
+            // given // missing id2 field
+        ]), [
 
-				PayloadStorage::ACCEPTS_KEY => BaseHotwireStream::TURBO_INDICATOR
-			]); // when
+            PayloadStorage::ACCEPTS_KEY => BaseHotwireStream::TURBO_INDICATOR
+        ]) // when
+        // then
+        ->assertUnprocessable() // sanity check
 
-			$frameTarget = (new ModelDetail)->idFromModel($this->employment2); // we're testing against the "before" coordinator, which makes use of id2
+        ->assertHeader(PayloadStorage::CONTENT_TYPE_KEY, BaseHotwireStream::TURBO_INDICATOR);
 
-			$hotwireAction = BaseHotwireStream::BEFORE_ACTION;
+        $this->assertStreamNode(BaseHotwireStream::BEFORE_ACTION, "update-form");
 
-			$upperCaseAction = ucfirst($hotwireAction). " form";
+        $this->assertStreamNode(BaseHotwireStream::APPEND_ACTION, "update-form");
 
-			// then
-			$responseAsserter->assertSee($upperCaseAction)
+        // can't use assertEmploymentFormError since none of the forms are bound to the renderer
+    }
 
-			->assertSee($this->employment2->id)
+    public function test_delete_node_renders_correctly()
+    {
 
-			->assertSee($this->employment2->title)
+        $this->dataProvider([
 
-			->assertSee(
-				"<turbo-stream action='$hotwireAction' targets='$frameTarget'>",
+            $this->deleteNodeUrls(...)
+        ], function (string $url, callable $outputAsserter) {
 
-				false
-			);
+            $this->get(self::INITIAL_URL);
 
-			$this->assertHotwireRedirect($responseAsserter);
-		}
+            $responseAsserter = $this->delete($url, array_merge($this->csrfField, [
 
-		public function test_absence_of_create_node_falls_back_to_available_on_failure () {
+                "id" => $this->employment1->id
+            ]), [
 
-			$employment1Id = $this->employment1->id;
+                PayloadStorage::ACCEPTS_KEY => BaseHotwireStream::TURBO_INDICATOR
+            ]) // when
+            // then
+            ->assertHeader(
+                PayloadStorage::CONTENT_TYPE_KEY,
+                BaseHotwireStream::TURBO_INDICATOR
+            );
 
-			$this->get(self::INITIAL_URL);				
+            $this->assertHotwireRedirect($responseAsserter);
 
-			$response = $this->post("/no-replace-node", array_merge($this->csrfField, [
+            $outputAsserter($responseAsserter);
+        });
+    }
 
-				"id" => $employment1Id,
+    public function deleteNodeUrls(): array
+    {
 
-				// given // missing id2 field
-			]), [
+        return [
 
-				PayloadStorage::ACCEPTS_KEY => BaseHotwireStream::TURBO_INDICATOR
-			]) // when
-			// then
-			->assertUnprocessable() // sanity check
+            [
+                "/delete-single", function (TestResponseBridge $response) {
 
-			->assertHeader(PayloadStorage::CONTENT_TYPE_KEY, BaseHotwireStream::TURBO_INDICATOR);
+                    $this->assertStreamNode(
+                        BaseHotwireStream::REMOVE_ACTION,
+                        "employment_". $this->employment1->id
+                    );
+                }], [
+                "/combine-delete", function (TestResponseBridge $response) {
 
-			$this->assertStreamNode(BaseHotwireStream::BEFORE_ACTION, "update-form");
+                    $employment1Id = $this->employment1->id;
 
-			$this->assertStreamNode(BaseHotwireStream::APPEND_ACTION, "update-form");
+                    $this->assertStreamNode(
+                        BaseHotwireStream::REMOVE_ACTION,
+                        "employment_". $employment1Id
+                    );
+                    $this->assertStreamNode(
+                        BaseHotwireStream::AFTER_ACTION,
+                        "employment_". $employment1Id
+                    );
 
-			// can't use assertEmploymentFormError since none of the forms are bound to the renderer
-		}
-
-		public function test_delete_node_renders_correctly () {
-
-			$this->dataProvider([
-			
-				$this->deleteNodeUrls(...)
-			], function (string $url, callable $outputAsserter) {
-
-				$this->get(self::INITIAL_URL);
-
-				$responseAsserter = $this->delete($url, array_merge($this->csrfField, [
-
-					"id" => $this->employment1->id
-				]), [
-
-					PayloadStorage::ACCEPTS_KEY => BaseHotwireStream::TURBO_INDICATOR
-				]) // when
-				// then
-				->assertHeader(
-					PayloadStorage::CONTENT_TYPE_KEY,
-
-					BaseHotwireStream::TURBO_INDICATOR
-				);
-
-				$this->assertHotwireRedirect($responseAsserter);
-
-				$outputAsserter($responseAsserter);
-			});
-		}
-
-		public function deleteNodeUrls ():array {
-
-			return [
-
-				[
-					"/delete-single", function (TestResponseBridge $response) {
-
-						$this->assertStreamNode(
-
-							BaseHotwireStream::REMOVE_ACTION,
-
-							"employment_". $this->employment1->id
-						);
-				}], [
-					"/combine-delete", function (TestResponseBridge $response) {
-
-						$employment1Id = $this->employment1->id;
-
-						$this->assertStreamNode(
-
-							BaseHotwireStream::REMOVE_ACTION,
-
-							"employment_". $employment1Id
-						);
-						$this->assertStreamNode(
-
-							BaseHotwireStream::AFTER_ACTION,
-
-							"employment_". $employment1Id
-						);
-
-						$this->assertEmploymentSuccessContent(
-
-							$response, BaseHotwireStream::AFTER_ACTION,
-
-							$this->employment1
-						);
-				}]
-			];
-		}
-	}
-?>
+                    $this->assertEmploymentSuccessContent(
+                        $response,
+                        BaseHotwireStream::AFTER_ACTION,
+                        $this->employment1
+                    );
+                }]
+        ];
+    }
+}

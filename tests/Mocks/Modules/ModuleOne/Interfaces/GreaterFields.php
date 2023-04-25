@@ -1,8 +1,8 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Interfaces;
 
-	interface GreaterFields {
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Interfaces;
 
-		public function plow ();
-	}
-?>
+interface GreaterFields
+{
+    public function plow();
+}

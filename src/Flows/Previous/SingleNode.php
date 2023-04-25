@@ -1,20 +1,22 @@
 <?php
-	namespace Suphle\Flows\Previous;
 
-	class SingleNode extends UnitNode {
+namespace Suphle\Flows\Previous;
 
-		final const ALTERS_QUERY_SEGMENT = 1;
+class SingleNode extends UnitNode
+{
+    final public const ALTERS_QUERY_SEGMENT = 1;
 
-		function __construct(string $nodeName) {
+    public function __construct(string $nodeName)
+    {
 
-			$this->nodeName = $nodeName;
-		}
-		
-		public function altersQuery ():self {
+        $this->nodeName = $nodeName;
+    }
 
-			$this->actions[self::ALTERS_QUERY_SEGMENT] = null;
+    public function altersQuery(): self
+    {
 
-			return $this;
-		}
-	}
-?>
+        $this->actions[self::ALTERS_QUERY_SEGMENT] = null;
+
+        return $this;
+    }
+}

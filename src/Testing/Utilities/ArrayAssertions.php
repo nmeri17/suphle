@@ -1,16 +1,17 @@
 <?php
-	namespace Suphle\Testing\Utilities;
 
-	trait ArrayAssertions {
+namespace Suphle\Testing\Utilities;
 
-		protected function assertAssocArraySubset (array $toVerify, array $payload):void {
+trait ArrayAssertions
+{
+    protected function assertAssocArraySubset(array $toVerify, array $payload): void
+    {
 
-			foreach ($toVerify as $key => $value) {
+        foreach ($toVerify as $key => $value) {
 
-				$this->assertArrayHasKey($key, $payload);
+            $this->assertArrayHasKey($key, $payload);
 
-				$this->assertSame($value, $payload[$key]);
-			}
-		}
-	}
-?>
+            $this->assertSame($value, $payload[$key]);
+        }
+    }
+}

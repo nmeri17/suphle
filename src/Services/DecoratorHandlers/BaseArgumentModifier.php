@@ -1,35 +1,38 @@
 <?php
-	namespace Suphle\Services\DecoratorHandlers;
 
-	use Suphle\Contracts\Hydration\ScopeHandlers\ModifiesArguments;
+namespace Suphle\Services\DecoratorHandlers;
 
-	use Suphle\Hydration\Structures\ObjectDetails;
+use Suphle\Contracts\Hydration\ScopeHandlers\ModifiesArguments;
 
-	use Suphle\Services\Structures\SetsReflectionAttributes;
+use Suphle\Hydration\Structures\ObjectDetails;
 
-	abstract class BaseArgumentModifier implements ModifiesArguments {
+use Suphle\Services\Structures\SetsReflectionAttributes;
 
-		use SetsReflectionAttributes;
+abstract class BaseArgumentModifier implements ModifiesArguments
+{
+    use SetsReflectionAttributes;
 
-		public function __construct(protected ObjectDetails $objectMeta) {
+    public function __construct(protected ObjectDetails $objectMeta)
+    {
 
-			//
-		}
+        //
+    }
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function transformConstructor (object $dummyInstance, array $arguments):array {
+    /**
+     * {@inheritdoc}
+    */
+    public function transformConstructor(object $dummyInstance, array $arguments): array
+    {
 
-			return $arguments;
-		}
+        return $arguments;
+    }
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function transformMethods (object $concreteInstance, array $arguments, string $methodName):array {
+    /**
+     * {@inheritdoc}
+    */
+    public function transformMethods(object $concreteInstance, array $arguments, string $methodName): array
+    {
 
-			return $arguments;
-		}
-	}
-?>
+        return $arguments;
+    }
+}

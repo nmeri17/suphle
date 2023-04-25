@@ -1,13 +1,14 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services;
 
-	use Suphle\Exception\ShutdownAlerters\MailBuildAlerter;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services;
 
-	class FailForMailable {
+use Suphle\Exception\ShutdownAlerters\MailBuildAlerter;
 
-		public function __construct(protected readonly MailBuildAlerter $dependency) {
+class FailForMailable
+{
+    public function __construct(protected readonly MailBuildAlerter $dependency)
+    {
 
-			//
-		}
-	}
-?>
+        //
+    }
+}

@@ -1,28 +1,31 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\OutgoingRequests;
 
-	use Suphle\IO\Http\BaseHttpRequest;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\OutgoingRequests;
 
-	use Psr\Http\Message\ResponseInterface;
+use Suphle\IO\Http\BaseHttpRequest;
 
-	class VisitSegment extends BaseHttpRequest {
+use Psr\Http\Message\ResponseInterface;
 
-		public function getRequestUrl ():string {
+class VisitSegment extends BaseHttpRequest
+{
+    public function getRequestUrl(): string
+    {
 
-			return "http://localhost:8080/segment"; // baseAddress must match what's in rr.yaml
-		}
+        return "http://localhost:8080/segment"; // baseAddress must match what's in rr.yaml
+    }
 
-		protected function getHttpResponse ():ResponseInterface {
+    protected function getHttpResponse(): ResponseInterface
+    {
 
-			return $this->requestClient->request(
-			
-				"get", $this->getRequestUrl()/*, $options*/
-			);
-		}
+        return $this->requestClient->request(
+            "get",
+            $this->getRequestUrl()/*, $options*/
+        );
+    }
 
-		protected function convertToDomainObject (ResponseInterface $response) {
+    protected function convertToDomainObject(ResponseInterface $response)
+    {
 
-			return $response;
-		}
-	}
-?>
+        return $response;
+    }
+}

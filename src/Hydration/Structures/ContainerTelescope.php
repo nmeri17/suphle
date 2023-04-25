@@ -1,319 +1,382 @@
 <?php
-	namespace Suphle\Hydration\Structures;
 
-	use Closure;
+namespace Suphle\Hydration\Structures;
 
-	class ContainerTelescope {
+use Closure;
 
-		protected array $consumerList = []; // [class/interface => [consumers]]
+class ContainerTelescope
+{
+    protected array $consumerList = []; // [class/interface => [consumers]]
 
-		protected array $readArguments = []; // [class => [[parameterName => value]]]
+    protected array $readArguments = []; // [class => [[parameterName => value]]]
 
-		protected array $readConcretes = []; // same as [readArguments]
+    protected array $readConcretes = []; // same as [readArguments]
 
-		protected array $refreshedEntities = [];
+    protected array $refreshedEntities = [];
 
-		protected array $consumerParents = []; // [dependent/class => [interface whose concrete was hydrated for its constructor]]
+    protected array $consumerParents = []; // [dependent/class => [interface whose concrete was hydrated for its constructor]]
 
-		protected array $writtenArguments = [];
+    protected array $writtenArguments = [];
 
-		protected array $writtenConcretes = [];
+    protected array $writtenConcretes = [];
 
-		protected array $missingConcretes = [];
+    protected array $missingConcretes = [];
 
-		protected array $missingArguments = [];
+    protected array $missingArguments = [];
 
-		protected array $missingContexts = []; // [class1, class2, class3]
+    protected array $missingContexts = []; // [class1, class2, class3]
 
-		protected array $storedConcretes = [];
+    protected array $storedConcretes = [];
 
-		protected ?Closure $noiseFilter = null; // receives $this and is expected to return true when filter should be removed
+    protected ?Closure $noiseFilter = null; // receives $this and is expected to return true when filter should be removed
 
-		public function setNoiseFilter (Closure $callback):self {
+    public function setNoiseFilter(Closure $callback): self
+    {
 
-			$this->noiseFilter = $callback;
+        $this->noiseFilter = $callback;
 
-			return $this;
-		}
+        return $this;
+    }
 
-		private function notFilteringNoise ():bool {
+    private function notFilteringNoise(): bool
+    {
 
-			return is_null($this->noiseFilter) ||
+        return is_null($this->noiseFilter) ||
 
-			call_user_func_array($this->noiseFilter, [$this]);
-		}
+        call_user_func_array($this->noiseFilter, [$this]);
+    }
 
-		public function safePopulate (array &$context, string $key, $value):void {
+    public function safePopulate(array &$context, string $key, $value): void
+    {
 
-			if (!$this->notFilteringNoise()) return;
+        if (!$this->notFilteringNoise()) {
+            return;
+        }
 
-			if (!array_key_exists($key, $context))
+        if (!array_key_exists($key, $context)) {
 
-				$context[$key] = [];
+            $context[$key] = [];
+        }
 
-			$context[$key][] = $value;
-		}
+        $context[$key][] = $value;
+    }
 
-		public function didPopulate (array $context, string $key, $value):bool {
+    public function didPopulate(array $context, string $key, $value): bool
+    {
 
-			return array_key_exists($key, $context) &&
+        return array_key_exists($key, $context) &&
 
-			in_array($value, $context[$key]);
-		}
+        in_array($value, $context[$key]);
+    }
 
-		/**
-		 * Find all in $context matching $value
-		*/
-		public function allMatchingValue (array $context, $value):array {
+    /**
+     * Find all in $context matching $value
+    */
+    public function allMatchingValue(array $context, $value): array
+    {
 
-			$matchingKeys = [];
+        $matchingKeys = [];
 
-			foreach ($context as $key => $valueList)
+        foreach ($context as $key => $valueList) {
 
-				if (in_array( $value, $valueList))
-			
-					$matchingKeys[] = $key;
+            if (in_array($value, $valueList)) {
 
-			return $matchingKeys;
-		}
+                $matchingKeys[] = $key;
+            }
+        }
 
-		public function setConsumerList (array $consumerList):void {
+        return $matchingKeys;
+    }
 
-			$this->consumerList = $consumerList;
-		}
+    public function setConsumerList(array $consumerList): void
+    {
 
-		public function getConsumerList ():array {
+        $this->consumerList = $consumerList;
+    }
 
-			return $this->consumerList;
-		}
+    public function getConsumerList(): array
+    {
 
-		public function hasConsumers (string $dependency):bool {
+        return $this->consumerList;
+    }
 
-			return array_key_exists($dependency, $this->consumerList);
-		}
+    public function hasConsumers(string $dependency): bool
+    {
 
-		public function getConsumersFor (string $dependency):array {
+        return array_key_exists($dependency, $this->consumerList);
+    }
 
-			if (!$this->hasConsumers($dependency)) return [];
+    public function getConsumersFor(string $dependency): array
+    {
 
-			return $this->consumerList[$dependency];
-		}
+        if (!$this->hasConsumers($dependency)) {
+            return [];
+        }
 
-		public function addReadArguments (string $contentOwner, string $parameterName, $mixedValue ):void {
+        return $this->consumerList[$dependency];
+    }
 
-			$this->safePopulate(
-				$this->readArguments, $contentOwner,
+    public function addReadArguments(string $contentOwner, string $parameterName, $mixedValue): void
+    {
 
-				[$parameterName => $mixedValue]
-			);
-		}
+        $this->safePopulate(
+            $this->readArguments,
+            $contentOwner,
+            [$parameterName => $mixedValue]
+        );
+    }
 
-		public function readArgumentWithName (string $contentOwner, string $argumentName):bool {
+    public function readArgumentWithName(string $contentOwner, string $argumentName): bool
+    {
 
-			return in_array($contentOwner,
+        return in_array(
+            $contentOwner,
+            $this->allReadArgument($argumentName)
+        );
+    }
 
-				$this->allReadArgument($argumentName)
-			);
-		}
+    /**
+     * @param {nameValue} [parameterName, not the type => $instance]
+    */
+    public function readArgumentFor(string $contentOwner, array $nameValue): bool
+    {
 
-		/**
-		 * @param {nameValue} [parameterName, not the type => $instance]
-		*/
-		public function readArgumentFor (string $contentOwner, array $nameValue):bool {
+        return $this->didPopulate(
+            $this->readArguments,
+            $contentOwner,
+            $nameValue
+        );
+    }
 
-			return $this->didPopulate(
+    /**
+     * @return a list of all concretes that while hydrating, read [argumentName] from a provision
+    */
+    public function allReadArgument($argumentName): array
+    {
 
-				$this->readArguments, $contentOwner, $nameValue
-			);
-		}
+        $matchingOwners = [];
 
-		/**
-		 * @return a list of all concretes that while hydrating, read [argumentName] from a provision
-		*/
-		public function allReadArgument ( $argumentName):array {
+        foreach ($this->readArguments as $owner => $valuePairList) {
 
-			$matchingOwners = [];
+            foreach ($valuePairList as $pair) {
 
-			foreach ($this->readArguments as $owner => $valuePairList)
+                if (current(array_keys($pair)) == $argumentName) { // remember they're stored using argumentName => $value, so numeric indexes won't suffice
 
-				foreach ($valuePairList as $pair)
+                    $matchingOwners[] = $owner;
+                }
+            }
+        }
 
-					if ( current(array_keys($pair)) == $argumentName) // remember they're stored using argumentName => $value, so numeric indexes won't suffice
-				
-						$matchingOwners[] = $owner;
+        return $matchingOwners;
+    }
 
-			return $matchingOwners;
-		}
+    public function addReadConcretes(string $contentOwner, string $className): void
+    {
 
-		public function addReadConcretes (string $contentOwner, string $className ):void {
+        $this->safePopulate($this->readConcretes, $contentOwner, $className);
+    }
 
-			$this->safePopulate($this->readConcretes, $contentOwner, $className);
-		}
+    public function getReadConcretes(): array
+    {
 
-		public function getReadConcretes ():array {
+        return $this->readConcretes;
+    }
 
-			return $this->readConcretes;
-		}
+    public function readConcreteFor(string $contentOwner, $className): bool
+    {
 
-		public function readConcreteFor (string $contentOwner, $className):bool {
+        return $this->didPopulate(
+            $this->writtenConcretes,
+            $contentOwner,
+            $className
+        );
+    }
 
-			return $this->didPopulate(
+    public function addRefreshedEntities(string $entity): void
+    {
 
-				$this->writtenConcretes, $contentOwner, $className
-			);
-		}
+        if (!$this->notFilteringNoise()) {
+            return;
+        }
 
-		public function addRefreshedEntities (string $entity):void {
+        $this->refreshedEntities[] = $entity;
+    }
 
-			if (!$this->notFilteringNoise()) return;
+    public function getRefreshedEntities(): array
+    {
 
-			$this->refreshedEntities[] = $entity;
-		}
+        return $this->refreshedEntities;
+    }
 
-		public function getRefreshedEntities ():array {
+    public function didRefreshEntity(string $entityName): bool
+    {
 
-			return $this->refreshedEntities;
-		}
+        return in_array($entityName, $this->refreshedEntities);
+    }
 
-		public function didRefreshEntity (string $entityName):bool {
+    public function addConsumerParent(string $dependent, string $dependency): void
+    {
 
-			return in_array($entityName, $this->refreshedEntities);
-		}
+        $this->safePopulate($this->consumerParents, $dependent, $dependency);
+    }
 
-		public function addConsumerParent (string $dependent, string $dependency):void {
+    public function getConsumerParents(): array
+    {
 
-			$this->safePopulate($this->consumerParents, $dependent, $dependency);
-		}
+        return $this->consumerParents;
+    }
 
-		public function getConsumerParents ():array {
+    public function hasConsumerParent(string $dependent, $dependency): bool
+    {
 
-			return $this->consumerParents;
-		}
+        return $this->didPopulate(
+            $this->consumerParents,
+            $dependent,
+            $dependency
+        );
+    }
 
-		public function hasConsumerParent (string $dependent, $dependency):bool {
+    public function addWrittenArguments(string $contentOwner, array $argumentList): void
+    {
 
-			return $this->didPopulate(
+        foreach ($argumentList as $argumentType) {
 
-				$this->consumerParents, $dependent, $dependency
-			);
-		}
+            $this->safePopulate(
+                $this->writtenArguments,
+                $contentOwner,
+                $argumentType
+            );
+        }
+    }
 
-		public function addWrittenArguments ( string $contentOwner, array $argumentList):void {
+    public function getWrittenArguments(): array
+    {
 
-			foreach ($argumentList as $argumentType)
+        return $this->writtenArguments;
+    }
 
-				$this->safePopulate(
-					$this->writtenArguments, $contentOwner,
+    public function wroteArgumentFor(string $contentOwner, $argumentName): bool
+    {
 
-					$argumentType
-				);
-		}
+        return $this->didPopulate(
+            $this->writtenArguments,
+            $contentOwner,
+            $argumentName
+        );
+    }
 
-		public function getWrittenArguments ():array {
+    public function addWrittenConcretes(string $contentOwner, array $dependencyList): void
+    {
 
-			return $this->writtenArguments;
-		}
+        foreach ($dependencyList as $dependency) {
 
-		public function wroteArgumentFor (string $contentOwner, $argumentName):bool {
+            $this->safePopulate($this->writtenConcretes, $contentOwner, $dependency);
+        }
+    }
 
-			return $this->didPopulate(
+    public function getWrittenConcretes(): array
+    {
 
-				$this->writtenArguments, $contentOwner, $argumentName
-			);
-		}
+        return $this->writtenConcretes;
+    }
 
-		public function addWrittenConcretes ( string $contentOwner, array $dependencyList):void {
+    public function addMissingArgument(string $contentOwner, $argumentName): void
+    {
 
-			foreach ($dependencyList as $dependency)
+        $this->safePopulate($this->missingArguments, $contentOwner, $argumentName);
+    }
 
-				$this->safePopulate($this->writtenConcretes, $contentOwner, $dependency);
-		}
+    public function getMissingArguments(): array
+    {
 
-		public function getWrittenConcretes ():array {
+        return $this->missingArguments;
+    }
 
-			return $this->writtenConcretes;
-		}
+    public function missedArgumentFor(string $contentOwner, $argumentName): bool
+    {
 
-		public function addMissingArgument (string $contentOwner, $argumentName):void {
+        return $this->didPopulate(
+            $this->missingArguments,
+            $contentOwner,
+            $argumentName
+        );
+    }
 
-			$this->safePopulate($this->missingArguments, $contentOwner, $argumentName);
-		}
+    public function allMissedArgument($argumentName): array
+    {
 
-		public function getMissingArguments ():array {
+        return $this->allMatchingValue(
+            $this->missingArguments,
+            $argumentName
+        );
+    }
 
-			return $this->missingArguments;
-		}
+    public function addMissingConcrete(string $contentOwner, $argumentName): void
+    {
 
-		public function missedArgumentFor (string $contentOwner, $argumentName):bool {
+        $this->safePopulate($this->missingConcretes, $contentOwner, $argumentName);
+    }
 
-			return $this->didPopulate(
+    public function getMissingConcretes(): array
+    {
 
-				$this->missingArguments, $contentOwner, $argumentName
-			);
-		}
+        return $this->missingConcretes;
+    }
 
-		public function allMissedArgument ( $argumentName):array {
+    public function missedConcreteFor(string $contentOwner, $argumentName): bool
+    {
 
-			return $this->allMatchingValue(
+        return $this->didPopulate(
+            $this->missingConcretes,
+            $contentOwner,
+            $argumentName
+        );
+    }
 
-				$this->missingArguments, $argumentName
-			);
-		}
+    public function allMissedConcrete($argumentName): array
+    {
 
-		public function addMissingConcrete (string $contentOwner, $argumentName):void {
+        return $this->allMatchingValue(
+            $this->missingConcretes,
+            $argumentName
+        );
+    }
 
-			$this->safePopulate($this->missingConcretes, $contentOwner, $argumentName);
-		}
+    public function addMissingContext(string $contentOwner): void
+    {
 
-		public function getMissingConcretes ():array {
+        if (!$this->notFilteringNoise()) {
+            return;
+        }
 
-			return $this->missingConcretes;
-		}
+        $this->missingContexts[] = $contentOwner;
+    }
 
-		public function missedConcreteFor (string $contentOwner, $argumentName):bool {
+    public function getMissingContexts(): array
+    {
 
-			return $this->didPopulate(
+        return $this->missingContexts;
+    }
 
-				$this->missingConcretes, $contentOwner, $argumentName
-			);
-		}
+    public function addStoredConcrete(string $contentOwner, string $className): void
+    {
 
-		public function allMissedConcrete ( $argumentName):array {
+        $this->safePopulate($this->storedConcretes, $contentOwner, $className);
+    }
 
-			return $this->allMatchingValue(
+    public function getStoredConcretes(): array
+    {
 
-				$this->missingConcretes, $argumentName
-			);
-		}
+        return $this->storedConcretes;
+    }
 
-		public function addMissingContext (string $contentOwner):void {
+    public function storedConcreteFor(string $contentOwner, $className): bool
+    {
 
-			if (!$this->notFilteringNoise()) return;
-
-			$this->missingContexts[] = $contentOwner;
-		}
-
-		public function getMissingContexts ():array {
-
-			return $this->missingContexts;
-		}
-
-		public function addStoredConcrete(string $contentOwner, string $className ):void {
-
-			$this->safePopulate($this->storedConcretes, $contentOwner, $className);
-		}
-
-		public function getStoredConcretes ():array {
-
-			return $this->storedConcretes;
-		}
-
-		public function storedConcreteFor (string $contentOwner, $className):bool {
-
-			return $this->didPopulate(
-
-				$this->storedConcretes, $contentOwner, $className
-			);
-		}
-	}
-?>
+        return $this->didPopulate(
+            $this->storedConcretes,
+            $contentOwner,
+            $className
+        );
+    }
+}

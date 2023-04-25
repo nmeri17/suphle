@@ -1,16 +1,18 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\InstalledComponents\SuphleLaravelTemplates\ServiceProviders\Exports;
 
-	class ConfigConstructor {
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\InstalledComponents\SuphleLaravelTemplates\ServiceProviders\Exports;
 
-		public function __construct(protected readonly array $firstConfig) {
+class ConfigConstructor
+{
+    public function __construct(protected readonly array $firstConfig)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function getSecondLevel ():array {
+    public function getSecondLevel(): array
+    {
 
-			return $this->firstConfig["second_level"];
-		}
-	}
-?>
+        return $this->firstConfig["second_level"];
+    }
+}

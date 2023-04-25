@@ -1,166 +1,170 @@
 <?php
-	namespace Suphle\Flows;
 
-	use Suphle\Flows\Jobs\{RouteBranches, UpdateCountDelete};
+namespace Suphle\Flows;
 
-	use Suphle\Flows\Structures\{RouteUserNode, AccessContext, PendingFlowDetails, RouteUmbrella};
+use Suphle\Flows\Jobs\{RouteBranches, UpdateCountDelete};
 
-	use Suphle\Contracts\{Events, Response\BaseResponseManager, IO\CacheManager, Auth\AuthStorage, Modules\HighLevelRequestHandler, Presentation\BaseRenderer};
+use Suphle\Flows\Structures\{RouteUserNode, AccessContext, PendingFlowDetails, RouteUmbrella};
 
-	use Suphle\Queues\AdapterManager;
+use Suphle\Contracts\{Events, Response\BaseResponseManager, IO\CacheManager, Auth\AuthStorage, Modules\HighLevelRequestHandler, Presentation\BaseRenderer};
 
-	use Suphle\Request\RequestDetails;
+use Suphle\Queues\AdapterManager;
 
-	use Suphle\Hydration\Container;
+use Suphle\Request\RequestDetails;
 
-	use Suphle\Modules\Structures\ActiveDescriptors;
+use Suphle\Hydration\Container;
 
-	class OuterFlowWrapper implements BaseResponseManager, HighLevelRequestHandler {
+use Suphle\Modules\Structures\ActiveDescriptors;
 
-		final public const ALL_USERS = "*";
+class OuterFlowWrapper implements BaseResponseManager, HighLevelRequestHandler
+{
+    final public const ALL_USERS = "*";
 
-		protected ?RouteUmbrella $routeUmbrella = null;
+    protected ?RouteUmbrella $routeUmbrella = null;
 
-		protected string $activeUser;
+    protected string $activeUser;
 
-		protected ?RouteUserNode $routeUserNode = null;
+    protected ?RouteUserNode $routeUserNode = null;
 
-		protected AuthStorage $authStorage;
+    protected AuthStorage $authStorage;
 
-		public function __construct(
-			protected readonly RequestDetails $requestDetails,
+    public function __construct(
+        protected readonly RequestDetails $requestDetails,
+        protected readonly AdapterManager $queueManager,
+        protected readonly UmbrellaSaver $flowSaver,
+        protected readonly Container $container,
+        protected readonly Events $eventManager,
+        protected readonly ActiveDescriptors $descriptorsHolder
+    ) {
 
-			protected readonly AdapterManager $queueManager,
-			
-			protected readonly UmbrellaSaver $flowSaver,
+        //
+    }
 
-			protected readonly Container $container,
+    public function canHandle(): bool
+    {
 
-			protected readonly Events $eventManager,
+        $this->routeUmbrella = $this->flowSaver->getExistingUmbrella($this->dataPath());
 
-			protected readonly ActiveDescriptors $descriptorsHolder
-		) {
-			
-			//
-		}
+        if (is_null($this->routeUmbrella)) {
+            return false;
+        }
 
-		public function canHandle ():bool {
+        $this->setAuthFromStored();
 
-			$this->routeUmbrella = $this->flowSaver->getExistingUmbrella($this->dataPath());
+        $this->routeUserNode = $this->getVisitorsFlow($this->getVisitingUserId());
 
-			if (is_null($this->routeUmbrella)) return false;
+        $userHasContent = !is_null($this->routeUserNode);
 
-			$this->setAuthFromStored();
+        if (!$userHasContent) {
 
-			$this->routeUserNode = $this->getVisitorsFlow($this->getVisitingUserId() );
+            $this->container->refreshClass(AuthStorage::class);
+        }
 
-			$userHasContent = !is_null($this->routeUserNode);
+        return $userHasContent;
+    }
 
-			if (!$userHasContent)
+    protected function setAuthFromStored(): void
+    {
 
-				$this->container->refreshClass(AuthStorage::class);
+        $this->authStorage = $this->container->getClass(
+            $this->routeUmbrella->getAuthStorage()
+        );
 
-			return $userHasContent;
-		}
+        $this->container->whenTypeAny()->needsAny([
 
-		protected function setAuthFromStored ():void {
+            AuthStorage::class => $this->authStorage
+        ]);
+    }
 
-			$this->authStorage = $this->container->getClass(
+    private function getVisitorsFlow(string $visitorId): ?RouteUserNode
+    {
 
-				$this->routeUmbrella->getAuthStorage()
-			);
+        $userPayload = $this->routeUmbrella->getUserPayload($visitorId);
 
-			$this->container->whenTypeAny()->needsAny([
+        if (is_null($userPayload) && ($visitorId != self::ALL_USERS)) { // assume data was saved for general user base
 
-				AuthStorage::class => $this->authStorage
-			]);
-		}
+            $visitorId = self::ALL_USERS;
 
-		private function getVisitorsFlow (string $visitorId):?RouteUserNode {
+            $userPayload = $this->routeUmbrella->getUserPayload($visitorId);
+        }
 
-			$userPayload = $this->routeUmbrella->getUserPayload($visitorId);
+        $this->activeUser = $visitorId;
 
-			if (is_null($userPayload) && ($visitorId != self::ALL_USERS)) { // assume data was saved for general user base
-				
-				$visitorId = self::ALL_USERS;
+        return $userPayload;
+    }
 
-				$userPayload = $this->routeUmbrella->getUserPayload($visitorId);
-			}
+    private function getVisitingUserId(): string
+    {
 
-			$this->activeUser = $visitorId;
+        $user = $this->authStorage->getUser();
 
-			return $userPayload;
-		}
+        return is_null($user) ? self::ALL_USERS : strval($user->getId());
+    }
 
-		private function getVisitingUserId ():string {
+    public function afterRender($cachedResponse = null): void
+    {
 
-			$user = $this->authStorage->getUser();
+        $this->emitEvents($cachedResponse);
 
-			return is_null($user) ? self::ALL_USERS: strval($user->getId());
-		}
+        $this->queueBranches();
+    }
 
-		public function afterRender($cachedResponse = null):void {
+    public function emptyFlow(): void
+    {
 
-			$this->emitEvents($cachedResponse);
+        $this->queueManager->addTask(UpdateCountDelete::class, [
+            "theAccessed" => new AccessContext(
+                $this->dataPath(),
+                $this->routeUserNode,
+                $this->routeUmbrella,
+                $this->activeUser
+            )
+        ]);
+    }
 
-			$this->queueBranches();
-		}
-		
-		public function emptyFlow():void {
+    private function dataPath(): string
+    {
 
-			$this->queueManager->addTask(UpdateCountDelete::class, [
-				"theAccessed" => new AccessContext(
+        return $this->flowSaver->getPatternLocation(
+            $this->requestDetails->getPath()
+        );
+    }
 
-					$this->dataPath(), $this->routeUserNode,
+    private function emitEvents($cachedResponse): void
+    {
 
-					$this->routeUmbrella, $this->activeUser
-				)
-			]);
-		}
+        $renderer = $this->responseRenderer();
 
-		private function dataPath ():string {
+        $this->eventManager->emit(
+            $renderer->getCoordinator()::class,
+            $renderer->getHandler(),
+            $cachedResponse // event handler can then inject payloadStorage/pathPlaceholders
+        );
+    }
 
-			return $this->flowSaver->getPatternLocation(
+    private function queueBranches(): void
+    {
 
-				$this->requestDetails->getPath()
-			);
-		}
+        $this->queueManager->addTask(RouteBranches::class, [
 
-		private function emitEvents($cachedResponse):void {
+            PendingFlowDetails::class => new PendingFlowDetails(
+                $this->responseRenderer(),
+                $this->authStorage
+            ),
 
-			$renderer = $this->responseRenderer();
+            ActiveDescriptors::class => $this->descriptorsHolder
+        ]);
+    }
 
-			$this->eventManager->emit(
+    public function responseRenderer(): BaseRenderer
+    {
 
-				$renderer->getCoordinator()::class,
+        return $this->routeUserNode->getRenderer();
+    }
 
-				$renderer->getHandler(),
+    public function handlingRenderer(): ?BaseRenderer
+    {
 
-				$cachedResponse // event handler can then inject payloadStorage/pathPlaceholders
-			);
-		}
- 
-		private function queueBranches():void {
-
-			$this->queueManager->addTask(RouteBranches::class, [
-				
-				PendingFlowDetails::class => new PendingFlowDetails(
-					
-					$this->responseRenderer(), $this->authStorage
-				),
-
-				ActiveDescriptors::class => $this->descriptorsHolder
-			]);
-		}
-
-		public function responseRenderer ():BaseRenderer {
-
-			return $this->routeUserNode->getRenderer();
-		}
-
-		public function handlingRenderer ():?BaseRenderer {
-
-			return $this->responseRenderer();
-		}
-	}
-?>
+        return $this->responseRenderer();
+    }
+}

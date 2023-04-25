@@ -1,13 +1,13 @@
 <?php
-	namespace Suphle\Contracts\Requests;
 
-	use Symfony\Component\HttpFoundation\File\UploadedFile;
+namespace Suphle\Contracts\Requests;
 
-	interface FileInputReader {
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
-		/**
-		 * @return UploadedFile[]
-		*/
-		public function getFileObjects ():array;
-	}
-?>
+interface FileInputReader
+{
+    /**
+     * @return UploadedFile[]
+    */
+    public function getFileObjects(): array;
+}

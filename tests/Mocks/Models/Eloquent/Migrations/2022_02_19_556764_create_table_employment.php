@@ -1,33 +1,34 @@
 <?php
-	namespace Suphle\Tests\Mocks\Models\Eloquent\Migrations;
 
-	use Suphle\Tests\Mocks\Models\Eloquent\Employer;
+namespace Suphle\Tests\Mocks\Models\Eloquent\Migrations;
 
-	use Illuminate\Database\{Migrations\Migration, Schema\Blueprint};
+use Suphle\Tests\Mocks\Models\Eloquent\Employer;
 
-	use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\{Migrations\Migration, Schema\Blueprint};
 
-	return new class extends Migration {
+use Illuminate\Support\Facades\Schema;
 
-		public function up ():void {
+return new class () extends Migration {
+    public function up(): void
+    {
 
-			Schema::create("employment", function (Blueprint $table) {
+        Schema::create("employment", function (Blueprint $table) {
 
-				$table->id();
+            $table->id();
 
-				$table->enum("status", ["taken", "available"])->default("available");
+            $table->enum("status", ["taken", "available"])->default("available");
 
-				$table->foreignIdFor(Employer::class);
+            $table->foreignIdFor(Employer::class);
 
-				$table->integer("salary");
+            $table->integer("salary");
 
-				$table->timestamps();
-			});
-		}
+            $table->timestamps();
+        });
+    }
 
-		public function down ():void {
+    public function down(): void
+    {
 
-			Schema::drop("employment");
-		}
-	};
-?>
+        Schema::drop("employment");
+    }
+};

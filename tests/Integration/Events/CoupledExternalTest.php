@@ -1,47 +1,50 @@
 <?php
-	namespace Suphle\Tests\Integration\Events;
 
-	use Suphle\Tests\Integration\Events\BaseTypes\EventTestCreator;
+namespace Suphle\Tests\Integration\Events;
 
-	use Suphle\Tests\Mocks\Interactions\ModuleOne;
+use Suphle\Tests\Integration\Events\BaseTypes\EventTestCreator;
 
-	use Suphle\Tests\Mocks\Modules\ModuleThree\{Meta\ModuleThreeDescriptor, Events\EventsHandler};
+use Suphle\Tests\Mocks\Interactions\ModuleOne;
 
-	class CoupledExternalTest extends EventTestCreator {
+use Suphle\Tests\Mocks\Modules\ModuleThree\{Meta\ModuleThreeDescriptor, Events\EventsHandler};
 
-		protected string $eventReceiverName = EventsHandler::class;
+class CoupledExternalTest extends EventTestCreator
+{
+    protected string $eventReceiverName = EventsHandler::class;
 
-		protected function setModuleThree ():void {
+    protected function setModuleThree(): void
+    {
 
-			$this->moduleThree = $this->bindMockedEventReceiver(ModuleThreeDescriptor::class)
-			->sendExpatriates([
+        $this->moduleThree = $this->bindMockedEventReceiver(ModuleThreeDescriptor::class)
+        ->sendExpatriates([
 
-				ModuleOne::class => $this->moduleOne
-			]);
-		}
+            ModuleOne::class => $this->moduleOne
+        ]);
+    }
 
-		public function test_can_listen_to_imported_external () {
+    public function test_can_listen_to_imported_external()
+    {
 
-			$this->createMockEventReceiver([
+        $this->createMockEventReceiver([
 
-				"setExternalPayload" => [1, [$this->payload]]
-			]); // then
+            "setExternalPayload" => [1, [$this->payload]]
+        ]); // then
 
-			$this->parentSetUp(); // given
+        $this->parentSetUp(); // given
 
-			$this->getModuleOne()->payloadEvent($this->payload); // when
-		}
+        $this->getModuleOne()->payloadEvent($this->payload); // when
+    }
 
-		public function test_local_bind_cant_react_to_external_emission () {
+    public function test_local_bind_cant_react_to_external_emission()
+    {
 
-			$this->createMockEventReceiver([
+        $this->createMockEventReceiver([
 
-				"handleImpossibleEmit" => [0, [$this->payload]]
-			]); // then
+            "handleImpossibleEmit" => [0, [$this->payload]]
+        ]); // then
 
-			$this->parentSetUp(); // given
+        $this->parentSetUp(); // given
 
-			$this->getModuleOne()->payloadEvent($this->payload); // when
-		}
-	}
-?>
+        $this->getModuleOne()->payloadEvent($this->payload); // when
+    }
+}

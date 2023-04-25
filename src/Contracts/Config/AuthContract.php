@@ -1,23 +1,23 @@
 <?php
-	namespace Suphle\Contracts\Config;
 
-	use Suphle\Contracts\Auth\LoginFlowMediator;
+namespace Suphle\Contracts\Config;
 
-	interface AuthContract extends ConfigMarker {
+use Suphle\Contracts\Auth\LoginFlowMediator;
 
-		/**
-		 * @return LoginMediator that should handle incoming login request
-		*/
-		public function getLoginCollection ():?string;
+interface AuthContract extends ConfigMarker
+{
+    /**
+     * @return LoginMediator that should handle incoming login request
+    */
+    public function getLoginCollection(): ?string;
 
-		/**
-		 * @return destination when user hits SessionStorage protected route
-		*/
-		public function markupRedirect ():string;
+    /**
+     * @return destination when user hits SessionStorage protected route
+    */
+    public function markupRedirect(): string;
 
-		// [<Model> => <ModelAuthorities>]
-		public function getModelObservers ():array;
+    // [<Model> => <ModelAuthorities>]
+    public function getModelObservers(): array;
 
-		public function isLoginRequest ():bool;
-	}
-?>
+    public function isLoginRequest(): bool;
+}

@@ -1,59 +1,61 @@
 <?php
-	namespace Suphle\Services\Structures;
 
-	use Suphle\Services\Decorators\VariableDependencies;
+namespace Suphle\Services\Structures;
 
-	use Suphle\Request\PayloadStorage;
+use Suphle\Services\Decorators\VariableDependencies;
 
-	use Suphle\Routing\PathPlaceholders;
+use Suphle\Request\PayloadStorage;
 
-	use Suphle\Services\IndicatesCaughtException;
+use Suphle\Routing\PathPlaceholders;
 
-	use Throwable;
+use Suphle\Services\IndicatesCaughtException;
 
-	/**
-	 * Aside handling requests that don't map to models/entities, this is useful for things like callback endpoints where a user is waiting for feedback on our end, but obviously not on the automated, calling service's end. In such cases, mere validation errors won't cut it. We need to respond to the waiting services with something to complete user flow
-	*/
-	#[VariableDependencies([ "setPayloadStorage", "setPlaceholderStorage"])]
-	abstract class ModellessPayload extends IndicatesCaughtException {
+use Throwable;
 
-		protected PayloadStorage $payloadStorage;
+/**
+ * Aside handling requests that don't map to models/entities, this is useful for things like callback endpoints where a user is waiting for feedback on our end, but obviously not on the automated, calling service's end. In such cases, mere validation errors won't cut it. We need to respond to the waiting services with something to complete user flow
+*/
+#[VariableDependencies([ "setPayloadStorage", "setPlaceholderStorage"])]
+abstract class ModellessPayload extends IndicatesCaughtException
+{
+    protected PayloadStorage $payloadStorage;
 
-		protected PathPlaceholders $pathPlaceholders;
+    protected PathPlaceholders $pathPlaceholders;
 
-		protected ?Throwable $exception = null;
+    protected ?Throwable $exception = null;
 
-		public function setPayloadStorage (PayloadStorage $payloadStorage):void {
+    public function setPayloadStorage(PayloadStorage $payloadStorage): void
+    {
 
-			$this->payloadStorage = $payloadStorage;
-		}
+        $this->payloadStorage = $payloadStorage;
+    }
 
-		public function setPlaceholderStorage (PathPlaceholders $pathPlaceholders):void {
+    public function setPlaceholderStorage(PathPlaceholders $pathPlaceholders): void
+    {
 
-			$this->pathPlaceholders = $pathPlaceholders;
-		}
+        $this->pathPlaceholders = $pathPlaceholders;
+    }
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function getDomainObject () {
+    /**
+     * {@inheritdoc}
+    */
+    public function getDomainObject()
+    {
 
-			try {
-				
-				return $this->convertToDomainObject();
-			}
-			catch (Throwable $exception) {
-				
-				$this->exception = $exception;
-				
-				// throw $exception;
-				return $this->translationFailure();
-			}
-		}
+        try {
 
-		/**
-		 * @throws Throwable, when it meets an unexpected/undesirable payload
-		*/
-		abstract protected function convertToDomainObject ();
-	}
-?>
+            return $this->convertToDomainObject();
+        } catch (Throwable $exception) {
+
+            $this->exception = $exception;
+
+            // throw $exception;
+            return $this->translationFailure();
+        }
+    }
+
+    /**
+     * @throws Throwable, when it meets an unexpected/undesirable payload
+    */
+    abstract protected function convertToDomainObject();
+}

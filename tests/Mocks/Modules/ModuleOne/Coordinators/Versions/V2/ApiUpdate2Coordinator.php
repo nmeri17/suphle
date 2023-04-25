@@ -1,18 +1,20 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\Versions\V2;
 
-	use Suphle\Services\ServiceCoordinator;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\Versions\V2;
 
-	class ApiUpdate2Coordinator extends ServiceCoordinator {
+use Suphle\Services\ServiceCoordinator;
 
-		public function secondCascade () {
+class ApiUpdate2Coordinator extends ServiceCoordinator
+{
+    public function secondCascade()
+    {
 
-			return [];
-		}
+        return [];
+    }
 
-		public function segmentInSecond () {
+    public function segmentInSecond()
+    {
 
-			//
-		}
-	}
-?>
+        //
+    }
+}

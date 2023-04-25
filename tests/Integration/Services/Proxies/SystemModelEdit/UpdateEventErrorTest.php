@@ -1,30 +1,32 @@
 <?php
-	namespace Suphle\Tests\Integration\Services\Proxies\SystemModelEdit;
 
-	use Suphle\Hydration\Container;
+namespace Suphle\Tests\Integration\Services\Proxies\SystemModelEdit;
 
-	use Suphle\Testing\TestTypes\ModuleLevelTest;
+use Suphle\Hydration\Container;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
+use Suphle\Testing\TestTypes\ModuleLevelTest;
 
-	use Suphle\Tests\Mocks\Interactions\ModuleOne;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
-	class UpdateEventErrorTest extends ModuleLevelTest {
-		
-		protected function getModules():array {
+use Suphle\Tests\Mocks\Interactions\ModuleOne;
 
-			return [new ModuleOneDescriptor(new Container)];
-		}
+class UpdateEventErrorTest extends ModuleLevelTest
+{
+    protected function getModules(): array
+    {
 
-		public function test_error_in_event_handler_terminates_transaction () {
+        return [new ModuleOneDescriptor(new Container())];
+    }
 
-			$payload = 15; // given
+    public function test_error_in_event_handler_terminates_transaction()
+    {
 
-			$result = $this->getModuleFor(ModuleOne::class)
+        $payload = 15; // given
 
-			->systemUpdateErrorEvent($payload); // when
+        $result = $this->getModuleFor(ModuleOne::class)
 
-			$this->assertEquals($result, $payload); // then
-		}
-	}
-?>
+        ->systemUpdateErrorEvent($payload); // when
+
+        $this->assertEquals($result, $payload); // then
+    }
+}

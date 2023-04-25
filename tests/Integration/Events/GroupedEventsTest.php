@@ -1,22 +1,23 @@
 <?php
-	namespace Suphle\Tests\Integration\Events;
 
-	use Suphle\Tests\Integration\Events\BaseTypes\TestLocalReceiver;
+namespace Suphle\Tests\Integration\Events;
 
-	class GroupedEventsTest extends TestLocalReceiver {
+use Suphle\Tests\Integration\Events\BaseTypes\TestLocalReceiver;
 
-		public function test_space_delimited_event_names () {
+class GroupedEventsTest extends TestLocalReceiver
+{
+    public function test_space_delimited_event_names()
+    {
 
-			$this->createMockEventReceiver([ // then
+        $this->createMockEventReceiver([ // then
 
-				"doNothing" => [1, []],
+            "doNothing" => [1, []],
 
-				"unionHandler" => [2, []]
-			]); // then
+            "unionHandler" => [2, []]
+        ]); // then
 
-			$this->parentSetUp(); // given
+        $this->parentSetUp(); // given
 
-			$this->getModuleOne()->sendConcatEvents($this->payload); // when
-		}
-	}
-?>
+        $this->getModuleOne()->sendConcatEvents($this->payload); // when
+    }
+}

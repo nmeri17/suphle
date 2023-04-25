@@ -1,45 +1,47 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Crud;
 
-	use Suphle\Routing\{BaseCollection, Crud\BrowserBuilder, Decorators\HandlingCoordinator};
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Crud;
 
-	use Suphle\Response\Format\Markup;
+use Suphle\Routing\{BaseCollection, Crud\BrowserBuilder, Decorators\HandlingCoordinator};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\CrudCoordinator;
+use Suphle\Response\Format\Markup;
 
-	#[HandlingCoordinator(CrudCoordinator::class)]
-	class BasicRoutes extends BaseCollection {
-		
-		public function SAVE__ALLh () {
-			
-			$this->_crud("envelope")->registerCruds();
-		}
-		
-		public function DISABLE__SOMEh () {
-			
-			$this->_crud("handicap")->disableHandlers([BrowserBuilder::SAVE_NEW])
+use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\CrudCoordinator;
 
-			->registerCruds();
-		}
-		
-		public function OVERRIDE () {
-			
-			$this->_crud("usurp")->replaceRenderer(
+#[HandlingCoordinator(CrudCoordinator::class)]
+class BasicRoutes extends BaseCollection
+{
+    public function SAVE__ALLh()
+    {
 
-				BrowserBuilder::SHOW_ONE,
+        $this->_crud("envelope")->registerCruds();
+    }
 
-				new Markup("myOverride", "usurp.show-one")
-			)
-			->registerCruds();
-		}
-		
-		public function NON__EXISTENTh () {
-			
-			$this->_crud("missing")
+    public function DISABLE__SOMEh()
+    {
 
-			->replaceRenderer("fooBar", new Markup("atLarge", "missing.show-one"))
+        $this->_crud("handicap")->disableHandlers([BrowserBuilder::SAVE_NEW])
 
-			->registerCruds();
-		}
-	}
-?>
+        ->registerCruds();
+    }
+
+    public function OVERRIDE()
+    {
+
+        $this->_crud("usurp")->replaceRenderer(
+            BrowserBuilder::SHOW_ONE,
+            new Markup("myOverride", "usurp.show-one")
+        )
+        ->registerCruds();
+    }
+
+    public function NON__EXISTENTh()
+    {
+
+        $this->_crud("missing")
+
+        ->replaceRenderer("fooBar", new Markup("atLarge", "missing.show-one"))
+
+        ->registerCruds();
+    }
+}

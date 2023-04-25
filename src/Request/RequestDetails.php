@@ -1,216 +1,245 @@
 <?php
-	namespace Suphle\Request;
 
-	use Suphle\Contracts\Config\Router;
+namespace Suphle\Request;
 
-	use Suphle\Services\Decorators\BindsAsSingleton;
+use Suphle\Contracts\Config\Router;
 
-	use Suphle\Hydration\Container;
+use Suphle\Services\Decorators\BindsAsSingleton;
 
-	use InvalidArgumentException;
+use Suphle\Hydration\Container;
 
-	#[BindsAsSingleton]
-	class RequestDetails {
+use InvalidArgumentException;
 
-		protected ?string $computedPath = null,
+#[BindsAsSingleton]
+class RequestDetails
+{
+    protected ?string $computedPath = null;
+    protected ?string $versionPresent;
+    protected ?string $permanentPath = null;
+    protected ?string // readonly version of [computedPath]
 
-		$versionPresent, $permanentPath = null, // readonly version of [computedPath]
+    $httpMethod = null;
 
-		$httpMethod = null;
+    protected array $queryParameters = [];
 
-		protected array $queryParameters = [];
+    public function __construct(protected readonly Router $config)
+    {
 
-		public function __construct (protected readonly Router $config) {
+        //
+    }
 
-			//
-		}
+    public function getPath(): ?string
+    {
 
-		public function getPath ():?string {
+        return $this->computedPath;
+    }
 
-			return $this->computedPath;
-		}
+    public function setPath(string $requestPath): void
+    {
 
-		public function setPath (string $requestPath):void {
+        $this->permanentPath = $this->computedPath = $requestPath;
+    }
 
-			$this->permanentPath = $this->computedPath = $requestPath;
-		}
+    public function setQueries(array $queryParameters): void
+    {
 
-		public function setQueries (array $queryParameters):void {
+        $this->queryParameters = $queryParameters;
+    }
 
-			$this->queryParameters = $queryParameters;
-		}
+    public function getQueryParameters(): array
+    {
 
-		public function getQueryParameters ():array {
+        return $this->queryParameters;
+    }
 
-			return $this->queryParameters;
-		}
+    public static function fromModules(array $descriptors, string $requestPath, ?string $forceHttpMethod): void
+    {
 
-		public static function fromModules (array $descriptors, string $requestPath, ?string $forceHttpMethod):void {
+        foreach ($descriptors as $descriptor) {
 
-			foreach ($descriptors as $descriptor)
+            static::fromContainer(
+                $descriptor->getContainer(),
+                $requestPath,
+                $forceHttpMethod
+            );
+        }
+    }
 
-				static::fromContainer(
-					$descriptor->getContainer(), $requestPath,
+    public static function fromContainer(Container $container, string $requestPath, ?string $forceHttpMethod): ?RequestDetails
+    {
 
-					$forceHttpMethod
-				);
-		}
+        $components = parse_url($requestPath);
 
-		public static function fromContainer (Container $container, string $requestPath, ?string $forceHttpMethod):?RequestDetails {
+        $pathComponent = @$components["path"];
 
-			$components = parse_url($requestPath);
+        if (is_null($pathComponent)) {
+            return null;
+        }
 
-			$pathComponent = @$components["path"];
+        $instance = static::newRequestInstance($container); // using static instead of self so any sub-class (e.g. a mock) will be called
 
-			if (is_null($pathComponent)) return null;
+        $instance->setPath($pathComponent);
 
-			$instance = static::newRequestInstance($container); // using static instead of self so any sub-class (e.g. a mock) will be called
+        parse_str($components["query"] ?? "", $queryParameters);
 
-			$instance->setPath($pathComponent);
+        $instance->setQueries($queryParameters);
 
-			parse_str($components["query"] ?? "", $queryParameters);
+        if (!is_null($forceHttpMethod)) {
 
-			$instance->setQueries($queryParameters);
+            $instance->setHttpMethod($forceHttpMethod);
+        } else {
+            $instance->deriveHttpMethod();
+        }
 
-			if (!is_null($forceHttpMethod))
+        return $instance;
+    }
 
-				$instance->setHttpMethod($forceHttpMethod);
+    public static function newRequestInstance(Container $container): RequestDetails
+    {
 
-			else $instance->deriveHttpMethod();
+        $selfName = self::class;
 
-			return $instance;
-		}
+        $container->refreshClass($selfName);
 
-		public static function newRequestInstance (Container $container):RequestDetails {
+        return $container->getClass($selfName); // automatically binds it
+    }
 
-			$selfName = self::class;
+    public function getPermanentPath(): ?string
+    {
 
-			$container->refreshClass($selfName);
+        return $this->permanentPath;
+    }
 
-			return $container->getClass($selfName); // automatically binds it
-		}
+    protected function setHttpMethod(string $method): void
+    {
 
-		public function getPermanentPath ():?string {
+        $this->httpMethod = $method;
+    }
 
-			return $this->permanentPath;
-		}
+    protected function deriveHttpMethod(): void
+    {
 
-		protected function setHttpMethod (string $method):void {
+        $hiddenField = "_method";
 
-			$this->httpMethod = $method;
-		}
+        if (array_key_exists($hiddenField, $_POST)) {
 
-		protected function deriveHttpMethod ():void {
+            $methodName = $_POST[$hiddenField];
+        } elseif (array_key_exists("REQUEST_METHOD", $_SERVER)) {
 
-			$hiddenField = "_method";
+            $methodName = $_SERVER["REQUEST_METHOD"];
+        } else {
+            $methodName = "get";
+        }
 
-			if (array_key_exists($hiddenField, $_POST))
+        $this->httpMethod = strtolower((string) $methodName);
+    }
 
-				$methodName = $_POST[$hiddenField];
+    public function getHttpMethod(): ?string
+    {
 
-			elseif (array_key_exists("REQUEST_METHOD", $_SERVER))
+        return $this->httpMethod;
+    }
 
-				$methodName = $_SERVER["REQUEST_METHOD"];
+    public function matchesMethod(string $method): bool
+    {
 
-			else $methodName = "get";
+        return preg_match("/" . $this->httpMethod . "/i", $method);
+    }
 
-			$this->httpMethod = strtolower((string) $methodName);
-		}
+    public function isGetRequest(): bool
+    {
 
-		public function getHttpMethod ():?string {
+        return $this->matchesMethod("get");
+    }
 
-			return $this->httpMethod;
-		}
+    public function isPostRequest(): bool
+    {
 
-		public function matchesMethod (string $method):bool {
-		
-			return preg_match("/" . $this->httpMethod . "/i", $method);
-		}
+        return $this->matchesMethod("post");
+    }
 
-		public function isGetRequest ():bool {
+    private function regexApiPrefix(): string
+    {
 
-			return $this->matchesMethod("get");
-		}
+        return "^\/?" . $this->config->apiPrefix();
+    }
 
-		public function isPostRequest ():bool {
+    public function isApiRoute(): bool
+    {
 
-			return $this->matchesMethod("post");
-		}
+        $matches = preg_match("/" . $this->regexApiPrefix() . "/", (string) $this->permanentPath); // using permanent since computed may have been changed by the time this method is being read
 
-		private function regexApiPrefix ():string {
+        if ($matches) {
+            $this->setIncomingVersion();
+        }
 
-			return "^\/?" . $this->config->apiPrefix();
-		}
+        return $matches;
+    }
 
-		public function isApiRoute ():bool {
+    /**
+    * Given a request to api(?:/v3)/verb/noun, set computed path to verb/noun
+    */
+    public function stripApiPrefix(): void
+    {
 
-			$matches = preg_match("/" . $this->regexApiPrefix() . "/", (string) $this->permanentPath); // using permanent since computed may have been changed by the time this method is being read
+        $possibleVersion = $this->versionPresent ?
 
-			if ($matches) $this->setIncomingVersion();
+            "(?:\/". $this->versionPresent .")?" :
 
-			return $matches;
-		}
+            "";
 
-		/**
-		* Given a request to api(?:/v3)/verb/noun, set computed path to verb/noun
-		*/
-		public function stripApiPrefix():void {
+        $pattern = $this->regexApiPrefix() . $possibleVersion. "\/(.+)";
 
-			$possibleVersion = $this->versionPresent ?
+        preg_match("/" . $pattern . "/i", (string) $this->permanentPath, $pathArray);
 
-				"(?:\/". $this->versionPresent .")?":
+        $this->computedPath = $pathArray[1];
+    }
 
-				"";
-			
-			$pattern = $this->regexApiPrefix() . $possibleVersion. "\/(.+)";
+    /**
+     * Given a request to api/v3/verb/noun, sets property to v3
+    */
+    public function setIncomingVersion(): void
+    {
 
-			preg_match("/" . $pattern . "/i", (string) $this->permanentPath, $pathArray);
+        $pattern = $this->regexApiPrefix() . "\/(.+?)\/";
 
-			$this->computedPath = $pathArray[1];
-		}
+        preg_match("/" . $pattern . "/i", (string) $this->permanentPath, $version);
 
-		/**
-		 * Given a request to api/v3/verb/noun, sets property to v3
-		*/
-		public function setIncomingVersion ():void {
-			
-			$pattern = $this->regexApiPrefix() . "\/(.+?)\/";
+        $this->versionPresent = $version[1] ?? null;
+    }
 
-			preg_match("/" . $pattern . "/i", (string) $this->permanentPath, $version);
+    # api/v3/verb/noun or api/verb/noun will return all versions from v3 and below
+    public function apiVersionClasses(): array
+    {
 
-			$this->versionPresent = $version[1] ?? null;
-		}
+        $apiStack = $this->config->apiStack();
 
-		# api/v3/verb/noun or api/verb/noun will return all versions from v3 and below
-		public function apiVersionClasses ():array {
+        $versionKeys = array_map("strtolower", array_keys($apiStack));
 
-			$apiStack = $this->config->apiStack();
+        $versionHandlers = array_values($apiStack);
 
-			$versionKeys = array_map("strtolower", array_keys($apiStack) );
+        if (!is_null($this->versionPresent)) {
 
-			$versionHandlers = array_values($apiStack);
+            $startIndex = array_search(
+                strtolower((string) $this->versionPresent), // case-insensitive search
+                $versionKeys
+            );
+        } else {
+            $startIndex = 0;
+        } // if there's no specific version, we will serve the most recent
 
-			if ( !is_null($this->versionPresent)) {
+        $versionHandlers = array_slice($versionHandlers, $startIndex);
 
-				$startIndex = array_search(
-					strtolower((string) $this->versionPresent), // case-insensitive search
-					$versionKeys
-				);
-			}
-			else $startIndex = 0; // if there's no specific version, we will serve the most recent
+        $versionKeys = array_slice($versionKeys, $startIndex);
 
-			$versionHandlers = array_slice($versionHandlers, $startIndex);
+        return array_combine($versionKeys, $versionHandlers);
+    }
 
-			$versionKeys = array_slice($versionKeys, $startIndex);
+    public function matchesPath(string $path): bool
+    {
 
-			return array_combine($versionKeys, $versionHandlers);
-		}
+        $sanitizedPath = preg_quote(trim($path, "/"), "/");
 
-		public function matchesPath (string $path):bool {
-
-			$sanitizedPath = preg_quote(trim($path, "/"), "/");
-
-			return preg_match("/^\/?" . $sanitizedPath . "\/?$/i", $this->getPath());
-		}
-	}
-?>
+        return preg_match("/^\/?" . $sanitizedPath . "\/?$/i", $this->getPath());
+    }
+}

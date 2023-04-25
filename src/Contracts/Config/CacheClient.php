@@ -1,8 +1,8 @@
 <?php
-	namespace Suphle\Contracts\Config;
 
-	interface CacheClient extends ConfigMarker {
+namespace Suphle\Contracts\Config;
 
-		public function getCredentials ():array;
-	}
-?>
+interface CacheClient extends ConfigMarker
+{
+    public function getCredentials(): array;
+}

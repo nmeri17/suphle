@@ -1,109 +1,114 @@
 <?php
-	namespace Suphle\Adapters\Presentation\Hotwire;
 
-	use Suphle\Hydration\{Container, Structures\CallbackDetails};
+namespace Suphle\Adapters\Presentation\Hotwire;
 
-	use Suphle\Contracts\{IO\Session, Requests\ValidationFailureConvention, Presentation\BaseRenderer};
+use Suphle\Hydration\{Container, Structures\CallbackDetails};
 
-	use Suphle\Response\{FlowResponseQueuer, RoutedRendererManager};
+use Suphle\Contracts\{IO\Session, Requests\ValidationFailureConvention, Presentation\BaseRenderer};
 
-	use Suphle\Request\{ValidatorManager, RequestDetails};
+use Suphle\Response\{FlowResponseQueuer, RoutedRendererManager};
 
-	use Suphle\Adapters\Presentation\Hotwire\Formats\BaseHotwireStream;
+use Suphle\Request\{ValidatorManager, RequestDetails};
 
-	use Suphle\Services\ServiceCoordinator;
+use Suphle\Adapters\Presentation\Hotwire\Formats\BaseHotwireStream;
 
-	use Suphle\Exception\Explosives\ValidationFailure;
+use Suphle\Services\ServiceCoordinator;
 
-	class HotwireRendererManager extends RoutedRendererManager {
+use Suphle\Exception\Explosives\ValidationFailure;
 
-		public function __construct(
+class HotwireRendererManager extends RoutedRendererManager
+{
+    public function __construct(
+        protected readonly Container $container,
+        protected readonly BaseRenderer $renderer,
+        protected readonly Session $sessionClient,
+        protected readonly FlowResponseQueuer $flowQueuer,
+        protected readonly RequestDetails $requestDetails,
+        protected readonly CallbackDetails $callbackDetails,
+        protected readonly ValidationFailureConvention $failureConvention
+    ) {
 
-			protected readonly Container $container,
+        //
+    }
 
-			protected readonly BaseRenderer $renderer,
+    public function bootDefaultRenderer(): self
+    {
 
-			protected readonly Session $sessionClient,
+        if ($this->avoidHotwireConditions()) {
 
-			protected readonly FlowResponseQueuer $flowQueuer,
+            return parent::bootDefaultRenderer();
+        }
 
-			protected readonly RequestDetails $requestDetails,
+        foreach ($this->renderer->getHotwireHandlers() as [, $handler]) {
 
-			protected readonly CallbackDetails $callbackDetails,
+            $this->handlerParameters[] = $this->fetchHandlerParameters(
+                $this->renderer->getCoordinator(),
+                $handler
+            );
+        }
 
-			protected readonly ValidationFailureConvention $failureConvention
-		) {
+        return $this;
+    }
 
-			//
-		}
+    protected function avoidHotwireConditions(): bool
+    {
 
-		public function bootDefaultRenderer ():self {
+        return !($this->renderer instanceof BaseHotwireStream) ||
 
-			if ($this->avoidHotwireConditions())
+        !$this->renderer->isHotwireRequest();
+    }
 
-				return parent::bootDefaultRenderer();
+    public function validationRenderer(array $failureDetails): BaseRenderer
+    {
 
-			foreach ($this->renderer->getHotwireHandlers() as [, $handler])
+        if ($this->avoidHotwireConditions()) {
 
-				$this->handlerParameters[] = $this->fetchHandlerParameters(
-					
-					$this->renderer->getCoordinator(), $handler
-				);
+            return $this->invokePreviousRenderer($failureDetails);
+        }
 
-			return $this;
-		}
+        return $this->failureConvention
 
-		protected function avoidHotwireConditions ():bool {
+        ->deriveFormPartial($this->renderer, $failureDetails);
+    }
 
-			return !($this->renderer instanceof BaseHotwireStream) ||
+    /**
+     * {@inheritdoc}
+    */
+    public function mayBeInvalid(?BaseRenderer $renderer = null): self
+    {
 
-			!$this->renderer->isHotwireRequest();
-		}
+        if (is_null($renderer)) {
+            $renderer = $this->renderer;
+        }
 
-		public function validationRenderer (array $failureDetails):BaseRenderer {
+        if ($this->avoidHotwireConditions()) {
 
-			if ($this->avoidHotwireConditions())
+            return parent::mayBeInvalid($renderer);
+        }
 
-				return $this->invokePreviousRenderer($failureDetails);
+        foreach ($renderer->getHotwireHandlers() as [, $handler]) {
 
-			return $this->failureConvention
+            $shouldValidate = $this->acquireValidatorStatus(
+                $renderer->getCoordinator(),
+                $handler
+            );
 
-			->deriveFormPartial($this->renderer, $failureDetails);
-		}
+            if ($shouldValidate && !$this->validatorManager->isValidated()) {
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function mayBeInvalid (?BaseRenderer $renderer = null):self {
+                throw new ValidationFailure($this);
+            }
+        }
 
-			if (is_null($renderer)) $renderer = $this->renderer;
+        return $this;
+    }
 
-			if ($this->avoidHotwireConditions())
+    public function shouldSetCode(RequestDetails $requestDetails, BaseRenderer $renderer): bool
+    {
 
-				return parent::mayBeInvalid($renderer);
+        $isHotwireRenderer = !$this->avoidHotwireConditions();
 
-			foreach ($renderer->getHotwireHandlers() as [, $handler]) {	
-				
-				$shouldValidate = $this->acquireValidatorStatus(
+        return $isHotwireRenderer ||
 
-					$renderer->getCoordinator(), $handler
-				);
-
-				if ($shouldValidate && !$this->validatorManager->isValidated())
-
-					throw new ValidationFailure($this);
-			}
-
-			return $this;
-		}
-
-		public function shouldSetCode (RequestDetails $requestDetails, BaseRenderer $renderer):bool {
-
-			$isHotwireRenderer = !$this->avoidHotwireConditions();
-
-			return $isHotwireRenderer ||
-
-			parent::shouldSetCode($requestDetails, $renderer);
-		}
-	}
-?>
+        parent::shouldSetCode($requestDetails, $renderer);
+    }
+}

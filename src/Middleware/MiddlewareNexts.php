@@ -1,23 +1,25 @@
 <?php
-	namespace Suphle\Middleware;
 
-	use Suphle\Contracts\Routing\Middleware;
+namespace Suphle\Middleware;
 
-	use Suphle\Request\PayloadStorage;
+use Suphle\Contracts\Routing\Middleware;
 
-	/**
-	 * Wraps the actual middleware in a way that causes it to fire its successor
-	*/
-	class MiddlewareNexts {
+use Suphle\Request\PayloadStorage;
 
-		public function __construct(protected readonly Middleware $currentMiddleware, protected readonly ?\Suphle\Middleware\MiddlewareNexts $nextHandler) {
+/**
+ * Wraps the actual middleware in a way that causes it to fire its successor
+*/
+class MiddlewareNexts
+{
+    public function __construct(protected readonly Middleware $currentMiddleware, protected readonly ?\Suphle\Middleware\MiddlewareNexts $nextHandler)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function handle (PayloadStorage $payloadStorage) {
+    public function handle(PayloadStorage $payloadStorage)
+    {
 
-			return $this->currentMiddleware->process($payloadStorage, $this->nextHandler);
-		}
-	}
-?>
+        return $this->currentMiddleware->process($payloadStorage, $this->nextHandler);
+    }
+}

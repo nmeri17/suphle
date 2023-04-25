@@ -1,8 +1,8 @@
 <?php
-	namespace Suphle;
 
-	class InRootNamespace {
+namespace Suphle;
 
-		//
-	}
-?>
+class InRootNamespace
+{
+    //
+}

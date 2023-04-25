@@ -1,24 +1,26 @@
 <?php
-	namespace Suphle\Tests\Integration\Modules\ModuleDescriptor;
 
-	use Suphle\Testing\TestTypes\ModuleLevelTest;
+namespace Suphle\Tests\Integration\Modules\ModuleDescriptor;
 
-	use Suphle\Tests\Integration\Generic\TestsModuleList;
+use Suphle\Testing\TestTypes\ModuleLevelTest;
 
-	class DescriptorCollection extends ModuleLevelTest {
+use Suphle\Tests\Integration\Generic\TestsModuleList;
 
-		use TestsModuleList;
+class DescriptorCollection extends ModuleLevelTest
+{
+    use TestsModuleList;
 
-		protected function setUp ():void {
+    protected function setUp(): void
+    {
 
-			$this->setAllDescriptors();
+        $this->setAllDescriptors();
 
-			parent::setUp();
-		}
+        parent::setUp();
+    }
 
-		protected function getModules():array {
+    protected function getModules(): array
+    {
 
-			return $this->getAllDescriptors();
-		}
-	}
-?>
+        return $this->getAllDescriptors();
+    }
+}

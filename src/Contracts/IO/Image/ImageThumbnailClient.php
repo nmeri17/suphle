@@ -1,15 +1,15 @@
 <?php
-	namespace Suphle\Contracts\IO\Image;
 
-	interface ImageThumbnailClient {
-		
-		public function setupClient ():void;
+namespace Suphle\Contracts\IO\Image;
 
-		public function setDimensions (int $width, int $height):void;
+interface ImageThumbnailClient
+{
+    public function setupClient(): void;
 
-		/**
-		 * * @return Location of saved file
-		*/
-		public function miniature (string $imageNewPath):string;
-	}
-?>
+    public function setDimensions(int $width, int $height): void;
+
+    /**
+     * * @return Location of saved file
+    */
+    public function miniature(string $imageNewPath): string;
+}

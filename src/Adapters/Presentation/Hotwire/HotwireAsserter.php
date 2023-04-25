@@ -1,67 +1,72 @@
 <?php
-	namespace Suphle\Adapters\Presentation\Hotwire;
 
-	use Suphle\Contracts\Presentation\BaseRenderer;
+namespace Suphle\Adapters\Presentation\Hotwire;
 
-	use Suphle\Adapters\Presentation\Hotwire\Formats\{BaseHotwireStream, RedirectHotwireStream};
+use Suphle\Contracts\Presentation\BaseRenderer;
 
-	use Suphle\Testing\Proxies\Extensions\TestResponseBridge;
+use Suphle\Adapters\Presentation\Hotwire\Formats\{BaseHotwireStream, RedirectHotwireStream};
 
-	trait HotwireAsserter {
+use Suphle\Testing\Proxies\Extensions\TestResponseBridge;
 
-		/**
-		 * Doesn't confirm element presence within the frame since we have no APIs for drilling through DOM trees
-		*/
-		protected function assertStreamNode (string $hotwireAction, ?string $targets = null):void {
+trait HotwireAsserter
+{
+    /**
+     * Doesn't confirm element presence within the frame since we have no APIs for drilling through DOM trees
+    */
+    protected function assertStreamNode(string $hotwireAction, ?string $targets = null): void
+    {
 
-			$renderer = $this->getContainer()->getClass(BaseRenderer::class);
+        $renderer = $this->getContainer()->getClass(BaseRenderer::class);
 
-			if (!$renderer instanceof BaseHotwireStream)
+        if (!$renderer instanceof BaseHotwireStream) {
 
-				$this->fail(BaseHotwireStream::class." not found");
+            $this->fail(BaseHotwireStream::class." not found");
+        }
 
-			$foundAction = false;
+        $foundAction = false;
 
-			foreach ($renderer->getStreamBuilders() as $builder) {
+        foreach ($renderer->getStreamBuilders() as $builder) {
 
-				if ($builder->hotwireAction != $hotwireAction) continue;
+            if ($builder->hotwireAction != $hotwireAction) {
+                continue;
+            }
 
-				if (is_null($targets)) {
+            if (is_null($targets)) {
 
-					$this->assertTrue(true);
+                $this->assertTrue(true);
 
-					return;
-				}
+                return;
+            }
 
-				if ($builder->targets == $targets) {
+            if ($builder->targets == $targets) {
 
-					$this->assertTrue(true);
+                $this->assertTrue(true);
 
-					return;
-				}
+                return;
+            }
 
-				$foundAction = true;
-			}
+            $foundAction = true;
+        }
 
-			if ($foundAction)
+        if ($foundAction) {
 
-				$failMessage = "Found node matching action '$hotwireAction' but no corresponding target '$targets'";
+            $failMessage = "Found node matching action '$hotwireAction' but no corresponding target '$targets'";
+        } else {
 
-			else {
+            $failMessage = "No node found in response matching action '$hotwireAction'";
 
-				$failMessage = "No node found in response matching action '$hotwireAction'";
+            if (!is_null($targets)) {
 
-				if (!is_null($targets))
+                $failMessage .= " and target '$targets'";
+            }
+        }
 
-					$failMessage .= " and target '$targets'";
-			}
+        $this->fail($failMessage);
+    }
 
-			$this->fail($failMessage);
-		}
+    protected function assertHotwireRedirect(TestResponseBridge $response): void
+    {
 
-		protected function assertHotwireRedirect (TestResponseBridge $response):void {
-
-			$response->assertStatus(RedirectHotwireStream::STATUS_CODE);
-		}
-	}
-?>
+        $response->assertStatus(RedirectHotwireStream::STATUS_CODE);
+    }
+}

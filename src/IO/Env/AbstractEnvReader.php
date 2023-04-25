@@ -1,50 +1,55 @@
 <?php
-	namespace Suphle\IO\Env;
 
-	use Suphle\Contracts\{IO\EnvAccessor, Config\ModuleFiles};
+namespace Suphle\IO\Env;
 
-	use Dotenv\Dotenv;
+use Suphle\Contracts\{IO\EnvAccessor, Config\ModuleFiles};
 
-	/**
-	 * {@inheritdoc}
-	*/
-	abstract class AbstractEnvReader implements EnvAccessor {
+use Dotenv\Dotenv;
 
-		protected Dotenv $client;
+/**
+ * {@inheritdoc}
+*/
+abstract class AbstractEnvReader implements EnvAccessor
+{
+    protected Dotenv $client;
 
-		public function __construct (protected readonly ModuleFiles $fileConfig) {
+    public function __construct(protected readonly ModuleFiles $fileConfig)
+    {
 
-			$this->setClient();
+        $this->setClient();
 
-			$this->client->safeLoad(); // file is not expected to exist in production, as variables will be set by deployment vendor
+        $this->client->safeLoad(); // file is not expected to exist in production, as variables will be set by deployment vendor
 
-			$this->validateFields();
-		}
+        $this->validateFields();
+    }
 
-		public function getField (string $name, $defaultValue = null) {
+    public function getField(string $name, $defaultValue = null)
+    {
 
-			$readValue = $_ENV[$name] ?? getenv($name); // most runners write to $_ENV except Symfony\Process (used in RoadRunner tests) that writes to getenv
+        $readValue = $_ENV[$name] ?? getenv($name); // most runners write to $_ENV except Symfony\Process (used in RoadRunner tests) that writes to getenv
 
-			if ($readValue === false) return $defaultValue;
+        if ($readValue === false) {
+            return $defaultValue;
+        }
 
-			return $readValue;
-		}
+        return $readValue;
+    }
 
-		/*public function setField (string $name, $value):void {
+    /*public function setField (string $name, $value):void {
 
-			$_ENV[$name] = $value;
-		}*/
+        $_ENV[$name] = $value;
+    }*/
 
-		/**
-		 * Make use of [client]
-		*/
-		abstract protected function validateFields ():void;
+    /**
+     * Make use of [client]
+    */
+    abstract protected function validateFields(): void;
 
-		protected function setClient ():void {
+    protected function setClient(): void
+    {
 
-			$path = $this->fileConfig->activeModulePath();
+        $path = $this->fileConfig->activeModulePath();
 
-			$this->client = Dotenv::createImmutable($path ); // don't programmatically overwrite env values
-		}
-	}
-?>
+        $this->client = Dotenv::createImmutable($path); // don't programmatically overwrite env values
+    }
+}

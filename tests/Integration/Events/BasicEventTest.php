@@ -1,40 +1,44 @@
 <?php
-	namespace Suphle\Tests\Integration\Events;
 
-	use Suphle\Testing\Condiments\EmittedEventsCatcher;
+namespace Suphle\Tests\Integration\Events;
 
-	use Suphle\Tests\Integration\Events\BaseTypes\EventTestCreator;
+use Suphle\Testing\Condiments\EmittedEventsCatcher;
 
-	use Suphle\Tests\Mocks\Interactions\ModuleOne;
+use Suphle\Tests\Integration\Events\BaseTypes\EventTestCreator;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Concretes\LocalSender, Events\LocalReceiver};
+use Suphle\Tests\Mocks\Interactions\ModuleOne;
 
-	class BasicEventTest extends EventTestCreator {
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Concretes\LocalSender, Events\LocalReceiver};
 
-		use EmittedEventsCatcher;
+class BasicEventTest extends EventTestCreator
+{
+    use EmittedEventsCatcher;
 
-		protected function setUp ():void {
+    protected function setUp(): void
+    {
 
-			$this->parentSetUp();
-		}
+        $this->parentSetUp();
+    }
 
-		public function test_reports_handled_events () {
+    public function test_reports_handled_events()
+    {
 
-			$this->getModuleOne()->noPayloadEvent(); // when
+        $this->getModuleOne()->noPayloadEvent(); // when
 
-			$this->assertHandledEvent(
-				LocalSender::class, ModuleOne::EMPTY_PAYLOAD_EVENT
-			); // then
-		}
+        $this->assertHandledEvent(
+            LocalSender::class,
+            ModuleOne::EMPTY_PAYLOAD_EVENT
+        ); // then
+    }
 
-		public function test_doesnt_report_unhandled_events () {
+    public function test_doesnt_report_unhandled_events()
+    {
 
-			$this->getModuleOne()->noPayloadEvent(); // when
+        $this->getModuleOne()->noPayloadEvent(); // when
 
-			$this->assertNotHandledEvent(
-				
-				LocalSender::class, LocalReceiver::CASCADE_REBOUND_EVENT
-			); // then
-		}
-	}
-?>
+        $this->assertNotHandledEvent(
+            LocalSender::class,
+            LocalReceiver::CASCADE_REBOUND_EVENT
+        ); // then
+    }
+}

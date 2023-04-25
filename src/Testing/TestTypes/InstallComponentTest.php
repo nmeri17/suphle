@@ -1,102 +1,109 @@
 <?php
-	namespace Suphle\Testing\TestTypes;
 
-	use Suphle\ComponentTemplates\BaseComponentEntry;
+namespace Suphle\Testing\TestTypes;
 
-	use Suphle\ComponentTemplates\Commands\InstallComponentCommand;
+use Suphle\ComponentTemplates\BaseComponentEntry;
 
-	use Suphle\Testing\{Condiments\FilesystemCleaner, TestTypes\CommandLineTest};
+use Suphle\ComponentTemplates\Commands\InstallComponentCommand;
 
-	use Symfony\Component\Console\{Command\Command, Tester\CommandTester};
+use Suphle\Testing\{Condiments\FilesystemCleaner, TestTypes\CommandLineTest};
 
-	/**
-	 * A class rather than a trait since this is a specific test that can't be combined with something else
-	*/
-	abstract class InstallComponentTest extends CommandLineTest {
+use Symfony\Component\Console\{Command\Command, Tester\CommandTester};
 
-		use FilesystemCleaner;
+/**
+ * A class rather than a trait since this is a specific test that can't be combined with something else
+*/
+abstract class InstallComponentTest extends CommandLineTest
+{
+    use FilesystemCleaner;
 
-		protected ?BaseComponentEntry $componentInstance = null;
+    protected ?BaseComponentEntry $componentInstance = null;
 
-		abstract protected function componentEntry ():string;
+    abstract protected function componentEntry(): string;
 
-		protected function assertInstalledComponent (array $commandOptions, bool $doubledInstaller = false ):void {
+    protected function assertInstalledComponent(array $commandOptions, bool $doubledInstaller = false): void
+    {
 
-			$componentPath = $this->getComponentPath();
+        $componentPath = $this->getComponentPath();
 
-			if ($this->componentIsInstalled())
+        if ($this->componentIsInstalled()) {
 
-				$this->getFilesystemReader()->emptyDirectory($componentPath);
+            $this->getFilesystemReader()->emptyDirectory($componentPath);
+        }
 
-			// then
-			$this->assertSame(
+        // then
+        $this->assertSame(
+            $this->runInstallComponent($commandOptions), // when
 
-				$this->runInstallComponent($commandOptions), // when
+            Command::SUCCESS
+        );
 
-				Command::SUCCESS
-			);
+        if (!$doubledInstaller) {
 
-			if (!$doubledInstaller)
+            $this->assertNotEmptyDirectory($componentPath);
+        }
+    }
 
-				$this->assertNotEmptyDirectory($componentPath);
-		}
+    protected function componentIsInstalled(): bool
+    {
 
-		protected function componentIsInstalled ():bool {
+        return file_exists($this->getComponentPath());
+    }
 
-			return file_exists($this->getComponentPath());
-		}
+    /**
+     * @return int: Command result
+    */
+    protected function runInstallComponent(array $commandOptions): int
+    {
 
-		/**
-		 * @return int: Command result
-		*/
-		protected function runInstallComponent (array $commandOptions):int {
+        $command = $this->consoleRunner->findHandler(
+            InstallComponentCommand::commandSignature()
+        );
 
-			$command = $this->consoleRunner->findHandler(
+        return (new CommandTester($command))
 
-				InstallComponentCommand::commandSignature()
-			);
+        ->execute($commandOptions);
+    }
 
-			return (new CommandTester($command))
+    protected function getComponentPath(): string
+    {
 
-			->execute( $commandOptions);
-		}
+        return $this->getComponentInstance()->userLandMirror();
+    }
 
-		protected function getComponentPath ():string {
+    protected function getComponentInstance(): BaseComponentEntry
+    {
 
-			return $this->getComponentInstance()->userLandMirror();
-		}
+        if (!is_null($this->componentInstance)) {
 
-		protected function getComponentInstance ():BaseComponentEntry {
+            return $this->componentInstance;
+        }
 
-			if (!is_null($this->componentInstance))
+        return $this->componentInstance = $this->getContainer()->getClass($this->componentEntry());
+    }
 
-				return $this->componentInstance;
+    /**
+     * For use as dataProvider
+     *
+     * @return Each installation state along with argument expected to be received by the ejector, ComponentEjector, not the individual entries
+    */
+    public function overrideOptions(): array
+    {
 
-			return $this->componentInstance = $this->getContainer()->getClass($this->componentEntry());
-		}
+        $entryName = $this->componentEntry();
 
-		/**
-		 * For use as dataProvider
-		 * 
-		 * @return Each installation state along with argument expected to be received by the ejector, ComponentEjector, not the individual entries
-		*/
-		public function overrideOptions ():array {
+        return [
+            [[], null],
+            [
 
-			$entryName = $this->componentEntry();
+                ["--" .InstallComponentCommand::OVERWRITE_OPTION], null
+            ],
+            [
 
-			return [
-				[[], null],
-				[
-
-					["--" .InstallComponentCommand::OVERWRITE_OPTION], null
-				],
-				[
-
-					[
-						"--" .InstallComponentCommand::OVERWRITE_OPTION => [$entryName]
-					], [$entryName]
-				]
-			];
-		}
-	}
-?>
+                [
+                    "--" .InstallComponentCommand::OVERWRITE_OPTION => [$entryName]
+                ], [$entryName]
+            ]
+        ];
+    }
+}

@@ -1,159 +1,163 @@
 <?php
-	namespace Suphle\Tests\Integration\Production;
 
-	use Suphle\Hydration\Container;
+namespace Suphle\Tests\Integration\Production;
 
-	use Suphle\Server\{VendorBin, HttpServerOperations, PsalmWrapper, Commands\HttpServerCommand};
+use Suphle\Hydration\Container;
 
-	use Suphle\Testing\{TestTypes\CommandLineTest, Proxies\WriteOnlyContainer};
+use Suphle\Server\{VendorBin, HttpServerOperations, PsalmWrapper, Commands\HttpServerCommand};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
+use Suphle\Testing\{TestTypes\CommandLineTest, Proxies\WriteOnlyContainer};
 
-	use Symfony\Component\Console\{Command\Command, Tester\CommandTester};
+use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
-	use Symfony\Component\Process\Process;
+use Symfony\Component\Console\{Command\Command, Tester\CommandTester};
 
-	class HttpServerCommandTest extends CommandLineTest {
+use Symfony\Component\Process\Process;
 
-		protected const RR_CONFIG = "some/path";
+class HttpServerCommandTest extends CommandLineTest
+{
+    protected const RR_CONFIG = "some/path";
 
-		protected function getModules ():array {
+    protected function getModules(): array
+    {
 
-			return [new ModuleOneDescriptor(new Container)];
-		}
+        return [new ModuleOneDescriptor(new Container())];
+    }
 
-		public function test_server_will_start_despite_static_falure_with_option () {
+    public function test_server_will_start_despite_static_falure_with_option()
+    {
 
-			$this->stubStaticFailure(); // given
+        $this->stubStaticFailure(); // given
 
-			$this->mockServerStart(self::RR_CONFIG);
+        $this->mockServerStart(self::RR_CONFIG);
 
-			$command = $this->consoleRunner->findHandler(
+        $command = $this->consoleRunner->findHandler(
+            HttpServerCommand::commandSignature()
+        );
 
-				HttpServerCommand::commandSignature()
-			);
+        // when
+        $commandResult = (new CommandTester($command))->execute(
+            $this->getServerOptions([
 
-			// when
-			$commandResult = (new CommandTester($command))->execute(
+                "--" . HttpServerCommand::IGNORE_STATIC_FAILURE_OPTION => null // given 2
+            ])
+        );
 
-				$this->getServerOptions([
+        $this->assertSame($commandResult, Command::SUCCESS); // then
+    }
 
-					"--" . HttpServerCommand::IGNORE_STATIC_FAILURE_OPTION => null // given 2
-				])
-			);
+    protected function mockServerStart(string $configPath): void
+    {
 
-			$this->assertSame($commandResult, Command::SUCCESS ); // then
-		}
+        $operationsService = HttpServerOperations::class;
 
-		protected function mockServerStart (string $configPath):void {
+        $arguments = $this->getContainer()->getMethodParameters(
+            Container::CLASS_CONSTRUCTOR,
+            $operationsService
+        );
 
-			$operationsService = HttpServerOperations::class;
+        $this->massProvide([
 
-			$arguments = $this->getContainer()->getMethodParameters(
+            $operationsService => $this->replaceConstructorArguments($operationsService, $arguments, [], [
 
-				Container::CLASS_CONSTRUCTOR, $operationsService
-			);
+                "startRRServer" => [1, [$configPath]]
+            ])
+        ]);
+    }
 
-			$this->massProvide([
+    protected function getServerOptions(array $additionalArguments = []): array
+    {
 
-				$operationsService => $this->replaceConstructorArguments($operationsService, $arguments, [], [
+        return array_merge([
 
-					"startRRServer" => [1, [$configPath]]
-				])
-			]);
-		}
+            HttpServerCommand::MODULES_FOLDER_ARGUMENT => "Modules",
 
-		protected function getServerOptions (array $additionalArguments = []):array {
+            "--" . HttpServerCommand::RR_CONFIG_OPTION => self::RR_CONFIG,
 
-			return array_merge([
+            "--" . HttpServerCommand::DISABLE_SANITIZATION_OPTION => null
+        ], $additionalArguments);
+    }
 
-				HttpServerCommand::MODULES_FOLDER_ARGUMENT => "Modules",
+    public function test_server_start_runs_command()
+    {
 
-				"--" . HttpServerCommand::RR_CONFIG_OPTION => self::RR_CONFIG,
+        $this->mockServerStartProcess(self::RR_CONFIG); // then
 
-				"--" . HttpServerCommand::DISABLE_SANITIZATION_OPTION => null
-			], $additionalArguments);
-		}
+        $this->getContainer()->getClass(HttpServerOperations::class)
 
-		public function test_server_start_runs_command () {
+        ->startRRServer(
+            self::RR_CONFIG // given
+        ); // when
+    }
 
-			$this->mockServerStartProcess(self::RR_CONFIG); // then
+    protected function mockServerStartProcess(string $configPath): void
+    {
 
-			$this->getContainer()->getClass(HttpServerOperations::class)
+        $vendorBin = VendorBin::class;
 
-			->startRRServer(
+        $this->massProvide([
 
-				self::RR_CONFIG // given
-			); // when
-		}
+            $vendorBin => $this->replaceConstructorArguments($vendorBin, [], [
 
-		protected function mockServerStartProcess (string $configPath):void {
+                /** @see ContributorCommandTest::mockVendorBin */
+                "setProcessArguments" => new Process([])
+            ], [
 
-			$vendorBin = VendorBin::class;
+                "setProcessArguments" => [1, [
 
-			$this->massProvide([
+                    VendorBin::RR_BINARY, ["serve", "-c", $configPath]
+                ]]
+            ])
+        ]);
+    }
 
-				$vendorBin => $this->replaceConstructorArguments($vendorBin, [], [
+    public function test_will_fail_on_static_check_error()
+    {
 
-					/** @see ContributorCommandTest::mockVendorBin */
-					"setProcessArguments" => new Process([])
-				], [
+        $exceptionMessage = "pammy_maduekwe";
 
-					"setProcessArguments" => [1, [
+        $this->stubStaticFailure($exceptionMessage, [
 
-						VendorBin::RR_BINARY, ["serve", "-c", $configPath]
-					]]
-				])
-			]);
-		}
+            "getErrorOutput" => [1, []]
+        ]); // given
 
-		public function test_will_fail_on_static_check_error () {
+        $this->expectOutputRegex("/$exceptionMessage/");
 
-			$exceptionMessage = "pammy_maduekwe";
+        $command = $this->consoleRunner->findHandler(
+            HttpServerCommand::commandSignature()
+        );
 
-			$this->stubStaticFailure($exceptionMessage, [
+        // when
+        $commandResult = (new CommandTester($command))
 
-				"getErrorOutput" => [1, []]
-			]); // given
+        ->execute($this->getServerOptions());
 
-			$this->expectOutputRegex("/$exceptionMessage/");
+        $this->assertSame($commandResult, Command::FAILURE);
+    }
 
-			$command = $this->consoleRunner->findHandler(
+    protected function stubStaticFailure(string $exceptionMessage = "", array $psalmProcessMocks = []): void
+    {
 
-				HttpServerCommand::commandSignature()
-			);
+        $wrapperName = PsalmWrapper::class;
 
-			// when
-			$commandResult = (new CommandTester($command))
+        $arguments = $this->getContainer()->getMethodParameters(
+            Container::CLASS_CONSTRUCTOR,
+            $wrapperName
+        );
 
-			->execute($this->getServerOptions());
+        $dummyProcess = $this->positiveDouble(Process::class, [
 
-			$this->assertSame($commandResult, Command::FAILURE );
-		}
+            "getOutput" => $exceptionMessage
+        ], $psalmProcessMocks);
 
-		protected function stubStaticFailure (string $exceptionMessage = "", array $psalmProcessMocks = []):void {
+        $this->massProvide([
 
-			$wrapperName = PsalmWrapper::class;
+            $wrapperName => $this->replaceConstructorArguments($wrapperName, $arguments, [
 
-			$arguments = $this->getContainer()->getMethodParameters(
+                "analyzeErrorStatus" => false, // given
 
-				Container::CLASS_CONSTRUCTOR, $wrapperName
-			);
-
-			$dummyProcess = $this->positiveDouble(Process::class, [
-
-				"getOutput" => $exceptionMessage
-			], $psalmProcessMocks);
-
-			$this->massProvide([
-
-				$wrapperName => $this->replaceConstructorArguments($wrapperName, $arguments, [
-
-					"analyzeErrorStatus" => false, // given
-
-					"getLastProcess" => $dummyProcess
-				])
-			]);
-		}
-	}
-?>
+                "getLastProcess" => $dummyProcess
+            ])
+        ]);
+    }
+}

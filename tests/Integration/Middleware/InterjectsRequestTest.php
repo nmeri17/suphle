@@ -1,57 +1,60 @@
 <?php
-	namespace Suphle\Tests\Integration\Middleware;
 
-	use Suphle\Contracts\Config\Router;
+namespace Suphle\Tests\Integration\Middleware;
 
-	use Suphle\Middleware\Handlers\FinalHandlerWrapper;
+use Suphle\Contracts\Config\Router;
 
-	use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
+use Suphle\Middleware\Handlers\FinalHandlerWrapper;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock};
+use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares\{AltersPayloadStorage, BlankMiddlewareHandler};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock};
 
-	use Suphle\Tests\Mocks\Interactions\ModuleOne;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares\{AltersPayloadStorage, BlankMiddlewareHandler};
 
-	class InterjectsRequestTest extends ModuleLevelTest {
+use Suphle\Tests\Mocks\Interactions\ModuleOne;
 
-		private string $sutName = BlankMiddlewareHandler::class; // continue here
-		
-		protected function getModules ():array {
+class InterjectsRequestTest extends ModuleLevelTest
+{
+    private string $sutName = BlankMiddlewareHandler::class; // continue here
 
-			return [
-				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+    protected function getModules(): array
+    {
 
-					$container->replaceWithMock(Router::class, RouterMock::class, [
+        return [
+            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-						"defaultMiddleware" => [
-							AltersPayloadStorage::class,
+                $container->replaceWithMock(Router::class, RouterMock::class, [
 
-							$this->sutName,
+                    "defaultMiddleware" => [
+                        AltersPayloadStorage::class,
 
-							FinalHandlerWrapper::class
-						]
-					])
-					->replaceWithConcrete($this->sutName, $this->mockMiddleware2()); // then
-				})
-			];
-		}
+                        $this->sutName,
 
-		private function mockMiddleware2 ():BlankMiddlewareHandler {
+                        FinalHandlerWrapper::class
+                    ]
+                ])
+                ->replaceWithConcrete($this->sutName, $this->mockMiddleware2()); // then
+            })
+        ];
+    }
 
-			return $this->positiveDouble($this->sutName, [
+    private function mockMiddleware2(): BlankMiddlewareHandler
+    {
 
-				"process" => $this->returnCallback(fn($request, $requestHandler) => $requestHandler->handle($request))], [
+        return $this->positiveDouble($this->sutName, [
 
-				"process" => [1, [$this->callback(fn($subject) => $subject->hasKey("foo")), $this->anything()]]
-			]);
-		}
+            "process" => $this->returnCallback(fn ($request, $requestHandler) => $requestHandler->handle($request))], [
 
-		public function test_default_middleware_executes_top_to_bottom () {
+            "process" => [1, [$this->callback(fn ($subject) => $subject->hasKey("foo")), $this->anything()]]
+        ]);
+    }
 
-			// given => @see [getModules]
+    public function test_default_middleware_executes_top_to_bottom()
+    {
 
-			$this->get("/segment"); // when
-		}
-	}
-?>
+        // given => @see [getModules]
+
+        $this->get("/segment"); // when
+    }
+}

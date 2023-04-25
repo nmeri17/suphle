@@ -1,42 +1,45 @@
 <?php
-	namespace Suphle\Auth\RequestScrutinizers;
 
-	use Suphle\Hydration\Container;
+namespace Suphle\Auth\RequestScrutinizers;
 
-	use Suphle\Routing\Structures\BaseScrutinizerHandler;
+use Suphle\Hydration\Container;
 
-	use Suphle\Services\Decorators\BindsAsSingleton;
+use Suphle\Routing\Structures\BaseScrutinizerHandler;
 
-	use Suphle\Exception\Explosives\UnauthorizedServiceAccess;
+use Suphle\Services\Decorators\BindsAsSingleton;
 
-	#[BindsAsSingleton]
-	class PathAuthorizationScrutinizer extends BaseScrutinizerHandler {
+use Suphle\Exception\Explosives\UnauthorizedServiceAccess;
 
-		public function __construct (
+#[BindsAsSingleton]
+class PathAuthorizationScrutinizer extends BaseScrutinizerHandler
+{
+    public function __construct(
+        protected readonly Container $container
+    ) {
 
-			protected readonly Container $container
-		) {
+        //
+    }
 
-			//
-		}
+    public function scrutinizeRequest(): void
+    {
 
-		public function scrutinizeRequest ():void {
+        if (!$this->passesActiveRules()) {
 
-			if (!$this->passesActiveRules())
+            throw new UnauthorizedServiceAccess();
+        }
+    }
 
-				throw new UnauthorizedServiceAccess;
-		}
+    public function passesActiveRules(): bool
+    {
 
-		public function passesActiveRules ():bool {
+        foreach ($this->metaFunnels as $funnel) {
 
-			foreach ($this->metaFunnels as $funnel) {
+            if (!$this->container->getClass($funnel->ruleClass)->permit()) {
 
-				if (!$this->container->getClass($funnel->ruleClass)->permit())
+                return false;
+            }
+        }
 
-					return false;
-			}
-
-			return true;
-		}
-	}
-?>
+        return true;
+    }
+}

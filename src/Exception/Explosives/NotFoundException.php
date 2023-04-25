@@ -1,10 +1,10 @@
 <?php
-	namespace Suphle\Exception\Explosives;
 
-	use Exception;
+namespace Suphle\Exception\Explosives;
 
-	class NotFoundException extends Exception {
+use Exception;
 
-		//
-	}
-?>
+class NotFoundException extends Exception
+{
+    //
+}

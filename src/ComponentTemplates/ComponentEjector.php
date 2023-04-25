@@ -1,60 +1,64 @@
 <?php
-	namespace Suphle\ComponentTemplates;
 
-	use Suphle\Hydration\Container;
+namespace Suphle\ComponentTemplates;
 
-	use Suphle\Contracts\Config\ComponentTemplates;
+use Suphle\Hydration\Container;
 
-	class ComponentEjector {
+use Suphle\Contracts\Config\ComponentTemplates;
 
-		protected readonly array $componentList;
+class ComponentEjector
+{
+    protected readonly array $componentList;
 
-		public function __construct (
+    public function __construct(
+        protected readonly Container $container,
+        ComponentTemplates $templateConfig
+    ) {
 
-			protected readonly Container $container,
+        $this->componentList = $templateConfig->getTemplateEntries();
+    }
 
-			ComponentTemplates $templateConfig
-		) {
+    public function depositFiles(?array $componentsToOverride, array $componentArguments): bool
+    {
 
-			$this->componentList = $templateConfig->getTemplateEntries();
-		}
+        $hydratedComponents = array_map(
+            function ($component) use ($componentArguments) {
 
-		public function depositFiles (?array $componentsToOverride, array $componentArguments):bool {
+                $instance = $this->container->getClass($component);
 
-			$hydratedComponents = array_map(
-				function ($component) use ($componentArguments) {
+                $instance->setInputArguments($componentArguments);
 
-					$instance = $this->container->getClass($component);
+                return $instance;
+            },
+            $this->componentList
+        );
 
-					$instance->setInputArguments($componentArguments);
+        foreach ($hydratedComponents as $component) {
 
-					return $instance;
-				},
+            if (
+                !$component->hasBeenEjected() ||
 
-				$this->componentList
-			);
+                $this->shouldOverride($component, $componentsToOverride)
+            ) {
 
-			foreach ($hydratedComponents as $component) {
+                $component->eject();
+            }
+        }
 
-				if (
-					!$component->hasBeenEjected() ||
+        return true;
+    }
 
-					$this->shouldOverride($component, $componentsToOverride)
-				)
+    protected function shouldOverride(BaseComponentEntry $component, ?array $componentsToOverride): bool
+    {
 
-					$component->eject();
-			}
+        if (is_null($componentsToOverride)) {
+            return false;
+        }
 
-			return true;
-		}
+        if (empty($componentsToOverride)) {
+            return true;
+        }
 
-		protected function shouldOverride (BaseComponentEntry $component, ?array $componentsToOverride):bool {
-
-			if (is_null($componentsToOverride)) return false;
-
-			if (empty($componentsToOverride)) return true;
-
-			return in_array($component::class, $componentsToOverride);
-		}
-	}
-?>
+        return in_array($component::class, $componentsToOverride);
+    }
+}

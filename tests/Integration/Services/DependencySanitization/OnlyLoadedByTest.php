@@ -1,43 +1,47 @@
 <?php
-	namespace Suphle\Tests\Integration\Services\DependencySanitization;;
 
-	use Suphle\Exception\Explosives\DevError\UnacceptableDependency;
+namespace Suphle\Tests\Integration\Services\DependencySanitization;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\{BCounter, Services\FailForMailable};
+;
 
-	class OnlyLoadedByTest extends TestSanitization {
+use Suphle\Exception\Explosives\DevError\UnacceptableDependency;
 
-		protected const FORBIDDEN = FailForMailable::class;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\{BCounter, Services\FailForMailable};
 
-		protected function setSanitizationPath ():void {
+class OnlyLoadedByTest extends TestSanitization
+{
+    protected const FORBIDDEN = FailForMailable::class;
 
-			$this->sanitizer->setExecutionPath($this->getClassDir(BCounter::class));
-		}
+    protected function setSanitizationPath(): void
+    {
 
-		public function test_unwanted_dependency_throws_errors () {
+        $this->sanitizer->setExecutionPath($this->getClassDir(BCounter::class));
+    }
 
-			// then
-			$this->expectException(UnacceptableDependency::class);
+    public function test_unwanted_dependency_throws_errors()
+    {
 
-			$this->expectExceptionMessageMatches(
+        // then
+        $this->expectException(UnacceptableDependency::class);
 
-				$this->escapeClassName(self::FORBIDDEN)
-			);
+        $this->expectExceptionMessageMatches(
+            $this->escapeClassName(self::FORBIDDEN)
+        );
 
-			// given @see setUp path setting
-			
-			$this->sanitizer->protectMailBuilders();
+        // given @see setUp path setting
 
-			$this->sanitizer->cleanseConsumers(); // when
-		}
+        $this->sanitizer->protectMailBuilders();
 
-		public function test_permitted_consumer_throws_no_error () {
-			
-			$this->sanitizer->protectMailBuilders([self::FORBIDDEN]); // given
+        $this->sanitizer->cleanseConsumers(); // when
+    }
 
-			$this->sanitizer->cleanseConsumers(); // when
+    public function test_permitted_consumer_throws_no_error()
+    {
 
-			$this->assertTrue(true);
-		}
-	}
-?>
+        $this->sanitizer->protectMailBuilders([self::FORBIDDEN]); // given
+
+        $this->sanitizer->cleanseConsumers(); // when
+
+        $this->assertTrue(true);
+    }
+}

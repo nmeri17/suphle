@@ -1,23 +1,26 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-	use Suphle\Services\ServiceCoordinator;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-	class NestedController extends ServiceCoordinator {
+use Suphle\Services\ServiceCoordinator;
 
-		public function noInner () {
+class NestedController extends ServiceCoordinator
+{
+    public function noInner()
+    {
 
-			return [];
-		}
+        return [];
+    }
 
-		public function hasInner () {
+    public function hasInner()
+    {
 
-			return [];
-		}
+        return [];
+    }
 
-		public function thirdSegmentHandler () {
+    public function thirdSegmentHandler()
+    {
 
-			return [];
-		}
-	}
-?>
+        return [];
+    }
+}

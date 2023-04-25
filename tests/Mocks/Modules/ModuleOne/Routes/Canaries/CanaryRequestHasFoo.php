@@ -1,27 +1,30 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Canaries;
 
-	use Suphle\Contracts\Routing\CanaryGateway;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Canaries;
 
-	use Suphle\Request\PayloadStorage;
+use Suphle\Contracts\Routing\CanaryGateway;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\CanaryCollections\CollectionRequestHasFoo;
+use Suphle\Request\PayloadStorage;
 
-	class CanaryRequestHasFoo implements CanaryGateway {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\CanaryCollections\CollectionRequestHasFoo;
 
-		public function __construct(protected readonly PayloadStorage $payloadStorage) {
+class CanaryRequestHasFoo implements CanaryGateway
+{
+    public function __construct(protected readonly PayloadStorage $payloadStorage)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function willLoad ():bool {
+    public function willLoad(): bool
+    {
 
-			return $this->payloadStorage->hasKey("foo");
-		}
+        return $this->payloadStorage->hasKey("foo");
+    }
 
-		public function entryClass ():string {
+    public function entryClass(): string
+    {
 
-			return CollectionRequestHasFoo::class;
-		}
-	}
-?>
+        return CollectionRequestHasFoo::class;
+    }
+}

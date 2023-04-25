@@ -1,8 +1,8 @@
 <?php
-	namespace Suphle\Contracts\Exception;
 
-	interface BroadcastableException {
+namespace Suphle\Contracts\Exception;
 
-		//
-	}
-?>
+interface BroadcastableException
+{
+    //
+}

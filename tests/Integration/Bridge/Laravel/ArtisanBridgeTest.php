@@ -1,59 +1,62 @@
 <?php
-	namespace Suphle\Tests\Integration\Bridge\Laravel;
 
-	use Suphle\Hydration\Container;
+namespace Suphle\Tests\Integration\Bridge\Laravel;
 
-	use Suphle\Contracts\Bridge\LaravelContainer;
+use Suphle\Hydration\Container;
 
-	use Suphle\Bridge\Laravel\Cli\ArtisanCli;
+use Suphle\Contracts\Bridge\LaravelContainer;
 
-	use Suphle\Testing\{TestTypes\CommandLineTest, Condiments\FilesystemCleaner};
+use Suphle\Bridge\Laravel\Cli\ArtisanCli;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
+use Suphle\Testing\{TestTypes\CommandLineTest, Condiments\FilesystemCleaner};
 
-	use Illuminate\Database\MigrationServiceProvider;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
-	use Symfony\Component\Console\Tester\CommandTester;
+use Illuminate\Database\MigrationServiceProvider;
 
-	class ArtisanBridgeTest extends CommandLineTest {
+use Symfony\Component\Console\Tester\CommandTester;
 
-		use FilesystemCleaner;
+class ArtisanBridgeTest extends CommandLineTest
+{
+    use FilesystemCleaner;
 
-		protected const MIGRATION_FOLDER = "sample_migrations";
+    protected const MIGRATION_FOLDER = "sample_migrations";
 
-		protected function getModules ():array {
+    protected function getModules(): array
+    {
 
-			return [new ModuleOneDescriptor(new Container) ];
-		}
+        return [new ModuleOneDescriptor(new Container()) ];
+    }
 
-		public function test_can_create_migrations () {
+    public function test_can_create_migrations()
+    {
 
-			// given => migrator command is wired in during laravel booting in artisan environment
+        // given => migrator command is wired in during laravel booting in artisan environment
 
-			$migrationPath = $this->migrationPath();
+        $migrationPath = $this->migrationPath();
 
-			$this->assertEmptyDirectory($migrationPath); // I would've liked to replace migrator instance injected in MigrationServiceProvider with a mock, but that replacement hasn't been possible
+        $this->assertEmptyDirectory($migrationPath); // I would've liked to replace migrator instance injected in MigrationServiceProvider with a mock, but that replacement hasn't been possible
 
-			$command = $this->consoleRunner->findHandler(ArtisanCli::commandSignature());
+        $command = $this->consoleRunner->findHandler(ArtisanCli::commandSignature());
 
-			$commandTester = new CommandTester($command);
+        $commandTester = new CommandTester($command);
 
-			$commandTester->execute([ // when
+        $commandTester->execute([ // when
 
-				ArtisanCli::TO_FORWARD_ARGUMENT => "make:migration create_users_table --path=" . self::MIGRATION_FOLDER,
-			]);
+            ArtisanCli::TO_FORWARD_ARGUMENT => "make:migration create_users_table --path=" . self::MIGRATION_FOLDER,
+        ]);
 
-			// then
-			$commandTester->assertCommandIsSuccessful(); // $commandTester::getDisplay can be used to extract console output as a string
+        // then
+        $commandTester->assertCommandIsSuccessful(); // $commandTester::getDisplay can be used to extract console output as a string
 
-			$this->assertNotEmptyDirectory($migrationPath, true);
-		}
+        $this->assertNotEmptyDirectory($migrationPath, true);
+    }
 
-		private function migrationPath ():string {
+    private function migrationPath(): string
+    {
 
-			return $this->firstModuleContainer()->getClass(LaravelContainer::class)
+        return $this->firstModuleContainer()->getClass(LaravelContainer::class)
 
-			->basePath() . DIRECTORY_SEPARATOR . self::MIGRATION_FOLDER;
-		}
-	}
-?>
+        ->basePath() . DIRECTORY_SEPARATOR . self::MIGRATION_FOLDER;
+    }
+}

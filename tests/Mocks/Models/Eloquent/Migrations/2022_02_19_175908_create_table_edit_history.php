@@ -1,33 +1,34 @@
 <?php
-	namespace Suphle\Adapters\Orms\Eloquent\Migrations;
 
-	use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
+namespace Suphle\Adapters\Orms\Eloquent\Migrations;
 
-	use Illuminate\Database\{Migrations\Migration, Schema\Blueprint};
+use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
 
-	use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\{Migrations\Migration, Schema\Blueprint};
 
-	return new class extends Migration {
+use Illuminate\Support\Facades\Schema;
 
-		public function up ():void {
+return new class () extends Migration {
+    public function up(): void
+    {
 
-			Schema::create("edit_history", function (Blueprint $table) {
+        Schema::create("edit_history", function (Blueprint $table) {
 
-				$table->id();
+            $table->id();
 
-				$table->morphs("historical");
+            $table->morphs("historical");
 
-				$table->foreignIdFor(EloquentUser::class);
+            $table->foreignIdFor(EloquentUser::class);
 
-				$table->json("payload");
+            $table->json("payload");
 
-				$table->timestampsTz();
-			});
-		}
+            $table->timestampsTz();
+        });
+    }
 
-		public function down ():void {
+    public function down(): void
+    {
 
-			Schema::drop("edit_history");
-		}
-	};
-?>
+        Schema::drop("edit_history");
+    }
+};

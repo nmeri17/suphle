@@ -1,34 +1,36 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Authorization\Paths;
 
-	use Suphle\Contracts\Auth\AuthStorage;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Authorization\Paths;
 
-	use Suphle\Request\RouteRule;
+use Suphle\Contracts\Auth\AuthStorage;
 
-	use Suphle\Routing\PathPlaceholders;
+use Suphle\Request\RouteRule;
 
-	use Suphle\Tests\Mocks\Models\Eloquent\Employment;
+use Suphle\Routing\PathPlaceholders;
 
-	class EmploymentEditRule extends RouteRule {
+use Suphle\Tests\Mocks\Models\Eloquent\Employment;
 
-		public function __construct (AuthStorage $authStorage, private readonly Employment $model, private readonly PathPlaceholders $pathPlaceholders) {
+class EmploymentEditRule extends RouteRule
+{
+    public function __construct(AuthStorage $authStorage, private readonly Employment $model, private readonly PathPlaceholders $pathPlaceholders)
+    {
 
-			parent::__construct($authStorage);
-		}
+        parent::__construct($authStorage);
+    }
 
-		public function permit ():bool {
+    public function permit(): bool
+    {
 
-			return /*$user->isAdmin() &&*/ $this->authStorage->getId() == $this->getCreatorId(); // not necessary cuz of the preceding rule combined with this, unless we want to replace "&&" with "||"
-		}
+        return /*$user->isAdmin() &&*/ $this->authStorage->getId() == $this->getCreatorId(); // not necessary cuz of the preceding rule combined with this, unless we want to replace "&&" with "||"
+    }
 
-		protected function getCreatorId ():int {
+    protected function getCreatorId(): int
+    {
 
-			$employment = $this->model->find(
-			
-				$this->pathPlaceholders->getSegmentValue("id")
-			);
+        $employment = $this->model->find(
+            $this->pathPlaceholders->getSegmentValue("id")
+        );
 
-			return $employment->employer->user_id;
-		}
-	}
-?>
+        return $employment->employer->user_id;
+    }
+}

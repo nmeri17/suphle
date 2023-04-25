@@ -1,66 +1,78 @@
 <?php
-	namespace Suphle\IO\Image\Operations;
 
-	use Suphle\Contracts\IO\Image\{ImageOptimiseOperation, ImageLocator};
+namespace Suphle\IO\Image\Operations;
 
-	use Suphle\File\FileSystemReader;
+use Suphle\Contracts\IO\Image\{ImageOptimiseOperation, ImageLocator};
 
-	use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Suphle\File\FileSystemReader;
 
-	abstract class BaseOptimizeOperation implements ImageOptimiseOperation {
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
-		protected array $imageObjects = [], $generatedFileNames = []; // only required for async operations
-		protected $client;
-		
-		protected string $resourceName, $operationName; // using a property instead of a constant since we can't formalise such as a contract
+abstract class BaseOptimizeOperation implements ImageOptimiseOperation
+{
+    protected array $imageObjects = [];
+    protected array $generatedFileNames = []; // only required for async operations
+    protected $client;
 
-		public function __construct(protected ImageLocator $imageLocator, protected FileSystemReader $fileSystemReader) {
+    protected string $resourceName;
 
-			//
-		}
+    protected string $operationName; // using a property instead of a constant since we can't formalise such as a contract
 
-		public function getAsyncNames ():array {
+    public function __construct(protected ImageLocator $imageLocator, protected FileSystemReader $fileSystemReader)
+    {
 
-			return $this->generatedFileNames = array_map(fn($image) => $this->getImageNewName($image), $this->imageObjects);
-		}
+        //
+    }
 
-		protected function getImageNewName (UploadedFile $image):string {
+    public function getAsyncNames(): array
+    {
 
-			return $this->imageLocator->resolveName(
+        return $this->generatedFileNames = array_map(fn ($image) => $this->getImageNewName($image), $this->imageObjects);
+    }
 
-				$image, $this->operationName, $this->resourceName
-			);
-		}
+    protected function getImageNewName(UploadedFile $image): string
+    {
 
-		public function setFiles (array $images):void {
+        return $this->imageLocator->resolveName(
+            $image,
+            $this->operationName,
+            $this->resourceName
+        );
+    }
 
-			$this->imageObjects = $images;
-		}
+    public function setFiles(array $images): void
+    {
 
-		public function savesAsync ():bool {
+        $this->imageObjects = $images;
+    }
 
-			return false;
-		}
+    public function savesAsync(): bool
+    {
 
-		public function setResourceName (string $name):void {
+        return false;
+    }
 
-			$this->resourceName = $name;
-		}
+    public function setResourceName(string $name): void
+    {
 
-		public function getOperationName ():string {
+        $this->resourceName = $name;
+    }
 
-			return $this->operationName;
-		}
+    public function getOperationName(): string
+    {
 
-		protected function localFileCopy (UploadedFile $image):string {
+        return $this->operationName;
+    }
 
-			$newPath = $this->getImageNewName($image);
+    protected function localFileCopy(UploadedFile $image): string
+    {
 
-			$this->fileSystemReader->ensureDirectoryExists($newPath);
+        $newPath = $this->getImageNewName($image);
 
-			copy($image->getPathname(), $newPath);
+        $this->fileSystemReader->ensureDirectoryExists($newPath);
 
-			return $newPath;
-		}
-	}
-?>
+        copy($image->getPathname(), $newPath);
+
+        return $newPath;
+    }
+}

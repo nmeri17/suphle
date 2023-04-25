@@ -1,226 +1,241 @@
 <?php
-	namespace Suphle\Testing\TestTypes;
 
-	use Suphle\Contracts\{Presentation\BaseRenderer, Modules\DescriptorInterface};
+namespace Suphle\Testing\TestTypes;
 
-	use Suphle\Hydration\{Container, Structures\ObjectDetails};
+use Suphle\Contracts\{Presentation\BaseRenderer, Modules\DescriptorInterface};
 
-	use Suphle\Modules\ModuleExceptionBridge;
+use Suphle\Hydration\{Container, Structures\ObjectDetails};
 
-	use Suphle\Exception\DetectedExceptionManager;
+use Suphle\Modules\ModuleExceptionBridge;
 
-	use Suphle\Testing\Condiments\{ BaseModuleInteractor, ModuleReplicator};
+use Suphle\Exception\DetectedExceptionManager;
 
-	use Suphle\Testing\Proxies\{ModuleHttpTest, Extensions\FrontDoor};
+use Suphle\Testing\Condiments\{ BaseModuleInteractor, ModuleReplicator};
 
-	use PHPUnit\Framework\{ ExpectationFailedException, MockObject\Stub\Stub};
+use Suphle\Testing\Proxies\{ModuleHttpTest, Extensions\FrontDoor};
 
-	use Throwable, Exception;
+use PHPUnit\Framework\{ ExpectationFailedException, MockObject\Stub\Stub};
 
-	abstract class InvestigateSystemCrash extends TestVirginContainer { // extending from this for sub classes to have access to [dataProvider]
+use Throwable;
+use Exception;
 
-		use BaseModuleInteractor, ModuleReplicator, ModuleHttpTest;
+abstract class InvestigateSystemCrash extends TestVirginContainer
+{ // extending from this for sub classes to have access to [dataProvider]
 
-		protected const BRIDGE_NAME = ModuleExceptionBridge::class;
-  
-  		protected const BROADCASTER_NAME = DetectedExceptionManager::class;
+    use BaseModuleInteractor;
+    use ModuleReplicator;
+    use ModuleHttpTest;
 
-		protected ObjectDetails $objectMeta;
+    protected const BRIDGE_NAME = ModuleExceptionBridge::class;
 
-		protected bool $softenDisgraceful = false; // prevents us from stubbing [BRIDGE_NAME]; we'll use the real one i.e. so that disgracefulShutdown can run
+    protected const BROADCASTER_NAME = DetectedExceptionManager::class;
 
-		protected function setUp ():void {
+    protected ObjectDetails $objectMeta;
 
-			$this->entrance = new FrontDoor ($this->modules = [$this->getModule()]);
+    protected bool $softenDisgraceful = false; // prevents us from stubbing [BRIDGE_NAME]; we'll use the real one i.e. so that disgracefulShutdown can run
 
-			$this->provideTestEquivalents();
+    protected function setUp(): void
+    {
 
-			$this->bootMockEntrance($this->entrance);
+        $this->entrance = new FrontDoor($this->modules = [$this->getModule()]);
 
-			$this->objectMeta = $this->getContainer()->getClass(ObjectDetails::class);
-		}
+        $this->provideTestEquivalents();
 
-		protected function getContainer ():Container {
+        $this->bootMockEntrance($this->entrance);
 
-			return $this->firstModuleContainer();
-		}
+        $this->objectMeta = $this->getContainer()->getClass(ObjectDetails::class);
+    }
 
-		abstract protected function getModule ():DescriptorInterface;
+    protected function getContainer(): Container
+    {
 
-		protected function assertWontBroadcast ( callable $flammable) {
+        return $this->firstModuleContainer();
+    }
 
-			return $this->executeHandlerDoubles(0, $flammable);
-		}
+    abstract protected function getModule(): DescriptorInterface;
 
-		/**
-		 * For this to run during a request, all exception handling has to fail
-		*/
-		protected function assertWillBroadcast ( callable $flammable) {
+    protected function assertWontBroadcast(callable $flammable)
+    {
 
-			return $this->executeHandlerDoubles(1, $flammable);
-		}
+        return $this->executeHandlerDoubles(0, $flammable);
+    }
 
-		/**
-		 * 
-		 * @return $flammable result
-		*/
-		private function executeHandlerDoubles (int $numTimes, callable $flammable) {
+    /**
+     * For this to run during a request, all exception handling has to fail
+    */
+    protected function assertWillBroadcast(callable $flammable)
+    {
 
-			$this->bindBroadcastAlerter($numTimes, [
+        return $this->executeHandlerDoubles(1, $flammable);
+    }
 
-				$this->anything(), $this->anything() // consider removing
-			]);
+    /**
+     *
+     * @return $flammable result
+    */
+    private function executeHandlerDoubles(int $numTimes, callable $flammable)
+    {
 
-			if ($this->softenDisgraceful)
+        $this->bindBroadcastAlerter($numTimes, [
 
-				$this->stubExceptionBridge();
+            $this->anything(), $this->anything() // consider removing
+        ]);
 
-			return $flammable();
-		}
+        if ($this->softenDisgraceful) {
 
-		/**
-		 * We only want to bind this when we want to verify payload going to the broadcaster. It's not for exceptions since exceptions don't come as objects during shutdown
-		*/
-		protected function bindBroadcastAlerter (int $numTimes, array $argumentList):void {
+            $this->stubExceptionBridge();
+        }
 
-			$this->getContainer()->whenTypeAny()->needsAny([
+        return $flammable();
+    }
 
-				self::BROADCASTER_NAME => $this->mockBroadcastAlerter($numTimes, $argumentList)
-			]);
-		}
+    /**
+     * We only want to bind this when we want to verify payload going to the broadcaster. It's not for exceptions since exceptions don't come as objects during shutdown
+    */
+    protected function bindBroadcastAlerter(int $numTimes, array $argumentList): void
+    {
 
-		/**
-		 * @param {argumentList}: Mock verifications for the alerter method
-		*/
-		protected function mockBroadcastAlerter (int $numTimes, array $argumentList):DetectedExceptionManager {
+        $this->getContainer()->whenTypeAny()->needsAny([
 
-			return $this->replaceConstructorArguments(
+            self::BROADCASTER_NAME => $this->mockBroadcastAlerter($numTimes, $argumentList)
+        ]);
+    }
 
-				self::BROADCASTER_NAME, $this->broadcasterArguments(),
+    /**
+     * @param {argumentList}: Mock verifications for the alerter method
+    */
+    protected function mockBroadcastAlerter(int $numTimes, array $argumentList): DetectedExceptionManager
+    {
 
-				[], [
+        return $this->replaceConstructorArguments(
+            self::BROADCASTER_NAME,
+            $this->broadcasterArguments(),
+            [],
+            [
 
-				DetectedExceptionManager::ALERTER_METHOD => [$numTimes, $argumentList]
-			]);
-		}
+            DetectedExceptionManager::ALERTER_METHOD => [$numTimes, $argumentList]
+            ]
+        );
+    }
 
-		/**
-		 * @return Constructor arguments to use in creating double for DetectedExceptionManager
-		*/
-		protected function broadcasterArguments ():array {
+    /**
+     * @return Constructor arguments to use in creating double for DetectedExceptionManager
+    */
+    protected function broadcasterArguments(): array
+    {
 
-			return [];
-		}
+        return [];
+    }
 
-		/**
-		 * What this does is prevent [disgracefulShutdown] from running when [gracefulShutdown] fails. In order for it to be useful, you'd have to violate DetectedExceptionManager::ALERTER_METHOD by not calling it (mocked before we got here), or throwing another error from [gracefulShutdown]
-		*/
-		protected function stubExceptionBridge (array $stubMethods = [], array $mockMethods = []):void {
+    /**
+     * What this does is prevent [disgracefulShutdown] from running when [gracefulShutdown] fails. In order for it to be useful, you'd have to violate DetectedExceptionManager::ALERTER_METHOD by not calling it (mocked before we got here), or throwing another error from [gracefulShutdown]
+    */
+    protected function stubExceptionBridge(array $stubMethods = [], array $mockMethods = []): void
+    {
 
-			$parameters = $this->getContainer()->getMethodParameters(
+        $parameters = $this->getContainer()->getMethodParameters(
+            Container::CLASS_CONSTRUCTOR,
+            self::BRIDGE_NAME
+        );
 
-				Container::CLASS_CONSTRUCTOR, self::BRIDGE_NAME
-			);
+        $defaultStubs = [
 
-			$defaultStubs = [
+            "disgracefulShutdown" => $this->returnCallback(function ($errorDetails, $latestException) {
 
-				"disgracefulShutdown" => $this->returnCallback(function ($errorDetails, $latestException) {
+                throw $latestException;
+            }),
 
-					throw $latestException;
-				}),
-				
-				"writeStatusCode" => null
-			];
+            "writeStatusCode" => null
+        ];
 
-			$this->massProvide([
+        $this->massProvide([
 
-				self::BRIDGE_NAME => $this->replaceConstructorArguments(
+            self::BRIDGE_NAME => $this->replaceConstructorArguments(
+                self::BRIDGE_NAME,
+                $parameters,
+                array_merge($defaultStubs, $stubMethods),
+                $mockMethods
+            )
+        ]);
+    }
 
-					self::BRIDGE_NAME, $parameters,
+    /**
+     * The bridge stubbed here is the one used by entrance, since it only looks for that object when triggered by handling a request
+     *
+     * @param {exception}: Should either be expected exception or its super class
+     *
+     * @param {flammable}: If exception is indeed thrown, and this callback contains an HTTP request, renderer returned will be a dummy one since we'll be unable to evaluate a real one
+    */
+    protected function assertWillCatchException(string $exceptionName, callable $flammable, string $exceptionMessage = null): void
+    {
 
-					array_merge($defaultStubs, $stubMethods),
+        $this->stubExceptionBridge([
 
-					$mockMethods
-				)
-			]);
-		}
+            "handlingRenderer" => $this->positiveDouble(BaseRenderer::class, [
 
-		/**
-		 * The bridge stubbed here is the one used by entrance, since it only looks for that object when triggered by handling a request
-		 * 
-		 * @param {exception}: Should either be expected exception or its super class
-		 * 
-		 * @param {flammable}: If exception is indeed thrown, and this callback contains an HTTP request, renderer returned will be a dummy one since we'll be unable to evaluate a real one
-		*/
-		protected function assertWillCatchException (string $exceptionName, callable $flammable, string $exceptionMessage = null):void {
+                "getRawResponse" => [], "getStatusCode" => 500
+            ])
+        ], [
 
-			$this->stubExceptionBridge([
+            "hydrateHandler" => [1, [
 
-				"handlingRenderer" => $this->positiveDouble(BaseRenderer::class, [
+                $this->callback(function ($subject) use ($exceptionName, $exceptionMessage) {
 
-					"getRawResponse" => [], "getStatusCode" => 500
-				])
-			], [
+                    $receivedException = $subject::class;
 
-				"hydrateHandler" => [1, [
+                    $matchesException = $receivedException === $exceptionName ||
 
-					$this->callback(function ($subject) use ($exceptionName, $exceptionMessage) {
+                    $this->objectMeta->implementsInterface($exceptionName, $receivedException); // we would've used assertInstanceOf here, but if that fails, it swallows context of the original error and throws the assertInstanceOf one, instead
 
-						$receivedException = $subject::class;
+                    $matchesMessage = !$exceptionMessage ? true :
 
-						$matchesException = $receivedException === $exceptionName ||
+                    preg_match("/$exceptionMessage/i", $subject);
 
-						$this->objectMeta->implementsInterface($exceptionName, $receivedException); // we would've used assertInstanceOf here, but if that fails, it swallows context of the original error and throws the assertInstanceOf one, instead
+                    return $matchesException && $matchesMessage;
+                })
+            ]]
+        ]);
 
-						$matchesMessage = !$exceptionMessage ? true:
+        $flammable();
+    }
 
-						preg_match("/$exceptionMessage/i", $subject);
+    /**
+     * Compares renderer handlers
+     * This can only run if exception was caught i.e. not during app shutdown
+    */
+    protected function assertExceptionUsesRenderer(BaseRenderer $renderer, callable $flammable): void
+    {
 
-						return $matchesException && $matchesMessage;
-					})
-				]]
-			]);
+        if ($this->softenDisgraceful) {
 
-			$flammable();
-		}
+            $this->stubExceptionBridge();
+        }
 
-		/**
-		 * Compares renderer handlers
-		 * This can only run if exception was caught i.e. not during app shutdown
-		*/
-		protected function assertExceptionUsesRenderer (BaseRenderer $renderer, callable $flammable):void {
+        try {
 
-			if ($this->softenDisgraceful)
+            $flammable();
+        } catch (Throwable $exception) {
 
-				$this->stubExceptionBridge();
+            $this->entrance->findExceptionRenderer($exception);
 
-			try {
-				
-				$flammable();
-			} catch (Throwable $exception) {
+            $resolvedRenderer = $this->entrance->underlyingRenderer();
 
-				$this->entrance->findExceptionRenderer($exception);
+            $this->assertTrue(
+                $renderer->matchesHandler($resolvedRenderer->getHandler()),
+                "Failed asserting that exception '". $exception::class . "' was handled with given renderer"
+            );
+        }
+    }
 
-				$resolvedRenderer = $this->entrance->underlyingRenderer();
-				
-				$this->assertTrue(
+    protected function debugCaughtException(): void
+    {
 
-					$renderer->matchesHandler($resolvedRenderer->getHandler()),
+        $this->stubExceptionBridge([
 
-					"Failed asserting that exception '". $exception::class . "' was handled with given renderer"
-				);
-			}
-		}
+            "hydrateHandler" => $this->returnCallback(function ($subject): never {
 
-		protected function debugCaughtException ():void {
-
-			$this->stubExceptionBridge([
-
-				"hydrateHandler" => $this->returnCallback(function ($subject): never {
-
-					throw $subject;
-				})
-			]);
-		}
-	}
-?>
+                throw $subject;
+            })
+        ]);
+    }
+}

@@ -1,31 +1,34 @@
 <?php
-	namespace Suphle\Security\CSRF;
 
-	use Suphle\Contracts\IO\Session;
+namespace Suphle\Security\CSRF;
 
-	class CsrfGenerator {
+use Suphle\Contracts\IO\Session;
 
-		final const TOKEN_FIELD = "_csrf_token";
+class CsrfGenerator
+{
+    final public const TOKEN_FIELD = "_csrf_token";
 
-		public function __construct(protected readonly Session $sessionClient) {
+    public function __construct(protected readonly Session $sessionClient)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function newToken ():string {
+    public function newToken(): string
+    {
 
-			$token = bin2hex(random_bytes(35));
+        $token = bin2hex(random_bytes(35));
 
-			$this->sessionClient->setValue(self::TOKEN_FIELD, $token);
+        $this->sessionClient->setValue(self::TOKEN_FIELD, $token);
 
-			return $token;
-		}
+        return $token;
+    }
 
-		public function isVerifiedToken (string $incomingToken):bool {
+    public function isVerifiedToken(string $incomingToken): bool
+    {
 
-			$savedToken = $this->sessionClient->getValue(self::TOKEN_FIELD);
+        $savedToken = $this->sessionClient->getValue(self::TOKEN_FIELD);
 
-			return !empty($savedToken) && $savedToken == $incomingToken;
-		}
-	}
-?>
+        return !empty($savedToken) && $savedToken == $incomingToken;
+    }
+}

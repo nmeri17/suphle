@@ -1,51 +1,54 @@
 <?php
-	namespace Suphle\Tests\Integration\Services\Proxies\SystemModelEdit;
 
-	use Suphle\Contracts\Database\OrmDialect;
+namespace Suphle\Tests\Integration\Services\Proxies\SystemModelEdit;
 
-	use Suphle\Testing\TestTypes\ModuleLevelTest;
+use Suphle\Contracts\Database\OrmDialect;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\SystemModelController;
+use Suphle\Testing\TestTypes\ModuleLevelTest;
 
-	use Suphle\Tests\Integration\Services\ReplacesRequestPayload;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\SystemModelController;
 
-	class SystemEditOrmTest extends ModuleLevelTest {
+use Suphle\Tests\Integration\Services\ReplacesRequestPayload;
 
-		use ReplacesRequestPayload;
+class SystemEditOrmTest extends ModuleLevelTest
+{
+    use ReplacesRequestPayload;
 
-		private function mockOrm ($numTimes):void {
+    private function mockOrm($numTimes): void
+    {
 
-			$this->massProvide([
+        $this->massProvide([
 
-				OrmDialect::class => $this->positiveDouble(OrmDialect::class, [], [
-				
-					"runTransaction" => [$numTimes, [$this->anything()]]
-				])
-			]);
-		}
+            OrmDialect::class => $this->positiveDouble(OrmDialect::class, [], [
 
-		public function test_update_method_runs_in_transaction () {
+                "runTransaction" => [$numTimes, [$this->anything()]]
+            ])
+        ]);
+    }
 
-			// given
-			$this->stubRequestObjects(1);
+    public function test_update_method_runs_in_transaction()
+    {
 
-			$this->mockOrm(1); // then
+        // given
+        $this->stubRequestObjects(1);
 
-			$this->getContainer()->getClass(SystemModelController::class)
+        $this->mockOrm(1); // then
 
-			->handlePutRequest(); // when
-		}
+        $this->getContainer()->getClass(SystemModelController::class)
 
-		public function test_other_methods_dont_run_in_transaction () {
+        ->handlePutRequest(); // when
+    }
 
-			// given
-			$this->stubRequestObjects(1);
+    public function test_other_methods_dont_run_in_transaction()
+    {
 
-			$this->mockOrm(0); // then
-			
-			$this->getContainer()->getClass(SystemModelController::class)
+        // given
+        $this->stubRequestObjects(1);
 
-			->putOtherServiceMethod(); // when
-		}
-	}
-?>
+        $this->mockOrm(0); // then
+
+        $this->getContainer()->getClass(SystemModelController::class)
+
+        ->putOtherServiceMethod(); // when
+    }
+}

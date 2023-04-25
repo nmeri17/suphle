@@ -1,11 +1,11 @@
 <?php
-	namespace Suphle\Routing;
 
-	use Suphle\Services\Decorators\BindsAsSingleton;
+namespace Suphle\Routing;
 
-	#[BindsAsSingleton]
-	class PreMiddlewareRegistry extends RouteCollectionMeta {
+use Suphle\Services\Decorators\BindsAsSingleton;
 
-		//
-	}
-?>
+#[BindsAsSingleton]
+class PreMiddlewareRegistry extends RouteCollectionMeta
+{
+    //
+}

@@ -1,16 +1,18 @@
 <?php
-	namespace Suphle\Flows\Previous;
 
-	class ResponseBuilderProxy {
-		
-		public function collectionNode(string $nodeName, string $columnName = "id"):CollectionNode {
+namespace Suphle\Flows\Previous;
 
-			return new CollectionNode($nodeName, $columnName);
-		}
-		
-		public function getNode(string $nodeName):SingleNode {
+class ResponseBuilderProxy
+{
+    public function collectionNode(string $nodeName, string $columnName = "id"): CollectionNode
+    {
 
-			return new SingleNode($nodeName);
-		}
-	}
-?>
+        return new CollectionNode($nodeName, $columnName);
+    }
+
+    public function getNode(string $nodeName): SingleNode
+    {
+
+        return new SingleNode($nodeName);
+    }
+}

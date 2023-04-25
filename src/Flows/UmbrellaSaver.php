@@ -1,89 +1,94 @@
 <?php
-	namespace Suphle\Flows;
 
-	use Suphle\Flows\Structures\{RouteUserNode, RouteUmbrella, PendingFlowDetails};
+namespace Suphle\Flows;
 
-	use Suphle\Contracts\{IO\CacheManager, Presentation\BaseRenderer, Config\Flows};
+use Suphle\Flows\Structures\{RouteUserNode, RouteUmbrella, PendingFlowDetails};
 
-	use Suphle\Hydration\Structures\ObjectDetails;
+use Suphle\Contracts\{IO\CacheManager, Presentation\BaseRenderer, Config\Flows};
 
-	class UmbrellaSaver {
+use Suphle\Hydration\Structures\ObjectDetails;
 
-		final const FLOW_PREFIX = "_suphle_flow";
+class UmbrellaSaver
+{
+    final public const FLOW_PREFIX = "_suphle_flow";
 
-		public function __construct (
-			protected readonly Flows $flowConfig,
+    public function __construct(
+        protected readonly Flows $flowConfig,
+        protected readonly CacheManager $cacheManager,
+        protected readonly ObjectDetails $objectMeta
+    ) {
+    }
 
-			protected readonly CacheManager $cacheManager,
+    public function getPatternLocation(string $urlPattern): string
+    {
 
-			protected readonly ObjectDetails $objectMeta
-		) {}
+        return self::FLOW_PREFIX . "/" . trim($urlPattern, "/");
+    }
 
-		public function getPatternLocation (string $urlPattern):string {
+    public function saveNewUmbrella(string $urlPattern, RouteUserNode $nodeContent, PendingFlowDetails $originatingFlowDetails): void
+    {
 
-			return self::FLOW_PREFIX . "/" . trim($urlPattern, "/");
-		}
+        $location = $this->getPatternLocation($urlPattern);
 
-		public function saveNewUmbrella (string $urlPattern, RouteUserNode $nodeContent, PendingFlowDetails $originatingFlowDetails):void {
+        $existing = $this->getExistingUmbrella($location);
 
-			$location = $this->getPatternLocation($urlPattern);
-			
-			$existing = $this->getExistingUmbrella($location);
+        if (is_null($existing)) {
 
-			if (is_null($existing)) {
+            $existing = new RouteUmbrella($location, $this->objectMeta);
 
-				$existing = new RouteUmbrella($location, $this->objectMeta);
+            $existing->setAuthMechanism(
+                $originatingFlowDetails->getAuthStorage()
+            );
+        }
 
-				$existing->setAuthMechanism(
+        $existing->addUser(
+            $originatingFlowDetails->getStoredUserId(),
+            $nodeContent
+        );
 
-					$originatingFlowDetails->getAuthStorage()
-				);
-			}
+        $saved = $this->cacheManager->saveItem($location, $existing);
 
-			$existing->addUser(
+        $contentType = $this->getContentType($nodeContent->getRenderer());
 
-				$originatingFlowDetails->getStoredUserId(), $nodeContent
-			);
+        if ($contentType) {
 
-			$saved = $this->cacheManager->saveItem($location, $existing);
+            $this->cacheManager->tagItem($contentType, $existing);
+        }
 
-			$contentType = $this->getContentType($nodeContent->getRenderer());
+        // or, $location can subscribe to a topic(instead of using tags?). update listener publishes to that topic (so we never have outdated content)
+    }
 
-			if ($contentType)
+    /**
+     * @return model type, where present
+    */
+    private function getContentType(BaseRenderer $renderer): ?string
+    {
 
-				$this->cacheManager->tagItem($contentType, $existing);
+        $contentTypes = $this->flowConfig->contentTypeIdentifier();
 
-			// or, $location can subscribe to a topic(instead of using tags?). update listener publishes to that topic (so we never have outdated content)
-		}
+        $payload = $renderer->getRawResponse();
 
-		/**
-		 * @return model type, where present
-		*/
-		private function getContentType (BaseRenderer $renderer):?string {
+        $payloadType = $this->objectMeta->getValueType($payload);
 
-			$contentTypes = $this->flowConfig->contentTypeIdentifier();
+        if (array_key_exists($payloadType, $contentTypes)) {
 
-			$payload = $renderer->getRawResponse();
+            return call_user_func([$payload, $contentTypes[$payloadType]]);
+        }
 
-			$payloadType = $this->objectMeta->getValueType($payload);
+        return null;
+    }
 
-			if (array_key_exists($payloadType, $contentTypes))
+    public function getExistingUmbrella(string $urlPattern): ?RouteUmbrella
+    {
 
-				return call_user_func([$payload, $contentTypes[$payloadType]]);
+        return $this->cacheManager->getItem($urlPattern); // or combine [tag] with the [get]
+    }
 
-			return null;
-		}
+    public function updateUmbrella(string $originalPattern, RouteUmbrella $existing): void
+    {
 
-		public function getExistingUmbrella (string $urlPattern):?RouteUmbrella {
+        $prefixed = $this->getPatternLocation($originalPattern);
 
-			return $this->cacheManager->getItem($urlPattern); // or combine [tag] with the [get]
-		}
-
-		public function updateUmbrella (string $originalPattern, RouteUmbrella $existing):void {
-
-			$prefixed = $this->getPatternLocation($originalPattern);
-
-			$this->cacheManager->saveItem($prefixed, $existing); // override whatever was there
-		}
-	}
-?>
+        $this->cacheManager->saveItem($prefixed, $existing); // override whatever was there
+    }
+}

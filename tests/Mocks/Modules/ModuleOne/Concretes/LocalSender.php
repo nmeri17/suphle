@@ -1,55 +1,59 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes;
 
-	use Suphle\Events\EmitProxy;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes;
 
-	use Suphle\Contracts\Events;
+use Suphle\Events\EmitProxy;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleApi;
+use Suphle\Contracts\Events;
 
-	class LocalSender {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleApi;
 
-		use EmitProxy;
+class LocalSender
+{
+    use EmitProxy;
 
-		public const CASCADE_BEGIN_EVENT = "cascading",
+    public const CASCADE_BEGIN_EVENT = "cascading",
 
-		CONCAT_EVENT = "concating",
+    CONCAT_EVENT = "concating",
 
-		CASCADE_EXTERNAL_BEGIN_EVENT = "begin_external_cascade",
+    CASCADE_EXTERNAL_BEGIN_EVENT = "begin_external_cascade",
 
-		EMPTY_PAYLOAD_EVENT = "no_payload";
+    EMPTY_PAYLOAD_EVENT = "no_payload";
 
-		public function __construct (
+    public function __construct(
+        protected readonly Events $eventManager
+    ) {
 
-			protected readonly Events $eventManager
-		) {
+        //
+    }
 
-			//
-		}
+    public function sendLocalEvent($payload): void
+    {
 
-		public function sendLocalEvent ($payload):void {
+        $this->emitHelper(ModuleApi::DEFAULT_EVENT, $payload);
+    }
 
-			$this->emitHelper (ModuleApi::DEFAULT_EVENT, $payload);
-		}
+    public function sendLocalEventNoPayload(): void
+    {
 
-		public function sendLocalEventNoPayload ():void {
+        $this->emitHelper(ModuleApi::EMPTY_PAYLOAD_EVENT);
+    }
 
-			$this->emitHelper (ModuleApi::EMPTY_PAYLOAD_EVENT);
-		}
+    public function cascadingEntry($payload): void
+    {
 
-		public function cascadingEntry ($payload):void {
+        $this->emitHelper(self::CASCADE_BEGIN_EVENT, $payload);
+    }
 
-			$this->emitHelper (self::CASCADE_BEGIN_EVENT, $payload);
-		}
+    public function sendConcatHalf($payload): void
+    {
 
-		public function sendConcatHalf ($payload):void {
+        $this->emitHelper(self::CONCAT_EVENT, $payload);
+    }
 
-			$this->emitHelper (self::CONCAT_EVENT, $payload);
-		}
+    public function beginExternalCascade($payload): void
+    {
 
-		public function beginExternalCascade ($payload):void {
-
-			$this->emitHelper (self::CASCADE_EXTERNAL_BEGIN_EVENT, $payload);
-		}
-	}
-?>
+        $this->emitHelper(self::CASCADE_EXTERNAL_BEGIN_EVENT, $payload);
+    }
+}

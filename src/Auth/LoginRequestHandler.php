@@ -1,111 +1,113 @@
 <?php
-	namespace Suphle\Auth;
 
-	use Suphle\Hydration\{Container, DecoratorHydrator, Structures\CallbackDetails};
+namespace Suphle\Auth;
 
-	use Suphle\Contracts\{ Modules\HighLevelRequestHandler, Presentation\BaseRenderer};
+use Suphle\Hydration\{Container, DecoratorHydrator, Structures\CallbackDetails};
 
-	use Suphle\Contracts\Auth\{LoginFlowMediator, ModuleLoginHandler, LoginActions};
+use Suphle\Contracts\{ Modules\HighLevelRequestHandler, Presentation\BaseRenderer};
 
-	use Suphle\Request\ValidatorManager;
+use Suphle\Contracts\Auth\{LoginFlowMediator, ModuleLoginHandler, LoginActions};
 
-	use Suphle\Services\Decorators\ValidationRules;
+use Suphle\Request\ValidatorManager;
 
-	use Suphle\Response\SetJsonValidationError;
+use Suphle\Services\Decorators\ValidationRules;
 
-	class LoginRequestHandler implements ModuleLoginHandler {
+use Suphle\Response\SetJsonValidationError;
 
-		use SetJsonValidationError;
+class LoginRequestHandler implements ModuleLoginHandler
+{
+    use SetJsonValidationError;
 
-		protected BaseRenderer $responseRenderer;
+    protected BaseRenderer $responseRenderer;
 
-		protected LoginActions $loginService;
+    protected LoginActions $loginService;
 
-		public function __construct (
-			protected readonly LoginFlowMediator $rendererCollection,
+    public function __construct(
+        protected readonly LoginFlowMediator $rendererCollection,
+        protected readonly Container $container,
+        protected readonly ValidatorManager $validatorManager,
+        protected readonly DecoratorHydrator $decoratorHydrator,
+        protected readonly CallbackDetails $callbackDetails
+    ) {
 
-			protected readonly Container $container,
+        $this->loginService = $rendererCollection->getLoginService();
+    }
 
-			protected readonly ValidatorManager $validatorManager,
+    public function isValidRequest(): bool
+    {
 
-			protected readonly DecoratorHydrator $decoratorHydrator,
+        $attributesList = $this->callbackDetails->getMethodAttributes(
+            $this->loginService::class,
+            "successLogin",
+            ValidationRules::class
+        );
 
-			protected readonly CallbackDetails $callbackDetails
-		) {
+        $latestRules = end($attributesList)->newInstance();
 
-			$this->loginService = $rendererCollection->getLoginService();
-		}
+        $this->validatorManager->setActionRules($latestRules->rules);
 
-		public function isValidRequest ():bool {
+        return $this->validatorManager->isValidated();
+    }
 
-			$attributesList = $this->callbackDetails->getMethodAttributes(
+    public function getValidatorErrors(): array
+    {
 
-				$this->loginService::class, "successLogin",
+        return $this->validatorManager->validationErrors();
+    }
 
-				ValidationRules::class
-			);
+    public function validationRenderer(array $failureDetails): BaseRenderer
+    {
 
-			$latestRules = end($attributesList)->newInstance();
+        $renderer = $this->rendererCollection->failedRenderer(); // browser renderer uses Reload to connect to the get for us, while json returns a plain array as usual
 
-			$this->validatorManager->setActionRules($latestRules->rules);
-	
-			return $this->validatorManager->isValidated();
-		}
+        $renderer->forceArrayShape($failureDetails);
 
-		public function getValidatorErrors ():array {
+        return $renderer;
+    }
 
-			return $this->validatorManager->validationErrors();
-		}
+    public function processLoginRequest(): void
+    {
 
-		public function validationRenderer (array $failureDetails):BaseRenderer {
+        $renderer = $this->responseRenderer;
 
-			$renderer = $this->rendererCollection->failedRenderer(); // browser renderer uses Reload to connect to the get for us, while json returns a plain array as usual
+        $renderer->setCoordinatorClass($this->loginService);
 
-			$renderer->forceArrayShape($failureDetails);
+        $this->executeRenderer();
+    }
 
-			return $renderer;
-		}
+    public function setResponseRenderer(): ModuleLoginHandler
+    {
 
-		public function processLoginRequest ():void {
+        if ($this->loginService->compareCredentials()) {
 
-			$renderer = $this->responseRenderer;
+            $renderer = $this->rendererCollection->successRenderer();
+        } else {
+            $renderer = $this->rendererCollection->failedRenderer();
+        }
 
-			$renderer->setCoordinatorClass($this->loginService);
+        $this->responseRenderer = $this->decoratorHydrator
 
-			$this->executeRenderer();
-		}
+        ->scopeInjecting($renderer, self::class);
 
-		public function setResponseRenderer ():ModuleLoginHandler {
+        return $this;
+    }
 
-			if ($this->loginService->compareCredentials())
+    private function executeRenderer(): void
+    {
 
-				$renderer = $this->rendererCollection->successRenderer();
+        $renderer = $this->responseRenderer;
 
-			else $renderer = $this->rendererCollection->failedRenderer();
+        $dependencies = $this->container->getMethodParameters(
+            $renderer->getHandler(),
+            $renderer->getCoordinator()::class
+        );
 
-			$this->responseRenderer = $this->decoratorHydrator
+        $renderer->invokeActionHandler($dependencies);
+    }
 
-			->scopeInjecting($renderer, self::class);
+    public function handlingRenderer(): ?BaseRenderer
+    {
 
-			return $this;
-		}
-
-		private function executeRenderer ():void {
-
-			$renderer = $this->responseRenderer;
-
-			$dependencies = $this->container->getMethodParameters(
-				$renderer->getHandler(),
-
-				$renderer->getCoordinator()::class
-			);
-
-			$renderer->invokeActionHandler($dependencies);
-		}
-
-		public function handlingRenderer ():?BaseRenderer {
-
-			return $this->responseRenderer;
-		}
-	}
-?>
+        return $this->responseRenderer;
+    }
+}

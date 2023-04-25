@@ -1,10 +1,10 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Enums;
 
-	enum BackedEnum:int {
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Enums;
 
-		case AGNES = 2;
+enum BackedEnum: int
+{
+    case AGNES = 2;
 
-		case FT = 1;
-	}
-?>
+    case FT = 1;
+}

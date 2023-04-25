@@ -1,150 +1,154 @@
 <?php
-	namespace Suphle\Modules;
 
-	use Suphle\Contracts\{ConsoleClient, Modules\DescriptorInterface};
+namespace Suphle\Modules;
 
-	use Suphle\Hydration\Container;
+use Suphle\Contracts\{ConsoleClient, Modules\DescriptorInterface};
 
-	use Suphle\Modules\Structures\ActiveDescriptors;
+use Suphle\Hydration\Container;
 
-	use Suphle\File\{FolderCloner, FileSystemReader};
+use Suphle\Modules\Structures\ActiveDescriptors;
 
-	use Suphle\ComponentTemplates\Commands\InstallComponentCommand;
+use Suphle\File\{FolderCloner, FileSystemReader};
 
-	use Symfony\Component\Console\{Output\OutputInterface, Command\Command};
+use Suphle\ComponentTemplates\Commands\InstallComponentCommand;
 
-	use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\{Output\OutputInterface, Command\Command};
 
-	class ModuleCloneService {
+use Symfony\Component\Console\Input\ArrayInput;
 
-		protected string $executionPath;
+class ModuleCloneService
+{
+    protected string $executionPath;
 
-		protected array $moduleList;
+    protected array $moduleList;
 
-		public function __construct (
+    public function __construct(
+        protected readonly FileSystemReader $fileSystemReader,
+        protected readonly ConsoleClient $consoleClient,
+        protected readonly FolderCloner $folderCloner,
+        protected readonly ModulesBooter $modulesBooter
+    ) {
 
-			protected readonly FileSystemReader $fileSystemReader,
+        //
+    }
 
-			protected readonly ConsoleClient $consoleClient,
+    public function setConsoleDetails(string $executionPath, array $moduleList): self
+    {
 
-			protected readonly FolderCloner $folderCloner,
+        $this->executionPath = $executionPath;
 
-			protected readonly ModulesBooter $modulesBooter
-		) {
+        $this->moduleList = $moduleList;
 
-			//
-		}
+        return $this;
+    }
 
-		public function setConsoleDetails ( string $executionPath, array $moduleList):self {
+    public function setCommandDetails(string $sourceName, bool $isAbsoluteSource, string $writeDestination = null): self
+    {
 
-			$this->executionPath = $executionPath;
+        $this->sourceName = $sourceName;
 
-			$this->moduleList = $moduleList;
+        $this->isAbsoluteSource = $isAbsoluteSource;
 
-			return $this;
-		}
+        $this->writeDestination = $writeDestination;
 
-		public function setCommandDetails (string $sourceName, bool $isAbsoluteSource, string $writeDestination = null):self {
+        return $this;
+    }
 
-			$this->sourceName = $sourceName;
+    public function createModuleFolder(string $moduleName): bool
+    {
 
-			$this->isAbsoluteSource = $isAbsoluteSource;
+        $contentsReplacement = $this->getContentReplacements($moduleName);
 
-			$this->writeDestination = $writeDestination;
+        return $this->folderCloner->setEntryReplacements(
+            $contentsReplacement,
+            $contentsReplacement,
+            $contentsReplacement
+        )
+        ->transferFolder(
+            $this->getSource(),
+            $this->getDestination($moduleName)
+        );
+    }
 
-			return $this;
-		}
+    public function installModuleTemplates(
+        string $moduleName,
+        OutputInterface $output,
+        ?string $descriptorName,
+        ?string $componentArguments
+    ): int {
 
-		public function createModuleFolder (string $moduleName):bool {
+        if (empty($descriptorName)) {
+            return Command::SUCCESS;
+        }
 
-			$contentsReplacement = $this->getContentReplacements($moduleName);
+        $descriptor = $this->bootNewlyCreatedContainer($descriptorName);
 
-			return $this->folderCloner->setEntryReplacements(
+        $command = $this->consoleClient->findCommand( // using the client without binding cliRunner itself (and using that as we do in the tests) because commands shouldn't have access to that high level object and have no need for all the functionality it provides
 
-				$contentsReplacement, $contentsReplacement,
+            InstallComponentCommand::commandSignature()
+        );
 
-				$contentsReplacement
-			)
-			->transferFolder(
+        $command->setModules([
 
-				$this->getSource(), $this->getDestination($moduleName)
-			);
-		}
+            ...$this->moduleList, $descriptor
+        ]);
 
-		public function installModuleTemplates (
-			string $moduleName, OutputInterface $output,
+        $commandOptions = [
 
-			?string $descriptorName, ?string $componentArguments
-		):int {
+            InstallComponentCommand::HYDRATOR_MODULE_OPTION => $descriptor->exportsImplements()
+        ];
 
-			if (empty($descriptorName)) return Command::SUCCESS;
+        if (!is_null($componentArguments)) {
 
-			$descriptor = $this->bootNewlyCreatedContainer($descriptorName);
+            $commandOptions["--" . InstallComponentCommand::COMPONENT_ARGS_OPTION] = $componentArguments;
+        }
 
-			$command = $this->consoleClient->findCommand( // using the client without binding cliRunner itself (and using that as we do in the tests) because commands shouldn't have access to that high level object and have no need for all the functionality it provides
+        $commandInput = new ArrayInput($commandOptions);
 
-				InstallComponentCommand::commandSignature()
-			);
+        return $command->run($commandInput, $output);
+    }
 
-			$command->setModules([
+    public function bootNewlyCreatedContainer(string $descriptorName): DescriptorInterface
+    {
 
-				...$this->moduleList, $descriptor
-			]);
+        $descriptor = new $descriptorName(new Container()); // this is why descriptor fqcn is necessary
 
-			$commandOptions = [
+        $this->modulesBooter->recursivelyBootModuleSet(
+            new ActiveDescriptors([$descriptor])
+        );
 
-				InstallComponentCommand::HYDRATOR_MODULE_OPTION => $descriptor->exportsImplements()
-			];
+        return $descriptor;
+    }
 
-			if (!is_null($componentArguments))
+    protected function getSource(): string
+    {
 
-				$commandOptions["--" . InstallComponentCommand::COMPONENT_ARGS_OPTION] = $componentArguments;
+        if ($this->isAbsoluteSource) {
 
-			$commandInput = new ArrayInput($commandOptions);
+            return $this->sourceName;
+        }
 
-			return $command->run($commandInput, $output);
-		}
+        return $this->fileSystemReader->noTrailingSlash(
+            $this->executionPath
+        ) . DIRECTORY_SEPARATOR. $this->sourceName;
+    }
 
-		public function bootNewlyCreatedContainer (string $descriptorName):DescriptorInterface {
+    protected function getDestination(string $target): string
+    {
 
-			$descriptor = new $descriptorName(new Container); // this is why descriptor fqcn is necessary
+        $destination = $this->fileSystemReader->noTrailingSlash(
+            $this->writeDestination ?? $this->executionPath
+        ). DIRECTORY_SEPARATOR . $target;
 
-			$this->modulesBooter->recursivelyBootModuleSet(
+        return $this->fileSystemReader->pathFromLevels($destination, "", 1); // since we expect to modify even the root folder itself, not only the children
+    }
 
-				new ActiveDescriptors([$descriptor])
-			);
+    /**
+     * Cannot dynamically replace root namespace since at least one module must exist, which isn't true for fresh projects
+    */
+    protected function getContentReplacements(string $moduleName): array
+    {
 
-			return $descriptor;
-		}
-
-		protected function getSource ():string {
-
-			if ($this->isAbsoluteSource)
-
-				return $this->sourceName;
-
-			return $this->fileSystemReader->noTrailingSlash(
-
-				$this->executionPath
-			) . DIRECTORY_SEPARATOR. $this->sourceName;
-		}
-
-		protected function getDestination (string $target):string {
-
-			$destination = $this->fileSystemReader->noTrailingSlash(
-
-				$this->writeDestination ?? $this->executionPath
-			). DIRECTORY_SEPARATOR . $target;
-
-			return $this->fileSystemReader->pathFromLevels($destination, "", 1); // since we expect to modify even the root folder itself, not only the children
-		}
-
-		/**
-		 * Cannot dynamically replace root namespace since at least one module must exist, which isn't true for fresh projects
-		*/
-		protected function getContentReplacements (string $moduleName):array {
-
-			return ["_module_name" => $moduleName];
-		}
-	}
-?>
+        return ["_module_name" => $moduleName];
+    }
+}

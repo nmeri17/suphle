@@ -1,152 +1,172 @@
 <?php
-	namespace Suphle\Request;
 
-	use Suphle\Services\Decorators\BindsAsSingleton;
+namespace Suphle\Request;
 
-	use Suphle\Contracts\Events;
+use Suphle\Services\Decorators\BindsAsSingleton;
 
-	use Suphle\Events\EmitProxy;
+use Suphle\Contracts\Events;
 
-	use GuzzleHttp\Psr7\ServerRequest;
+use Suphle\Events\EmitProxy;
 
-	use Psr\Http\Message\ServerRequestInterface;
+use GuzzleHttp\Psr7\ServerRequest;
 
-	#[BindsAsSingleton]
-	class PayloadStorage extends ServerRequest {
+use Psr\Http\Message\ServerRequestInterface;
 
-		use SanitizesIntegerInput, EmitProxy;
+#[BindsAsSingleton]
+class PayloadStorage extends ServerRequest
+{
+    use SanitizesIntegerInput;
+    use EmitProxy;
 
-		final const JSON_HEADER_VALUE = "application/json",
+    final public const JSON_HEADER_VALUE = "application/json",
 
-		HTML_HEADER_VALUE = "text/html",
-  
-  		CONTENT_TYPE_KEY = "Content-Type",
+    HTML_HEADER_VALUE = "text/html",
 
-  		ACCEPTS_KEY = "Accept", LOCATION_KEY = "Location",
+    CONTENT_TYPE_KEY = "Content-Type",
 
-		ON_REFRESH = "new_request";
+    ACCEPTS_KEY = "Accept", LOCATION_KEY = "Location",
 
-		protected array $payload = [];
+    ON_REFRESH = "new_request";
 
-		protected bool $shouldIndicateRefresh = false;
+    protected array $payload = [];
 
-		public function __construct (
+    protected bool $shouldIndicateRefresh = false;
 
-			protected readonly RequestDetails $requestDetails,
+    public function __construct(
+        protected readonly RequestDetails $requestDetails,
+        protected readonly Events $eventManager
+    ) {
 
-			protected readonly Events $eventManager
-		) {
+        $this->setPsrOrigin(self::fromGlobals());
+    }
 
-			$this->setPsrOrigin(self::fromGlobals());
-		}
+    public function setPsrOrigin(ServerRequestInterface $psrOrigin): void
+    {
 
-		public function setPsrOrigin (ServerRequestInterface $psrOrigin):void {
+        $this->psrOrigin = $psrOrigin;
 
-			$this->psrOrigin = $psrOrigin;
+        $this->assignActivePayload();
+    }
 
-			$this->assignActivePayload();
-		}
+    protected function assignActivePayload(): void
+    {
 
-		protected function assignActivePayload ():void {
+        if ($this->requestDetails->isGetRequest()) {
 
-			if ($this->requestDetails->isGetRequest())
+            $this->setFullPayload($this->psrOrigin->getQueryParams());
+        } else {
+            $this->setFullPayload($this->psrOrigin->getParsedBody());
+        }
+    }
 
-				$this->setFullPayload($this->psrOrigin->getQueryParams());
+    public function setFullPayload(array $payload): void
+    {
 
-			else $this->setFullPayload($this->psrOrigin->getParsedBody());
-		}
+        $this->payload = $payload;
 
-		public function setFullPayload (array $payload):void {
+        $this->indicateRefresh();
+    }
 
-			$this->payload = $payload;
+    public function fullPayload(): array
+    {
 
-			$this->indicateRefresh();
-		}
+        return $this->payload;
+    }
 
-		public function fullPayload ():array {
+    public function mergePayload(array $upserts): void
+    {
 
-			return $this->payload;
-		}
+        $this->payload = array_merge($this->payload, $upserts);
+    }
 
-		public function mergePayload (array $upserts):void {
+    public function acceptsJson(): bool
+    {
 
-			$this->payload = array_merge($this->payload, $upserts);
-		}
+        return $this->matchesHeader(
+            self::ACCEPTS_KEY,
+            self::JSON_HEADER_VALUE
+        );
+    }
 
-		public function acceptsJson ():bool {
+    public function matchesHeader(string $name, string $expectedValue): bool
+    {
 
-			return $this->matchesHeader(
+        if (!$this->hasHeader($name)) {
+            return false;
+        }
 
-				self::ACCEPTS_KEY, self::JSON_HEADER_VALUE
-			);
-		}
+        $currentValue = str_replace("/", "\/", $this->getHeaderLine($name));
 
-		public function matchesHeader (string $name, string $expectedValue):bool {
+        return preg_match("/^$currentValue$/i", $expectedValue);
+    }
 
-			if (!$this->hasHeader($name)) return false;
+    public function hasKey(string $property): bool
+    {
 
-			$currentValue = str_replace("/", "\/", $this->getHeaderLine($name));
+        return array_key_exists($property, $this->payload);
+    }
 
-			return preg_match("/^$currentValue$/i", $expectedValue);
-		}
+    public function keyHasContent(string $property): bool
+    {
 
-		public function hasKey (string $property):bool {
+        return $this->hasKey($property) &&
 
-			return array_key_exists($property, $this->payload);
-		}
+        !empty($this->getKey($property));
+    }
 
-		public function keyHasContent (string $property):bool {
+    public function getKey(string $property)
+    {
 
-			return $this->hasKey($property) &&
+        return $this->payload[$property];
+    }
 
-			!empty($this->getKey($property));
-		}
+    public function matchesContent(string $property, $expectedValue): bool
+    {
 
-		public function getKey (string $property) {
+        return $this->keyHasContent($property) &&
 
-			return $this->payload[$property];
-		}
+        $this->getKey($property) == $expectedValue;
+    }
 
-		public function matchesContent (string $property, $expectedValue):bool {
+    /**
+     * Should be called before the readers start calling [getKey]
+    */
+    public function allNumericToPositive(): void
+    {
 
-			return $this->keyHasContent($property) &&
+        $this->payload = $this->allInputToPositive($this->payload);
+    }
 
-			$this->getKey($property) == $expectedValue;
-		}
+    public function getKeyForPositiveInt(string $key): int
+    {
 
-		/**
-		 * Should be called before the readers start calling [getKey]
-		*/
-		public function allNumericToPositive ():void {
+        return $this->positiveIntValue($this->payload[$key]);
+    }
 
-			$this->payload = $this->allInputToPositive($this->payload);
-		}
+    public function only(array $include): array
+    {
 
-		public function getKeyForPositiveInt (string $key):int {
+        return array_filter($this->fullPayload(), fn ($key) => in_array($key, $include), ARRAY_FILTER_USE_KEY);
+    }
 
-			return $this->positiveIntValue($this->payload[$key]);
-		}
+    public function except(array $exclude): array
+    {
 
-		public function only (array $include):array {
+        return array_filter($this->fullPayload(), fn ($key) => !in_array($key, $exclude), ARRAY_FILTER_USE_KEY);
+    }
 
-			return array_filter($this->fullPayload(), fn($key) => in_array($key, $include), ARRAY_FILTER_USE_KEY);
-		}
+    public function setRefreshMode(bool $mode): void
+    {
 
-		public function except (array $exclude):array {
+        $this->shouldIndicateRefresh = $mode;
+    }
 
-			return array_filter($this->fullPayload(), fn($key) => !in_array($key, $exclude), ARRAY_FILTER_USE_KEY);
-		}
+    public function indicateRefresh(): void
+    {
 
-		public function setRefreshMode (bool $mode):void {
+        if ($this->shouldIndicateRefresh) {
 
-			$this->shouldIndicateRefresh = $mode;
-		}
-
-		public function indicateRefresh ():void {
-
-			if ($this->shouldIndicateRefresh)
-
-				$this->emitHelper(self::ON_REFRESH, $this);
-		}
-	}
-?>
+            $this->emitHelper(self::ON_REFRESH, $this);
+        }
+    }
+}

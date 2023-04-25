@@ -1,29 +1,32 @@
 <?php
-	namespace Suphle\Exception\Jobs;
 
-	use Suphle\Contracts\Exception\FatalShutdownAlert;
+namespace Suphle\Exception\Jobs;
 
-	use Suphle\Exception\ShutdownAlerters\MailBuildAlerter;
+use Suphle\Contracts\Exception\FatalShutdownAlert;
 
-	class MailShutdownAlert implements FatalShutdownAlert {
+use Suphle\Exception\ShutdownAlerters\MailBuildAlerter;
 
-		protected string $errorDetails;
+class MailShutdownAlert implements FatalShutdownAlert
+{
+    protected string $errorDetails;
 
-		public function __construct(protected readonly MailBuildAlerter $mailAlerter) {
+    public function __construct(protected readonly MailBuildAlerter $mailAlerter)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function setErrorAsJson (string $errorDetails):void {
+    public function setErrorAsJson(string $errorDetails): void
+    {
 
-			$this->errorDetails = $errorDetails;
-		}
+        $this->errorDetails = $errorDetails;
+    }
 
-		public function handle ():void {
+    public function handle(): void
+    {
 
-			$this->mailAlerter->setPayload($this->errorDetails)
+        $this->mailAlerter->setPayload($this->errorDetails)
 
-			->sendMessage();
-		}
-	}
-?>
+        ->sendMessage();
+    }
+}

@@ -1,75 +1,83 @@
 <?php
-	namespace Suphle\Tests\Integration\Authorization;
 
-	use Suphle\Contracts\Config\{AuthContract, Router};
+namespace Suphle\Tests\Integration\Authorization;
 
-	use Suphle\Exception\Explosives\UnauthorizedServiceAccess;
+use Suphle\Contracts\Config\{AuthContract, Router};
 
-	use Suphle\Testing\Proxies\{SecureUserAssertions, WriteOnlyContainer};
+use Suphle\Exception\Explosives\UnauthorizedServiceAccess;
 
-	use Suphle\Testing\{Condiments\BaseDatabasePopulator, TestTypes\ModuleLevelTest};
+use Suphle\Testing\Proxies\{SecureUserAssertions, WriteOnlyContainer};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock, Authorization\Models\EmploymentAuthorizer, Routes\Auth\AuthorizeRoutes};
+use Suphle\Testing\{Condiments\BaseDatabasePopulator, TestTypes\ModuleLevelTest};
 
-	use Suphle\Tests\Mocks\Models\Eloquent\Employment;
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock, Authorization\Models\EmploymentAuthorizer, Routes\Auth\AuthorizeRoutes};
 
-	class ModelAuthorizationTest extends ModuleLevelTest {
+use Suphle\Tests\Mocks\Models\Eloquent\Employment;
 
-		use BaseDatabasePopulator, SecureUserAssertions;
+class ModelAuthorizationTest extends ModuleLevelTest
+{
+    use BaseDatabasePopulator;
+    use SecureUserAssertions;
 
-		protected bool $debugCaughtExceptions = true;
+    protected bool $debugCaughtExceptions = true;
 
-		protected function getModules ():array {
+    protected function getModules(): array
+    {
 
-			return [
+        return [
 
-				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-					$container->replaceWithMock(Router::class, RouterMock::class, [
+                $container->replaceWithMock(Router::class, RouterMock::class, [
 
-						"browserEntryRoute" => AuthorizeRoutes::class
-					])
-					->replaceWithMock(AuthContract::class, AuthContract::class, [
+                    "browserEntryRoute" => AuthorizeRoutes::class
+                ])
+                ->replaceWithMock(
+                    AuthContract::class,
+                    AuthContract::class,
+                    [
 
-							"getModelObservers" => [
+                        "getModelObservers" => [
 
-								Employment::class => EmploymentAuthorizer::class
-							]
-						]
-					);
-				})
-			];
-		}
+                            Employment::class => EmploymentAuthorizer::class
+                        ]
+                    ]
+                );
+            })
+        ];
+    }
 
-		protected function getActiveEntity ():string {
+    protected function getActiveEntity(): string
+    {
 
-			return Employment::class;
-		}
+        return Employment::class;
+    }
 
-		public function test_authorized_user_can_perform_operation () {
+    public function test_authorized_user_can_perform_operation()
+    {
 
-			// given
-			$employment = $this->replicator->getRandomEntity();
+        // given
+        $employment = $this->replicator->getRandomEntity();
 
-			$this->actingAs($employment->employer->user);
+        $this->actingAs($employment->employer->user);
 
-			$this->assertTrue( // then
+        $this->assertTrue( // then
 
-				$employment->update(["status" => "taken"]) // when
-			);
-		}
+            $employment->update(["status" => "taken"]) // when
+        );
+    }
 
-		public function test_unauthorized_user_cant_perform_operation () {
+    public function test_unauthorized_user_cant_perform_operation()
+    {
 
-			$this->expectException(UnauthorizedServiceAccess::class); // then
+        $this->expectException(UnauthorizedServiceAccess::class); // then
 
-			[$employment1, $employment2] = $this->replicator
+        [$employment1, $employment2] = $this->replicator
 
-			->getRandomEntities(2, ["employer.user"]);
+        ->getRandomEntities(2, ["employer.user"]);
 
-			$this->actingAs($employment2->employer->user); // given
+        $this->actingAs($employment2->employer->user); // given
 
-			$employment1->update(["status" => "taken"]); // when
-		}
-	}
-?>
+        $employment1->update(["status" => "taken"]); // when
+    }
+}

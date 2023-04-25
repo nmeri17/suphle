@@ -1,10 +1,10 @@
 <?php
-	namespace Suphle\Tests\Mocks\Interactions;
 
-	interface ModuleTwo {
+namespace Suphle\Tests\Mocks\Interactions;
 
-		public function getShallowValue ():int;
+interface ModuleTwo
+{
+    public function getShallowValue(): int;
 
-		public function setNestedModuleValue (int $newCount):void;
-	}
-?>
+    public function setNestedModuleValue(int $newCount): void;
+}

@@ -1,28 +1,31 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes;
 
-	use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes;
 
-	use Suphle\Response\Format\Json;
+use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\ImageUploadCoordinator;
+use Suphle\Response\Format\Json;
 
-	#[HandlingCoordinator(ImageUploadCoordinator::class)]
-	class ImageUploadCollection extends BaseCollection {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\ImageUploadCoordinator;
 
-		public function APPLY__ALLh () {
+#[HandlingCoordinator(ImageUploadCoordinator::class)]
+class ImageUploadCollection extends BaseCollection
+{
+    public function APPLY__ALLh()
+    {
 
-			$this->_httpPost(new Json("applyAllOptimizations"));
-		}
+        $this->_httpPost(new Json("applyAllOptimizations"));
+    }
 
-		public function APPLY__NONEh () {
+    public function APPLY__NONEh()
+    {
 
-			$this->_httpPost(new Json("applyNoOptimization"));
-		}
+        $this->_httpPost(new Json("applyNoOptimization"));
+    }
 
-		public function APPLY__CROPh () {
+    public function APPLY__CROPh()
+    {
 
-			$this->_httpPost(new Json("applyThumbnail"));
-		}
-	}
-?>
+        $this->_httpPost(new Json("applyThumbnail"));
+    }
+}

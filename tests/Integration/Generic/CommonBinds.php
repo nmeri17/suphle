@@ -1,56 +1,60 @@
 <?php
-	namespace Suphle\Tests\Integration\Generic;
 
-	use Suphle\Contracts\Config\{Router, ModuleFiles};
+namespace Suphle\Tests\Integration\Generic;
 
-	use Suphle\Config\AscendingHierarchy;
+use Suphle\Contracts\Config\{Router, ModuleFiles};
 
-	use Suphle\File\FileSystemReader;
+use Suphle\Config\AscendingHierarchy;
 
-	use Suphle\Hydration\Container;
+use Suphle\File\FileSystemReader;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Config\RouterMock;
+use Suphle\Hydration\Container;
 
-	trait CommonBinds {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Config\RouterMock;
 
-		protected function simpleBinds ():array {
+trait CommonBinds
+{
+    protected function simpleBinds(): array
+    {
 
-			return array_merge(parent::simpleBinds(), [
+        return array_merge(parent::simpleBinds(), [
 
-				Router::class => RouterMock::class
-			]);
-		}
+            Router::class => RouterMock::class
+        ]);
+    }
 
-		protected function fileConfigModuleName ():string {
+    protected function fileConfigModuleName(): string
+    {
 
-			return "ModuleOne";
-		}
+        return "ModuleOne";
+    }
 
-		protected function concreteBinds ():array {
+    protected function concreteBinds(): array
+    {
 
-			$container = $this->getContainer();
+        $container = $this->getContainer();
 
-			$systemReader = $container->getClass(FileSystemReader::class);
+        $systemReader = $container->getClass(FileSystemReader::class);
 
-			$anchorPath = $systemReader->pathFromLevels(__DIR__,
+        $anchorPath = $systemReader->pathFromLevels(
+            __DIR__,
+            "Mocks/Modules/". $this->fileConfigModuleName() . "/Config", // "config" so that back tracking by levels will land us at module root. Can be any folder there
+            2
+        );
 
-				"Mocks/Modules/". $this->fileConfigModuleName() . "/Config", // "config" so that back tracking by levels will land us at module root. Can be any folder there
-			2);
+        return array_merge(parent::concreteBinds(), [
 
-			return array_merge(parent::concreteBinds(), [
+            ModuleFiles::class => new AscendingHierarchy(
+                $anchorPath,
+                $this->getNamespace($container),
+                $systemReader
+            )
+        ]);
+    }
 
-				ModuleFiles::class => new AscendingHierarchy(
+    protected function getNamespace(Container $container): string
+    {
 
-					$anchorPath, $this->getNamespace($container),
-
-					$systemReader
-				)
-			]);
-		}
-
-		protected function getNamespace (Container $container):string {
-
-			return "\Suphle\Tests\Mocks\Modules\\". $this->fileConfigModuleName();
-		}
-	}
-?>
+        return "\Suphle\Tests\Mocks\Modules\\". $this->fileConfigModuleName();
+    }
+}

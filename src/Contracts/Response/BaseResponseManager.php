@@ -1,12 +1,12 @@
 <?php
-	namespace Suphle\Contracts\Response;
 
-	use Suphle\Contracts\Presentation\BaseRenderer;
+namespace Suphle\Contracts\Response;
 
-	interface BaseResponseManager {
-		
-		public function responseRenderer ():BaseRenderer;
+use Suphle\Contracts\Presentation\BaseRenderer;
 
-		public function afterRender ($data = null):void;
-	}
-?>
+interface BaseResponseManager
+{
+    public function responseRenderer(): BaseRenderer;
+
+    public function afterRender($data = null): void;
+}

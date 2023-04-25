@@ -1,57 +1,62 @@
 <?php
-	namespace Suphle\Adapters\Mailers;
 
-	use Suphle\Contracts\IO\MailClient;
+namespace Suphle\Adapters\Mailers;
 
-	use Symfony\Component\{Mime\Message, Mailer\Mailer};
+use Suphle\Contracts\IO\MailClient;
 
-	class SymfonyMailer implements MailClient {
+use Symfony\Component\{Mime\Message, Mailer\Mailer};
 
-		public function __construct(
-			protected readonly Message $bodyWriter,
+class SymfonyMailer implements MailClient
+{
+    public function __construct(
+        protected readonly Message $bodyWriter,
+        protected readonly Mailer $sender
+    ) {
 
-			protected readonly Mailer $sender
-		) {
+        //
+    }
 
-			//
-		}
+    public function setDestination(string $destination): self
+    {
 
-		public function setDestination (string $destination):self {
+        $this->bodyWriter->to($destination);
 
-			$this->bodyWriter->to($destination);
+        return $this;
+    }
 
-			return $this;
-		}
+    public function setSubject(string $subject): self
+    {
 
-		public function setSubject (string $subject):self {
+        $this->bodyWriter->subject($subject);
 
-			$this->bodyWriter->subject($subject);
+        return $this;
+    }
 
-			return $this;
-		}
+    public function setText(string $text): self
+    {
 
-		public function setText (string $text):self {
+        $this->bodyWriter->text($text);
 
-			$this->bodyWriter->text($text);
+        return $this;
+    }
 
-			return $this;
-		}
+    public function setHtml(string $html): self
+    {
 
-		public function setHtml (string $html):self {
+        $this->bodyWriter->html($html);
 
-			$this->bodyWriter->html($html);
+        return $this;
+    }
 
-			return $this;
-		}
+    public function fireMail(): void
+    {
 
-		public function fireMail ():void {
+        $this->sender->send($this->bodyWriter);
+    }
 
-			$this->sender->send($this->bodyWriter);
-		}
+    public function getNativeClient()
+    {
 
-		public function getNativeClient () {
-
-			return $this->bodyWriter;
-		}
-	}
-?>
+        return $this->bodyWriter;
+    }
+}

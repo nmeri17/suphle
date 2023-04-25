@@ -1,62 +1,67 @@
 <?php
-	namespace Suphle\Services\Structures;
 
-	use Suphle\Contracts\Database\OrmDialect;
+namespace Suphle\Services\Structures;
 
-	use Suphle\Services\Decorators\VariableDependencies;
+use Suphle\Contracts\Database\OrmDialect;
 
-	use Suphle\Request\PayloadStorage;
+use Suphle\Services\Decorators\VariableDependencies;
 
-	use Suphle\Routing\PathPlaceholders;
+use Suphle\Request\PayloadStorage;
 
-	#[VariableDependencies([
+use Suphle\Routing\PathPlaceholders;
 
-		"setPayloadStorage", "setPlaceholderStorage",
+#[VariableDependencies([
 
-		"setOrmDialect"
-	])]
-	abstract class ModelfulPayload {
+    "setPayloadStorage", "setPlaceholderStorage",
 
-		protected PayloadStorage $payloadStorage;
+    "setOrmDialect"
+])]
+abstract class ModelfulPayload
+{
+    protected PayloadStorage $payloadStorage;
 
-		protected OrmDialect $ormDialect;
+    protected OrmDialect $ormDialect;
 
-		protected PathPlaceholders $pathPlaceholders;
+    protected PathPlaceholders $pathPlaceholders;
 
-		public function setPayloadStorage (PayloadStorage $payloadStorage):void {
+    public function setPayloadStorage(PayloadStorage $payloadStorage): void
+    {
 
-			$this->payloadStorage = $payloadStorage;
-		}
+        $this->payloadStorage = $payloadStorage;
+    }
 
-		public function setPlaceholderStorage (PathPlaceholders $pathPlaceholders):void {
+    public function setPlaceholderStorage(PathPlaceholders $pathPlaceholders): void
+    {
 
-			$this->pathPlaceholders = $pathPlaceholders;
-		}
+        $this->pathPlaceholders = $pathPlaceholders;
+    }
 
-		public function setOrmDialect (OrmDialect $ormDialect):void {
+    public function setOrmDialect(OrmDialect $ormDialect): void
+    {
 
-			$this->ormDialect = $ormDialect;
-		}
+        $this->ormDialect = $ormDialect;
+    }
 
-		protected function onlyFields ():array {
+    protected function onlyFields(): array
+    {
 
-			return ["id", "name"];
-		}
+        return ["id", "name"];
+    }
 
-		/**
-		 * @return a query builder after interacting with [payloadStorage]
-		*/
-		abstract protected function getBaseCriteria ():object;
+    /**
+     * @return a query builder after interacting with [payloadStorage]
+    */
+    abstract protected function getBaseCriteria(): object;
 
-		/**
-		 * This is the only method caller cares about
-		*/
-		final public function getBuilder ():object {
+    /**
+     * This is the only method caller cares about
+    */
+    final public function getBuilder(): object
+    {
 
-			return $this->ormDialect->selectFields(
-
-				$this->getBaseCriteria(), $this->onlyFields()
-			);
-		}
-	}
-?>
+        return $this->ormDialect->selectFields(
+            $this->getBaseCriteria(),
+            $this->onlyFields()
+        );
+    }
+}

@@ -1,62 +1,62 @@
 <?php
-	namespace Suphle\Request;
 
-	use Suphle\Hydration\BaseInterfaceLoader;
+namespace Suphle\Request;
 
-	use Suphle\Adapters\Validators\LaravelValidator;
+use Suphle\Hydration\BaseInterfaceLoader;
 
-	use Suphle\Contracts\{ Config\AuthContract, Bridge\LaravelContainer, Database\OrmDialect};
+use Suphle\Adapters\Validators\LaravelValidator;
 
-	use Illuminate\Database\Capsule\Manager as Capsule;
+use Suphle\Contracts\{ Config\AuthContract, Bridge\LaravelContainer, Database\OrmDialect};
 
-	use Illuminate\Validation\{Factory as ValidationFactory, DatabasePresenceVerifier};
-	
-	use Illuminate\Translation\{FileLoader, Translator};
+use Illuminate\Database\Capsule\Manager as Capsule;
 
-	use Illuminate\Filesystem\Filesystem;
+use Illuminate\Validation\{Factory as ValidationFactory, DatabasePresenceVerifier};
 
-	class ValidatorLoader extends BaseInterfaceLoader {
+use Illuminate\Translation\{FileLoader, Translator};
 
-		public function __construct(
+use Illuminate\Filesystem\Filesystem;
 
-			protected readonly LaravelContainer $laravelContainer,
+class ValidatorLoader extends BaseInterfaceLoader
+{
+    public function __construct(
+        protected readonly LaravelContainer $laravelContainer,
+        protected readonly OrmDialect $ormDialect
+    ) {
 
-			protected readonly OrmDialect $ormDialect
-		) {
+        //
+    }
 
-			//
-		}
+    public function bindArguments(): array
+    {
 
-		public function bindArguments ():array {
+        $client = $this->getValidationClient();
 
-			$client = $this->getValidationClient();
+        $databaseManager = $this->ormDialect->getNativeClient()
 
-			$databaseManager = $this->ormDialect->getNativeClient()
+        ->getDatabaseManager();
 
-			->getDatabaseManager();
+        $client->setPresenceVerifier(new DatabasePresenceVerifier($databaseManager));
 
-			$client->setPresenceVerifier(new DatabasePresenceVerifier($databaseManager));
+        return [
 
-			return [
+            ValidationFactory::class => $client
+        ];
+    }
 
-				ValidationFactory::class => $client
-			];
-		}
+    private function getValidationClient(): ValidationFactory
+    {
 
-		private function getValidationClient ():ValidationFactory {
+        $translator = new Translator(
+            new FileLoader(new Filesystem(), "lang"),
+            "en"
+        );
 
-			$translator = new Translator(
-				new FileLoader(new Filesystem, "lang"),
+        return new ValidationFactory($translator, $this->laravelContainer);
+    }
 
-				"en"
-			);
+    public function concreteName(): string
+    {
 
-			return new ValidationFactory( $translator, $this->laravelContainer);
-		}
-
-		public function concreteName ():string {
-
-			return LaravelValidator::class;
-		}
-	}
-?>
+        return LaravelValidator::class;
+    }
+}

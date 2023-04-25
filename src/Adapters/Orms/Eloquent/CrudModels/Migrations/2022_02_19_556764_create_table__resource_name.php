@@ -1,27 +1,28 @@
 <?php
-	namespace _database_namespace\Migrations;
 
-	use Illuminate\Database\{Migrations\Migration, Schema\Blueprint};
+namespace _database_namespace\Migrations;
 
-	use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\{Migrations\Migration, Schema\Blueprint};
 
-	return new class extends Migration {
+use Illuminate\Support\Facades\Schema;
 
-		public function up ():void {
+return new class () extends Migration {
+    public function up(): void
+    {
 
-			Schema::create("_resource_name", function (Blueprint $table) {
+        Schema::create("_resource_name", function (Blueprint $table) {
 
-				$table->id();
+            $table->id();
 
-				$table->string("title");
+            $table->string("title");
 
-				$table->timestamps();
-			});
-		}
+            $table->timestamps();
+        });
+    }
 
-		public function down ():void {
+    public function down(): void
+    {
 
-			Schema::drop("_resource_name");
-		}
-	};
-?>
+        Schema::drop("_resource_name");
+    }
+};

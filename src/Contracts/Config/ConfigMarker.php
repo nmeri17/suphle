@@ -1,5 +1,7 @@
 <?php
-	namespace Suphle\Contracts\Config;
 
-	interface ConfigMarker {}
-?>
+namespace Suphle\Contracts\Config;
+
+interface ConfigMarker
+{
+}

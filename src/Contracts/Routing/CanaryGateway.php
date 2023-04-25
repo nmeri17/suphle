@@ -1,11 +1,10 @@
 <?php
 
-	namespace Suphle\Contracts\Routing;
+namespace Suphle\Contracts\Routing;
 
-	interface CanaryGateway {
+interface CanaryGateway
+{
+    public function willLoad(): bool;
 
-		public function willLoad ():bool;
-
-		public function entryClass ():string;
-	}
-?>
+    public function entryClass(): string;
+}

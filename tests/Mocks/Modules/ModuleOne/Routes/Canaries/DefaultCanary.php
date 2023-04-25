@@ -1,20 +1,22 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Canaries;
 
-	use Suphle\Contracts\Routing\CanaryGateway;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Canaries;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\CanaryCollections\DefaultCollection;
+use Suphle\Contracts\Routing\CanaryGateway;
 
-	class DefaultCanary implements CanaryGateway {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\CanaryCollections\DefaultCollection;
 
-		public function willLoad ():bool {
+class DefaultCanary implements CanaryGateway
+{
+    public function willLoad(): bool
+    {
 
-			return true;
-		}
+        return true;
+    }
 
-		public function entryClass ():string {
+    public function entryClass(): string
+    {
 
-			return DefaultCollection::class;
-		}
-	}
-?>
+        return DefaultCollection::class;
+    }
+}

@@ -1,24 +1,26 @@
 <?php
-	namespace Suphle\Tests\Mocks;
 
-	use Suphle\Modules\ModuleHandlerIdentifier;
+namespace Suphle\Tests\Mocks;
 
-	use Suphle\Tests\Integration\Generic\TestsModuleList;
+use Suphle\Modules\ModuleHandlerIdentifier;
 
-	class PublishedTestModules extends ModuleHandlerIdentifier {
+use Suphle\Tests\Integration\Generic\TestsModuleList;
 
-		use TestsModuleList;
+class PublishedTestModules extends ModuleHandlerIdentifier
+{
+    use TestsModuleList;
 
-		public function __construct () {
+    public function __construct()
+    {
 
-			$this->setAllDescriptors();
+        $this->setAllDescriptors();
 
-			parent::__construct();
-		}
-		
-		public function getModules ():array {
+        parent::__construct();
+    }
 
-			return $this->getAllDescriptors();
-		}
-	}
-?>
+    public function getModules(): array
+    {
+
+        return $this->getAllDescriptors();
+    }
+}

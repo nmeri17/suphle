@@ -1,94 +1,96 @@
 <?php
-	namespace Suphle\Auth\Storage;
 
-	use Suphle\Contracts\{Config\AuthContract, IO\EnvAccessor};
+namespace Suphle\Auth\Storage;
 
-	use Suphle\Request\PayloadStorage;
+use Suphle\Contracts\{Config\AuthContract, IO\EnvAccessor};
 
-	use Firebase\JWT\{JWT, Key};
+use Suphle\Request\PayloadStorage;
 
-	use Throwable;
+use Firebase\JWT\{JWT, Key};
 
-	class TokenStorage extends BaseAuthStorage {
+use Throwable;
 
-		final public const AUTHORIZATION_HEADER = "Authorization";
+class TokenStorage extends BaseAuthStorage
+{
+    final public const AUTHORIZATION_HEADER = "Authorization";
 
-		private const IDENTIFIER_KEY = "user_id",
+    private const IDENTIFIER_KEY = "user_id",
 
-		ENCODING_ALGO = "HS256";
+    ENCODING_ALGO = "HS256";
 
-		public function __construct (protected readonly EnvAccessor $envAccessor, protected readonly PayloadStorage $payloadStorage) {}
+    public function __construct(protected readonly EnvAccessor $envAccessor, protected readonly PayloadStorage $payloadStorage)
+    {
+    }
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function resumeSession ():void {
+    /**
+     * {@inheritdoc}
+    */
+    public function resumeSession(): void
+    {
 
-			if (!$this->payloadStorage->hasHeader(self::AUTHORIZATION_HEADER))
+        if (!$this->payloadStorage->hasHeader(self::AUTHORIZATION_HEADER)) {
 
-				return;
+            return;
+        }
 
-			try {
+        try {
 
-				$incomingToken = explode(" ",
+            $incomingToken = explode(
+                " ",
+                $this->payloadStorage->getHeaderLine(self::AUTHORIZATION_HEADER)
+            )[1]; // the bearer part
 
-					$this->payloadStorage->getHeaderLine(self::AUTHORIZATION_HEADER)
-				)[1]; // the bearer part
+            $decoded = JWT::decode(
+                $incomingToken,
+                new Key(
+                    $this->envAccessor->getField("APP_SECRET_KEY"),
+                    self::ENCODING_ALGO
+                )
+            );
+        } catch (Throwable $exception) {
 
-				$decoded = JWT::decode(
+            var_dump(
+                "Unable to decode token",
+                $exception->getMessage(),
+                $exception::class
+            );
 
-					$incomingToken, new Key(
+            return;
+        }
 
-						$this->envAccessor->getField("APP_SECRET_KEY"),
+        $this->identifier = $decoded->data->{self::IDENTIFIER_KEY};
+    }
 
-						self::ENCODING_ALGO
-					)
-				);
-			}
-			catch (Throwable $exception) {
+    /**
+     * {@inheritdoc}
+    */
+    public function startSession(string $value): string
+    {
 
-				var_dump("Unable to decode token",
+        $issuedAt = time();
 
-					$exception->getMessage(), $exception::class
-				);
+        $envAccessor = $this->envAccessor;
 
-				return;
-			}
+        $tokenDetails = [
+            "iss" => $envAccessor->getField("SITE_HOST"),
+            // "aud" => $audience, // $audience
+            "iat" => $issuedAt,
 
-			$this->identifier = $decoded->data->{self::IDENTIFIER_KEY};
-		}
+            //"nbf" => $issuedAt + 10, // in seconds
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function startSession(string $value):string {
-			
-			$issuedAt = time();
+            "exp" => $issuedAt + $envAccessor->getField("JWT_TTL"),
 
-			$envAccessor = $this->envAccessor;
+            "data" => [self::IDENTIFIER_KEY => $value]
+        ];
 
-			$tokenDetails = [
-				"iss" => $envAccessor->getField("SITE_HOST"),
-				// "aud" => $audience, // $audience
-				"iat" => $issuedAt,
+        $outgoingToken = JWT::encode(
+            $tokenDetails,
+            $envAccessor->getField("APP_SECRET_KEY"),
+            self::ENCODING_ALGO
+        );
 
-				//"nbf" => $issuedAt + 10, // in seconds
+        $this->identifier = $value; // manually trigger resumption. Can't use getId/resumeSession since it expects to read payload, which isn't valid reaction for this mechanism
 
-				"exp" => $issuedAt + $envAccessor->getField("JWT_TTL"),
-
-				"data" => [self::IDENTIFIER_KEY => $value]
-			];
-
-			$outgoingToken = JWT::encode(
-
-				$tokenDetails, $envAccessor->getField("APP_SECRET_KEY"),
-
-				self::ENCODING_ALGO
-			);
-
-			$this->identifier = $value; // manually trigger resumption. Can't use getId/resumeSession since it expects to read payload, which isn't valid reaction for this mechanism
-
-			return $outgoingToken;
-		}
-	}
-?>
+        return $outgoingToken;
+    }
+}

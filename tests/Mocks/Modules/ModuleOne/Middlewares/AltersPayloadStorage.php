@@ -1,24 +1,26 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares;
 
-	use Suphle\Contracts\{Presentation\BaseRenderer, Routing\Middleware};
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares;
 
-	use Suphle\Middleware\MiddlewareNexts;
+use Suphle\Contracts\{Presentation\BaseRenderer, Routing\Middleware};
 
-	use Suphle\Request\PayloadStorage;
+use Suphle\Middleware\MiddlewareNexts;
 
-	class AltersPayloadStorage implements Middleware {
+use Suphle\Request\PayloadStorage;
 
-		public function process (PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler):BaseRenderer {
+class AltersPayloadStorage implements Middleware
+{
+    public function process(PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler): BaseRenderer
+    {
 
-			$payloadStorage->mergePayload($this->payloadUpdates());
+        $payloadStorage->mergePayload($this->payloadUpdates());
 
-			return $requestHandler->handle($payloadStorage);
-		}
+        return $requestHandler->handle($payloadStorage);
+    }
 
-		public function payloadUpdates ():array {
+    public function payloadUpdates(): array
+    {
 
-			return ["foo" => "bar"];
-		}
-	}
-?>
+        return ["foo" => "bar"];
+    }
+}

@@ -1,30 +1,32 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-	use Suphle\Services\{ServiceCoordinator, Decorators\ValidationRules};
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\SystemModelEditMock1;
+use Suphle\Services\{ServiceCoordinator, Decorators\ValidationRules};
 
-	class SystemModelController extends ServiceCoordinator {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\SystemModelEditMock1;
 
-		public function __construct(protected readonly SystemModelEditMock1 $editService) {
+class SystemModelController extends ServiceCoordinator
+{
+    public function __construct(protected readonly SystemModelEditMock1 $editService)
+    {
 
-			//
-		}
+        //
+    }
 
-		#[ValidationRules([])] // Empty since test doesn't require routing to this controller
-		public function handlePutRequest () { // supposed to send modefulPayload into editService->initializeUpdateModels. But for the purpose of this test, we'll return a predefined value
+    #[ValidationRules([])] // Empty since test doesn't require routing to this controller
+    public function handlePutRequest() // supposed to send modefulPayload into editService->initializeUpdateModels. But for the purpose of this test, we'll return a predefined value
+    {if ($this->editService->updateModels()) {
 
-			if ($this->editService->updateModels())
+        return ["message" => "success"];
+    }
 
-				return ["message" => "success"];
+        return ["message" => "failed"];
+    }
 
-			return ["message" => "failed"];
-		}
+    public function putOtherServiceMethod()
+    {
 
-		public function putOtherServiceMethod () {
-
-			$this->editService->unrelatedToUpdate();
-		}
-	}
-?>
+        $this->editService->unrelatedToUpdate();
+    }
+}

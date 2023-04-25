@@ -1,20 +1,22 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\InstalledComponents\SuphleLaravelTemplates\ServiceProviders;
 
-	use Illuminate\Support\ServiceProvider;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\InstalledComponents\SuphleLaravelTemplates\ServiceProviders;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\InstalledComponents\SuphleLaravelTemplates\ServiceProviders\Exports\ConfigConstructor;
+use Illuminate\Support\ServiceProvider;
 
-	class RegistersRouteProvider extends ServiceProvider {
+use Suphle\Tests\Mocks\Modules\ModuleOne\InstalledComponents\SuphleLaravelTemplates\ServiceProviders\Exports\ConfigConstructor;
 
-		public function register () {
+class RegistersRouteProvider extends ServiceProvider
+{
+    public function register()
+    {
 
-			$this->app->singleton(ConfigConstructor::class, fn($app) => new ConfigConstructor(config("nested.first_level")));
-		}
+        $this->app->singleton(ConfigConstructor::class, fn ($app) => new ConfigConstructor(config("nested.first_level")));
+    }
 
-		public function boot () {
+    public function boot()
+    {
 
-			$this->loadRoutesFrom(__DIR__ . "/../routes/web.php");
-		}
-	}
-?>
+        $this->loadRoutesFrom(__DIR__ . "/../routes/web.php");
+    }
+}

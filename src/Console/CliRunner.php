@@ -1,138 +1,144 @@
 <?php
-	namespace Suphle\Console;
 
-	use Suphle\Contracts\{ConsoleClient, Config\Console};
+namespace Suphle\Console;
 
-	use Suphle\Modules\{ModuleHandlerIdentifier, Structures\ActiveDescriptors};
+use Suphle\Contracts\{ConsoleClient, Config\Console};
 
-	use Suphle\Server\ModuleWorkerAccessor;
+use Suphle\Modules\{ModuleHandlerIdentifier, Structures\ActiveDescriptors};
 
-	use Suphle\Hydration\Container;
+use Suphle\Server\ModuleWorkerAccessor;
 
-	use Suphle\Hydration\Structures\{BaseInterfaceCollection, ContainerBooter};
+use Suphle\Hydration\Container;
 
-	class CliRunner {
+use Suphle\Hydration\Structures\{BaseInterfaceCollection, ContainerBooter};
 
-		protected string $projectRootPath;
+class CliRunner
+{
+    protected string $projectRootPath;
 
-		protected ?Container $defaultContainer = null;
+    protected ?Container $defaultContainer = null;
 
-		protected array $allCommands = [],
+    protected array $allCommands = [];
+    protected array $descriptors = []; // used to avoid getting fresh descriptor copies while repeatedly reading MHI and instantiating descriptors
 
-		$descriptors = []; // used to avoid getting fresh descriptor copies while repeatedly reading MHI and instantiating descriptors
+    public function __construct(
+        protected readonly ModuleHandlerIdentifier $moduleHandler,
+        protected readonly ConsoleClient $consoleClient
+    ) {
 
-		public function __construct (
+        //
+    }
 
-			protected readonly ModuleHandlerIdentifier $moduleHandler,
+    public function setRootPath(string $projectRootPath): self
+    {
 
-			protected readonly ConsoleClient $consoleClient
-		) {
+        $this->projectRootPath = $projectRootPath;
 
-			//
-		}
+        return $this;
+    }
 
-		public function setRootPath (string $projectRootPath):self {
+    public function extractAvailableCommands(): self
+    {
 
-			$this->projectRootPath = $projectRootPath;
+        $firstContainer = $this->moduleHandler->firstContainer();
 
-			return $this;
-		}
+        if (!is_null($firstContainer)) {
 
-		public function extractAvailableCommands ():self {
+            (new ModuleWorkerAccessor($this->moduleHandler, false))
 
-			$firstContainer = $this->moduleHandler->firstContainer();
+            ->buildIdentifier();
 
-			if (!is_null($firstContainer)) {
+            $descriptorsHolder = $firstContainer->getClass(ActiveDescriptors::class);
 
-				(new ModuleWorkerAccessor($this->moduleHandler, false))
+            $this->descriptors = $descriptorsHolder->getOriginalDescriptors();
 
-				->buildIdentifier();
+            $this->extractCommandsFromModules();
+        } else {
 
-				$descriptorsHolder = $firstContainer->getClass(ActiveDescriptors::class);
+            $this->defaultContainer = new Container();
 
-				$this->descriptors = $descriptorsHolder->getOriginalDescriptors();
+            (new ContainerBooter($this->defaultContainer))
 
-				$this->extractCommandsFromModules();
-			}
-			else {
+            ->initializeContainer(BaseInterfaceCollection::class);
 
-				$this->defaultContainer = new Container;
+            $this->extractCommandsFromContainer($this->defaultContainer);
+        }
 
-				(new ContainerBooter($this->defaultContainer ))
+        return $this;
+    }
 
-				->initializeContainer(BaseInterfaceCollection::class);
+    private function extractCommandsFromModules(): void
+    {
 
-				$this->extractCommandsFromContainer($this->defaultContainer);
-			}
+        foreach ($this->descriptors as $module) {
 
-			return $this;
-		}
+            $this->extractCommandsFromContainer($module->getContainer());
+        }
+    }
 
-		private function extractCommandsFromModules ():void {
+    private function extractCommandsFromContainer(Container $container): void
+    {
 
-			foreach ($this->descriptors as $module)
+        $commands = $container->getClass(Console::class)->commandsList();
 
-				$this->extractCommandsFromContainer($module->getContainer());
-		}
+        $hydratedCommands = array_map(
+            fn ($name) => $container->getClass($name),
+            $this->getUniqueCommands($commands)
+        );
 
-		private function extractCommandsFromContainer (Container $container):void {
+        $this->allCommands = array_merge($this->allCommands, $hydratedCommands);
 
-			$commands = $container->getClass(Console::class)->commandsList();
+        $container->whenTypeAny()->needsAny([
 
-			$hydratedCommands = array_map(
-				fn($name) => $container->getClass($name),
+            ConsoleClient::class => $this->consoleClient
+        ]); // for any command that needs to call other commands
+    }
 
-				$this->getUniqueCommands($commands)
-			);
+    private function getUniqueCommands(array $commandNames): array
+    {
 
-			$this->allCommands = array_merge($this->allCommands, $hydratedCommands);
+        return array_diff(
+            $commandNames,
+            array_map("get_class", $this->allCommands)
+        );
+    }
 
-			$container->whenTypeAny()->needsAny([
+    public function funnelToClient(): void
+    {
 
-				ConsoleClient::class => $this->consoleClient
-			]); // for any command that needs to call other commands
-		}
+        foreach ($this->allCommands as $command) {
 
-		private function getUniqueCommands (array $commandNames):array {
+            $command->setModules($this->descriptors);
 
-			return array_diff (
-			
-				$commandNames, array_map("get_class", $this->allCommands)
-			);
-		}
+            $command->setExecutionPath($this->projectRootPath);
 
-		public function funnelToClient ():void {
+            if (!is_null($this->defaultContainer)) {
 
-			foreach ($this->allCommands as $command) {
+                $command->setDefaultContainer($this->defaultContainer);
+            }
 
-				$command->setModules($this->descriptors);
+            $this->consoleClient->add($command);
+        }
+    }
 
-				$command->setExecutionPath($this->projectRootPath);
+    public function getDefaultContainer(): ?Container
+    {
 
-				if (!is_null($this->defaultContainer))
+        return $this->defaultContainer;
+    }
 
-					$command->setDefaultContainer($this->defaultContainer);
+    /**
+     * Not necessary to be called in test env
+    */
+    public function awaitCommands(): void
+    {
 
-				$this->consoleClient->add($command);
-			}
-		}
+        $this->consoleClient->run();
+    }
 
-		public function getDefaultContainer ():?Container {
+    public function findHandler(string $command): BaseCliCommand
+    {
 
-			return $this->defaultContainer;
-		}
-
-		/**
-		 * Not necessary to be called in test env
-		*/
-		public function awaitCommands ():void {
-
-			$this->consoleClient->run();
-		}
-
-		public function findHandler (string $command):BaseCliCommand {
-
-			return $this->consoleClient->findCommand($command);
-		}
-	}
-?>
+        return $this->consoleClient->findCommand($command);
+    }
+}

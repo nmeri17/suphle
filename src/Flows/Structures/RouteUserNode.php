@@ -1,92 +1,105 @@
 <?php
-	namespace Suphle\Flows\Structures;
 
-	use Suphle\Contracts\Presentation\BaseRenderer;
+namespace Suphle\Flows\Structures;
 
-	use DateTime, DateInterval;
+use Suphle\Contracts\Presentation\BaseRenderer;
 
-	/**
-	 *  This is the smallest unit where the ultimate user related cached information is stored
-	*/
-	class RouteUserNode {
+use DateTime;
+use DateInterval;
 
-		private $maxHitsHydrator;
-  private $expiresAtHydrator;
-  protected int $hits = 0;
-		
-		public function __construct(protected readonly BaseRenderer $renderer) {
+/**
+ *  This is the smallest unit where the ultimate user related cached information is stored
+*/
+class RouteUserNode
+{
+    private $maxHitsHydrator;
+    private $expiresAtHydrator;
+    protected int $hits = 0;
 
-			//
-		}
+    public function __construct(protected readonly BaseRenderer $renderer)
+    {
 
-		public function currentHits():int {
+        //
+    }
 
-			return $this->hits;
-		}
+    public function currentHits(): int
+    {
 
-		public function getMaxHits(string $userId, string $pattern):int {
+        return $this->hits;
+    }
 
-			$callback = $this->maxHitsHydrator;
+    public function getMaxHits(string $userId, string $pattern): int
+    {
 
-			if (is_null($callback))
+        $callback = $this->maxHitsHydrator;
 
-				$callback = $this->defaultMaxHits();
-			
-			return call_user_func_array($callback, [$userId, $pattern]);
-		}
+        if (is_null($callback)) {
 
-		protected function defaultMaxHits ():callable {
+            $callback = $this->defaultMaxHits();
+        }
 
-			return fn($userId, $pattern) => 1;
-		}
+        return call_user_func_array($callback, [$userId, $pattern]);
+    }
 
-		/**
-		 * @param {callback} => Function (string $userId, string $pattern):int
-		*/
-		public function setMaxHitsHydrator(callable $callback):self {
-			
-			$this->maxHitsHydrator = $callback;
+    protected function defaultMaxHits(): callable
+    {
 
-			return $this;
-		}
+        return fn ($userId, $pattern) => 1;
+    }
 
-		public function incrementHits():void {
+    /**
+     * @param {callback} => Function (string $userId, string $pattern):int
+    */
+    public function setMaxHitsHydrator(callable $callback): self
+    {
 
-			$this->hits++;
-		}
+        $this->maxHitsHydrator = $callback;
 
-		public function getExpiresAt(string $userId, string $pattern):DateTime {
+        return $this;
+    }
 
-			$callback = $this->expiresAtHydrator;
+    public function incrementHits(): void
+    {
 
-			if (is_null($callback))
+        $this->hits++;
+    }
 
-				$callback = $this->defaultExpiresAt();
-			
-			return call_user_func_array($callback, [$userId, $pattern]);
-		}
+    public function getExpiresAt(string $userId, string $pattern): DateTime
+    {
 
-		protected function defaultExpiresAt ():callable {
+        $callback = $this->expiresAtHydrator;
 
-			return function ($userId, $pattern) {
+        if (is_null($callback)) {
 
-				return (new DateTime)->add(new DateInterval("PT10M")); // store for 10 minutes
-			};
-		}
+            $callback = $this->defaultExpiresAt();
+        }
 
-		/**
-		 * @param {callback} => Function (string $userId, string $pattern):DateTime
-		*/
-		public function setExpiresAtHydrator(callable $callback):self {
-			
-			$this->expiresAtHydrator = $callback;
+        return call_user_func_array($callback, [$userId, $pattern]);
+    }
 
-			return $this;
-		}
+    protected function defaultExpiresAt(): callable
+    {
 
-		public function getRenderer():BaseRenderer {
-			
-			return $this->renderer;
-		}
-	}
-?>
+        return function ($userId, $pattern) {
+
+            return (new DateTime())->add(new DateInterval("PT10M")); // store for 10 minutes
+        };
+    }
+
+    /**
+     * @param {callback} => Function (string $userId, string $pattern):DateTime
+    */
+    public function setExpiresAtHydrator(callable $callback): self
+    {
+
+        $this->expiresAtHydrator = $callback;
+
+        return $this;
+    }
+
+    public function getRenderer(): BaseRenderer
+    {
+
+        return $this->renderer;
+    }
+}

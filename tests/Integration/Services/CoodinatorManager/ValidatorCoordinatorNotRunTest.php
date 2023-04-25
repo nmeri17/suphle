@@ -1,56 +1,61 @@
 <?php
-	namespace Suphle\Tests\Integration\Services\CoodinatorManager;
 
-	use Suphle\Security\CSRF\CsrfGenerator;
+namespace Suphle\Tests\Integration\Services\CoodinatorManager;
 
-	use Suphle\Contracts\Config\Router;
+use Suphle\Security\CSRF\CsrfGenerator;
 
-	use Suphle\Exception\Explosives\ValidationFailure;
+use Suphle\Contracts\Config\Router;
 
-	use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
+use Suphle\Exception\Explosives\ValidationFailure;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock, Routes\ValidatorCollection, Coordinators\ValidatorCoordinator};
+use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
-	class ValidatorCoordinatorNotRunTest extends ModuleLevelTest {
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock, Routes\ValidatorCollection, Coordinators\ValidatorCoordinator};
 
-		protected bool $debugCaughtExceptions = true;
+class ValidatorCoordinatorNotRunTest extends ModuleLevelTest
+{
+    protected bool $debugCaughtExceptions = true;
 
-		protected function getModules ():array {
+    protected function getModules(): array
+    {
 
-			return [
+        return [
 
-				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-					$container->replaceWithMock(Router::class, RouterMock::class, [
+                $container->replaceWithMock(Router::class, RouterMock::class, [
 
-						"browserEntryRoute" => ValidatorCollection::class
-					]);
-				})
-			];
-		}
+                    "browserEntryRoute" => ValidatorCollection::class
+                ]);
+            })
+        ];
+    }
 
-		public function test_failure_prevents_action_handling () {
+    public function test_failure_prevents_action_handling()
+    {
 
-			$this->expectException(ValidationFailure::class);
+        $this->expectException(ValidationFailure::class);
 
-			// given @see validation rules
-			$this->get("/get-without")->assertOk();
+        // given @see validation rules
+        $this->get("/get-without")->assertOk();
 
-			$this->massProvide([
+        $this->massProvide([
 
-				ValidatorCoordinator::class => $this->positiveDouble(
-					ValidatorCoordinator::class, [], [
-					
-					"postWithValidator" => [0, []] // then
-				])
-			]);
+            ValidatorCoordinator::class => $this->positiveDouble(
+                ValidatorCoordinator::class,
+                [],
+                [
 
-			$this->post("/post-with-json", [
+                "postWithValidator" => [0, []] // then
+                ]
+            )
+        ]);
 
-				CsrfGenerator::TOKEN_FIELD => $this->getContainer()
+        $this->post("/post-with-json", [
 
-				->getClass(CsrfGenerator::class)->newToken()
-			]);
-		}
-	}
-?>
+            CsrfGenerator::TOKEN_FIELD => $this->getContainer()
+
+            ->getClass(CsrfGenerator::class)->newToken()
+        ]);
+    }
+}

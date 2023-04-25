@@ -1,61 +1,65 @@
 <?php
-	namespace Suphle\Tests\Integration\Orms;
 
-	use Suphle\Testing\Condiments\BaseDatabasePopulator;
+namespace Suphle\Tests\Integration\Orms;
 
-	use Suphle\Tests\Integration\Modules\ModuleDescriptor\DescriptorCollection;
+use Suphle\Testing\Condiments\BaseDatabasePopulator;
 
-	use Suphle\Tests\Mocks\Models\Eloquent\Employment;
+use Suphle\Tests\Integration\Modules\ModuleDescriptor\DescriptorCollection;
 
-	class MultiModuleRetainTest extends DescriptorCollection {
+use Suphle\Tests\Mocks\Models\Eloquent\Employment;
 
-		use BaseDatabasePopulator;
+class MultiModuleRetainTest extends DescriptorCollection
+{
+    use BaseDatabasePopulator;
 
-		protected function getActiveEntity ():string {
+    protected function getActiveEntity(): string
+    {
 
-			return Employment::class;
-		}
+        return Employment::class;
+    }
 
-		public function test_can_read_inserted_data ():int {
+    public function test_can_read_inserted_data(): int
+    {
 
-			$amountMetAndSeeded = $this->replicator->getCount();
+        $amountMetAndSeeded = $this->replicator->getCount();
 
-			$numToInsert = 1;
+        $numToInsert = 1;
 
-			$this->replicator->modifyInsertion($numToInsert); // when
+        $this->replicator->modifyInsertion($numToInsert); // when
 
-			$expectedSize = $amountMetAndSeeded + $numToInsert;
+        $expectedSize = $amountMetAndSeeded + $numToInsert;
 
-			$this->assertSame($expectedSize, $this->replicator->getCount()); // then
+        $this->assertSame($expectedSize, $this->replicator->getCount()); // then
 
-			return $expectedSize;
-		}
+        return $expectedSize;
+    }
 
-		/** 
-		 * This is different from the one on SingleModuleRetainTest cuz that didn't reveal running with multiple containers resets the connection
-		 * 
-		 * @depends test_can_read_inserted_data
-		*/
-		public function test_will_see_leftover_from_previous_seedings (int $amountAdded):int {
+    /**
+     * This is different from the one on SingleModuleRetainTest cuz that didn't reveal running with multiple containers resets the connection
+     *
+     * @depends test_can_read_inserted_data
+    */
+    public function test_will_see_leftover_from_previous_seedings(int $amountAdded): int
+    {
 
-			$expectedAdded = $this->getInitialCount() + $amountAdded;
+        $expectedAdded = $this->getInitialCount() + $amountAdded;
 
-			$this->assertSame($expectedAdded, $this->replicator->getCount());
+        $this->assertSame($expectedAdded, $this->replicator->getCount());
 
-			return $expectedAdded;
-		}
+        return $expectedAdded;
+    }
 
-		/**
-		 * @depends test_will_see_leftover_from_previous_seedings
-		*/
-		public function test_multi_module_routing_doesnt_reset_database (int $amountAdded) {
+    /**
+     * @depends test_will_see_leftover_from_previous_seedings
+    */
+    public function test_multi_module_routing_doesnt_reset_database(int $amountAdded)
+    {
 
-			$expectedAdded = $this->getInitialCount() + $amountAdded;
+        $expectedAdded = $this->getInitialCount() + $amountAdded;
 
-			// when
-			$this->get("/module-three/5")->assertOk(); // sanity check
+        // when
+        $this->get("/module-three/5")->assertOk(); // sanity check
 
-			$this->assertSame($expectedAdded, $this->replicator->getCount()); // then
-		}
-	}
-?>
+        $this->assertSame($expectedAdded, $this->replicator->getCount()); // then
+    }
+}

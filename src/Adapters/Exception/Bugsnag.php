@@ -1,29 +1,31 @@
 <?php
-	namespace Suphle\Adapters\Exception;
 
-	use Suphle\Contracts\Exception\AlertAdapter;
+namespace Suphle\Adapters\Exception;
 
-	use Bugsnag\Client as BugsnagClient;
+use Suphle\Contracts\Exception\AlertAdapter;
 
-	use Throwable;
+use Bugsnag\Client as BugsnagClient;
 
-	class Bugsnag implements AlertAdapter {
+use Throwable;
 
-		protected $client;
+class Bugsnag implements AlertAdapter
+{
+    protected $client;
 
-		public function __construct () {
+    public function __construct()
+    {
 
-			$this->client = BugsnagClient::make(); // expects to read API credentials from env
-		}
+        $this->client = BugsnagClient::make(); // expects to read API credentials from env
+    }
 
-		public function broadcastException (Throwable $exception, $activePayload):void {
+    public function broadcastException(Throwable $exception, $activePayload): void
+    {
 
-			$this->client->notifyException($exception, function ($report) use ($activePayload) {
+        $this->client->notifyException($exception, function ($report) use ($activePayload) {
 
-				// $report->setSeverity('info');
-				
-				$report->setMetaData($activePayload);
-			});
-		}
-	}
-?>
+            // $report->setSeverity('info');
+
+            $report->setMetaData($activePayload);
+        });
+    }
+}

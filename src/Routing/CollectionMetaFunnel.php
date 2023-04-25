@@ -1,16 +1,18 @@
 <?php
-	namespace Suphle\Routing;
 
-	abstract class CollectionMetaFunnel {
+namespace Suphle\Routing;
 
-		public function __construct (protected readonly array $activePatterns) {
+abstract class CollectionMetaFunnel
+{
+    public function __construct(protected readonly array $activePatterns)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function containsPattern (string $pattern):bool {
+    public function containsPattern(string $pattern): bool
+    {
 
-			return in_array($pattern, $this->activePatterns);
-		}
-	}
-?>
+        return in_array($pattern, $this->activePatterns);
+    }
+}

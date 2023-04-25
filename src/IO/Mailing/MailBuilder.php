@@ -1,17 +1,18 @@
 <?php
-	namespace Suphle\IO\Mailing;
 
-	abstract class MailBuilder {
+namespace Suphle\IO\Mailing;
 
-		protected $payload;
+abstract class MailBuilder
+{
+    protected $payload;
 
-		public function setPayload ($data):self {
+    public function setPayload($data): self
+    {
 
-			$this->payload = $data;
+        $this->payload = $data;
 
-			return $this;
-		}
+        return $this;
+    }
 
-		abstract public function sendMessage ():void;
-	}
-?>
+    abstract public function sendMessage(): void;
+}

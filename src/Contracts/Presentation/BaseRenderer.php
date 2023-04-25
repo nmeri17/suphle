@@ -1,52 +1,52 @@
 <?php
-	namespace Suphle\Contracts\Presentation;
 
-	use Suphle\Flows\ControllerFlows;
+namespace Suphle\Contracts\Presentation;
 
-	use Suphle\Services\ServiceCoordinator;
+use Suphle\Flows\ControllerFlows;
 
-	/**
-	 * Psr\Http\Message\ResponseInterface, if you will
-	*/
-	interface BaseRenderer {
+use Suphle\Services\ServiceCoordinator;
 
-		public function render ():string;
+/**
+ * Psr\Http\Message\ResponseInterface, if you will
+*/
+interface BaseRenderer
+{
+    public function render(): string;
 
-		public function invokeActionHandler (array $handlerParameters):self;
+    public function invokeActionHandler(array $handlerParameters): self;
 
-		public function hasBranches():bool;
+    public function hasBranches(): bool;
 
-		public function getHandler ():string;
+    public function getHandler(): string;
 
-		public function setCoordinatorClass (ServiceCoordinator $class):void;
+    public function setCoordinatorClass(ServiceCoordinator $class): void;
 
-		public function getCoordinator ():ServiceCoordinator;
+    public function getCoordinator(): ServiceCoordinator;
 
-		public function matchesHandler (string $name):bool;
+    public function matchesHandler(string $name): bool;
 
-		public function setHeaders (int $statusCode, array $headers):void;
+    public function setHeaders(int $statusCode, array $headers): void;
 
-		public function setRawResponse (iterable $response):self;
+    public function setRawResponse(iterable $response): self;
 
-		public function setFlow (ControllerFlows $flow):self;
+    public function setFlow(ControllerFlows $flow): self;
 
-		public function getFlow ():?ControllerFlows;
+    public function getFlow(): ?ControllerFlows;
 
-		public function getRawResponse():iterable;
+    public function getRawResponse(): iterable;
 
-		public function getRouteMethod ():string;
+    public function getRouteMethod(): string;
 
-		public function setRouteMethod (string $httpMethod):void;
+    public function setRouteMethod(string $httpMethod): void;
 
-		public function getStatusCode ():int;
+    public function getStatusCode(): int;
 
-		public function getHeaders ():array;
+    public function getHeaders(): array;
 
-		/**
-		 * Determines whether this renderer is fit for writing validation errors to directly or whether it should be deferred to the renderer of the preceding request
-		*/
-		public function deferValidationContent ():bool;
+    /**
+     * Determines whether this renderer is fit for writing validation errors to directly or whether it should be deferred to the renderer of the preceding request
+    */
+    public function deferValidationContent(): bool;
 
-		public function forceArrayShape (array $includeData = []):void;
-	}
-?>
+    public function forceArrayShape(array $includeData = []): void;
+}

@@ -1,18 +1,19 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleThree\Coordinators;
 
-	use Suphle\Services\ServiceCoordinator;
+namespace Suphle\Tests\Mocks\Modules\ModuleThree\Coordinators;
 
-	use Suphle\Tests\Mocks\Modules\ModuleThree\PayloadReaders\ReadsId;
+use Suphle\Services\ServiceCoordinator;
 
-	class BaseCoordinator extends ServiceCoordinator {
+use Suphle\Tests\Mocks\Modules\ModuleThree\PayloadReaders\ReadsId;
 
-		public function checkPlaceholder (ReadsId $payloadReader):array {
+class BaseCoordinator extends ServiceCoordinator
+{
+    public function checkPlaceholder(ReadsId $payloadReader): array
+    {
 
-			return [
+        return [
 
-				"id" => $payloadReader->getDomainObject()
-			];
-		}
-	}
-?>
+            "id" => $payloadReader->getDomainObject()
+        ];
+    }
+}

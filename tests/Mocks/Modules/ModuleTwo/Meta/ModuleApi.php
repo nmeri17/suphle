@@ -1,23 +1,26 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleTwo\Meta;
 
-	use Suphle\Tests\Mocks\Interactions\{ModuleTwo, ModuleThree};
+namespace Suphle\Tests\Mocks\Modules\ModuleTwo\Meta;
 
-	class ModuleApi implements ModuleTwo {
+use Suphle\Tests\Mocks\Interactions\{ModuleTwo, ModuleThree};
 
-		public function __construct(protected readonly ModuleThree $moduleThree) {
+class ModuleApi implements ModuleTwo
+{
+    public function __construct(protected readonly ModuleThree $moduleThree)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function getShallowValue ():int {
+    public function getShallowValue(): int
+    {
 
-			return $this->moduleThree->getLocalValue();
-		}
+        return $this->moduleThree->getLocalValue();
+    }
 
-		public function setNestedModuleValue (int $newCount):void {
+    public function setNestedModuleValue(int $newCount): void
+    {
 
-			$this->moduleThree->changeExternalValueProxy($newCount);
-		}
-	}
-?>
+        $this->moduleThree->changeExternalValueProxy($newCount);
+    }
+}

@@ -1,69 +1,78 @@
 <?php
-	namespace Suphle\Auth\Storage;
 
-	use Suphle\Contracts\Auth\{AuthStorage, UserContract, UserHydrator};
+namespace Suphle\Auth\Storage;
 
-	/**
-	 * Assumes ormDialect has already booted. They should probably be coupled together, but AuthStorage is crucial enough to exist independently (type-hinting, for one)
-	*/
-	abstract class BaseAuthStorage implements AuthStorage {
+use Suphle\Contracts\Auth\{AuthStorage, UserContract, UserHydrator};
 
-		protected UserHydrator $userHydrator;
-		
-		protected ?UserContract $user = null;
-		
-		protected ?string $identifier = null;
+/**
+ * Assumes ormDialect has already booted. They should probably be coupled together, but AuthStorage is crucial enough to exist independently (type-hinting, for one)
+*/
+abstract class BaseAuthStorage implements AuthStorage
+{
+    protected UserHydrator $userHydrator;
 
-		public function setHydrator (UserHydrator $userHydrator):void {
+    protected ?UserContract $user = null;
 
-			$this->userHydrator = $userHydrator;
-		}
+    protected ?string $identifier = null;
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function getUser ():?UserContract {
+    public function setHydrator(UserHydrator $userHydrator): void
+    {
 
-			$userId = $this->getId();
+        $this->userHydrator = $userHydrator;
+    }
 
-			if (is_null($userId)) return null;
+    /**
+     * {@inheritdoc}
+    */
+    public function getUser(): ?UserContract
+    {
 
-			if ( is_null($this->user))
+        $userId = $this->getId();
 
-				$this->user = $this->userHydrator->getUserById( $userId );
+        if (is_null($userId)) {
+            return null;
+        }
 
-			return $this->user;
-		}
-		
-		public function getId ():?string {
+        if (is_null($this->user)) {
 
-			$this->resumeSession(); // this is supposed to be wrapped in a nonce preventing it from being called each time we try to read id, but that'll mean we can't switch between multiple users within tests e.g those using [dataProvider], where PHPUnit doesn't reset objects
+            $this->user = $this->userHydrator->getUserById($userId);
+        }
 
-			return $this->identifier;
-		}
+        return $this->user;
+    }
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function imitate (string $value):string {
+    public function getId(): ?string
+    {
 
-			$this->identifier = $value;
+        $this->resumeSession(); // this is supposed to be wrapped in a nonce preventing it from being called each time we try to read id, but that'll mean we can't switch between multiple users within tests e.g those using [dataProvider], where PHPUnit doesn't reset objects
 
-			$this->discardUser();
+        return $this->identifier;
+    }
 
-			return $this->startSession($value);
-		}
+    /**
+     * {@inheritdoc}
+    */
+    public function imitate(string $value): string
+    {
 
-		public function logout ():void {
+        $this->identifier = $value;
 
-			$this->identifier = null;
+        $this->discardUser();
 
-			$this->discardUser();
-		}
+        return $this->startSession($value);
+    }
 
-		private function discardUser ():void {
+    public function logout(): void
+    {
 
-			$this->user = null;
-		}
-	}
-?>
+        $this->identifier = null;
+
+        $this->discardUser();
+    }
+
+    private function discardUser(): void
+    {
+
+        $this->user = null;
+    }
+}

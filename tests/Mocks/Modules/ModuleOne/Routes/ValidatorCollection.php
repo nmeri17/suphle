@@ -1,35 +1,39 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes;
 
-	use Suphle\Routing\BaseCollection;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes;
 
-	use Suphle\Response\Format\{Json, Markup, Redirect};
+use Suphle\Routing\BaseCollection;
 
-	use Suphle\Routing\Decorators\HandlingCoordinator;
+use Suphle\Response\Format\{Json, Markup, Redirect};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\ValidatorCoordinator;
+use Suphle\Routing\Decorators\HandlingCoordinator;
 
-	#[HandlingCoordinator(ValidatorCoordinator::class)]
-	class ValidatorCollection extends BaseCollection {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\ValidatorCoordinator;
 
-		public function POST__WITH__JSONh () {
+#[HandlingCoordinator(ValidatorCoordinator::class)]
+class ValidatorCollection extends BaseCollection
+{
+    public function POST__WITH__JSONh()
+    {
 
-			$this->_httpPost(new Json("postWithValidator"));
-		}
+        $this->_httpPost(new Json("postWithValidator"));
+    }
 
-		public function POST__WITH__HTMLh () {
+    public function POST__WITH__HTMLh()
+    {
 
-			$this->_httpPost(new Redirect("postWithValidator", fn () => "/"));
-		}
+        $this->_httpPost(new Redirect("postWithValidator", fn () => "/"));
+    }
 
-		public function POST__WITHOUTh () {
+    public function POST__WITHOUTh()
+    {
 
-			$this->_httpPost(new Json("postNoValidator"));
-		}
+        $this->_httpPost(new Json("postNoValidator"));
+    }
 
-		public function GET__WITHOUTh () {
+    public function GET__WITHOUTh()
+    {
 
-			$this->_httpGet(new Markup("handleGet", "secure-some.edit-form"));
-		}
-	}
-?>
+        $this->_httpGet(new Markup("handleGet", "secure-some.edit-form"));
+    }
+}

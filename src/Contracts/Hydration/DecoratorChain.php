@@ -1,8 +1,8 @@
 <?php
-	namespace Suphle\Contracts\Hydration;
 
-	interface DecoratorChain {
+namespace Suphle\Contracts\Hydration;
 
-		public function allScopes ():array;
-	}
-?>
+interface DecoratorChain
+{
+    public function allScopes(): array;
+}

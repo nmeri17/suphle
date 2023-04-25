@@ -1,43 +1,47 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\ApiRoutes\V1;
 
-	use Suphle\Routing\{BaseApiCollection, PreMiddlewareRegistry, Decorators\HandlingCoordinator};
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\ApiRoutes\V1;
 
-	use Suphle\Auth\RequestScrutinizers\AuthenticateMetaFunnel;
+use Suphle\Routing\{BaseApiCollection, PreMiddlewareRegistry, Decorators\HandlingCoordinator};
 
-	use Suphle\Response\Format\Json;
+use Suphle\Auth\RequestScrutinizers\AuthenticateMetaFunnel;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\ApiEntryCoordinator;
+use Suphle\Response\Format\Json;
 
-	#[HandlingCoordinator(ApiEntryCoordinator::class)]
-	class LowerMirror extends BaseApiCollection {
-		
-		public function API__SEGMENTh () {
-			
-			$this->_httpGet(new Json("segmentHandler"));
-		}
+use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\ApiEntryCoordinator;
 
-		public function SEGMENT_id() {
+#[HandlingCoordinator(ApiEntryCoordinator::class)]
+class LowerMirror extends BaseApiCollection
+{
+    public function API__SEGMENTh()
+    {
 
-			$this->_httpGet(new Json("simplePairOverride"));
-		}
+        $this->_httpGet(new Json("segmentHandler"));
+    }
 
-		public function CASCADE () {
+    public function SEGMENT_id()
+    {
 
-			$this->_httpGet(new Json("originalCascade"));
-		}
+        $this->_httpGet(new Json("simplePairOverride"));
+    }
 
-		public function SECURE__SEGMENTh () {
+    public function CASCADE()
+    {
 
-			$this->_httpGet(new Json("segmentHandler"));
-		}
+        $this->_httpGet(new Json("originalCascade"));
+    }
 
-		public function _preMiddleware (PreMiddlewareRegistry $registry):void {
+    public function SECURE__SEGMENTh()
+    {
 
-			$registry->tagPatterns(
+        $this->_httpGet(new Json("segmentHandler"));
+    }
 
-				new AuthenticateMetaFunnel(["SECURE__SEGMENTh", "CASCADE"], $this->authStorage)
-			);
-		}
-	}
-?>
+    public function _preMiddleware(PreMiddlewareRegistry $registry): void
+    {
+
+        $registry->tagPatterns(
+            new AuthenticateMetaFunnel(["SECURE__SEGMENTh", "CASCADE"], $this->authStorage)
+        );
+    }
+}

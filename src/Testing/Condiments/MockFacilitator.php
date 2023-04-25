@@ -1,250 +1,267 @@
 <?php
-	namespace Suphle\Testing\Condiments;
 
-	use Suphle\Hydration\{Container, Structures\ObjectDetails};
+namespace Suphle\Testing\Condiments;
 
-	use PHPUnit\Framework\MockObject\{ MockObject, Stub\Stub, Rule\InvocationOrder, Builder\InvocationMocker};
+use Suphle\Hydration\{Container, Structures\ObjectDetails};
 
-	use ReflectionMethod, ReflectionClass, Exception;
+use PHPUnit\Framework\MockObject\{ MockObject, Stub\Stub, Rule\InvocationOrder, Builder\InvocationMocker};
 
-	trait MockFacilitator {
+use ReflectionMethod;
+use ReflectionClass;
+use Exception;
 
-		/**
-		 * @param {mockMethods} = [string method => [int|InvocationOrder numTimes, [arguments]]]
-		 * 
-		 * @return Mock version of given [target], with an auto-generated class name
-		*/
-		protected function positiveDouble (
+trait MockFacilitator
+{
+    /**
+     * @param {mockMethods} = [string method => [int|InvocationOrder numTimes, [arguments]]]
+     *
+     * @return Mock version of given [target], with an auto-generated class name
+    */
+    protected function positiveDouble(
+        string $target,
+        array $stubs = [],
+        array $mockMethods = [],
+        ?array $constructorArguments = null
+    ): MockObject {
 
-			string $target, array $stubs = [], array $mockMethods = [],
+        $builder = $this->createMockBuilder(
+            $target,
+            $constructorArguments,
+            $this->computeMethodsToRetain($stubs, $mockMethods)
+        );
 
-			?array $constructorArguments = null
-		):MockObject {
+        $this->stubSingle($stubs, $builder);
 
-			$builder = $this->createMockBuilder(
-				$target, $constructorArguments,
+        $this->mockCalls($mockMethods, $builder);
 
-				$this->computeMethodsToRetain($stubs, $mockMethods)
-			);
+        return $builder;
+    }
 
-			$this->stubSingle($stubs, $builder);
+    protected function positiveDoubleMany(
+        string $target,
+        array $stubs = [],
+        array $mockMethods = [],
+        ?array $constructorArguments = null
+    ): MockObject {
 
-			$this->mockCalls($mockMethods, $builder);
+        $builder = $this->createMockBuilder(
+            $target,
+            $constructorArguments,
+            $this->computeMethodsToRetain($stubs, $mockMethods)
+        );
 
-			return $builder;
-		}
+        $this->stubMany($stubs, $builder);
 
-		protected function positiveDoubleMany (
+        $this->mockCalls($mockMethods, $builder);
 
-			string $target, array $stubs = [], array $mockMethods = [],
+        return $builder;
+    }
 
-			?array $constructorArguments = null
-		):MockObject {
+    /**
+     * Raises warning "Trying to configure method ..." when we try to mock methods that weren't passed to [onlyMethods], possibly through [createMockBuilder]
+    */
+    protected function mockCalls(array $calls, MockObject $builder): void
+    {
 
-			$builder = $this->createMockBuilder(
-				$target, $constructorArguments,
+        foreach ($calls as $method => $behavior) {
 
-				$this->computeMethodsToRetain($stubs, $mockMethods)
-			);
+            $this->getCallCount($builder, $behavior[0])
 
-			$this->stubMany($stubs, $builder);
+            ->method($method)->with(...$behavior[1]);
+        }
+    }
 
-			$this->mockCalls($mockMethods, $builder);
+    /**
+     * @param {count} int|InvocationOrder
+     *
+     * @return InvocationMocker
+    */
+    private function getCallCount(MockObject $builder, $count)
+    {
 
-			return $builder;
-		}
+        return $builder->expects(is_int($count) ? $this->exactly($count) : $count);
+    }
 
-		/**
-		 * Raises warning "Trying to configure method ..." when we try to mock methods that weren't passed to [onlyMethods], possibly through [createMockBuilder]
-		*/
-		protected function mockCalls (array $calls, MockObject $builder):void {
+    /**
+     * Stubs all methods out except those explicitly provided
+    */
+    protected function negativeDouble(string $target, array $stubs = [], array $mockMethods = [], ?array $constructorArguments = null)
+    {
 
-			foreach ($calls as $method => $behavior) {
+        $allMethods = get_class_methods($target);
 
-				$this->getCallCount($builder, $behavior[0])
+        $builder = $this->createMockBuilder($target, $constructorArguments, $allMethods);
 
-				->method($method)->with(...$behavior[1]);
-			}
-		}
+        $this->stubSingle($stubs, $builder);
 
-		/**
-		 * @param {count} int|InvocationOrder
-		 * 
-		 * @return InvocationMocker
-		*/
-		private function getCallCount (MockObject $builder, $count) {
+        $this->mockCalls($mockMethods, $builder);
 
-			return $builder->expects(is_int($count) ? $this->exactly($count): $count);
-		}
+        return $builder;
+    }
 
-		/**
-		 * Stubs all methods out except those explicitly provided
-		*/
-		protected function negativeDouble (string $target, array $stubs = [], array $mockMethods = [], ?array $constructorArguments = null) {
+    protected function stubSingle(array $stubs, MockObject $builder): void
+    {
 
-			$allMethods = get_class_methods($target);
+        foreach ($stubs as $method => $newValue) {
 
-			$builder = $this->createMockBuilder( $target, $constructorArguments, $allMethods);
+            $builder->expects($this->any())
 
-			$this->stubSingle($stubs, $builder);
+            ->method($method)->will($this->wrapStubBehavior($newValue));
+        }
+    }
 
-			$this->mockCalls($mockMethods, $builder);
+    /**
+     * Allows for stubbing multiple calls to SUT and receiving different results each time
+    */
+    private function stubMany(array $stubs, MockObject $builder): void
+    {
 
-			return $builder;
-		}
+        foreach ($stubs as $method => $newValue) {
 
-		protected function stubSingle (array $stubs, MockObject $builder):void {
+            $expectation = $builder->expects($this->any())
 
-			foreach ($stubs as $method => $newValue)
+            ->method($method);
 
-				$builder->expects($this->any())
+            if (is_array($newValue)) {
 
-				->method($method)->will($this->wrapStubBehavior($newValue));
-		}
+                $expectation->will($this->onConsecutiveCalls(...$newValue));
+            } else {
+                $expectation->will($this->wrapStubBehavior($newValue));
+            }
+        }
+    }
 
-		/**
-		 * Allows for stubbing multiple calls to SUT and receiving different results each time
-		*/
-		private function stubMany (array $stubs, MockObject $builder):void {
+    private function wrapStubBehavior($value): Stub
+    {
 
-			foreach ($stubs as $method => $newValue) {
+        return $value instanceof Stub ? $value : $this->returnValue($value);
+    }
 
-				$expectation = $builder->expects($this->any())
+    /**
+     * @param {constructorArguments} when null, constructor will be skipped
+     * @return MockObject version of given [target]
+    */
+    protected function createMockBuilder(string $target, ?array $constructorArguments, array $methodsToRetain): MockObject
+    {
 
-				->method($method);
+        $builder = $this->getMockBuilder($target);
 
-				if (is_array($newValue))
+        if (!is_null($constructorArguments)) {
 
-					$expectation->will($this->onConsecutiveCalls(...$newValue));
+            $builder->setConstructorArgs($constructorArguments);
+        } else {
+            $builder->disableOriginalConstructor();
+        }
 
-				else $expectation->will($this->wrapStubBehavior($newValue));
-			}
-		}
+        $builder->onlyMethods($methodsToRetain);
 
-		private function wrapStubBehavior ($value):Stub {
+        $builder->disableArgumentCloning();
 
-			return $value instanceof Stub ? $value: $this->returnValue($value);
-		}
+        if ((new ReflectionClass($target))->isAbstract()) {
 
-		/**
-		 * @param {constructorArguments} when null, constructor will be skipped
-		 * @return MockObject version of given [target]
-		*/
-		protected function createMockBuilder (string $target, ?array $constructorArguments, array $methodsToRetain):MockObject {
+            return $builder->getMockForAbstractClass();
+        }
 
-			$builder = $this->getMockBuilder($target);
+        return $builder->getMock();
+    }
 
-			if (!is_null($constructorArguments))
+    /**
+     * @param {invokeConstructor} Constructors can't invoke stubbed methods during the doubling process since they're unavailable then. Constructors with this requirement have to be triggered manually
+     * When it receives argument names not matching method signature, it doesn't complain but returns the double equivalent
+    */
+    protected function replaceConstructorArguments(
+        string $target,
+        array $constructorStubs,
+        array $methodStubs = [],
+        array $mockMethods = [],
+        bool $positiveDouble = true,
+        bool $useBaseContainer = true,
+        bool $invokeConstructor = false
+    ): MockObject {
 
-				$builder->setConstructorArgs($constructorArguments);
+        $this->ensureAssocConstructor($constructorStubs);
 
-			else $builder->disableOriginalConstructor();
+        $reflectedConstructor = new ReflectionMethod($target, Container::CLASS_CONSTRUCTOR);
 
-			$builder->onlyMethods($methodsToRetain);
+        $arguments = $this->mockDummyUnion(
+            $reflectedConstructor->getParameters(),
+            $constructorStubs,
+            $positiveDouble,
+            $useBaseContainer
+        );
 
-			$builder->disableArgumentCloning();
+        $doubleMode = $positiveDouble ? "positiveDouble" : "negativeDouble";
 
-			if ((new ReflectionClass($target))->isAbstract())
+        if (!$invokeConstructor) {
 
-				return $builder->getMockForAbstractClass();
+            $double = $this->$doubleMode($target, $methodStubs, $mockMethods, $arguments);
+        } else {
 
-			return $builder->getMock();
-		}
+            $double = $this->$doubleMode($target, $methodStubs, $mockMethods);
 
-		/**
-		 * @param {invokeConstructor} Constructors can't invoke stubbed methods during the doubling process since they're unavailable then. Constructors with this requirement have to be triggered manually
-		 * When it receives argument names not matching method signature, it doesn't complain but returns the double equivalent
-		*/
-		protected function replaceConstructorArguments (
+            $double->__construct(...array_values($arguments));
+        }
 
-			string $target, array $constructorStubs,
+        return $double;
+    }
 
-			array $methodStubs = [], array $mockMethods = [],
+    private function ensureAssocConstructor(array $constructorStubs): void
+    {
 
-			bool $positiveDouble = true, bool $useBaseContainer = true,
+        array_walk($constructorStubs, function ($value, $key) {
 
-			bool $invokeConstructor = false
-		):MockObject {
+            if (is_numeric($key)) {
 
-			$this->ensureAssocConstructor($constructorStubs);
+                throw new Exception("Stub array must be associative");
+            }
+        });
+    }
 
-			$reflectedConstructor = new ReflectionMethod($target, Container::CLASS_CONSTRUCTOR);
+    private function mockDummyUnion(array $parameters, array $replacements, bool $isPositive, bool $useBaseContainer): array
+    {
 
-			$arguments = $this->mockDummyUnion(
+        return array_map(function ($parameter) use ($replacements, $isPositive, $useBaseContainer) {
 
-				$reflectedConstructor->getParameters(),
+            $parameterName = $parameter->getName();
 
-				$constructorStubs, $positiveDouble,
+            if (array_key_exists($parameterName, $replacements)) {
 
-				$useBaseContainer
-			);
+                return $replacements[$parameterName];
+            }
 
-			$doubleMode = $positiveDouble ? "positiveDouble": "negativeDouble";
+            $parameterType = $parameter->getType();
 
-			if (!$invokeConstructor)
+            $argumentType = $parameterType->getName();
 
-				$double = $this->$doubleMode($target, $methodStubs, $mockMethods, $arguments);
+            if (array_key_exists($argumentType, $replacements)) {
 
-			else {
+                return $replacements[$argumentType];
+            }
 
-				$double = $this->$doubleMode($target, $methodStubs, $mockMethods);
+            if ($argumentType == Container::class && $useBaseContainer) {
 
-				$double->__construct(...array_values($arguments));
-			}
+                return $this->getContainer();
+            }
 
-			return $double;
-		}
+            if ($parameterType->isBuiltin()) {
 
-		private function ensureAssocConstructor (array $constructorStubs):void {
+                return $this->getContainer()->getClass(ObjectDetails::class)
 
-			array_walk($constructorStubs, function ($value, $key) {
+                ->getScalarValue($argumentType);
+            }
 
-				if (is_numeric($key))
+            return $isPositive ?
+                $this->positiveDouble($argumentType) :
 
-					throw new Exception("Stub array must be associative");
-			});
-		}
+                $this->negativeDouble($argumentType);
+        }, $parameters);
+    }
 
-		private function mockDummyUnion (array $parameters, array $replacements, bool $isPositive, bool $useBaseContainer):array {
+    private function computeMethodsToRetain(array $stubMethods, array $mockMethods): array
+    {
 
-			return array_map(function ($parameter) use ($replacements, $isPositive, $useBaseContainer) {
+        $mergedMethods = array_merge(array_keys($stubMethods), array_keys($mockMethods));
 
-				$parameterName = $parameter->getName();
-
-				if (array_key_exists($parameterName, $replacements))
-
-					return $replacements[$parameterName];
-
-				$parameterType = $parameter->getType();
-
-				$argumentType = $parameterType->getName();
-
-				if (array_key_exists($argumentType, $replacements))
-
-					return $replacements[$argumentType];
-
-				if ($argumentType == Container::class && $useBaseContainer)
-
-					return $this->getContainer();
-
-				if ($parameterType->isBuiltin())
-
-					return $this->getContainer()->getClass(ObjectDetails::class)
-
-					->getScalarValue($argumentType);
-
-				return $isPositive?
-					$this->positiveDouble($argumentType):
-
-					$this->negativeDouble($argumentType);
-			}, $parameters);
-		}
-
-		private function computeMethodsToRetain (array $stubMethods, array $mockMethods):array {
-
-			$mergedMethods = array_merge(array_keys($stubMethods), array_keys($mockMethods));
-
-			return array_unique($mergedMethods);
-		}
-	}
-?>
+        return array_unique($mergedMethods);
+    }
+}

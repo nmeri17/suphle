@@ -1,291 +1,321 @@
 <?php
-	namespace Suphle\Adapters\Presentation\Hotwire\Formats;
 
-	use Suphle\Contracts\Presentation\BaseRenderer;
+namespace Suphle\Adapters\Presentation\Hotwire\Formats;
 
-	use Suphle\Response\Format\BaseHtmlRenderer;
+use Suphle\Contracts\Presentation\BaseRenderer;
 
-	use Suphle\Request\PayloadStorage;
+use Suphle\Response\Format\BaseHtmlRenderer;
 
-	use Suphle\Hydration\Structures\CallbackDetails;
+use Suphle\Request\PayloadStorage;
 
-	use Suphle\Services\{ServiceCoordinator, Decorators\VariableDependencies};
+use Suphle\Hydration\Structures\CallbackDetails;
 
-	use Suphle\Adapters\Presentation\Hotwire\HotwireStreamBuilder;
+use Suphle\Services\{ServiceCoordinator, Decorators\VariableDependencies};
 
-	#[VariableDependencies([
+use Suphle\Adapters\Presentation\Hotwire\HotwireStreamBuilder;
 
-		"setPayloadStorage", "setCallbackDetails"
-	])]
-	abstract class BaseHotwireStream extends BaseHtmlRenderer {
+#[VariableDependencies([
 
-		public const TURBO_INDICATOR = "text/vnd.turbo-stream.html",
+    "setPayloadStorage", "setCallbackDetails"
+])]
+abstract class BaseHotwireStream extends BaseHtmlRenderer
+{
+    public const TURBO_INDICATOR = "text/vnd.turbo-stream.html",
 
-		APPEND_ACTION = "append", PREPEND_ACTION = "prepend",
+    APPEND_ACTION = "append", PREPEND_ACTION = "prepend",
 
-		BEFORE_ACTION = "before", AFTER_ACTION = "after",
+    BEFORE_ACTION = "before", AFTER_ACTION = "after",
 
-		REPLACE_ACTION = "replace", UPDATE_ACTION = "update",
+    REPLACE_ACTION = "replace", UPDATE_ACTION = "update",
 
-		REMOVE_ACTION = "remove";
+    REMOVE_ACTION = "remove";
 
-		protected array $hotwireHandlers = [], // details about each handler being bound
+    protected array $hotwireHandlers = [];
+    protected array // details about each handler being bound
 
-		$nodeResponses = [], // result of executing each handler
+    $nodeResponses = [];
+    protected array // result of executing each handler
 
-		$streamBuilders = []; // houses each node and its corresponding parsed content
+    $streamBuilders = []; // houses each node and its corresponding parsed content
 
-		protected PayloadStorage $payloadStorage;
+    protected PayloadStorage $payloadStorage;
 
-		protected BaseRenderer $fallbackRenderer;
+    protected BaseRenderer $fallbackRenderer;
 
-		protected string $markupName;
+    protected string $markupName;
 
-		protected CallbackDetails $callbackDetails;
+    protected CallbackDetails $callbackDetails;
 
-		protected int $statusCode = 200;
+    protected int $statusCode = 200;
 
-		protected bool $trimmedActions = false;
+    protected bool $trimmedActions = false;
 
-		public function setPayloadStorage (PayloadStorage $payloadStorage):void {
+    public function setPayloadStorage(PayloadStorage $payloadStorage): void
+    {
 
-			$this->payloadStorage = $payloadStorage;
-		}
+        $this->payloadStorage = $payloadStorage;
+    }
 
-		public function setCallbackDetails (CallbackDetails $callbackDetails):void {
+    public function setCallbackDetails(CallbackDetails $callbackDetails): void
+    {
 
-			$this->callbackDetails = $callbackDetails;
-		}
+        $this->callbackDetails = $callbackDetails;
+    }
 
-		public function isHotwireRequest ():bool {
+    public function isHotwireRequest(): bool
+    {
 
-			return $this->payloadStorage->matchesHeader(
+        return $this->payloadStorage->matchesHeader(
+            PayloadStorage::ACCEPTS_KEY,
+            self::TURBO_INDICATOR
+        );
+    }
 
-				PayloadStorage::ACCEPTS_KEY, self::TURBO_INDICATOR
-			);
-		}
+    public function addAppend(string $handler, callable $target, string $markupName): self
+    {
 
-		public function addAppend (string $handler, callable $target, string $markupName):self {
+        $this->hotwireHandlers[] = [ // keying by action will limit each renderer to one action type
 
-			$this->hotwireHandlers[] = [ // keying by action will limit each renderer to one action type
+            self::APPEND_ACTION, ...func_get_args()
+        ];
 
-				self::APPEND_ACTION, ...func_get_args()
-			];
+        return $this;
+    }
 
-			return $this;
-		}
+    public function addPrepend(string $handler, callable $target, string $markupName): self
+    {
 
-		public function addPrepend (string $handler, callable $target, string $markupName):self {
+        $this->hotwireHandlers[] = [
 
-			$this->hotwireHandlers[] = [
+            self::PREPEND_ACTION, ...func_get_args()
+        ];
 
-				self::PREPEND_ACTION, ...func_get_args()
-			];
+        return $this;
+    }
 
-			return $this;
-		}
+    public function addReplace(string $handler, callable $target, string $markupName): self
+    {
 
-		public function addReplace (string $handler, callable $target, string $markupName):self {
+        $this->hotwireHandlers[] = [
 
-			$this->hotwireHandlers[] = [
+            self::REPLACE_ACTION, ...func_get_args()
+        ];
 
-				self::REPLACE_ACTION, ...func_get_args()
-			];
+        return $this;
+    }
 
-			return $this;
-		}
+    public function addUpdate(string $handler, callable $target, string $markupName): self
+    {
 
-		public function addUpdate (string $handler, callable $target, string $markupName):self {
+        $this->hotwireHandlers[] = [
 
-			$this->hotwireHandlers[] = [
+            self::UPDATE_ACTION, ...func_get_args()
+        ];
 
-				self::UPDATE_ACTION, ...func_get_args()
-			];
+        return $this;
+    }
 
-			return $this;
-		}
+    public function addBefore(string $handler, callable $target, string $markupName): self
+    {
 
-		public function addBefore (string $handler, callable $target, string $markupName):self {
+        $this->hotwireHandlers[] = [
 
-			$this->hotwireHandlers[] = [
+            self::BEFORE_ACTION, ...func_get_args()
+        ];
 
-				self::BEFORE_ACTION, ...func_get_args()
-			];
+        return $this;
+    }
 
-			return $this;
-		}
+    public function addAfter(string $handler, callable $target, string $markupName): self
+    {
 
-		public function addAfter (string $handler, callable $target, string $markupName):self {
+        $this->hotwireHandlers[] = [
 
-			$this->hotwireHandlers[] = [
+            self::AFTER_ACTION, ...func_get_args()
+        ];
 
-				self::AFTER_ACTION, ...func_get_args()
-			];
+        return $this;
+    }
 
-			return $this;
-		}
+    public function addRemove(string $handler, callable $target): self
+    {
 
-		public function addRemove (string $handler, callable $target):self {
+        $this->hotwireHandlers[] = [self::REMOVE_ACTION, $handler, $target];
 
-			$this->hotwireHandlers[] = [self::REMOVE_ACTION, $handler, $target];
+        return $this;
+    }
 
-			return $this;
-		}
+    public function invokeActionHandler(array $handlerParameters): BaseRenderer
+    {
 
-		public function invokeActionHandler (array $handlerParameters):BaseRenderer {
+        if (!$this->isHotwireRequest()) {
 
-			if (!$this->isHotwireRequest())
+            $this->fallbackRenderer->invokeActionHandler($handlerParameters);
+        } else {
+            foreach ($this->hotwireHandlers as $index => [, $handler]) {
 
-				$this->fallbackRenderer->invokeActionHandler($handlerParameters);
+                $this->nodeResponses[] = call_user_func_array(
+                    [$this->coordinator, $handler],
+                    $handlerParameters[$index]
+                );
+            }
+        }
 
-			else foreach ($this->hotwireHandlers as $index => [, $handler])
+        return $this;
+    }
 
-				$this->nodeResponses[] = call_user_func_array(
+    public function render(): string
+    {
 
-					[$this->coordinator, $handler],
+        $useFallback = !$this->isHotwireRequest();
 
-					$handlerParameters[$index]
-				);
+        if ($useFallback) {
 
-			return $this;
-		}
+            $renderedContent = $this->fallbackRenderer->render();
+        }
 
-		public function render ():string {
+        $this->setConditionalHeader($useFallback); // this has to be called after rendering occurs due to the fact that some headers (e.g. redirect) are only known after render is called
 
-			$useFallback = !$this->isHotwireRequest();
+        if ($useFallback) {
+            return $renderedContent;
+        }
 
-			if ($useFallback)
+        $allStreams = "";
 
-				$renderedContent = $this->fallbackRenderer->render();
+        foreach ($this->hotwireHandlers as $index => $handlerDetails) {
 
-			$this->setConditionalHeader($useFallback); // this has to be called after rendering occurs due to the fact that some headers (e.g. redirect) are only known after render is called
+            [$hotwireAction,, $targets ] = $handlerDetails;
 
-			if ($useFallback) return $renderedContent;
+            $this->rawResponse = $this->nodeResponses[$index]; // for use by the target derivator and the html parser at each node
 
-			$allStreams = "";
+            $targetString = $this->callbackDetails
 
-			foreach ($this->hotwireHandlers as $index => $handlerDetails) {
+            ->recursiveValueDerivation($targets, $this);
 
-				[$hotwireAction,, $targets ] = $handlerDetails;
+            $builder = new HotwireStreamBuilder($hotwireAction, $targetString);
 
-				$this->rawResponse = $this->nodeResponses[$index]; // for use by the target derivator and the html parser at each node
+            $builder->wrapContent(
+                $this->parseNodeContent(@$handlerDetails[3])
+            );
 
-				$targetString = $this->callbackDetails
+            $this->streamBuilders[] = $builder;
 
-				->recursiveValueDerivation($targets, $this);
+            $allStreams .= $builder;
+        }
 
-				$builder = new HotwireStreamBuilder($hotwireAction, $targetString);
+        $this->rawResponse = $this->nodeResponses; // reset it
 
-				$builder->wrapContent(
+        return $allStreams;
+    }
 
-					$this->parseNodeContent(@$handlerDetails[3])
-				);
+    protected function setConditionalHeader(bool $notHot): void
+    {
 
-				$this->streamBuilders[] = $builder;
+        if ($notHot) {
 
-				$allStreams .= $builder;
-			}
+            $this->statusCode = $this->fallbackRenderer->getStatusCode();
 
-			$this->rawResponse = $this->nodeResponses; // reset it
+            $this->headers = $this->fallbackRenderer->getHeaders();
+        } else {
+            $this->setHeaders($this->statusCode, [
 
-			return $allStreams;
-		}
+                PayloadStorage::CONTENT_TYPE_KEY => self::TURBO_INDICATOR
+            ]);
+        }
+    }
 
-		protected function setConditionalHeader (bool $notHot):void {
+    protected function parseNodeContent(?string $markupName = null): string
+    {
 
-			if ($notHot) {
+        if (is_null($markupName)) {
+            return "";
+        } // "remove" action has no markup
 
-				$this->statusCode = $this->fallbackRenderer->getStatusCode();
+        $this->markupName = $markupName;
 
-				$this->headers = $this->fallbackRenderer->getHeaders();
-			}
+        return $this->htmlParser->parseRenderer($this);
+    }
 
-			else $this->setHeaders($this->statusCode, [
-				
-				PayloadStorage::CONTENT_TYPE_KEY => self::TURBO_INDICATOR
-			]);
-		}
+    /**
+     * These methods expect the partials to check the PayloadStorage for presence of data from previous request
+    */
+    public function retainCreateNodes(): self
+    {
 
-		protected function parseNodeContent (?string $markupName = null):string {
+        return $this->trimUnwantedActions([self::REPLACE_ACTION]);
+    }
 
-			if (is_null($markupName)) return ""; // "remove" action has no markup
+    public function retainUpdateNodes(): self
+    {
 
-			$this->markupName = $markupName;
+        return $this->trimUnwantedActions([self::UPDATE_ACTION]);
+    }
 
-			return $this->htmlParser->parseRenderer($this);
-		}
+    protected function trimUnwantedActions(array $permittedActions): self
+    {
 
-		/**
-		 * These methods expect the partials to check the PayloadStorage for presence of data from previous request
-		*/
-		public function retainCreateNodes ():self {
+        $handlersCopy = $this->hotwireHandlers;
 
-			return $this->trimUnwantedActions([self::REPLACE_ACTION]);
-		}
+        $this->trimmedActions = true;
 
-		public function retainUpdateNodes ():self {
+        foreach ($handlersCopy as $index => [$hotwireAction]) {
 
-			return $this->trimUnwantedActions([self::UPDATE_ACTION]);
-		}
+            if (!in_array($hotwireAction, $permittedActions)) {
 
-		protected function trimUnwantedActions (array $permittedActions):self {
+                unset($handlersCopy[$index]);
+            }
+        }
 
-			$handlersCopy = $this->hotwireHandlers;
+        if (!empty($handlersCopy)) {
 
-			$this->trimmedActions = true;
+            $this->hotwireHandlers = array_values($handlersCopy);
+        }
 
-			foreach ($handlersCopy as $index => [$hotwireAction]) {
+        return $this;
+    }
 
-				if (!in_array($hotwireAction, $permittedActions))
+    public function getStreamBuilders(): array
+    {
 
-					unset($handlersCopy[$index]);
-			}
+        return $this->streamBuilders;
+    }
 
-			if (!empty($handlersCopy))
+    public function getHotwireHandlers(): array
+    {
 
-				$this->hotwireHandlers = array_values($handlersCopy);
-			
-			return $this;
-		}
+        return $this->hotwireHandlers;
+    }
 
-		public function getStreamBuilders ():array {
+    public function setCoordinatorClass(ServiceCoordinator $coordinator): void
+    {
 
-			return $this->streamBuilders;
-		}
+        parent::setCoordinatorClass($coordinator);
 
-		public function getHotwireHandlers ():array {
+        $this->fallbackRenderer->setCoordinatorClass($coordinator);
+    }
 
-			return $this->hotwireHandlers;
-		}
+    public function setRawResponse(iterable $response): BaseRenderer
+    {
 
-		public function setCoordinatorClass (ServiceCoordinator $coordinator):void {
-			
-			parent::setCoordinatorClass($coordinator);
+        $this->forceArrayShape($response);
 
-			$this->fallbackRenderer->setCoordinatorClass($coordinator);
-		}
+        if ($this->trimmedActions) {
 
-		public function setRawResponse (iterable $response):BaseRenderer {
+            /**
+             * Wrap in extra array to match nodeResponse structure ([[], []...]).
+             *
+             * Since no action handler will be called in the eventuality of a validation failure, set this for all nodes found.
+             *
+             * Can either be one (on trim success), or all otherwise
+            */
+            foreach ($this->hotwireHandlers as $handlerDetails) {
 
-			$this->forceArrayShape($response);
+                $this->nodeResponses[] = $this->rawResponse;
+            }
+        } else {
+            $this->nodeResponses = $this->rawResponse;
+        }
 
-			if ($this->trimmedActions) {
-
-				/**
-				 * Wrap in extra array to match nodeResponse structure ([[], []...]).
-				 *
-				 * Since no action handler will be called in the eventuality of a validation failure, set this for all nodes found.
-				 *
-				 * Can either be one (on trim success), or all otherwise
-				*/
-				foreach ($this->hotwireHandlers as $handlerDetails)
-
-					$this->nodeResponses[] = $this->rawResponse;
-			}
-
-			else $this->nodeResponses = $this->rawResponse;
-
-			return $this;
-		}
-	}
-?>
+        return $this;
+    }
+}

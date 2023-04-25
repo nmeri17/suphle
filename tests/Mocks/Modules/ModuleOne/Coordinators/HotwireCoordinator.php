@@ -1,90 +1,99 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-	use Suphle\Services\{ServiceCoordinator, Decorators\ValidationRules};
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\SystemModelEditMock1;
+use Suphle\Services\{ServiceCoordinator, Decorators\ValidationRules};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\PayloadReaders\{BaseEmploymentBuilder, EmploymentId2Builder};
+use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\SystemModelEditMock1;
 
-	class HotwireCoordinator extends ServiceCoordinator {
+use Suphle\Tests\Mocks\Modules\ModuleOne\PayloadReaders\{BaseEmploymentBuilder, EmploymentId2Builder};
 
-		public function __construct (protected SystemModelEditMock1 $editService) {
+class HotwireCoordinator extends ServiceCoordinator
+{
+    public function __construct(protected SystemModelEditMock1 $editService)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function loadForm ():array {
+    public function loadForm(): array
+    {
 
-			return [];
-		}
+        return [];
+    }
 
-		#[ValidationRules([
+    #[ValidationRules([
 
-			"id" => "required|numeric|exists:employment",
+        "id" => "required|numeric|exists:employment",
 
-			"id2" => "required|numeric|exists:employment,id"
-		])]
-		public function regularFormResponse ():array {
+        "id2" => "required|numeric|exists:employment,id"
+    ])]
+    public function regularFormResponse(): array
+    {
 
-			return []; // not really necessary to return anything since they just redirect
-		}
+        return []; // not really necessary to return anything since they just redirect
+    }
 
-		#[ValidationRules([
+    #[ValidationRules([
 
-			"id" => "required|numeric|exists:employment",
+        "id" => "required|numeric|exists:employment",
 
-			"id2" => "required|numeric|exists:employment,id"
-		])]
-		public function hotwireFormResponse (BaseEmploymentBuilder $employmentBuilder):array {
+        "id2" => "required|numeric|exists:employment,id"
+    ])]
+    public function hotwireFormResponse(BaseEmploymentBuilder $employmentBuilder): array
+    {
 
-			return [];
-		}
+        return [];
+    }
 
-		/**
-		 * Just return the posted data
-		*/
-		#[ValidationRules([
+    /**
+     * Just return the posted data
+    */
+    #[ValidationRules([
 
-			"id" => "required|numeric|exists:employment",
+        "id" => "required|numeric|exists:employment",
 
-			"id2" => "required|numeric|exists:employment,id"
-		])]
-		public function hotwireReplace (BaseEmploymentBuilder $employmentBuilder):array {
+        "id2" => "required|numeric|exists:employment,id"
+    ])]
+    public function hotwireReplace(BaseEmploymentBuilder $employmentBuilder): array
+    {
 
-			return ["data" => $employmentBuilder->getBuilder()->first()];
-		}
+        return ["data" => $employmentBuilder->getBuilder()->first()];
+    }
 
-		#[ValidationRules([])]
-		public function hotwireBefore (EmploymentId2Builder $employmentBuilder):array {
+    #[ValidationRules([])]
+    public function hotwireBefore(EmploymentId2Builder $employmentBuilder): array
+    {
 
-			return ["data" => $employmentBuilder->getBuilder()->first()];
-		}
+        return ["data" => $employmentBuilder->getBuilder()->first()];
+    }
 
-		#[ValidationRules([])]
-		public function hotwireAfter (BaseEmploymentBuilder $employmentBuilder):array {
+    #[ValidationRules([])]
+    public function hotwireAfter(BaseEmploymentBuilder $employmentBuilder): array
+    {
 
-			return ["data" => $employmentBuilder->getBuilder()->first()];
-		}
+        return ["data" => $employmentBuilder->getBuilder()->first()];
+    }
 
-		#[ValidationRules([
+    #[ValidationRules([
 
-			"id" => "required|numeric|exists:employment",
+        "id" => "required|numeric|exists:employment",
 
-			"id2" => "required|numeric|exists:employment,id"
-		])]
-		public function hotwireUpdate (EmploymentId2Builder $employmentBuilder):array {
+        "id2" => "required|numeric|exists:employment,id"
+    ])]
+    public function hotwireUpdate(EmploymentId2Builder $employmentBuilder): array
+    {
 
-			return ["data" => $employmentBuilder->getBuilder()->first()];
-		}
+        return ["data" => $employmentBuilder->getBuilder()->first()];
+    }
 
-		#[ValidationRules([
+    #[ValidationRules([
 
-			"id" => "required|numeric|exists:employment"
-		])]
-		public function hotwireDelete (BaseEmploymentBuilder $employmentBuilder):array {
+        "id" => "required|numeric|exists:employment"
+    ])]
+    public function hotwireDelete(BaseEmploymentBuilder $employmentBuilder): array
+    {
 
-			return ["data" => $employmentBuilder->getBuilder()->first()]; // even though it's not used on the front end, it's still necessary for generating the target on the route collection
-		}
-	}
-?>
+        return ["data" => $employmentBuilder->getBuilder()->first()]; // even though it's not used on the front end, it's still necessary for generating the target on the route collection
+    }
+}

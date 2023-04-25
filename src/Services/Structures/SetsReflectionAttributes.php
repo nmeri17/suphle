@@ -1,13 +1,14 @@
 <?php
-	namespace Suphle\Services\Structures;
 
-	trait SetsReflectionAttributes {
+namespace Suphle\Services\Structures;
 
-		protected array $attributesList = [];
+trait SetsReflectionAttributes
+{
+    protected array $attributesList = [];
 
-		public function setAttributesList (array $attributes):void {
+    public function setAttributesList(array $attributes): void
+    {
 
-			$this->attributesList = $attributes;
-		}
-	}
-?>
+        $this->attributesList = $attributes;
+    }
+}

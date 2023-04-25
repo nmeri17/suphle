@@ -1,52 +1,56 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Events;
 
-	use Suphle\Events\EventManager;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Events;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\{LocalSender as Emitter, Services\UpdatefulEmitter};
+use Suphle\Events\EventManager;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleApi;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\{LocalSender as Emitter, Services\UpdatefulEmitter};
 
-	class AssignListeners extends EventManager {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleApi;
 
-		public function registerListeners():void {
+class AssignListeners extends EventManager
+{
+    public function registerListeners(): void
+    {
 
-			parent::registerListeners();
-			
-			$this->localSenderBindings();
+        parent::registerListeners();
 
-			$this->localReceiverBindings();
+        $this->localSenderBindings();
 
-			$this->updatefulBindings();
-		}
+        $this->localReceiverBindings();
 
-		private function localSenderBindings ():void {
+        $this->updatefulBindings();
+    }
 
-			$this->local(Emitter::class, LocalReceiver::class)
+    private function localSenderBindings(): void
+    {
 
-			->on(ModuleApi::DEFAULT_EVENT, "updatePayload")
+        $this->local(Emitter::class, LocalReceiver::class)
 
-			->on(Emitter::EMPTY_PAYLOAD_EVENT, "doNothing")
+        ->on(ModuleApi::DEFAULT_EVENT, "updatePayload")
 
-			->on(Emitter::CASCADE_BEGIN_EVENT, "reboundsNewEvent")
+        ->on(Emitter::EMPTY_PAYLOAD_EVENT, "doNothing")
 
-			->on(Emitter::EMPTY_PAYLOAD_EVENT . " " . Emitter::CONCAT_EVENT, "unionHandler")
+        ->on(Emitter::CASCADE_BEGIN_EVENT, "reboundsNewEvent")
 
-			->on(Emitter::CASCADE_EXTERNAL_BEGIN_EVENT, "reboundExternalEvent");
-		}
+        ->on(Emitter::EMPTY_PAYLOAD_EVENT . " " . Emitter::CONCAT_EVENT, "unionHandler")
 
-		private function localReceiverBindings ():void {
-			
-			$this->local(LocalReceiver::class, ReboundReceiver::class)
+        ->on(Emitter::CASCADE_EXTERNAL_BEGIN_EVENT, "reboundExternalEvent");
+    }
 
-			->on(LocalReceiver::CASCADE_REBOUND_EVENT, "ricochetReactor");
-	    }
+    private function localReceiverBindings(): void
+    {
 
-	    private function updatefulBindings ():void {
+        $this->local(LocalReceiver::class, ReboundReceiver::class)
 
-	    	$this->local(UpdatefulEmitter::class, UpdatefulListener::class)
+        ->on(LocalReceiver::CASCADE_REBOUND_EVENT, "ricochetReactor");
+    }
 
-	    	->on(UpdatefulEmitter::UPDATE_ERROR, "terminateTransaction");
-	    }
-	}
-?>
+    private function updatefulBindings(): void
+    {
+
+        $this->local(UpdatefulEmitter::class, UpdatefulListener::class)
+
+        ->on(UpdatefulEmitter::UPDATE_ERROR, "terminateTransaction");
+    }
+}

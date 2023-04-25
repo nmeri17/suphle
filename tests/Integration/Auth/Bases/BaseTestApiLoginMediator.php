@@ -1,24 +1,26 @@
 <?php
-	namespace Suphle\Tests\Integration\Auth\Bases;
 
-	use Suphle\Auth\{Renderers\ApiLoginMediator, Repositories\ApiAuthRepo};
+namespace Suphle\Tests\Integration\Auth\Bases;
 
-	use Suphle\Testing\TestTypes\ModuleLevelTest;
+use Suphle\Auth\{Renderers\ApiLoginMediator, Repositories\ApiAuthRepo};
 
-	class BaseTestApiLoginMediator extends ModuleLevelTest {
+use Suphle\Testing\TestTypes\ModuleLevelTest;
 
-		use TestLoginMediator;
+class BaseTestApiLoginMediator extends ModuleLevelTest
+{
+    use TestLoginMediator;
 
-		public const LOGIN_PATH = "/api/v1/login";
+    public const LOGIN_PATH = "/api/v1/login";
 
-		protected function loginRendererName ():string {
+    protected function loginRendererName(): string
+    {
 
-			return ApiLoginMediator::class;
-		}
+        return ApiLoginMediator::class;
+    }
 
-		protected function loginRepoService ():string {
+    protected function loginRepoService(): string
+    {
 
-			return ApiAuthRepo::class;
-		}
-	}
-?>
+        return ApiAuthRepo::class;
+    }
+}

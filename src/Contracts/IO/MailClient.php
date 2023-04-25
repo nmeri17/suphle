@@ -1,18 +1,18 @@
 <?php
-	namespace Suphle\Contracts\IO;
 
-	interface MailClient {
+namespace Suphle\Contracts\IO;
 
-		public function setDestination (string $destination):self;
+interface MailClient
+{
+    public function setDestination(string $destination): self;
 
-		public function setSubject (string $subject):self;
+    public function setSubject(string $subject): self;
 
-		public function setText (string $text):self;
+    public function setText(string $text): self;
 
-		public function setHtml (string $html):self;
+    public function setHtml(string $html): self;
 
-		public function fireMail ():void;
+    public function fireMail(): void;
 
-		public function getNativeClient ();
-	}
-?>
+    public function getNativeClient();
+}

@@ -1,18 +1,19 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleTwo\Routes;
 
-	use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
+namespace Suphle\Tests\Mocks\Modules\ModuleTwo\Routes;
 
-	use Suphle\Tests\Mocks\Modules\ModuleTwo\Coordinators\BaseCoordinator;
+use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
 
-	use Suphle\Response\Format\Json;
+use Suphle\Tests\Mocks\Modules\ModuleTwo\Coordinators\BaseCoordinator;
 
-	#[HandlingCoordinator(BaseCoordinator::class)]
-	class BrowserCollection extends BaseCollection {
+use Suphle\Response\Format\Json;
 
-		public function MODULE__TWOh_id() {
+#[HandlingCoordinator(BaseCoordinator::class)]
+class BrowserCollection extends BaseCollection
+{
+    public function MODULE__TWOh_id()
+    {
 
-			$this->_httpGet(new Json("checkPlaceholder"));
-		}
-	}
-?>
+        $this->_httpGet(new Json("checkPlaceholder"));
+    }
+}

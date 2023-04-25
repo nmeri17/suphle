@@ -1,48 +1,54 @@
 <?php
-	namespace Suphle\Services\Search;
 
-	use Suphle\Services\UpdatelessService;
+namespace Suphle\Services\Search;
 
-	use Suphle\Request\PayloadStorage;
+use Suphle\Services\UpdatelessService;
 
-	use Suphle\Contracts\{Database\OrmDialect, Services\Decorators\VariableDependencies};
+use Suphle\Request\PayloadStorage;
 
-	#[VariableDependencies([ "setPayloadStorage", "setOrmDialect"])]
-	class SimpleSearch extends UpdatelessService {
+use Suphle\Contracts\{Database\OrmDialect, Services\Decorators\VariableDependencies};
 
-		protected PayloadStorage $payloadStorage;
+#[VariableDependencies([ "setPayloadStorage", "setOrmDialect"])]
+class SimpleSearch extends UpdatelessService
+{
+    protected PayloadStorage $payloadStorage;
 
-		protected OrmDialect $ormDialect;
+    protected OrmDialect $ormDialect;
 
-		public function setPayloadStorage (PayloadStorage $payloadStorage):void {
+    public function setPayloadStorage(PayloadStorage $payloadStorage): void
+    {
 
-			$this->payloadStorage = $payloadStorage;
-		}
+        $this->payloadStorage = $payloadStorage;
+    }
 
-		public function setOrmDialect (OrmDialect $ormDialect):void {
+    public function setOrmDialect(OrmDialect $ormDialect): void
+    {
 
-			$this->ormDialect = $ormDialect;
-		}
+        $this->ormDialect = $ormDialect;
+    }
 
-		public function convertToQuery ($baseModel, array $nonColumns) {
+    public function convertToQuery($baseModel, array $nonColumns)
+    {
 
-			foreach ($this->getConstraints($nonColumns) as $parameter => $value)
+        foreach ($this->getConstraints($nonColumns) as $parameter => $value) {
 
-				if (method_exists($this, $parameter))
+            if (method_exists($this, $parameter)) {
 
-					$baseModel = $this->$parameter($baseModel, $value);
+                $baseModel = $this->$parameter($baseModel, $value);
+            } else {
+                $baseModel = $this->ormDialect->addWhereClause($baseModel, [$parameter => $value]);
+            }
+        }
 
-				else $baseModel = $this->ormDialect->addWhereClause($baseModel, [$parameter => $value]);
+        return $baseModel;
+    }
 
-			return $baseModel;
-		}
+    /**
+     * @return only the query parameters we intend to search by
+    */
+    protected function getConstraints(array $nonColumns): array
+    {
 
-		/**
-		 * @return only the query parameters we intend to search by
-		*/
-		protected function getConstraints (array $nonColumns):array {
-
-			return $this->payloadStorage->except($nonColumns); // at the very least, omit query key since it's expected to be set in the [ModelfulPayload]
-		}
-	}
-?>
+        return $this->payloadStorage->except($nonColumns); // at the very least, omit query key since it's expected to be set in the [ModelfulPayload]
+    }
+}

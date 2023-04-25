@@ -1,21 +1,23 @@
 <?php
-	namespace Suphle\Config;
 
-	use Suphle\Contracts\Config\ContainerConfig as IContainerConfig;
+namespace Suphle\Config;
 
-	class ContainerConfig implements IContainerConfig {
+use Suphle\Contracts\Config\ContainerConfig as IContainerConfig;
 
-		public function containerLogFile ():string {
+class ContainerConfig implements IContainerConfig
+{
+    public function containerLogFile(): string
+    {
 
-			return "container-log.txt";
-		}
+        return "container-log.txt";
+    }
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function getExternalHydrators ():array {
+    /**
+     * {@inheritdoc}
+    */
+    public function getExternalHydrators(): array
+    {
 
-			return [];
-		}
-	}
-?>
+        return [];
+    }
+}

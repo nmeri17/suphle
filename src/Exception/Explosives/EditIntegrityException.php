@@ -1,34 +1,37 @@
 <?php
-	namespace Suphle\Exception\Explosives;
 
-	use Exception;
+namespace Suphle\Exception\Explosives;
 
-	class EditIntegrityException extends Exception {
+use Exception;
 
-		final const NO_AUTHORIZER = 1;
-  final const KEY_MISMATCH = 2;
-  final const MISSING_KEY = 3;
+class EditIntegrityException extends Exception
+{
+    final public const NO_AUTHORIZER = 1;
+    final public const KEY_MISMATCH = 2;
+    final public const MISSING_KEY = 3;
 
-		public function __construct (protected readonly int $integrityType) {
+    public function __construct(protected readonly int $integrityType)
+    {
 
-			$this->setMessage();
-		}
+        $this->setMessage();
+    }
 
-		public function setMessage ():void {
+    public function setMessage(): void
+    {
 
-			$this->message = [
+        $this->message = [
 
-				self::NO_AUTHORIZER => "No path authorizer found",
+            self::NO_AUTHORIZER => "No path authorizer found",
 
-				self::KEY_MISMATCH => "Mismatching update integrity key",
+            self::KEY_MISMATCH => "Mismatching update integrity key",
 
-				self::MISSING_KEY => "No update integrity key found"
-			][$this->integrityType];
-		}
+            self::MISSING_KEY => "No update integrity key found"
+        ][$this->integrityType];
+    }
 
-		public function getIntegrityType ():int {
+    public function getIntegrityType(): int
+    {
 
-			return $this->integrityType;
-		}
-	}
-?>
+        return $this->integrityType;
+    }
+}

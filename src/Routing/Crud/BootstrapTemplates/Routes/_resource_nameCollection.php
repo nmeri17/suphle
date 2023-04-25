@@ -1,16 +1,17 @@
 <?php
-	namespace _modules_shell\_module_name\Routes;
 
-	use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
+namespace _modules_shell\_module_name\Routes;
 
-	use _modules_shell\_module_name\Coordinators\_resource_nameCoordinator;
+use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
 
-	#[HandlingCoordinator(_resource_nameCoordinator::class)]
-	class _resource_nameCollection extends BaseCollection {
+use _modules_shell\_module_name\Coordinators\_resource_nameCoordinator;
 
-		public function _resource_route () {
+#[HandlingCoordinator(_resource_nameCoordinator::class)]
+class _resource_nameCollection extends BaseCollection
+{
+    public function _resource_route()
+    {
 
-			$this->_crud("_resource_name")->registerCruds();
-		}
-	}
-?>
+        $this->_crud("_resource_name")->registerCruds();
+    }
+}

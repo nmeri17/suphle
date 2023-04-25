@@ -1,56 +1,56 @@
 <?php
-	namespace Suphle\Modules;
 
-	use Suphle\Modules\Structures\ActiveDescriptors;
+namespace Suphle\Modules;
 
-	use Suphle\Events\ModuleLevelEvents;
+use Suphle\Modules\Structures\ActiveDescriptors;
 
-	use Suphle\Contracts\{Modules\DescriptorInterface, Config\ModuleFiles};
+use Suphle\Events\ModuleLevelEvents;
 
-	use Suphle\Services\Decorators\BindsAsSingleton;
+use Suphle\Contracts\{Modules\DescriptorInterface, Config\ModuleFiles};
 
-	#[BindsAsSingleton]
-	class ModulesBooter {
+use Suphle\Services\Decorators\BindsAsSingleton;
 
-		protected array $modules;
+#[BindsAsSingleton]
+class ModulesBooter
+{
+    protected array $modules;
 
-		public function __construct (
+    public function __construct(
+        protected readonly ModuleLevelEvents $eventManager
+    ) {
 
-			protected readonly ModuleLevelEvents $eventManager
-		) {
+        //
+    }
 
-			//
-		}
+    public function bootOuterModules(ActiveDescriptors $descriptorsHolder): void
+    {
 
-		public function bootOuterModules (ActiveDescriptors $descriptorsHolder):void {
+        $this->modules = $descriptorsHolder->getOriginalDescriptors();
 
-			$this->modules = $descriptorsHolder->getOriginalDescriptors();
+        $this->recursivelyBootModuleSet($descriptorsHolder);
+    }
 
-			$this->recursivelyBootModuleSet( $descriptorsHolder);
-		}
+    public function recursivelyBootModuleSet(ActiveDescriptors $descriptorsHolder): void
+    {
 
-		public function recursivelyBootModuleSet (ActiveDescriptors $descriptorsHolder):void {
+        foreach ($descriptorsHolder->getOriginalDescriptors() as $descriptor) {
 
-			foreach ($descriptorsHolder->getOriginalDescriptors() as $descriptor) {
+            $descriptor->warmModuleContainer();
 
-				$descriptor->warmModuleContainer();
+            $descriptor->getContainer()->whenTypeAny()->needsAny([
 
-				$descriptor->getContainer()->whenTypeAny()->needsAny([
+                DescriptorInterface::class => $descriptor,
 
-					DescriptorInterface::class => $descriptor,
+                ActiveDescriptors::class => $descriptorsHolder // before this point, any object that requires the holder has to receive it manually
+            ]);
 
-					ActiveDescriptors::class => $descriptorsHolder // before this point, any object that requires the holder has to receive it manually
-				]);
+            $descriptor->prepareToRun();
 
-				$descriptor->prepareToRun();
+            $this->recursivelyBootModuleSet(new ActiveDescriptors(
+                $descriptor->getExpatriates()
+            ));
+        }
 
-				$this->recursivelyBootModuleSet(new ActiveDescriptors(
-
-					$descriptor->getExpatriates()
-				));
-			}
-
-			$this->eventManager->bootReactiveLogger($descriptorsHolder);
-		}
-	}
-?>
+        $this->eventManager->bootReactiveLogger($descriptorsHolder);
+    }
+}

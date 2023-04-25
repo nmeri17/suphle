@@ -1,84 +1,86 @@
 <?php
-	namespace Suphle\Exception\Diffusers;
 
-	use Suphle\Contracts\Exception\ExceptionHandler;
+namespace Suphle\Exception\Diffusers;
 
-	use Suphle\Contracts\Presentation\{HtmlParser, BaseRenderer};
+use Suphle\Contracts\Exception\ExceptionHandler;
 
-	use Suphle\Hydration\DecoratorHydrator;
+use Suphle\Contracts\Presentation\{HtmlParser, BaseRenderer};
 
-	use Suphle\Request\RequestDetails;
+use Suphle\Hydration\DecoratorHydrator;
 
-	use Suphle\Response\Format\{ Markup, Json};
+use Suphle\Request\RequestDetails;
 
-	use Suphle\Exception\{ComponentEntry, Explosives\NotFoundException};
+use Suphle\Response\Format\{ Markup, Json};
 
-	use Throwable;
+use Suphle\Exception\{ComponentEntry, Explosives\NotFoundException};
 
-	class NotFoundDiffuser implements ExceptionHandler {
+use Throwable;
 
-		protected BaseRenderer $renderer;
+class NotFoundDiffuser implements ExceptionHandler
+{
+    protected BaseRenderer $renderer;
 
-		public function __construct(
-			protected readonly RequestDetails $requestDetails,
+    public function __construct(
+        protected readonly RequestDetails $requestDetails,
+        protected readonly ComponentEntry $componentEntry,
+        protected readonly DecoratorHydrator $decoratorHydrator,
+        protected readonly HtmlParser $htmlParser
+    ) {
 
-			protected readonly ComponentEntry $componentEntry,
+        //
+    }
 
-			protected readonly DecoratorHydrator $decoratorHydrator,
+    /**
+     * @param {origin} NotFoundException
+    */
+    public function setContextualData(Throwable $origin): void
+    {
 
-			protected readonly HtmlParser $htmlParser
-		) {
+        //
+    }
 
-			//
-		}
+    public function prepareRendererData(): void
+    {
 
-		/**
-		 * @param {origin} NotFoundException
-		*/
-		public function setContextualData (Throwable $origin):void {
+        if ($this->requestDetails->isApiRoute()) {
 
-			//
-		}
+            $this->renderer = new Json("");
+        } else {
+            $this->renderer = $this->getMarkupRenderer();
+        }
 
-		public function prepareRendererData ():void {
+        $url = $this->requestDetails->getPath();
 
-			if ($this->requestDetails->isApiRoute())
+        $this->renderer->setRawResponse([
 
-				$this->renderer = new Json("");
+            "url" => $url,
 
-			else $this->renderer = $this->getMarkupRenderer();
+            "message" => $url . " Not Found"
+        ])->setHeaders(404, []);
+    }
 
-			$url = $this->requestDetails->getPath();
+    public function getRenderer(): BaseRenderer
+    {
 
-			$this->renderer->setRawResponse([
+        return $this->renderer;
+    }
 
-				"url" => $url,
+    protected function getMarkupRenderer(): BaseRenderer
+    {
 
-				"message" => $url . " Not Found"
-			])->setHeaders(404, []);
-		}
+        $renderer = new Markup("missingHandler", "not-found");
 
-		public function getRenderer ():BaseRenderer {
+        $this->decoratorHydrator->scopeInjecting(
+            $renderer,
+            self::class
+        );
 
-			return $this->renderer;
-		}
+        $this->htmlParser->findInPath(
+            $this->componentEntry->userLandMirror() . "Markup".
 
-		protected function getMarkupRenderer ():BaseRenderer {
+            DIRECTORY_SEPARATOR
+        );
 
-			$renderer = new Markup("missingHandler", "not-found");
-
-			$this->decoratorHydrator->scopeInjecting(
-
-				$renderer, self::class
-			);
-
-			$this->htmlParser->findInPath(
-				$this->componentEntry->userLandMirror() . "Markup".
-
-				DIRECTORY_SEPARATOR
-			);
-
-			return $renderer;
-		}
-	}
-?>
+        return $renderer;
+    }
+}

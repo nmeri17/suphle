@@ -1,147 +1,166 @@
 <?php
-	namespace Suphle\Response\Format;
 
-	use Suphle\Contracts\Presentation\{HtmlParser, BaseRenderer};
+namespace Suphle\Response\Format;
 
-	use Suphle\Services\Decorators\VariableDependencies;
+use Suphle\Contracts\Presentation\{HtmlParser, BaseRenderer};
 
-	use Suphle\Hydration\Container;
+use Suphle\Services\Decorators\VariableDependencies;
 
-	use Suphle\Flows\ControllerFlows;
+use Suphle\Hydration\Container;
 
-	use Suphle\Services\ServiceCoordinator;
+use Suphle\Flows\ControllerFlows;
 
-	abstract class GenericRenderer implements BaseRenderer {
+use Suphle\Services\ServiceCoordinator;
 
-		protected ServiceCoordinator $coordinator;
-		
-		protected ?ControllerFlows $flows = null;
-		
-		protected string $routeMethod, $handler;
+abstract class GenericRenderer implements BaseRenderer
+{
+    protected ServiceCoordinator $coordinator;
 
-		protected int $statusCode;
+    protected ?ControllerFlows $flows = null;
 
-		protected array $headers = [];
+    protected string $routeMethod;
 
-		protected iterable $rawResponse = [];
+    protected string $handler;
 
-		protected bool $shouldDeferValidationFailure = true;
+    protected int $statusCode;
 
-		public function setCoordinatorClass (ServiceCoordinator $coordinator):void {
-			
-			$this->coordinator = $coordinator;
-		}
+    protected array $headers = [];
 
-		public function invokeActionHandler (array $handlerParameters):BaseRenderer {
+    protected iterable $rawResponse = [];
 
-			$this->rawResponse = call_user_func_array(
+    protected bool $shouldDeferValidationFailure = true;
 
-				[$this->getCoordinator(), $this->handler],
+    public function setCoordinatorClass(ServiceCoordinator $coordinator): void
+    {
 
-				$handlerParameters
-			);
+        $this->coordinator = $coordinator;
+    }
 
-			return $this;
-		}
+    public function invokeActionHandler(array $handlerParameters): BaseRenderer
+    {
 
-		public function getCoordinator ():ServiceCoordinator {
-			
-			return $this->coordinator;
-		}
+        $this->rawResponse = call_user_func_array(
+            [$this->getCoordinator(), $this->handler],
+            $handlerParameters
+        );
 
-		protected function renderJson():string {
+        return $this;
+    }
 
-			return json_encode($this->rawResponse, JSON_THROW_ON_ERROR);
-		}
+    public function getCoordinator(): ServiceCoordinator
+    {
 
-		public function hasBranches():bool {
-			
-			return !is_null($this->getFlow());
-		}
+        return $this->coordinator;
+    }
 
-		public function setRawResponse (iterable $response):BaseRenderer {
-			
-			$this->rawResponse = $response;
+    protected function renderJson(): string
+    {
 
-			return $this;
-		}
+        return json_encode($this->rawResponse, JSON_THROW_ON_ERROR);
+    }
 
-		public function setFlow(ControllerFlows $flow):BaseRenderer {
-			
-			$this->flows = $flow;
+    public function hasBranches(): bool
+    {
 
-			return $this;
-		}
+        return !is_null($this->getFlow());
+    }
 
-		public function getFlow():?ControllerFlows {
-			
-			return $this->flows;
-		}
+    public function setRawResponse(iterable $response): BaseRenderer
+    {
 
-		public function getRawResponse():iterable {
-			
-			return $this->rawResponse;
-		}
+        $this->rawResponse = $response;
 
-		public function getRouteMethod():string {
-			
-			return $this->routeMethod;
-		}
+        return $this;
+    }
 
-		public function setRouteMethod(string $httpMethod):void {
-			
-			$this->routeMethod = $httpMethod;
-		}
+    public function setFlow(ControllerFlows $flow): BaseRenderer
+    {
 
-		public function getHandler ():string {
+        $this->flows = $flow;
 
-			return $this->handler;
-		}
+        return $this;
+    }
 
-		public function matchesHandler (string $name):bool {
+    public function getFlow(): ?ControllerFlows
+    {
 
-			return $this->handler == $name;
-		}
+        return $this->flows;
+    }
 
-		public function setHeaders (int $statusCode, array $headers):void {
+    public function getRawResponse(): iterable
+    {
 
-			$this->statusCode = $statusCode;
+        return $this->rawResponse;
+    }
 
-			$this->headers = array_merge($this->headers, $headers);
-		}
+    public function getRouteMethod(): string
+    {
 
-		public function getStatusCode ():int {
+        return $this->routeMethod;
+    }
 
-			return $this->statusCode;
-		}
+    public function setRouteMethod(string $httpMethod): void
+    {
 
-		public function getHeaders ():array {
+        $this->routeMethod = $httpMethod;
+    }
 
-			return $this->headers;
-		}
+    public function getHandler(): string
+    {
 
-		public function deferValidationContent ():bool {
+        return $this->handler;
+    }
 
-			return $this->shouldDeferValidationFailure;
-		}
+    public function matchesHandler(string $name): bool
+    {
 
-		/**
-		* Insurance against routes that can possibly fail validation that don't return an array
-		*/
-		public function forceArrayShape (array $includeData = []):void {
+        return $this->handler == $name;
+    }
 
-			$currentBody = $this->rawResponse;
+    public function setHeaders(int $statusCode, array $headers): void
+    {
 
-			if (!is_array($currentBody))
+        $this->statusCode = $statusCode;
 
-				$currentBody = json_decode(
+        $this->headers = array_merge($this->headers, $headers);
+    }
 
-					json_encode($currentBody, JSON_THROW_ON_ERROR),
+    public function getStatusCode(): int
+    {
 
-					true, 512, JSON_THROW_ON_ERROR
-				);
+        return $this->statusCode;
+    }
 
-			$this->rawResponse = array_merge($currentBody, $includeData);
-		}
-	}
-?>
+    public function getHeaders(): array
+    {
+
+        return $this->headers;
+    }
+
+    public function deferValidationContent(): bool
+    {
+
+        return $this->shouldDeferValidationFailure;
+    }
+
+    /**
+    * Insurance against routes that can possibly fail validation that don't return an array
+    */
+    public function forceArrayShape(array $includeData = []): void
+    {
+
+        $currentBody = $this->rawResponse;
+
+        if (!is_array($currentBody)) {
+
+            $currentBody = json_decode(
+                json_encode($currentBody, JSON_THROW_ON_ERROR),
+                true,
+                512,
+                JSON_THROW_ON_ERROR
+            );
+        }
+
+        $this->rawResponse = array_merge($currentBody, $includeData);
+    }
+}

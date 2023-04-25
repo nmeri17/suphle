@@ -1,10 +1,10 @@
 <?php
-	namespace Suphle\Contracts\Requests;
 
-	interface RequestValidator {
+namespace Suphle\Contracts\Requests;
 
-		public function validate (array $parameters, array $rules):void;
+interface RequestValidator
+{
+    public function validate(array $parameters, array $rules): void;
 
-		public function getErrors ():iterable;
-	}
-?>
+    public function getErrors(): iterable;
+}

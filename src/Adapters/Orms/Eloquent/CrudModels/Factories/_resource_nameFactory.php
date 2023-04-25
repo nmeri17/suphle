@@ -1,24 +1,25 @@
 <?php
-	namespace _database_namespace\_resource_name\Factories;
 
-	use _database_namespace\_resource_name;
+namespace _database_namespace\_resource_name\Factories;
 
-	use Illuminate\Database\Eloquent\Factories\Factory;
+use _database_namespace\_resource_name;
 
-	use Faker\Factory as FakerFactory;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
-	class _resource_nameFactory extends Factory {
+use Faker\Factory as FakerFactory;
 
-		protected $model = _resource_name::class;
+class _resource_nameFactory extends Factory
+{
+    protected $model = _resource_name::class;
 
-		public function definition ():array {
+    public function definition(): array
+    {
 
-			$faker = FakerFactory::create();
+        $faker = FakerFactory::create();
 
-			return [
+        return [
 
-				"title" => $faker->name()
-			];
-		}
-	}
-?>
+            "title" => $faker->name()
+        ];
+    }
+}

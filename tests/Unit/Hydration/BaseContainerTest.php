@@ -1,214 +1,229 @@
 <?php
-	namespace Suphle\Tests\Unit\Hydration;
 
-	use Suphle\Hydration\{Container, Structures\ContainerTelescope};
+namespace Suphle\Tests\Unit\Hydration;
 
-	use Suphle\Contracts\Auth\UserContract;
+use Suphle\Hydration\{Container, Structures\ContainerTelescope};
 
-	use Suphle\Testing\TestTypes\TestVirginContainer;
+use Suphle\Contracts\Auth\UserContract;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\{ ARequiresBCounter, BCounter};
+use Suphle\Testing\TestTypes\TestVirginContainer;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Interfaces\CInterface;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\{ ARequiresBCounter, BCounter};
 
-	use ReflectionMethod, Exception, stdClass;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Interfaces\CInterface;
 
-	class BaseContainerTest extends TestVirginContainer {
+use ReflectionMethod;
+use Exception;
+use stdClass;
 
-		private $container, $aRequires = ARequiresBCounter::class;
+class BaseContainerTest extends TestVirginContainer
+{
+    private $container;
+    private $aRequires = ARequiresBCounter::class;
 
-		protected function setUp ():void {
+    protected function setUp(): void
+    {
 
-			$this->container = new Container;
+        $this->container = new Container();
 
-			$this->container->setEssentials();
-		}
+        $this->container->setEssentials();
+    }
 
-		public function test_decorateProvidedConcrete_doesnt_overflow_memory () {
+    public function test_decorateProvidedConcrete_doesnt_overflow_memory()
+    {
 
-			$sut = $this->positiveDouble(Container::class, [], [
+        $sut = $this->positiveDouble(Container::class, [], [
 
-				"getProvidedConcrete" => [1, [$this->anything()]]
-			]); // then
+            "getProvidedConcrete" => [1, [$this->anything()]]
+        ]); // then
 
-			$sut->setEssentials();
+        $sut->setEssentials();
 
-			$sut->decorateProvidedConcrete($this->aRequires); // when
-		}
+        $sut->decorateProvidedConcrete($this->aRequires); // when
+    }
 
-		public function test_can_provide_arguments () {
+    public function test_can_provide_arguments()
+    {
 
-			$containerTelescope = new ContainerTelescope;
+        $containerTelescope = new ContainerTelescope();
 
-			$container = $this->container;
+        $container = $this->container;
 
-			$container->setTelescope($containerTelescope);
+        $container->setTelescope($containerTelescope);
 
-			$bCounter = new BCounter;
+        $bCounter = new BCounter();
 
-			$container->whenType($this->aRequires)->needsAny([ // given
+        $container->whenType($this->aRequires)->needsAny([ // given
 
-				BCounter::class => $bCounter
-			])
-			->getClass($this->aRequires); // when
+            BCounter::class => $bCounter
+        ])
+        ->getClass($this->aRequires); // when
 
-			$this->assertTrue($containerTelescope->readArgumentFor(
+        $this->assertTrue($containerTelescope->readArgumentFor(
+            $this->aRequires,
+            [
 
-				$this->aRequires, [
+                "b1" => $bCounter
+            ]
+        ));
+    }
 
-					"b1" => $bCounter
-				]
-			));
-		}
+    public function test_getClass_tries_returning_provided()
+    {
 
-		public function test_getClass_tries_returning_provided () {
+        $stub = new stdClass();
 
-			$stub = new stdClass;
+        $sut = $this->positiveDouble(Container::class, [
 
-			$sut = $this->positiveDouble(Container::class, [
+            "decorateProvidedConcrete" => $stub // given
+        ]);
 
-				"decorateProvidedConcrete" => $stub // given
-			]);
+        $this->assertSame( // then
+            $sut->getClass($this->aRequires), // when
 
-			$this->assertSame( // then
-				$sut->getClass($this->aRequires), // when
+            $stub
+        );
+    }
 
-				$stub
-			);
-		}
+    public function test_unprovided_get_to_decorateProvidedConcrete_returns_null()
+    {
 
-		public function test_unprovided_get_to_decorateProvidedConcrete_returns_null () {
+        $this->assertNull($this->container->decorateProvidedConcrete($this->aRequires));
+    }
 
-			$this->assertNull($this->container->decorateProvidedConcrete($this->aRequires));
-		}
+    public function test_getClass_tries_to_instantiate_concrete()
+    {
 
-		public function test_getClass_tries_to_instantiate_concrete () {
+        // given
+        $sut = $this->positiveDouble(Container::class, [], [
 
-			// given
-			$sut = $this->positiveDouble(Container::class, [], [
+            "instantiateConcrete" => [ // then
+                $this->atLeastOnce(), [
+                    $this->equalTo($this->aRequires)
+                ]
+            ]
+        ]);
 
-				"instantiateConcrete" => [ // then
-					$this->atLeastOnce(), [
-						$this->equalTo($this->aRequires)
-					]
-				]
-			]);
+        $this->bootContainer($sut);
 
-			$this->bootContainer($sut);
+        $sut->getClass($this->aRequires); // when
+    }
 
-			$sut->getClass($this->aRequires); // when
-		}
+    public function test_can_directly_instantiate_concrete_without_interface()
+    {
 
-		public function test_can_directly_instantiate_concrete_without_interface () {
+        // given
+        $sut = $this->withArgumentsForARequires([
 
-			// given
-			$sut = $this->withArgumentsForARequires([
+            "getDecorator" => $this->stubDecorator()
+        ]);
 
-				"getDecorator" => $this->stubDecorator()
-			]);
+        $this->bootContainer($sut);
 
-			$this->bootContainer($sut);
+        $this->assertInstanceOf( // then
+            $this->aRequires,
+            $sut->instantiateConcrete($this->aRequires) // when
+        );
+    }
 
-			$this->assertInstanceOf( // then
-				$this->aRequires,
+    private function withArgumentsForARequires(array $otherOverrides = [])
+    {
 
-				$sut->instantiateConcrete($this->aRequires) // when
-			);
-		}
+        return $this->positiveDouble(Container::class, array_merge([
 
-		private function withArgumentsForARequires (array $otherOverrides = []) {
+            "getMethodParameters" => array_merge($this->manuallyStubify([BCounter::class]), [""])
+        ], $otherOverrides));
+    }
 
-			return $this->positiveDouble(Container::class, array_merge([
+    public function test_can_hydrate_method_parameters_without_interface()
+    {
 
-				"getMethodParameters" => array_merge($this->manuallyStubify([BCounter::class]), [""])
-			], $otherOverrides));
-		}
+        $sut = $this->positiveDouble(Container::class, [
 
-		public function test_can_hydrate_method_parameters_without_interface () {
+            "lastHydratedFor" => $this->aRequires,
 
-			$sut = $this->positiveDouble(Container::class, [
+            "getDecorator" => $this->stubDecorator()
+        ]);
 
-				"lastHydratedFor" => $this->aRequires,
+        $this->bootContainer($sut);
 
-				"getDecorator" => $this->stubDecorator()
-			]);
+        // given
+        $reflectedCallable = new ReflectionMethod($this->aRequires, Container::CLASS_CONSTRUCTOR);
 
-			$this->bootContainer($sut);
+        $provisionContext = $sut->getRecursionContext();
 
-			// given
-			$reflectedCallable = new ReflectionMethod($this->aRequires, Container::CLASS_CONSTRUCTOR);
+        $parameters = $sut->populateDependencies($reflectedCallable, $provisionContext); // when
 
-			$provisionContext = $sut->getRecursionContext();
+        // then
+        $this->assertTrue(is_string($parameters["primitive"]));
 
-			$parameters = $sut->populateDependencies($reflectedCallable, $provisionContext); // when
+        $this->assertInstanceOf(BCounter::class, $parameters["b1"]);
+    }
 
-			// then
-			$this->assertTrue (is_string( $parameters["primitive"]));
+    public function test_internal_get_parameters_calls_populateDependencies()
+    {
 
-			$this->assertInstanceOf (BCounter::class, $parameters["b1"]);
-		}
+        // given
+        $sut = $this->positiveDouble(Container::class, [
 
-		public function test_internal_get_parameters_calls_populateDependencies () {
+            "getDecorator" => $this->stubDecorator()
+        ], [
 
-			// given
-			$sut = $this->positiveDouble(Container::class, [
+            "populateDependencies" => [1, [
 
-				"getDecorator" => $this->stubDecorator()
-			], [
-				
-				"populateDependencies" => [1, [
+                $this->anything(), $this->anything() // not null, since there's always a context when a class method is being populated (fallback to universal)
+            ]] // then
+        ]);
 
-					$this->anything(), $this->anything() // not null, since there's always a context when a class method is being populated (fallback to universal)
-				]] // then
-			]);
+        $this->bootContainer($sut);
 
-			$this->bootContainer($sut);
+        $parameters = $sut->internalMethodGetParameters($this->aRequires, function ($className) use ($sut) {
 
-			$parameters = $sut->internalMethodGetParameters($this->aRequires, function ($className) use ($sut) {
+            return $sut->getMethodParameters(Container::CLASS_CONSTRUCTOR, $className);
+        });
+    }
 
-				return $sut->getMethodParameters(Container::CLASS_CONSTRUCTOR, $className);
-			});
-		}
+    private function manuallyStubify(array $types): array
+    {
 
-		private function manuallyStubify (array $types):array {
+        return array_map(function ($type) {
 
-			return array_map(function ($type) {
+            return $this->positiveDouble($type);
+        }, $types);
+    }
 
-				return $this->positiveDouble($type);
-			}, $types);
-		}
+    public function test_request_for_interface_skip_bridge_calls_provideInterface()
+    {
 
-		public function test_request_for_interface_skip_bridge_calls_provideInterface () {
+        $interfaceName = UserContract::class;
 
-			$interfaceName = UserContract::class;
+        $sut = $this->positiveDouble(Container::class, [
 
-			$sut = $this->positiveDouble(Container::class, [
+            "getDecorator" => $this->stubDecorator()
+        ], [
 
-				"getDecorator" => $this->stubDecorator()
-			], [
+            "provideInterface" => [1, [$interfaceName]], // then
+        ]);
 
-				"provideInterface" => [1, [$interfaceName]], // then
-			]);
+        $this->bootContainer($sut);
 
-			$this->bootContainer($sut);
+        $sut->getClass($interfaceName);
+    }
 
-			$sut->getClass($interfaceName);
-		}
+    public function test_hydrating_interface_without_bind_will_terminate()
+    {
 
-		public function test_hydrating_interface_without_bind_will_terminate () {
+        $this->expectException(Exception::class); // then
 
-			$this->expectException(Exception::class); // then
+        $sut = $this->positiveDouble(Container::class, [
 
-			$sut = $this->positiveDouble(Container::class, [
+            "getDecorator" => $this->stubDecorator()
+        ]);
 
-				"getDecorator" => $this->stubDecorator()
-			]);
+        $this->bootContainer($sut);
 
-			$this->bootContainer($sut);
+        $this->withDefaultInterfaceCollection($sut);
 
-			$this->withDefaultInterfaceCollection($sut);
-
-			$sut->getClass(CInterface::class); // when
-		}
-	}
-?>
+        $sut->getClass(CInterface::class); // when
+    }
+}

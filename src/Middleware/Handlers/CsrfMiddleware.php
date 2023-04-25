@@ -1,49 +1,52 @@
 <?php
-	namespace Suphle\Middleware\Handlers;
 
-	use Suphle\Middleware\MiddlewareNexts;
+namespace Suphle\Middleware\Handlers;
 
-	use Suphle\Request\PayloadStorage;
+use Suphle\Middleware\MiddlewareNexts;
 
-	use Suphle\Request\RequestDetails;
+use Suphle\Request\PayloadStorage;
 
-	use Suphle\Contracts\{Auth\AuthStorage, Presentation\BaseRenderer, Routing\Middleware};
+use Suphle\Request\RequestDetails;
 
-	use Suphle\Auth\Storage\SessionStorage;
+use Suphle\Contracts\{Auth\AuthStorage, Presentation\BaseRenderer, Routing\Middleware};
 
-	use Suphle\Exception\Explosives\DevError\CsrfException;
+use Suphle\Auth\Storage\SessionStorage;
 
-	use Suphle\Security\CSRF\CsrfGenerator;
+use Suphle\Exception\Explosives\DevError\CsrfException;
 
-	class CsrfMiddleware implements Middleware {
+use Suphle\Security\CSRF\CsrfGenerator;
 
-		public function __construct(protected readonly CsrfGenerator $generator, protected readonly RequestDetails $requestDetails, protected readonly AuthStorage $authStorage) {
+class CsrfMiddleware implements Middleware
+{
+    public function __construct(protected readonly CsrfGenerator $generator, protected readonly RequestDetails $requestDetails, protected readonly AuthStorage $authStorage)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function process (PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler):BaseRenderer {
+    public function process(PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler): BaseRenderer
+    {
 
-			$notBrowser = $this->requestDetails->isApiRoute() &&
+        $notBrowser = $this->requestDetails->isApiRoute() &&
 
-			!$this->authStorage instanceof SessionStorage;
+        !$this->authStorage instanceof SessionStorage;
 
-			if (
-				$this->requestDetails->isGetRequest() ||
+        if (
+            $this->requestDetails->isGetRequest() ||
 
-				$notBrowser
-			)
+            $notBrowser
+        ) {
 
-				return $requestHandler->handle($payloadStorage);
+            return $requestHandler->handle($payloadStorage);
+        }
 
-			if ( !$this->generator->isVerifiedToken(
+        if (!$this->generator->isVerifiedToken(
+            $payloadStorage->getKey(CsrfGenerator::TOKEN_FIELD)
+        )) {
 
-				$payloadStorage->getKey(CsrfGenerator::TOKEN_FIELD)
-			))
+            throw new CsrfException();
+        }
 
-				throw new CsrfException;
-
-			return $requestHandler->handle($payloadStorage);
-		}
-	}
-?>
+        return $requestHandler->handle($payloadStorage);
+    }
+}

@@ -1,152 +1,158 @@
 <?php
-	namespace Suphle\Server\Commands;
 
-	use Suphle\Contracts\Server\OnStartup;
+namespace Suphle\Server\Commands;
 
-	use Suphle\Hydration\Container;
+use Suphle\Contracts\Server\OnStartup;
 
-	use Suphle\Server\HttpServerOperations;
+use Suphle\Hydration\Container;
 
-	use Suphle\Console\BaseCliCommand;
+use Suphle\Server\HttpServerOperations;
 
-	use Symfony\Component\Console\{Output\OutputInterface, Command\Command};
+use Suphle\Console\BaseCliCommand;
 
-	use Symfony\Component\Console\Input\{InputInterface, InputArgument, InputOption};
+use Symfony\Component\Console\{Output\OutputInterface, Command\Command};
 
-	use Throwable;
+use Symfony\Component\Console\Input\{InputInterface, InputArgument, InputOption};
 
-	class HttpServerCommand extends BaseCliCommand {
+use Throwable;
 
-		public const MODULES_FOLDER_ARGUMENT = "to_scan",
+class HttpServerCommand extends BaseCliCommand
+{
+    public const MODULES_FOLDER_ARGUMENT = "to_scan",
 
-		RR_CONFIG_OPTION = "rr_config_path",
+    RR_CONFIG_OPTION = "rr_config_path",
 
-		DISABLE_SANITIZATION_OPTION = "insane",
+    DISABLE_SANITIZATION_OPTION = "insane",
 
-		CUSTOM_OPERATIONS = "operations_class",
+    CUSTOM_OPERATIONS = "operations_class",
 
-		CUSTOM_CLASS_OPTIONS = "custom_operations_options",
+    CUSTOM_CLASS_OPTIONS = "custom_operations_options",
 
-		NO_REFACTOR_STATIC_OPTION = "no_static_refactor",
+    NO_REFACTOR_STATIC_OPTION = "no_static_refactor",
 
-		IGNORE_STATIC_FAILURE_OPTION = "ignore_static_correct";
+    IGNORE_STATIC_FAILURE_OPTION = "ignore_static_correct";
 
-		protected static $defaultDescription = "Run build operations and start RR servers";
+    protected static $defaultDescription = "Run build operations and start RR servers";
 
-		protected bool $withModuleOption = false;
+    protected bool $withModuleOption = false;
 
-		protected function configure ():void {
+    protected function configure(): void
+    {
 
-			parent::configure();
+        parent::configure();
 
-			$this->addArgument(
+        $this->addArgument(
+            self::MODULES_FOLDER_ARGUMENT,
+            InputArgument::REQUIRED,
+            "Folder containing all modules, relative to project root"
+        );
 
-				self::MODULES_FOLDER_ARGUMENT, InputArgument::REQUIRED, "Folder containing all modules, relative to project root"
-			);
+        $this->addOption(
+            self::RR_CONFIG_OPTION,
+            "r",
+            InputOption::VALUE_REQUIRED,
+            "Path to custom RR config"
+        );
 
-			$this->addOption(
-				self::RR_CONFIG_OPTION, "r",
+        $this->addOption(
+            self::DISABLE_SANITIZATION_OPTION,
+            "i",
+            InputOption::VALUE_NONE,
+            "Prevent dependency sanitization"
+        );
 
-				InputOption::VALUE_REQUIRED, "Path to custom RR config"
-			);
+        $this->addOption(
+            self::CUSTOM_OPERATIONS,
+            "o",
+            InputOption::VALUE_REQUIRED,
+            "Class name of object implementing ". OnStartup::class
+        );
 
-			$this->addOption(
-				self::DISABLE_SANITIZATION_OPTION, "i",
+        $this->addOption(
+            self::CUSTOM_CLASS_OPTIONS,
+            "c",
+            InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, // the array reader requires the required option
 
-				InputOption::VALUE_NONE, "Prevent dependency sanitization"
-			);
+            "Arguments to pass to the custom boot service class"
+        );
 
-			$this->addOption(
-				self::CUSTOM_OPERATIONS, "o",
+        $this->addOption(
+            self::NO_REFACTOR_STATIC_OPTION,
+            "f",
+            InputOption::VALUE_NONE,
+            "Don't correct type violations found"
+        );
 
-				InputOption::VALUE_REQUIRED, "Class name of object implementing ". OnStartup::class
-			);
+        $this->addOption(
+            self::IGNORE_STATIC_FAILURE_OPTION,
+            "b",
+            InputOption::VALUE_NONE,
+            "Proceed with server build despite static errors"
+        );
+    }
 
-			$this->addOption(
-				self::CUSTOM_CLASS_OPTIONS, "c",
+    public static function commandSignature(): string
+    {
 
-				InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, // the array reader requires the required option
+        return "server:start";
+    }
 
-				"Arguments to pass to the custom boot service class"
-			);
+    public function execute(InputInterface $input, OutputInterface $output): int
+    {
 
-			$this->addOption(
-				self::NO_REFACTOR_STATIC_OPTION, "f",
+        try {
 
-				InputOption::VALUE_NONE, "Don't correct type violations found"
-			);
+            $container = $this->getExecutionContainer(null);
 
-			$this->addOption(
-				self::IGNORE_STATIC_FAILURE_OPTION, "b",
+            $serverOperations = $container
 
-				InputOption::VALUE_NONE, "Proceed with server build despite static errors"
-			);
-		}
+            ->getClass(HttpServerOperations::class)
 
-		public static function commandSignature ():string {
+            ->sendRootPath(
+                $this->executionPath,
+                $input->getArgument(self::MODULES_FOLDER_ARGUMENT)
+            );
 
-			return "server:start";
-		}
+            if (!$input->getOption(self::DISABLE_SANITIZATION_OPTION)) { // absent
 
-		public function execute (InputInterface $input, OutputInterface $output):int {
+                $serverOperations->restoreSanity();
+            }
 
-			try {
+            $serverOperations->runStaticChecks(
+                !$input->getOption(self::NO_REFACTOR_STATIC_OPTION), // means default value received by that method will be true i.e. it has to be present for refactor to be disabled
 
-				$container = $this->getExecutionContainer(null);
+                $input->getOption(self::IGNORE_STATIC_FAILURE_OPTION)
+            );
 
-				$serverOperations = $container
+            $this->handleCustomOperations($input, $container);
 
-				->getClass(HttpServerOperations::class)
+            $serverOperations->startRRServer(
+                $input->getOption(self::RR_CONFIG_OPTION)
+            );
 
-				->sendRootPath(
+            return Command::SUCCESS;
+        } catch (Throwable $exception) {
 
-					$this->executionPath,
+            $output->writeln($exception);
 
-					$input->getArgument(self::MODULES_FOLDER_ARGUMENT)
-				);
+            echo $exception;
 
-				if (!$input->getOption(self::DISABLE_SANITIZATION_OPTION)) // absent
+            return Command::FAILURE;
+        }
+    }
 
-					$serverOperations->restoreSanity();
+    protected function handleCustomOperations(InputInterface $input, Container $container): void
+    {
 
-				$serverOperations->runStaticChecks(
+        $operationName = $input->getOption(self::CUSTOM_OPERATIONS);
 
-					!$input->getOption(self::NO_REFACTOR_STATIC_OPTION), // means default value received by that method will be true i.e. it has to be present for refactor to be disabled
+        if (!$operationName) {
+            return;
+        }
 
-					$input->getOption(self::IGNORE_STATIC_FAILURE_OPTION)
-				);
-
-				$this->handleCustomOperations($input, $container);
-
-				$serverOperations->startRRServer(
-
-					$input->getOption(self::RR_CONFIG_OPTION)
-				);
-
-				return Command::SUCCESS;
-			}
-			catch (Throwable $exception) {
-
-				$output->writeln($exception);
-
-				echo $exception;
-
-				return Command::FAILURE;
-			}
-		}
-
-		protected function handleCustomOperations (InputInterface $input, Container $container):void {
-
-			$operationName = $input->getOption(self::CUSTOM_OPERATIONS);
-
-			if (!$operationName) return;
-
-			$container->getClass($operationName)->runOperations(
-
-				$this->executionPath,
-
-				$input->getOption(self::CUSTOM_CLASS_OPTIONS)
-			);
-		}
-	}
-?>
+        $container->getClass($operationName)->runOperations(
+            $this->executionPath,
+            $input->getOption(self::CUSTOM_CLASS_OPTIONS)
+        );
+    }
+}

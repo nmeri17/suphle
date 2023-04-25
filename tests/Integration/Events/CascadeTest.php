@@ -1,31 +1,33 @@
 <?php
-	namespace Suphle\Tests\Integration\Events;
 
-	use Suphle\Tests\Integration\Events\BaseTypes\EventTestCreator;
+namespace Suphle\Tests\Integration\Events;
 
-	use Suphle\Tests\Mocks\Interactions\ModuleOne;
+use Suphle\Tests\Integration\Events\BaseTypes\EventTestCreator;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Events\ReboundReceiver, Meta\ModuleOneDescriptor};
+use Suphle\Tests\Mocks\Interactions\ModuleOne;
 
-	class CascadeTest extends EventTestCreator {
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Events\ReboundReceiver, Meta\ModuleOneDescriptor};
 
-		protected string $eventReceiverName = ReboundReceiver::class;
+class CascadeTest extends EventTestCreator
+{
+    protected string $eventReceiverName = ReboundReceiver::class;
 
-		protected function setModuleOne ():void {
+    protected function setModuleOne(): void
+    {
 
-			$this->moduleOne = $this->bindMockedEventReceiver(ModuleOneDescriptor::class);
-		}
+        $this->moduleOne = $this->bindMockedEventReceiver(ModuleOneDescriptor::class);
+    }
 
-		public function test_local_emit_cascades_to_local () {
+    public function test_local_emit_cascades_to_local()
+    {
 
-			$this->createMockEventReceiver([
+        $this->createMockEventReceiver([
 
-				"ricochetReactor" => [1, [$this->payload]]
-			]); // then
+            "ricochetReactor" => [1, [$this->payload]]
+        ]); // then
 
-			$this->parentSetUp(); // given
+        $this->parentSetUp(); // given
 
-			$this->getModuleOne()->cascadeEntryEvent($this->payload); // when
-		}
-	}
-?>
+        $this->getModuleOne()->cascadeEntryEvent($this->payload); // when
+    }
+}

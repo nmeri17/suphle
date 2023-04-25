@@ -1,7 +1,6 @@
 <?php
 
-	return [
-		
-		"migrations" => "migrations"
-	];
-?>
+return [
+
+    "migrations" => "migrations"
+];

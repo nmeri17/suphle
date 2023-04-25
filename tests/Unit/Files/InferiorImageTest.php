@@ -1,45 +1,49 @@
 <?php
-	namespace Suphle\Tests\Unit\Files;
 
-	use Suphle\Adapters\Image\Optimizers\NativeReducerClient;
+namespace Suphle\Tests\Unit\Files;
 
-	use Suphle\Testing\{TestTypes\IsolatedComponentTest, Condiments\FilesystemCleaner};
+use Suphle\Adapters\Image\Optimizers\NativeReducerClient;
 
-	use Suphle\Tests\Integration\Generic\CommonBinds;
+use Suphle\Testing\{TestTypes\IsolatedComponentTest, Condiments\FilesystemCleaner};
 
-	class InferiorImageTest extends IsolatedComponentTest {
+use Suphle\Tests\Integration\Generic\CommonBinds;
 
-		use FilesystemCleaner, CommonBinds;
+class InferiorImageTest extends IsolatedComponentTest
+{
+    use FilesystemCleaner;
+    use CommonBinds;
 
-		public function test_file_size_does_reduce () {
+    public function test_file_size_does_reduce()
+    {
 
-			// given
-			$picture = $this->saveFakeImage("nmeri.jpg", 100, 100, 300);
+        // given
+        $picture = $this->saveFakeImage("nmeri.jpg", 100, 100, 300);
 
-			$oldPath = $picture->getPathName();
+        $oldPath = $picture->getPathName();
 
-			$newPath = $this->getNewPath();
+        $newPath = $this->getNewPath();
 
-			copy($oldPath, $newPath);
+        copy($oldPath, $newPath);
 
-			$generatedPath = $this->container->getClass(NativeReducerClient::class)
-			
-			->downgradeImage ($picture, $newPath, 150); // when
+        $generatedPath = $this->container->getClass(NativeReducerClient::class)
 
-			$sizeBefore = filesize($oldPath);
+        ->downgradeImage($picture, $newPath, 150); // when
 
-			$sizeAfter = filesize($generatedPath);
+        $sizeBefore = filesize($oldPath);
 
-			$this->assertGreaterThan($sizeAfter, $sizeBefore); // then
+        $sizeAfter = filesize($generatedPath);
 
-			foreach ([$oldPath, $generatedPath] as $path) // cleanup
+        $this->assertGreaterThan($sizeAfter, $sizeBefore); // then
 
-				unlink($path);
-		}
+        foreach ([$oldPath, $generatedPath] as $path) { // cleanup
 
-		private function getNewPath ():string {
+            unlink($path);
+        }
+    }
 
-			return __DIR__ . DIRECTORY_SEPARATOR ."reduced.jpg";
-		}
-	}
-?>
+    private function getNewPath(): string
+    {
+
+        return __DIR__ . DIRECTORY_SEPARATOR ."reduced.jpg";
+    }
+}

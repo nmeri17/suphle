@@ -1,18 +1,18 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes;
 
-	use Suphle\Hydration\Container;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes;
 
-	class MethodCircularContainer {
+use Suphle\Hydration\Container;
 
-		public function __construct (private readonly Container $container) { // any higher access level will prevent the proxy from doing its thing
+class MethodCircularContainer
+{
+    public function __construct(private readonly Container $container) // any higher access level will prevent the proxy from doing its thing
+    {//
+    }
 
-			//
-		}
+    public function loadFromContainer(): MethodCircularConstructor
+    {
 
-		public function loadFromContainer ():MethodCircularConstructor {
-
-			return $this->container->getClass(MethodCircularConstructor::class);
-		}
-	}
-?>
+        return $this->container->getClass(MethodCircularConstructor::class);
+    }
+}

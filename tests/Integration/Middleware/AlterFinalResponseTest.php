@@ -1,48 +1,50 @@
 <?php
-	namespace Suphle\Tests\Integration\Middleware;
 
-	use Suphle\Contracts\Config\Router;
+namespace Suphle\Tests\Integration\Middleware;
 
-	use Suphle\Middleware\Handlers\FinalHandlerWrapper;
+use Suphle\Contracts\Config\Router;
 
-	use Suphle\Response\Format\Json;
+use Suphle\Middleware\Handlers\FinalHandlerWrapper;
 
-	use Suphle\Testing\{ TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer };
+use Suphle\Response\Format\Json;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock, Middlewares\AlterFinalResponse};
+use Suphle\Testing\{ TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer };
 
-	class AlterFinalResponseTest extends ModuleLevelTest {
-		
-		protected function getModules():array {
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock, Middlewares\AlterFinalResponse};
 
-			return [
-				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+class AlterFinalResponseTest extends ModuleLevelTest
+{
+    protected function getModules(): array
+    {
 
-					$finalName = FinalHandlerWrapper::class;
+        return [
+            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-					$container->replaceWithMock(Router::class, RouterMock::class, [
+                $finalName = FinalHandlerWrapper::class;
 
-						"defaultMiddleware" => [
-							AlterFinalResponse::class,
+                $container->replaceWithMock(Router::class, RouterMock::class, [
 
-							$finalName
-						]
-					])
-					->replaceWithMock($finalName, $finalName, [
-					
-						"process" => (new Json(""))->setRawResponse(["foo" => "bar"])
-					], [], false);
-				})
-			];
-		}
+                    "defaultMiddleware" => [
+                        AlterFinalResponse::class,
 
-		public function test_middleware_can_alter_response () {
+                        $finalName
+                    ]
+                ])
+                ->replaceWithMock($finalName, $finalName, [
 
-			// given @see module injection
+                    "process" => (new Json(""))->setRawResponse(["foo" => "bar"])
+                ], [], false);
+            })
+        ];
+    }
 
-			$this->get("/segment") // when
+    public function test_middleware_can_alter_response()
+    {
 
-			->assertJson(["foo" => "baz"]); // then
-		}
-	}
-?>
+        // given @see module injection
+
+        $this->get("/segment") // when
+
+        ->assertJson(["foo" => "baz"]); // then
+    }
+}

@@ -1,150 +1,169 @@
 <?php
-	namespace Suphle\Testing\TestTypes;
 
-	use Suphle\Hydration\{DecoratorHydrator, InterfaceHydrator, Container};
+namespace Suphle\Testing\TestTypes;
 
-	use Suphle\Hydration\Structures\{BaseInterfaceCollection, ContainerTelescope};
+use Suphle\Hydration\{DecoratorHydrator, InterfaceHydrator, Container};
 
-	use Suphle\Testing\Condiments\MockFacilitator;
+use Suphle\Hydration\Structures\{BaseInterfaceCollection, ContainerTelescope};
 
-	use PHPUnit\Framework\{TestCase, ExpectationFailedException};
+use Suphle\Testing\Condiments\MockFacilitator;
 
-	use Throwable, ReflectionFunction;
+use PHPUnit\Framework\{TestCase, ExpectationFailedException};
 
-	class TestVirginContainer extends TestCase {
+use Throwable;
+use ReflectionFunction;
 
-		use MockFacilitator;
+class TestVirginContainer extends TestCase
+{
+    use MockFacilitator;
 
-		protected ?ContainerTelescope $containerTelescope = null;
+    protected ?ContainerTelescope $containerTelescope = null;
 
-		protected bool $monitorContainer = false;
+    protected bool $monitorContainer = false;
 
-		protected function bootContainer (Container $container):void {
+    protected function bootContainer(Container $container): void
+    {
 
-			$container->initializeUniversalProvision();
+        $container->initializeUniversalProvision();
 
-			$container->setEssentials();
-		}
+        $container->setEssentials();
+    }
 
-		protected function stubDecorator ():DecoratorHydrator {
+    protected function stubDecorator(): DecoratorHydrator
+    {
 
-			return $this->positiveDouble(DecoratorHydrator::class, [
+        return $this->positiveDouble(DecoratorHydrator::class, [
 
-				"scopeArguments" => $this->returnArgument(1),
+            "scopeArguments" => $this->returnArgument(1),
 
-				"scopeInjecting" => $this->returnArgument(0)
-			]);
-		}
+            "scopeInjecting" => $this->returnArgument(0)
+        ]);
+    }
 
-		protected function withDefaultInterfaceCollection (Container $container):void {
+    protected function withDefaultInterfaceCollection(Container $container): void
+    {
 
-			$container->setInterfaceHydrator(BaseInterfaceCollection::class);
-		}
+        $container->setInterfaceHydrator(BaseInterfaceCollection::class);
+    }
 
-		protected function stubbedInterfaceCollection ():InterfaceHydrator {
+    protected function stubbedInterfaceCollection(): InterfaceHydrator
+    {
 
-			return $this->positiveDouble(InterfaceHydrator::class, [
+        return $this->positiveDouble(InterfaceHydrator::class, [
 
-				"deriveConcrete" => $this->returnCallback(fn($subject) => $this->positiveDouble($subject, []))
-			]);
-		}
+            "deriveConcrete" => $this->returnCallback(fn ($subject) => $this->positiveDouble($subject, []))
+        ]);
+    }
 
-		/**
-		 * @param {callables} Expects them all to be methods, not closures or anonymous methods. Structure:
-		 * 
-		 * [$this, method]. Each method
-		 * 
-		 * [[foo, bar], [foobar, nmeri]]
-		*/
-		protected function dataProvider (array $callables, callable $testBody):void {
+    /**
+     * @param {callables} Expects them all to be methods, not closures or anonymous methods. Structure:
+     *
+     * [$this, method]. Each method
+     *
+     * [[foo, bar], [foobar, nmeri]]
+    */
+    protected function dataProvider(array $callables, callable $testBody): void
+    {
 
-			$this->beforeAllMethods();
+        $this->beforeAllMethods();
 
-			foreach ($callables as $methodIndex => $method) { // between here
+        foreach ($callables as $methodIndex => $method) { // between here
 
-				$this->beforeEachMethod($methodIndex);
+            $this->beforeEachMethod($methodIndex);
 
-				foreach ($method() as $fixtureIndex => $dataFixture) {
+            foreach ($method() as $fixtureIndex => $dataFixture) {
 
-					try { // and here, don't backup against original to avoid overwriting provider modifications
+                try { // and here, don't backup against original to avoid overwriting provider modifications
 
-						$this->beforeEachFixture($fixtureIndex);
+                    $this->beforeEachFixture($fixtureIndex);
 
-						$testBody(...$dataFixture);
+                    $testBody(...$dataFixture);
 
-						$this->afterEachFixture($fixtureIndex);
-					}
+                    $this->afterEachFixture($fixtureIndex);
+                } catch (Throwable $exception) { // test failures throw ExpectationFailedException, but without catching errors, error message will appear as if all providers and data sets failed
 
-					catch (Throwable $exception) { // test failures throw ExpectationFailedException, but without catching errors, error message will appear as if all providers and data sets failed
+                    echo $this->providerExceptionMessage(
+                        $method,
+                        $fixtureIndex,
+                        $dataFixture
+                    );
 
-						echo $this->providerExceptionMessage(
+                    throw $exception;
+                }
+            }
+        }
 
-							$method, $fixtureIndex, $dataFixture
-						);
+        $this->afterAllMethods();
+    }
 
-						throw $exception;
-					}
-				}
-			}
+    protected function beforeAllMethods(): void
+    {
+    }
 
-			$this->afterAllMethods();
-		}
+    /**
+     * Restore original modules' state
+    */
+    protected function beforeEachMethod(int $methodIndex): void
+    {
+    }
 
-		protected function beforeAllMethods ():void {}
+    /**
+     * Restore preliminary state
+    */
+    protected function beforeEachFixture(int $fixtureIndex): void
+    {
+    }
 
-		/**
-		 * Restore original modules' state
-		*/
-		protected function beforeEachMethod (int $methodIndex):void {}
+    protected function afterEachFixture(int $fixtureIndex): void
+    {
+    }
 
-		/**
-		 * Restore preliminary state
-		*/
-		protected function beforeEachFixture (int $fixtureIndex):void {}
+    protected function afterAllMethods(): void
+    {
+    }
 
-		protected function afterEachFixture (int $fixtureIndex):void {}
+    private function providerExceptionMessage(callable $methodCallable, int $errorIndex, array $dataRow): string
+    {
 
-		protected function afterAllMethods ():void {}
+        $newLine = "\n";
 
-		private function providerExceptionMessage (callable $methodCallable, int $errorIndex, array $dataRow):string {
+        $methodCallable = $this->extractCallableDetails($methodCallable);
 
-			$newLine = "\n";
+        $methodName = $methodCallable[0] . "::". $methodCallable[1];
 
-			$methodCallable = $this->extractCallableDetails($methodCallable);
+        $messages = [
+            "$methodName with data set #$errorIndex:",
 
-			$methodName = $methodCallable[0] . "::". $methodCallable[1];
+            var_export($dataRow, true)
+        ];
 
-			$messages = [
-				"$methodName with data set #$errorIndex:",
+        return $newLine. implode($newLine, $messages). $newLine;
+    }
 
-				var_export($dataRow, true)
-			];
+    private function extractCallableDetails(callable $methodCallable): array
+    {
 
-			return $newLine. implode($newLine, $messages). $newLine;
-		}
+        $reflectedCallable = new ReflectionFunction($methodCallable);
 
-		private function extractCallableDetails (callable $methodCallable):array {
+        return [
 
-			$reflectedCallable = new ReflectionFunction($methodCallable);
+            $reflectedCallable->getClosureThis()::class,
 
-			return [
-			
-				$reflectedCallable->getClosureThis()::class,
+            $reflectedCallable->getName()
+        ];
+    }
 
-				$reflectedCallable->getName()
-			];
-		}
+    protected function mayMonitorContainer(Container $container): void
+    {
 
-		protected function mayMonitorContainer (Container $container):void {
+        if ($this->monitorContainer) {
 
-			if ($this->monitorContainer) {
+            if (is_null($this->containerTelescope)) {
 
-				if (is_null($this->containerTelescope))
+                $this->containerTelescope = new ContainerTelescope();
+            }
 
-					$this->containerTelescope = new ContainerTelescope;
-
-				$container->setTelescope($this->containerTelescope);
-			}
-		}
-	}
-?>
+            $container->setTelescope($this->containerTelescope);
+        }
+    }
+}

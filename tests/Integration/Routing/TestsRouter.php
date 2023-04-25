@@ -1,45 +1,50 @@
 <?php
-	namespace Suphle\Tests\Integration\Routing;
 
-	use Suphle\Routing\RouteManager;
+namespace Suphle\Tests\Integration\Routing;
 
-	use Suphle\Contracts\{Config\Router, Presentation\BaseRenderer};
+use Suphle\Routing\RouteManager;
 
-	use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
+use Suphle\Contracts\{Config\Router, Presentation\BaseRenderer};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\BrowserNoPrefix, Meta\ModuleOneDescriptor, Config\RouterMock};
+use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
-	class TestsRouter extends ModuleLevelTest {
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\BrowserNoPrefix, Meta\ModuleOneDescriptor, Config\RouterMock};
 
-		protected function getEntryCollection ():string {
+class TestsRouter extends ModuleLevelTest
+{
+    protected function getEntryCollection(): string
+    {
 
-			return BrowserNoPrefix::class;
-		}
+        return BrowserNoPrefix::class;
+    }
 
-		protected function getModules ():array {
+    protected function getModules(): array
+    {
 
-			return [
-				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+        return [
+            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-					$container->replaceWithMock(Router::class, RouterMock::class, [
+                $container->replaceWithMock(Router::class, RouterMock::class, [
 
-						"browserEntryRoute" => $this->getEntryCollection()
-					]);
-				})
-			];
-		}
+                    "browserEntryRoute" => $this->getEntryCollection()
+                ]);
+            })
+        ];
+    }
 
-		protected function fakeRequest (string $url, string $httpMethod = "get", array $payload = null):?BaseRenderer {
+    protected function fakeRequest(string $url, string $httpMethod = "get", array $payload = null): ?BaseRenderer
+    {
 
-			if (is_null($payload)) $this->$httpMethod($url);
+        if (is_null($payload)) {
+            $this->$httpMethod($url);
+        } else {
+            $this->$httpMethod($url, $payload);
+        }
 
-			else $this->$httpMethod($url, $payload);
+        $router = $this->getContainer()->getClass(RouteManager::class);
 
-			$router = $this->getContainer()->getClass(RouteManager::class);
+        $router->findRenderer();
 
-			$router->findRenderer();
-
-			return $router->getActiveRenderer();
-		}
-	}
-?>
+        return $router->getActiveRenderer();
+    }
+}

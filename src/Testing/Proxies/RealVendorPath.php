@@ -1,29 +1,31 @@
 <?php
-	namespace Suphle\Testing\Proxies;
 
-	use Suphle\File\FileSystemReader;
+namespace Suphle\Testing\Proxies;
 
-	use Suphle\Server\VendorBin;
+use Suphle\File\FileSystemReader;
 
-	trait RealVendorPath {
+use Suphle\Server\VendorBin;
 
-		protected ?VendorBin $vendorBin = null;
+trait RealVendorPath
+{
+    protected ?VendorBin $vendorBin = null;
 
-		/**
-		 * @return The path 2 steps before vendor/bin
-		*/
-		protected function getVendorParent ():string {
+    /**
+     * @return The path 2 steps before vendor/bin
+    */
+    protected function getVendorParent(): string
+    {
 
-			return $this->getContainer()->getClass(FileSystemReader::class)
+        return $this->getContainer()->getClass(FileSystemReader::class)
 
-			->pathFromLevels($_SERVER["COMPOSER_RUNTIME_BIN_DIR"], "", 2);
-		}
+        ->pathFromLevels($_SERVER["COMPOSER_RUNTIME_BIN_DIR"], "", 2);
+    }
 
-		protected function setVendorPath ():void {
+    protected function setVendorPath(): void
+    {
 
-			$this->vendorBin = $this->getContainer()->getClass(VendorBin::class);
+        $this->vendorBin = $this->getContainer()->getClass(VendorBin::class);
 
-			$this->vendorBin->setRootPath($this->getVendorParent());
-		}
-	}
-?>
+        $this->vendorBin->setRootPath($this->getVendorParent());
+    }
+}

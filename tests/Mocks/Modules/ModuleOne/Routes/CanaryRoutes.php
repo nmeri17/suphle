@@ -1,40 +1,45 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Canaries\{DefaultCanary, InvalidCanary, CanaryRequestHasFoo, CanaryForUser5};
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes;
 
-	use Suphle\Routing\BaseApiCollection;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Canaries\{DefaultCanary, InvalidCanary, CanaryRequestHasFoo, CanaryForUser5};
 
-	class CanaryRoutes extends BaseApiCollection { // try with/without prefix, with/without middleware, with/without auth
-		
-		public function LOAD__DEFAULTh () {
-			
-			$this->_canaryEntry([
+use Suphle\Routing\BaseApiCollection;
 
-				InvalidCanary::class, DefaultCanary::class
-			]);
-		}
-		
-		public function OTHER__USERS__SKIPh () {
-			
-			$this->_canaryEntry([
-				InvalidCanary::class,
+class CanaryRoutes extends BaseApiCollection
+{ // try with/without prefix, with/without middleware, with/without auth
 
-				CanaryForUser5::class, DefaultCanary::class
-			]);
-		}
+    public function LOAD__DEFAULTh()
+    {
 
-		public function SPECIAL__FOOh () {
+        $this->_canaryEntry([
 
-			$this->_canaryEntry([
+            InvalidCanary::class, DefaultCanary::class
+        ]);
+    }
 
-				CanaryForUser5::class, CanaryRequestHasFoo::class
-			]);
-		}
+    public function OTHER__USERS__SKIPh()
+    {
 
-		public function NONE__PASSINGh () {
+        $this->_canaryEntry([
+            InvalidCanary::class,
 
-			$this->_canaryEntry([InvalidCanary::class]);
-		}
-	}
-?>
+            CanaryForUser5::class, DefaultCanary::class
+        ]);
+    }
+
+    public function SPECIAL__FOOh()
+    {
+
+        $this->_canaryEntry([
+
+            CanaryForUser5::class, CanaryRequestHasFoo::class
+        ]);
+    }
+
+    public function NONE__PASSINGh()
+    {
+
+        $this->_canaryEntry([InvalidCanary::class]);
+    }
+}

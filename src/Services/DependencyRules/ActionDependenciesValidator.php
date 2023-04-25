@@ -1,36 +1,39 @@
 <?php
-	namespace Suphle\Services\DependencyRules;
 
-	use InvalidArgumentException;
+namespace Suphle\Services\DependencyRules;
 
-	class ActionDependenciesValidator extends BaseDependencyHandler {
+use InvalidArgumentException;
 
-		public function evaluateClass (string $className):void {
+class ActionDependenciesValidator extends BaseDependencyHandler
+{
+    public function evaluateClass(string $className): void
+    {
 
-			foreach ($this->objectMeta->getPublicMethods($className) as $methodName) {
+        foreach ($this->objectMeta->getPublicMethods($className) as $methodName) {
 
-				foreach (
-					$this->methodDependencyTypes($className, $methodName) as $dependencyType
-				) {
+            foreach (
+                $this->methodDependencyTypes($className, $methodName) as $dependencyType
+            ) {
 
-					if (!$this->isPermittedParent($this->argumentList, $dependencyType))
+                if (!$this->isPermittedParent($this->argumentList, $dependencyType)) {
 
-						throw new InvalidArgumentException(
+                    throw new InvalidArgumentException(
+                        $this->getErrorMessage(
+                            $className,
+                            $dependencyType,
+                            $methodName
+                        )
+                    );
+                }
+            }
+        }
+    }
 
-							$this->getErrorMessage(
+    protected function getErrorMessage(string $consumer, string $dependency, string $methodName): string
+    {
 
-								$className, $dependencyType, $methodName
-							)
-						);
-				}
-			}
-		}
+        return $consumer . "::". $methodName .
 
-		protected function getErrorMessage (string $consumer, string $dependency, string $methodName):string {
-
-			return $consumer . "::". $methodName .
-
-			" is forbidden from depending on $dependency";
-		}
-	}
-?>
+        " is forbidden from depending on $dependency";
+    }
+}

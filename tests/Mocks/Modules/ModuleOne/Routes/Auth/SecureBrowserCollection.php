@@ -1,28 +1,29 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Auth;
 
-	use Suphle\Routing\{BaseCollection, PreMiddlewareRegistry, Decorators\HandlingCoordinator};
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Auth;
 
-	use Suphle\Auth\RequestScrutinizers\AuthenticateMetaFunnel;
+use Suphle\Routing\{BaseCollection, PreMiddlewareRegistry, Decorators\HandlingCoordinator};
 
-	use Suphle\Response\Format\Json;
+use Suphle\Auth\RequestScrutinizers\AuthenticateMetaFunnel;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\BaseCoordinator;
+use Suphle\Response\Format\Json;
 
-	#[HandlingCoordinator(BaseCoordinator::class)]
-	class SecureBrowserCollection extends BaseCollection {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\BaseCoordinator;
 
-		public function SEGMENT() {
+#[HandlingCoordinator(BaseCoordinator::class)]
+class SecureBrowserCollection extends BaseCollection
+{
+    public function SEGMENT()
+    {
 
-			$this->_httpGet(new Json("plainSegment"));
-		}
+        $this->_httpGet(new Json("plainSegment"));
+    }
 
-		public function _preMiddleware (PreMiddlewareRegistry $registry):void {
+    public function _preMiddleware(PreMiddlewareRegistry $registry): void
+    {
 
-			$registry->tagPatterns(
-
-				new AuthenticateMetaFunnel(["SEGMENT"], $this->authStorage)
-			);
-		}
-	}
-?>
+        $registry->tagPatterns(
+            new AuthenticateMetaFunnel(["SEGMENT"], $this->authStorage)
+        );
+    }
+}

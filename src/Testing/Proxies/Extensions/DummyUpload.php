@@ -1,20 +1,22 @@
 <?php
-	namespace Suphle\Testing\Proxies\Extensions;
 
-	use Symfony\Component\HttpFoundation\File\UploadedFile;
+namespace Suphle\Testing\Proxies\Extensions;
 
-	class DummyUpload extends UploadedFile {
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
-		protected $fileSize;
+class DummyUpload extends UploadedFile
+{
+    protected $fileSize;
 
-		public function setSize (int $fileSize):void {
+    public function setSize(int $fileSize): void
+    {
 
-			$this->fileSize = $fileSize * 1024;
-		}
+        $this->fileSize = $fileSize * 1024;
+    }
 
-		public function getSize ():int {
+    public function getSize(): int
+    {
 
-			return $this->fileSize ?? parent::getSize();
-		}
-	}
-?>
+        return $this->fileSize ?? parent::getSize();
+    }
+}

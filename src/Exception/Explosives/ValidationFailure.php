@@ -1,23 +1,25 @@
 <?php
-	namespace Suphle\Exception\Explosives;
 
-	use Suphle\Contracts\Requests\ValidationEvaluator;
+namespace Suphle\Exception\Explosives;
 
-	use Exception;
+use Suphle\Contracts\Requests\ValidationEvaluator;
 
-	class ValidationFailure extends Exception {
+use Exception;
 
-		public function __construct (protected readonly ValidationEvaluator $evaluator) {
+class ValidationFailure extends Exception
+{
+    public function __construct(protected readonly ValidationEvaluator $evaluator)
+    {
 
-			$this->message = json_encode(
+        $this->message = json_encode(
+            $evaluator->getValidatorErrors(),
+            JSON_PRETTY_PRINT
+        ); // assigning here otherwise assertion failure will preclude seeing what failed
+    }
 
-				$evaluator->getValidatorErrors(), JSON_PRETTY_PRINT
-			); // assigning here otherwise assertion failure will preclude seeing what failed
-		}
+    public function getEvaluator(): ValidationEvaluator
+    {
 
-		public function getEvaluator ():ValidationEvaluator {
-
-			return $this->evaluator;
-		}
-	}
-?>
+        return $this->evaluator;
+    }
+}

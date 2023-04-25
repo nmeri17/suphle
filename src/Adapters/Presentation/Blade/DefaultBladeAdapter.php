@@ -1,160 +1,160 @@
 <?php
-	namespace Suphle\Adapters\Presentation\Blade;
 
-	use Suphle\Contracts\{Config\ModuleFiles, Bridge\LaravelContainer};
+namespace Suphle\Adapters\Presentation\Blade;
 
-	use Suphle\Contracts\Presentation\{HtmlParser, RendersMarkup};
+use Suphle\Contracts\{Config\ModuleFiles, Bridge\LaravelContainer};
 
-	use Suphle\Services\Decorators\BindsAsSingleton;
+use Suphle\Contracts\Presentation\{HtmlParser, RendersMarkup};
 
-	use Illuminate\{Filesystem\Filesystem, Events\Dispatcher};
+use Suphle\Services\Decorators\BindsAsSingleton;
 
-	use Illuminate\View\Engines\{EngineResolver, CompilerEngine};
+use Illuminate\{Filesystem\Filesystem, Events\Dispatcher};
 
-	use Illuminate\View\{FileViewFinder, Factory as BladeViewFactory, Compilers\BladeCompiler};
+use Illuminate\View\Engines\{EngineResolver, CompilerEngine};
 
-	use Illuminate\Support\Facades\{ View as ViewFacade, Blade as BladeFacade};
+use Illuminate\View\{FileViewFinder, Factory as BladeViewFactory, Compilers\BladeCompiler};
 
-	use Illuminate\Contracts\View\Factory as BladeViewFactoryInterface;
+use Illuminate\Support\Facades\{ View as ViewFacade, Blade as BladeFacade};
 
-	#[BindsAsSingleton(HtmlParser::class)]
-	class DefaultBladeAdapter implements HtmlParser {
+use Illuminate\Contracts\View\Factory as BladeViewFactoryInterface;
 
-		protected BladeViewFactoryInterface $viewFactory;
+#[BindsAsSingleton(HtmlParser::class)]
+class DefaultBladeAdapter implements HtmlParser
+{
+    protected BladeViewFactoryInterface $viewFactory;
 
-		protected BladeCompiler $bladeCompiler;
+    protected BladeCompiler $bladeCompiler;
 
-		protected array $viewPaths;
+    protected array $viewPaths;
 
-		public function __construct (
+    public function __construct(
+        protected readonly LaravelContainer $laravelContainer,
+        protected readonly ModuleFiles $fileConfig
+    ) {
 
-			protected readonly LaravelContainer $laravelContainer,
+        $this->viewPaths = [$fileConfig->defaultViewPath()];
+    }
 
-			protected readonly ModuleFiles $fileConfig
-		) {
+    public function findInPath(string $markupPath): void
+    {
 
-			$this->viewPaths = [$fileConfig->defaultViewPath()];
-		}
+        $this->viewPaths[] = $markupPath; // Where present, this must be called before setViewFactory
+    }
 
-		public function findInPath (string $markupPath):void {
+    public function crudFilesLocation(): string
+    {
 
-			$this->viewPaths[] = $markupPath; // Where present, this must be called before setViewFactory
-		}
+        return __DIR__ . DIRECTORY_SEPARATOR. "CrudTemplates". DIRECTORY_SEPARATOR;
+    }
 
-		public function crudFilesLocation ():string {
+    public function parseRenderer(RendersMarkup $renderer): string
+    {
 
-			return __DIR__ . DIRECTORY_SEPARATOR. "CrudTemplates". DIRECTORY_SEPARATOR;
-		}
+        $this->setViewFactory(); // these calls ought to reside in an interface loader but if they're called before all paths are being set, the factory won't include those sources
 
-		public function parseRenderer (RendersMarkup $renderer):string {
+        $this->bindComponentTags();
 
-			$this->setViewFactory(); // these calls ought to reside in an interface loader but if they're called before all paths are being set, the factory won't include those sources
+        return $this->parseRaw(
+            $renderer->getMarkupName(),
+            $renderer->getRawResponse()
+        );
+    }
 
-			$this->bindComponentTags();
+    /**
+     * This can't exist on the interface cuz different engines will want different sets of arguments. Thus it differs from adapter to adapter
+    */
+    public function parseRaw(string $markupName, iterable $payload): string
+    {
 
-			return $this->parseRaw(
+        return $this->viewFactory->make($markupName, $payload)
 
-				$renderer->getMarkupName(), $renderer->getRawResponse()
-			);
-		}
+        ->render();
+    }
 
-		/**
-		 * This can't exist on the interface cuz different engines will want different sets of arguments. Thus it differs from adapter to adapter
-		*/
-		public function parseRaw (string $markupName, iterable $payload):string {
+    public function bindComponentTags(): void
+    {
+    }
 
-			return $this->viewFactory->make($markupName, $payload)
+    public function setViewFactory(): void
+    {
 
-			->render();
-		}
+        $filesystem = new Filesystem();
 
-		public function bindComponentTags ():void {}
+        $this->setBladeCompiler($filesystem);
 
-		public function setViewFactory ():void {
+        $this->viewFactory = new BladeViewFactory(
+            $this->getViewResolver(),
+            new FileViewFinder($filesystem, $this->viewPaths),
+            $this->laravelContainer->make(Dispatcher::class)
+        );
 
-			$filesystem = new Filesystem;
+        $this->bindInstancesToLaravelContainer();
+    }
 
-			$this->setBladeCompiler($filesystem);
+    protected function setBladeCompiler(Filesystem $fileSystem): void
+    {
 
-			$this->viewFactory = new BladeViewFactory(
+        $this->bladeCompiler = new BladeCompiler(
+            $fileSystem,
+            $this->fileConfig->activeModulePath() . "compiled-views"
+        );
+    }
 
-				$this->getViewResolver(),
+    protected function getViewResolver(): EngineResolver
+    {
 
-				new FileViewFinder($filesystem, $this->viewPaths),
+        $viewResolver = new EngineResolver();
 
-				$this->laravelContainer->make(Dispatcher::class)
-			);
+        $viewResolver->register("blade", function () {
 
-			$this->bindInstancesToLaravelContainer();
-		}
+            return new CompilerEngine($this->bladeCompiler);
+        });
 
-		protected function setBladeCompiler (Filesystem $fileSystem):void {
+        return $viewResolver;
+    }
 
-			$this->bladeCompiler = new BladeCompiler(
+    // not really necessary but to avoid any of the objects trying to pull something from somewhere without knowing configured copies are available here
+    protected function bindInstancesToLaravelContainer(): void
+    {
 
-				$fileSystem,
+        $this->viewFactory->setContainer($this->laravelContainer);
 
-				$this->fileConfig->activeModulePath() . "compiled-views"
-			);
-		}
+        $this->laravelContainer->instance(
+            BladeViewFactoryInterface::class,
+            $this->viewFactory
+        );
 
-		protected function getViewResolver ():EngineResolver {
+        $this->laravelContainer->alias(
+            BladeViewFactoryInterface::class,
+            (new class () extends ViewFacade {
+                public static function getFacadeAccessor()
+                {
 
-			$viewResolver = new EngineResolver;
+                    return parent::getFacadeAccessor();
+                }
+            })::getFacadeAccessor()
+        );
 
-			$viewResolver->register("blade", function () {
+        $this->laravelContainer::setInstance($this->laravelContainer); // without this, the call creates a fresh container without all the bindings above
 
-				return new CompilerEngine($this->bladeCompiler);
-			});
+        $this->bladeCompiler->anonymousComponentPath(
+            $this->fileConfig->defaultViewPath() // requires presence of a composer.json with at least one psr4 namespace for guessing namespace to use
+        );
 
-			return $viewResolver;
-		}
+        $this->laravelContainer->instance(
+            BladeCompiler::class,
+            $this->bladeCompiler
+        );
 
-		// not really necessary but to avoid any of the objects trying to pull something from somewhere without knowing configured copies are available here
-		protected function bindInstancesToLaravelContainer ():void {
+        $this->laravelContainer->alias(
+            BladeCompiler::class,
+            (new class () extends BladeFacade {
+                public static function getFacadeAccessor()
+                {
 
-			$this->viewFactory->setContainer($this->laravelContainer);
-			
-			$this->laravelContainer->instance(
-
-				BladeViewFactoryInterface::class, $this->viewFactory
-			);
-
-			$this->laravelContainer->alias(
-				BladeViewFactoryInterface::class,
-
-				(new class extends ViewFacade {
-
-					public static function getFacadeAccessor() {
-
-						return parent::getFacadeAccessor();
-					}
-				})::getFacadeAccessor()
-			);
-
-			$this->laravelContainer::setInstance($this->laravelContainer); // without this, the call creates a fresh container without all the bindings above
-
-			$this->bladeCompiler->anonymousComponentPath(
-
-				$this->fileConfig->defaultViewPath() // requires presence of a composer.json with at least one psr4 namespace for guessing namespace to use
-			);
-
-			$this->laravelContainer->instance(
-
-				BladeCompiler::class, $this->bladeCompiler
-			);
-
-			$this->laravelContainer->alias(
-				BladeCompiler::class,
-
-				(new class extends BladeFacade {
-
-					public static function getFacadeAccessor() {
-
-						return parent::getFacadeAccessor();
-					}
-				})::getFacadeAccessor()
-			);
-		}
-	}
-?>
+                    return parent::getFacadeAccessor();
+                }
+            })::getFacadeAccessor()
+        );
+    }
+}

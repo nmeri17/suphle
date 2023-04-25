@@ -1,13 +1,14 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Events;
 
-	class ReboundReceiver {
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Events;
 
-		private $payload;
+class ReboundReceiver
+{
+    private $payload;
 
-		public function ricochetReactor ($payload):void {
+    public function ricochetReactor($payload): void
+    {
 
-			$this->payload = $payload;
-		}
-	}
-?>
+        $this->payload = $payload;
+    }
+}

@@ -1,34 +1,36 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Prefix\Secured;
 
-	use Suphle\Routing\{BaseCollection, PreMiddlewareRegistry};
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Prefix\Secured;
 
-	use Suphle\Middleware\MiddlewareRegistry;
+use Suphle\Routing\{BaseCollection, PreMiddlewareRegistry};
 
-	use Suphle\Auth\RequestScrutinizers\AuthenticateMetaFunnel;
+use Suphle\Middleware\MiddlewareRegistry;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Prefix\IntermediaryToWithout;
+use Suphle\Auth\RequestScrutinizers\AuthenticateMetaFunnel;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares\Collectors\BlankCollectionMetaFunnel;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Prefix\IntermediaryToWithout;
 
-	class MisleadingEntry extends BaseCollection {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares\Collectors\BlankCollectionMetaFunnel;
 
-		public function _preMiddleware (PreMiddlewareRegistry $registry):void {
+class MisleadingEntry extends BaseCollection
+{
+    public function _preMiddleware(PreMiddlewareRegistry $registry): void
+    {
 
-			$registry->tagPatterns(
+        $registry->tagPatterns(
+            new AuthenticateMetaFunnel(["FIRST"], $this->authStorage)
+        );
+    }
 
-				new AuthenticateMetaFunnel(["FIRST"], $this->authStorage)
-			);
-		}
+    public function _assignMiddleware(MiddlewareRegistry $registry): void
+    {
 
-		public function _assignMiddleware (MiddlewareRegistry $registry):void {
+        $registry->tagPatterns(new BlankCollectionMetaFunnel(["FIRST"]));
+    }
 
-			$registry->tagPatterns(new BlankCollectionMetaFunnel(["FIRST"]));
-		}
-		
-		public function FIRST () {
-			
-			$this->_prefixFor(IntermediaryToWithout::class);
-		}
-	}
-?>
+    public function FIRST()
+    {
+
+        $this->_prefixFor(IntermediaryToWithout::class);
+    }
+}

@@ -1,36 +1,41 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services;
 
-	use Suphle\Services\{UpdatefulService, Structures\BaseErrorCatcherService};
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services;
 
-	use Suphle\Contracts\Services\CallInterceptors\SystemModelEdit;
+use Suphle\Services\{UpdatefulService, Structures\BaseErrorCatcherService};
 
-	use Suphle\Services\Decorators\{InterceptsCalls, VariableDependencies};
+use Suphle\Contracts\Services\CallInterceptors\SystemModelEdit;
 
-	#[InterceptsCalls(SystemModelEdit::class)]
-	#[VariableDependencies([
+use Suphle\Services\Decorators\{InterceptsCalls, VariableDependencies};
 
-		"setPayloadStorage", "setPlaceholderStorage"
-	])]
-	class SystemModelEditMock1 extends UpdatefulService implements SystemModelEdit {
+#[InterceptsCalls(SystemModelEdit::class)]
+#[VariableDependencies([
 
-		use BaseErrorCatcherService;
+    "setPayloadStorage", "setPlaceholderStorage"
+])]
+class SystemModelEditMock1 extends UpdatefulService implements SystemModelEdit
+{
+    use BaseErrorCatcherService;
 
-		public function updateModels () {
+    public function updateModels()
+    {
 
-			return true;
-		}
+        return true;
+    }
 
-		public function modelsToUpdate ():array {
+    public function modelsToUpdate(): array
+    {
 
-			return [];
-		}
+        return [];
+    }
 
-		public function initializeUpdateModels ($baseModel):void {
+    public function initializeUpdateModels($baseModel): void
+    {
 
-			//
-		}
+        //
+    }
 
-		public function unrelatedToUpdate () {}
-	}
-?>
+    public function unrelatedToUpdate()
+    {
+    }
+}

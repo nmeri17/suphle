@@ -1,73 +1,78 @@
 <?php
-	namespace Suphle\Exception\Diffusers;
 
-	use Suphle\Contracts\{Exception\ExceptionHandler, Config\AuthContract, Presentation\BaseRenderer};
+namespace Suphle\Exception\Diffusers;
 
-	use Suphle\Request\RequestDetails;
+use Suphle\Contracts\{Exception\ExceptionHandler, Config\AuthContract, Presentation\BaseRenderer};
 
-	use Suphle\Response\Format\{ Redirect, Json};
+use Suphle\Request\RequestDetails;
 
-	use Suphle\Request\PayloadStorage;
+use Suphle\Response\Format\{ Redirect, Json};
 
-	use Suphle\Exception\Explosives\Unauthenticated;
+use Suphle\Request\PayloadStorage;
 
-	use Suphle\Auth\Storage\TokenStorage;
+use Suphle\Exception\Explosives\Unauthenticated;
 
-	use Throwable;
+use Suphle\Auth\Storage\TokenStorage;
 
-	class UnauthenticatedDiffuser implements ExceptionHandler {
+use Throwable;
 
-		private $renderer;
-  protected string $controllerAction = "virtualWall";
+class UnauthenticatedDiffuser implements ExceptionHandler
+{
+    private $renderer;
+    protected string $controllerAction = "virtualWall";
 
-		/**
-		 * @param {origin} Unauthenticated
-		*/
-		public function setContextualData (Throwable $origin):void {
+    /**
+     * @param {origin} Unauthenticated
+    */
+    public function setContextualData(Throwable $origin): void
+    {
 
-			if ($origin->storageMechanism() instanceof TokenStorage)
+        if ($origin->storageMechanism() instanceof TokenStorage) {
 
-				$this->renderer = $this->getTokenRenderer();
+            $this->renderer = $this->getTokenRenderer();
+        } else {
+            $this->renderer = $this->getSessionRenderer();
+        }
+    }
 
-			else $this->renderer = $this->getSessionRenderer();
-		}
+    public function prepareRendererData(): void
+    {
 
-		public function prepareRendererData ():void {
+        $this->renderer->setHeaders(401, []);
+    }
 
-			$this->renderer->setHeaders(401, []);
-		}
+    public function getRenderer(): BaseRenderer
+    {
 
-		public function getRenderer ():BaseRenderer {
+        return $this->renderer;
+    }
 
-			return $this->renderer;
-		}
+    protected function getTokenRenderer(): BaseRenderer
+    {
 
-		protected function getTokenRenderer ():BaseRenderer {
+        $renderer = new Json($this->controllerAction);
 
-			$renderer = new Json($this->controllerAction);
+        return $renderer->setRawResponse([
 
-			return $renderer->setRawResponse([
+            "message" => "Unauthenticated"
+        ]);
+    }
 
-				"message" => "Unauthenticated"
-			]);
-		}
+    protected function getSessionRenderer(): BaseRenderer
+    {
 
-		protected function getSessionRenderer ():BaseRenderer {
+        return new Redirect($this->controllerAction, function (
+            RequestDetails $requestDetails,
+            AuthContract $authContract,
+            PayloadStorage $payloadStorage
+        ) {
 
-			return new Redirect($this->controllerAction, function (
+            return $authContract->markupRedirect() . "?". http_build_query([
 
-				RequestDetails $requestDetails, AuthContract $authContract,
+                "path" => $requestDetails->getPath(),
 
-			 	PayloadStorage $payloadStorage
-			 ) {
-
-				return $authContract->markupRedirect() . "?". http_build_query([
-
-					"path" => $requestDetails->getPath(),
-
-					"query" => $payloadStorage->fullPayload()
-				]);
-			});
-		}
-	}
-?>
+                "query" => $payloadStorage->fullPayload()
+            ]);
+        });
+    }
+}

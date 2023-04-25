@@ -1,13 +1,14 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Events;
 
-	use Exception;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Events;
 
-	class UpdatefulListener {
+use Exception;
 
-		public function terminateTransaction ($payload):never {
+class UpdatefulListener
+{
+    public function terminateTransaction($payload): never
+    {
 
-			throw new Exception;
-		}
-	}
-?>
+        throw new Exception();
+    }
+}

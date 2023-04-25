@@ -1,67 +1,77 @@
 <?php
-	namespace Suphle\Flows\Structures;
 
-	use Suphle\Hydration\Structures\ObjectDetails;
+namespace Suphle\Flows\Structures;
 
-	use DateTime, Exception;
+use Suphle\Hydration\Structures\ObjectDetails;
 
-	/**
-	 * This is the object value for each route key in the cache i.e. cache = ["path-x" => RouteUmbrella]
-	 * 
-	 * Using this instead of [user-x => [stored, resources]] since URL lookup/fail fast is faster than user hydration first
-	 */
-	class RouteUmbrella {
+use DateTime;
+use Exception;
 
-		protected array $users = [];
+/**
+ * This is the object value for each route key in the cache i.e. cache = ["path-x" => RouteUmbrella]
+ *
+ * Using this instead of [user-x => [stored, resources]] since URL lookup/fail fast is faster than user hydration first
+ */
+class RouteUmbrella
+{
+    protected array $users = [];
 
-		protected string $authStorageName;
+    protected string $authStorageName;
 
-		//private $nodeTags; // should give us a bird's eye view of the path to each model [collection] i.e. [Cows => "user35,foo", "user*,bar"]
+    //private $nodeTags; // should give us a bird's eye view of the path to each model [collection] i.e. [Cows => "user35,foo", "user*,bar"]
 
-		public function __construct(
-			protected readonly string $routeName,
+    public function __construct(
+        protected readonly string $routeName,
+        protected readonly ObjectDetails $objectMeta
+    ) {
 
-			protected readonly ObjectDetails $objectMeta
-		) {
+        //
+    }
 
-			//
-		}
+    public function setAuthMechanism(string $storageName): void
+    {
 
-		public function setAuthMechanism (string $storageName):void {
+        if ($this->objectMeta->isInterface($storageName)) {
 
-			if ($this->objectMeta->isInterface($storageName))
+            throw new Exception("Storage mechanism must be a class", 500);
+        }
 
-				throw new Exception("Storage mechanism must be a class", 500);
+        $this->authStorageName = $storageName;
+    }
 
-			$this->authStorageName = $storageName;
-		}
+    public function getAuthStorage(): string
+    {
 
-		public function getAuthStorage ():string {
+        return $this->authStorageName;
+    }
 
-			return $this->authStorageName;
-		}
+    public function addUser(string $userId, RouteUserNode $unitPayload): void
+    {
 
-		public function addUser (string $userId, RouteUserNode $unitPayload):void {
+        $this->users[$userId] = $unitPayload;
+    }
 
-			$this->users[$userId] = $unitPayload;
-		}
+    public function getUserPayload(string $userId): ?RouteUserNode
+    {
 
-		public function getUserPayload (string $userId):?RouteUserNode {
+        if (!array_key_exists($userId, $this->users)) {
+            return null;
+        }
 
-			if (!array_key_exists($userId, $this->users)) return null;
+        $context = $this->users[$userId];
 
-			$context = $this->users[$userId];
+        $expiresAt = $context->getExpiresAt($userId, $this->routeName);
 
-			$expiresAt = $context->getExpiresAt($userId, $this->routeName);
+        if ($expiresAt >= new DateTime()) {
+            return $context;
+        }
 
-			if ($expiresAt >= new DateTime) return $context;
+        return null;
+    }
 
-			return null;
-		}
+    public function clearUser(string $userId): void
+    {
 
-		public function clearUser(string $userId):void {
-
-			unset($this->users[$userId]);
-		}
-	}
-?>
+        unset($this->users[$userId]);
+    }
+}

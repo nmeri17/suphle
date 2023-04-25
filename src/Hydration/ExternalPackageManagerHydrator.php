@@ -1,51 +1,58 @@
 <?php
-	namespace Suphle\Hydration;
 
-	/**
-	 * Container helper to load those managers, since at the time class is requested, our container may be unfit to hydrate it by itself
-	 */
-	class ExternalPackageManagerHydrator {
+namespace Suphle\Hydration;
 
-		protected array $managers = [];
+/**
+ * Container helper to load those managers, since at the time class is requested, our container may be unfit to hydrate it by itself
+ */
+class ExternalPackageManagerHydrator
+{
+    protected array $managers = [];
 
-		public function __construct(protected readonly Container $container) {
+    public function __construct(protected readonly Container $container)
+    {
 
-			//
-		}
+        //
+    }
 
-		/**
-		 * Does not decorate objects since we can't have access to decorate those interfaces/entities. Plus, this method is a decorator on its own
-		 * 
-		 * @return Object, preferably proxied class hydrated from one of the given containers
-		*/
-		public function findInManagers ( string $fullName ) {
+    /**
+     * Does not decorate objects since we can't have access to decorate those interfaces/entities. Plus, this method is a decorator on its own
+     *
+     * @return Object, preferably proxied class hydrated from one of the given containers
+    */
+    public function findInManagers(string $fullName)
+    {
 
-			$activeManager = null;
+        $activeManager = null;
 
-			foreach ($this->managers as $manager)
+        foreach ($this->managers as $manager) {
 
-				if ( $manager->canProvide($fullName))
+            if ($manager->canProvide($fullName)) {
 
-					$activeManager = $manager;
+                $activeManager = $manager;
+            }
+        }
 
-			if (is_null($activeManager))
+        if (is_null($activeManager)) {
 
-				return null;
+            return null;
+        }
 
-			return $activeManager->manageService($fullName);
-		}
+        return $activeManager->manageService($fullName);
+    }
 
-		/**
-		 * @param {managerNames} string<ExternalPackageManager>[]
-		*/
-		public function setManagers (array $managerNames):void {
+    /**
+     * @param {managerNames} string<ExternalPackageManager>[]
+    */
+    public function setManagers(array $managerNames): void
+    {
 
-			$this->managers = array_map(fn($managerName) => $this->container->getClass($managerName), $managerNames);
-		}
+        $this->managers = array_map(fn ($managerName) => $this->container->getClass($managerName), $managerNames);
+    }
 
-		public function hasManagers ():bool {
+    public function hasManagers(): bool
+    {
 
-			return !empty($this->managers);
-		}
-	}
-?>
+        return !empty($this->managers);
+    }
+}

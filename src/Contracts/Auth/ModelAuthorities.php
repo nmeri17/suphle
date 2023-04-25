@@ -1,17 +1,17 @@
 <?php
-	namespace Suphle\Contracts\Auth;
 
-	interface ModelAuthorities {
-		
-		public function retrieved ($entity):bool;
+namespace Suphle\Contracts\Auth;
 
-		public function updating ($entity):bool;
+interface ModelAuthorities
+{
+    public function retrieved($entity): bool;
 
-		/**
-		 * @param {entity} May have no id
-		*/
-		public function creating ($entity):bool;
+    public function updating($entity): bool;
 
-		public function deleting ($entity):bool;
-	}
-?>
+    /**
+     * @param {entity} May have no id
+    */
+    public function creating($entity): bool;
+
+    public function deleting($entity): bool;
+}

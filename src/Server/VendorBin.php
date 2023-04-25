@@ -1,70 +1,79 @@
 <?php
-	namespace Suphle\Server;
 
-	use Suphle\File\FileSystemReader;
+namespace Suphle\Server;
 
-	use Symfony\Component\Process\Process;
+use Suphle\File\FileSystemReader;
 
-	class VendorBin {
+use Symfony\Component\Process\Process;
 
-		public const RR_BINARY = "rr";
+class VendorBin
+{
+    public const RR_BINARY = "rr";
 
-		protected string $projectRootPath;
+    protected string $projectRootPath;
 
-		public function __construct (protected readonly FileSystemReader $fileSystemReader) {
+    public function __construct(protected readonly FileSystemReader $fileSystemReader)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function setRootPath (string $path):void {
+    public function setRootPath(string $path): void
+    {
 
-			$this->projectRootPath = $path;
-		}
+        $this->projectRootPath = $path;
+    }
 
-		public function getBinDir ():string {
+    public function getBinDir(): string
+    {
 
-			return $this->fileSystemReader->noTrailingSlash($this->projectRootPath) . "/vendor/bin";
-		}
+        return $this->fileSystemReader->noTrailingSlash($this->projectRootPath) . "/vendor/bin";
+    }
 
-		/**
-		 * @param {relativePath} Path as relative to vendor/bin
-		*/
-		public function getRootFile (string $relativePath):string {
+    /**
+     * @param {relativePath} Path as relative to vendor/bin
+    */
+    public function getRootFile(string $relativePath): string
+    {
 
-			return $this->fileSystemReader->getAbsolutePath(
+        return $this->fileSystemReader->getAbsolutePath(
+            $this->getBinDir(),
+            $relativePath
+        );
+    }
 
-				$this->getBinDir(), $relativePath
-			);
-		}
+    public function getServerLauncher(string $relativeToConfig): Process
+    {
 
-		public function getServerLauncher (string $relativeToConfig):Process {
+        return $this->setProcessArguments(self::RR_BINARY, [
 
-			return $this->setProcessArguments(self::RR_BINARY, [
+            "serve", "-c", $this->getRootFile($relativeToConfig)
+        ]);
+    }
 
-				"serve", "-c", $this->getRootFile($relativeToConfig)
-			]);
-		}
+    public function setProcessArguments(string $processName, array $commandOptions, bool $withTimeout = true): Process
+    {
 
-		public function setProcessArguments (string $processName, array $commandOptions, bool $withTimeout = true):Process {
+        $process = new Process(
+            array_merge([$processName], $commandOptions),
+            $this->getBinDir()
+        );
 
-			$process = new Process(
-				array_merge([$processName], $commandOptions),
+        if ($withTimeout) {
+            $process->setTimeout(20_000);
+        }
 
-				$this->getBinDir()
-			);
+        return $process;
+    }
 
-			if ($withTimeout) $process->setTimeout(20_000);
+    public static function processOut($type, $buffer): void
+    {
 
-			return $process;
-		}
+        if (Process::ERR === $type) {
 
-		public static function processOut ($type, $buffer):void {
-
-			if (Process::ERR === $type)
-
-				echo "ERROR > $buffer";
-
-			else echo $buffer;
-		}
-	}
-?>
+            echo "ERROR > $buffer";
+        } else {
+            echo $buffer;
+        }
+    }
+}

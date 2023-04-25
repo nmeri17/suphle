@@ -1,11 +1,12 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes;
 
-	class FlowService {
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes;
 
-		public function customHandlePrevious ( $payload):iterable {
+class FlowService
+{
+    public function customHandlePrevious($payload): iterable
+    {
 
-			return array_map(fn($model) => $model["id"] * 2, $payload["data"]);
-		}
-	}
-?>
+        return array_map(fn ($model) => $model["id"] * 2, $payload["data"]);
+    }
+}

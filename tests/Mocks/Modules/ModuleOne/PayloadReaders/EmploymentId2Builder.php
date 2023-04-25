@@ -1,14 +1,15 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\PayloadReaders;
 
-	class EmploymentId2Builder extends BaseEmploymentBuilder {
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\PayloadReaders;
 
-		protected function getBaseCriteria ():object {
+class EmploymentId2Builder extends BaseEmploymentBuilder
+{
+    protected function getBaseCriteria(): object
+    {
 
-			return $this->blankEmployment->where([
+        return $this->blankEmployment->where([
 
-				"id" => $this->payloadStorage->getKey("id2")
-			]);
-		}
-	}
-?>
+            "id" => $this->payloadStorage->getKey("id2")
+        ]);
+    }
+}

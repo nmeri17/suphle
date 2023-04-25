@@ -1,8 +1,8 @@
 <?php
-	namespace Suphle\Contracts\Hydration;
 
-	interface ClassHydrationBehavior {
+namespace Suphle\Contracts\Hydration;
 
-		public function protectRefreshPurge ():bool;
-	}
-?>
+interface ClassHydrationBehavior
+{
+    public function protectRefreshPurge(): bool;
+}

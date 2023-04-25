@@ -1,13 +1,14 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\Versions\V3;
 
-	use Suphle\Services\ServiceCoordinator;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\Versions\V3;
 
-	class ApiUpdate3Coordinator extends ServiceCoordinator {
+use Suphle\Services\ServiceCoordinator;
 
-		public function thirdCascade () {
+class ApiUpdate3Coordinator extends ServiceCoordinator
+{
+    public function thirdCascade()
+    {
 
-			//
-		}
-	}
-?>
+        //
+    }
+}

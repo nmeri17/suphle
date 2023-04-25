@@ -1,23 +1,23 @@
 <?php
-	namespace Suphle\Contracts;
 
-	use Suphle\Console\BaseCliCommand;
+namespace Suphle\Contracts;
 
-	interface ConsoleClient {
+use Suphle\Console\BaseCliCommand;
 
-		/**
-		 * @return void
-		*/
-		public function addCommand (BaseCliCommand $command);
+interface ConsoleClient
+{
+    /**
+     * @return void
+    */
+    public function addCommand(BaseCliCommand $command);
 
-		/**
-		 * @return void
-		*/
-		public function run ();
+    /**
+     * @return void
+    */
+    public function run();
 
-		/**
-		 * @return BaseCliCommand
-		*/
-		public function findCommand (string $name);
-	}
-?>
+    /**
+     * @return BaseCliCommand
+    */
+    public function findCommand(string $name);
+}

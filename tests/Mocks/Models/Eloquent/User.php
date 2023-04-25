@@ -1,27 +1,30 @@
 <?php
-	namespace Suphle\Tests\Mocks\Models\Eloquent;
 
-	use Suphle\Adapters\Orms\Eloquent\Models\User as ParentUser;
+namespace Suphle\Tests\Mocks\Models\Eloquent;
 
-	use Suphle\Tests\Mocks\Models\Eloquent\Factories\UserFactory;
+use Suphle\Adapters\Orms\Eloquent\Models\User as ParentUser;
 
-	use Illuminate\Database\Eloquent\Factories\Factory;
+use Suphle\Tests\Mocks\Models\Eloquent\Factories\UserFactory;
 
-	class User extends ParentUser {
+use Illuminate\Database\Eloquent\Factories\Factory;
 
-		public function isAdmin ():bool {
+class User extends ParentUser
+{
+    public function isAdmin(): bool
+    {
 
-			return $this->is_admin;
-		}
+        return $this->is_admin;
+    }
 
-		public static function migrationFolders ():array {
+    public static function migrationFolders(): array
+    {
 
-			return [__DIR__ . DIRECTORY_SEPARATOR . "Migrations"];
-		}
+        return [__DIR__ . DIRECTORY_SEPARATOR . "Migrations"];
+    }
 
-		protected static function newFactory ():Factory {
+    protected static function newFactory(): Factory
+    {
 
-			return UserFactory::new();
-		}
-	}
-?>
+        return UserFactory::new();
+    }
+}

@@ -1,147 +1,155 @@
 <?php
-	namespace Suphle\Tests\Integration\Services\CoodinatorManager;
 
-	use Suphle\Contracts\{Config\Router, Presentation\BaseRenderer, Response\RendererManager, Requests\ValidationEvaluator};
+namespace Suphle\Tests\Integration\Services\CoodinatorManager;
 
-	use Suphle\Response\RoutedRendererManager;
+use Suphle\Contracts\{Config\Router, Presentation\BaseRenderer, Response\RendererManager, Requests\ValidationEvaluator};
 
-	use Suphle\Security\CSRF\CsrfGenerator;
+use Suphle\Response\RoutedRendererManager;
 
-	use Suphle\Response\Format\Json;
+use Suphle\Security\CSRF\CsrfGenerator;
 
-	use Suphle\Request\RequestDetails;
+use Suphle\Response\Format\Json;
 
-	use Suphle\Hydration\Container;
+use Suphle\Request\RequestDetails;
 
-	use Suphle\Exception\{Diffusers\ValidationFailureDiffuser, Explosives\ValidationFailure};
+use Suphle\Hydration\Container;
 
-	use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
+use Suphle\Exception\{Diffusers\ValidationFailureDiffuser, Explosives\ValidationFailure};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock, Routes\ValidatorCollection, Coordinators\ValidatorCoordinator};
+use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
-	class HttpValidationTest extends ModuleLevelTest {
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock, Routes\ValidatorCollection, Coordinators\ValidatorCoordinator};
 
-		protected const FAIL_RETRY_TIMES = 3;
+class HttpValidationTest extends ModuleLevelTest
+{
+    protected const FAIL_RETRY_TIMES = 3;
 
-		// protected bool $debugCaughtExceptions = true;
+    // protected bool $debugCaughtExceptions = true;
 
-		protected array $csrfField;
+    protected array $csrfField;
 
-		protected function setUp ():void {
+    protected function setUp(): void
+    {
 
-			parent::setUp();
+        parent::setUp();
 
-			$this->csrfField = [
+        $this->csrfField = [
 
-				CsrfGenerator::TOKEN_FIELD => $this->getContainer()
+            CsrfGenerator::TOKEN_FIELD => $this->getContainer()
 
-				->getClass(CsrfGenerator::class)->newToken()
-			];
-		}
+            ->getClass(CsrfGenerator::class)->newToken()
+        ];
+    }
 
-		protected function getModules ():array {
+    protected function getModules(): array
+    {
 
-			return [
+        return [
 
-				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-					$container->replaceWithMock(Router::class, RouterMock::class, [
-			
-						"browserEntryRoute" => ValidatorCollection::class
-					]);
-				})
-			];
-		}
+                $container->replaceWithMock(Router::class, RouterMock::class, [
 
-		public function test_failed_validation_calls_diffuser_builder () {
+                    "browserEntryRoute" => ValidatorCollection::class
+                ]);
+            })
+        ];
+    }
 
-			$this->massProvide([
+    public function test_failed_validation_calls_diffuser_builder()
+    {
 
-				RendererManager::class => $this->getRendererManager()
-			]);
+        $this->massProvide([
 
-			$response = $this->post("/post-with-json", $this->csrfField); // when
-		}
+            RendererManager::class => $this->getRendererManager()
+        ]);
 
-		protected function getRendererManager ():RoutedRendererManager {
+        $response = $this->post("/post-with-json", $this->csrfField); // when
+    }
 
-			$renderer = new Json("postWithValidator");
+    protected function getRendererManager(): RoutedRendererManager
+    {
 
-			$renderer->setCoordinatorClass($this->positiveDouble(ValidatorCoordinator::class));
+        $renderer = new Json("postWithValidator");
 
-			return $this->replaceConstructorArguments(
+        $renderer->setCoordinatorClass($this->positiveDouble(ValidatorCoordinator::class));
 
-				RoutedRendererManager::class, [
+        return $this->replaceConstructorArguments(
+            RoutedRendererManager::class,
+            [
 
-				RequestDetails::class => $this->positiveDouble(RequestDetails::class, [
+            RequestDetails::class => $this->positiveDouble(RequestDetails::class, [
 
-					"isGetRequest" => false
-				]),
-				BaseRenderer::class => $renderer
-			], [
+                "isGetRequest" => false
+            ]),
+            BaseRenderer::class => $renderer
+            ],
+            [
 
-				"mayBeInvalid" => $this->throwException(
+            "mayBeInvalid" => $this->throwException(
+                $this->getValidationException($renderer)
+            ) // then
+            ]
+        );
+    }
 
-					$this->getValidationException($renderer)
-				) // then
-			]);
-		}
+    protected function getValidationException(BaseRenderer $rendererToReturn): ValidationFailure
+    {
 
-		protected function getValidationException (BaseRenderer $rendererToReturn):ValidationFailure {
+        return $this->positiveDouble(ValidationFailure::class, [
 
-			return $this->positiveDouble(ValidationFailure::class, [
+            "getEvaluator" => $this->positiveDouble(ValidationEvaluator::class, [
 
-				"getEvaluator" => $this->positiveDouble(ValidationEvaluator::class, [
+                "validationRenderer" => $rendererToReturn
+            ], [
 
-					"validationRenderer" => $rendererToReturn
-				], [
+                "validationRenderer" => [1, [
 
-					"validationRenderer" => [1, [
+                    $this->callback(function ($subject) {
 
-						$this->callback(function ($subject) {
+                        return empty(array_diff(array_keys($subject), [
 
-							return empty(array_diff(array_keys($subject), [
+                            ValidationFailureDiffuser::PAYLOAD_KEY,
 
-								ValidationFailureDiffuser::PAYLOAD_KEY,
+                            ValidationFailureDiffuser::ERRORS_PRESENCE
+                        ])); // contains all keys or array1 == array2
+                    })
+                ]]
+            ])
+        ]);
+    }
 
-								ValidationFailureDiffuser::ERRORS_PRESENCE
-							])); // contains all keys or array1 == array2
-						})
-					]]
-				])
-			]);
-		}
+    public function test_failed_validation_always_adds_errors_to_json_renderer()
+    {
 
-		public function test_failed_validation_always_adds_errors_to_json_renderer () {
+        for ($i = 0; $i < self::FAIL_RETRY_TIMES; $i++) {
 
-			for ($i = 0; $i < self::FAIL_RETRY_TIMES; $i++) {
+            $this->get("/get-without"); // given
 
-				$this->get("/get-without"); // given
+            $response = $this->post("/post-with-json", $this->csrfField); // when
 
-				$response = $this->post("/post-with-json", $this->csrfField); // when
+            // then
+            $response->assertUnprocessable()
 
-				// then
-				$response->assertUnprocessable()
+            ->assertJsonValidationErrorFor(
+                "foo",
+                ValidationFailureDiffuser::ERRORS_PRESENCE
+            )
+            ->assertJsonMissing(["message" => "mercy"]);
+        }
+    }
 
-				->assertJsonValidationErrorFor(
+    public function test_failed_validation_always_reverts_errors_to_previous_on_browser()
+    {
 
-					"foo", ValidationFailureDiffuser::ERRORS_PRESENCE
-				)
-				->assertJsonMissing(["message" => "mercy"]);
-			}
-		}
+        for ($i = 0; $i < self::FAIL_RETRY_TIMES; $i++) {
 
-		public function test_failed_validation_always_reverts_errors_to_previous_on_browser () {
+            $this->get("/get-without"); // given
 
-			for ($i = 0; $i < self::FAIL_RETRY_TIMES; $i++) {
+            $response = $this->post("/post-with-html", $this->csrfField); // when
 
-				$this->get("/get-without"); // given
-
-				$response = $this->post("/post-with-html", $this->csrfField); // when
-
-				// then
-				$response->assertRedirect();
-			}
-		}
-	}
-?>
+            // then
+            $response->assertRedirect();
+        }
+    }
+}

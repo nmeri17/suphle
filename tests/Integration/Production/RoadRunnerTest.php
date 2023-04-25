@@ -1,199 +1,203 @@
 <?php
-	namespace Suphle\Tests\Integration\Production;
 
-	use Suphle\Hydration\Container;
+namespace Suphle\Tests\Integration\Production;
 
-	use Suphle\Server\VendorBin;
+use Suphle\Hydration\Container;
 
-	use Suphle\Testing\Utilities\PingHttpServer;
+use Suphle\Server\VendorBin;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\OutgoingRequests\VisitSegment;
+use Suphle\Testing\Utilities\PingHttpServer;
 
-	use GuzzleHttp\Exception\RequestException;
+use Suphle\Tests\Mocks\Modules\ModuleOne\OutgoingRequests\VisitSegment;
 
-	use Psr\Http\Message\ResponseInterface;
+use GuzzleHttp\Exception\RequestException;
 
-	use Symfony\Component\Process\Process;
+use Psr\Http\Message\ResponseInterface;
 
-	use Throwable;
+use Symfony\Component\Process\Process;
 
-	class RoadRunnerTest extends BaseTestProduction {
+use Throwable;
 
-		use PingHttpServer;
+class RoadRunnerTest extends BaseTestProduction
+{
+    use PingHttpServer;
 
-		protected const REQUEST_SENDER = VisitSegment::class,
+    protected const REQUEST_SENDER = VisitSegment::class,
 
-		SERVER_TIMEOUT = 2850, // stop process if unable to start server after these seconds
+    SERVER_TIMEOUT = 2850, // stop process if unable to start server after these seconds
 
-		RR_CONFIG = "../../test-rr.yaml";
-		
-		/**
-		 * @dataProvider modulesUrls
-		*/
-		public function test_can_visit_urls_after_server_setup (string $url, string $expectedOutput) {
+    RR_CONFIG = "../../test-rr.yaml";
 
-			$this->sendRequestToProcess($url, $expectedOutput);
-		}
+    /**
+     * @dataProvider modulesUrls
+    */
+    public function test_can_visit_urls_after_server_setup(string $url, string $expectedOutput)
+    {
 
-		protected function sendRequestToProcess (string $url, string $expectedOutput):void {
+        $this->sendRequestToProcess($url, $expectedOutput);
+    }
 
-			$this->ensureExecutableRuns();
+    protected function sendRequestToProcess(string $url, string $expectedOutput): void
+    {
 
-			$serverProcess = $this->vendorBin->getServerLauncher(self::RR_CONFIG);
+        $this->ensureExecutableRuns();
 
-			$serverProcess->setTimeout(self::SERVER_TIMEOUT);
+        $serverProcess = $this->vendorBin->getServerLauncher(self::RR_CONFIG);
 
-			try {
+        $serverProcess->setTimeout(self::SERVER_TIMEOUT);
 
-				$serverProcess->start();
+        try {
 
-				if (!$this->serverIsReady($serverProcess))
+            $serverProcess->start();
 
-					$this->fail(
+            if (!$this->serverIsReady($serverProcess)) {
 
-						"Unable to start server:\n".
+                $this->fail(
+                    "Unable to start server:\n".
 
-						$this->processFullOutput($serverProcess)
-					);
+                    $this->processFullOutput($serverProcess)
+                );
+            }
 
-				$parameters = $this->getContainer()
+            $parameters = $this->getContainer()
 
-				->getMethodParameters(Container::CLASS_CONSTRUCTOR, self::REQUEST_SENDER);
+            ->getMethodParameters(Container::CLASS_CONSTRUCTOR, self::REQUEST_SENDER);
 
-				$httpService = $this->replaceConstructorArguments(
+            $httpService = $this->replaceConstructorArguments(
+                self::REQUEST_SENDER,
+                $parameters,
+                [
 
-					self::REQUEST_SENDER, $parameters, [
+                    "getRequestUrl" => "localhost:8080/$url"
+                ]
+            );
 
-						"getRequestUrl" => "localhost:8080/$url"
-					]
-				);
+            $response = $httpService->getDomainObject(); // when
 
-				$response = $httpService->getDomainObject(); // when
+            if ($httpService->hasErrors()) {
 
-				if ($httpService->hasErrors()) {
+                $exception = $httpService->getException();
 
-					$exception = $httpService->getException();
+                var_dump($this->processFullOutput($serverProcess));
 
-					var_dump($this->processFullOutput($serverProcess));
+                var_dump($this->getResponseBody( // comes after the above so even if this fails, we can have an idea of what went wrong
 
-					var_dump($this->getResponseBody( // comes after the above so even if this fails, we can have an idea of what went wrong
+                    $exception->getResponse()
+                ));
 
-						$exception->getResponse()
-					));
+                $this->fail($exception);
+            }
 
-					$this->fail($exception);
-				}
+            $this->assertSame(200, $response->getStatusCode());
 
-				$this->assertSame(200, $response->getStatusCode());
+            $this->assertSame(
+                $expectedOutput,
+                $this->getResponseBody($response)
+            );
+        } finally {
 
-				$this->assertSame(
+            $serverProcess->stop();
+        }
+    }
 
-					$expectedOutput,
+    private function ensureExecutableRuns(): void
+    {
 
-					$this->getResponseBody($response)
-				);
-			}
-			finally {
+        $helpProcess = $this->vendorBin->setProcessArguments(VendorBin::RR_BINARY, ["--help" ]);
 
-				$serverProcess->stop();
-			}
-		}
+        $helpProcess->mustRun();
 
-		private function ensureExecutableRuns ():void {
+        $this->assertTrue($helpProcess->isSuccessful());
 
-			$helpProcess = $this->vendorBin->setProcessArguments(VendorBin::RR_BINARY, ["--help" ] );
+        $this->assertStringContainsStringIgnoringCase(
+            "available commands",
+            $helpProcess->getOutput()
+        );
+    }
 
-			$helpProcess->mustRun();
+    private function getResponseBody(ResponseInterface $response)
+    {
 
-			$this->assertTrue($helpProcess->isSuccessful());
+        return $response->getBody()->getContents();
+    }
 
-			$this->assertStringContainsStringIgnoringCase(
+    /**
+     * @dataProvider moduleThreeUrls
+    */
+    public function test_controller_action_can_read_different_ids(string $url, string $expectedOutput)
+    {
 
-				"available commands", $helpProcess->getOutput()
-			);
-		}
+        $this->sendRequestToProcess($url, $expectedOutput);
+    }
 
-		private function getResponseBody (ResponseInterface $response) {
+    public function test_single_process_can_handle_multiple_requests()
+    {
 
-			return $response->getBody()->getContents();
-		}
+        $serverProcess = $this->vendorBin->getServerLauncher(self::RR_CONFIG);
 
-		/**
-		 * @dataProvider moduleThreeUrls
-		*/
-		public function test_controller_action_can_read_different_ids (string $url, string $expectedOutput) {
+        $serverProcess->setTimeout(self::SERVER_TIMEOUT);
 
-			$this->sendRequestToProcess($url, $expectedOutput);
-		}
+        try {
 
-		public function test_single_process_can_handle_multiple_requests () {
+            $serverProcess->start();
 
-			$serverProcess = $this->vendorBin->getServerLauncher(self::RR_CONFIG);
+            if (!$this->serverIsReady($serverProcess)) {
 
-			$serverProcess->setTimeout(self::SERVER_TIMEOUT);
+                $this->fail(
+                    "Unable to start server:\n".
 
-			try {
+                    $this->processFullOutput($serverProcess)
+                );
+            }
 
-				$serverProcess->start();
+            $parameters = $this->getContainer()
 
-				if (!$this->serverIsReady($serverProcess))
+            ->getMethodParameters(Container::CLASS_CONSTRUCTOR, self::REQUEST_SENDER);
 
-					$this->fail(
+            foreach ($this->modulesUrls() as $dataSet) {
 
-						"Unable to start server:\n".
+                $url = $dataSet[0];
 
-						$this->processFullOutput($serverProcess)
-					);
+                $expectedOutput = $dataSet[1];
 
-				$parameters = $this->getContainer()
+                // var_dump(205, $url/*, $responseBody, $expectedOutput*/);
 
-				->getMethodParameters(Container::CLASS_CONSTRUCTOR, self::REQUEST_SENDER);
+                $httpService = $this->replaceConstructorArguments(
+                    self::REQUEST_SENDER,
+                    $parameters,
+                    [
 
-				foreach ($this->modulesUrls() as $dataSet) {
+                        "getRequestUrl" => "localhost:8080/$url"
+                    ]
+                );
 
-					$url = $dataSet[0];
+                $response = $httpService->getDomainObject();
 
-					$expectedOutput = $dataSet[1];
+                if ($httpService->hasErrors()) {
 
-					// var_dump(205, $url/*, $responseBody, $expectedOutput*/);
+                    $exception = $httpService->getException();
 
-					$httpService = $this->replaceConstructorArguments(
+                    var_dump($this->processFullOutput($serverProcess));
 
-						self::REQUEST_SENDER, $parameters, [
+                    var_dump($this->getResponseBody(
+                        $exception->getResponse()
+                    ));
 
-							"getRequestUrl" => "localhost:8080/$url"
-						]
-					);
+                    $this->fail($exception);
+                }
 
-					$response = $httpService->getDomainObject();
+                $responseBody = $this->getResponseBody($response);
 
-					if ($httpService->hasErrors()) {
+                if ($expectedOutput != $responseBody) {
 
-						$exception = $httpService->getException();
+                    var_dump($this->processFullOutput($serverProcess));
+                }
 
-						var_dump($this->processFullOutput($serverProcess));
+                $this->assertSame($expectedOutput, $responseBody);
+            }
+        } finally {
 
-						var_dump($this->getResponseBody(
-
-							$exception->getResponse()
-						));
-
-						$this->fail($exception);
-					}
-
-					$responseBody = $this->getResponseBody($response);
-
-					if ($expectedOutput != $responseBody)
-
-						var_dump($this->processFullOutput($serverProcess));
-
-					$this->assertSame($expectedOutput, $responseBody);
-				}
-			}
-			finally {
-
-				$serverProcess->stop();
-			}
-		}
-	}
-?>
+            $serverProcess->stop();
+        }
+    }
+}

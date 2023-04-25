@@ -1,85 +1,98 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-	use Suphle\Services\ServiceCoordinator;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\PayloadReaders\ReadsId;
+use Suphle\Services\ServiceCoordinator;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\{DummyModels, BlankUpdateless};
+use Suphle\Tests\Mocks\Modules\ModuleOne\PayloadReaders\ReadsId;
 
-	class FlowCoordinator extends ServiceCoordinator {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\{DummyModels, BlankUpdateless};
 
-		public function __construct(protected readonly DummyModels $dummyModels, protected readonly BlankUpdateless $blankService) {
+class FlowCoordinator extends ServiceCoordinator
+{
+    public function __construct(protected readonly DummyModels $dummyModels, protected readonly BlankUpdateless $blankService)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function noFlowHandler () {
+    public function noFlowHandler()
+    {
 
-			return [];
-		}
+        return [];
+    }
 
-		public function getPostDetails () {
+    public function getPostDetails()
+    {
 
-			return [];
-		}
+        return [];
+    }
 
-		public function preloaded () {
+    public function preloaded()
+    {
 
-			return [];
-		}
+        return [];
+    }
 
-		public function parentFlow () {
+    public function parentFlow()
+    {
 
-			return [];
-		}
+        return [];
+    }
 
-		public function handleChildFlow () {
+    public function handleChildFlow()
+    {
 
-			return [];
-		}
+        return [];
+    }
 
-		public function handleCombined () {
+    public function handleCombined()
+    {
 
-			return [];
-		}
+        return [];
+    }
 
-		public function handleSingleNode () {
+    public function handleSingleNode()
+    {
 
-			return [];
-		}
+        return [];
+    }
 
-		public function handleFromService () {
+    public function handleFromService()
+    {
 
-			return [];
-		}
+        return [];
+    }
 
-		public function handlePipeTo () {
+    public function handlePipeTo()
+    {
 
-			return [];
-		}
+        return [];
+    }
 
-		public function handleOneOf () {
+    public function handleOneOf()
+    {
 
-			return [];
-		}
+        return [];
+    }
 
-		public function readFlowPayload (ReadsId $payloadReader):array {
+    public function readFlowPayload(ReadsId $payloadReader): array
+    {
 
-			return [
+        return [
 
-				"id" => $payloadReader->getDomainObject(),
+            "id" => $payloadReader->getDomainObject(),
 
-				"user_id" => $this->blankService->getUserId()
-			];
-		}
+            "user_id" => $this->blankService->getUserId()
+        ];
+    }
 
-		public function getsTenModels ():array {
+    public function getsTenModels(): array
+    {
 
-			return [
+        return [
 
-				"anchor" => $this->dummyModels->fetchModels()
-			];
-		}
-	}
-?>
+            "anchor" => $this->dummyModels->fetchModels()
+        ];
+    }
+}

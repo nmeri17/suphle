@@ -1,18 +1,21 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services;
 
-	class EmploymentEditError extends EmploymentEditMock {
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services;
 
-		public function updateResource () {
+class EmploymentEditError extends EmploymentEditMock
+{
+    public function updateResource()
+    {
 
-			trigger_error("nonsensical", E_USER_ERROR);
-		}
+        trigger_error("nonsensical", E_USER_ERROR);
+    }
 
-		public function failureState (string $method) {
+    public function failureState(string $method)
+    {
 
-			if ($method == "updateResource")
+        if ($method == "updateResource") {
 
-				return "boo!";
-		}
-	}
-?>
+            return "boo!";
+        }
+    }
+}

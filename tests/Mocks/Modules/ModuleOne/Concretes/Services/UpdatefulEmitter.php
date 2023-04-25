@@ -1,39 +1,43 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services;
 
-	use Suphle\Events\EmitProxy;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services;
 
-	use Suphle\Contracts\Events;
+use Suphle\Events\EmitProxy;
 
-	class UpdatefulEmitter extends SystemModelEditMock1 {
+use Suphle\Contracts\Events;
 
-		use EmitProxy;
+class UpdatefulEmitter extends SystemModelEditMock1
+{
+    use EmitProxy;
 
-		public const UPDATE_ERROR = "update_error";
+    public const UPDATE_ERROR = "update_error";
 
-		public function __construct (private readonly Events $eventManager) {
+    public function __construct(private readonly Events $eventManager)
+    {
 
-			//
-		}
+        //
+    }
 
-		/**
-		 * @param {payload}:int
-		*/
-		public function initializeUpdateModels ( $payload):void {
+    /**
+     * @param {payload}:int
+    */
+    public function initializeUpdateModels($payload): void
+    {
 
-			$this->payload = $payload;
-		}
+        $this->payload = $payload;
+    }
 
-		public function updateModels ():int {
+    public function updateModels(): int
+    {
 
-			$this->emitHelper (self::UPDATE_ERROR, $this->payload); // one of the handlers here is expected to rollback updates before it and prevent ours below from running
+        $this->emitHelper(self::UPDATE_ERROR, $this->payload); // one of the handlers here is expected to rollback updates before it and prevent ours below from running
 
-			return $this->payload * 3; // since event listener doesn't implement ServiceErrorCatcher, this method should terminate and return value of [failureState]
-		}
+        return $this->payload * 3; // since event listener doesn't implement ServiceErrorCatcher, this method should terminate and return value of [failureState]
+    }
 
-		public function failureState (string $method) {
+    public function failureState(string $method)
+    {
 
-			return $this->payload;
-		}
-	}
-?>
+        return $this->payload;
+    }
+}

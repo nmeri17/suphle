@@ -1,38 +1,41 @@
 <?php
-	namespace _database_namespace;
 
-	use Suphle\Contracts\Services\Models\IntegrityModel;
+namespace _database_namespace;
 
-	use Suphle\Adapters\Orms\Eloquent\{Models\BaseModel, Condiments\EditIntegrity};
+use Suphle\Contracts\Services\Models\IntegrityModel;
 
-	use _database_namespace\Factories\_resource_nameFactory;
+use Suphle\Adapters\Orms\Eloquent\{Models\BaseModel, Condiments\EditIntegrity};
 
-	use Illuminate\Database\Eloquent\{Factories\Factory, Relations\Relation};
+use _database_namespace\Factories\_resource_nameFactory;
 
-	class _resource_name extends BaseModel implements IntegrityModel {
+use Illuminate\Database\Eloquent\{Factories\Factory, Relations\Relation};
 
-		use EditIntegrity;
+class _resource_name extends BaseModel implements IntegrityModel
+{
+    use EditIntegrity;
 
-		protected $table = "_resource_name";
-  
-  		protected $casts = [
+    protected $table = "_resource_name";
 
-			IntegrityModel::INTEGRITY_COLUMN => "datetime:Y-m-d H:i:s"
-		];
+    protected $casts = [
 
-		public function edit_history ():Relation {
+        IntegrityModel::INTEGRITY_COLUMN => "datetime:Y-m-d H:i:s"
+    ];
 
-			return $this->morphMany(EditHistory::class, "historical");
-		}
+    public function edit_history(): Relation
+    {
 
-		protected static function newFactory ():Factory {
+        return $this->morphMany(EditHistory::class, "historical");
+    }
 
-			return _resource_nameFactory::new();
-		}
+    protected static function newFactory(): Factory
+    {
 
-		public static function migrationFolders ():array {
+        return _resource_nameFactory::new();
+    }
 
-			return [__DIR__ . DIRECTORY_SEPARATOR . "Migrations"];
-		}
-	}
-?>
+    public static function migrationFolders(): array
+    {
+
+        return [__DIR__ . DIRECTORY_SEPARATOR . "Migrations"];
+    }
+}

@@ -1,44 +1,48 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleThree\Events;
 
-	use Suphle\Events\EventManager;
+namespace Suphle\Tests\Mocks\Modules\ModuleThree\Events;
 
-	use Suphle\Tests\Mocks\Interactions\ModuleOne;
+use Suphle\Events\EventManager;
 
-	class AssignListeners extends EventManager {
+use Suphle\Tests\Mocks\Interactions\ModuleOne;
 
-		public function registerListeners ():void {
+class AssignListeners extends EventManager
+{
+    public function registerListeners(): void
+    {
 
-			parent::registerListeners();
-			
-			$this->moduleOneBindings();
+        parent::registerListeners();
 
-			$this->incompatibleBindings();
+        $this->moduleOneBindings();
 
-			$this->localReceiverBindings();
-		}
+        $this->incompatibleBindings();
 
-		private function moduleOneBindings ():void {
-			
-			$this->external(ModuleOne::class, EventsHandler::class)
-			
-			->on(ModuleOne::DEFAULT_EVENT, "setExternalPayload")
-			
-			->on(ModuleOne::OUTSIDERS_REBOUND_EVENT, "handleExternalRebound");
-		}
+        $this->localReceiverBindings();
+    }
 
-		private function incompatibleBindings ():void {
-			
-			$this->local(ModuleOne::class, EventsHandler::class)
-			
-			->on(ModuleOne::DEFAULT_EVENT, "handleImpossibleEmit");
-		}
+    private function moduleOneBindings(): void
+    {
 
-		private function localReceiverBindings ():void {
+        $this->external(ModuleOne::class, EventsHandler::class)
 
-			$this->local(EventsHandler::class, ReboundReceiver::class)
-			
-			->on(EventsHandler::EXTERNAL_LOCAL_REBOUND, "handleMultiModuleRebound");
-		}
-	}
-?>
+        ->on(ModuleOne::DEFAULT_EVENT, "setExternalPayload")
+
+        ->on(ModuleOne::OUTSIDERS_REBOUND_EVENT, "handleExternalRebound");
+    }
+
+    private function incompatibleBindings(): void
+    {
+
+        $this->local(ModuleOne::class, EventsHandler::class)
+
+        ->on(ModuleOne::DEFAULT_EVENT, "handleImpossibleEmit");
+    }
+
+    private function localReceiverBindings(): void
+    {
+
+        $this->local(EventsHandler::class, ReboundReceiver::class)
+
+        ->on(EventsHandler::EXTERNAL_LOCAL_REBOUND, "handleMultiModuleRebound");
+    }
+}

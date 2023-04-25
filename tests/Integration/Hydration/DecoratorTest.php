@@ -1,111 +1,114 @@
 <?php
-	namespace Suphle\Tests\Integration\Hydration;
 
-	use Suphle\Hydration\{DecoratorHydrator, Structures\CallbackDetails};
+namespace Suphle\Tests\Integration\Hydration;
 
-	use Suphle\Services\Decorators\{InterceptsCalls, VariableDependencies, ValidationRules};
+use Suphle\Hydration\{DecoratorHydrator, Structures\CallbackDetails};
 
-	use Suphle\Testing\{TestTypes\IsolatedComponentTest, Utilities\ArrayAssertions};
+use Suphle\Services\Decorators\{InterceptsCalls, VariableDependencies, ValidationRules};
 
-	use Suphle\Tests\Integration\Generic\CommonBinds;
+use Suphle\Testing\{TestTypes\IsolatedComponentTest, Utilities\ArrayAssertions};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\{ThrowsException, Services\SystemModelEditMock1};
+use Suphle\Tests\Integration\Generic\CommonBinds;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Authentication\CustomBrowserRepo;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\{ThrowsException, Services\SystemModelEditMock1};
 
-	use ProxyManager\Factory\AccessInterceptorValueHolderFactory as AccessInterceptor;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Authentication\CustomBrowserRepo;
 
-	use Throwable, ReflectionAttribute;
+use ProxyManager\Factory\AccessInterceptorValueHolderFactory as AccessInterceptor;
 
-	class DecoratorTest extends IsolatedComponentTest {
+use Throwable;
+use ReflectionAttribute;
 
-		use CommonBinds, ArrayAssertions;
+class DecoratorTest extends IsolatedComponentTest
+{
+    use CommonBinds;
+    use ArrayAssertions;
 
-		private DecoratorHydrator $hydrator;
+    private DecoratorHydrator $hydrator;
 
-		protected function setUp ():void {
+    protected function setUp(): void
+    {
 
-			parent::setUp();
+        parent::setUp();
 
-			$this->hydrator = $this->container->getClass(DecoratorHydrator::class);
-		}
+        $this->hydrator = $this->container->getClass(DecoratorHydrator::class);
+    }
 
-		public function test_getRelevantDecors_gets_correct_list () {
+    public function test_getRelevantDecors_gets_correct_list()
+    {
 
-			$decoratorToHandler = [
+        $decoratorToHandler = [
 
-				InterceptsCalls::class => null,
+            InterceptsCalls::class => null,
 
-				VariableDependencies::class => null
-			];
+            VariableDependencies::class => null
+        ];
 
-			$result = $this->hydrator->getRelevantDecors(
+        $result = $this->hydrator->getRelevantDecors(
+            $decoratorToHandler,
+            SystemModelEditMock1::class
+        );
 
-				$decoratorToHandler, SystemModelEditMock1::class
-			);
+        foreach ($decoratorToHandler as $decoratorName => $handler) {
 
-			foreach ($decoratorToHandler as $decoratorName => $handler) {
+            $this->assertArrayHasKey($decoratorName, $result);
 
-				$this->assertArrayHasKey($decoratorName, $result);
+            $this->assertInstanceOf(
+                ReflectionAttribute::class,
+                $result[$decoratorName][0]
+            );
+        }
+    }
 
-				$this->assertInstanceOf(
-				
-					ReflectionAttribute::class, $result[$decoratorName][0]
-				);
-			}
-		}
+    public function test_catches_error() // proof of concept
+    {$awesomeClass = new ThrowsException();
 
-		public function test_catches_error () { // proof of concept
+        $sut = (new AccessInterceptor())->createProxy($awesomeClass, [
 
-			$awesomeClass = new ThrowsException;
+            "awesomeMethod" => function ($proxy, $concrete, $method, $parameters, &$earlyReturn) { // we control this, only releasing concrete method and paramters
 
-			$sut = (new AccessInterceptor)->createProxy($awesomeClass, [
+                try {
+                    $result = $concrete->$method();
+                } catch (Throwable) {
 
-				"awesomeMethod" => function ($proxy, $concrete, $method, $parameters, &$earlyReturn) { // we control this, only releasing concrete method and paramters
+                    $result = 48;
+                }
 
-					try {
-						$result = $concrete->$method();
-					}
-					catch (Throwable) {
+                $earlyReturn = true; // for all methods
 
-						$result = 48;
-					}
+                return $result;
+            }
+        ], [
 
-					$earlyReturn = true; // for all methods
+            "awesomeMethod" => function ($proxy, $concrete, $method, $parameters, $result, &$earlyReturn) {
 
-					return $result;
-				}
-			], [
+                var_dump(47, $concrete, $result); // early return means this won't run
 
-				"awesomeMethod" => function ($proxy, $concrete, $method, $parameters, $result, &$earlyReturn) {
-					
-					var_dump(47, $concrete, $result); // early return means this won't run
+                $earlyReturn = true;
 
-					$earlyReturn = true;
+                return 63;
+            }
+            ]);
 
-					return 63;
-				}
-			]);
+        $this->assertSame(48, $sut->awesomeMethod());
+    }
 
-			$this->assertSame(48, $sut->awesomeMethod());
-		}
+    public function test_extended_class_attribute_is_most_recent()
+    {
 
-		public function test_extended_class_attribute_is_most_recent () {
+        $allRules = $this->container->getClass(CallbackDetails::class)
+        ->getMethodAttributes(
+            CustomBrowserRepo::class,
+            "successLogin", // given // attributes on this method
 
-			$allRules = $this->container->getClass(CallbackDetails::class)
-			->getMethodAttributes(
+            ValidationRules::class
+        );
 
-				CustomBrowserRepo::class, "successLogin", // given // attributes on this method
+        $mostRecent = end($allRules)->newInstance()->rules; // when
 
-				ValidationRules::class
-			);
+        $this->assertAssocArraySubset([
 
-			$mostRecent = end($allRules)->newInstance()->rules; // when
-
-			$this->assertAssocArraySubset([
-
-				"password" => "required|numeric|min:9"
-			], $mostRecent); // then
-		}
-	}
-?>
+            "password" => "required|numeric|min:9"
+        ], $mostRecent); // then
+    }
+}

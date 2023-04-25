@@ -1,39 +1,40 @@
 <?php
-	namespace Suphle\Hydration\Structures;
 
-	use Closure;
-	
-	class NamespaceUnit {
+namespace Suphle\Hydration\Structures;
 
-		public function __construct(
+use Closure;
 
-			protected readonly string $fromNamespace,
+class NamespaceUnit
+{
+    public function __construct(
+        protected readonly string $fromNamespace,
+        protected readonly string $newLocation,
 
-			protected readonly string $newLocation,
+        /**
+           * @param {nameResolver} Function(string $requestedInterface):string
+        *	[requestedInterface] has the namespace trimmed away. It's the entity requested at runtime
+        */
+        protected readonly Closure $nameResolver
+    ) {
 
-			/**
-	   		* @param {nameResolver} Function(string $requestedInterface):string
-			*	[requestedInterface] has the namespace trimmed away. It's the entity requested at runtime
-			*/
-			protected readonly Closure $nameResolver
-		) {
+        //
+    }
 
-			//
-		}
+    public function getSource(): string
+    {
 
-		public function getSource():string {
-			
-			return $this->fromNamespace;
-		}
+        return $this->fromNamespace;
+    }
 
-		public function getNewName(string $incomingEntity):string {
-			
-			return call_user_func($this->nameResolver, $incomingEntity);
-		}
+    public function getNewName(string $incomingEntity): string
+    {
 
-		public function getLocation():string {
-			
-			return $this->newLocation;
-		}
-	}
-?>
+        return call_user_func($this->nameResolver, $incomingEntity);
+    }
+
+    public function getLocation(): string
+    {
+
+        return $this->newLocation;
+    }
+}

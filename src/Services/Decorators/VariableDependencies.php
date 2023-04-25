@@ -1,14 +1,15 @@
 <?php
-	namespace Suphle\Services\Decorators;
 
-	use Attribute;
+namespace Suphle\Services\Decorators;
 
-	#[Attribute(Attribute::TARGET_CLASS)]
-	class VariableDependencies {
+use Attribute;
 
-		public function __construct (public readonly array $dependencyMethods) {
+#[Attribute(Attribute::TARGET_CLASS)]
+class VariableDependencies
+{
+    public function __construct(public readonly array $dependencyMethods)
+    {
 
-			//
-		}
-	}
-?>
+        //
+    }
+}

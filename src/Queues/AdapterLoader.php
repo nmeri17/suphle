@@ -1,32 +1,34 @@
 <?php
-	namespace Suphle\Queues;
 
-	use Suphle\Contracts\IO\EnvAccessor;
+namespace Suphle\Queues;
 
-	use Suphle\Hydration\BaseInterfaceLoader;
+use Suphle\Contracts\IO\EnvAccessor;
 
-	use Suphle\Adapters\Queues\SpiralQueue;
+use Suphle\Hydration\BaseInterfaceLoader;
 
-	class AdapterLoader extends BaseInterfaceLoader {
+use Suphle\Adapters\Queues\SpiralQueue;
 
-		public function __construct(protected readonly EnvAccessor $envAccessor) {
+class AdapterLoader extends BaseInterfaceLoader
+{
+    public function __construct(protected readonly EnvAccessor $envAccessor)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function afterBind ($initialized):void {
+    public function afterBind($initialized): void
+    {
 
-			$initialized->configureNative();
+        $initialized->configureNative();
 
-			$initialized->setActiveQueue(
+        $initialized->setActiveQueue(
+            $this->envAccessor->getField("DEFAULT_QUEUE_NAME")
+        );
+    }
 
-				$this->envAccessor->getField("DEFAULT_QUEUE_NAME")
-			);
-		}
+    public function concreteName(): string
+    {
 
-		public function concreteName ():string {
-
-			return SpiralQueue::class;
-		}
-	}
-?>
+        return SpiralQueue::class;
+    }
+}

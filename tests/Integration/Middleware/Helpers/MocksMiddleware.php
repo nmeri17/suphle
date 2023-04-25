@@ -1,30 +1,30 @@
 <?php
-	namespace Suphle\Tests\Integration\Middleware\Helpers;
 
-	use Suphle\Contracts\Routing\Middleware;
+namespace Suphle\Tests\Integration\Middleware\Helpers;
 
-	trait MocksMiddleware {
+use Suphle\Contracts\Routing\Middleware;
 
-		// without this, we'll use getModules and then need to have test classes for each of these different configurations
-		protected function getMiddlewareMock (
+trait MocksMiddleware
+{
+    // without this, we'll use getModules and then need to have test classes for each of these different configurations
+    protected function getMiddlewareMock(
+        string $className,
+        int $numTimes,
+        array $constructorArguments = []
+    ): Middleware {
 
-			string $className, int $numTimes,
+        return $this->positiveDouble($className, [
 
-			array $constructorArguments = []
-		):Middleware {
+            "process" => $this->returnCallback(fn ($request, $requestHandler) => $requestHandler->handle($request))
+        ], [
 
-			return $this->positiveDouble($className, [
+            "process" => [$numTimes, []]
+        ], $constructorArguments);
+    }
 
-				"process" => $this->returnCallback(fn($request, $requestHandler) => $requestHandler->handle($request))
-			], [
+    protected function provideMiddleware(array $middlewareList): void
+    {
 
-				"process" => [$numTimes, []]
-			], $constructorArguments);
-		}
-
-		protected function provideMiddleware (array $middlewareList):void {
-
-			$this->getContainer()->whenTypeAny()->needsAny($middlewareList);
-		}
-	}
-?>
+        $this->getContainer()->whenTypeAny()->needsAny($middlewareList);
+    }
+}

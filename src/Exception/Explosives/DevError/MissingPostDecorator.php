@@ -1,15 +1,16 @@
 <?php
-	namespace Suphle\Exception\Explosives\DevError;
 
-	use Suphle\Contracts\Exception\BroadcastableException;
+namespace Suphle\Exception\Explosives\DevError;
 
-	use Exception;
+use Suphle\Contracts\Exception\BroadcastableException;
 
-	class MissingPostDecorator extends Exception implements BroadcastableException {
+use Exception;
 
-		public function __construct (string $concrete) {
+class MissingPostDecorator extends Exception implements BroadcastableException
+{
+    public function __construct(string $concrete)
+    {
 
-			$this->message = "Attempted to handle POST request but no decorated handler found on ". $concrete;
-		}
-	}
-?>
+        $this->message = "Attempted to handle POST request but no decorated handler found on ". $concrete;
+    }
+}

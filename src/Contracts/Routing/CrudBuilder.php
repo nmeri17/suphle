@@ -1,8 +1,8 @@
 <?php
-	namespace Suphle\Contracts\Routing;
 
-	interface CrudBuilder {
+namespace Suphle\Contracts\Routing;
 
-		public function registerCruds():void;
-	}
-?>
+interface CrudBuilder
+{
+    public function registerCruds(): void;
+}

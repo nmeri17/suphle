@@ -1,59 +1,59 @@
 <?php
-	namespace Suphle\Routing;
 
-	use Suphle\Routing\Structures\BaseScrutinizerHandler;
+namespace Suphle\Routing;
 
-	use Suphle\Hydration\Container;
+use Suphle\Routing\Structures\BaseScrutinizerHandler;
 
-	use Suphle\Contracts\{Presentation\BaseRenderer, Config\Router as RouterConfig};
+use Suphle\Hydration\Container;
 
-	class CollectionMetaQueue {
+use Suphle\Contracts\{Presentation\BaseRenderer, Config\Router as RouterConfig};
 
-		public function __construct (
+class CollectionMetaQueue
+{
+    public function __construct(
+        protected readonly PreMiddlewareRegistry $registry,
+        protected readonly RouterConfig $routerConfig,
+        protected readonly Container $container
+    ) {
 
-			protected readonly PreMiddlewareRegistry $registry,
+        //
+    }
 
-			protected readonly RouterConfig $routerConfig,
+    public function executeRoutedMetaFunnels(): void
+    {
 
-			protected readonly Container $container
-		) {
+        $this->executeMetaFunnels($this->registry->getRoutedFunnels());
+    }
 
-			//
-		}
+    public function executeMetaFunnels(array $funnels): void
+    {
 
-		public function executeRoutedMetaFunnels ():void  {
-			
-			$this->executeMetaFunnels($this->registry->getRoutedFunnels());
-		}
+        $handlers = [];
 
-		public function executeMetaFunnels (array $funnels):void {
+        foreach ($funnels as $funnel) {
 
-			$handlers = [];
+            $handlerName = $this->routerConfig->scrutinizerHandlers()[
 
-			foreach ($funnels as $funnel) {
+                $funnel::class
+            ];
 
-				$handlerName = $this->routerConfig->scrutinizerHandlers()[
+            if (!array_key_exists($handlerName, $handlers)) {
 
-					$funnel::class
-				];
+                $handlers[$handlerName] = $this->container->getClass($handlerName);
+            }
 
-				if (!array_key_exists($handlerName, $handlers))
+            $handlers[$handlerName]->addMetaFunnel($funnel);
+        }
 
-					$handlers[$handlerName] = $this->container->getClass($handlerName);
+        array_walk(
+            $handlers,
+            fn (BaseScrutinizerHandler $handler) => $handler->scrutinizeRequest() // defer scrutiny so the filters execute only once
+        );
+    }
 
-				$handlers[$handlerName]->addMetaFunnel($funnel);
-			}
+    public function findMatchingFunnels(callable $matcher): array
+    {
 
-			array_walk(
-				$handlers,
-
-				fn (BaseScrutinizerHandler $handler) => $handler->scrutinizeRequest() // defer scrutiny so the filters execute only once
-			);
-		}
-
-		public function findMatchingFunnels (callable $matcher):array {
-
-			return array_filter($this->registry->getRoutedFunnels(), $matcher);
-		}
-	}
-?>
+        return array_filter($this->registry->getRoutedFunnels(), $matcher);
+    }
+}

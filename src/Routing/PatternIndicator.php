@@ -1,72 +1,74 @@
 <?php
-	namespace Suphle\Routing;
 
-	use Suphle\Contracts\{Routing\RouteCollection, Auth\AuthStorage, Config\Router as RouterConfig};
+namespace Suphle\Routing;
 
-	use Suphle\Request\RequestDetails;
+use Suphle\Contracts\{Routing\RouteCollection, Auth\AuthStorage, Config\Router as RouterConfig};
 
-	use Suphle\Routing\PreMiddlewareRegistry;
+use Suphle\Request\RequestDetails;
 
-	use Suphle\Middleware\MiddlewareRegistry;
+use Suphle\Routing\PreMiddlewareRegistry;
 
-	class PatternIndicator {
+use Suphle\Middleware\MiddlewareRegistry;
 
-		protected ?bool $mirrorState = null;
+class PatternIndicator
+{
+    protected ?bool $mirrorState = null;
 
-		public function __construct (
+    public function __construct(
+        protected readonly MiddlewareRegistry $middlewareRegistry,
+        protected readonly PreMiddlewareRegistry $preRegistry,
+        protected readonly RouterConfig $routerConfig,
+        protected readonly RequestDetails $requestDetails
+    ) {
 
-			protected readonly MiddlewareRegistry $middlewareRegistry, 
+        //
+    }
 
-			protected readonly PreMiddlewareRegistry $preRegistry,
+    public function logPatternDetails(RouteCollection $collection, string $pattern): void
+    {
 
-			protected readonly RouterConfig $routerConfig,
+        $this->includeMiddleware($collection, $pattern);
 
-			protected readonly RequestDetails $requestDetails
-		) {
+        $this->updateMeta($collection, $pattern);
+    }
 
-			//
-		}
+    public function shouldMirror(): bool
+    {
 
-		public function logPatternDetails (RouteCollection $collection, string $pattern):void {
+        if (is_null($this->mirrorState)) {
 
-			$this->includeMiddleware($collection, $pattern);
+            $this->mirrorState = $this->requestDetails->isApiRoute() &&
 
-			$this->updateMeta($collection, $pattern);
-		}
+            $this->routerConfig->mirrorsCollections();
+        }
 
-		public function shouldMirror ():bool {
+        return $this->mirrorState;
+    }
 
-			if (is_null($this->mirrorState))
+    protected function includeMiddleware(RouteCollection $collection, string $segment): void
+    {
 
-				$this->mirrorState = $this->requestDetails->isApiRoute() &&
+        $collection->_assignMiddleware($this->middlewareRegistry);
 
-				$this->routerConfig->mirrorsCollections();
+        $this->middlewareRegistry->updateInteractedPatterns($segment);
+    }
 
-			return $this->mirrorState;
-		}
+    protected function updateMeta(RouteCollection $collection, string $segment): void
+    {
 
-		protected function includeMiddleware (RouteCollection $collection, string $segment):void {
+        $collection->_preMiddleware($this->preRegistry);
 
-			$collection->_assignMiddleware($this->middlewareRegistry);
+        $this->preRegistry->updateInteractedPatterns($segment);
+    }
 
-			$this->middlewareRegistry->updateInteractedPatterns($segment);
-		}
+    /**
+     * When a module has more than one route collection, the preceding collection could have logged to its registry. Without a reseet, those tags will [undesirably] affect the next collection handling routing
+    */
+    public function resetIndications(): void
+    {
 
-		protected function updateMeta (RouteCollection $collection, string $segment):void {
+        $this->middlewareRegistry->emptyAllStacks();
 
-			$collection->_preMiddleware($this->preRegistry);
-
-			$this->preRegistry->updateInteractedPatterns($segment);
-		}
-
-		/**
-		 * When a module has more than one route collection, the preceding collection could have logged to its registry. Without a reseet, those tags will [undesirably] affect the next collection handling routing
-		*/
-		public function resetIndications ():void {
-
-			$this->middlewareRegistry->emptyAllStacks();
-
-			$this->preRegistry->emptyAllStacks();
-		}
-	}
-?>
+        $this->preRegistry->emptyAllStacks();
+    }
+}

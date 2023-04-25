@@ -1,63 +1,65 @@
 <?php
-	namespace Suphle\Bridge\Laravel\Routing;
 
-	use Suphle\Contracts\{Config\Laravel as LaravelConfig, Bridge\LaravelContainer, Presentation\BaseRenderer, Routing\ExternalRouter};
+namespace Suphle\Bridge\Laravel\Routing;
 
-	use Suphle\Response\Format\ExternallyEvaluatedRenderer;
+use Suphle\Contracts\{Config\Laravel as LaravelConfig, Bridge\LaravelContainer, Presentation\BaseRenderer, Routing\ExternalRouter};
 
-	use Illuminate\Routing\{Router, Route};
+use Suphle\Response\Format\ExternallyEvaluatedRenderer;
 
-	use Illuminate\Http\Request;
+use Illuminate\Routing\{Router, Route};
 
-	use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Illuminate\Http\Request;
 
-	class ModuleRouteMatcher implements ExternalRouter {
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-		protected Router $router;
+class ModuleRouteMatcher implements ExternalRouter
+{
+    protected Router $router;
 
-  		protected Request $request;
+    protected Request $request;
 
-		public function __construct(
-			protected readonly LaravelConfig $config,
+    public function __construct(
+        protected readonly LaravelConfig $config,
+        protected readonly LaravelContainer $laravelContainer
+    ) {
 
-			protected readonly LaravelContainer $laravelContainer
-		) {
+        //
+    }
 
-			//
-		}
+    public function canHandleRequest(): bool
+    {
 
-		public function canHandleRequest ():bool {
+        if (!$this->config->registersRoutes()) {
+            return false;
+        }
 
-			if (!$this->config->registersRoutes()) return false;
+        $this->router = $this->laravelContainer->make(Router::class);
 
-			$this->router = $this->laravelContainer->make(Router::class);
+        $this->request = $this->laravelContainer->make(LaravelContainer::INCOMING_REQUEST_KEY);
 
-			$this->request = $this->laravelContainer->make(LaravelContainer::INCOMING_REQUEST_KEY);
+        try {
 
-			try {
-				
-				return $this->router->getRoutes()->match($this->request) instanceof Route;
-			} catch (NotFoundHttpException) {
-			
-				return false;	
-			}
-		}
-		
-		public function convertToRenderer ():BaseRenderer {
+            return $this->router->getRoutes()->match($this->request) instanceof Route;
+        } catch (NotFoundHttpException) {
 
-			$fullRequest = $this->router->dispatch($this->request);
+            return false;
+        }
+    }
 
-			$renderer = (new ExternallyEvaluatedRenderer)
+    public function convertToRenderer(): BaseRenderer
+    {
 
-			->setRawResponse($fullRequest->getContent());
+        $fullRequest = $this->router->dispatch($this->request);
 
-			$renderer->setHeaders(
-				$fullRequest->getStatusCode(),
+        $renderer = (new ExternallyEvaluatedRenderer())
 
-				$fullRequest->headers->all()
-			);
+        ->setRawResponse($fullRequest->getContent());
 
-			return $renderer;
-		}
-	}
-?>
+        $renderer->setHeaders(
+            $fullRequest->getStatusCode(),
+            $fullRequest->headers->all()
+        );
+
+        return $renderer;
+    }
+}

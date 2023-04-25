@@ -1,13 +1,14 @@
 <?php
-	namespace Suphle\File;
 
-	trait SetsExecutionPath {
+namespace Suphle\File;
 
-		protected string $executionPath;
+trait SetsExecutionPath
+{
+    protected string $executionPath;
 
-		public function setExecutionPath (string $path):void {
+    public function setExecutionPath(string $path): void
+    {
 
-			$this->executionPath = $path;
-		}
-	}
-?>
+        $this->executionPath = $path;
+    }
+}

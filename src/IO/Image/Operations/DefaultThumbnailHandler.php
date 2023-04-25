@@ -1,29 +1,32 @@
 <?php
-	namespace Suphle\IO\Image\Operations;
 
-	use Suphle\Contracts\IO\Image\{ ImageThumbnailClient, ImageLocator, ThumbnailOperationHandler};
+namespace Suphle\IO\Image\Operations;
 
-	use Suphle\File\FileSystemReader;
+use Suphle\Contracts\IO\Image\{ ImageThumbnailClient, ImageLocator, ThumbnailOperationHandler};
 
-	class DefaultThumbnailHandler extends BaseOptimizeOperation implements ThumbnailOperationHandler {
+use Suphle\File\FileSystemReader;
 
-		protected string $operationName = ThumbnailOperationHandler::OPERATION_NAME;
+class DefaultThumbnailHandler extends BaseOptimizeOperation implements ThumbnailOperationHandler
+{
+    protected string $operationName = ThumbnailOperationHandler::OPERATION_NAME;
 
-		public function __construct (ImageThumbnailClient $client, ImageLocator $imageLocator, FileSystemReader $fileSystemReader) {
+    public function __construct(ImageThumbnailClient $client, ImageLocator $imageLocator, FileSystemReader $fileSystemReader)
+    {
 
-			$this->client = $client;
+        $this->client = $client;
 
-			parent::__construct($imageLocator, $fileSystemReader);
-		}
+        parent::__construct($imageLocator, $fileSystemReader);
+    }
 
-		public function getTransformed ():?array {
+    public function getTransformed(): ?array
+    {
 
-			return array_map(fn($file) => $this->client->miniature($this->localFileCopy($file)), $this->imageObjects);
-		}
+        return array_map(fn ($file) => $this->client->miniature($this->localFileCopy($file)), $this->imageObjects);
+    }
 
-		public function setDimensions(int $width, int $height):void {
+    public function setDimensions(int $width, int $height): void
+    {
 
-			$this->client->setDimensions($width, $height);
-		}
-	}
-?>
+        $this->client->setDimensions($width, $height);
+    }
+}

@@ -1,202 +1,200 @@
 <?php
-	namespace Suphle\Server;
 
-	use Suphle\Server\Structures\DependencyRule;
+namespace Suphle\Server;
 
-	use Suphle\File\{FileSystemReader, SetsExecutionPath};
+use Suphle\Server\Structures\DependencyRule;
 
-	use Suphle\Hydration\{Container, Structures\ObjectDetails};
+use Suphle\File\{FileSystemReader, SetsExecutionPath};
 
-	use Suphle\Contracts\{Queues\Task, Modules\ControllerModule, Server\DependencyFileHandler};
+use Suphle\Hydration\{Container, Structures\ObjectDetails};
 
-	use Suphle\IO\{Http\BaseHttpRequest, Mailing\MailBuilder};
+use Suphle\Contracts\{Queues\Task, Modules\ControllerModule, Server\DependencyFileHandler};
 
-	use Suphle\Request\PayloadStorage;
+use Suphle\IO\{Http\BaseHttpRequest, Mailing\MailBuilder};
 
-	use Suphle\Services\{ServiceCoordinator, UpdatefulService, UpdatelessService, ConditionalFactory};
+use Suphle\Request\PayloadStorage;
 
-	use Suphle\Services\Structures\{ModelfulPayload, ModellessPayload};
+use Suphle\Services\{ServiceCoordinator, UpdatefulService, UpdatelessService, ConditionalFactory};
 
-	use Suphle\Services\DependencyRules\{OnlyLoadedByHandler, ActionDependenciesValidator, ServicePreferenceHandler};
+use Suphle\Services\Structures\{ModelfulPayload, ModellessPayload};
 
-	class DependencySanitizer {
+use Suphle\Services\DependencyRules\{OnlyLoadedByHandler, ActionDependenciesValidator, ServicePreferenceHandler};
 
-		use SetsExecutionPath;
+class DependencySanitizer
+{
+    use SetsExecutionPath;
 
-		protected array $rules = [];
+    protected array $rules = [];
 
-		public function __construct (
+    public function __construct(
+        protected readonly FileSystemReader $fileSystemReader,
+        protected readonly Container $container,
+        protected readonly ObjectDetails $objectMeta
+    ) {
 
-			protected readonly FileSystemReader $fileSystemReader,
+        //
+    }
 
-			protected readonly Container $container,
+    protected function setDefaultRules(): void
+    {
 
-			protected readonly ObjectDetails $objectMeta
-		) {
+        $this->coordinatorConstructor();
 
-			//
-		}
+        $this->coordinatorActionMethods();
 
-		protected function setDefaultRules ():void {
+        $this->protectUpdateyServices();
 
-			$this->coordinatorConstructor();
+        $this->protectMailBuilders();
+    }
 
-			$this->coordinatorActionMethods();
+    public function cleanseConsumers(): void
+    {
 
-			$this->protectUpdateyServices();
+        if (empty($this->rules)) {
+            $this->setDefaultRules();
+        }
 
-			$this->protectMailBuilders();
-		}
+        $hydratedHandlers = array_map(function ($rule) {
 
-		public function cleanseConsumers ():void {
+            return $rule->extractHandler($this->container);
+        }, $this->rules);
 
-			if (empty($this->rules)) $this->setDefaultRules();
+        foreach ($hydratedHandlers as $index => $handler) {
 
-			$hydratedHandlers = array_map(function ($rule) {
+            $this->iterateExecutionPath(
+                $this->executionPath,
+                $handler,
+                $this->rules[$index]
+            );
+        }
+    }
 
-				return $rule->extractHandler($this->container);
-			}, $this->rules);
+    protected function iterateExecutionPath(
+        string $executionPath,
+        DependencyFileHandler $handler,
+        DependencyRule $dependencyRule
+    ): void {
 
-			foreach ($hydratedHandlers as $index => $handler)
+        $this->fileSystemReader->iterateDirectory(
+            $executionPath,
+            function ($directoryPath, $directoryName) use ($handler, $dependencyRule) {
 
-				$this->iterateExecutionPath(
+                $this->iterateExecutionPath(
+                    $directoryPath,
+                    $handler,
+                    $dependencyRule
+                );
+            },
+            function ($filePath, $fileName) use ($handler, $dependencyRule) {
 
-					$this->executionPath, $handler, $this->rules[$index]
-				);
-		}
+                $classFullName = $this->objectMeta->classNameFromFile($filePath);
 
-		protected function iterateExecutionPath (
+                if (
+                    !empty($classFullName) &&
 
-			string $executionPath, DependencyFileHandler $handler,
+                    $dependencyRule->shouldEvaluateClass($classFullName)
+                ) {
 
-			DependencyRule $dependencyRule
-		):void {
+                    $handler->evaluateClass($classFullName);
+                }
+            },
+            function ($path) {
 
-			$this->fileSystemReader->iterateDirectory(
-
-				$executionPath, function ($directoryPath, $directoryName) use ($handler, $dependencyRule) {
-
-					$this->iterateExecutionPath(
-
-						$directoryPath, $handler, $dependencyRule
-					);
-				},
-
-				function ($filePath, $fileName) use ($handler, $dependencyRule) {
-
-					$classFullName = $this->objectMeta->classNameFromFile($filePath);
-
-					if (
-						!empty($classFullName) &&
-
-						$dependencyRule->shouldEvaluateClass($classFullName)
-					)
-
-						$handler->evaluateClass($classFullName);
-				},
-
-				function ($path) {
-
-					//
-				}
-			);
-		}
-
-		public function coordinatorConstructor (array $toOmit = []):void {
-
-			$this->addRule(
-				ServicePreferenceHandler::class,
-
-				function ($className) use ($toOmit) {
-
-					return $this->coordinatorFilter($className) &&
-
-					!in_array($className, $toOmit);
-				},
-
-				[
-					ConditionalFactory::class, // We're treating it as a type of service in itself
-					ControllerModule::class, // These are a service already. There's no need accessing them through another local proxy
-
-					PayloadStorage::class, // there may be items we don't want to pass to the builder but to a service?
-
-					BaseHttpRequest::class, UpdatefulService::class,
-
-					UpdatelessService::class
-				]
-			);
-		}
-
-		public function coordinatorActionMethods ():void {
-
-			$this->addRule(
-				ActionDependenciesValidator::class,
-
-				$this->coordinatorFilter(...),
-
-				[
-
-					ModelfulPayload::class, ModellessPayload::class
-				]
-			);
-		}
-
-		protected function coordinatorFilter (string $className):bool {
-
-			return $this->objectMeta->stringInClassTree(
-
-				$className, ServiceCoordinator::class
-			);
-		}
-
-		public function addRule (string $ruleHandler, callable $filter, array $argumentList):void {
-
-			$this->rules[] = new DependencyRule($ruleHandler, $filter, $argumentList);
-		}
-
-		protected function protectUpdateyServices ():void {
-
-			$this->addRule(
-				ServicePreferenceHandler::class,
-
-				function ($className):bool {
-
-					return $this->objectMeta->stringInClassTree(
-
-						$className, UpdatefulService::class
-					);
-				},
-
-				[UpdatelessService::class]
-			);
-
-			$this->addRule(
-				ServicePreferenceHandler::class,
-
-				function ($className):bool {
-
-					return $this->objectMeta->stringInClassTree(
-
-						$className, UpdatelessService::class
-					);
-				},
-
-				[UpdatefulService::class]
-			);
-		}
-
-		public function protectMailBuilders (array $toOmit = []):void {
-
-			$this->addRule(
-				OnlyLoadedByHandler::class,
-
-				function ($className) use ($toOmit):bool {
-
-					return !in_array($className, $toOmit);
-				},
-
-				[MailBuilder::class, [Task::class]]
-			);
-		}
-	}
-?>
+                //
+            }
+        );
+    }
+
+    public function coordinatorConstructor(array $toOmit = []): void
+    {
+
+        $this->addRule(
+            ServicePreferenceHandler::class,
+            function ($className) use ($toOmit) {
+
+                return $this->coordinatorFilter($className) &&
+
+                !in_array($className, $toOmit);
+            },
+            [
+                ConditionalFactory::class, // We're treating it as a type of service in itself
+                ControllerModule::class, // These are a service already. There's no need accessing them through another local proxy
+
+                PayloadStorage::class, // there may be items we don't want to pass to the builder but to a service?
+
+                BaseHttpRequest::class, UpdatefulService::class,
+
+                UpdatelessService::class
+            ]
+        );
+    }
+
+    public function coordinatorActionMethods(): void
+    {
+
+        $this->addRule(
+            ActionDependenciesValidator::class,
+            $this->coordinatorFilter(...),
+            [
+
+                ModelfulPayload::class, ModellessPayload::class
+            ]
+        );
+    }
+
+    protected function coordinatorFilter(string $className): bool
+    {
+
+        return $this->objectMeta->stringInClassTree(
+            $className,
+            ServiceCoordinator::class
+        );
+    }
+
+    public function addRule(string $ruleHandler, callable $filter, array $argumentList): void
+    {
+
+        $this->rules[] = new DependencyRule($ruleHandler, $filter, $argumentList);
+    }
+
+    protected function protectUpdateyServices(): void
+    {
+
+        $this->addRule(
+            ServicePreferenceHandler::class,
+            function ($className): bool {
+
+                return $this->objectMeta->stringInClassTree(
+                    $className,
+                    UpdatefulService::class
+                );
+            },
+            [UpdatelessService::class]
+        );
+
+        $this->addRule(
+            ServicePreferenceHandler::class,
+            function ($className): bool {
+
+                return $this->objectMeta->stringInClassTree(
+                    $className,
+                    UpdatelessService::class
+                );
+            },
+            [UpdatefulService::class]
+        );
+    }
+
+    public function protectMailBuilders(array $toOmit = []): void
+    {
+
+        $this->addRule(
+            OnlyLoadedByHandler::class,
+            function ($className) use ($toOmit): bool {
+
+                return !in_array($className, $toOmit);
+            },
+            [MailBuilder::class, [Task::class]]
+        );
+    }
+}

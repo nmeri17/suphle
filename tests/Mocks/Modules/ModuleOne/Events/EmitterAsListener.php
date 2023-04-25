@@ -1,19 +1,20 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Events;
 
-	use Suphle\Events\EventManager;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Events;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Events\LocalReceiver;
+use Suphle\Events\EventManager;
 
-	class EmitterAsListener extends EventManager {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Events\LocalReceiver;
 
-		public function registerListeners ():void {
+class EmitterAsListener extends EventManager
+{
+    public function registerListeners(): void
+    {
 
-			parent::registerListeners();
-			
-			$this->local(LocalReceiver::class, LocalReceiver::class)
-			
-			->on(LocalReceiver::CASCADE_REBOUND_EVENT, "updatePayload");
-		}
-	}
-?>
+        parent::registerListeners();
+
+        $this->local(LocalReceiver::class, LocalReceiver::class)
+
+        ->on(LocalReceiver::CASCADE_REBOUND_EVENT, "updatePayload");
+    }
+}

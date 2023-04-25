@@ -1,10 +1,11 @@
 <?php
-	namespace Suphle\Contracts\Exception;
 
-	use Suphle\Contracts\Queues\Task;
+namespace Suphle\Contracts\Exception;
 
-	interface FatalShutdownAlert extends Task { // the only entity permitted to consume Mailers
+use Suphle\Contracts\Queues\Task;
 
-		public function setErrorAsJson (string $errorDetails):void;
-	}
-?>
+interface FatalShutdownAlert extends Task
+{ // the only entity permitted to consume Mailers
+
+    public function setErrorAsJson(string $errorDetails): void;
+}

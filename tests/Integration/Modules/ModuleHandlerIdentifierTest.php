@@ -1,119 +1,128 @@
 <?php
-	namespace Suphle\Tests\Integration\Modules;
 
-	use Suphle\Contracts\Auth\{ModuleLoginHandler, LoginFlowMediator};
+namespace Suphle\Tests\Integration\Modules;
 
-	use Suphle\Contracts\Config\{Router, AuthContract};
+use Suphle\Contracts\Auth\{ModuleLoginHandler, LoginFlowMediator};
 
-	use Suphle\Flows\OuterFlowWrapper;
+use Suphle\Contracts\Config\{Router, AuthContract};
 
-	use Suphle\Exception\Explosives\ValidationFailure;
+use Suphle\Flows\OuterFlowWrapper;
 
-	use Suphle\Config\Auth;
+use Suphle\Exception\Explosives\ValidationFailure;
 
-	use Suphle\Testing\{Condiments\DirectHttpTest, Proxies\WriteOnlyContainer};
+use Suphle\Config\Auth;
 
-	use Suphle\Tests\Integration\Flows\Jobs\RouteBranches\JobFactory;
+use Suphle\Testing\{Condiments\DirectHttpTest, Proxies\WriteOnlyContainer};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\OriginCollection, Meta\ModuleOneDescriptor, Config\RouterMock};
+use Suphle\Tests\Integration\Flows\Jobs\RouteBranches\JobFactory;
 
-	class ModuleHandlerIdentifierTest extends JobFactory {
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\OriginCollection, Meta\ModuleOneDescriptor, Config\RouterMock};
 
-		use DirectHttpTest, DoublesHandlerIdentifier;
+class ModuleHandlerIdentifierTest extends JobFactory
+{
+    use DirectHttpTest;
+    use DoublesHandlerIdentifier;
 
-		protected function setUp ():void {
+    protected function setUp(): void
+    {
 
-			$this->setDummyRenderer();
+        $this->setDummyRenderer();
 
-			parent::setUp();
-		}
+        parent::setUp();
+    }
 
-		// no need to create these. We're not interested in using any
-		protected function setAllDescriptors ():void {}
+    // no need to create these. We're not interested in using any
+    protected function setAllDescriptors(): void
+    {
+    }
 
-		protected function getModules():array {
+    protected function getModules(): array
+    {
 
-			return [
+        return [
 
-				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-					$container->replaceWithMock(Router::class, RouterMock::class, [
+                $container->replaceWithMock(Router::class, RouterMock::class, [
 
-						"browserEntryRoute" => OriginCollection::class
-					]);
-				})
-			];
-		}
-		
-		public function test_can_handle_login () {
+                    "browserEntryRoute" => OriginCollection::class
+                ]);
+            })
+        ];
+    }
 
-			$this->massProvide([
+    public function test_can_handle_login()
+    {
 
-				ModuleLoginHandler::class => $this->mockLoginHandler() // then
-			]);
+        $this->massProvide([
 
-			$this->post(
+            ModuleLoginHandler::class => $this->mockLoginHandler() // then
+        ]);
 
-				Auth::API_LOGIN_PATH // given
-			); // when
-		}
+        $this->post(
+            Auth::API_LOGIN_PATH // given
+        ); // when
+    }
 
-		private function mockLoginHandler ():ModuleLoginHandler {
+    private function mockLoginHandler(): ModuleLoginHandler
+    {
 
-			return $this->positiveDouble(ModuleLoginHandler::class,
+        return $this->positiveDouble(
+            ModuleLoginHandler::class,
+            [
 
-				[
+                "isValidRequest" => true,
 
-					"isValidRequest" => true,
+                "handlingRenderer" => $this->dummyRenderer,
 
-					"handlingRenderer" => $this->dummyRenderer,
+                "setResponseRenderer" => $this->returnSelf()
+            ],
+            [
 
-					"setResponseRenderer" => $this->returnSelf()
-				], [
+                "processLoginRequest" => [1, []]
+            ]
+        );
+    }
 
-					"processLoginRequest" => [1, []]
-				]
-			);
-		}
+    public function test_saved_flow_triggers_flow_handler()
+    {
 
-		public function test_saved_flow_triggers_flow_handler () {
+        $this->handleDefaultPendingFlowDetails(); // given
 
-			$this->handleDefaultPendingFlowDetails(); // given
+        //$this->assertHandledByFlow($this->userUrl);
 
-			//$this->assertHandledByFlow($this->userUrl);
-			
-			$this->setHttpParams($this->userUrl); // when
+        $this->setHttpParams($this->userUrl); // when
 
-			$this->getHandlerIdentifier([], [
+        $this->getHandlerIdentifier([], [
 
-				"flowRequestHandler" => [$this->atLeastOnce(), [ // then
+            "flowRequestHandler" => [$this->atLeastOnce(), [ // then
 
-					$this->callback(fn($argument) => is_a($argument, OuterFlowWrapper::class))
-				]]
-			])
-			->respondFromHandler();
-		}
-		
-		public function test_validation_failure_on_login_will_terminate () {
+                $this->callback(fn ($argument) => is_a($argument, OuterFlowWrapper::class))
+            ]]
+        ])
+        ->respondFromHandler();
+    }
 
-			$this->expectException(ValidationFailure::class); // then
+    public function test_validation_failure_on_login_will_terminate()
+    {
 
-			$sutName = ModuleLoginHandler::class;
+        $this->expectException(ValidationFailure::class); // then
 
-			$this->massProvide([
+        $sutName = ModuleLoginHandler::class;
 
-				$sutName => $this->negativeDouble($sutName, [
+        $this->massProvide([
 
-					"isValidRequest" => false // given
-				]),
+            $sutName => $this->negativeDouble($sutName, [
 
-				AuthContract::class => $this->positiveDouble(AuthContract::class, [
+                "isValidRequest" => false // given
+            ]),
 
-					"getLoginCollection" => $this->negativeDouble(LoginFlowMediator::class)
-				])
-			]);
+            AuthContract::class => $this->positiveDouble(AuthContract::class, [
 
-			$this->entrance->handleLoginRequest(); // when
-		}
-	}
-?>
+                "getLoginCollection" => $this->negativeDouble(LoginFlowMediator::class)
+            ])
+        ]);
+
+        $this->entrance->handleLoginRequest(); // when
+    }
+}

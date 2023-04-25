@@ -1,38 +1,43 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleThree\Events;
 
-	use Suphle\Events\EmitProxy;
+namespace Suphle\Tests\Mocks\Modules\ModuleThree\Events;
 
-	use Suphle\Contracts\Events;
+use Suphle\Events\EmitProxy;
 
-	class EventsHandler {
+use Suphle\Contracts\Events;
 
-		use EmitProxy;
+class EventsHandler
+{
+    use EmitProxy;
 
-		final const EXTERNAL_LOCAL_REBOUND = "local_external_local";
+    final public const EXTERNAL_LOCAL_REBOUND = "local_external_local";
 
-		private $payload;
+    private $payload;
 
-		public function __construct (protected readonly Events $eventManager) {
+    public function __construct(protected readonly Events $eventManager)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function setExternalPayload (int $payload) {
-			
-			$this->payload = $payload;
-		}
+    public function setExternalPayload(int $payload)
+    {
 
-		public function handleImpossibleEmit (int $payload) {
-			
-			$this->payload = $payload;
-		}
+        $this->payload = $payload;
+    }
 
-		public function handleExternalRebound (bool $reboundInExternal) {
+    public function handleImpossibleEmit(int $payload)
+    {
 
-			if ($reboundInExternal)
+        $this->payload = $payload;
+    }
 
-				$this->emitHelper(self::EXTERNAL_LOCAL_REBOUND);
-		}
-	}
-?>
+    public function handleExternalRebound(bool $reboundInExternal)
+    {
+
+        if ($reboundInExternal) {
+
+            $this->emitHelper(self::EXTERNAL_LOCAL_REBOUND);
+        }
+    }
+}

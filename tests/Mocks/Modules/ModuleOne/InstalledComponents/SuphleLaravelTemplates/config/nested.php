@@ -1,19 +1,18 @@
 <?php
 
-	return [
+return [
 
-		"first_level" => [
+    "first_level" => [
 
-			"second_level" => [
+        "second_level" => [
 
-				"value" => 5,
+            "value" => 5,
 
-				"name" => "awesome name"
-			],
+            "name" => "awesome name"
+        ],
 
-			"bar" => []
-		],
+        "bar" => []
+    ],
 
-		"foo" => "awesome foo"
-	];
-?>
+    "foo" => "awesome foo"
+];

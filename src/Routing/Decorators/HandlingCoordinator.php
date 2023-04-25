@@ -1,14 +1,15 @@
 <?php
-	namespace Suphle\Routing\Decorators;
 
-	use Attribute;
+namespace Suphle\Routing\Decorators;
 
-	#[Attribute(Attribute::TARGET_CLASS)]
-	class HandlingCoordinator {
+use Attribute;
 
-		public function __construct (public readonly string $coordinatorName) {
+#[Attribute(Attribute::TARGET_CLASS)]
+class HandlingCoordinator
+{
+    public function __construct(public readonly string $coordinatorName)
+    {
 
-			//
-		}
-	}
-?>
+        //
+    }
+}

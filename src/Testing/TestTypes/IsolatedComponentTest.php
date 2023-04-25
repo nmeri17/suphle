@@ -1,126 +1,138 @@
 <?php
-	namespace Suphle\Testing\TestTypes;
 
-	use Suphle\Contracts\IO\{Session, CacheManager};
+namespace Suphle\Testing\TestTypes;
 
-	use Suphle\Contracts\Queues\Adapter as QueueAdapter;
+use Suphle\Contracts\IO\{Session, CacheManager};
 
-	use Suphle\Hydration\Container;
+use Suphle\Contracts\Queues\Adapter as QueueAdapter;
 
-	use Suphle\Adapters\{Session\InMemorySession, Cache\InMemoryCache};
+use Suphle\Hydration\Container;
 
-	use Suphle\Request\RequestDetails;
+use Suphle\Adapters\{Session\InMemorySession, Cache\InMemoryCache};
 
-	use Suphle\Testing\Proxies\{ConfigureExceptionBridge, ExceptionBroadcasters};
+use Suphle\Request\RequestDetails;
 
-	/**
-	 * Used for tests that mostly require a Container. Boots and provides this container to them
-	*/
-	abstract class IsolatedComponentTest extends TestVirginContainer {
+use Suphle\Testing\Proxies\{ConfigureExceptionBridge, ExceptionBroadcasters};
 
-		use ExceptionBroadcasters;
+/**
+ * Used for tests that mostly require a Container. Boots and provides this container to them
+*/
+abstract class IsolatedComponentTest extends TestVirginContainer
+{
+    use ExceptionBroadcasters;
 
-		protected Container $container;
+    protected Container $container;
 
-		protected bool $usesRealDecorator = true;
+    protected bool $usesRealDecorator = true;
 
-		protected function setUp ():void {
+    protected function setUp(): void
+    {
 
-			$this->container = $container = $this->positiveDouble(
+        $this->container = $container = $this->positiveDouble(
+            Container::class,
+            $this->getContainerStubs(),
+            $this->getContainerMocks()
+        );
 
-				Container::class,
+        $this->bootContainer($container);
 
-				$this->getContainerStubs(), $this->getContainerMocks()
-			);
+        $this->withDefaultInterfaceCollection($container);
 
-			$this->bootContainer($container);
+        $this->entityBindings();
 
-			$this->withDefaultInterfaceCollection($container);
+        $this->maySetRealDecorator();
 
-			$this->entityBindings();
+        $this->mayMonitorContainer($this->container);
+    }
 
-			$this->maySetRealDecorator();
+    protected function entityBindings(): void
+    {
 
-			$this->mayMonitorContainer($this->container);
-		}
+        foreach ($this->concreteBinds() as $name => $concrete) { // this goes first so if any of the simpleBinds below requires a concrete, it'll be available to it
 
-		protected function entityBindings ():void {
+            $this->container->whenTypeAny()->needsAny([
 
-			foreach ($this->concreteBinds() as $name => $concrete) // this goes first so if any of the simpleBinds below requires a concrete, it'll be available to it
+                $name => $concrete
+            ]);
+        }
 
-				$this->container->whenTypeAny()->needsAny([
+        foreach ($this->simpleBinds() as $contract => $className) {
 
-					$name => $concrete
-				]);
+            $concrete = $this->container->getClass($className); // not safe to hydrate entity within a provision
 
-			foreach ($this->simpleBinds() as $contract => $className) {
+            $this->container->whenTypeAny()->needsAny([
 
-				$concrete = $this->container->getClass($className); // not safe to hydrate entity within a provision
+                $contract => $concrete
+            ]);
+        }
+    }
 
-				$this->container->whenTypeAny()->needsAny([
+    protected function simpleBinds(): array
+    {
 
-					$contract => $concrete
-				]);
-			}
-		}
+        return [
 
-		protected function simpleBinds ():array {
+            Session::class => InMemorySession::class,
 
-			return [
+            CacheManager::class => InMemoryCache::class
+        ];
+    }
 
-				Session::class => InMemorySession::class,
+    protected function concreteBinds(): array
+    {
 
-				CacheManager::class => InMemoryCache::class
-			];
-		}
+        return array_merge($this->getExceptionDoubles(), [
 
-		protected function concreteBinds ():array {
+            QueueAdapter::class => $this->positiveDouble(QueueAdapter::class)
+        ]);
+    }
 
-			return array_merge($this->getExceptionDoubles(), [
+    // used for normalizing traits that are applicable to both this and module level test
+    protected function getContainer(): Container
+    {
 
-				QueueAdapter::class => $this->positiveDouble(QueueAdapter::class)
-			]);
-		}
+        return $this->container;
+    }
 
-		// used for normalizing traits that are applicable to both this and module level test
-		protected function getContainer ():Container {
+    protected function massProvide(array $provisions): void
+    {
 
-			return $this->container;
-		}
+        $this->container->refreshMany(array_keys($provisions));
 
-		protected function massProvide (array $provisions):void {
+        $this->container->whenTypeAny()->needsAny($provisions);
+    }
 
-			$this->container->refreshMany(array_keys($provisions));
+    private function getContainerStubs(): array
+    {
 
-			$this->container->whenTypeAny()->needsAny($provisions);
-		}
+        $stubs = [];
 
-		private function getContainerStubs ():array {
+        if (!$this->usesRealDecorator) {
 
-			$stubs = [];
+            $stubs["getDecorator"] = $this->stubDecorator();
+        }
 
-			if (!$this->usesRealDecorator)
+        return $stubs;
+    }
 
-				$stubs["getDecorator"] = $this->stubDecorator();
+    protected function getContainerMocks(): array
+    {
 
-			return $stubs;
-		}
+        return [];
+    }
 
-		protected function getContainerMocks ():array {
+    private function maySetRealDecorator(): void
+    {
 
-			return [];
-		}
+        if ($this->usesRealDecorator) {
 
-		private function maySetRealDecorator ():void {
+            $this->container->interiorDecorate();
+        }
+    }
 
-			if ($this->usesRealDecorator)
+    protected function setRequestPath(string $requestPath, string $httpMethod): void
+    {
 
-				$this->container->interiorDecorate();
-		}
-
-		protected function setRequestPath (string $requestPath, string $httpMethod):void {
-
-			RequestDetails::fromContainer($this->container, $requestPath, $httpMethod);
-		}
-	}
-?>
+        RequestDetails::fromContainer($this->container, $requestPath, $httpMethod);
+    }
+}

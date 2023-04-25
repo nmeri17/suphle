@@ -1,15 +1,16 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\Selective;
 
-	use Suphle\Services\ServiceCoordinator;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\Selective;
 
-	use Suphle\Hydration\Container;
+use Suphle\Services\ServiceCoordinator;
 
-	class ForbiddenDependencyController extends ServiceCoordinator {
+use Suphle\Hydration\Container;
 
-		public function __construct(protected readonly Container $container) {
+class ForbiddenDependencyController extends ServiceCoordinator
+{
+    public function __construct(protected readonly Container $container)
+    {
 
-			//
-		}
-	}
-?>
+        //
+    }
+}

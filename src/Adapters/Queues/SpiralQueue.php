@@ -1,81 +1,85 @@
 <?php
-	namespace Suphle\Adapters\Queues;
 
-	use Suphle\Contracts\IO\EnvAccessor;
+namespace Suphle\Adapters\Queues;
 
-	use Suphle\Hydration\Container;
+use Suphle\Contracts\IO\EnvAccessor;
 
-	use Spiral\RoadRunner\Jobs\{Consumer, Jobs, Task\ReceivedTaskInterface};
+use Suphle\Hydration\Container;
 
-	use Spiral\{Goridge\RPC\RPC, RoadRunner\Environment};
+use Spiral\RoadRunner\Jobs\{Consumer, Jobs, Task\ReceivedTaskInterface};
 
-	use Throwable;
+use Spiral\{Goridge\RPC\RPC, RoadRunner\Environment};
 
-	class SpiralQueue extends BaseQueueAdapter {
+use Throwable;
 
-		final const HEADER_ATTEMPTS = "attempts",
+class SpiralQueue extends BaseQueueAdapter
+{
+    final public const HEADER_ATTEMPTS = "attempts",
 
-		HEADER_RETRY_DELAY = "retry-delay";
+    HEADER_RETRY_DELAY = "retry-delay";
 
-		protected readonly int $maxRetries;
+    protected readonly int $maxRetries;
 
-		public function __construct (EnvAccessor $envAccessor, protected readonly Container $container) {
+    public function __construct(EnvAccessor $envAccessor, protected readonly Container $container)
+    {
 
-			$this->maxRetries = $envAccessor->getField("MAX_QUEUE_RETRIES", 5);
-		}
+        $this->maxRetries = $envAccessor->getField("MAX_QUEUE_RETRIES", 5);
+    }
 
-		public function pushAction (string $taskClass, array $payload):void {
+    public function pushAction(string $taskClass, array $payload): void
+    {
 
-			$queue = $this->client->connect($this->activeQueueName);
+        $queue = $this->client->connect($this->activeQueueName);
 
-			$task = $queue->create($taskClass, $payload)
+        $task = $queue->create($taskClass, $payload)
 
-			->withHeader(self::HEADER_ATTEMPTS, $this->maxRetries);
+        ->withHeader(self::HEADER_ATTEMPTS, $this->maxRetries);
 
-			$queue->dispatch($task);
-		}
+        $queue->dispatch($task);
+    }
 
-		// connection opened here is for the server
-		public function processTasks ():void {
+    // connection opened here is for the server
+    public function processTasks(): void
+    {
 
-			$consumer = new Consumer;
+        $consumer = new Consumer();
 
-			while ($task = $consumer->waitTask()) {
+        while ($task = $consumer->waitTask()) {
 
-				try {
+            try {
 
-					$this->hydrateTask($task->getName(), $task->getPayload())
-					->handle();
+                $this->hydrateTask($task->getName(), $task->getPayload())
+                ->handle();
 
-					$task->complete();
-				}
-				catch (Throwable $exception) {
+                $task->complete();
+            } catch (Throwable $exception) {
 
-					$this->onTaskFailure($task, $exception);
-				}
-			}
-		}
+                $this->onTaskFailure($task, $exception);
+            }
+        }
+    }
 
-		protected function onTaskFailure (ReceivedTaskInterface $task, Throwable $exception):void {
+    protected function onTaskFailure(ReceivedTaskInterface $task, Throwable $exception): void
+    {
 
-			$currentAttempts = intval($task->getHeaderLine(self::HEADER_ATTEMPTS));
+        $currentAttempts = intval($task->getHeaderLine(self::HEADER_ATTEMPTS));
 
-			$delayInterval = intval($task->getHeaderLine(self::HEADER_RETRY_DELAY));
+        $delayInterval = intval($task->getHeaderLine(self::HEADER_RETRY_DELAY));
 
-			$task->withHeader(self::HEADER_ATTEMPTS, $currentAttempts - 1)
+        $task->withHeader(self::HEADER_ATTEMPTS, $currentAttempts - 1)
 
-			->withHeader(self::HEADER_RETRY_DELAY, $delayInterval * 2) // to be read on the next possibly failing iteration
+        ->withHeader(self::HEADER_RETRY_DELAY, $delayInterval * 2) // to be read on the next possibly failing iteration
 
-			->withDelay($delayInterval)
+        ->withDelay($delayInterval)
 
-			->fail($exception, $currentAttempts > intval($this->maxRetries));
-		}
+        ->fail($exception, $currentAttempts > intval($this->maxRetries));
+    }
 
-		public function configureNative ():void {
+    public function configureNative(): void
+    {
 
-			$rpcAddress = Environment::fromGlobals()->getRPCAddress();
+        $rpcAddress = Environment::fromGlobals()->getRPCAddress();
 
-			$this->client = new Jobs(RPC::create($rpcAddress));
-		}
-	}
-?>
+        $this->client = new Jobs(RPC::create($rpcAddress));
+    }
+}

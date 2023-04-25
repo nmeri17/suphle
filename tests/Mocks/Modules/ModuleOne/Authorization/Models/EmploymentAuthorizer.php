@@ -1,47 +1,55 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Authorization\Models;
 
-	use Suphle\Adapters\Orms\Eloquent\Condiments\BaseEloquentAuthorizer;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Authorization\Models;
 
-	use Suphle\Exception\Explosives\UnauthorizedServiceAccess;
+use Suphle\Adapters\Orms\Eloquent\Condiments\BaseEloquentAuthorizer;
 
-	class EmploymentAuthorizer extends BaseEloquentAuthorizer {
+use Suphle\Exception\Explosives\UnauthorizedServiceAccess;
 
-		public function retrieved ($model):bool {
+class EmploymentAuthorizer extends BaseEloquentAuthorizer
+{
+    public function retrieved($model): bool
+    {
 
-			return true;
-		}
+        return true;
+    }
 
-		protected function isEmployer ($model):bool {
+    protected function isEmployer($model): bool
+    {
 
-			return $this->authStorage->getId() == $model->employer->user_id;
-		}
+        return $this->authStorage->getId() == $model->employer->user_id;
+    }
 
-		public function updating ($model):bool {
+    public function updating($model): bool
+    {
 
-			if ($this->isEmployer($model)) // you can only access id/user in the event method, not the constructor. At the time of creation, session hasn't been initialized and user id will be undefined
+        if ($this->isEmployer($model)) { // you can only access id/user in the event method, not the constructor. At the time of creation, session hasn't been initialized and user id will be undefined
 
-				return true;
+            return true;
+        }
 
-			throw new UnauthorizedServiceAccess;
-		}
+        throw new UnauthorizedServiceAccess();
+    }
 
-		public function creating ($model):bool {
+    public function creating($model): bool
+    {
 
-			return true;
-		}
+        return true;
+    }
 
-		public function deleting ($model):bool {
+    public function deleting($model): bool
+    {
 
-			if (!$this->isEmployer($model))
+        if (!$this->isEmployer($model)) {
 
-				throw new UnauthorizedServiceAccess;
+            throw new UnauthorizedServiceAccess();
+        }
 
-			foreach ($this->getChildrenMethods($model::class) as $methodName)
+        foreach ($this->getChildrenMethods($model::class) as $methodName) {
 
-				$model->$methodName()->delete();
+            $model->$methodName()->delete();
+        }
 
-			return true;
-		}
-	}
-?>
+        return true;
+    }
+}

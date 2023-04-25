@@ -1,90 +1,96 @@
 <?php
-	namespace Suphle\Response\Format;
 
-	use Suphle\Hydration\Structures\CallbackDetails;
+namespace Suphle\Response\Format;
 
-	use Suphle\Services\Decorators\VariableDependencies;
+use Suphle\Hydration\Structures\CallbackDetails;
 
-	use Suphle\Request\PayloadStorage;
+use Suphle\Services\Decorators\VariableDependencies;
 
-	use Suphle\Contracts\IO\Session;
+use Suphle\Request\PayloadStorage;
 
-	use Suphle\Response\RoutedRendererManager;
+use Suphle\Contracts\IO\Session;
 
-	use Closure, Throwable;
+use Suphle\Response\RoutedRendererManager;
 
-	#[VariableDependencies(["setCallbackDetails", "setSession" ])]
-	class Redirect extends GenericRenderer {
+use Closure;
+use Throwable;
 
-		public const STATUS_CODE = 302;
+#[VariableDependencies(["setCallbackDetails", "setSession" ])]
+class Redirect extends GenericRenderer
+{
+    public const STATUS_CODE = 302;
 
-		protected CallbackDetails $callbackDetails;
+    protected CallbackDetails $callbackDetails;
 
-		protected Session $sessionClient;
+    protected Session $sessionClient;
 
-		protected int $statusCode = self::STATUS_CODE;
+    protected int $statusCode = self::STATUS_CODE;
 
-		/**
-		 * @param {destination} Since PDO instances can't be serialized, when using this renderer with PDO in scope, wrap this parameter in a curried/doubly wrapped function
-		 
-		 Arguments for the eventual function are autowired and the return value is used as new request location
+    /**
+     * @param {destination} Since PDO instances can't be serialized, when using this renderer with PDO in scope, wrap this parameter in a curried/doubly wrapped function
 
-		 Function is bound to this object instance
-		*/
-		public function __construct (
+     Arguments for the eventual function are autowired and the return value is used as new request location
 
-			protected string $handler, protected ?Closure $destination
-		) {
+     Function is bound to this object instance
+    */
+    public function __construct(
+        protected string $handler,
+        protected ?Closure $destination
+    ) {
 
-			//
-		}
+        //
+    }
 
-		public function setCallbackDetails (CallbackDetails $callbackDetails):void {
+    public function setCallbackDetails(CallbackDetails $callbackDetails): void
+    {
 
-			$this->callbackDetails = $callbackDetails;
-		}
+        $this->callbackDetails = $callbackDetails;
+    }
 
-		public function setSession (Session $sessionClient):void {
+    public function setSession(Session $sessionClient): void
+    {
 
-			$this->sessionClient = $sessionClient;
-		}
+        $this->sessionClient = $sessionClient;
+    }
 
-		protected function renderRedirect (callable $callback):void {
+    protected function renderRedirect(callable $callback): void
+    {
 
-			try { /**
-				* If it's a failing form request and next destination relies on coordinator's response, renderer will have no location; so try returning back.
-				* 
-				* Assumes the exception's handler must have written something to session and alerter, so no need presenting exception to user here
-				*/
+        try { /**
+                * If it's a failing form request and next destination relies on coordinator's response, renderer will have no location; so try returning back.
+                *
+                * Assumes the exception's handler must have written something to session and alerter, so no need presenting exception to user here
+                */
 
-				$nextDestination = $this->callbackDetails
+            $nextDestination = $this->callbackDetails
 
-				->recursiveValueDerivation($callback, $this);
+            ->recursiveValueDerivation($callback, $this);
 
-				if ($nextDestination === false)
+            if ($nextDestination === false) {
 
-					$nextDestination = $this->navigateBack();
-			}
-			catch (Throwable) {
+                $nextDestination = $this->navigateBack();
+            }
+        } catch (Throwable) {
 
-				$nextDestination = $this->navigateBack();
-			}
+            $nextDestination = $this->navigateBack();
+        }
 
-			$this->headers[PayloadStorage::LOCATION_KEY] = $nextDestination;
-		}
+        $this->headers[PayloadStorage::LOCATION_KEY] = $nextDestination;
+    }
 
-		protected function navigateBack ():string {
+    protected function navigateBack(): string
+    {
 
-			$this->setHeaders(self::STATUS_CODE, []); // override 500 written by error handler
+        $this->setHeaders(self::STATUS_CODE, []); // override 500 written by error handler
 
-			return $this->sessionClient->getValue(RoutedRendererManager::PREVIOUS_GET_URL);
-		}
+        return $this->sessionClient->getValue(RoutedRendererManager::PREVIOUS_GET_URL);
+    }
 
-		public function render ():string {
+    public function render(): string
+    {
 
-			$this->renderRedirect($this->destination);
-			
-			return "";
-		}
-	}
-?>
+        $this->renderRedirect($this->destination);
+
+        return "";
+    }
+}

@@ -1,75 +1,87 @@
 <?php
-	namespace Suphle\Hydration\Structures;
 
-	/**
-	*	Blueprint for each provided entity
-	*/
-	class ProvisionUnit {
+namespace Suphle\Hydration\Structures;
 
-		protected array $concretes = [], // populated by `needs`
+/**
+*	Blueprint for each provided entity
+*/
+class ProvisionUnit
+{
+    protected array $concretes = [];
+    protected array // populated by `needs`
 
-		$arguments = [];
+    $arguments = [];
 
-		public function __construct (protected readonly string $owner) {
+    public function __construct(protected readonly string $owner)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function getOwner ():string {
+    public function getOwner(): string
+    {
 
-			return $this->owner;
-		}
+        return $this->owner;
+    }
 
-		public function hasConcrete(string $fullName):bool {
+    public function hasConcrete(string $fullName): bool
+    {
 
-			return array_key_exists($fullName, $this->concretes);
-		}
+        return array_key_exists($fullName, $this->concretes);
+    }
 
-		public function getConcrete(string $fullName) {
-			
-			return $this->concretes[$fullName];
-		}
+    public function getConcrete(string $fullName)
+    {
 
-		public function addConcrete(string $fullName, object $instance):self {
-			
-			$this->concretes[$fullName] = $instance;
+        return $this->concretes[$fullName];
+    }
 
-			return $this;
-		}
+    public function addConcrete(string $fullName, object $instance): self
+    {
 
-		public function updateConcretes(array $dependencyList):void {
-			
-			$this->concretes = array_merge($this->concretes, $dependencyList);
-		}
+        $this->concretes[$fullName] = $instance;
 
-		public function updateArguments(array $parameters):void {
-			
-			$this->arguments = array_merge($this->arguments, $parameters);
-		}
+        return $this;
+    }
 
-		/**
-		 * @param {parameter} Can either be parameter name or type
-		*/
-		public function hasArgument(string $parameter):bool {
-			
-			return array_key_exists($parameter, $this->arguments);
-		}
+    public function updateConcretes(array $dependencyList): void
+    {
 
-		public function getArgument(string $fullName) {
-			
-			return $this->arguments[$fullName];
-		}
+        $this->concretes = array_merge($this->concretes, $dependencyList);
+    }
 
-		public function clearInProvision (string $fullName):void {
+    public function updateArguments(array $parameters): void
+    {
 
-			unset($this->arguments[$fullName]);
+        $this->arguments = array_merge($this->arguments, $parameters);
+    }
 
-			unset($this->concretes[$fullName]);
-		}
+    /**
+     * @param {parameter} Can either be parameter name or type
+    */
+    public function hasArgument(string $parameter): bool
+    {
 
-		public function hasAnywhere (string $fullName):bool {
+        return array_key_exists($parameter, $this->arguments);
+    }
 
-			return $this->hasConcrete($fullName) || $this->hasArgument($fullName);
-		}
-	}
-?>
+    public function getArgument(string $fullName)
+    {
+
+        return $this->arguments[$fullName];
+    }
+
+    public function clearInProvision(string $fullName): void
+    {
+
+        unset($this->arguments[$fullName]);
+
+        unset($this->concretes[$fullName]);
+    }
+
+    public function hasAnywhere(string $fullName): bool
+    {
+
+        return $this->hasConcrete($fullName) || $this->hasArgument($fullName);
+    }
+}

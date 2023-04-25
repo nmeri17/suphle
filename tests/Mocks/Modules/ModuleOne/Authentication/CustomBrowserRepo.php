@@ -1,20 +1,21 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Authentication;
 
-	use Suphle\Auth\Repositories\BrowserAuthRepo;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Authentication;
 
-	use Suphle\Services\Decorators\ValidationRules;
+use Suphle\Auth\Repositories\BrowserAuthRepo;
 
-	class CustomBrowserRepo extends BrowserAuthRepo {
+use Suphle\Services\Decorators\ValidationRules;
 
-		#[ValidationRules([
-			"email" => "required|email",
+class CustomBrowserRepo extends BrowserAuthRepo
+{
+    #[ValidationRules([
+        "email" => "required|email",
 
-			"password" => "required|numeric|min:9"
-		])]
-		public function successLogin ():iterable {
+        "password" => "required|numeric|min:9"
+    ])]
+    public function successLogin(): iterable
+    {
 
-			return [$this->startSessionForCompared()];
-		}
-	}
-?>
+        return [$this->startSessionForCompared()];
+    }
+}

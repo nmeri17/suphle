@@ -1,54 +1,56 @@
 <?php
-	namespace Suphle\Tests\Integration\Production;
 
-	use Suphle\Testing\Proxies\RealVendorPath;
+namespace Suphle\Tests\Integration\Production;
 
-	use Suphle\Tests\Integration\Modules\ModuleDescriptor\DescriptorCollection;
+use Suphle\Testing\Proxies\RealVendorPath;
 
-	abstract class BaseTestProduction extends DescriptorCollection {
+use Suphle\Tests\Integration\Modules\ModuleDescriptor\DescriptorCollection;
 
-		use RealVendorPath;
+abstract class BaseTestProduction extends DescriptorCollection
+{
+    use RealVendorPath;
 
-		protected bool $debugCaughtExceptions = true,
-  
-  		$useTestComponents = false;
+    protected bool $debugCaughtExceptions = true;
+    protected bool $useTestComponents = false;
 
-		protected function setUp ():void {
+    protected function setUp(): void
+    {
 
-			parent::setUp();
+        parent::setUp();
 
-			$this->setVendorPath();
-		}
+        $this->setVendorPath();
+    }
 
-		public function modulesUrls ():array {
+    public function modulesUrls(): array
+    {
 
-			return [
-				$this->moduleThreeUrls()[0],
-				[
-					"segment", json_encode([
+        return [
+            $this->moduleThreeUrls()[0],
+            [
+                "segment", json_encode([
 
-						"message" => "plain Segment"
-					])
-				]
-			];
-		}
+                    "message" => "plain Segment"
+                ])
+            ]
+        ];
+    }
 
-		public function moduleThreeUrls ():array {
+    public function moduleThreeUrls(): array
+    {
 
-			return [
+        return [
 
-				[
-					"module-three/4", json_encode([
+            [
+                "module-three/4", json_encode([
 
-						"id" => 4
-					])
-				], [
-					"module-three/8", json_encode([
+                    "id" => 4
+                ])
+            ], [
+                "module-three/8", json_encode([
 
-						"id" => 8
-					])
-				]
-			];
-		}
-	}
-?>
+                    "id" => 8
+                ])
+            ]
+        ];
+    }
+}

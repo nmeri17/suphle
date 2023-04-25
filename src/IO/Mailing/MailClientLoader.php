@@ -1,38 +1,41 @@
 <?php
-	namespace Suphle\IO\Mailing;
 
-	use Suphle\Hydration\BaseInterfaceLoader;
+namespace Suphle\IO\Mailing;
 
-	use Suphle\Adapters\Mailers\SymfonyMailer;
+use Suphle\Hydration\BaseInterfaceLoader;
 
-	use Suphle\Contracts\IO\EnvAccessor;
+use Suphle\Adapters\Mailers\SymfonyMailer;
 
-	use Symfony\Component\Mailer\{Transport, Mailer};
+use Suphle\Contracts\IO\EnvAccessor;
 
-	use Symfony\Component\Mime\{Email, Message};
+use Symfony\Component\Mailer\{Transport, Mailer};
 
-	class MailClientLoader extends BaseInterfaceLoader {
+use Symfony\Component\Mime\{Email, Message};
 
-		public function __construct(protected readonly EnvAccessor $envAccessor) {
+class MailClientLoader extends BaseInterfaceLoader
+{
+    public function __construct(protected readonly EnvAccessor $envAccessor)
+    {
 
-			//
-		}
+        //
+    }
 
-		public function bindArguments ():array {
+    public function bindArguments(): array
+    {
 
-			$connection = $this->envAccessor->getField("MAIL_SMTP");
+        $connection = $this->envAccessor->getField("MAIL_SMTP");
 
-			return [
+        return [
 
-				Message::class => new Email,
+            Message::class => new Email(),
 
-				Mailer::class => new Mailer(Transport::fromDsn($connection))
-			];
-		}
+            Mailer::class => new Mailer(Transport::fromDsn($connection))
+        ];
+    }
 
-		public function concreteName ():string {
+    public function concreteName(): string
+    {
 
-			return SymfonyMailer::class;
-		}
-	}
-?>
+        return SymfonyMailer::class;
+    }
+}

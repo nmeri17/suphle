@@ -1,83 +1,91 @@
 <?php
-	namespace Suphle\Console;
 
-	use Suphle\Modules\Structures\ActiveDescriptors;
+namespace Suphle\Console;
 
-	use Suphle\Hydration\Container;
+use Suphle\Modules\Structures\ActiveDescriptors;
 
-	use Suphle\File\SetsExecutionPath;
+use Suphle\Hydration\Container;
 
-	use Symfony\Component\Console\Input\{InputOption, InputInterface};
+use Suphle\File\SetsExecutionPath;
 
-	use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\{InputOption, InputInterface};
 
-	use Exception;
+use Symfony\Component\Console\Command\Command;
 
-	abstract class BaseCliCommand extends Command {
+use Exception;
 
-		use SetsExecutionPath;
+abstract class BaseCliCommand extends Command
+{
+    use SetsExecutionPath;
 
-		protected array $moduleList;
+    protected array $moduleList;
 
-		protected Container $defaultContainer;
+    protected Container $defaultContainer;
 
-		protected bool $withModuleOption = true;
+    protected bool $withModuleOption = true;
 
-		final public const HYDRATOR_MODULE_OPTION = "hydrating_module";
+    final public const HYDRATOR_MODULE_OPTION = "hydrating_module";
 
-		public function __construct () {
+    public function __construct()
+    {
 
-			parent::__construct(null); // overwriting their constructor to prevent container from sending us an empty string
-		}
+        parent::__construct(null); // overwriting their constructor to prevent container from sending us an empty string
+    }
 
-		public function setModules (array $moduleList):void {
+    public function setModules(array $moduleList): void
+    {
 
-			$this->moduleList = $moduleList;
-		}
+        $this->moduleList = $moduleList;
+    }
 
-		public function setDefaultContainer (Container $container):void {
+    public function setDefaultContainer(Container $container): void
+    {
 
-			$this->defaultContainer = $container;
-		}
+        $this->defaultContainer = $container;
+    }
 
-		/**
-		 * Child classes should either call parent::configure() or setName
-		*/
-		protected function configure ():void {
+    /**
+     * Child classes should either call parent::configure() or setName
+    */
+    protected function configure(): void
+    {
 
-			$this->setName(static::commandSignature()); // child version, not self
+        $this->setName(static::commandSignature()); // child version, not self
 
-			if ($this->withModuleOption)
+        if ($this->withModuleOption) {
 
-				$this->addOption(
+            $this->addOption(
+                self::HYDRATOR_MODULE_OPTION,
+                "m",
+                InputOption::VALUE_OPTIONAL,
+                "Module interface to use in hydrating dependencies"
+            );
+        }
+    }
 
-					self::HYDRATOR_MODULE_OPTION, "m", InputOption::VALUE_OPTIONAL,
+    /**
+     * Using this instead of static::$defaultName since their console runner has the funny logic that ignores the property when defined on a parent class, which means commands can't be replaced by their doubles in a test
+    */
+    abstract public static function commandSignature(): string;
 
-					"Module interface to use in hydrating dependencies"
-				);
-		}
+    /**
+     * Can either be called with HYDRATOR_MODULE_OPTION or no argument
+    */
+    protected function getExecutionContainer(?string $moduleInterface): Container
+    {
 
-		/**
-		 * Using this instead of static::$defaultName since their console runner has the funny logic that ignores the property when defined on a parent class, which means commands can't be replaced by their doubles in a test
-		*/
-		abstract public static function commandSignature ():string;
+        if ($moduleInterface) {
 
-		/**
-		 * Can either be called with HYDRATOR_MODULE_OPTION or no argument
-		*/
-		protected function getExecutionContainer (?string $moduleInterface):Container {
+            return (new ActiveDescriptors($this->moduleList))
 
-			if ($moduleInterface)
+            ->findMatchingExports($moduleInterface)->getContainer();
+        }
 
-				return (new ActiveDescriptors($this->moduleList))
+        if (!empty($this->moduleList)) {
 
-				->findMatchingExports($moduleInterface)->getContainer();
+            return current($this->moduleList)->getContainer();
+        }
 
-			if (!empty($this->moduleList))
-
-				return current($this->moduleList)->getContainer();
-
-			return $this->defaultContainer;
-		}
-	}
-?>
+        return $this->defaultContainer;
+    }
+}

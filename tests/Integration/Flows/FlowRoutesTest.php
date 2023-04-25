@@ -1,254 +1,274 @@
 <?php
-	namespace Suphle\Tests\Integration\Flows;
 
-	use Suphle\Contracts\Auth\{UserContract, AuthStorage};
+namespace Suphle\Tests\Integration\Flows;
 
-	use Suphle\Contracts\Config\Router;
+use Suphle\Contracts\Auth\{UserContract, AuthStorage};
 
-	use Suphle\Auth\Storage\TokenStorage;
+use Suphle\Contracts\Config\Router;
 
-	use Suphle\Flows\{FlowHydrator, Structures\PendingFlowDetails};
+use Suphle\Auth\Storage\TokenStorage;
 
-	use Suphle\Testing\{Proxies\WriteOnlyContainer, Condiments\EmittedEventsCatcher};
+use Suphle\Flows\{FlowHydrator, Structures\PendingFlowDetails};
 
-	use Suphle\Tests\Integration\Flows\Jobs\RouteBranches\JobFactory;
+use Suphle\Testing\{Proxies\WriteOnlyContainer, Condiments\EmittedEventsCatcher};
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\OriginCollection, Meta\ModuleOneDescriptor, Config\RouterMock};
+use Suphle\Tests\Integration\Flows\Jobs\RouteBranches\JobFactory;
 
-	/**
-	 * These are low-level tests probably redundant now. But during those early times, I think they offered granular access to Flow task creation
-	*/
-	class FlowRoutesTest extends JobFactory {
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\OriginCollection, Meta\ModuleOneDescriptor, Config\RouterMock};
 
-		use EmittedEventsCatcher;
+/**
+ * These are low-level tests probably redundant now. But during those early times, I think they offered granular access to Flow task creation
+*/
+class FlowRoutesTest extends JobFactory
+{
+    use EmittedEventsCatcher;
 
-		protected function getModules():array {
+    protected function getModules(): array
+    {
 
-			return [
+        return [
 
-				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-					$container->replaceWithMock(Router::class, RouterMock::class, [
+                $container->replaceWithMock(Router::class, RouterMock::class, [
 
-						"browserEntryRoute" => OriginCollection::class
-					]);
-				})
-			];
-		}
-		
-		public function test_specialized_user_can_access_his_content () {
+                    "browserEntryRoute" => OriginCollection::class
+                ]);
+            })
+        ];
+    }
 
-			$this->dataProvider([
+    public function test_specialized_user_can_access_his_content()
+    {
 
-				$this->specializedUser(...)
-			], function (PendingFlowDetails $context, ?UserContract $visitor) {
+        $this->dataProvider([
 
-				// this guy makes the internal requests for us i.e. to locate renderer for each flow, provided it exists on active route collection
-				$this->makeRouteBranches($context)->handle(); // when
+            $this->specializedUser(...)
+        ], function (PendingFlowDetails $context, ?UserContract $visitor) {
 
-				$resourceId = $this->expectedSavedResource($context);
+            // this guy makes the internal requests for us i.e. to locate renderer for each flow, provided it exists on active route collection
+            $this->makeRouteBranches($context)->handle(); // when
 
-				$this->setRequestVisitor($visitor); // given
+            $resourceId = $this->expectedSavedResource($context);
 
-				$this->assertHandledByFlow("/user-content/$resourceId"); // then
-			});
-		}
+            $this->setRequestVisitor($visitor); // given
 
-		public function specializedUser ():array {
+            $this->assertHandledByFlow("/user-content/$resourceId"); // then
+        });
+    }
 
-			return [
+    public function specializedUser(): array
+    {
 
-				[
-					$this->makePendingFlowDetails($this->contentOwner),
+        return [
 
-					$this->contentOwner
-				],
+            [
+                $this->makePendingFlowDetails($this->contentOwner),
 
-				[$this->makePendingFlowDetails(), null] // create content to be mass consumed. Visiting user 5's resource as nobody should access it
-			];
-		}
+                $this->contentOwner
+            ],
 
-		protected function setRequestVisitor (?UserContract $visitor):void {
+            [$this->makePendingFlowDetails(), null] // create content to be mass consumed. Visiting user 5's resource as nobody should access it
+        ];
+    }
 
-			$isGuest = is_null($visitor);
+    protected function setRequestVisitor(?UserContract $visitor): void
+    {
 
-			if (!$isGuest) $this->actingAs($visitor); // remove any user from preceding provider run
+        $isGuest = is_null($visitor);
 
-			else $this->getAuthStorage()->logout();
-		}
-		
-		/**
-		 * @\depends test_specialized_user_can_access_his_content
-		*/
-		public function test_content_visitor_must_match_auth_mechanism () {
+        if (!$isGuest) {
+            $this->actingAs($visitor);
+        } // remove any user from preceding provider run
 
-			$context = $this->makePendingFlowDetails($this->contentOwner, TokenStorage::class);
+        else {
+            $this->getAuthStorage()->logout();
+        }
+    }
 
-			$this->makeRouteBranches($context)->handle(); // when
+    /**
+     * @\depends test_specialized_user_can_access_his_content
+    */
+    public function test_content_visitor_must_match_auth_mechanism()
+    {
 
-			$resourceId = $this->expectedSavedResource($context);
+        $context = $this->makePendingFlowDetails($this->contentOwner, TokenStorage::class);
 
-			$this->setRequestVisitor($this->contentOwner); // given
+        $this->makeRouteBranches($context)->handle(); // when
 
-			$this->assertNotHandledByFlow("/user-content/$resourceId"); // then
-		}
-		
-		public function test_other_users_cant_access_specialized_user_content () {
+        $resourceId = $this->expectedSavedResource($context);
 
-			$this->dataProvider([
+        $this->setRequestVisitor($this->contentOwner); // given
 
-				$this->strangeUsers(...)
-			], function (PendingFlowDetails $context, ?UserContract $visitor) {
+        $this->assertNotHandledByFlow("/user-content/$resourceId"); // then
+    }
 
-				$this->makeRouteBranches($context)->handle(); // when
+    public function test_other_users_cant_access_specialized_user_content()
+    {
 
-				$resourceId = $this->expectedSavedResource($context);
+        $this->dataProvider([
 
-				$this->setRequestVisitor($visitor); // given
+            $this->strangeUsers(...)
+        ], function (PendingFlowDetails $context, ?UserContract $visitor) {
 
-				$this->assertNotHandledByFlow("/user-content/$resourceId"); // then
-			});
-		}
+            $this->makeRouteBranches($context)->handle(); // when
 
-		public function strangeUsers ():array {
+            $resourceId = $this->expectedSavedResource($context);
 
-			return [
-				[
+            $this->setRequestVisitor($visitor); // given
 
-					$this->makePendingFlowDetails($this->contentOwner),
+            $this->assertNotHandledByFlow("/user-content/$resourceId"); // then
+        });
+    }
 
-					$this->contentVisitor
-				], // create for user 5 and visit it as user 3; should see nothing
+    public function strangeUsers(): array
+    {
 
-				[
+        return [
+            [
 
-					$this->makePendingFlowDetails($this->contentOwner), null
-				] // create content for user 5. Visiting as nobody should hit a brick wall
-			];
-		}
-		
-		public function test_all_can_access_generalized_content () {
+                $this->makePendingFlowDetails($this->contentOwner),
 
-			$this->dataProvider([
-				$this->specializedUser(...),
-				$this->strangeUsers(...)
-			], function (PendingFlowDetails $context, ?UserContract $visitor) {
+                $this->contentVisitor
+            ], // create for user 5 and visit it as user 3; should see nothing
 
-				$this->makeRouteBranches($context)->handle(); // when
+            [
 
-				$resourceId = $this->expectedSavedResource($context);
+                $this->makePendingFlowDetails($this->contentOwner), null
+            ] // create content for user 5. Visiting as nobody should hit a brick wall
+        ];
+    }
 
-				$this->setRequestVisitor($visitor); // given
+    public function test_all_can_access_generalized_content()
+    {
 
-				// then
-				$this->assertHandledByFlow("/user-content/$resourceId");
-			});
-		}
+        $this->dataProvider([
+            $this->specializedUser(...),
+            $this->strangeUsers(...)
+        ], function (PendingFlowDetails $context, ?UserContract $visitor) {
 
-		protected function expectedSavedResource (PendingFlowDetails $context):int {
+            $this->makeRouteBranches($context)->handle(); // when
 
-			$payload = $context->getRenderer()->getRawResponse();
+            $resourceId = $this->expectedSavedResource($context);
 
-			return $payload[$this->originDataName]->random()["id"];
-		}
+            $this->setRequestVisitor($visitor); // given
 
-		/**
-		 * @dataProvider getOriginUrls
-		 * @\covers RendererManager::afterRender Fudging, since this is said to be unrecommended and hampers coverage report
-		*/
-		public function test_visiting_origin_path_pushes_caching_job (string $url) {
+            // then
+            $this->assertHandledByFlow("/user-content/$resourceId");
+        });
+    }
 
-			$this->assertPushedToFlow($url);
-		}
+    protected function expectedSavedResource(PendingFlowDetails $context): int
+    {
 
-		public function getOriginUrls ():array {
+        $payload = $context->getRenderer()->getRawResponse();
 
-			return [
-				["/single-node"],
-				["/combine-flows"],
-				["/from-service"],
-				["/pipe-to"],
-				["/one-of"]
-			];
-		}
+        return $payload[$this->originDataName]->random()["id"];
+    }
 
-		public function test_will_emitEvent_after_returning_flow_request() {
+    /**
+     * @dataProvider getOriginUrls
+     * @\covers RendererManager::afterRender Fudging, since this is said to be unrecommended and hampers coverage report
+    */
+    public function test_visiting_origin_path_pushes_caching_job(string $url)
+    {
 
-			$context = $this->handleDefaultPendingFlowDetails();
+        $this->assertPushedToFlow($url);
+    }
 
-			$this->get("/user-content/" . $this->expectedSavedResource($context)); // when
+    public function getOriginUrls(): array
+    {
 
-			$this->assertHandledEvent ($this->rendererController); // then
-		}
+        return [
+            ["/single-node"],
+            ["/combine-flows"],
+            ["/from-service"],
+            ["/pipe-to"],
+            ["/one-of"]
+        ];
+    }
 
-		/**
-		 * Hydration doesn't even run for same wildcard same/different user, different mechanism
-		 * 
-		 * @\covers RouteBranches::patternMatchesMechanism
-		*/
-		public function test_wildcard_is_locked_to_mechanism () {
+    public function test_will_emitEvent_after_returning_flow_request()
+    {
 
-			$this->dataProvider([
+        $context = $this->handleDefaultPendingFlowDetails();
 
-				$this->userDatabase(...)
-			], function (UserContract $visitor) {
+        $this->get("/user-content/" . $this->expectedSavedResource($context)); // when
 
-				$hydrator = FlowHydrator::class;
+        $this->assertHandledEvent($this->rendererController); // then
+    }
 
-				$this->massProvide([ // inject before hydrating RouteBranches
+    /**
+     * Hydration doesn't even run for same wildcard same/different user, different mechanism
+     *
+     * @\covers RouteBranches::patternMatchesMechanism
+    */
+    public function test_wildcard_is_locked_to_mechanism()
+    {
 
-					$hydrator => $this->negativeDouble($hydrator, [], [
+        $this->dataProvider([
 
-						"runNodes" => [1, []]
-					])
-				]);
+            $this->userDatabase(...)
+        ], function (UserContract $visitor) {
 
-				$this->makeRouteBranches($this->makePendingFlowDetails($visitor))->handle(); // given
+            $hydrator = FlowHydrator::class;
 
-				// then
-				$this->massProvide([
+            $this->massProvide([ // inject before hydrating RouteBranches
 
-					$hydrator => $this->negativeDouble($hydrator, [], [
+                $hydrator => $this->negativeDouble($hydrator, [], [
 
-						"runNodes" => [0, []]
-					])
-				]);
+                    "runNodes" => [1, []]
+                ])
+            ]);
 
-				$this->makeRouteBranches($this->makePendingFlowDetails( // expecting it to read from same cache as previous and refuse to save
+            $this->makeRouteBranches($this->makePendingFlowDetails($visitor))->handle(); // given
 
-					$visitor, TokenStorage::class
-				))->handle(); // when
-			});
-		}
+            // then
+            $this->massProvide([
 
-		public function userDatabase ():array {
+                $hydrator => $this->negativeDouble($hydrator, [], [
 
-			return [
-				[$this->contentOwner],
-				
-				[$this->contentVisitor]
-			];
-		}
+                    "runNodes" => [0, []]
+                ])
+            ]);
 
-		/**
-		 * @\depends test_specialized_user_can_access_his_content
-		*/
-		public function test_internal_flow_requests_will_see_authStorage () {
+            $this->makeRouteBranches($this->makePendingFlowDetails( // expecting it to read from same cache as previous and refuse to save
 
-			$context = $this->makePendingFlowDetails($this->contentOwner); // note that we don't login until the real request. Yet that controller is still able to read user ID
+                $visitor,
+                TokenStorage::class
+            ))->handle(); // when
+        });
+    }
 
-			$this->makeRouteBranches($context)->handle(); // given
+    public function userDatabase(): array
+    {
 
-			$resourceId = $this->expectedSavedResource($context);
+        return [
+            [$this->contentOwner],
 
-			$this->setRequestVisitor($this->contentOwner); // for OuterFlowWrapper to evaluate with
+            [$this->contentVisitor]
+        ];
+    }
 
-			$this->get("/user-content/$resourceId") // when
+    /**
+     * @\depends test_specialized_user_can_access_his_content
+    */
+    public function test_internal_flow_requests_will_see_authStorage()
+    {
 
-			->assertJson([
+        $context = $this->makePendingFlowDetails($this->contentOwner); // note that we don't login until the real request. Yet that controller is still able to read user ID
 
-				"user_id" => $this->contentOwner->getId()
-			]); // then
-		}
-	}
-?>
+        $this->makeRouteBranches($context)->handle(); // given
+
+        $resourceId = $this->expectedSavedResource($context);
+
+        $this->setRequestVisitor($this->contentOwner); // for OuterFlowWrapper to evaluate with
+
+        $this->get("/user-content/$resourceId") // when
+
+        ->assertJson([
+
+            "user_id" => $this->contentOwner->getId()
+        ]); // then
+    }
+}

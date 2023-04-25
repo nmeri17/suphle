@@ -1,53 +1,56 @@
 <?php
-	namespace Suphle\Tests\Integration\Templating;
 
-	use Suphle\Contracts\Presentation\BaseRenderer;
+namespace Suphle\Tests\Integration\Templating;
 
-	use Suphle\Response\Format\Markup;
+use Suphle\Contracts\Presentation\BaseRenderer;
 
-	use Suphle\Hydration\Container;
+use Suphle\Response\Format\Markup;
 
-	use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\ExaminesHttpResponse};
+use Suphle\Hydration\Container;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
+use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\ExaminesHttpResponse};
 
-	use Throwable;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
-	class BladeAdapterTest extends ModuleLevelTest { // required cuz blade uses laravel container which triggers events
+use Throwable;
 
-		use ExaminesHttpResponse;
+class BladeAdapterTest extends ModuleLevelTest
+{ // required cuz blade uses laravel container which triggers events
 
-		protected const MARKUP_NAME = "generic.default",
+    use ExaminesHttpResponse;
 
-		HANDLER_NAME = "genericHandler";
+    protected const MARKUP_NAME = "generic.default",
 
-		protected function getModules ():array {
+    HANDLER_NAME = "genericHandler";
 
-			return [new ModuleOneDescriptor(new Container)];
-		}
+    protected function getModules(): array
+    {
 
-		public function test_can_render_data () {
+        return [new ModuleOneDescriptor(new Container())];
+    }
 
-			$hotGirls = ["Joy", "Alexis", "Gloria"]; // given
+    public function test_can_render_data()
+    {
 
-			$renderer = new Markup(self::HANDLER_NAME, self::MARKUP_NAME);
+        $hotGirls = ["Joy", "Alexis", "Gloria"]; // given
 
-			$renderer->setRawResponse([ "data" => $hotGirls]);
+        $renderer = new Markup(self::HANDLER_NAME, self::MARKUP_NAME);
 
-			$this->getContainer()->whenTypeAny()->needsAny([
+        $renderer->setRawResponse([ "data" => $hotGirls]);
 
-				BaseRenderer::class => $renderer
-			])
-			->getClass(BaseRenderer::class)->render(); // when
+        $this->getContainer()->whenTypeAny()->needsAny([
 
-			$responseAsserter = $this->makeExaminable($renderer);
+            BaseRenderer::class => $renderer
+        ])
+        ->getClass(BaseRenderer::class)->render(); // when
 
-			foreach ($hotGirls as $expected) { // then
+        $responseAsserter = $this->makeExaminable($renderer);
 
-				$responseAsserter->assertSee($expected);
+        foreach ($hotGirls as $expected) { // then
 
-				$responseAsserter->assertSee("<li>$expected</li>", false);
-			}
-		}
-	}
-?>
+            $responseAsserter->assertSee($expected);
+
+            $responseAsserter->assertSee("<li>$expected</li>", false);
+        }
+    }
+}

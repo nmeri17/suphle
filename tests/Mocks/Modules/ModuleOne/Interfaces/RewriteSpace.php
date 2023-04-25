@@ -1,8 +1,8 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Interfaces;
 
-	interface RewriteSpace {
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Interfaces;
 
-		public function getValue ():int;
-	}
-?>
+interface RewriteSpace
+{
+    public function getValue(): int;
+}

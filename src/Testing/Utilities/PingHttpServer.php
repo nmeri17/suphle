@@ -1,97 +1,101 @@
 <?php
-	namespace Suphle\Testing\Utilities;
 
-	use Suphle\Contracts\Config\ModuleFiles;
+namespace Suphle\Testing\Utilities;
 
-	use Suphle\Server\Commands\HttpServerCommand;
+use Suphle\Contracts\Config\ModuleFiles;
 
-	use Symfony\Component\Process\Process;
+use Suphle\Server\Commands\HttpServerCommand;
 
-	trait PingHttpServer {
+use Symfony\Component\Process\Process;
 
-		protected int $setupDuration = 20_000;
+trait PingHttpServer
+{
+    protected int $setupDuration = 20_000;
 
-		// Using a process over a command since that would warrant re-specifying modules map, and doesn't guarantee to turn off the rr process if successful
+    // Using a process over a command since that would warrant re-specifying modules map, and doesn't guarantee to turn off the rr process if successful
 
-		// Not automating tests for this asserter since some of the bootstrap operations will attempt to scan the entire codebase, which will not only fail but take an awful amount of time. But it's *manually* tested on the starter project
+    // Not automating tests for this asserter since some of the bootstrap operations will attempt to scan the entire codebase, which will not only fail but take an awful amount of time. But it's *manually* tested on the starter project
 
-		/**
-		 * @param {binaryPath}: Location of the Suphle executable
-		*/
-		protected function assertServerBuilds (
-			array $userDefinedOptions = [], string $binaryPath = null
-		):void {
+    /**
+     * @param {binaryPath}: Location of the Suphle executable
+    */
+    protected function assertServerBuilds(
+        array $userDefinedOptions = [],
+        string $binaryPath = null
+    ): void {
 
-			if (is_null($binaryPath))
+        if (is_null($binaryPath)) {
 
-				$binaryPath = $this->getContainer()->getClass(ModuleFiles::class)
-				
-				->getRootPath();
+            $binaryPath = $this->getContainer()->getClass(ModuleFiles::class)
 
-			$serverDefaults = [
+            ->getRootPath();
+        }
 
-				"php", "suphle", HttpServerCommand::commandSignature()
-			];
+        $serverDefaults = [
 
-			$overwritable = [];
+            "php", "suphle", HttpServerCommand::commandSignature()
+        ];
 
-			foreach (array_merge([
+        $overwritable = [];
 
-				HttpServerCommand::MODULES_FOLDER_ARGUMENT => "AllModules",
+        foreach (array_merge([
 
-				"--". HttpServerCommand::IGNORE_STATIC_FAILURE_OPTION => null
-			], $userDefinedOptions) as $key => $value) {
+            HttpServerCommand::MODULES_FOLDER_ARGUMENT => "AllModules",
 
-				if (str_starts_with($key, "--")) {
+            "--". HttpServerCommand::IGNORE_STATIC_FAILURE_OPTION => null
+        ], $userDefinedOptions) as $key => $value) {
 
-					$entry = $key;
+            if (str_starts_with($key, "--")) {
 
-					if (!is_null($value)) $entry .= "=$value";
-				}
+                $entry = $key;
 
-				else $entry = $value;
+                if (!is_null($value)) {
+                    $entry .= "=$value";
+                }
+            } else {
+                $entry = $value;
+            }
 
-				$overwritable[] = $entry;
-			}
+            $overwritable[] = $entry;
+        }
 
-			$serverOptions = array_merge($serverDefaults, $overwritable);
-		
-			$serverProcess = new Process($serverOptions, $binaryPath);
+        $serverOptions = array_merge($serverDefaults, $overwritable);
 
-			$serverProcess->setTimeout($this->setupDuration);
+        $serverProcess = new Process($serverOptions, $binaryPath);
 
-			$serverProcess->start();
+        $serverProcess->setTimeout($this->setupDuration);
 
-			$this->assertTrue(
+        $serverProcess->start();
 
-				$this->serverIsReady($serverProcess),
+        $this->assertTrue(
+            $this->serverIsReady($serverProcess),
+            "Unable to start server:\n".
 
-				"Unable to start server:\n".
+            $this->processFullOutput($serverProcess)
+        );
 
-				$this->processFullOutput($serverProcess)
-			);
+        $serverProcess->stop();
+    }
 
-			$serverProcess->stop();
-		}
+    /**
+     * This method is blocking (like a while loop) and will continually poll the process until the internal condition is met. It doesn't have anything to do with timeout/asyncronicity, only lets us know the appropriate time to make assertions against the process i.e. when condition is met
+    */
+    private function serverIsReady(Process $serverProcess): bool
+    {
 
-		/**
-		 * This method is blocking (like a while loop) and will continually poll the process until the internal condition is met. It doesn't have anything to do with timeout/asyncronicity, only lets us know the appropriate time to make assertions against the process i.e. when condition is met
-		*/
-		private function serverIsReady (Process $serverProcess):bool {
+        $serverProcess->waitUntil(function ($type, $buffer) {
 
-			$serverProcess->waitUntil(function ($type, $buffer) {
+            return stripos((string) $buffer, "http server was started");
+        });
 
-				return stripos((string) $buffer, "http server was started");
-			});
+        return $serverProcess->isRunning(); // If condition is not met, process should be released by timing out. Thus, this returns false
+    }
 
-			return $serverProcess->isRunning(); // If condition is not met, process should be released by timing out. Thus, this returns false
-		}
+    private function processFullOutput(Process $process): string
+    {
 
-		private function processFullOutput (Process $process):string {
+        return $process->getOutput() . "\n".
 
-			return $process->getOutput() . "\n".
-
-			$process->getErrorOutput();
-		}
-	}
-?>
+        $process->getErrorOutput();
+    }
+}

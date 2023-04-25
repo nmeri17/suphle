@@ -1,33 +1,30 @@
 <?php
-	namespace Suphle\Exception\ShutdownAlerters;
 
-	use Suphle\IO\Mailing\MailBuilder;
+namespace Suphle\Exception\ShutdownAlerters;
 
-	use Suphle\Contracts\IO\{EnvAccessor, MailClient};
+use Suphle\IO\Mailing\MailBuilder;
 
-	class MailBuildAlerter extends MailBuilder {
+use Suphle\Contracts\IO\{EnvAccessor, MailClient};
 
-		public function __construct(
+class MailBuildAlerter extends MailBuilder
+{
+    public function __construct(
+        protected readonly MailClient $mailClient,
+        protected readonly EnvAccessor $envAccessor
+    ) {
 
-			protected readonly MailClient $mailClient,
+        //
+    }
 
-			protected readonly EnvAccessor $envAccessor
-		) {
+    public function sendMessage(): void
+    {
 
-			//
-		}
-
-		public function sendMessage ():void {
-
-			$this->mailClient->setDestination(
-
-				$this->envAccessor->getField("MAIL_SHUTDOWN_RECIPIENT")
-			)
-			->setSubject(
-
-				$this->envAccessor->getField("MAIL_SHUTDOWN_SUBJECT")
-			)
-			->setText($this->payload)->fireMail();
-		}
-	}
-?>
+        $this->mailClient->setDestination(
+            $this->envAccessor->getField("MAIL_SHUTDOWN_RECIPIENT")
+        )
+        ->setSubject(
+            $this->envAccessor->getField("MAIL_SHUTDOWN_SUBJECT")
+        )
+        ->setText($this->payload)->fireMail();
+    }
+}

@@ -1,69 +1,70 @@
 <?php
-	namespace Suphle\Config;
 
-	use Suphle\Contracts\Config\{Database as DatabaseContract, ModuleFiles};
+namespace Suphle\Config;
 
-	use Suphle\Contracts\IO\EnvAccessor;
+use Suphle\Contracts\Config\{Database as DatabaseContract, ModuleFiles};
 
-	class PDOMysqlKeys implements DatabaseContract {
+use Suphle\Contracts\IO\EnvAccessor;
 
-		protected ?string $parallelToken;
+class PDOMysqlKeys implements DatabaseContract
+{
+    protected ?string $parallelToken;
 
-		protected string $relativeFolderName = "AppModels";
+    protected string $relativeFolderName = "AppModels";
 
-		public function __construct (
+    public function __construct(
+        protected readonly EnvAccessor $envAccessor,
+        protected readonly ModuleFiles $fileConfig
+    ) {
 
-			protected readonly EnvAccessor $envAccessor,
+        $this->parallelToken = $envAccessor->getField("TEST_TOKEN");
+    }
 
-			protected readonly ModuleFiles $fileConfig
-		) {
+    public function getCredentials(): array
+    {
 
-			$this->parallelToken = $envAccessor->getField("TEST_TOKEN");
-		}
+        return [
+            "default" => [
 
-		public function getCredentials ():array {
+                "host" => $this->envAccessor->getField("DATABASE_HOST"),
 
-			return [
-				"default" => [
+                "database" => $this->addParallelSuffix(
+                    $this->envAccessor->getField("DATABASE_NAME")
+                ),
 
-					"host" => $this->envAccessor->getField("DATABASE_HOST"),
+                "username" => $this->envAccessor->getField("DATABASE_USER"),
 
-					"database" => $this->addParallelSuffix(
+                "password" => $this->envAccessor->getField("DATABASE_PASS"),
 
-						$this->envAccessor->getField("DATABASE_NAME")
-					),
+                "driver" => "mysql",
 
-					"username" => $this->envAccessor->getField("DATABASE_USER"),
+                "engine" => "InnoDB"
+            ]
+        ];
+    }
 
-					"password" => $this->envAccessor->getField("DATABASE_PASS"),
+    protected function addParallelSuffix(string $databaseName): string
+    {
 
-					"driver" => "mysql",
+        return is_null($this->parallelToken) ? $databaseName :
 
-					"engine" => "InnoDB"
-				]
-			];
-		}
+        $databaseName. "_". $this->parallelToken;
+    }
 
-		protected function addParallelSuffix (string $databaseName):string {
+    /**
+     * {@inheritdoc}
+    */
+    public function componentInstallPath(): string
+    {
 
-			return is_null($this->parallelToken) ? $databaseName:
+        return $this->fileConfig->getRootPath().
 
-			$databaseName. "_". $this->parallelToken;
-		}
+        $this->relativeFolderName . DIRECTORY_SEPARATOR;
+    }
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function componentInstallPath ():string {
+    public function componentInstallNamespace(): string
+    {
 
-			return $this->fileConfig->getRootPath().
-
-			$this->relativeFolderName . DIRECTORY_SEPARATOR;
-		}
-
-		public function componentInstallNamespace ():string {
-
-			return $this->relativeFolderName;
-		}
-	}
-?>
+        return $this->relativeFolderName;
+    }
+}

@@ -1,183 +1,203 @@
 <?php
-	namespace Suphle\Adapters\Orms\Eloquent;
 
-	use Suphle\Hydration\Container;
+namespace Suphle\Adapters\Orms\Eloquent;
 
-	use Suphle\Contracts\Database\{OrmReplicator, OrmDialect};
+use Suphle\Hydration\Container;
 
-	use Suphle\Contracts\{Config\Database, Bridge\LaravelContainer};
+use Suphle\Contracts\Database\{OrmReplicator, OrmDialect};
 
-	use Suphle\Adapters\Orms\Eloquent\Models\BaseModel;
+use Suphle\Contracts\{Config\Database, Bridge\LaravelContainer};
 
-	use Illuminate\Database\{Connection, Migrations\Migrator};
+use Suphle\Adapters\Orms\Eloquent\Models\BaseModel;
 
-	use Exception, PDO;
+use Illuminate\Database\{Connection, Migrations\Migrator};
 
-	class ModelReplicator implements OrmReplicator {
+use Exception;
+use PDO;
 
-		protected BaseModel $activeModel;
-  
-		protected Connection $databaseConnection;
+class ModelReplicator implements OrmReplicator
+{
+    protected BaseModel $activeModel;
 
-		protected Migrator $migrator;
+    protected Connection $databaseConnection;
 
-		protected array $credentials = [];
+    protected Migrator $migrator;
 
-		public function __construct (
-			protected readonly Container $container,
+    protected array $credentials = [];
 
-			OrmDialect $ormDialect, LaravelContainer $laravelContainer,
+    public function __construct(
+        protected readonly Container $container,
+        OrmDialect $ormDialect,
+        LaravelContainer $laravelContainer,
+        Database $config
+    ) {
 
-			Database $config
-		) {
+        $this->credentials = $config->getCredentials();
 
-			$this->credentials = $config->getCredentials();
+        $this->databaseConnection = $ormDialect->getConnection();
 
-			$this->databaseConnection = $ormDialect->getConnection();
+        $this->migrator = $laravelContainer->make("migrator");
+    }
 
-			$this->migrator = $laravelContainer->make("migrator");
-		}
+    public function seedDatabase(int $amount): void
+    {
 
-		public function seedDatabase ( int $amount):void {
+        $this->activeModel::factory()->count($amount)->create();
+    }
 
-			$this->activeModel::factory()->count($amount)->create();
-		}
+    public function getCount(): int
+    {
 
-		public function getCount ():int {
+        return $this->activeModel->count();
+    }
 
-			return $this->activeModel->count();
-		}
+    /**
+     * @return Collection
+    */
+    public function modifyInsertion(int $amount = 1, array $customizeFields = [], callable $customizeModel = null): iterable
+    {
 
-		/**
-		 * @return Collection
-		*/
-		public function modifyInsertion ( int $amount = 1, array $customizeFields = [], callable $customizeModel = null):iterable {
+        $builder = $this->activeModel::factory()->count($amount);
 
-			$builder = $this->activeModel::factory()->count($amount);
+        $builder = !is_null($customizeModel) ? $customizeModel($builder) : $builder;
 
-			$builder = !is_null($customizeModel) ? $customizeModel($builder): $builder;
+        if (!empty($customizeFields)) {
 
-			if (!empty($customizeFields))
+            return $builder->create($customizeFields);
+        }
 
-				return $builder->create($customizeFields);
+        return $builder->create();
+    }
 
-			return $builder->create();
-		}
+    public function getRandomEntity(array $relations = []): object
+    {
 
-		public function getRandomEntity (array $relations = []):object {
+        return $this->activeModel->inRandomOrder()->with($relations)
 
-			return $this->activeModel->inRandomOrder()->with($relations)
+        ->first();
+    }
 
-			->first();
-		}
+    public function getRandomEntities(
+        int $amount,
+        array $relations = []
+    ): iterable {
 
-		public function getRandomEntities (
+        return $this->activeModel->inRandomOrder()->limit($amount)
 
-			int $amount, array $relations = []
-		):iterable {
+        ->with($relations)->get();
+    }
 
-			return $this->activeModel->inRandomOrder()->limit($amount)
+    public function getSpecificEntities(
+        int $amount,
+        array $constraints,
+        array $relations = []
+    ): iterable {
 
-			->with($relations)->get();
-		}
+        return $this->activeModel->limit($amount)->with($relations)
 
-		public function getSpecificEntities (
+        ->where($constraints)->get();
+    }
 
-			int $amount, array $constraints, array $relations = []
-		):iterable {
+    public function setActiveModelType(string $model): void
+    {
 
-			return $this->activeModel->limit($amount)->with($relations)
+        $this->activeModel = $this->container->getClass($model); // resolving from container so it can be stubbed out
+    }
 
-			->where($constraints)->get();
-		}
+    public function setupSchema(): void
+    {
 
-		public function setActiveModelType (string $model):void {
+        $this->mayCreateDatabase();
 
-			$this->activeModel = $this->container->getClass($model); // resolving from container so it can be stubbed out
-		}
+        $repository = $this->migrator->getRepository();
 
-		public function setupSchema ():void {
+        if (!$repository->repositoryExists()) {
 
-			$this->mayCreateDatabase();
+            $repository->createRepository();
+        }
 
-			$repository = $this->migrator->getRepository();
+        $this->validateMigrationPaths();
 
-			if (!$repository->repositoryExists())
+        $this->migrator->run($this->activeModel::migrationFolders());
+    }
 
-				$repository->createRepository();
+    private function validateMigrationPaths(): void
+    {
 
-			$this->validateMigrationPaths();
+        $model = $this->activeModel;
 
-			$this->migrator->run($this->activeModel::migrationFolders());
-		}
+        foreach ($model::migrationFolders() as $path) {
 
-		private function validateMigrationPaths ():void {
+            if (!is_dir($path)) {
 
-			$model = $this->activeModel;
+                throw new Exception("Invalid migration path given while trying to migrate model ". $model::class. ": $path");
+            }
+        }
+    }
 
-			foreach ($model::migrationFolders() as $path)
+    public function dismantleSchema(): void
+    {
 
-				if (!is_dir($path))
+        if (!getenv("SUPHLE_NUKE_DB")) {
+            return;
+        }
 
-					throw new Exception("Invalid migration path given while trying to migrate model ". $model::class. ": $path");
-		}
+        $this->migrator->rollback($this->activeModel::migrationFolders());
 
-		public function dismantleSchema ():void {
+        $this->dropDatabase();
+    }
 
-			if (!getenv("SUPHLE_NUKE_DB")) return;
+    public function listenForQueries(): void
+    {
 
-			$this->migrator->rollback($this->activeModel::migrationFolders());
+        $this->databaseConnection->beginTransaction();
+    }
 
-			$this->dropDatabase();
-		}
+    public function revertHeardQueries(): void
+    {
 
-		public function listenForQueries ():void {
+        $this->databaseConnection->rollBack();
+    }
 
-			$this->databaseConnection->beginTransaction();
-		}
+    protected function getPdoConnection(array $connectionDetails): PDO
+    {
 
-		public function revertHeardQueries ():void {
+        extract($connectionDetails);
 
-			$this->databaseConnection->rollBack();
-		}
+        $instance = new PDO("$driver:host=$host", $username, $password);
 
-		protected function getPdoConnection (array $connectionDetails):PDO {
+        $instance->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-			extract($connectionDetails);
-			
-			$instance = new PDO("$driver:host=$host", $username, $password);
+        return $instance;
+    }
 
-			$instance->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    protected function mayCreateDatabase(): void
+    {
 
-			return $instance;
-		}
+        foreach ($this->credentials as $connectionDetails) {
 
-		protected function mayCreateDatabase ():void {
+            $sanitizedName = "`".
 
-			foreach ($this->credentials as $connectionDetails) {
+                str_replace("`", "``", $connectionDetails["database"]).
 
-				$sanitizedName = "`".
+                "`";
 
-					str_replace("`","``", $connectionDetails["database"]).
+            $connection = $this->getPdoConnection($connectionDetails);
 
-					"`";
+            $connection->query("CREATE DATABASE IF NOT EXISTS $sanitizedName");
 
-				$connection = $this->getPdoConnection($connectionDetails);
+            $connection->query("use $sanitizedName");
+        }
+    }
 
-				$connection->query("CREATE DATABASE IF NOT EXISTS $sanitizedName");
-				
-				$connection->query("use $sanitizedName");
-			}
-		}
+    protected function dropDatabase(): void
+    {
 
-		protected function dropDatabase ():void {
+        foreach ($this->credentials as $connectionDetails) {
 
-			foreach ($this->credentials as $connectionDetails) {
+            $connection = $this->getPdoConnection($connectionDetails);
 
-				$connection = $this->getPdoConnection($connectionDetails);
-
-				$connection->exec("DROP database ". $connectionDetails["database"]);
-			}
-		}
-	}
-?>
+            $connection->exec("DROP database ". $connectionDetails["database"]);
+        }
+    }
+}

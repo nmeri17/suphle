@@ -1,8 +1,8 @@
 <?php
-	namespace Suphle\Contracts\Config;
 
-	interface Console extends ConfigMarker {
+namespace Suphle\Contracts\Config;
 
-		public function commandsList ():array;
-	}
-?>
+interface Console extends ConfigMarker
+{
+    public function commandsList(): array;
+}

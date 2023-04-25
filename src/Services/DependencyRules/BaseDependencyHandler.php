@@ -1,72 +1,76 @@
 <?php
-	namespace Suphle\Services\DependencyRules;
 
-	use Suphle\Contracts\Server\DependencyFileHandler;
+namespace Suphle\Services\DependencyRules;
 
-	use Suphle\Hydration\{Container, Structures\ObjectDetails};
+use Suphle\Contracts\Server\DependencyFileHandler;
 
-	use ReflectionMethod;
+use Suphle\Hydration\{Container, Structures\ObjectDetails};
 
-	abstract class BaseDependencyHandler implements DependencyFileHandler {
+use ReflectionMethod;
 
-		protected array $argumentList;
+abstract class BaseDependencyHandler implements DependencyFileHandler
+{
+    protected array $argumentList;
 
-		public function __construct (
+    public function __construct(
+        protected readonly Container $container,
+        protected readonly ObjectDetails $objectMeta
+    ) {
 
-			protected readonly Container $container,
+        //
+    }
 
-			protected readonly ObjectDetails $objectMeta
-		) {
+    public function setRunArguments(array $argumentList): void
+    {
 
-			//
-		}
+        $this->argumentList = $argumentList;
+    }
 
-		public function setRunArguments (array $argumentList):void {
+    /**
+     * @param {dependency} mixed. Can be any type passed as argument
+    */
+    protected function isPermittedParent(array $parentList, $dependencyType): bool
+    {
 
-			$this->argumentList = $argumentList;
-		}
+        foreach ($parentList as $typeToMatch) {
 
-		/**
-		 * @param {dependency} mixed. Can be any type passed as argument
-		*/
-		protected function isPermittedParent (array $parentList, $dependencyType):bool {
+            if ($this->objectMeta->stringInClassTree(
+                $dependencyType,
+                $typeToMatch
+            )) {
+                return true;
+            }
+        }
 
-			foreach ($parentList as $typeToMatch) {
+        return false;
+    }
 
-				if ($this->objectMeta->stringInClassTree(
+    protected function constructorDependencyTypes(string $className): array
+    {
 
-					$dependencyType, $typeToMatch
-				))
-				return true;
-			}
+        if (!method_exists($className, Container::CLASS_CONSTRUCTOR)) {
 
-			return false;
-		}
+            return [];
+        }
 
-		protected function constructorDependencyTypes (string $className):array {
+        return $this->methodDependencyTypes($className, Container::CLASS_CONSTRUCTOR);
+    }
 
-			if (!method_exists($className, Container::CLASS_CONSTRUCTOR))
+    protected function methodDependencyTypes(string $className, string $methodName): array
+    {
 
-				return [];
+        $reflectedCallable = new ReflectionMethod($className, $methodName);
 
-			return $this->methodDependencyTypes($className, Container::CLASS_CONSTRUCTOR);
-		}
+        $noBuiltIn = array_filter($reflectedCallable->getParameters(), function ($parameter) {
 
-		protected function methodDependencyTypes (string $className, string $methodName):array {
+            $hasType = $parameter->getType();
 
-			$reflectedCallable = new ReflectionMethod($className, $methodName);
+            return $hasType && !$hasType->isBuiltin();
+        });
 
-			$noBuiltIn = array_filter($reflectedCallable->getParameters(), function ($parameter) {
+        return array_map(function ($parameter) {
 
-				$hasType = $parameter->getType();
-
-				return $hasType && !$hasType->isBuiltin();
-			});
-
-			return array_map(function ($parameter) {
-
-				return $parameter->getType()->getName();
-			}, $noBuiltIn);
-		}
-	}
-?>
+            return $parameter->getType()->getName();
+        }, $noBuiltIn);
+    }
+}

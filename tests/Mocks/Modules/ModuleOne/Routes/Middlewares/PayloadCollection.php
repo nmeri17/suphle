@@ -1,18 +1,19 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Middlewares;
 
-	use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Middlewares;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\ReadsPayloadCoordinator;
+use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
 
-	use Suphle\Response\Format\Json;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\ReadsPayloadCoordinator;
 
-	#[HandlingCoordinator(ReadsPayloadCoordinator::class)]
-	class PayloadCollection extends BaseCollection {
+use Suphle\Response\Format\Json;
 
-		public function ALL__PAYLOADh () {
+#[HandlingCoordinator(ReadsPayloadCoordinator::class)]
+class PayloadCollection extends BaseCollection
+{
+    public function ALL__PAYLOADh()
+    {
 
-			$this->_httpGet(new Json("mirrorPayload"));
-		}
-	}
-?>
+        $this->_httpGet(new Json("mirrorPayload"));
+    }
+}

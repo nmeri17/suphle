@@ -1,49 +1,51 @@
 <?php
-	namespace Suphle\Events;
 
-	use Suphle\Hydration\Container;
+namespace Suphle\Events;
 
-	/**
-	 * Used to ensure all events from each emittable entity are handled by one class per subscriber
-	*/
-	class EventSubscription {
+use Suphle\Hydration\Container;
 
-		protected array $handlingUnits = [];
+/**
+ * Used to ensure all events from each emittable entity are handled by one class per subscriber
+*/
+class EventSubscription
+{
+    protected array $handlingUnits = [];
 
-		public function __construct(
-			protected readonly string $handlingClass,
+    public function __construct(
+        protected readonly string $handlingClass,
+        protected readonly Container $container
+    ) {
 
-			protected readonly Container $container
-		) {
+        //
+    }
 
-			//
-		}
-		
-		// since each local event manager points to its own module, we can know that pulling a listener from another module will load the class from its correct scope
-		public function getListener ():object {
+    // since each local event manager points to its own module, we can know that pulling a listener from another module will load the class from its correct scope
+    public function getListener(): object
+    {
 
-			return $this->container->getClass($this->handlingClass);
-		}
-		
-		public function getMatchingUnits(string $eventName):array {
+        return $this->container->getClass($this->handlingClass);
+    }
 
-			return array_filter(
-				$this->handlingUnits,
+    public function getMatchingUnits(string $eventName): array
+    {
 
-				fn(ExecutionUnit $unit) => $unit->matchesEvent($eventName) // return an array of all hits, instead of the first one only so we can chain multiple handlers to one event
-			);
-		}
+        return array_filter(
+            $this->handlingUnits,
+            fn (ExecutionUnit $unit) => $unit->matchesEvent($eventName) // return an array of all hits, instead of the first one only so we can chain multiple handlers to one event
+        );
+    }
 
-		/**
-		* @param {eventNames} space separated list of events to be handled by this method
-		*/
-		public function on (string $eventNames, string $handlingMethod):self {
+    /**
+    * @param {eventNames} space separated list of events to be handled by this method
+    */
+    public function on(string $eventNames, string $handlingMethod): self
+    {
 
-			foreach (explode(" ", $eventNames) as $eventName)
+        foreach (explode(" ", $eventNames) as $eventName) {
 
-				$this->handlingUnits[] = new ExecutionUnit($eventName, $handlingMethod);
+            $this->handlingUnits[] = new ExecutionUnit($eventName, $handlingMethod);
+        }
 
-			return $this;
-		}
-	}
-?>
+        return $this;
+    }
+}

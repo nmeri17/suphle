@@ -1,13 +1,13 @@
 <?php
-	namespace Suphle\Contracts\Config;
 
-	interface Laravel extends ConfigMarker {
+namespace Suphle\Contracts\Config;
 
-		/**
-		 * [configName => My\Suphle\Config::class]
-		*/
-		public function configBridge ():array;
+interface Laravel extends ConfigMarker
+{
+    /**
+     * [configName => My\Suphle\Config::class]
+    */
+    public function configBridge(): array;
 
-		public function registersRoutes ():bool;
-	}
-?>
+    public function registersRoutes(): bool;
+}

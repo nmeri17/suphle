@@ -1,26 +1,29 @@
 <?php
-	namespace Suphle\Routing;
 
-	use Suphle\Routing\Structures\MethodPlaceholders;
+namespace Suphle\Routing;
 
-	class CollectionMethodToUrl {
+use Suphle\Routing\Structures\MethodPlaceholders;
 
-		final const REPLACEMENT_TYPE_PLACEHOLDER = "placeholder",
+class CollectionMethodToUrl
+{
+    final public const REPLACEMENT_TYPE_PLACEHOLDER = "placeholder",
 
-		PLACEHOLDER_IDENTIFIER = "[a-z0-9]+";
+    PLACEHOLDER_IDENTIFIER = "[a-z0-9]+";
 
-		protected array $caughtPlaceholders = [];
-  
-  		protected string $pattern;
+    protected array $caughtPlaceholders = [];
 
-		public function __construct () {
+    protected string $pattern;
 
-			$this->setPattern();
-		}
+    public function __construct()
+    {
 
-		private function setPattern ():void {
+        $this->setPattern();
+    }
 
-			$this->pattern = "(
+    private function setPattern(): void
+    {
+
+        $this->pattern = "(
 				(_)?#literal to literal i.e. no placeholder in between
 				(?<one_word>
 					[A-Z0-9]+# one word match
@@ -39,96 +42,107 @@
 			(
 				(?:_)?# path segments delimited by single underscores
 				(?<placeholder>".
-					self::PLACEHOLDER_IDENTIFIER .
-				")
+                self::PLACEHOLDER_IDENTIFIER .
+            ")
 				_?# possible trailing slash before next literal
 			)?";
-		}
+    }
 
-		/* given hypothetical path: PATH_id_EDIT_id2_EDIT__SAME__OKJh_optionalO_TOMP, clean and return a path similar to a real life path; but still in a regex format so optional segments can be indicated as such
-		PATH/$replacement/EDIT/$replacement/EDIT-SAME-OKJ/?($replacement/)?TOMP
-		*/
-		public function replacePlaceholders (string $collectionMethod, string $replacement):MethodPlaceholders {
+    /* given hypothetical path: PATH_id_EDIT_id2_EDIT__SAME__OKJh_optionalO_TOMP, clean and return a path similar to a real life path; but still in a regex format so optional segments can be indicated as such
+    PATH/$replacement/EDIT/$replacement/EDIT-SAME-OKJ/?($replacement/)?TOMP
+    */
+    public function replacePlaceholders(string $collectionMethod, string $replacement): MethodPlaceholders
+    {
 
-			$regexified = preg_replace_callback(
-				"/" . $this->pattern . "/x",
+        $regexified = preg_replace_callback(
+            "/" . $this->pattern . "/x",
+            function ($matches) use ($replacement) {
 
-			function ($matches) use ( $replacement) {
+                $builder = "";
 
-				$builder = "";
+                if (isset($matches["one_word"]) && $literal = $matches["one_word"]) {
 
-				if (isset($matches["one_word"]) && $literal = $matches["one_word"])
+                    $builder .= $this->handleLiteralMatch($builder, $literal, $matches);
+                }
 
-					$builder .= $this->handleLiteralMatch($builder, $literal, $matches);
+                if (isset($matches["placeholder"]) && $foundPlaceholder = $matches["placeholder"]) {
 
-				if (isset($matches["placeholder"]) && $foundPlaceholder = $matches["placeholder"])
+                    $builder .= $this->handlePlaceholderMatch($foundPlaceholder, $matches, $replacement);
+                }
 
-					$builder .= $this->handlePlaceholderMatch( $foundPlaceholder, $matches, $replacement);
+                if (isset($matches["is_index"])) {
 
-				if (isset($matches["is_index"]))
+                    $builder .= "";
+                }
 
-					$builder .= "";
+                return $builder;
+            },
+            $collectionMethod
+        );
 
-				return $builder;
-			}, $collectionMethod);
+        if (str_ends_with($regexified, "/")) {
 
-			if (str_ends_with($regexified, "/"))
+            $regexified = trim($regexified, "/") . "/?";
+        } // make trailing slash optional
 
-				$regexified = trim($regexified, "/") . "/?"; // make trailing slash optional
-			
-			$result = new MethodPlaceholders($regexified, $this->caughtPlaceholders);
+        $result = new MethodPlaceholders($regexified, $this->caughtPlaceholders);
 
-			$this->caughtPlaceholders = [];
+        $this->caughtPlaceholders = [];
 
-			return $result;
-		}
+        return $result;
+    }
 
-		private function handleLiteralMatch (string $builder, string $literal, array $matches):string {
+    private function handleLiteralMatch(string $builder, string $literal, array $matches): string
+    {
 
-			if ($delimiter = @$matches["merge_delimiter"]) {
+        if ($delimiter = @$matches["merge_delimiter"]) {
 
-				$segmentDelimiters = ["h" => "-", "u" => "_"];
+            $segmentDelimiters = ["h" => "-", "u" => "_"];
 
-				$literal = implode(
-					$segmentDelimiters[$delimiter], explode(
-						"__", rtrim($literal, $delimiter) // trailing "h"
-					)
-				);
-			}
+            $literal = implode(
+                $segmentDelimiters[$delimiter],
+                explode(
+                    "__",
+                    rtrim($literal, $delimiter) // trailing "h"
+                )
+            );
+        }
 
-			return "$literal/";
-		}
+        return "$literal/";
+    }
 
-		private function handlePlaceholderMatch (string $placeholder, array $matches, string $replacement):string {
+    private function handlePlaceholderMatch(string $placeholder, array $matches, string $replacement): string
+    {
 
-			$segment = "";
+        $segment = "";
 
-			$replaceWithPlaceholder = $replacement == self::REPLACEMENT_TYPE_PLACEHOLDER;
+        $replaceWithPlaceholder = $replacement == self::REPLACEMENT_TYPE_PLACEHOLDER;
 
-			if ($replaceWithPlaceholder)
+        if ($replaceWithPlaceholder) {
 
-				$replacement = $placeholder;
+            $replacement = $placeholder;
+        }
 
-			$segment .= "$replacement/";
+        $segment .= "$replacement/";
 
-			$this->caughtPlaceholders[] = $placeholder;
+        $this->caughtPlaceholders[] = $placeholder;
 
-			return $segment;
-		}
+        return $segment;
+    }
 
-		/**
-		 * @param {tokenizedUrl} Something like
-		 * SEGMENT/id/SEGMENT2/?(id2/?)?
-		 * 
-		 * Notice the full method is transformed into a url but still retains its original placeholders
-		 * 
-		 * @return Array [SEGMENT, id, SEGMENT2, id2]
-		*/
-		public function splitIntoSegments (string $tokenizedUrl):array {
+    /**
+     * @param {tokenizedUrl} Something like
+     * SEGMENT/id/SEGMENT2/?(id2/?)?
+     *
+     * Notice the full method is transformed into a url but still retains its original placeholders
+     *
+     * @return Array [SEGMENT, id, SEGMENT2, id2]
+    */
+    public function splitIntoSegments(string $tokenizedUrl): array
+    {
 
-			preg_match_all( "/(?:([\w-]+)\/)/", $tokenizedUrl, $matches );
+        preg_match_all("/(?:([\w-]+)\/)/", $tokenizedUrl, $matches);
 
-			return $matches[1];
-		}
-	}
-?>
+        return $matches[1];
+    }
+}

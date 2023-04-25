@@ -1,39 +1,42 @@
 <?php
-	namespace Suphle\Tests\Integration\Bridge\Laravel;
 
-	use Suphle\Bridge\Laravel\Routing\ModuleRouteMatcher;
+namespace Suphle\Tests\Integration\Bridge\Laravel;
 
-	use Suphle\Contracts\Config\Laravel;
+use Suphle\Bridge\Laravel\Routing\ModuleRouteMatcher;
 
-	use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
+use Suphle\Contracts\Config\Laravel;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\LaravelMock};
+use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
-	class ModuleRouteMatcherTest extends ModuleLevelTest {
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\LaravelMock};
 
-		protected function getModules ():array {
+class ModuleRouteMatcherTest extends ModuleLevelTest
+{
+    protected function getModules(): array
+    {
 
-			return [
-				$this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+        return [
+            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-					$container->replaceWithMock(
+                $container->replaceWithMock(
+                    Laravel::class,
+                    LaravelMock::class,
+                    []
+                );
+            })
+        ];
+    }
 
-						Laravel::class, LaravelMock::class, []
-					);
-				})
-			];
-		}
-		
-		public function test_getResponse_from_provided_route () {
+    public function test_getResponse_from_provided_route()
+    {
 
-			// given ==> @see module binding
+        // given ==> @see module binding
 
-		    // when
-		    $this->get("/laravel/entry"); // calling this before sut is created since LaravelContainer needs the information
+        // when
+        $this->get("/laravel/entry"); // calling this before sut is created since LaravelContainer needs the information
 
-			$sut = $this->getContainer()->getClass(ModuleRouteMatcher::class); // RegistersRouteProvider->boot never runs
+        $sut = $this->getContainer()->getClass(ModuleRouteMatcher::class); // RegistersRouteProvider->boot never runs
 
-		   $this->assertTrue($sut->canHandleRequest()); // then
-		}
-	}
-?>
+        $this->assertTrue($sut->canHandleRequest()); // then
+    }
+}

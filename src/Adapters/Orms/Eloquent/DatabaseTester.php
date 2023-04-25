@@ -1,34 +1,37 @@
 <?php
-	namespace Suphle\Adapters\Orms\Eloquent;
 
-	use Suphle\Contracts\Database\{OrmTester, OrmDialect};
+namespace Suphle\Adapters\Orms\Eloquent;
 
-	use PHPUnit\Framework\TestCase;
+use Suphle\Contracts\Database\{OrmTester, OrmDialect};
 
-	use Illuminate\Foundation\Testing\Concerns\InteractsWithDatabase;
+use PHPUnit\Framework\TestCase;
 
-	/**
-	 * Extending TestCase to make [$this->assert...] available to the trait
-	*/
-	class DatabaseTester extends TestCase implements OrmTester {
+use Illuminate\Foundation\Testing\Concerns\InteractsWithDatabase;
 
-		use InteractsWithDatabase;
+/**
+ * Extending TestCase to make [$this->assert...] available to the trait
+*/
+class DatabaseTester extends TestCase implements OrmTester
+{
+    use InteractsWithDatabase;
 
-		private $connection;
+    private $connection;
 
-		public function __construct (OrmDialect $ormDialect) {
+    public function __construct(OrmDialect $ormDialect)
+    {
 
-			$this->connection = $ormDialect->getConnection();
-		}
+        $this->connection = $ormDialect->getConnection();
+    }
 
-		public function __call (string $methodName, array $arguments) {
+    public function __call(string $methodName, array $arguments)
+    {
 
-			return $this->$methodName(...$arguments); // instead of manually changing accessibility on underlying client
-		}
+        return $this->$methodName(...$arguments); // instead of manually changing accessibility on underlying client
+    }
 
-		public function getConnection ($connection = null) {
+    public function getConnection($connection = null)
+    {
 
-			return $this->connection;
-		}
-	}
-?>
+        return $this->connection;
+    }
+}

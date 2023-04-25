@@ -1,138 +1,142 @@
 <?php
-	namespace Suphle\Modules;
 
-	use Suphle\Routing\{RouteManager, ExternalRouteMatcher, CollectionMetaQueue};
+namespace Suphle\Modules;
 
-	use Suphle\Request\{RequestDetails, PayloadStorage};
+use Suphle\Routing\{RouteManager, ExternalRouteMatcher, CollectionMetaQueue};
 
-	use Suphle\Middleware\MiddlewareQueue;
+use Suphle\Request\{RequestDetails, PayloadStorage};
 
-	use Suphle\Hydration\{Container, DecoratorHydrator};
+use Suphle\Middleware\MiddlewareQueue;
 
-	use Suphle\Contracts\{Auth\AuthStorage, Presentation\BaseRenderer, Response\RendererManager};
+use Suphle\Hydration\{Container, DecoratorHydrator};
 
-	use Suphle\Contracts\Modules\{HighLevelRequestHandler, DescriptorInterface};
+use Suphle\Contracts\{Auth\AuthStorage, Presentation\BaseRenderer, Response\RendererManager};
 
-	use Suphle\Exception\Explosives\{UnauthorizedServiceAccess, Unauthenticated};
-	
-	class ModuleInitializer implements HighLevelRequestHandler {
+use Suphle\Contracts\Modules\{HighLevelRequestHandler, DescriptorInterface};
 
-		protected bool $foundRoute = false;
+use Suphle\Exception\Explosives\{UnauthorizedServiceAccess, Unauthenticated};
 
-		protected readonly Container $container;
+class ModuleInitializer implements HighLevelRequestHandler
+{
+    protected bool $foundRoute = false;
 
-		protected ?BaseRenderer $finalRenderer = null;
+    protected readonly Container $container;
 
-		public function __construct (
-			protected readonly DescriptorInterface $descriptor,
+    protected ?BaseRenderer $finalRenderer = null;
 
-			protected readonly RequestDetails $requestDetails,
+    public function __construct(
+        protected readonly DescriptorInterface $descriptor,
+        protected readonly RequestDetails $requestDetails,
+        protected readonly DecoratorHydrator $decoratorHydrator,
+        protected readonly RouteManager $router,
+        protected readonly ExternalRouteMatcher $externalRouters
+    ) {
 
-			protected readonly DecoratorHydrator $decoratorHydrator,
+        $this->container = $descriptor->getContainer();
+    }
 
-			protected readonly RouteManager $router,
+    public function assignRoute(): self
+    {
 
-			protected readonly ExternalRouteMatcher $externalRouters
-		) {
+        $this->router->findRenderer();
 
-			$this->container = $descriptor->getContainer();
-		}
+        if ($this->router->getActiveRenderer()) {
 
-		public function assignRoute ():self {
+            $this->foundRoute = true;
 
-			$this->router->findRenderer();
-			
-			if ($this->router->getActiveRenderer() ) {
+            $this->bindRoutingSideEffects();
+        } else {
 
-				$this->foundRoute = true;
+            $this->sharePayloadToExternals();
 
-				$this->bindRoutingSideEffects();
-			}
-			
-			else {
+            $this->foundRoute = $this->externalRouters->shouldDelegateRouting();
+        }
 
-				$this->sharePayloadToExternals();
+        return $this;
+    }
 
-				$this->foundRoute = $this->externalRouters->shouldDelegateRouting();
-			}
+    protected function bindRoutingSideEffects(): void
+    {
 
-			return $this;
-		}
+        $this->router->getPlaceholderStorage()
 
-		protected function bindRoutingSideEffects ():void {
+        ->exchangeTokenValues($this->requestDetails->getPath()); // thanks to object references, this update affects the object stored in Container without explicitly rebinding
 
-			$this->router->getPlaceholderStorage()
+        $renderer = $this->router->getActiveRenderer();
 
-			->exchangeTokenValues($this->requestDetails->getPath()); // thanks to object references, this update affects the object stored in Container without explicitly rebinding
+        /**
+         * Not really necessary but just a slight optimization to save callers from demeter on the router.
+         *
+         * Any of those callers should assume its module has routed to a renderer
+         *
+         * Ordering here binds to container before scoping the renderer, in case any of the dependencies requires the renderer itself
+        */
+        $this->container->whenTypeAny()->needsAny([
 
-			$renderer = $this->router->getActiveRenderer();
+            BaseRenderer::class => $renderer
+        ]);
 
-			/**
-			 * Not really necessary but just a slight optimization to save callers from demeter on the router.
-			 * 
-			 * Any of those callers should assume its module has routed to a renderer
-			 * 
-			 * Ordering here binds to container before scoping the renderer, in case any of the dependencies requires the renderer itself
-			*/
-			$this->container->whenTypeAny()->needsAny([
+        $this->decoratorHydrator->scopeInjecting( // this is where all renderer dependencies are being injected
 
-				BaseRenderer::class => $renderer
-			]);
+            $renderer,
+            self::class
+        );
+    }
 
-			$this->decoratorHydrator->scopeInjecting( // this is where all renderer dependencies are being injected
+    protected function sharePayloadToExternals(): void
+    {
 
-				$renderer, self::class
-			);
-		}
+        $payloadStorage = $this->container->getClass(PayloadStorage::class);
 
-		protected function sharePayloadToExternals ():void {
+        $payloadStorage->setRefreshMode(true);
 
-			$payloadStorage = $this->container->getClass(PayloadStorage::class);
+        $payloadStorage->indicateRefresh();
+    }
 
-			$payloadStorage->setRefreshMode(true);
+    /**
+     * @param {rendererManager} this manager should come from currently active module
+     *
+     * @throws ValidationFailure
+    */
+    public function fullRequestProtocols(RendererManager $rendererManager): self
+    {
 
-			$payloadStorage->indicateRefresh();
-		}
+        if ($this->externalRouters->hasActiveHandler()) {
 
-		/**
-		 * @param {rendererManager} this manager should come from currently active module
-		 * 
-		 * @throws ValidationFailure
-		*/
-		public function fullRequestProtocols (RendererManager $rendererManager):self {
+            return $this;
+        }
 
-			if ($this->externalRouters->hasActiveHandler())
+        $this->container->getClass(CollectionMetaQueue::class)
 
-				return $this;
+        ->executeRoutedMetaFunnels();
 
-			$this->container->getClass (CollectionMetaQueue::class)
+        $rendererManager->mayBeInvalid()->bootDefaultRenderer();
 
-			->executeRoutedMetaFunnels();
+        return $this;
+    }
 
-			$rendererManager->mayBeInvalid()->bootDefaultRenderer();
+    public function setHandlingRenderer(): void
+    {
 
-			return $this;
-		}
+        if ($this->externalRouters->hasActiveHandler()) {
 
-		public function setHandlingRenderer ():void {
+            $this->finalRenderer = $this->externalRouters->getConvertedRenderer();
+        } else {
+            $this->finalRenderer = $this->container->getClass(MiddlewareQueue::class)
 
-			if ($this->externalRouters->hasActiveHandler())
+            ->runStack();
+        }
+    }
 
-				$this->finalRenderer = $this->externalRouters->getConvertedRenderer();
+    public function handlingRenderer(): ?BaseRenderer
+    {
 
-			else $this->finalRenderer = $this->container->getClass (MiddlewareQueue::class)
+        return $this->finalRenderer;
+    }
 
-			->runStack();
-		}
+    public function didFindRoute(): bool
+    {
 
-		public function handlingRenderer ():?BaseRenderer {
-
-			return $this->finalRenderer;
-		}
-
-		public function didFindRoute():bool {
-			
-			return $this->foundRoute;
-		}
-	}
-?>
+        return $this->foundRoute;
+    }
+}

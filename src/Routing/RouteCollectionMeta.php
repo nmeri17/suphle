@@ -1,80 +1,87 @@
 <?php
-	namespace Suphle\Routing;
 
-	use Suphle\Routing\Structures\CollectionMetaExclusion;
+namespace Suphle\Routing;
 
-	abstract class RouteCollectionMeta {
+use Suphle\Routing\Structures\CollectionMetaExclusion;
 
-		protected array $registry = [],
+abstract class RouteCollectionMeta
+{
+    protected array $registry = [];
+    protected array $excludePatterns = [];
+    protected array $interactedPatterns = [];
 
-		$excludePatterns = [], $interactedPatterns = [];
+    public function tagPatterns(CollectionMetaFunnel $collector): self
+    {
 
-		public function tagPatterns (CollectionMetaFunnel $collector):self {
+        $this->registry[] = $collector;
 
-			$this->registry[] = $collector;
+        return $this;
+    }
 
-			return $this;
-		}
+    public function updateInteractedPatterns(string $pattern): void
+    {
 
-		public function updateInteractedPatterns (string $pattern):void {
+        $this->interactedPatterns[] = $pattern;
+    }
 
-			$this->interactedPatterns[] = $pattern;
-		}
+    public function removeTag(
+        array $patternsToOmit,
+        string $funnelName,
+        callable $matcher = null
+    ): self {
 
-		public function removeTag (
+        foreach ($patternsToOmit as $pattern) {
 
-			array $patternsToOmit, string $funnelName, callable $matcher = null
-		):self {
+            $this->excludePatterns[$pattern] = new CollectionMetaExclusion($funnelName, $matcher);
+        }
 
-			foreach ($patternsToOmit as $pattern)
+        return $this;
+    }
 
-				$this->excludePatterns[$pattern] = new CollectionMetaExclusion($funnelName, $matcher);
+    /**
+     * @return CollectionMetaFunnel[] relevant to current path
+    */
+    public function getRoutedFunnels(): array
+    {
 
-			return $this;
-		}
+        $toWeedOut = array_intersect(
+            $this->interactedPatterns,
+            array_keys($this->excludePatterns)
+        );
 
-		/**
-		 * @return CollectionMetaFunnel[] relevant to current path
-		*/
-		public function getRoutedFunnels ():array {
+        return array_filter($this->registry, function (CollectionMetaFunnel $funnel) use ($toWeedOut) {
 
-			$toWeedOut = array_intersect(
+            $boundToInteracted = false;
 
-				$this->interactedPatterns,
+            foreach ($this->interactedPatterns as $pattern) {
 
-				array_keys($this->excludePatterns)
-			);
+                if ($funnel->containsPattern($pattern)) {
 
-			return array_filter($this->registry, function (CollectionMetaFunnel $funnel) use ($toWeedOut) {
+                    $boundToInteracted = true;
 
-				$boundToInteracted = false;
+                    break;
+                }
+            }
 
-				foreach ($this->interactedPatterns as $pattern) {
+            if (!$boundToInteracted) {
+                return false;
+            }
 
-					if ($funnel->containsPattern($pattern)) {
+            foreach ($toWeedOut as $pattern) {
 
-						$boundToInteracted = true;
+                if ($this->excludePatterns[$pattern]->shouldExclude($funnel)) {
 
-						break;
-					}
-				}
+                    return false;
+                }
+            }
 
-				if (!$boundToInteracted) return false;
+            return true;
+        });
+    }
 
-				foreach ($toWeedOut as $pattern) {
+    public function emptyAllStacks(): void
+    {
 
-					if ($this->excludePatterns[$pattern]->shouldExclude($funnel))
-
-						return false;
-				}
-
-				return true;
-			});
-		}
-
-		public function emptyAllStacks ():void {
-
-			$this->interactedPatterns = $this->excludePatterns = $this->registry = [];
-		}
-	}
-?>
+        $this->interactedPatterns = $this->excludePatterns = $this->registry = [];
+    }
+}

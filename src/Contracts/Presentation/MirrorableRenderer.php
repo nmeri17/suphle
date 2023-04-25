@@ -1,8 +1,8 @@
 <?php
-	namespace Suphle\Contracts\Presentation;
 
-	interface MirrorableRenderer {
+namespace Suphle\Contracts\Presentation;
 
-		public function setWantsJson ():void;
-	}
-?>
+interface MirrorableRenderer
+{
+    public function setWantsJson(): void;
+}

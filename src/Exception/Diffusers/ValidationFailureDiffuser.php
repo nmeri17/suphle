@@ -1,72 +1,75 @@
 <?php
-	namespace Suphle\Exception\Diffusers;
 
-	use Suphle\Contracts\{Exception\ExceptionHandler, Presentation\BaseRenderer, Requests\ValidationEvaluator};
+namespace Suphle\Exception\Diffusers;
 
-	use Suphle\Request\{PayloadStorage, RequestDetails};
+use Suphle\Contracts\{Exception\ExceptionHandler, Presentation\BaseRenderer, Requests\ValidationEvaluator};
 
-	use Suphle\Exception\Explosives\ValidationFailure;
+use Suphle\Request\{PayloadStorage, RequestDetails};
 
-	use Throwable;
+use Suphle\Exception\Explosives\ValidationFailure;
 
-	class ValidationFailureDiffuser implements ExceptionHandler {
+use Throwable;
 
-		public const ERRORS_PRESENCE = "validation_errors",
+class ValidationFailureDiffuser implements ExceptionHandler
+{
+    public const ERRORS_PRESENCE = "validation_errors",
 
-		PAYLOAD_KEY = "payload_storage",
+    PAYLOAD_KEY = "payload_storage",
 
-		FAILURE_KEYS = [self::ERRORS_PRESENCE, self::PAYLOAD_KEY];
+    FAILURE_KEYS = [self::ERRORS_PRESENCE, self::PAYLOAD_KEY];
 
-		protected BaseRenderer $renderer;
+    protected BaseRenderer $renderer;
 
-		protected ValidationEvaluator $validationEvaluator;
+    protected ValidationEvaluator $validationEvaluator;
 
-		public function __construct (
+    public function __construct(
+        protected readonly PayloadStorage $payloadStorage,
+        protected readonly RequestDetails $requestDetails
+    ) {
 
-			protected readonly PayloadStorage $payloadStorage,
+        //
+    }
 
-			protected readonly RequestDetails $requestDetails
-		) {
+    /**
+     * @param {origin} ValidationFailure
+    */
+    public function setContextualData(Throwable $origin): void
+    {
 
-			//
-		}
+        $this->validationEvaluator = $origin->getEvaluator();
+    }
 
-		/**
-		 * @param {origin} ValidationFailure
-		*/
-		public function setContextualData (Throwable $origin):void {
+    /**
+     * Expected to be called before renderer->render()
+    */
+    public function prepareRendererData(): void
+    {
 
-			$this->validationEvaluator = $origin->getEvaluator();
-		}
+        $this->renderer = $this->validationEvaluator->validationRenderer([ // received by the view
 
-		/**
-		 * Expected to be called before renderer->render()
-		*/
-		public function prepareRendererData ():void {
+            self::ERRORS_PRESENCE => $this->validationErrors(),
 
-			$this->renderer = $this->validationEvaluator->validationRenderer([ // received by the view
+            self::PAYLOAD_KEY => $this->payloadStorage->fullPayload()
+        ]);
 
-				self::ERRORS_PRESENCE => $this->validationErrors(),
+        if ($this->validationEvaluator->shouldSetCode(
+            $this->requestDetails,
+            $this->renderer
+        )) {
 
-				self::PAYLOAD_KEY => $this->payloadStorage->fullPayload()
-			]);
+            $this->renderer->setHeaders(422, []);
+        }
+    }
 
-			if ($this->validationEvaluator->shouldSetCode(
+    protected function validationErrors(): array
+    {
 
-				$this->requestDetails, $this->renderer
-			))
+        return $this->validationEvaluator->getValidatorErrors();
+    }
 
-				$this->renderer->setHeaders(422, []);
-		}
+    public function getRenderer(): BaseRenderer
+    {
 
-		protected function validationErrors ():array {
-
-			return $this->validationEvaluator->getValidatorErrors();
-		}
-
-		public function getRenderer ():BaseRenderer {
-
-			return $this->renderer;
-		}
-	}
-?>
+        return $this->renderer;
+    }
+}

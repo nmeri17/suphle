@@ -1,13 +1,14 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Enums\PureEnum;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes;
 
-	class InjectsPureEnum {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Enums\PureEnum;
 
-		public function __construct (public readonly PureEnum $pureEnum) {
+class InjectsPureEnum
+{
+    public function __construct(public readonly PureEnum $pureEnum)
+    {
 
-			//
-		}
-	}
-?>
+        //
+    }
+}

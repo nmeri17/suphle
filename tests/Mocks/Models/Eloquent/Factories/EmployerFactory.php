@@ -1,20 +1,21 @@
 <?php
-	namespace Suphle\Tests\Mocks\Models\Eloquent\Factories;
 
-	use Suphle\Tests\Mocks\Models\Eloquent\{Employer, User as EloquentUser};
+namespace Suphle\Tests\Mocks\Models\Eloquent\Factories;
 
-	use Illuminate\Database\Eloquent\Factories\Factory;
+use Suphle\Tests\Mocks\Models\Eloquent\{Employer, User as EloquentUser};
 
-	class EmployerFactory extends Factory {
+use Illuminate\Database\Eloquent\Factories\Factory;
 
-		protected $model = Employer::class;
+class EmployerFactory extends Factory
+{
+    protected $model = Employer::class;
 
-		public function definition ():array {
+    public function definition(): array
+    {
 
-			return [
+        return [
 
-				"user_id" => EloquentUser::factory()
-			];
-		}
-	}
-?>
+            "user_id" => EloquentUser::factory()
+        ];
+    }
+}

@@ -1,33 +1,36 @@
 <?php
-	namespace Suphle\Response\Format;
 
-	use Suphle\Contracts\Presentation\{RendersMarkup, HtmlParser};
+namespace Suphle\Response\Format;
 
-	use Suphle\Services\Decorators\VariableDependencies;
+use Suphle\Contracts\Presentation\{RendersMarkup, HtmlParser};
 
-	#[VariableDependencies(["setHtmlParser" ])]
-	abstract class BaseHtmlRenderer extends GenericRenderer implements RendersMarkup {
+use Suphle\Services\Decorators\VariableDependencies;
 
-		protected string $markupName;
+#[VariableDependencies(["setHtmlParser" ])]
+abstract class BaseHtmlRenderer extends GenericRenderer implements RendersMarkup
+{
+    protected string $markupName;
 
-		protected HtmlParser $htmlParser;
+    protected HtmlParser $htmlParser;
 
-		public function setHtmlParser (HtmlParser $parser):void {
+    public function setHtmlParser(HtmlParser $parser): void
+    {
 
-			$this->htmlParser = $parser;
-		}
+        $this->htmlParser = $parser;
+    }
 
-		/**
-		 * {@inheritdoc}
-		*/
-		public function setMarkupName (string $markupName):void {
+    /**
+     * {@inheritdoc}
+    */
+    public function setMarkupName(string $markupName): void
+    {
 
-			$this->markupName = $markupName;
-		}
+        $this->markupName = $markupName;
+    }
 
-		public function getMarkupName ():string {
+    public function getMarkupName(): string
+    {
 
-			return $this->markupName;
-		}
-	}
-?>
+        return $this->markupName;
+    }
+}

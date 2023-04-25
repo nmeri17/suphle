@@ -1,259 +1,291 @@
 <?php
-	namespace Suphle\Testing\Proxies;
 
-	use Suphle\Hydration\Container;
+namespace Suphle\Testing\Proxies;
 
-	use Suphle\Middleware\MiddlewareRegistry;
+use Suphle\Hydration\Container;
 
-	use Suphle\Request\PayloadStorage;
+use Suphle\Middleware\MiddlewareRegistry;
 
-	use Suphle\Testing\Condiments\DirectHttpTest;
+use Suphle\Request\PayloadStorage;
 
-	use Suphle\Testing\Proxies\Extensions\{TestResponseBridge, MiddlewareManipulator};
+use Suphle\Testing\Condiments\DirectHttpTest;
 
-	use Suphle\Exception\Explosives\NotFoundException;
+use Suphle\Testing\Proxies\Extensions\{TestResponseBridge, MiddlewareManipulator};
 
-	trait ModuleHttpTest {
+use Suphle\Exception\Explosives\NotFoundException;
 
-		use DirectHttpTest, ExaminesHttpResponse;
+trait ModuleHttpTest
+{
+    use DirectHttpTest;
+    use ExaminesHttpResponse;
 
-		private array $staticHeaders = [];
-		
-		private ?MiddlewareRegistry $mockMiddlewareRegistry = null;
+    private array $staticHeaders = [];
 
-		public function withHeaders(array $headers):self {
+    private ?MiddlewareRegistry $mockMiddlewareRegistry = null;
 
-			$this->staticHeaders = array_merge($this->staticHeaders, $headers);
+    public function withHeaders(array $headers): self
+    {
 
-			return $this;
-		}
+        $this->staticHeaders = array_merge($this->staticHeaders, $headers);
 
-		public function withToken(string $token, string $type = "Bearer"):self {
+        return $this;
+    }
 
-			$this->staticHeaders["Authorization"] = $type . " " . $token;
+    public function withToken(string $token, string $type = "Bearer"): self
+    {
 
-			return $this;
-		}
+        $this->staticHeaders["Authorization"] = $type . " " . $token;
 
-		/**
-		 * Assumes there's some behavior this middleware may have that we aren't comfortable triggering
-		 * 
-		 * @param {collectorNames} CollectionMetaFunnel::class[]
-		*/
-		public function withoutMiddleware (array $collectorNames = []):self {
+        return $this;
+    }
 
-			$this->setMiddlewareRegistry();
+    /**
+     * Assumes there's some behavior this middleware may have that we aren't comfortable triggering
+     *
+     * @param {collectorNames} CollectionMetaFunnel::class[]
+    */
+    public function withoutMiddleware(array $collectorNames = []): self
+    {
 
-			if (empty($collectors))
+        $this->setMiddlewareRegistry();
 
-				$this->mockMiddlewareRegistry->disableAll();
+        if (empty($collectors)) {
 
-			else $this->mockMiddlewareRegistry->disableCollectors($collectors);
+            $this->mockMiddlewareRegistry->disableAll();
+        } else {
+            $this->mockMiddlewareRegistry->disableCollectors($collectors);
+        }
 
-			return $this;
-		}
+        return $this;
+    }
 
-		/**
-		 * Useful when we want to see the implication of using a particular middleware, in test
-		 * 
-		 * @param {collectors} CollectionMetaFunnel[]
-		*/
-		public function withMiddleware (array $collectors):self {
+    /**
+     * Useful when we want to see the implication of using a particular middleware, in test
+     *
+     * @param {collectors} CollectionMetaFunnel[]
+    */
+    public function withMiddleware(array $collectors): self
+    {
 
-			$this->setMiddlewareRegistry();
+        $this->setMiddlewareRegistry();
 
-			$this->mockMiddlewareRegistry->addToActiveStack($collectors);
+        $this->mockMiddlewareRegistry->addToActiveStack($collectors);
 
-			return $this;
-		}
+        return $this;
+    }
 
-		private function setMiddlewareRegistry ():void {
+    private function setMiddlewareRegistry(): void
+    {
 
-			if (is_null($this->mockMiddlewareRegistry)) {
+        if (is_null($this->mockMiddlewareRegistry)) {
 
-				$this->mockMiddlewareRegistry = $this->getContainer()->getClass(MiddlewareManipulator::class);
+            $this->mockMiddlewareRegistry = $this->getContainer()->getClass(MiddlewareManipulator::class);
 
-				$this->massProvide([
+            $this->massProvide([
 
-					MiddlewareRegistry::class => $this->mockMiddlewareRegistry
-				]);
-			}
-		}
+                MiddlewareRegistry::class => $this->mockMiddlewareRegistry
+            ]);
+        }
+    }
 
-		protected function assertUsedCollectorNames (array $collectorNames):void {
+    protected function assertUsedCollectorNames(array $collectorNames): void
+    {
 
-			$matches = $this->matchingCollectorNames($collectorNames);
+        $matches = $this->matchingCollectorNames($collectorNames);
 
-			$this->assertSame($matches, $collectorNames,
+        $this->assertSame(
+            $matches,
+            $collectorNames,
+            "Failed to assert that given collectors were all used. Only matched: ".
 
-				"Failed to assert that given collectors were all used. Only matched: ".
+            json_encode($matches, JSON_PRETTY_PRINT)
+        );
+    }
 
-				json_encode( $matches, JSON_PRETTY_PRINT)
-			);
-		}
+    protected function assertUsedCollectors(array $collectors): void
+    {
 
-		protected function assertUsedCollectors (array $collectors):void {
+        $unused = array_diff($collectors, $this->getAllCollectors());
 
-			$unused = array_diff($collectors, $this->getAllCollectors());
+        $this->assertEmpty(
+            $unused,
+            "Failed to assert that collectors ".
 
-			$this->assertEmpty($unused,
+            json_encode($unused, JSON_PRETTY_PRINT). " were used"
+        );
+    }
 
-				"Failed to assert that collectors ".
+    protected function assertDidntUseCollectorNames(array $collectorNames): void
+    {
 
-				json_encode($unused, JSON_PRETTY_PRINT). " were used"
-			);
-		}
+        $matches = $this->matchingCollectorNames($collectorNames);
 
-		protected function assertDidntUseCollectorNames (array $collectorNames):void {
+        $intersectingUsed = array_intersect($collectorNames, $matches);
 
-			$matches = $this->matchingCollectorNames($collectorNames);
+        $this->assertEmpty(
+            $matches,
+            "Didn't expect to use the following collectors: ".
 
-			$intersectingUsed = array_intersect($collectorNames, $matches);
+            json_encode($intersectingUsed, JSON_PRETTY_PRINT)
+        );
+    }
 
-			$this->assertEmpty($matches,
+    protected function assertDidntUseCollectors(array $collectors): void
+    {
 
-				"Didn't expect to use the following collectors: ".
+        $intersectingUsed = array_intersect($collectors, $this->getAllCollectors());
 
-				json_encode( $intersectingUsed, JSON_PRETTY_PRINT)
-			);
-		}
+        $this->assertEmpty(
+            $intersectingUsed,
+            "Didn't expect to use collectors " .
 
-		protected function assertDidntUseCollectors (array $collectors):void {
+            json_encode($intersectingUsed, JSON_PRETTY_PRINT)
+        );
+    }
 
-			$intersectingUsed = array_intersect($collectors, $this->getAllCollectors());
+    private function getAllCollectors(): array
+    {
 
-			$this->assertEmpty($intersectingUsed,
+        return $this->entrance->getActiveContainer()
 
-				"Didn't expect to use collectors " .
+        ->getClass(MiddlewareRegistry::class)->getRoutedFunnels();
+    }
 
-				json_encode($intersectingUsed, JSON_PRETTY_PRINT)
-			);
-		}
+    /**
+     * @return Array of matching collector names
+    */
+    private function matchingCollectorNames(array $collectorNames): array
+    {
 
-		private function getAllCollectors ():array {
+        $allCollectors = array_map(
+            fn ($collector) => $collector::class,
+            $this->getAllCollectors()
+        );
 
-			return $this->entrance->getActiveContainer()
+        return array_intersect($collectorNames, $allCollectors);
+    }
 
-			->getClass(MiddlewareRegistry::class)->getRoutedFunnels();
-		}
+    public function get(string $url, array $payload = [], array $headers = []): TestResponseBridge
+    {
 
-		/**
-		 * @return Array of matching collector names
-		*/
-		private function matchingCollectorNames (array $collectorNames):array {
+        return $this->gatewayResponse($url, __FUNCTION__, $payload, $headers);
+    }
 
-			$allCollectors = array_map(
+    public function getJson(string $url, array $payload = [], array $headers = []): TestResponseBridge
+    {
 
-				fn ($collector) => $collector::class,
+        return $this->json("get", $url, $payload, $headers);
+    }
 
-				$this->getAllCollectors()
-			);
+    private function gatewayResponse(
+        string $requestPath,
+        string $httpMethod,
+        ?array $payload,
+        array $headers,
+        array $files = []
+    ): TestResponseBridge {
 
-			return array_intersect($collectorNames, $allCollectors);
-		}
+        $entrance = $this->entrance;
 
-		public function get(string $url, array $payload = [], array $headers = []):TestResponseBridge {
+        $this->setHttpParams($requestPath, $httpMethod, $payload, $headers);
 
-			return $this->gatewayResponse($url, __FUNCTION__, $payload, $headers);
-		}
+        $this->provideFileObjects($files, $httpMethod);
 
-		public function getJson(string $url, array $payload = [], array $headers = []):TestResponseBridge {
+        $entrance->diffuseSetResponse(false); // Writing anything to the real headers is redundant in test environment
 
-			return $this->json( "get", $url, $payload, $headers);
-		}
+        $renderer = $entrance->underlyingRenderer();
 
-		private function gatewayResponse (
-			string $requestPath, string $httpMethod, ?array $payload,
+        return $this->makeExaminable($renderer);
+    }
 
-			array $headers, array $files = []
-		):TestResponseBridge {
+    public function post(
+        string $url,
+        array $payload = [],
+        array $headers = [],
+        array $files = []
+    ): TestResponseBridge {
 
-			$entrance = $this->entrance;
+        return $this->gatewayResponse(
+            $url,
+            __FUNCTION__,
+            $payload,
+            $headers,
+            $files
+        );
+    }
 
-			$this->setHttpParams($requestPath, $httpMethod, $payload, $headers);
+    public function postJson(
+        string $url,
+        array $payload = [],
+        array $headers = [],
+        array $files = []
+    ): TestResponseBridge {
 
-			$this->provideFileObjects($files, $httpMethod);
+        return $this->json("post", $url, $payload, $headers, $files);
+    }
 
-			$entrance->diffuseSetResponse(false); // Writing anything to the real headers is redundant in test environment
+    public function put(
+        string $url,
+        array $payload = [],
+        array $headers = [],
+        array $files = []
+    ): TestResponseBridge {
 
-			$renderer = $entrance->underlyingRenderer();
+        return $this->gatewayResponse(
+            $url,
+            __FUNCTION__,
+            $payload,
+            $headers,
+            $files
+        );
+    }
 
-			return $this->makeExaminable($renderer);
-		}
+    public function putJson(
+        string $url,
+        array $payload = [],
+        array $headers = [],
+        array $files = []
+    ): TestResponseBridge {
 
-		public function post (
-			string $url, array $payload = [], array $headers = [],
+        return $this->json("put", $url, $payload, $headers, $files);
+    }
 
-			array $files = []
-		):TestResponseBridge {
+    public function delete(string $url, array $payload = [], array $headers = []): TestResponseBridge
+    {
 
-			return $this->gatewayResponse(
+        return $this->gatewayResponse($url, __FUNCTION__, $payload, $headers);
+    }
 
-				$url, __FUNCTION__, $payload, $headers, $files
-			);
-		}
+    public function deleteJson(string $url, array $payload = [], array $headers = []): TestResponseBridge
+    {
 
-		public function postJson (
-			string $url, array $payload = [], array $headers = [],
+        return $this->json("delete", $url, $payload, $headers);
+    }
 
-			array $files = []
-		):TestResponseBridge {
+    public function json(
+        string $httpMethod,
+        string $url,
+        array $payload = [],
+        array $headers = [],
+        array $files = []
+    ): TestResponseBridge {
 
-			return $this->json("post", $url, $payload, $headers, $files);
-		}
+        $converted = json_encode($payload, JSON_THROW_ON_ERROR);
 
-		public function put (
-			string $url, array $payload = [], array $headers = [],
+        $newHeaders = array_merge([
+            "Content-Length" => mb_strlen($converted, "8bit"),
 
-			array $files = []
-		):TestResponseBridge {
+            PayloadStorage::CONTENT_TYPE_KEY => PayloadStorage::JSON_HEADER_VALUE,
 
-			return $this->gatewayResponse(
+            PayloadStorage::ACCEPTS_KEY => PayloadStorage::JSON_HEADER_VALUE
+        ], $headers);
 
-				$url, __FUNCTION__, $payload, $headers, $files
-			);
-		}
-
-		public function putJson (
-
-			string $url, array $payload = [], array $headers = [],
-
-			array $files = []
-		):TestResponseBridge {
-
-			return $this->json("put", $url, $payload, $headers, $files);
-		}
-
-		public function delete(string $url, array $payload = [], array $headers = []):TestResponseBridge {
-
-			return $this->gatewayResponse($url, __FUNCTION__, $payload, $headers);
-		}
-
-		public function deleteJson(string $url, array $payload = [], array $headers = []):TestResponseBridge {
-
-			return $this->json("delete", $url, $payload, $headers);
-		}
-
-		public function json(
-			string $httpMethod, string $url, array $payload = [],
-
-			array $headers = [], array $files = []
-		):TestResponseBridge {
-
-			$converted = json_encode($payload, JSON_THROW_ON_ERROR);
-
-			$newHeaders = array_merge([
-				"Content-Length" => mb_strlen($converted, "8bit"),
-
-				PayloadStorage::CONTENT_TYPE_KEY => PayloadStorage::JSON_HEADER_VALUE,
-
-				PayloadStorage::ACCEPTS_KEY => PayloadStorage::JSON_HEADER_VALUE
-			], $headers);
-
-			return $this->gatewayResponse(
-
-				$url, $httpMethod, $payload, $newHeaders, $files
-			);
-		}
-	}
-?>
+        return $this->gatewayResponse(
+            $url,
+            $httpMethod,
+            $payload,
+            $newHeaders,
+            $files
+        );
+    }
+}

@@ -1,16 +1,17 @@
 <?php
-	namespace Suphle\Tests\Mocks\Models\Eloquent\Factories;
 
-	use Illuminate\Database\Eloquent\Factories\Factory;
+namespace Suphle\Tests\Mocks\Models\Eloquent\Factories;
 
-	abstract class NameModelFactory extends Factory {
+use Illuminate\Database\Eloquent\Factories\Factory;
 
-		public function definition ():array {
+abstract class NameModelFactory extends Factory
+{
+    public function definition(): array
+    {
 
-			return [
+        return [
 
-				"name" => $this->faker->word()
-			];
-		}
-	}
-?>
+            "name" => $this->faker->word()
+        ];
+    }
+}

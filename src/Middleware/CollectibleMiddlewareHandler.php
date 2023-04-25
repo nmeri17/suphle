@@ -1,12 +1,12 @@
 <?php
-	namespace Suphle\Middleware;
 
-	use Suphle\Contracts\Routing\Middleware;
+namespace Suphle\Middleware;
 
-	use Suphle\Routing\Structures\ReceivesMetaFunnel;
+use Suphle\Contracts\Routing\Middleware;
 
-	abstract class CollectibleMiddlewareHandler implements Middleware {
+use Suphle\Routing\Structures\ReceivesMetaFunnel;
 
-		use ReceivesMetaFunnel;
-	}
-?>
+abstract class CollectibleMiddlewareHandler implements Middleware
+{
+    use ReceivesMetaFunnel;
+}

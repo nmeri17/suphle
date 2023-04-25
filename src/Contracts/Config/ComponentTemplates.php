@@ -1,8 +1,8 @@
 <?php
-	namespace Suphle\Contracts\Config;
 
-	interface ComponentTemplates extends ConfigMarker {
+namespace Suphle\Contracts\Config;
 
-		public function getTemplateEntries ():array;
-	}
-?>
+interface ComponentTemplates extends ConfigMarker
+{
+    public function getTemplateEntries(): array;
+}

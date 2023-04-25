@@ -1,13 +1,14 @@
 <?php
-	namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes;
 
-	use Suphle\Tests\Mocks\Modules\ModuleOne\Enums\BackedEnum;
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes;
 
-	class InjectsBackedEnum {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Enums\BackedEnum;
 
-		public function __construct (public readonly BackedEnum $backedEnum) {
+class InjectsBackedEnum
+{
+    public function __construct(public readonly BackedEnum $backedEnum)
+    {
 
-			//
-		}
-	}
-?>
+        //
+    }
+}
