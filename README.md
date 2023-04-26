@@ -1,6 +1,6 @@
 <p align="center">
     <a href="https://suphle.com">
-        <img src="./suphle-banner.png" title="Suphle Banner" alt="Suphle Banner">
+        <img src="suphle-banner.png" title="Suphle Banner" alt="Suphle Banner">
     </a>
 </p>
 
@@ -11,7 +11,7 @@ Suphle Framework
 
 This is the dev-facing project intended for contribution to Suphle itself. Its complete documentation is live at [Suphle.com](https://suphle.com).
 
-High-level details about what Suphle's capabilities are and why it was built have been migrated [here](https://dev.to/mmayboy_/introducing-suphle-the-tale-of-a-modern-php-framework-54i9).
+High-level details about what Suphle's capabilities are and why it was built have been migrated [here](https://dev.to/mmayboy_/introducing-suphle-the-tale-of-a-modern-php-framework-54i9) and [here](https://nmeri.hashnode.dev/a-synopsis-of-the-suphle-framework).
 
 ## Testing
 
