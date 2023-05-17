@@ -24,10 +24,13 @@ class VendorBin
         $this->projectRootPath = $path;
     }
 
+    /**
+     * As with all paths, requires trailing slash
+    */
     public function getBinDir(): string
     {
 
-        return $this->fileSystemReader->noTrailingSlash($this->projectRootPath) . "/vendor/bin";
+        return $this->fileSystemReader->noTrailingSlash($this->projectRootPath) . "/vendor/bin". DIRECTORY_SEPARATOR;
     }
 
     /**
@@ -55,8 +58,10 @@ class VendorBin
     {
 
         $process = new Process(
-            array_merge([$processName], $commandOptions),
-            $this->getBinDir()
+            array_merge([
+
+            	$this->getBinDir(). $processName
+            ], $commandOptions)
         );
 
         if ($withTimeout) {
