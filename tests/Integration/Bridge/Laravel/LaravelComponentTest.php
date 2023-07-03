@@ -6,7 +6,7 @@ use Suphle\Contracts\{Config\ComponentTemplates, Bridge\LaravelContainer};
 
 use Suphle\ComponentTemplates\Commands\InstallComponentCommand;
 
-use Suphle\Bridge\Laravel\{ComponentEntry as LaravelComponentEntry, ConfigDownloader};
+use Suphle\Bridge\Laravel\ComponentEntry as LaravelComponentEntry;
 
 use Suphle\Testing\{ TestTypes\InstallComponentTest, Proxies\WriteOnlyContainer};
 
@@ -117,27 +117,5 @@ class LaravelComponentTest extends InstallComponentTest
                 $fileSystemReader->emptyDirectory($backupPath);
             }
         }
-    }
-
-    public function test_can_download_app_config()
-    {
-
-        $configPath = $this->getComponentPath() . "config/app.php";
-
-        if (file_exists($configPath)) {
-
-            return $this->assertTrue(true);
-        } // circumvent network requests on each test run. It happens on test_can_install_component and fails internally so we don't bother since we already confirmed it works
-
-        $remoteConfig = $this->container->getClass(ConfigDownloader::class);
-
-        $remoteConfig->setFilePath($configPath)->getDomainObject(); // when
-
-        if ($remoteConfig->hasErrors()) {
-
-            $this->fail($remoteConfig->getException());
-        }
-
-        $this->assertFileExists($configPath); // then
     }
 }

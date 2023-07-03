@@ -8,7 +8,7 @@ use Suphle\File\{FileSystemReader, SetsExecutionPath};
 
 use Suphle\Hydration\{Container, Structures\ObjectDetails};
 
-use Suphle\Contracts\{Queues\Task, Modules\ControllerModule, Server\DependencyFileHandler};
+use Suphle\Contracts\{Queues\Task, Modules\ControllerModule, Server\DependencyFileHandler, IO\Session};
 
 use Suphle\IO\{Http\BaseHttpRequest, Mailing\MailBuilder};
 
@@ -17,6 +17,8 @@ use Suphle\Request\PayloadStorage;
 use Suphle\Services\{ServiceCoordinator, UpdatefulService, UpdatelessService, ConditionalFactory};
 
 use Suphle\Services\Structures\{ModelfulPayload, ModellessPayload};
+
+use Suphle\Security\CSRF\CsrfGenerator;
 
 use Suphle\Services\DependencyRules\{OnlyLoadedByHandler, ActionDependenciesValidator, ServicePreferenceHandler};
 
@@ -41,8 +43,6 @@ class DependencySanitizer
         $this->coordinatorConstructor();
 
         $this->coordinatorActionMethods();
-
-        $this->protectUpdateyServices();
 
         $this->protectMailBuilders();
     }
@@ -124,7 +124,9 @@ class DependencySanitizer
 
                 BaseHttpRequest::class, UpdatefulService::class,
 
-                UpdatelessService::class
+                UpdatelessService::class, Session::class,
+
+                CsrfGenerator::class
             ]
         );
     }
@@ -155,34 +157,6 @@ class DependencySanitizer
     {
 
         $this->rules[] = new DependencyRule($ruleHandler, $filter, $argumentList);
-    }
-
-    protected function protectUpdateyServices(): void
-    {
-
-        $this->addRule(
-            ServicePreferenceHandler::class,
-            function ($className): bool {
-
-                return $this->objectMeta->stringInClassTree(
-                    $className,
-                    UpdatefulService::class
-                );
-            },
-            [UpdatelessService::class]
-        );
-
-        $this->addRule(
-            ServicePreferenceHandler::class,
-            function ($className): bool {
-
-                return $this->objectMeta->stringInClassTree(
-                    $className,
-                    UpdatelessService::class
-                );
-            },
-            [UpdatefulService::class]
-        );
     }
 
     public function protectMailBuilders(array $toOmit = []): void

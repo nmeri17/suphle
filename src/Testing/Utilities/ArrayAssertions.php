@@ -14,4 +14,21 @@ trait ArrayAssertions
             $this->assertSame($value, $payload[$key]);
         }
     }
+
+    protected function assertArrayHasPath (array $payload, string $path) {
+
+        if (str_contains($path, ".")) {
+
+            $segments = explode(".", $path);
+
+            $current = array_shift($segments);
+
+            return $this->assertArrayHasPath(
+
+                $payload[$current], implode(".", $segments)
+            );
+        }
+        
+        return $this->assertArrayHasKey($path, $payload);
+    }
 }

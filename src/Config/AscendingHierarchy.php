@@ -64,7 +64,7 @@ class AscendingHierarchy implements ModuleFiles
     public function getImagePath(): string
     {
 
-        return $this->activeModulePath(). "Images" . DIRECTORY_SEPARATOR;
+        return $this->getRootPath(). "public/Images" . DIRECTORY_SEPARATOR;
     }
 
     /**

@@ -884,7 +884,7 @@ class Container implements ClassHydrationBehavior
 
         if ($this->objectMeta->isInterface($typeName)) {
 
-            throw new HydrationException("$typeName's concrete cannot depend on its dependency's concrete");
+            throw new HydrationException("Circular dependency detected. $typeName's concrete cannot depend on its dependency's concrete. Hint: Cross-check the constructor of the following dependencies for occurences of $typeName: \n". json_encode($this->hydratingForStack, JSON_PRETTY_PRINT));
         }
 
         $classNameArray = range("a", "z");

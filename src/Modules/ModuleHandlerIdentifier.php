@@ -197,12 +197,19 @@ abstract class ModuleHandlerIdentifier
         return $renderer;
     }
 
-    public function findExceptionRenderer(Throwable $exception): void
+    public function findExceptionRenderer(Throwable $originalException): void
     {
 
         $this->identifiedHandler = $this->freshExceptionBridge(); // from currently active container after routing may have occured
 
-        $this->identifiedHandler->hydrateHandler($exception);
+        try {
+
+        	$this->identifiedHandler->hydrateHandler($originalException);
+        }
+        catch (Throwable $exception) { // if we can't hydrate the handler
+
+        	throw $originalException;
+        }
     }
 
     public function underlyingRenderer(): BaseRenderer

@@ -18,6 +18,9 @@ use Illuminate\Support\Facades\{ View as ViewFacade, Blade as BladeFacade};
 
 use Illuminate\Contracts\View\Factory as BladeViewFactoryInterface;
 
+/**
+ * Not binding this by default since it can't register any layout bindings, thus it can't load any error pages when the main/intended request fails
+*/
 #[BindsAsSingleton(HtmlParser::class)]
 class DefaultBladeAdapter implements HtmlParser
 {

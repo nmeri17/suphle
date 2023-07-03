@@ -6,6 +6,8 @@ use Suphle\Services\IndicatesCaughtException;
 
 use Suphle\Exception\DetectedExceptionManager;
 
+use Suphle\Contracts\IO\EnvAccessor;
+
 use Psr\Http\{Client\ClientInterface, Message\ResponseInterface};
 
 use Throwable;
@@ -19,7 +21,9 @@ abstract class BaseHttpRequest extends IndicatesCaughtException
     */
     public function __construct(
         protected readonly ClientInterface $requestClient,
-        protected readonly DetectedExceptionManager $exceptionManager
+        protected readonly DetectedExceptionManager $exceptionManager,
+
+		protected readonly EnvAccessor $envAccessor // expected to be used by majority sub-classes
     ) {
 
         //

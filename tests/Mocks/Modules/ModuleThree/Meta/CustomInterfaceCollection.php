@@ -6,11 +6,11 @@ use Suphle\Hydration\Structures\BaseInterfaceCollection;
 
 use Suphle\Contracts\Config\{Router, Flows};
 
-use Suphle\Contracts\{Events, Auth\UserContract};
+use Suphle\Contracts\{Events, Auth\UserContract, Presentation\HtmlParser};
 
 use Suphle\Tests\Mocks\Modules\ModuleThree\Config\{RouterMock, FlowMock};
 
-use Suphle\Tests\Mocks\Modules\ModuleThree\Events\AssignListeners;
+use Suphle\Tests\Mocks\Modules\ModuleThree\{Events\AssignListeners, Concretes\CustomBladeAdapter};
 
 use Suphle\Tests\Mocks\Interactions\ModuleThree;
 
@@ -38,7 +38,9 @@ class CustomInterfaceCollection extends BaseInterfaceCollection
 
             Events::class => AssignListeners::class,
 
-            UserContract::class => EloquentUser::class
+            UserContract::class => EloquentUser::class,
+
+            HtmlParser::class => CustomBladeAdapter::class
         ]);
     }
 }

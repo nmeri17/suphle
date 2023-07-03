@@ -4,7 +4,7 @@ namespace Suphle\Hydration\Structures;
 
 use Suphle\Contracts\Hydration\{InterfaceCollection, DecoratorChain};
 
-use Suphle\Contracts\{Events, Presentation\HtmlParser, Queues\Adapter as QueueAdapter, Modules\ControllerModule, Response\RendererManager };
+use Suphle\Contracts\{Events, Queues\Adapter as QueueAdapter, Modules\ControllerModule, Response\RendererManager };
 
 use Suphle\Contracts\Exception\{FatalShutdownAlert, AlertAdapter};
 
@@ -115,8 +115,6 @@ class BaseInterfaceCollection implements InterfaceCollection
             FatalShutdownAlert::class => MailShutdownAlert::class,
 
             FileInputReader::class => NativeFileReader::class,
-
-            HtmlParser::class => DefaultBladeAdapter::class,
 
             ImageLocator::class => LocalSaver::class,
 

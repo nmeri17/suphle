@@ -6,5 +6,8 @@ use Suphle\Services\ServiceCoordinator;
 
 class BlankController extends ServiceCoordinator
 {
-    //
+    public function getEmptyArray ():array {
+
+    	return [];
+    }
 }

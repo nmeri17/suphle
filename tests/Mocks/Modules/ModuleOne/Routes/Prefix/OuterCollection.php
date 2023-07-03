@@ -4,6 +4,8 @@ namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Prefix;
 
 use Suphle\Routing\{BaseCollection, Decorators\HandlingCoordinator};
 
+use Suphle\Response\Format\Json;
+
 use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\BlankController;
 
 #[HandlingCoordinator(BlankController::class)]
@@ -25,5 +27,10 @@ class OuterCollection extends BaseCollection
     {
 
         $this->_prefixFor(WithInnerPrefix::class);
+    }
+
+    public function _index () {
+
+    	$this->_httpGet(new Json("getEmptyArray"));
     }
 }

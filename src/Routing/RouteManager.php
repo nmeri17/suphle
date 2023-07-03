@@ -153,6 +153,11 @@ class RouteManager
         return null;
     }
 
+    /**
+     * @param {patterns}: The list of patterns found on the currently evaluated collection
+     * 
+     * @return returns a new array mapping each pattern to its details irrespective of whether it has placeholder details or not. e.g ['OUTER__index' => ["url" => "OUTER/_", "placeholders" => []]]
+    */
     public function patternPlaceholderDetails(array $patterns): array
     {
 

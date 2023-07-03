@@ -40,4 +40,12 @@ class PlainPrefixTest extends TestsRouter
 
         $this->assertTrue($matchingRenderer->matchesHandler("hasInner")); // then
     }
+
+    public function test_local_prefix_can_combine_with_index ()
+    {
+
+        $matchingRenderer = $this->fakeRequest("/outer/"); // when
+
+        $this->assertNotNull($matchingRenderer); // then
+    }
 }

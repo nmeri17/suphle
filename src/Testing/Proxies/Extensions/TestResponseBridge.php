@@ -14,7 +14,7 @@ class TestResponseBridge extends TestResponse
         parent::__construct($response);
     }
 
-    protected function session()
+    public function session()
     {
 
         return $this->sessionClient;

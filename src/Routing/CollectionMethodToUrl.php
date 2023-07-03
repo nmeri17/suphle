@@ -35,9 +35,9 @@ class CollectionMethodToUrl
 				)
 			)?# literal match
 			(
-				(?:_)(?<is_index>
+				(?:_?_)(?<is_index>
 					index$
-				)# should come before next group so placeholder doesn't grab it. must be at end of the string
+				)# should come before next group so placeholder doesn't grab it. must be at end of the string. the preceding underscore is intended to match collections combining indexes with prefixes
 			)?
 			(
 				(?:_)?# path segments delimited by single underscores

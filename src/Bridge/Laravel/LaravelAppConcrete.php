@@ -100,7 +100,7 @@ class LaravelAppConcrete extends Application implements LaravelContainer
 
             $requestDetails->getHttpMethod()?? "",
             $payloadStorage->fullPayload(),
-            $_COOKIE,
+            $_COOKIE, /*$payloadStorage->getCookieParams/getUploadedFiles/getServerParams(). Can't use these psr equivalents cuz they're strongly typed and these methods return null if called outside a request context, as it's often is here*/
             $_FILES,
             $_SERVER
         );

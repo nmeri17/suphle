@@ -56,6 +56,10 @@ class RoutedRendererManager implements RendererManager, BaseResponseManager, Val
 
             $this->flowQueuer->saveSubBranches($this->renderer);
         }
+
+        if ($this->shouldStoreRenderer())
+
+        	$this->sessionClient->resetOldInput();
     }
 
     public function bootDefaultRenderer(): self
