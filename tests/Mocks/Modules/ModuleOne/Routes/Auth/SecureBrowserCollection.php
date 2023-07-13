@@ -23,7 +23,7 @@ class SecureBrowserCollection extends BaseCollection
     {
 
         $registry->tagPatterns(
-            new AuthenticateMetaFunnel(["SEGMENT"], $this->authStorage)
+            new AuthenticateMetaFunnel(["SEGMENT"], $this->hydrateAuthStorage())
         );
     }
 }

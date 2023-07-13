@@ -22,6 +22,8 @@ use Suphle\Exception\Explosives\{ValidationFailure, NotFoundException};
 
 use Suphle\Request\RequestDetails;
 
+use Psr\Http\Message\ServerRequestInterface;
+
 use Throwable;
 
 abstract class ModuleHandlerIdentifier
@@ -68,8 +70,14 @@ abstract class ModuleHandlerIdentifier
         ->bootOuterModules($this->descriptorsHolder);
     }
 
-    public function setRequestPath(string $requestPath, string $httpMethod = null): void
+    public function setRequestPath (
+        string $requestPath, string $httpMethod = null,
+
+        ServerRequestInterface $contextualRequest = null
+    ): void
     {
+
+        RequestDetails::setLoopInput($contextualRequest);
 
         RequestDetails::fromModules(
             $this->descriptorInstances,
@@ -204,11 +212,11 @@ abstract class ModuleHandlerIdentifier
 
         try {
 
-        	$this->identifiedHandler->hydrateHandler($originalException);
+            $this->identifiedHandler->hydrateHandler($originalException);
         }
         catch (Throwable $exception) { // if we can't hydrate the handler
 
-        	throw $originalException;
+            throw $originalException;
         }
     }
 

@@ -16,7 +16,7 @@ http:
   address: localhost:8080
   pool:
     num_workers: 1 #4
-  middleware: ["headers", "static", "gzip"]
+  middleware: ["static", "gzip"]
   uploads:
     forbid: [".php", ".exe", ".bat"]
   static:

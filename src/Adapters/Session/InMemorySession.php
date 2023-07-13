@@ -53,10 +53,9 @@ class InMemorySession implements SessionContract
         $this->store = [];
     }
 
-    public function prolongSession(array $cookieOptions = []): void
-    {
+    public function getAsCookieString ():string {
 
-        //
+        return "";
     }
 
     public function resetOldInput(): void

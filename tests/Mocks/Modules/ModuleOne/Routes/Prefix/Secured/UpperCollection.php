@@ -15,7 +15,7 @@ class UpperCollection extends BaseCollection
     {
 
         $registry->tagPatterns(
-            new AuthenticateMetaFunnel(["PREFIX"], $this->authStorage)
+            new AuthenticateMetaFunnel(["PREFIX"], $this->hydrateAuthStorage())
         );
     }
 

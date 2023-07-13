@@ -21,7 +21,7 @@ class AuthenticateCrudCollection extends BaseCollection
     {
 
         $registry->tagPatterns(
-            new AuthenticateMetaFunnel(["EDIT_id"], $this->authStorage)
+            new AuthenticateMetaFunnel(["EDIT_id"], $this->hydrateAuthStorage())
         );
     }
 }

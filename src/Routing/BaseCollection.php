@@ -12,23 +12,28 @@ use Suphle\Contracts\{Presentation\BaseRenderer, Auth\AuthStorage};
 
 use Suphle\Contracts\Routing\{RouteCollection, CrudBuilder};
 
+use Suphle\Hydration\Container;
+
 use Exception;
 
 abstract class BaseCollection implements RouteCollection
 {
-    protected string $collectionParent = BaseCollection::class; // this is set if this collection is used as prefix in another. Should be used while determining the prefix of that collection
+    protected string $collectionParent = BaseCollection::class, // this is set if this collection is used as prefix in another. Should be used while determining the prefix of that collection
 
-    protected ?string $prefixClass = null;
-    protected ?string $parentPrefix = null;
+    $authStorageName = AuthStorage::class;
+
+    protected ?string $prefixClass = null, $parentPrefix = null;
 
     protected bool $crudMode = false;
 
     protected array $lastRegistered = [];
 
+    protected ?AuthStorage $authStorage = null;
+
     public function __construct(
         protected readonly CanaryValidator $canaryValidator,
         protected readonly MethodSorter $methodSorter,
-        protected AuthStorage $authStorage
+        protected Container $container
     ) {
 
         //
@@ -199,8 +204,8 @@ abstract class BaseCollection implements RouteCollection
 
         $instances = $validator->setCanaries($canaries)
 
-        ->collectionAuthStorage($this->authStorage)
-
+        ->collectionAuthStorage($this->hydrateAuthStorage())
+        
         ->setValidCanaries()->getCanaryInstances();
 
         foreach ($instances as $canary) {
@@ -212,6 +217,16 @@ abstract class BaseCollection implements RouteCollection
                 break;
             }
         }
+    }
+
+    protected function hydrateAuthStorage ():AuthStorage {
+
+    	if (!is_null($this->authStorage)) return $this->authStorage;
+
+    	return $this->authStorage = $this->container->getClass(
+
+        	$this->authStorageName
+        );
     }
 
     public function _getPrefixCollection(): ?string

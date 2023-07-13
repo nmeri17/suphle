@@ -27,6 +27,9 @@ class PredisAdapter implements CacheManager
         $this->client = new Client($this->cacheConfig->getCredentials());
     }
 
+    /**
+     * @return a JSON representation of the stored content if what was stored was not a scalar value
+    */
     public function getItem(string $key, callable $storeOnAbsence = null)
     {
 
@@ -52,7 +55,10 @@ class PredisAdapter implements CacheManager
     public function saveItem(string $key, $data): void
     {
 
-        $this->client->set($key, $data);
+        $this->client->set(
+
+            $key, is_scalar($data) ? $data: json_encode($data) // this client is only capable of storing strings
+        );
     }
 
     public function tagItem(string $key, $data): void

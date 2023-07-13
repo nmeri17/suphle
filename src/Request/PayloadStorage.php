@@ -8,15 +8,14 @@ use Suphle\Contracts\Events;
 
 use Suphle\Events\EmitProxy;
 
-use GuzzleHttp\Psr7\ServerRequest;
+use GuzzleHttp\Psr7\ServerRequest; // the nyholm equivalent is not extendable
 
 use Psr\Http\Message\ServerRequestInterface;
 
 #[BindsAsSingleton]
 class PayloadStorage extends ServerRequest
 {
-    use SanitizesIntegerInput;
-    use EmitProxy;
+    use SanitizesIntegerInput, EmitProxy;
 
     final public const JSON_HEADER_VALUE = "application/json",
 
@@ -37,15 +36,22 @@ class PayloadStorage extends ServerRequest
         protected readonly Events $eventManager
     ) {
 
-        $this->setPsrOrigin(self::fromGlobals());
+        $this->setPsrOrigin($requestDetails->getContextualRequest());
     }
 
-    public function setPsrOrigin(ServerRequestInterface $psrOrigin): void
+    public function setPsrOrigin(?ServerRequestInterface $psrOrigin): void
     {
+
+        if (is_null($psrOrigin)) return;
 
         $this->psrOrigin = $psrOrigin;
 
         $this->assignActivePayload();
+    }
+
+    public function getCookieParams():array {
+
+        return $this->psrOrigin->getCookieParams();
     }
 
     protected function assignActivePayload(): void

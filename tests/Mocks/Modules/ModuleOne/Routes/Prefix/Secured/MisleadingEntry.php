@@ -18,7 +18,7 @@ class MisleadingEntry extends BaseCollection
     {
 
         $registry->tagPatterns(
-            new AuthenticateMetaFunnel(["FIRST"], $this->authStorage)
+            new AuthenticateMetaFunnel(["FIRST"], $this->hydrateAuthStorage())
         );
     }
 

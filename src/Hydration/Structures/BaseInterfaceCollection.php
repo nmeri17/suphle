@@ -36,7 +36,7 @@ use Suphle\Adapters\Orms\Eloquent\{ UserEntityLoader, ModelReplicator, OrmLoader
 
 use Suphle\Adapters\Image\Optimizers\NativeReducerClient;
 
-use Suphle\Adapters\{Exception\Bugsnag, Session\NativeSession};
+use Suphle\Adapters\{Exception\Bugsnag, Session\CacheDrivenSession};
 
 use Suphle\Adapters\Presentation\Hotwire\FailureConventions\HttpMethodValidationConvention;
 
@@ -132,7 +132,7 @@ class BaseInterfaceCollection implements InterfaceCollection
 
             RequestEventsListener::class => DefaultRequestListener::class,
 
-            Session::class => NativeSession::class,
+            Session::class => CacheDrivenSession::class,
 
             ThumbnailOperationHandler::class => DefaultThumbnailHandler::class,
 

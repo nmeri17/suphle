@@ -59,7 +59,7 @@ class RoutedRendererManager implements RendererManager, BaseResponseManager, Val
 
         if ($this->shouldStoreRenderer())
 
-        	$this->sessionClient->resetOldInput();
+            $this->sessionClient->resetOldInput();
     }
 
     public function bootDefaultRenderer(): self

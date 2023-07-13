@@ -25,12 +25,9 @@ class SessionStorage extends BaseAuthStorage
     public function startSession(string $value): string
     {
 
-        if (!$this->isImpersonating) { // protection against session fixation
+        if (!$this->isImpersonating)// protection against session fixation
 
             $this->logout();
-
-            $this->sessionClient->prolongSession();
-        }
 
         $this->sessionClient->setValue($this->identifierKey, $value);
 

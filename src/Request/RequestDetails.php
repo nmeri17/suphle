@@ -8,24 +8,37 @@ use Suphle\Services\Decorators\BindsAsSingleton;
 
 use Suphle\Hydration\Container;
 
+use Psr\Http\Message\ServerRequestInterface;
+
 use InvalidArgumentException;
 
 #[BindsAsSingleton]
 class RequestDetails
 {
-    protected ?string $computedPath = null;
-    protected ?string $versionPresent;
-    protected ?string $permanentPath = null;
-    protected ?string // readonly version of [computedPath]
-
+    protected ?string $computedPath = null,
+    
+    $versionPresent, $permanentPath = null, // readonly version of [computedPath]
+    
     $httpMethod = null;
 
     protected array $queryParameters = [];
+
+    protected static ?ServerRequestInterface $contextualRequest = null;
 
     public function __construct(protected readonly Router $config)
     {
 
         //
+    }
+
+    public static function setLoopInput (?ServerRequestInterface $contextualRequest):void {
+
+        self::$contextualRequest = $contextualRequest;
+    }
+
+    public function getContextualRequest ():?ServerRequestInterface {
+
+        return self::$contextualRequest;
     }
 
     public function getPath(): ?string
@@ -121,12 +134,16 @@ class RequestDetails
 
         $hiddenField = "_method";
 
-        if (array_key_exists($hiddenField, $_POST)) {
+        $postPayload = self::$contextualRequest->getParsedBody() ?? [];
 
-            $methodName = $_POST[$hiddenField];
-        } elseif (array_key_exists("REQUEST_METHOD", $_SERVER)) {
+        $serverPayload = self::$contextualRequest->getServerParams();
 
-            $methodName = $_SERVER["REQUEST_METHOD"];
+        if (array_key_exists($hiddenField, $postPayload)) {
+
+            $methodName = $postPayload[$hiddenField];
+        } elseif (array_key_exists("REQUEST_METHOD", $serverPayload)) {
+
+            $methodName = $serverPayload["REQUEST_METHOD"];
         } else {
             $methodName = "get";
         }

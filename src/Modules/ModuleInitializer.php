@@ -10,7 +10,7 @@ use Suphle\Middleware\MiddlewareQueue;
 
 use Suphle\Hydration\{Container, DecoratorHydrator};
 
-use Suphle\Contracts\{Auth\AuthStorage, Presentation\BaseRenderer, Response\RendererManager};
+use Suphle\Contracts\{Presentation\BaseRenderer, Response\RendererManager};
 
 use Suphle\Contracts\Modules\{HighLevelRequestHandler, DescriptorInterface};
 

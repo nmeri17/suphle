@@ -12,7 +12,7 @@ interface Session
 
     public function reset(): void;
 
-    public function prolongSession(array $cookieOptions = []): void;
+    public function getAsCookieString ():string;
 
     public function hasOldInput(string $key): bool;
 

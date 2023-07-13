@@ -26,6 +26,9 @@ abstract class BaseDependencyHandler implements DependencyFileHandler
         $this->argumentList = $argumentList;
     }
 
+    /**
+     * @param {dependency} mixed. Can be any type passed as argument
+    */
     protected function isPermittedParent(array $parentList, string $dependencyType): bool
     {
 

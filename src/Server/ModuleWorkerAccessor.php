@@ -133,11 +133,10 @@ class ModuleWorkerAccessor
     protected function flushHttpResponse(?ServerRequestInterface $newRequest): void
     {
 
-        $_POST = $newRequest->getParsedBody() ?? []; // this is the only way to retrieve payload. Any attempt outside this object sees everything as empty. Using POST instead of passing it all the way down to payloadStorage, since it's the only usage with that requirement; moreover, downward interacts with requestDetail, not payloadStorage
-
         $renderer = $this->getRequestRenderer(
             $newRequest->getRequestTarget(),
-            false
+            
+            false, $newRequest
         );
 
         $this->httpWorker->respond(
@@ -145,10 +144,10 @@ class ModuleWorkerAccessor
         );
     }
 
-    public function getRequestRenderer(string $urlPattern, bool $outputHeaders): BaseRenderer
+    public function getRequestRenderer(string $urlPattern, bool $outputHeaders, ServerRequestInterface $contextualRequest): BaseRenderer
     {
 
-        $this->handlerIdentifier->setRequestPath($urlPattern);
+        $this->handlerIdentifier->setRequestPath($urlPattern, null, $contextualRequest);
 
         $this->handlerIdentifier->diffuseSetResponse($outputHeaders);
 
