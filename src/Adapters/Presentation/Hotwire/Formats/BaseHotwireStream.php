@@ -2,7 +2,7 @@
 
 namespace Suphle\Adapters\Presentation\Hotwire\Formats;
 
-use Suphle\Contracts\Presentation\BaseRenderer;
+use Suphle\Contracts\{Presentation\BaseRenderer, IO\Session};
 
 use Suphle\Response\Format\BaseHtmlRenderer;
 
@@ -60,6 +60,14 @@ abstract class BaseHotwireStream extends BaseHtmlRenderer
     {
 
         $this->callbackDetails = $callbackDetails;
+    }
+
+    public function setSession(Session $sessionClient): void
+    {
+	
+		parent::setSession($sessionClient);
+
+        $this->fallbackRenderer->setSession($sessionClient);
     }
 
     public function isHotwireRequest(): bool

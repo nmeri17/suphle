@@ -4,8 +4,6 @@ namespace Suphle\Testing\Proxies;
 
 use Suphle\Contracts\{Presentation\BaseRenderer, IO\Session};
 
-use Suphle\Adapters\Session\InMemorySession;
-
 use Suphle\Testing\Proxies\Extensions\TestResponseBridge;
 
 use Illuminate\Http\Response;
