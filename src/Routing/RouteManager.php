@@ -48,6 +48,8 @@ class RouteManager
 
         $requestPath = trim($this->requestDetails->getPath(), "/"); // this should only be read after setting collection list since it can mutate request path
 
+        $this->finishCollectionHousekeeping(); // refresh the placeholders and stuff from a possible earlier request, so we can work with a fresh slate
+
         foreach ($collectionList as $collection) {
 
             $hit = $this->recursiveSearch($collection, $requestPath);
@@ -59,7 +61,7 @@ class RouteManager
                 return;
             }
 
-            $this->finishCollectionHousekeeping();
+            $this->finishCollectionHousekeeping(); // refresh for just next collection
         }
     }
 

@@ -59,34 +59,7 @@ class RoadRunnerTest extends BaseTestProduction
                 );
             }
 
-            $parameters = $this->getContainer()
-
-            ->getMethodParameters(Container::CLASS_CONSTRUCTOR, self::REQUEST_SENDER);
-
-            $httpService = $this->replaceConstructorArguments(
-                self::REQUEST_SENDER,
-                $parameters,
-                [
-
-                    "getRequestUrl" => "localhost:8080/$url"
-                ]
-            );
-
-            $response = $httpService->getDomainObject(); // when
-
-            if ($httpService->hasErrors()) {
-
-                $exception = $httpService->getException();
-
-                var_dump($this->processFullOutput($serverProcess));
-
-                var_dump($this->getResponseBody( // comes after the above so even if this fails, we can have an idea of what went wrong
-
-                    $exception->getResponse()
-                ));
-
-                $this->fail($exception);
-            }
+            $response = $this->launchIncursiveRequest($url); // when
 
             $this->assertSame(200, $response->getStatusCode());
 
@@ -98,6 +71,38 @@ class RoadRunnerTest extends BaseTestProduction
 
             $serverProcess->stop();
         }
+    }
+
+    protected function launchIncursiveRequest (string $url):ResponseInterface {
+
+    	$parameters = $this->getContainer()
+
+        ->getMethodParameters(Container::CLASS_CONSTRUCTOR, self::REQUEST_SENDER);
+
+        $httpService = $this->replaceConstructorArguments(
+            self::REQUEST_SENDER,
+            $parameters,
+            [
+
+                "getRequestUrl" => "localhost:8080/$url"
+            ]
+        );
+
+        if ($httpService->hasErrors()) {
+
+            $exception = $httpService->getException();
+
+            var_dump($this->processFullOutput($serverProcess));
+
+            var_dump($this->getResponseBody( // comes after the above so even if this fails, we can have an idea of what went wrong
+
+                $exception->getResponse()
+            ));
+
+            $this->fail($exception);
+        }
+
+        return $httpService->getDomainObject();
     }
 
     private function ensureExecutableRuns(): void
@@ -150,43 +155,15 @@ class RoadRunnerTest extends BaseTestProduction
                 );
             }
 
-            $parameters = $this->getContainer()
-
-            ->getMethodParameters(Container::CLASS_CONSTRUCTOR, self::REQUEST_SENDER);
-
             foreach ($this->modulesUrls() as $dataSet) {
 
-                $url = $dataSet[0];
+                $response = $this->launchIncursiveRequest($dataSet[0]); // when
+
+                $responseBody = $this->getResponseBody($response);
 
                 $expectedOutput = $dataSet[1];
 
                 // var_dump(205, $url/*, $responseBody, $expectedOutput*/);
-
-                $httpService = $this->replaceConstructorArguments(
-                    self::REQUEST_SENDER,
-                    $parameters,
-                    [
-
-                        "getRequestUrl" => "localhost:8080/$url"
-                    ]
-                );
-
-                $response = $httpService->getDomainObject();
-
-                if ($httpService->hasErrors()) {
-
-                    $exception = $httpService->getException();
-
-                    var_dump($this->processFullOutput($serverProcess));
-
-                    var_dump($this->getResponseBody(
-                        $exception->getResponse()
-                    ));
-
-                    $this->fail($exception);
-                }
-
-                $responseBody = $this->getResponseBody($response);
 
                 if ($expectedOutput != $responseBody) {
 

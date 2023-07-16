@@ -27,6 +27,6 @@ class CanaryController extends ServiceCoordinator
     public function defaultPlaceholder()
     {
 
-        //
+        return [];
     }
 }

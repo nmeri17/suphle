@@ -131,6 +131,8 @@ class PathPlaceholders
     {
 
         $this->stack = [];
+
+        $this->hasExchangedTokens = false; // since this object may be long-lived, without this, the placeholder stack won't be re-computed
     }
 
     public function foundSegments(array $placeholders): void
