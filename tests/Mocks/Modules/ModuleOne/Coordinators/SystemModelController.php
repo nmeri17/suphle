@@ -15,11 +15,12 @@ class SystemModelController extends ServiceCoordinator
     }
 
     #[ValidationRules([])] // Empty since test doesn't require routing to this controller
-    public function handlePutRequest() // supposed to send modefulPayload into editService->initializeUpdateModels. But for the purpose of this test, we'll return a predefined value
-    {if ($this->editService->updateModels()) {
+    public function handlePutRequest(object $builder) {
 
-        return ["message" => "success"];
-    }
+    	if ($this->editService->updateModels($builder)) {
+
+	        return ["message" => "success"];
+	    }
 
         return ["message" => "failed"];
     }

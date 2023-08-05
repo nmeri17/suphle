@@ -134,9 +134,20 @@ class ModuleExceptionBridge implements HighLevelRequestHandler, ClassHydrationBe
     public function disgracefulShutdown(string $errorDetails, Throwable $exception): string
     {
 
-        $errorDetails .= \Wyrihaximus\throwable_json_encode($exception); // regular json_encode can't serialize throwables
+        $encodedException = \Wyrihaximus\throwable_json_encode($exception); // regular json_encode can't serialize throwables
+        $decodedException = json_decode($encodedException, true);
 
-        file_put_contents($this->config->shutdownLog(), $errorDetails, FILE_APPEND);
+        $decodedError = json_decode($errorDetails, true);
+
+        $timestamp = date("Y-m-d H:i");
+
+        file_put_contents(
+        	$this->config->shutdownLog(),
+
+        	json_encode(compact("decodedException", "decodedError", "timestamp"), JSON_PRETTY_PRINT),
+
+        	FILE_APPEND
+        );
 
         $this->writeStatusCode(500);
 

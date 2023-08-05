@@ -49,7 +49,12 @@ class SystemModelEditHandler extends BaseInjectionModifier
 
         try {
 
-            return $this->ormDialect->runTransaction(fn () => $concrete->updateModels(), $concrete->modelsToUpdate());
+            return $this->ormDialect->runTransaction(
+            	
+            	fn () => $concrete->updateModels(...$argumentList),
+
+            	$concrete->modelsToUpdate(...$argumentList)
+            );
         } catch (Throwable $exception) {
 
             return $this->errorDecoratorHandler->attemptDiffuse(

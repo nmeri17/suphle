@@ -17,10 +17,10 @@ class BaseEmploymentBuilder extends ModelfulPayload
     protected function getBaseCriteria(): object
     {
 
-        return $this->blankEmployment->where([
+        return $this->blankEmployment->where(
 
-            "id" => $this->payloadStorage->getKey("id")
-        ]);
+        	$this->payloadStorage->only(["id"])
+        );
     }
 
     protected function onlyFields(): array

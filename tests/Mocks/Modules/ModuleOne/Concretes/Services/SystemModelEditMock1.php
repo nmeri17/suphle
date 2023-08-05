@@ -17,22 +17,16 @@ class SystemModelEditMock1 extends UpdatefulService implements SystemModelEdit
 {
     use BaseErrorCatcherService;
 
-    public function updateModels()
+    public function updateModels(object $baseModel):bool
     {
 
         return true;
     }
 
-    public function modelsToUpdate(): array
+    public function modelsToUpdate (object $baseModel): array
     {
 
-        return [];
-    }
-
-    public function initializeUpdateModels($baseModel): void
-    {
-
-        //
+        return [$baseModel];
     }
 
     public function unrelatedToUpdate()

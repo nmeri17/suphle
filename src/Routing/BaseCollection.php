@@ -10,7 +10,7 @@ use Suphle\Middleware\MiddlewareRegistry;
 
 use Suphle\Contracts\{Presentation\BaseRenderer, Auth\AuthStorage};
 
-use Suphle\Contracts\Routing\{RouteCollection, CrudBuilder};
+use Suphle\Contracts\Routing\{RouteCollection, Crud\CrudBuilder};
 
 use Suphle\Hydration\Container;
 
@@ -205,7 +205,7 @@ abstract class BaseCollection implements RouteCollection
         $instances = $validator->setCanaries($canaries)
 
         ->collectionAuthStorage($this->hydrateAuthStorage())
-        
+
         ->setValidCanaries()->getCanaryInstances();
 
         foreach ($instances as $canary) {

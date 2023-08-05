@@ -6,10 +6,7 @@ use Suphle\Services\Structures\ModelfulPayload;
 
 use _database_namespace\_resource_name;
 
-/**
- * Only useful with endpoints that fetch from the builder
-*/
-class Base_resource_nameBuilder extends ModelfulPayload
+class Search_resource_nameBuilder extends ModelfulPayload
 {
     public function __construct(protected readonly _resource_name $blankModel)
     {
@@ -20,7 +17,10 @@ class Base_resource_nameBuilder extends ModelfulPayload
     protected function getBaseCriteria(): object
     {
 
-        return $this->blankModel->where($this->payloadStorage->only(["id"]));
+        return $this->blankModel->where([
+
+            ["name", "like", "%". $this->payloadStorage->getKey("query"). "%"]
+        ]);
     }
 
     protected function onlyFields(): array

@@ -66,11 +66,8 @@ class ModuleApi implements ModuleOne
         $this->localSender->beginExternalCascade($value);
     }
 
-    public function systemUpdateErrorEvent(int $payload): int
+    public function systemUpdateErrorEvent(object $payload): int
     {
-
-        $this->errorEditService->initializeUpdateModels($payload);
-
-        return $this->errorEditService->updateModels();
+    	return $this->errorEditService->updateModels($payload);
     }
 }

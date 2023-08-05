@@ -24,5 +24,5 @@ interface ModuleOne
 
     public function multiModuleCascadeEvent(bool $value);
 
-    public function systemUpdateErrorEvent(int $payload): ?int;
+    public function systemUpdateErrorEvent(object $payload): ?int;
 }

@@ -16,11 +16,6 @@ class _resource_name extends BaseModel implements IntegrityModel
 
     protected $table = "_resource_name";
 
-    protected $casts = [
-
-        IntegrityModel::INTEGRITY_COLUMN => "datetime:Y-m-d H:i:s"
-    ];
-
     public function edit_history(): Relation
     {
 

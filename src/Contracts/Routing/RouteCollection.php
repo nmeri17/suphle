@@ -2,6 +2,8 @@
 
 namespace Suphle\Contracts\Routing;
 
+use Suphle\Contracts\Routing\Crud\CrudBuilder;
+
 use Suphle\Routing\{MethodSorter, PreMiddlewareRegistry};
 
 use Suphle\Middleware\MiddlewareRegistry;

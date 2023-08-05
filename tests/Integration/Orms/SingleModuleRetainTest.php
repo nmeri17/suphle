@@ -102,14 +102,18 @@ class SingleModuleRetainTest extends ModuleLevelTest
         $csrfToken = $this->getContainer()->getClass(CsrfGenerator::class)
         ->newToken();
 
+        $columnProperty = IntegrityModel::INTEGRITY_COLUMN;
+
         $this->put(
             "/pmulti-edit/" . $this->lastInserted->id,
             array_merge($this->updatePayload, [
 
                 CsrfGenerator::TOKEN_FIELD => $csrfToken,
 
+                "id" => $this->lastInserted->id, // not necessary since id is already passed in the url but the payloadReader doesn't use placeholderStorage and I'm too lazy to differentiate for all consumers
+
                 MultiUserEditHandler::INTEGRITY_KEY => $this->lastInserted
-                ->toArray()[IntegrityModel::INTEGRITY_COLUMN] // force casting from carbon type to string
+                ->$columnProperty->toDateTimeString()
             ])
         ) // when
         ->assertJsonPath("message", 1); // sanity check // update success

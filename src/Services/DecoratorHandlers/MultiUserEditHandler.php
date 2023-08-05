@@ -85,7 +85,7 @@ class MultiUserEditHandler extends BaseInjectionModifier
             throw new EditIntegrityException(EditIntegrityException::MISSING_KEY);
         }
 
-        $currentVersion = $concrete->getResource();
+        $currentVersion = $concrete->getResource(clone $argumentList["builder"]);
 
         $integrityValue = $this->payloadStorage->getKey(self::INTEGRITY_KEY);
 
@@ -96,9 +96,9 @@ class MultiUserEditHandler extends BaseInjectionModifier
 
         try {
 
-            return $this->ormDialect->runTransaction(function () use ($currentVersion, $concrete, $integrityValue) {
+            return $this->ormDialect->runTransaction(function () use ($currentVersion, $concrete, $integrityValue, $argumentList) {
 
-                $result = $concrete->updateResource(); // user's incoming changes
+                $result = $concrete->updateResource(...$argumentList); // user's incoming changes
 
                 $currentVersion->nullifyEditIntegrity(
                     new DateTime($integrityValue)
@@ -143,6 +143,6 @@ class MultiUserEditHandler extends BaseInjectionModifier
             throw new EditIntegrityException(EditIntegrityException::NO_AUTHORIZER);
         }
 
-        return $concrete->getResource(); // we're not wrapping in error catcher since we want request termination if getting editable resource failed; there's nothing to fallback on
+        return $concrete->getResource(...$argumentList); // we're not wrapping in error catcher since we want request termination if getting editable resource failed; there's nothing to fallback on
     }
 }

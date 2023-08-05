@@ -16,11 +16,6 @@ class Employment extends BaseModel implements IntegrityModel
 
     protected $table = "employment";
 
-    protected $casts = [
-
-        IntegrityModel::INTEGRITY_COLUMN => "datetime:Y-m-d H:i:s"
-    ];
-
     public function edit_history(): Relation
     {
 

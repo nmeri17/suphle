@@ -14,12 +14,12 @@ interface MultiUserModelEdit extends ServiceErrorCatcher
     /**
      * We expect this method to be idempotent i.e. yield same resource, be it called during get or post
     */
-    public function getResource(): IntegrityModel;
+    public function getResource(object $builder): IntegrityModel;
 
     /**
      * @throws EditIntegrityException
      *
      * @return mixed. Can be anything caller can work with
     */
-    public function updateResource();
+    public function updateResource(object $builder, array $toUpdate);
 }

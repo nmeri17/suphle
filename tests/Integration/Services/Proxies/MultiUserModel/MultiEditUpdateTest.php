@@ -32,8 +32,9 @@ class MultiEditUpdateTest extends ModuleLevelTest
 
     private string $sutName = EmploymentEditMock::class;
 
-    protected function setUp(): void // continue by running tests
-    {$this->databaseAllSetup();
+    protected function setUp(): void
+    {
+    	$this->databaseAllSetup();
 
         $this->lastInserted = $this->replicator->getRandomEntity();
     }
@@ -45,9 +46,10 @@ class MultiEditUpdateTest extends ModuleLevelTest
 
         $this->stubRequestObjects(5);
 
-        $sut = $this->getContainer()->getClass($this->sutName);
+        $this->updateSutResource($this->getContainer()->getClass($this->sutName), [
 
-        $sut->updateResource(); // when
+        	"id" => 5
+        ]); // when
     }
 
     protected function getActiveEntity(): string
@@ -68,19 +70,22 @@ class MultiEditUpdateTest extends ModuleLevelTest
         // given
         $modelId = $this->lastInserted->id;
 
-        $this->stubRequestObjects($modelId, [
+        $payload = [
 
             MultiUserEditHandler::INTEGRITY_KEY => $threeMinutesAgo,
 
             "name" => "ujunwa", "id" => $modelId
-        ]);
+        ];
+
+        $this->stubRequestObjects($modelId, $payload);
 
         // when
         $sut = $this->getContainer()->getClass($this->sutName); // to wrap in decorator
 
-        for ($i = 0; $i < 2; $i++) {
-            $sut->updateResource();
-        } // first request updates integrityKey. Next iteration should fail
+        for ($i = 0; $i < 2; $i++) { // first request updates integrityKey. Next iteration should fail
+            
+            $this->updateSutResource($sut, $payload);
+        }
     }
 
     public function test_update_can_withstand_errors()
@@ -90,19 +95,28 @@ class MultiEditUpdateTest extends ModuleLevelTest
 
         $modelId = $this->lastInserted->id;
 
-        $this->stubRequestObjects($modelId, [
+        $payload = [
 
             MultiUserEditHandler::INTEGRITY_KEY => $this->lastInserted->$columnName,
 
-            "name" => "ujunwa",
+            "name" => "ujunwa", "id" => $modelId
+        ];
 
-            "id" => $modelId
-        ]);
+        $this->stubRequestObjects($modelId, $payload);
 
-        $result = $this->getContainer()->getClass(EmploymentEditError::class)
-
-        ->updateResource(); // when
+        $result = $this->updateSutResource(
+        
+        	$this->getContainer()->getClass(EmploymentEditError::class), $payload
+        ); // when
 
         $this->assertSame("boo!", $result); // then
+    }
+
+    /**
+     * @return call result
+    */
+    protected function updateSutResource (EmploymentEditMock $sut, array $payload = []) {
+
+    	return $sut->updateResource($this->lastInserted, $payload);
     }
 }

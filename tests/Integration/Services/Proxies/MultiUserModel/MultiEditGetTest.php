@@ -80,10 +80,11 @@ class MultiEditGetTest extends InvestigateSystemCrash
         }, EditIntegrityException::NO_AUTHORIZER);
     }
 
-    public function test_authorized_getter_is_successful() // analogous to above test
-    {$this->actingAs($this->employment->employer->user); // given
+    public function test_authorized_getter_is_successful() { // analogous to above test
 
-        // $this->debugCaughtException();
+    	$this->actingAs($this->employment->employer->user); // given
+
+        //$this->debugCaughtException();
 
         $this->get("/admin/gmulti-edit/". $this->employment->id) // when
 

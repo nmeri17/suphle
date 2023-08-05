@@ -2,7 +2,7 @@
 
 namespace Suphle\Contracts\Presentation;
 
-use Suphle\Contracts\Routing\OutputsCrudFiles;
+use Suphle\Contracts\Routing\Crud\OutputsCrudFiles;
 
 interface HtmlParser extends OutputsCrudFiles
 {

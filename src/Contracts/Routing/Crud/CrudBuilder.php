@@ -1,6 +1,6 @@
 <?php
 
-namespace Suphle\Contracts\Routing;
+namespace Suphle\Contracts\Routing\Crud;
 
 interface CrudBuilder
 {

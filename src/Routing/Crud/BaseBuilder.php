@@ -2,7 +2,7 @@
 
 namespace Suphle\Routing\Crud;
 
-use Suphle\Contracts\Routing\{CrudBuilder, RouteCollection};
+use Suphle\Contracts\Routing\{Crud\CrudBuilder, RouteCollection};
 
 use Suphle\Contracts\Presentation\BaseRenderer;
 

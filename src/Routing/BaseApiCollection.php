@@ -2,7 +2,7 @@
 
 namespace Suphle\Routing;
 
-use Suphle\Contracts\Routing\{ApiRouteCollection, CrudBuilder};
+use Suphle\Contracts\Routing\{ApiRouteCollection, Crud\CrudBuilder};
 
 use Suphle\Auth\Storage\TokenStorage;
 

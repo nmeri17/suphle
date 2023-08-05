@@ -4,7 +4,7 @@ namespace Suphle\Contracts\Database;
 
 use Suphle\Contracts\Auth\{AuthStorage, UserHydrator};
 
-use Suphle\Contracts\Routing\OutputsCrudFiles;
+use Suphle\Contracts\Routing\Crud\OutputsCrudFiles;
 
 interface OrmDialect extends OutputsCrudFiles
 {

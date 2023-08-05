@@ -10,8 +10,6 @@ use Suphle\Services\{UpdatefulService, Structures\BaseErrorCatcherService};
 
 use Suphle\Services\Decorators\{InterceptsCalls, VariableDependencies};
 
-use Suphle\Tests\Mocks\Models\Eloquent\Employment;
-
 #[InterceptsCalls(MultiUserModelEdit::class)]
 #[VariableDependencies([
 
@@ -21,27 +19,15 @@ class EmploymentEditMock extends UpdatefulService implements MultiUserModelEdit
 {
     use BaseErrorCatcherService;
 
-    public function __construct(private readonly Employment $blankModel)
+    public function getResource(object $builder): IntegrityModel
     {
 
-        //
+        return $builder->first();
     }
 
-    public function getResource(): IntegrityModel
+    public function updateResource(object $builder, array $toUpdate)
     {
 
-        return $this->blankModel->find(
-            $this->pathPlaceholders->getSegmentValue("id")
-        );
-    }
-
-    public function updateResource()
-    {
-
-        return $this->blankModel->where([
-
-            "id" => $this->pathPlaceholders->getSegmentValue("id")
-        ])
-        ->update($this->payloadStorage->only(["salary"]));
+        return $builder->update($toUpdate);
     }
 }

@@ -101,6 +101,9 @@ class CrudCommandTest extends CommandLineTest
         ], $additionalArguments));
     }
 
+    /**
+     * Will confirm all given classes are in existence
+    */
     protected function assertCreatedClasses(array $classNames): void
     {
 
@@ -108,7 +111,7 @@ class CrudCommandTest extends CommandLineTest
 
         foreach ($classNames as $className) {
 
-            if (!$classesExist = class_exists($className)) {
+            if (!$classesExist = class_exists($className)) { // aims to find first class on the list that wasn't created
                 break;
             }
         }

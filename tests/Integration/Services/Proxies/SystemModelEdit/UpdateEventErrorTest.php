@@ -4,14 +4,24 @@ namespace Suphle\Tests\Integration\Services\Proxies\SystemModelEdit;
 
 use Suphle\Hydration\Container;
 
-use Suphle\Testing\TestTypes\ModuleLevelTest;
+use Suphle\Testing\{TestTypes\ModuleLevelTest, Condiments\BaseDatabasePopulator};
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
 use Suphle\Tests\Mocks\Interactions\ModuleOne;
 
+use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
+
 class UpdateEventErrorTest extends ModuleLevelTest
 {
+	use BaseDatabasePopulator;
+
+    protected function getActiveEntity(): string
+    {
+
+        return EloquentUser::class;
+    }
+    
     protected function getModules(): array
     {
 
@@ -21,12 +31,20 @@ class UpdateEventErrorTest extends ModuleLevelTest
     public function test_error_in_event_handler_terminates_transaction()
     {
 
-        $payload = 15; // given
+    	$adminStatus = true; // given
 
-        $result = $this->getModuleFor(ModuleOne::class)
+        $model = $this->replicator
 
-        ->systemUpdateErrorEvent($payload); // when
+        ->modifyInsertion(1, ["is_admin" => $adminStatus])->first();
 
-        $this->assertEquals($result, $payload); // then
+        $this->getModuleFor(ModuleOne::class)
+
+        ->systemUpdateErrorEvent($model); // when
+
+        $onlineValue = $this->replicator
+
+        ->getSpecificEntities(1, ["id" => $model->id])->first();
+
+        $this->assertEquals($onlineValue->is_admin, $adminStatus); // then
     }
 }

@@ -19,7 +19,10 @@ class SystemEditOrmTest extends ModuleLevelTest
 
         $this->massProvide([
 
-            OrmDialect::class => $this->positiveDouble(OrmDialect::class, [], [
+            OrmDialect::class => $this->positiveDouble(OrmDialect::class, [
+
+            	"runTransaction" => true
+            ], [
 
                 "runTransaction" => [$numTimes, [$this->anything()]]
             ])
@@ -36,7 +39,7 @@ class SystemEditOrmTest extends ModuleLevelTest
 
         $this->getContainer()->getClass(SystemModelController::class)
 
-        ->handlePutRequest(); // when
+        ->handlePutRequest(new \stdClass); // when
     }
 
     public function test_other_methods_dont_run_in_transaction()
