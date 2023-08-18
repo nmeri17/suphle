@@ -65,7 +65,7 @@ class RouteManager
         }
     }
 
-    private function recursiveSearch(string $collectionName, string $incomingPath, string $parentPrefix = ""): ?BaseRenderer
+    protected function recursiveSearch(string $collectionName, string $incomingPath, string $parentPrefix = ""): ?BaseRenderer
     {
 
         $collection = $this->container->getClass($collectionName);
@@ -86,24 +86,23 @@ class RouteManager
 
         $expectsCrud = $collection->_expectsCrud();
 
-        if (!empty($remainder) && !$expectsCrud) {
+        $shouldExtractCrud = !empty($remainder) && !$expectsCrud;
 
-            $prefixClass = $collection->_getPrefixCollection();
+        if (!$shouldExtractCrud)
 
-            if (!$prefixClass) {
-                return null;
-            }
+        	return $this->extractRenderer($collection, $remainder, $methodName, $expectsCrud);
 
-            $this->patternIndicator->logPatternDetails($collection, $methodName);
+        $prefixClass = $collection->_getPrefixCollection();
 
-            return $this->recursiveSearch(
-                $prefixClass,
-                $remainder,
-                $collection->_prefixCurrent()
-            );
-        }
+        if (!$prefixClass) return null;
 
-        return $this->extractRenderer($collection, $remainder, $methodName, $expectsCrud);
+        $this->patternIndicator->logPatternDetails($collection, $methodName);
+
+        return $this->recursiveSearch(
+            $prefixClass,
+            $remainder,
+            $collection->_prefixCurrent()
+        );
     }
 
     public function findMatchingMethod(string $fullRouteState, array $patterns): ?PlaceholderCheck
@@ -177,7 +176,7 @@ class RouteManager
         return array_combine($patterns, $values);
     }
 
-    private function extractRenderer(RouteCollection $collection, string $remainder, string $methodName, bool $expectsCrud): ?BaseRenderer
+    protected function extractRenderer(RouteCollection $collection, string $remainder, string $methodName, bool $expectsCrud): ?BaseRenderer
     {
 
         $possibleRenderers = $collection->_getLastRegistered();
@@ -229,7 +228,7 @@ class RouteManager
         return null;
     }
 
-    private function matchRemainder(PlaceholderCheck $check, string $fullRouteState): string
+    protected function matchRemainder(PlaceholderCheck $check, string $fullRouteState): string
     {
 
         if (empty($fullRouteState) && $check->getMethodName() == RouteCollection::INDEX_METHOD) {
@@ -237,7 +236,7 @@ class RouteManager
             return $fullRouteState;
         }
 
-        return explode($check->getRouteState(), $fullRouteState, 2)[1];
+        return explode($check->getRouteState(), $fullRouteState, 2)[1]; // 3rd parameter means that for arguments like: a/b, a/b/a/b/c/d, a/b/c/d will be returned for continuous matching instead of being split into another row
     }
 
     public function confirmRouteMethod(BaseRenderer $renderer): bool
@@ -253,7 +252,7 @@ class RouteManager
         return true;
     }
 
-    private function onSearchCompletion(RouteCollection $collection, BaseRenderer $renderer, string $pattern): void
+    protected function onSearchCompletion(RouteCollection $collection, BaseRenderer $renderer, string $pattern): void
     {
 
         $this->patternIndicator->logPatternDetails($collection, $pattern);
