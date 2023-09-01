@@ -1,9 +1,7 @@
 <?php
-namespace Suphle\Tests\Integration\Routing;
+namespace Suphle\Tests\Integration\Routing\RouteDetector;
 
 use Suphle\Contracts\Config\Router;
-
-use Suphle\Routing\CollectionRouteDetector;
 
 use Suphle\Testing\TestTypes\IsolatedComponentTest;
 
@@ -13,7 +11,7 @@ use Suphle\Tests\Mocks\Modules\ModuleOne\Config\RouterMock;
 
 class BaseDetectorTest extends IsolatedComponentTest {
     
-    use CommonBinds {
+    use CommonBinds, RouteDetectorAsserter {
 
         CommonBinds::concreteBinds as commonConcretes;
     }
@@ -34,31 +32,15 @@ class BaseDetectorTest extends IsolatedComponentTest {
             ])
         ]);
     }
-// low level (prefixes), api, crud, auth
+
     public function test_can_detect_all_high_level_routes () {
 
-        $sut = $this->container->getClass(CollectionRouteDetector::class);
+        $this->assertFoundGivenPatterns(
 
-        $matchedAll = true;
+            $this->getDetector()->compileCollectionDetails()[0], // [0] is used to access browser based (un-versioned) routes
 
-        $collectionDetails = $sut->findRenderers();
-var_dump($collectionDetails);
-    	foreach ($this->expectedPatternDetails() as $detailEntry) {
-
-            $matchedAll = !empty(array_filter($collectionDetails,
-
-                fn ($details) => strtolower($detailEntry[0]) == strtolower($details["url"])
-            ));
-
-            if (!$matchedAll) {
-
-                var_dump($detailEntry);
-
-                break;
-            }
-        }
-
-        $this->assertTrue($matchedAll);
+            $this->expectedPatternDetails()
+        );
     }
 
     public function expectedPatternDetails (): array

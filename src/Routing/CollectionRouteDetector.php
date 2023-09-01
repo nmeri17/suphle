@@ -8,6 +8,8 @@ use Suphle\Hydration\{Container, Structures\ObjectDetails};
 
 use Suphle\Contracts\{ Config\Router as RouterConfig, Routing\RouteCollection};
 
+use Suphle\Auth\RequestScrutinizers\AuthenticateMetaFunnel;
+
 use Suphle\Contracts\Presentation\{MirrorableRenderer, BaseRenderer};
 
 class CollectionRouteDetector
@@ -19,23 +21,24 @@ class CollectionRouteDetector
         protected readonly RouterConfig $config,
         protected readonly Container $container,
         protected readonly PatternIndicator $patternIndicator,
-        protected readonly CollectionMethodToUrl $urlReplacer
+        protected readonly CollectionMethodToUrl $urlReplacer,
+        protected readonly CollectionMetaQueue $collectionMetaQueue
     ) {
 
         //
     }
 
-    public function findRenderers(array $skipPatterns = []): array
+    public function compileCollectionDetails(array $skipPatterns = []): array
     {
         $this->skipPatterns = $skipPatterns;
 
         $routePatterns = [];
 
-        foreach ($this->entryRouteMap() as $collection) {
+        foreach ($this->entryRouteMap() as $key => $collection) {
 
             $this->patternIndicator->resetIndications();
 
-            $routePatterns += $this->getCollectionRegexDetails($collection);
+            $routePatterns[$key] = $this->getCollectionRegexDetails($collection);
         }
 
         return $routePatterns;
@@ -48,7 +51,7 @@ class CollectionRouteDetector
 
         $collection->_setParentPrefix($parentPrefix);
 
-        $mutableCollectionDetails = $collectionDetails = $this->filterActivePatterns($collection);
+        $collectionDetails = $this->filterActivePatterns($collection);
 
         foreach ($collectionDetails as $methodPattern => $patternDetails) {
 
@@ -56,11 +59,11 @@ class CollectionRouteDetector
 
             $prefixClass = $collection->_getPrefixCollection();
 
+            //$this->patternIndicator->logPatternDetails($collection, $methodPattern); // logs all patterns into interactedPatterns. We get back every tagged funnel
+
             if (!empty($prefixClass)) {
 
-                // $this->patternIndicator->logPatternDetails($collection, $methodName); // for this to work, we need new instances for each collection. Or just update its entry
-
-                $mutableCollectionDetails[$methodPattern]["child_collection"] = $this->getCollectionRegexDetails(
+                $collectionDetails[$methodPattern]["child_collection"] = $this->getCollectionRegexDetails(
                     
                     $prefixClass, $collection->_prefixCurrent()
                 );
@@ -68,22 +71,25 @@ class CollectionRouteDetector
 
             else {
 
-                $possibleRenderers = $collection->_getLastRegistered(); // if it's a crud, indicate on this outer logger by adding all those urls. otherwise, descend and add those children under a key named as such
+                $possibleRenderers = $collection->_getLastRegistered();
 
                 if (!$collection->_expectsCrud())
 
-                    $mutableCollectionDetails[$methodPattern]["renderer"] = $possibleRenderers[0];
+                    $collectionDetails[$methodPattern]["renderer"] = $possibleRenderers[0];
 
-                else $mutableCollectionDetails = $this->extractCrudRenderers(
+                else $collectionDetails[$methodPattern]["child_collection"] = $this->extractCrudRenderers(
 
-                    $possibleRenderers, $mutableCollectionDetails,
-
-                    $methodPattern
+                    $possibleRenderers, $methodPattern
                 );
             }
         }
 
-        return $mutableCollectionDetails;
+        $authFunnels = $this->collectionMetaQueue->findMatchingFunnels(function (CollectionMetaFunnel $funnel) { // has to be called after visiting all patterns i.e logging them through the indicator
+
+            return $funnel instanceof AuthenticateMetaFunnel;
+        });
+// var_dump($authFunnels);
+        return $collectionDetails;
     }
 
     protected function filterActivePatterns (RouteCollection $collection):array {
@@ -97,35 +103,29 @@ class CollectionRouteDetector
         return $this->collateCollectionMethods($filteredPatterns);
     }
 
-    protected function extractCrudRenderers (array $possibleRenderers, array $collectionDetails, string $outerPrefix):array {
+    protected function extractCrudRenderers (
+        array $possibleRenderers, string $outerPrefix
+    ):array {
 
         $crudDetails = $this->collateCollectionMethods(array_keys($possibleRenderers));
 
+        $sanitizedPrefix = $this->collateCollectionMethods([$outerPrefix])[$outerPrefix]["url"];
+
         foreach ($possibleRenderers as $crudPath => $renderer) {
 
-            $crudNodeDetail = $crudDetails[$crudPath];
+            $crudDetails[$crudPath]["renderer"] = $renderer;
 
-            $crudNodeDetail["renderer"] = $renderer;
-
-            $collectionDetails[$outerPrefix."_".$crudPath] = $crudNodeDetail;
+            $crudDetails[$crudPath]["url"] = $this->collateCollectionMethods([$crudPath])[$crudPath]["url"];
         }
 
-        return $collectionDetails;
+        return $crudDetails;
     }
 
+    /**
+     * No collection required. Just computes given patterns and returns details about them
+    */
     public function collateCollectionMethods (array $patterns):array
     {
-
-        /*
-        * leaving this in, to see how the parser reacts to index patterns
-        $indexMethodIndex = array_search(RouteCollection::INDEX_METHOD, $patterns);
-
-        if ($indexMethodIndex !== false) {
-
-            return new PlaceholderCheck("", RouteCollection::INDEX_METHOD);
-
-            unset($patterns[$indexMethodIndex]); // since we're sure it's not the one, no need to confuse the other guys, who will always "partially" match an empty string
-        }*/
 
         return array_map(
             function ($methodDetails) {
@@ -181,9 +181,9 @@ class CollectionRouteDetector
 
         if ($hasEntry) $routeMap[] = $entryRoute;
 
-        if ($this->config->mirrorsCollections()) // entry goes to the bottom
+        if ($this->config->mirrorsCollections())
 
-            $routeMap = [...$this->config->apiStack(), ...$routeMap];
+            $routeMap = array_merge($this->config->apiStack(), $routeMap);
 
         return $routeMap;
     }

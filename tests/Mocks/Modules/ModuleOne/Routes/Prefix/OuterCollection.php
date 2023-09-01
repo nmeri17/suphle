@@ -23,6 +23,7 @@ class OuterCollection extends BaseCollection
         $this->_prefixFor(NoInnerPrefix::class);
     }
 
+    // doesn't actually ignore it. The child only prefers its own prefix when the collection is used directly
     public function IGNORE__INTERNALh()
     {
 

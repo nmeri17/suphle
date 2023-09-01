@@ -133,7 +133,7 @@ class MultiUserEditHandler extends BaseInjectionModifier
         array $argumentList
     ) {
 
-        $matchingFunnels = $this->collectionMetaQueue->findMatchingFunnels(function (AuthorizeMetaFunnel $funnel) {
+        $matchingFunnels = $this->collectionMetaQueue->findMatchingFunnels(function (CollectionMetaFunnel $funnel) {
 
             return $funnel instanceof AuthorizeMetaFunnel;
         });
@@ -143,6 +143,6 @@ class MultiUserEditHandler extends BaseInjectionModifier
             throw new EditIntegrityException(EditIntegrityException::NO_AUTHORIZER);
         }
 
-        return $concrete->getResource(...$argumentList); // we're not wrapping in error catcher since we want request termination if getting editable resource failed; there's nothing to fallback on
+        return $concrete->getResource(...$argumentList); // we're not wrapping in error catcher since we want request termination if getting editable resource failed; there's nothing to fallback to
     }
 }

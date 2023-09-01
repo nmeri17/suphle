@@ -117,6 +117,11 @@ class MultiEditUpdateTest extends ModuleLevelTest
     */
     protected function updateSutResource (EmploymentEditMock $sut, array $payload = []) {
 
-    	return $sut->updateResource($this->lastInserted, $payload);
+    	return $sut->updateResource(
+
+    		(new Employment)->where(["id" => $this->lastInserted->id]), // this requires a builder, not a ready-made object/model
+
+    		$payload
+    	);
     }
 }
