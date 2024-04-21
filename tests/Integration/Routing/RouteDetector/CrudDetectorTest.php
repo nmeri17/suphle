@@ -5,36 +5,27 @@ use Suphle\Contracts\Config\Router;
 
 use Suphle\Routing\CollectionRouteDetector;
 
-use Suphle\Testing\TestTypes\IsolatedComponentTest;
+use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
-use Suphle\Tests\Integration\Generic\CommonBinds;
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Config\RouterMock, Routes\Crud\BasicRoutes, Meta\ModuleOneDescriptor};
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Config\RouterMock, Routes\Crud\BasicRoutes};
-
-class CrudDetectorTest extends IsolatedComponentTest {
+class CrudDetectorTest extends ModuleLevelTest {
     
-    use CommonBinds, RouteDetectorAsserter {
+    use RouteDetectorAsserter;
 
-        CommonBinds::concreteBinds as commonConcretes;
-    }
-
-    protected function simpleBinds ():array {
-
-        return parent::simpleBinds(); // the trait version automatically binds the average config
-    }
-
-    protected function concreteBinds(): array
+    protected function getModules (): array
     {
+        return [
+            $this->replicateModule(ModuleOneDescriptor::class, function(WriteOnlyContainer $container) {
 
-        return array_merge($this->commonConcretes(), [
+                $container->replaceWithMock(Router::class, RouterMock::class, [
 
-            Router::class => $this->positiveDouble(RouterMock::class, [
+                    "mirrorsCollections" => false,
 
-                "mirrorsCollections" => false,
-
-                "browserEntryRoute" => BasicRoutes::class
-            ])
-        ]);
+                    "browserEntryRoute" => BasicRoutes::class
+                ]);
+            })
+        ];
     }
 
     public function test_can_detect_all_crud_routes () {

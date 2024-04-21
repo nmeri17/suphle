@@ -15,6 +15,10 @@ use Suphle\Contracts\Presentation\{MirrorableRenderer, BaseRenderer};
 class CollectionRouteDetector
 {
 
+    public const HAS_CHILD_NODE = "child_collection",
+
+    HAS_RENDERER = "renderer";
+
     protected array $skipPatterns;
 
     public function __construct(
@@ -51,19 +55,19 @@ class CollectionRouteDetector
 
         $collection->_setParentPrefix($parentPrefix);
 
-        $collectionDetails = $this->filterActivePatterns($collection);
+        $collectionTree = $this->filterActivePatterns($collection);
 
-        foreach ($collectionDetails as $methodPattern => $patternDetails) {
+        foreach ($collectionTree as $methodPattern => $patternDetails) {
 
             $collection->_invokePattern($methodPattern);
 
             $prefixClass = $collection->_getPrefixCollection();
 
-            //$this->patternIndicator->logPatternDetails($collection, $methodPattern); // logs all patterns into interactedPatterns. We get back every tagged funnel
+            $this->patternIndicator->logPatternDetails($collection, $methodPattern); // logs all patterns into interactedPatterns. We get back every tagged funnel
 
             if (!empty($prefixClass)) {
 
-                $collectionDetails[$methodPattern]["child_collection"] = $this->getCollectionRegexDetails(
+                $collectionTree[$methodPattern][self::HAS_CHILD_NODE] = $this->getCollectionRegexDetails(
                     
                     $prefixClass, $collection->_prefixCurrent()
                 );
@@ -75,21 +79,16 @@ class CollectionRouteDetector
 
                 if (!$collection->_expectsCrud())
 
-                    $collectionDetails[$methodPattern]["renderer"] = $possibleRenderers[0];
+                    $collectionTree[$methodPattern][self::HAS_RENDERER] = $possibleRenderers[0];
 
-                else $collectionDetails[$methodPattern]["child_collection"] = $this->extractCrudRenderers(
+                else $collectionTree[$methodPattern][self::HAS_CHILD_NODE] = $this->extractCrudRenderers(
 
                     $possibleRenderers, $methodPattern
                 );
             }
         }
 
-        $authFunnels = $this->collectionMetaQueue->findMatchingFunnels(function (CollectionMetaFunnel $funnel) { // has to be called after visiting all patterns i.e logging them through the indicator
-
-            return $funnel instanceof AuthenticateMetaFunnel;
-        });
-// var_dump($authFunnels);
-        return $collectionDetails;
+        return $collectionTree;
     }
 
     protected function filterActivePatterns (RouteCollection $collection):array {
@@ -113,7 +112,7 @@ class CollectionRouteDetector
 
         foreach ($possibleRenderers as $crudPath => $renderer) {
 
-            $crudDetails[$crudPath]["renderer"] = $renderer;
+            $crudDetails[$crudPath][self::HAS_RENDERER] = $renderer;
 
             $crudDetails[$crudPath]["url"] = $this->collateCollectionMethods([$crudPath])[$crudPath]["url"];
         }
@@ -186,5 +185,47 @@ class CollectionRouteDetector
             $routeMap = array_merge($this->config->apiStack(), $routeMap);
 
         return $routeMap;
+    }
+
+    /**
+     * @param {funnels}: Usually, array_keys(router->scrutinizerHandlers)
+    */
+    public function assignMetaStatus (array $funnels, array $collectionTree, array $carryPatterns = []):array {
+
+        foreach ($collectionTree as $methodPattern => &$nodeDetail) {
+
+            if (!is_array($nodeDetail)) continue;
+
+            $carryPatterns[] = $methodPattern;
+var_dump($methodPattern, $nodeDetail);
+
+            if (array_key_exists(self::HAS_RENDERER, $nodeDetail)) {
+
+                foreach ($funnels as $funnel)
+
+                    $nodeDetail[$funnel] = $this->hasMetaFunnel($funnel, $carryPatterns);
+
+                array_pop($carryPatterns);
+            }
+            elseif (array_key_exists(self::HAS_CHILD_NODE, $nodeDetail))
+
+                $nodeDetail = $this->assignMetaStatus($funnels, $nodeDetail, $carryPatterns);
+        }
+
+        return $collectionTree;
+    }
+
+    /**
+     * This can only be called after building the route tree i.e logging all patterns through the indicator
+    */
+    public function hasMetaFunnel (string $funnelToSearch, array $interactedPatterns):bool {
+
+        $matchingFunnels = $this->collectionMetaQueue->findRoutedFunnels(function (CollectionMetaFunnel $funnel) use ($funnelToSearch) {
+
+            return $funnel instanceof $funnelToSearch;
+        }, $interactedPatterns);
+var_dump($matchingFunnels);
+
+        return !empty($matchingFunnels);
     }
 }

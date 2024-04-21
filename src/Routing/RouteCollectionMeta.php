@@ -24,6 +24,11 @@ abstract class RouteCollectionMeta
         $this->interactedPatterns[] = $pattern;
     }
 
+    public function setAllInteractedPatterns (array $patterns):void {
+
+    	$this->interactedPatterns = $patterns;
+    }
+
     public function removeTag(
         array $patternsToOmit,
         string $funnelName,
@@ -39,21 +44,23 @@ abstract class RouteCollectionMeta
     }
 
     /**
+     * @param {interactedPatterns}: When omitted, defaults to routed patterns for the request
      * @return CollectionMetaFunnel[] relevant to current path
     */
-    public function getRoutedFunnels(): array
+    public function getFunnelsForInteracted(?array $interactedPatterns = null): array
     {
+    	$patternsToScan = $interactedPatterns ?? $this->interactedPatterns;
 
         $toWeedOut = array_intersect(
-            $this->interactedPatterns,
-            array_keys($this->excludePatterns)
+            
+            $patternsToScan, array_keys($this->excludePatterns)
         );
 
-        return array_filter($this->registry, function (CollectionMetaFunnel $funnel) use ($toWeedOut) {
+        return array_filter($this->registry, function (CollectionMetaFunnel $funnel) use ($toWeedOut, $patternsToScan) {
 
             $boundToInteracted = false;
 
-            foreach ($this->interactedPatterns as $pattern) {
+            foreach ($patternsToScan as $pattern) {
 
                 if ($funnel->containsPattern($pattern)) {
 

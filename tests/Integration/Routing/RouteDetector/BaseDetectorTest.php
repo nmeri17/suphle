@@ -3,34 +3,26 @@ namespace Suphle\Tests\Integration\Routing\RouteDetector;
 
 use Suphle\Contracts\Config\Router;
 
-use Suphle\Testing\TestTypes\IsolatedComponentTest;
+use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
-use Suphle\Tests\Integration\Generic\CommonBinds;
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Config\RouterMock, Meta\ModuleOneDescriptor};
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\Config\RouterMock;
-
-class BaseDetectorTest extends IsolatedComponentTest {
+class BaseDetectorTest extends ModuleLevelTest {
     
-    use CommonBinds, RouteDetectorAsserter {
+    use RouteDetectorAsserter;
 
-        CommonBinds::concreteBinds as commonConcretes;
-    }
-
-    protected function simpleBinds ():array {
-
-        return parent::simpleBinds(); // the trait version automatically binds the average config
-    }
-
-    protected function concreteBinds(): array
+    protected function getModules (): array
     {
 
-        return array_merge($this->commonConcretes(), [
+        return [
+            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-            Router::class => $this->positiveDouble(RouterMock::class, [
+                $container->replaceWithMock(Router::class, RouterMock::class, [
 
-                "mirrorsCollections" => false
-            ])
-        ]);
+                    "mirrorsCollections" => false
+                ]);
+            })
+        ];
     }
 
     public function test_can_detect_all_high_level_routes () {

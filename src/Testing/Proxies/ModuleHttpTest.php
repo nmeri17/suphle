@@ -148,7 +148,7 @@ trait ModuleHttpTest
 
         return $this->entrance->getActiveContainer()
 
-        ->getClass(MiddlewareRegistry::class)->getRoutedFunnels();
+        ->getClass(MiddlewareRegistry::class)->getFunnelsForInteracted();
     }
 
     /**

@@ -42,7 +42,7 @@ class MiddlewareManipulator extends MiddlewareRegistry
     /**
      * {@inheritdoc}
     */
-    public function getRoutedFunnels(): array
+    public function getFunnelsForInteracted(?array $interactedPatterns = null): array
     {
 
         if ($this->stackAlwaysEmpty) {
@@ -51,7 +51,7 @@ class MiddlewareManipulator extends MiddlewareRegistry
 
         $stack = $this->preInclude;
 
-        $parentStack = parent::getRoutedFunnels();
+        $parentStack = parent::getFunnelsForInteracted($interactedPatterns);
 
         foreach ($parentStack as $index => $collector) {
 

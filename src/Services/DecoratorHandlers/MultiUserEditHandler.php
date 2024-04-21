@@ -133,7 +133,7 @@ class MultiUserEditHandler extends BaseInjectionModifier
         array $argumentList
     ) {
 
-        $matchingFunnels = $this->collectionMetaQueue->findMatchingFunnels(function (CollectionMetaFunnel $funnel) {
+        $matchingFunnels = $this->collectionMetaQueue->findRoutedFunnels(function (CollectionMetaFunnel $funnel) {
 
             return $funnel instanceof AuthorizeMetaFunnel;
         });

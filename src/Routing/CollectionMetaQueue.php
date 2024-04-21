@@ -22,7 +22,7 @@ class CollectionMetaQueue
     public function executeRoutedMetaFunnels(): void
     {
 
-        $this->executeMetaFunnels($this->registry->getRoutedFunnels());
+        $this->executeMetaFunnels($this->registry->getFunnelsForInteracted());
     }
 
     public function executeMetaFunnels(array $funnels): void
@@ -42,18 +42,22 @@ class CollectionMetaQueue
                 $handlers[$handlerName] = $this->container->getClass($handlerName);
             }
 
-            $handlers[$handlerName]->addMetaFunnel($funnel);
+            $handlers[$handlerName]->addMetaFunnel($funnel); // funnels represent different contexts of information/detail passable to the same handler
         }
 
         array_walk(
             $handlers,
-            fn (BaseScrutinizerHandler $handler) => $handler->scrutinizeRequest() // defer scrutiny so the filters execute only once
+            fn (BaseScrutinizerHandler $handler) => $handler->scrutinizeRequest() // we have deferred scrutiny until outside above loop so the filters execute only once
         );
     }
 
-    public function findMatchingFunnels(callable $matcher): array
+    public function findRoutedFunnels(callable $matcher, array $interactedPatterns = null): array
     {
 
-        return array_filter($this->registry->getRoutedFunnels(), $matcher);
+        return array_filter(
+        	$this->registry->getFunnelsForInteracted($interactedPatterns),
+
+        	$matcher
+        );
     }
 }

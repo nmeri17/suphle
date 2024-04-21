@@ -62,7 +62,7 @@ class PatternIndicator
     }
 
     /**
-     * When a module has more than one route collection, the preceding collection could have logged to its registry. Without a reseet, those tags will [undesirably] affect the next collection handling routing
+     * When a module has more than one route collection, the preceding collection could have logged to its registry. Without a reset, those tags will [undesirably] affect the next collection handling routing
     */
     public function resetIndications(): void
     {

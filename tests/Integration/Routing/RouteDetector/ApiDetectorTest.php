@@ -3,17 +3,19 @@ namespace Suphle\Tests\Integration\Routing\RouteDetector;
 
 use Suphle\Contracts\Config\Router;
 
-use Suphle\Testing\TestTypes\IsolatedComponentTest;
+use Suphle\Hydration\Container;
 
-use Suphle\Tests\Integration\Generic\CommonBinds;
+use Suphle\Testing\TestTypes\ModuleLevelTest;
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\Config\RouterMock;
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Config\RouterMock, Meta\ModuleOneDescriptor};
 
-class ApiDetectorTest extends IsolatedComponentTest {
+class ApiDetectorTest extends ModuleLevelTest {
     
-    use CommonBinds, RouteDetectorAsserter {
+    use RouteDetectorAsserter;
 
-        CommonBinds::concreteBinds as commonConcretes;
+    protected function getModules ():array {
+
+        return [new ModuleOneDescriptor(new Container)];
     }
 
     public function test_will_include_api_routes () {

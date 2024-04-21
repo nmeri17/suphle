@@ -1,38 +1,31 @@
 <?php
-namespace Suphle\Tests\Integration\Routing\RouteDetector;
+namespace Suphle\Tests\Integration\Routing\RouteDetector\Prefix;
 
 use Suphle\Contracts\Config\Router;
 
-use Suphle\Testing\TestTypes\IsolatedComponentTest;
+use Suphle\Tests\Integration\Routing\RouteDetector\RouteDetectorAsserter;
 
-use Suphle\Tests\Integration\Generic\CommonBinds;
+use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Config\RouterMock, Routes\Prefix\OuterCollection};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Config\RouterMock, Routes\Prefix\OuterCollection, Meta\ModuleOneDescriptor};
 
-class ComputedPrefixTest extends IsolatedComponentTest {
+class ComputedPrefixTest extends ModuleLevelTest {
     
-    use CommonBinds, RouteDetectorAsserter {
+    use RouteDetectorAsserter;
 
-        CommonBinds::concreteBinds as commonConcretes;
-    }
+    protected function getModules ():array {
 
-    protected function simpleBinds ():array {
+        return [
+            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-        return parent::simpleBinds();
-    }
+                $container->replaceWithMock(Router::class, RouterMock::class, [
 
-    protected function concreteBinds(): array
-    {
+                    "mirrorsCollections" => false,
 
-        return array_merge($this->commonConcretes(), [
-
-            Router::class => $this->positiveDouble(RouterMock::class, [
-
-                "mirrorsCollections" => false,
-
-                "browserEntryRoute" => OuterCollection::class
-            ])
-        ]);
+                    "browserEntryRoute" => OuterCollection::class
+                ]);
+            })
+        ];
     }
 
     public function test_correctly_works_with_collection_defined_prefix () {

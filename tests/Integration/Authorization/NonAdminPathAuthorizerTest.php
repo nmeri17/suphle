@@ -53,7 +53,7 @@ class NonAdminPathAuthorizerTest extends TestPathAuthorizer
 
         $routedFunnels = $this->getContainer()->getClass(PreMiddlewareRegistry::class)
 
-        ->getRoutedFunnels();
+        ->getFunnelsForInteracted();
 
         $this->assertEmpty($routedFunnels); // then
     }

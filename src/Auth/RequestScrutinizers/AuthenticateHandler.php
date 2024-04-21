@@ -35,7 +35,7 @@ class AuthenticateHandler extends BaseScrutinizerHandler
                 $this->routerConfig->mirrorAuthenticator()
             );
         } else {
-            $routedMechanism = end($this->metaFunnels)->authStorage;
+            $routedMechanism = end($this->metaFunnels)->authStorage; // {end} means we just work with the last attached AuthenticateMetaFunnel since it's most relevant
         }
 
         if (is_null($routedMechanism->getId())) {

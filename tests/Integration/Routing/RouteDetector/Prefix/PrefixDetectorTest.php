@@ -1,38 +1,32 @@
 <?php
-namespace Suphle\Tests\Integration\Routing\RouteDetector;
+namespace Suphle\Tests\Integration\Routing\RouteDetector\Prefix;
 
 use Suphle\Contracts\Config\Router;
 
-use Suphle\Testing\TestTypes\IsolatedComponentTest;
+use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
-use Suphle\Tests\Integration\Generic\CommonBinds;
+use Suphle\Tests\Integration\Routing\RouteDetector\RouteDetectorAsserter;
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Config\RouterMock, Routes\Prefix\ActualEntry};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Config\RouterMock, Routes\Prefix\ActualEntry, Meta\ModuleOneDescriptor};
 
-class PrefixDetectorTest extends IsolatedComponentTest {
+class PrefixDetectorTest extends ModuleLevelTest {
     
-    use CommonBinds, RouteDetectorAsserter {
+    use RouteDetectorAsserter;
 
-        CommonBinds::concreteBinds as commonConcretes;
-    }
-
-    protected function simpleBinds ():array {
-
-        return parent::simpleBinds();
-    }
-
-    protected function concreteBinds(): array
+    protected function getModules (): array
     {
 
-        return array_merge($this->commonConcretes(), [
+        return [
+            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-            Router::class => $this->positiveDouble(RouterMock::class, [
+                $container->replaceWithMock(Router::class, RouterMock::class, [
 
-                "mirrorsCollections" => false,
+                    "mirrorsCollections" => false,
 
-                "browserEntryRoute" => ActualEntry::class
-            ])
-        ]);
+                    "browserEntryRoute" => ActualEntry::class
+                ]);
+            })
+        ];
     }
 
     public function test_can_dig_through_to_innermost_pattern () {
