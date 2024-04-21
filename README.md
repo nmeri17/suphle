@@ -9,7 +9,7 @@ Suphle Framework
 
 ## Introduction
 
-This is the dev-facing project intended for contribution to Suphle itself. Its complete documentation is live at [Suphle.com](https://suphle.com).
+This is the dev-facing project intended for contribution to Suphle itself. Its complete documentation is live at [netlify](https://angry-cray-9c191b.netlify.app).
 
 High-level details about what Suphle's capabilities are and why it was built have been migrated [here](https://dev.to/mmayboy_/introducing-suphle-the-tale-of-a-modern-php-framework-54i9) and [here](https://nmeri.hashnode.dev/a-synopsis-of-the-suphle-framework).
 
