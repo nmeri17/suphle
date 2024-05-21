@@ -503,7 +503,7 @@ class Container implements ClassHydrationBehavior
 
         foreach ($stack as $execution) {
 
-            if (array_key_exists($caller, $execution) && $execution[$caller] != get_class()) {
+            if (array_key_exists($caller, $execution) && $execution[$caller] != __CLASS__) {
 
                 return $execution[$caller];
             }
@@ -1054,7 +1054,7 @@ class Container implements ClassHydrationBehavior
     public function setEssentials(): void
     {
 
-        $this->whenTypeAny()->needsAny([get_class() => $this]);
+        $this->whenTypeAny()->needsAny([__CLASS__ => $this]);
 
         $this->objectMeta = new ObjectDetails($this);
 

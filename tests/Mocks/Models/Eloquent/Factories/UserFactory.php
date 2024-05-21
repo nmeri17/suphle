@@ -24,7 +24,7 @@ class UserFactory extends Factory
         return [
             ...$guessedFields,
 
-            "email" => $this->faker->unique()->safeEmail()
+            "email" => $this->faker->unique()->safeEmail(),
 
             "password" => password_hash($this->password, PASSWORD_DEFAULT)
         ];

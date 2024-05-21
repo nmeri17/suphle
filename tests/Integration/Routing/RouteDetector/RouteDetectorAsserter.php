@@ -5,6 +5,9 @@ use Suphle\Routing\CollectionRouteDetector;
 
 trait RouteDetectorAsserter {
 
+    /**
+     * Cycles through each entry in {expectedUrls} expecting to find a match on the first dimension of {collectionDetails} ie doesn't go beyond the first depth of details
+    */
     protected function assertFoundGivenPatterns (array $collectionDetails, array $expectedUrls):void {
 
         $matchedAll = true;
@@ -78,7 +81,7 @@ trait RouteDetectorAsserter {
             if (!empty($remainder)) {
 
                 $this->assertMatchesChildPatterns(
-                    $patternDetails["child_collection"],
+                    $patternDetails[CollectionRouteDetector::HAS_CHILD_NODE],
 
                     $remainder
                 );
@@ -89,4 +92,6 @@ trait RouteDetectorAsserter {
 
         $this->assertTrue($foundMatch);
     }
+
+    // protected function assertMatchesChildPatterns
 }

@@ -20,7 +20,7 @@ class MiddlewareQueue
         protected readonly Container $container
     ) {
 
-        $this->routedCollectors = $registry->getRoutedFunnels();
+        $this->routedCollectors = $registry->getFunnelsForInteracted();
     }
 
     public function runStack(): BaseRenderer
