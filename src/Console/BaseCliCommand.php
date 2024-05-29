@@ -76,9 +76,15 @@ abstract class BaseCliCommand extends Command
 
         if ($moduleInterface) {
 
-            return (new ActiveDescriptors($this->moduleList))
+            $container = (new ActiveDescriptors($this->moduleList))
 
-            ->findMatchingExports($moduleInterface)->getContainer();
+            ->findMatchingExports($moduleInterface);
+
+            if (is_null($container))
+
+                throw new Exception("No module descriptor found matching {$moduleInterface}");
+
+            return $container->getContainer();
         }
 
         if (!empty($this->moduleList)) {
