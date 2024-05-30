@@ -8,7 +8,7 @@ use Exception;
 
 class UnexpectedAuthentication extends Exception
 {
-    public function __construct(public readonly AuthStorage $authStorage)
+    public function __construct() // not passing storage since it's irrelevant to user
     {
 
         //

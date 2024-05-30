@@ -6,6 +6,8 @@ use Suphle\Hydration\Container;
 
 use Suphle\Auth\Storage\{SessionStorage, TokenStorage};
 
+use Suphle\Exception\Explosives\UnexpectedAuthentication;
+
 use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
 
 use Suphle\Testing\{TestTypes\ModuleLevelTest, Condiments\BaseDatabasePopulator};
@@ -18,8 +20,6 @@ class ApiGuestModuleBasedTest extends ModuleLevelTest
 {
     use BaseDatabasePopulator;
     use SecureUserAssertions;
-
-    protected bool $debugCaughtExceptions = true;
 
     protected function getModules(): array
     {
@@ -40,10 +40,15 @@ class ApiGuestModuleBasedTest extends ModuleLevelTest
 
         $user = $this->replicator->getRandomEntity();
 
-        $this->actingAs($user, TokenStorage::class); // given
+        $token = $this->actingAs($user, TokenStorage::class); // given
 
-        $this->get("/api/v1/strictly-guest") // when
+        $responseAsserter = $this->get("/api/v1/strictly-guest", [], [
 
-        ->assertOk(/*401*/); // then
+            "Authorization" => "Bearer $token"
+        ]); // when
+
+        $responseAsserter->assertStatus(500); // then
+
+        $responseAsserter->assertSee("UnexpectedAuthentication");
     }
 }

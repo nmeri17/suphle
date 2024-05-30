@@ -6,7 +6,7 @@ use Suphle\Routing\Structures\BaseScrutinizerHandler;
 
 use Suphle\Services\Decorators\BindsAsSingleton;
 
-use Suphle\Exception\Explosives\Unauthenticated;
+use Suphle\Exception\Explosives\UnexpectedAuthentication;
 
 #[BindsAsSingleton]
 class MustBeGuestScrutinizer extends BaseScrutinizerHandler
@@ -33,8 +33,10 @@ class MustBeGuestScrutinizer extends BaseScrutinizerHandler
         catch (Unauthenticated $exception) {
 
             $foundUser = false;
-        }var_dump($foundUser);
-        if ($foundUser !== false) throw new UnexpectedAuthentication();
+        }
+        if ($foundUser !== false)
+
+            throw new UnexpectedAuthentication();
         
     }
 }
