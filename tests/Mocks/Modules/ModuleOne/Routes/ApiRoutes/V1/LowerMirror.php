@@ -4,7 +4,7 @@ namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\ApiRoutes\V1;
 
 use Suphle\Routing\{BaseApiCollection, PreMiddlewareRegistry, Decorators\HandlingCoordinator};
 
-use Suphle\Auth\RequestScrutinizers\AuthenticateMetaFunnel;
+use Suphle\Auth\RequestScrutinizers\{AuthenticateMetaFunnel, GuestMetaFunnel};
 
 use Suphle\Response\Format\Json;
 
@@ -37,6 +37,12 @@ class LowerMirror extends BaseApiCollection
         $this->_httpGet(new Json("segmentHandler"));
     }
 
+    public function STRICTLY__GUESTh()
+    {
+
+        $this->_httpGet(new Json("segmentHandler"));
+    }
+
     public function _preMiddleware(PreMiddlewareRegistry $registry): void
     {
 
@@ -46,6 +52,9 @@ class LowerMirror extends BaseApiCollection
 
             	$this->hydrateAuthStorage()
             )
-        );
+        )->tagPatterns(new GuestMetaFunnel(
+        	
+        	["STRICTLY__GUESTh"], $this->hydrateAuthStorage()
+        ));
     }
 }

@@ -9,13 +9,13 @@ class ApiEntryCoordinator extends ServiceCoordinator
     public function segmentHandler()
     {
 
-        //
+        return [];
     }
 
     public function simplePairOverride()
     {
 
-        //
+        return [];
     }
 
     public function originalCascade()

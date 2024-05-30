@@ -8,7 +8,7 @@ use Suphle\Middleware\Handlers\{FinalHandlerWrapper, CsrfMiddleware, JsonNegotia
 
 use Suphle\Middleware\Collectors\JsonNegotiatorCollector;
 
-use Suphle\Auth\RequestScrutinizers\{AuthenticateMetaFunnel, AuthenticateHandler, AuthorizeMetaFunnel, PathAuthorizationScrutinizer};
+use Suphle\Auth\RequestScrutinizers\{AuthenticateMetaFunnel, AuthenticateHandler, AuthorizeMetaFunnel, GuestMetaFunnel, PathAuthorizationScrutinizer, MustBeGuestScrutinizer};
 
 use Suphle\Adapters\Orms\Eloquent\RequestScrutinizers\{AccountVerifiedFunnel, UserIsVerified};
 
@@ -79,7 +79,9 @@ class Router implements RouterConfig
 
             AuthenticateMetaFunnel::class => AuthenticateHandler::class,
 
-            AuthorizeMetaFunnel::class => PathAuthorizationScrutinizer::class
+            AuthorizeMetaFunnel::class => PathAuthorizationScrutinizer::class,
+
+            GuestMetaFunnel::class => MustBeGuestScrutinizer::class
         ];
     }
 
