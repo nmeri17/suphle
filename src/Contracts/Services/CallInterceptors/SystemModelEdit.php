@@ -12,5 +12,5 @@ interface SystemModelEdit extends ServiceErrorCatcher
     /**
      * The rows to be locked while running the update. Should correspond to the rows of [updateModels]
     */
-    public function modelsToUpdate (object $baseModel): array;
+    public function modelsToUpdate (): array;
 }

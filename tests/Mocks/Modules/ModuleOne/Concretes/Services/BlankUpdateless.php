@@ -20,7 +20,7 @@ class BlankUpdateless extends UpdatelessService
         return $this->authStorage->getId();
     }
 
-    public function modelsToUpdate (object $baseModel): array
+    public function modelsToUpdate ():iterable
     {
 
         return [];

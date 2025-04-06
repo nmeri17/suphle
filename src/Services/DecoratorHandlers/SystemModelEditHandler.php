@@ -53,7 +53,7 @@ class SystemModelEditHandler extends BaseInjectionModifier
             	
             	fn () => $concrete->updateModels(...$argumentList),
 
-            	$concrete->modelsToUpdate(...$argumentList)
+            	$concrete->modelsToUpdate()
             );
         } catch (Throwable $exception) {
 

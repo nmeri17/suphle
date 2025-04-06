@@ -23,10 +23,10 @@ class SystemModelEditMock1 extends UpdatefulService implements SystemModelEdit
         return true;
     }
 
-    public function modelsToUpdate (object $baseModel): array
+    public function modelsToUpdate ():iterable
     {
 
-        return [$baseModel];
+        return [new stdClass];
     }
 
     public function unrelatedToUpdate()
