@@ -38,11 +38,14 @@ class CollectionRouteDetector
 
         $routePatterns = [];
 
-        foreach ($this->entryRouteMap() as $key => $collection) {
+        // Use the new attribute-based coordinator discovery instead of deprecated configs
+        $coordinatorClasses = $this->config->getCoordinatorClassesToScan();
+
+        foreach ($coordinatorClasses as $coordinatorClass) {
 
             $this->patternIndicator->resetIndications();
 
-            $routePatterns[$key] = $this->getCollectionRegexDetails($collection);
+            $routePatterns[$coordinatorClass] = $this->getCollectionRegexDetails($coordinatorClass);
         }
 
         return $routePatterns;
@@ -164,27 +167,6 @@ class CollectionRouteDetector
         }, $patterns);
 
         return array_combine($patterns, $values);
-    }
-
-    /**
-     * @return class-string<RouteCollection>[]
-    */
-    public function entryRouteMap(): array
-    {
-
-        $entryRoute = $this->config->browserEntryRoute();
-
-        $hasEntry = !is_null($entryRoute);
-
-        $routeMap = [];
-
-        if ($hasEntry) $routeMap[] = $entryRoute;
-
-        if ($this->config->mirrorsCollections())
-
-            $routeMap = array_merge($this->config->apiStack(), $routeMap);
-
-        return $routeMap;
     }
 
     /**

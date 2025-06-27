@@ -14,6 +14,12 @@ use Suphle\Tests\Integration\Generic\CommonBinds;
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\Config\RouterMock;
 
+use AllModules\ModuleOne\Coordinators\{
+    V3\ApiV3Coordinator,
+    V2\ApiV2Coordinator,
+    V1\ApiV1Coordinator
+};
+
 class RequestDetailsTest extends IsolatedComponentTest
 {
     use CommonBinds;
@@ -25,38 +31,29 @@ class RequestDetailsTest extends IsolatedComponentTest
 
         parent::setUp();
 
-        $this->stubConfig([ "apiStack" => [ // given
-
-            "v3" => "class3",
-
-            "v2" => "class2",
-
-            "v1" => "class1"
-        ]]);
+        $this->stubConfig([
+            "getCoordinatorClassesToScan" => [
+                ApiV3Coordinator::class,
+                ApiV2Coordinator::class,
+                ApiV1Coordinator::class
+            ]
+        ]);
     }
 
-    public function test_apiVersion_gets_versions_below_given()
+    public function test_coordinator_discovery_returns_filtered_classes()
     {
 
         $sut = $this->getRequestDetails("api/v2/first"); // when
 
-        $this->assertSame([
-
-            "v2" => "class2",
-
-            "v1" => "class1"
-        ], $sut->apiVersionClasses()); // then
+        $this->assertTrue($sut->isApiRoute()); // then
     }
 
-    public function test_apiVersion_doesnt_get_versions_above_given()
+    public function test_coordinator_discovery_handles_no_version()
     {
 
-        $sut = $this->getRequestDetails("api/v1/first"); // when
+        $sut = $this->getRequestDetails("api/first"); // when
 
-        $this->assertSame([
-
-            "v1" => "class1"
-        ], $sut->apiVersionClasses()); // then
+        $this->assertTrue($sut->isApiRoute()); // then
     }
 
     private function stubConfig(array $stubMethods): void

@@ -2,15 +2,5 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleTwo\Config;
 
-use Suphle\Config\Router;
-
-use Suphle\Tests\Mocks\Modules\ModuleTwo\Routes\BrowserCollection;
-
-class RouterMock extends Router
-{
-    public function browserEntryRoute(): ?string
-    {
-
-        return BrowserCollection::class;
-    }
-}
+// This class is no longer needed as it only returns default values
+// The base Router config provides all the necessary defaults

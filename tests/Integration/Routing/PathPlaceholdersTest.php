@@ -60,7 +60,7 @@ class PathPlaceholdersTest extends TestsRouter
             "urlReplacer" => $container->getClass(CollectionMethodToUrl::class)
         ], [
 
-            "entryRouteMap" => [BrowserNoPrefix::class]
+            "getCoordinatorClassesToScan" => [BrowserNoPrefix::class]
         ]);
     }
 

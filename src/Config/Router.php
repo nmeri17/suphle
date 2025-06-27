@@ -14,32 +14,11 @@ use Suphle\Adapters\Orms\Eloquent\RequestScrutinizers\{AccountVerifiedFunnel, Us
 
 use Suphle\Auth\Storage\TokenStorage;
 
-use Suphle\Bridge\Laravel\Routing\ModuleRouteMatcher;
-
 class Router implements RouterConfig
 {
     public function apiPrefix(): string
     {
-
         return "api";
-    }
-
-    /**
-     * {@inheritdoc}
-    */
-    public function apiStack(): array
-    {
-
-        return [];
-    }
-
-    /**
-     * {@inheritdoc}
-    */
-    public function browserEntryRoute(): ?string
-    {
-
-        return null;
     }
 
     /**
@@ -47,10 +26,8 @@ class Router implements RouterConfig
     */
     public function defaultMiddleware(): array
     {
-
         return [
             CsrfMiddleware::class,
-
             FinalHandlerWrapper::class
         ];
     }
@@ -60,9 +37,7 @@ class Router implements RouterConfig
     */
     public function collectorHandlers(): array
     {
-
         return [
-
             JsonNegotiatorCollector::class => JsonNegotiator::class,
         ];
     }
@@ -72,37 +47,37 @@ class Router implements RouterConfig
     */
     public function scrutinizerHandlers(): array
     {
-
         return [
-
             AccountVerifiedFunnel::class => UserIsVerified::class,
-
             AuthenticateMetaFunnel::class => AuthenticateHandler::class,
-
             AuthorizeMetaFunnel::class => PathAuthorizationScrutinizer::class,
-
             GuestMetaFunnel::class => MustBeGuestScrutinizer::class
         ];
     }
 
     public function mirrorsCollections(): bool
     {
-
         return false;
     }
 
     public function mirrorAuthenticator(): string
     {
-
         return TokenStorage::class;
     }
 
     /**
      * {@inheritdoc}
     */
-    public function externalRouters(): array
+    public function getCoordinatorPath(): string
     {
+        return "Coordinators";
+    }
 
-        return [ModuleRouteMatcher::class];
+    /**
+     * {@inheritdoc}
+    */
+    public function getCoordinatorClassesToScan(): array
+    {
+        return []; // Scan all coordinators by default
     }
 }

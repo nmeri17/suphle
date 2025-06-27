@@ -25,6 +25,8 @@ class RequestDetails
 
     protected static ?ServerRequestInterface $contextualRequest = null;
 
+    protected ?string $canaryState = null;
+
     public function __construct(protected readonly Router $config)
     {
 
@@ -225,38 +227,43 @@ class RequestDetails
         $this->versionPresent = $version[1] ?? null;
     }
 
-    # api/v3/verb/noun or api/verb/noun will return all versions from v3 and below
-    public function apiVersionClasses(): array
-    {
-
-        $apiStack = $this->config->apiStack();
-
-        $versionKeys = array_map("strtolower", array_keys($apiStack));
-
-        $versionHandlers = array_values($apiStack);
-
-        if (!is_null($this->versionPresent)) {
-
-            $startIndex = array_search(
-                strtolower((string) $this->versionPresent), // case-insensitive search
-                $versionKeys
-            );
-        } else {
-            $startIndex = 0;
-        } // if there's no specific version, we will serve the most recent
-
-        $versionHandlers = array_slice($versionHandlers, $startIndex);
-
-        $versionKeys = array_slice($versionKeys, $startIndex);
-
-        return array_combine($versionKeys, $versionHandlers);
-    }
-
     public function matchesPath(string $path): bool
     {
 
         $sanitizedPath = preg_quote(trim($path, "/"), "/");
 
         return preg_match("/^\/?" . $sanitizedPath . "\/?$/i", $this->getPath());
+    }
+
+    public function getCanaryState(): ?string
+    {
+        if ($this->canaryState !== null) {
+            return $this->canaryState;
+        }
+
+        $controllerClass = $this->getActiveControllerClass(); // You may need to implement this
+        if (!$controllerClass || !class_exists($controllerClass)) {
+            $this->canaryState = null;
+            return null;
+        }
+
+        $reflection = new \ReflectionClass($controllerClass);
+        $attributes = $reflection->getAttributes(\Suphle\Routing\Attributes\CanaryState::class);
+
+        if ($attributes) {
+            $canaryAttr = $attributes[0]->newInstance();
+            foreach ($canaryAttr->canaries as $canaryClass) {
+                if (class_exists($canaryClass)) {
+                    $result = (new $canaryClass())->willLoad();
+                    if ($result !== null) {
+                        $this->canaryState = $result;
+                        return $result;
+                    }
+                }
+            }
+        }
+
+        $this->canaryState = null;
+        return null;
     }
 }

@@ -47,8 +47,11 @@ class ApiGuestModuleBasedTest extends ModuleLevelTest
             "Authorization" => "Bearer $token"
         ]); // when
 
-        $responseAsserter->assertStatus(500); // then
+        $responseAsserter->assertStatus(403); // then
 
-        $responseAsserter->assertSee("UnexpectedAuthentication");
+        $responseAsserter->assertJson([
+            'error' => 'UnexpectedAuthentication',
+            'message' => 'This route is only accessible to guest users. You are already authenticated.'
+        ]);
     }
 }

@@ -8,20 +8,17 @@ class Json extends GenericRenderer
 {
     protected bool $shouldDeferValidationFailure = false;
 
-    public function __construct(string $handler)
+    public function __construct(array $data)
     {
-
-        $this->handler = $handler;
+        $this->setRawResponse($data);
 
         $this->setHeaders(200, [
-
             PayloadStorage::CONTENT_TYPE_KEY => PayloadStorage::JSON_HEADER_VALUE
         ]);
     }
 
     public function render(): string
     {
-
         return $this->renderJson();
     }
 
@@ -30,7 +27,6 @@ class Json extends GenericRenderer
      */
     public function deferValidationContent(): bool
     {
-
         return false;
     }
 }

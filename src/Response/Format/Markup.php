@@ -14,26 +14,20 @@ class Markup extends BaseHtmlRenderer implements MirrorableRenderer
     protected bool $wantsJson = false;
 
     public function __construct(
-        protected string $handler,
         protected string $markupName
     ) {
-
         $this->setHeaders(200, [
-
             PayloadStorage::CONTENT_TYPE_KEY => PayloadStorage::HTML_HEADER_VALUE
         ]);
     }
 
     public function render(): string
     {
-
         if (!$this->wantsJson) {
-
             return $this->htmlParser->parseRenderer($this);
         }
 
         $this->setHeaders(200, [
-
             PayloadStorage::CONTENT_TYPE_KEY => PayloadStorage::JSON_HEADER_VALUE
         ]);
 
@@ -42,9 +36,7 @@ class Markup extends BaseHtmlRenderer implements MirrorableRenderer
 
     public function setWantsJson(): void
     {
-
         $this->wantsJson = true;
-
         $this->shouldDeferValidationFailure = false;
     }
 }

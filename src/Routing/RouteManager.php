@@ -43,25 +43,19 @@ class RouteManager
 
     public function findRenderer(): void
     {
+        // Use the new attribute-based coordinator discovery instead of deprecated configs
+        $coordinatorClasses = $this->config->getCoordinatorClassesToScan();
 
-        $collectionList = $this->entryRouteMap();
+        foreach ($coordinatorClasses as $coordinatorClass) {
 
-        $requestPath = trim($this->requestDetails->getPath(), "/"); // this should only be read after setting collection list since it can mutate request path
+            $renderer = $this->recursiveSearch($coordinatorClass, $this->requestDetails->getPath());
 
-        $this->finishCollectionHousekeeping(); // refresh the placeholders and stuff from a possible earlier request, so we can work with a fresh slate
+            if (!is_null($renderer)) {
 
-        foreach ($collectionList as $collection) {
+                $this->activeRenderer = $renderer;
 
-            $hit = $this->recursiveSearch($collection, $requestPath);
-
-            if (!is_null($hit)) {
-
-                $this->activeRenderer = $hit;
-
-                return;
+                break;
             }
-
-            $this->finishCollectionHousekeeping(); // refresh for just next collection
         }
     }
 
@@ -286,41 +280,6 @@ class RouteManager
     {
 
         return $this->activeRenderer;
-    }
-
-    /**
-     * @return class-string<RouteCollection>[]
-    */
-    public function entryRouteMap(): array
-    {
-
-        $requestDetails = $this->requestDetails;
-
-        $entryRoute = $this->config->browserEntryRoute();
-
-        $hasEntry = !is_null($entryRoute);
-
-        if (!$requestDetails->isApiRoute()) {
-
-            $browserRoutes = [];
-
-            if ($hasEntry) {
-                $browserRoutes[] = $entryRoute;
-            }
-
-            return $browserRoutes;
-        }
-
-        $apiStack = $requestDetails->apiVersionClasses();
-
-        if ($this->patternIndicator->shouldMirror() && $hasEntry) {
-
-            array_push($apiStack, $entryRoute);
-        } // entry goes to the bottom
-
-        $requestDetails->stripApiPrefix(); // just before we go on our search
-
-        return $apiStack;
     }
 
     /**

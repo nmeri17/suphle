@@ -2,7 +2,7 @@
 
 namespace Suphle\Modules;
 
-use Suphle\Routing\{RouteManager, ExternalRouteMatcher, CollectionMetaQueue};
+use Suphle\Routing\{RouteManager, CollectionMetaQueue};
 
 use Suphle\Request\{RequestDetails, PayloadStorage};
 
@@ -28,8 +28,7 @@ class ModuleInitializer implements HighLevelRequestHandler
         protected readonly DescriptorInterface $descriptor,
         protected readonly RequestDetails $requestDetails,
         protected readonly DecoratorHydrator $decoratorHydrator,
-        protected readonly RouteManager $router,
-        protected readonly ExternalRouteMatcher $externalRouters
+        protected readonly RouteManager $router
     ) {
 
         $this->container = $descriptor->getContainer();
@@ -45,11 +44,6 @@ class ModuleInitializer implements HighLevelRequestHandler
             $this->foundRoute = true;
 
             $this->bindRoutingSideEffects();
-        } else {
-
-            $this->sharePayloadToExternals();
-
-            $this->foundRoute = $this->externalRouters->shouldDelegateRouting();
         }
 
         return $this;
@@ -83,16 +77,6 @@ class ModuleInitializer implements HighLevelRequestHandler
         );
     }
 
-    protected function sharePayloadToExternals(): void
-    {
-
-        $payloadStorage = $this->container->getClass(PayloadStorage::class);
-
-        $payloadStorage->setRefreshMode(true);
-
-        $payloadStorage->indicateRefresh();
-    }
-
     /**
      * @param {rendererManager} this manager should come from currently active module
      *
@@ -100,11 +84,6 @@ class ModuleInitializer implements HighLevelRequestHandler
     */
     public function fullRequestProtocols(RendererManager $rendererManager): self
     {
-
-        if ($this->externalRouters->hasActiveHandler()) {
-
-            return $this;
-        }
 
         $this->container->getClass(CollectionMetaQueue::class)
 
@@ -118,14 +97,9 @@ class ModuleInitializer implements HighLevelRequestHandler
     public function setHandlingRenderer(): void
     {
 
-        if ($this->externalRouters->hasActiveHandler()) {
+        $this->finalRenderer = $this->container->getClass(MiddlewareQueue::class)
 
-            $this->finalRenderer = $this->externalRouters->getConvertedRenderer();
-        } else {
-            $this->finalRenderer = $this->container->getClass(MiddlewareQueue::class)
-
-            ->runStack();
-        }
+        ->runStack();
     }
 
     public function handlingRenderer(): ?BaseRenderer

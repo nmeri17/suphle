@@ -4,9 +4,9 @@ namespace Suphle\Config;
 
 use Suphle\Contracts\Config\{ExceptionInterceptor, ModuleFiles};
 
-use Suphle\Exception\Explosives\{EditIntegrityException, NotFoundException, Unauthenticated, UnauthorizedServiceAccess, UnverifiedAccount, ValidationFailure};
+use Suphle\Exception\Explosives\{EditIntegrityException, NotFoundException, Unauthenticated, UnauthorizedServiceAccess, UnverifiedAccount, ValidationFailure, UnexpectedAuthentication};
 
-use Suphle\Exception\Diffusers\{GenericDiffuser, NotFoundDiffuser, ValidationFailureDiffuser, UnauthorizedDiffuser, UnauthenticatedDiffuser, StaleEditDiffuser, UnverifiedAccountDiffuser};
+use Suphle\Exception\Diffusers\{GenericDiffuser, NotFoundDiffuser, ValidationFailureDiffuser, UnauthorizedDiffuser, UnauthenticatedDiffuser, StaleEditDiffuser, UnverifiedAccountDiffuser, UnexpectedAuthenticationDiffuser};
 
 class ExceptionConfig implements ExceptionInterceptor
 {
@@ -31,7 +31,9 @@ class ExceptionConfig implements ExceptionInterceptor
 
             UnverifiedAccount::class => UnverifiedAccountDiffuser::class,
 
-            ValidationFailure::class => ValidationFailureDiffuser::class
+            ValidationFailure::class => ValidationFailureDiffuser::class,
+
+            UnexpectedAuthentication::class => UnexpectedAuthenticationDiffuser::class
         ];
     }
 

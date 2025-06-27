@@ -31,7 +31,7 @@ class _resource_nameApiCoordinator extends ServiceCoordinator
         	"results" => $this->_resource_nameSearcher->convertToQuery(
 
 				$searchBuilder->getBuilder(), ["query"]
-			)->paginate();
+			)->paginate()
         ];
     }
 }

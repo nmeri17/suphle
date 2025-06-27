@@ -3,17 +3,12 @@
 namespace Suphle\Tests\Integration\Routing\Crud;
 
 use Suphle\Exception\Explosives\IncompatibleHttpMethod;
-
+use Suphle\Routing\Attributes\HttpMethod;
 use Suphle\Security\CSRF\CsrfGenerator;
-
 use Suphle\Testing\Condiments\BaseDatabasePopulator;
-
 use Suphle\Tests\Integration\Routing\TestsRouter;
-
 use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Crud\BasicRoutes;
-
 use Suphle\Tests\Mocks\Models\Eloquent\Employment;
-
 use Exception;
 
 class GenericTest extends TestsRouter
@@ -59,7 +54,7 @@ class GenericTest extends TestsRouter
         ], function (
             string $requestPath,
             string $handler,
-            string $httpMethod,
+            HttpMethod $httpMethod,
             $payload = null
         ) {
 
@@ -81,10 +76,10 @@ class GenericTest extends TestsRouter
         $payload = array_merge($this->csrfField, ["id" => 5]);
 
         return [
-            ["create", "showCreateForm", "get"],
+            ["create", "showCreateForm", HttpMethod::GET],
 
             [
-                "save", "saveNew", "post",
+                "save", "saveNew", HttpMethod::POST,
 
                 array_merge($this->csrfField, [
 
@@ -96,15 +91,15 @@ class GenericTest extends TestsRouter
                 ])
             ],
 
-            ["", "showAll", "get"],
+            ["", "showAll", HttpMethod::GET],
 
-            ["5", "showOne", "get"],
+            ["5", "showOne", HttpMethod::GET],
 
-            ["edit", "updateOne", "put", $payload],
+            ["edit", "updateOne", HttpMethod::PUT, $payload],
 
-            ["delete", "deleteOne", "delete", $payload],
+            ["delete", "deleteOne", HttpMethod::DELETE, $payload],
 
-            ["search", "showSearchForm", "get"]
+            ["search", "showSearchForm", HttpMethod::GET]
         ];
     }
 
@@ -113,14 +108,16 @@ class GenericTest extends TestsRouter
 
         $this->expectException(IncompatibleHttpMethod::class); // then
 
+        $url = "/disable-some/save";
         // In the collection, we disabled explicit HTTP method "post";url "save", which would make this request be interpreted as HTTP method "get";url ".../id"
-        $this->fakeRequest("/disable-some/save", "post"); // when
+        $this->fakeRequest($url, HttpMethod::POST); // when
     }
 
     public function test_can_override_routes()
     {
 
-        $matchingRenderer = $this->fakeRequest("/override/5"); // when
+        $url = "/override/5";
+        $matchingRenderer = $this->fakeRequest($url); // when
 
         $this->assertNotNull($matchingRenderer);
 
@@ -132,7 +129,8 @@ class GenericTest extends TestsRouter
 
         $this->expectException(Exception::class); // then
 
-        $this->fakeRequest("/non-existent/save"); // when
+        $url = "/non-existent/save";
+        $this->fakeRequest($url); // when
     }
 
     /**

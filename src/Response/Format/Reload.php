@@ -15,28 +15,22 @@ class Reload extends BaseHtmlRenderer
 
     protected RendererManager $rendererManager;
 
-    public function __construct(protected string $handler)
+    public function __construct(protected iterable $data = [])
     {
-
         $this->setHeaders(self::STATUS_CODE, [
-
             PayloadStorage::CONTENT_TYPE_KEY => PayloadStorage::HTML_HEADER_VALUE
         ]);
     }
 
     public function setRendererManager(RendererManager $rendererManager): void
     {
-
         $this->rendererManager = $rendererManager;
     }
 
     public function render(): string
     {
-
         return $this->rendererManager
-
-        ->invokePreviousRenderer($this->rawResponse)
-
-        ->render();
+            ->invokePreviousRenderer($this->data)
+            ->render();
     }
 }

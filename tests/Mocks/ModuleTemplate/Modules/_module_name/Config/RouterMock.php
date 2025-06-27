@@ -4,13 +4,17 @@ namespace Suphle\Tests\Mocks\Modules\_module_name\Config;
 
 use Suphle\Config\Router;
 
-use Suphle\Tests\Mocks\Modules\_module_name\Routes\BrowserCollection;
-
 class RouterMock extends Router
 {
-    public function browserEntryRoute(): ?string
+    public function getCoordinatorPath(): string
     {
+        return "Controllers";
+    }
 
-        return BrowserCollection::class;
+    public function getCoordinatorClassesToScan(): array
+    {
+        return [
+            // List specific coordinator classes to scan, or empty array for all
+        ];
     }
 }
