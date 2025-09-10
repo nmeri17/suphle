@@ -3,10 +3,12 @@
 namespace Suphle\Adapters\Presentation\Hotwire\Formats;
 
 use Suphle\Contracts\{Presentation\BaseRenderer, IO\Session};
+use Suphle\Contracts\Presentation\MirrorableRenderer;
+use Suphle\Request\PayloadStorage;
+use Suphle\Contracts\Response\OpenApiRenderer;
+use Suphle\Response\Traits\OpenApiRendererTrait;
 
 use Suphle\Response\Format\BaseHtmlRenderer;
-
-use Suphle\Request\PayloadStorage;
 
 use Suphle\Hydration\Structures\CallbackDetails;
 
@@ -18,8 +20,10 @@ use Suphle\Adapters\Presentation\Hotwire\HotwireStreamBuilder;
 
     "setPayloadStorage", "setCallbackDetails"
 ])]
-abstract class BaseHotwireStream extends BaseHtmlRenderer
+abstract class BaseHotwireStream extends BaseHtmlRenderer implements MirrorableRenderer, OpenApiRenderer
 {
+    use OpenApiRendererTrait;
+
     public const TURBO_INDICATOR = "text/vnd.turbo-stream.html",
 
     APPEND_ACTION = "append", PREPEND_ACTION = "prepend",
@@ -49,6 +53,8 @@ abstract class BaseHotwireStream extends BaseHtmlRenderer
     protected int $statusCode = 200;
 
     protected bool $trimmedActions = false;
+
+    protected array $streams = [];
 
     public function setPayloadStorage(PayloadStorage $payloadStorage): void
     {
@@ -174,11 +180,9 @@ abstract class BaseHotwireStream extends BaseHtmlRenderer
 
     public function render(): string
     {
-
         $useFallback = !$this->isHotwireRequest();
 
         if ($useFallback) {
-
             $renderedContent = $this->fallbackRenderer->render();
         }
 
@@ -191,14 +195,12 @@ abstract class BaseHotwireStream extends BaseHtmlRenderer
         $allStreams = "";
 
         foreach ($this->hotwireHandlers as $index => $handlerDetails) {
-
             [$hotwireAction,, $targets ] = $handlerDetails;
 
             $this->rawResponse = $this->nodeResponses[$index]; // for use by the target derivator and the html parser at each node
 
             $targetString = $this->callbackDetails
-
-            ->recursiveValueDerivation($targets, $this);
+                ->recursiveValueDerivation($targets, $this);
 
             $builder = new HotwireStreamBuilder($hotwireAction, $targetString);
 
@@ -208,12 +210,38 @@ abstract class BaseHotwireStream extends BaseHtmlRenderer
 
             $this->streamBuilders[] = $builder;
 
-            $allStreams .= $builder;
+            $allStreams .= $builder->getStream();
         }
 
-        $this->rawResponse = $this->nodeResponses; // reset it
-
         return $allStreams;
+    }
+
+    /**
+     * Override default content type for Hotwire streams
+     */
+    public static function getContentType(): string
+    {
+        return self::TURBO_INDICATOR;
+    }
+
+    /**
+     * Override default response schema for Hotwire streams
+     */
+    public static function getResponseSchema(): array
+    {
+        return [
+            'type' => 'string',
+            'format' => 'html',
+            'description' => static::getDescription()
+        ];
+    }
+
+    /**
+     * Override default description for Hotwire streams
+     */
+    public static function getDescription(): string
+    {
+        return 'Turbo Stream response';
     }
 
     protected function setConditionalHeader(bool $notHot): void
@@ -325,5 +353,15 @@ abstract class BaseHotwireStream extends BaseHtmlRenderer
         }
 
         return $this;
+    }
+
+    public function addStream(string $action, string $target, string $template, array $data = []): void
+    {
+        $this->streams[] = [
+            "action" => $action,
+            "target" => $target,
+            "template" => $template,
+            "data" => $data
+        ];
     }
 }

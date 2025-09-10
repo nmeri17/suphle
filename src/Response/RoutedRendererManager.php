@@ -112,7 +112,7 @@ class RoutedRendererManager implements RendererManager, BaseResponseManager, Val
 
             $previousUrl = $this->sessionClient->getValue(self::PREVIOUS_GET_URL);
 
-            $previousRenderer = new Redirect("", fn () => $previousUrl);
+            $previousRenderer = new Redirect(fn () => $previousUrl);
 
             foreach ($toMerge as $key => $value) {
 

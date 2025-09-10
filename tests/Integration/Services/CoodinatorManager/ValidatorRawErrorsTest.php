@@ -91,7 +91,7 @@ class ValidatorRawErrorsTest extends ModuleLevelTest
     protected function getRenderer(): BaseRenderer
     {
 
-        $renderer = new Json("postWithValidator");
+        $renderer = new Json([]);
 
         $renderer->setCoordinatorClass($this->positiveDouble(ValidatorCoordinator::class));
 

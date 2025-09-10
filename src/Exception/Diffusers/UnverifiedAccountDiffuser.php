@@ -51,11 +51,9 @@ class UnverifiedAccountDiffuser implements ExceptionHandler
 
     protected function getTokenRenderer(): BaseRenderer
     {
-
-        $renderer = new Json("");
+        $renderer = new Json([]);
 
         $renderer->setRawResponse([
-
             "message" => "User be verified. Visit ". $this->verificationUrl . " to begin"
         ]);
 
@@ -66,11 +64,9 @@ class UnverifiedAccountDiffuser implements ExceptionHandler
 
     protected function getSessionRenderer(): BaseRenderer
     {
-
         $verificationPath = $this->verificationUrl;
 
-        $renderer = new Redirect("", function () use ($verificationPath) {
-
+        $renderer = new Redirect(function () use ($verificationPath) {
             return $verificationPath;
         });
 

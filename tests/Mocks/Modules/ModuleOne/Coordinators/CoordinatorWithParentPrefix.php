@@ -2,15 +2,16 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-use Suphle\Coordinators\BaseCoordinator;
-use Suphle\Routing\Attributes\{Route, RoutePrefix, HttpMethod};
+use Suphle\Services\ServiceCoordinator;
+use Suphle\Routing\Attributes\{Route, RoutePrefix};
+use Suphle\Response\Format\Json;
 
 #[RoutePrefix('api/v1/secure')]
-class CoordinatorWithParentPrefix extends BaseCoordinator
+class CoordinatorWithParentPrefix extends ServiceCoordinator
 {
-    #[Route('/', method: HttpMethod::GET)]
-    public function index(): array
+    #[Route('/')]
+    public function index(): Json
     {
-        return ['message' => 'Secure area'];
+        return new Json(['message' => 'Secure area']);
     }
 } 

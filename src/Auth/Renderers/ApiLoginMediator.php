@@ -14,25 +14,27 @@ class ApiLoginMediator implements LoginFlowMediator
 {
     public function __construct(protected readonly ApiAuthRepo $authService)
     {
-
         //
     }
 
     public function successRenderer(): BaseRenderer
     {
-
-        return new Json("successLogin");
+        return new Json([
+            'status' => 'success',
+            'message' => 'Login successful'
+        ]);
     }
 
     public function failedRenderer(): BaseRenderer
     {
-
-        return new Json("failedLogin");
+        return new Json([
+            'status' => 'error',
+            'message' => 'Login failed'
+        ]);
     }
 
     public function getLoginService(): LoginActions
     {
-
         return $this->authService;
     }
 }

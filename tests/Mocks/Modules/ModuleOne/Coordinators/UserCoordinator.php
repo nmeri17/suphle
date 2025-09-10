@@ -2,17 +2,19 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-use Suphle\Coordinators\BaseCoordinator;
-use Suphle\Routing\Attributes\{Route, RoutePrefix, CanaryRoute, HttpMethod, CanaryState};
+use Suphle\Routing\Attributes\{Route, RoutePrefix, CanaryRoute, HttpMethod, CanaryState, PreMiddleware};
 use Suphle\Response\Format\{Json, Redirect, Reload, Markup};
 use Suphle\Tests\Mocks\Modules\ModuleOne\Middleware\AuthMiddleware;
 use Suphle\Tests\Mocks\Modules\ModuleOne\Canary\{BetaUserCanary, SpecialUserCanary};
+use Suphle\Coordinators\ServiceCoordinator;
+use Suphle\Auth\RequestScrutinizers\AuthenticateMetaFunnel;
 
 #[CanaryState([BetaUserCanary::class, SpecialUserCanary::class])]
 #[RoutePrefix('api/v1/users')]
-class UserCoordinator extends BaseCoordinator
+class UserCoordinator extends ServiceCoordinator
 {
-    #[Route('/', method: HttpMethod::GET, middlewares: [AuthMiddleware::class])]
+    #[Route('/')]
+    #[PreMiddleware(AuthenticateMetaFunnel::class)]
     public function index(): Json
     {
         $canary = $this->requestDetails->getCanaryState();
@@ -29,18 +31,17 @@ class UserCoordinator extends BaseCoordinator
         return new Json(['status' => 'created']);
     }
 
-    #[Route('/secure', method: HttpMethod::GET, middlewares: [AuthMiddleware::class])]
-    #[CanaryRoute([BetaUserCanary::class], FallbackForAllUsers::class)]
-    public function secureRoute(): Json
+    #[Route('/secure')]
+    #[PreMiddleware(AuthenticateMetaFunnel::class)]
+    public function secure(): Json
     {
-        return new Json(['beta' => true]);
+        return new Json(['message' => 'Secure content']);
     }
 
-    #[Route('/{id}', method: HttpMethod::GET)]
+    #[Route('/{id}')]
     public function show(): Json
     {
-        $id = $this->pathPlaceholders->getSegmentValue('id');
-        return new Json(['user' => ['id' => $id, 'name' => 'John Doe']]);
+        return new Json(['message' => 'User details']);
     }
 
     #[Route('/{id}', method: HttpMethod::PUT)]
@@ -70,17 +71,13 @@ class UserCoordinator extends BaseCoordinator
     #[Route('/reload-example', method: HttpMethod::PUT)]
     public function reloadExample(): Reload
     {
-        // Example of reload response with validation errors and old input
-        return new Reload([
-            'validation_errors' => ['email' => 'Invalid email format'],
-            'payload_storage' => ['email' => 'user@example.com']
-        ]);
+        // Example of reload response - framework handles validation data automatically
+        return new Reload();
     }
 
-    #[Route('/markup-example', method: HttpMethod::GET)]
+    #[Route('/markup-example')]
     public function markupExample(): Markup
     {
-        // Example of markup response
-        return new Markup('user-profile');
+        return new Markup('test.markup', ['data' => 'example data']);
     }
 } 

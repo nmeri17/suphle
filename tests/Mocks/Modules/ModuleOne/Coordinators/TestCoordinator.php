@@ -2,14 +2,14 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-use Suphle\Coordinators\BaseCoordinator;
+use Suphle\Coordinators\ServiceCoordinator;
 use Suphle\Routing\Attributes\{Route, RoutePrefix, HttpMethod};
 use Suphle\Response\Format\{Json, Redirect, Reload, Markup};
 
 #[RoutePrefix('api/v1/test')]
-class TestCoordinator extends BaseCoordinator
+class TestCoordinator extends ServiceCoordinator
 {
-    #[Route('/', method: HttpMethod::GET)]
+    #[Route('/')]
     public function index(): Json
     {
         return new Json(['users' => ['Jane', 'John']]);
@@ -32,16 +32,12 @@ class TestCoordinator extends BaseCoordinator
     #[Route('/reload-example', method: HttpMethod::PUT)]
     public function reloadExample(): Reload
     {
-        // Reload should receive data for validation errors and old input
-        return new Reload([
-            'validation_errors' => ['field' => 'Error message'],
-            'payload_storage' => ['old_field' => 'old_value']
-        ]);
+        return new Reload();
     }
 
-    #[Route('/markup-example', method: HttpMethod::GET)]
+    #[Route('/markup-example')]
     public function markupExample(): Markup
     {
-        return new Markup('user-profile');
+        return new Markup('test.markup', ['data' => 'example data']);
     }
 } 

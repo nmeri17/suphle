@@ -2,14 +2,16 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-use Suphle\Coordinators\BaseCoordinator;
-use Suphle\Routing\Attributes\{Route, HttpMethod};
+use Suphle\Services\ServiceCoordinator;
+use Suphle\Routing\Attributes\{Route, RoutePrefix};
+use Suphle\Response\Format\Json;
 
-class CoordinatorWithoutPrefix extends BaseCoordinator
+#[RoutePrefix('')]
+class CoordinatorWithoutPrefix extends ServiceCoordinator
 {
-    #[Route('/test', method: HttpMethod::GET)]
-    public function test(): array
+    #[Route('/test')]
+    public function test(): Json
     {
-        return ['message' => 'This should be ignored'];
+        return new Json(['message' => 'This should be ignored']);
     }
 } 

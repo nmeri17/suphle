@@ -3,24 +3,27 @@
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
 use Suphle\Services\ServiceCoordinator;
+use Suphle\Routing\Attributes\{Route, RoutePrefix};
+use Suphle\Response\Format\Json;
 
+#[RoutePrefix('api/v1')]
 class ApiEntryCoordinator extends ServiceCoordinator
 {
-    public function segmentHandler()
+    #[Route('api-segment')]
+    public function segmentHandler(): Json
     {
-
-        return [];
+        return new Json([]);
     }
 
-    public function simplePairOverride()
+    #[Route('segment/{id}')]
+    public function simplePairOverride(): Json
     {
-
-        return [];
+        return new Json([]);
     }
 
-    public function originalCascade()
+    #[Route('cascade')]
+    public function originalCascade(): Json
     {
-
-        return [];
+        return new Json([]);
     }
 }

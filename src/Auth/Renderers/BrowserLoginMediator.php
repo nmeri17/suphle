@@ -18,44 +18,32 @@ class BrowserLoginMediator implements LoginFlowMediator
 
     public function __construct(protected readonly BrowserAuthRepo $authService)
     {
-
         //
     }
 
     public function successRenderer(): BaseRenderer
     {
-
         $defaultPath = $this->successDestination;
-
-        return new Redirect("successLogin", function (PayloadStorage $payloadStorage) use ($defaultPath) {
-
+        return new Redirect(function (PayloadStorage $payloadStorage) use ($defaultPath) {
             if (!$payloadStorage->hasKey("path")) {
-
                 return $defaultPath;
             }
-
             $path = $payloadStorage->getKey("path");
-
             $queryPart = $payloadStorage->getKey("query");
-
             if (!empty($queryPart)) {
-
                 $path .= "?" . $queryPart;
             }
-
             return $path;
         });
     }
 
     public function failedRenderer(): BaseRenderer
     {
-
-        return new Reload("failedLogin");
+        return new Reload();
     }
 
     public function getLoginService(): LoginActions
     {
-
         return $this->authService;
     }
 }

@@ -3,13 +3,17 @@
 namespace Suphle\Response\Format;
 
 use Suphle\Request\PayloadStorage;
+use Suphle\Contracts\Response\OpenApiRenderer;
+use Suphle\Response\Traits\OpenApiRendererTrait;
 
 use Symfony\Component\HttpFoundation\File\{File, Exception\FileException};
 
 use Closure;
 
-class LocalFileDownload extends Redirect
+class LocalFileDownload extends Redirect implements OpenApiRenderer
 {
+    use OpenApiRendererTrait;
+
     public function __construct(
         protected string $handler,
         protected Closure $deriveFilePath,
@@ -82,5 +86,55 @@ class LocalFileDownload extends Redirect
 
             "Connection" => "Keep-Alive"
         ]);
+    }
+
+    /**
+     * Override default content type for LocalFileDownload
+     */
+    public static function getContentType(): string
+    {
+        return 'application/octet-stream';
+    }
+
+    /**
+     * Override default status code for LocalFileDownload
+     */
+    public static function getStatusCode(): int
+    {
+        return 200;
+    }
+
+    /**
+     * Override default response schema for LocalFileDownload
+     */
+    public static function getResponseSchema(): array
+    {
+        return [
+            'type' => 'string',
+            'format' => 'binary',
+            'description' => static::getDescription(),
+            'headers' => [
+                'Content-Disposition' => [
+                    'description' => 'File download attachment header',
+                    'schema' => [
+                        'type' => 'string'
+                    ]
+                ],
+                'Content-Length' => [
+                    'description' => 'File size in bytes',
+                    'schema' => [
+                        'type' => 'integer'
+                    ]
+                ]
+            ]
+        ];
+    }
+
+    /**
+     * Override default description for LocalFileDownload
+     */
+    public static function getDescription(): string
+    {
+        return 'File download response';
     }
 }

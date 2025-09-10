@@ -2,16 +2,17 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-use Suphle\Coordinators\BaseCoordinator;
-use Suphle\Routing\Attributes\{Route, HttpMethod};
+use Suphle\Services\ServiceCoordinator;
+use Suphle\Routing\Attributes\{Route, RoutePrefix};
 use Suphle\Response\Format\Json;
 
-class BetaUserCanary extends BaseCoordinator
+#[RoutePrefix('')]
+class BetaUserCanary extends ServiceCoordinator
 {
-    #[Route('/beta', method: HttpMethod::GET)]
-    public function betaFeature(): Json
+    #[Route('/beta')]
+    public function beta(): Json
     {
-        return new Json(['beta' => true, 'feature' => 'experimental']);
+        return new Json(['message' => 'Beta version']);
     }
 
     public function shouldUseCanary(): bool

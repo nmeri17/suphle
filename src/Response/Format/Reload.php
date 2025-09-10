@@ -7,15 +7,20 @@ use Suphle\Services\Decorators\VariableDependencies;
 use Suphle\Request\PayloadStorage;
 
 use Suphle\Contracts\Response\RendererManager;
+use Suphle\Contracts\Presentation\MirrorableRenderer;
+use Suphle\Contracts\Response\OpenApiRenderer;
+use Suphle\Response\Traits\OpenApiRendererTrait;
 
 #[VariableDependencies([ "setRendererManager" ])]
-class Reload extends BaseHtmlRenderer
+class Reload extends GenericRenderer implements MirrorableRenderer, OpenApiRenderer
 {
-    public const STATUS_CODE = 205; // Reset Content
+    use OpenApiRendererTrait;
+
+    public const STATUS_CODE = 200;
 
     protected RendererManager $rendererManager;
 
-    public function __construct(protected iterable $data = [])
+    public function __construct()
     {
         $this->setHeaders(self::STATUS_CODE, [
             PayloadStorage::CONTENT_TYPE_KEY => PayloadStorage::HTML_HEADER_VALUE
@@ -30,7 +35,34 @@ class Reload extends BaseHtmlRenderer
     public function render(): string
     {
         return $this->rendererManager
-            ->invokePreviousRenderer($this->data)
+            ->invokePreviousRenderer()
             ->render();
+    }
+
+    /**
+     * Override default status code for Reload
+     */
+    public static function getStatusCode(): int
+    {
+        return self::STATUS_CODE;
+    }
+
+    /**
+     * Override default response schema for Reload
+     */
+    public static function getResponseSchema(): array
+    {
+        return [
+            'type' => 'string',
+            'description' => static::getDescription()
+        ];
+    }
+
+    /**
+     * Override default description for Reload
+     */
+    public static function getDescription(): string
+    {
+        return 'Page reload response';
     }
 }

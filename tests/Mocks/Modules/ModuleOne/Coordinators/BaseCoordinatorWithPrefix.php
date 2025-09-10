@@ -2,15 +2,16 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-use Suphle\Coordinators\BaseCoordinator;
-use Suphle\Routing\Attributes\{Route, RoutePrefix, HttpMethod};
+use Suphle\Services\ServiceCoordinator;
+use Suphle\Routing\Attributes\{Route, RoutePrefix};
+use Suphle\Response\Format\Json;
 
 #[RoutePrefix('api/v1/admin')]
-class BaseCoordinatorWithPrefix extends BaseCoordinator
+class BaseCoordinatorWithPrefix extends ServiceCoordinator
 {
-    #[Route('/users', method: HttpMethod::GET)]
-    public function index(): array
+    #[Route('/users')]
+    public function index(): Json
     {
-        return ['message' => 'Admin users list'];
+        return new Json(['message' => 'Admin users list']);
     }
 } 

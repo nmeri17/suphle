@@ -3,18 +3,20 @@
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
 use Suphle\Services\ServiceCoordinator;
+use Suphle\Routing\Attributes\{Route, HttpMethod};
+use Suphle\Response\Format\Json;
 
 class MixedNestedSecuredController extends ServiceCoordinator
 {
-    public function handleUnlinked()
+    #[Route("unlink")]
+    public function handleUnlinked(): Json
     {
-
-        return [];
+        return new Json([]);
     }
 
-    public function handleRetained()
+    #[Route("retain-auth")]
+    public function handleRetained(): Json
     {
-
-        return [];
+        return new Json([]);
     }
 }

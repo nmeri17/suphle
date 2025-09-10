@@ -2,20 +2,20 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-use Suphle\Coordinators\BaseCoordinator;
-use Suphle\Routing\Attributes\{Route, RoutePrefix, HttpMethod};
+use Suphle\Coordinators\ServiceCoordinator;
+use Suphle\Routing\Attributes\{Route, RoutePrefix};
 use Suphle\Response\Format\Json;
 
 #[RoutePrefix('api/v1/users')]
-class PrefixedCoordinator extends BaseCoordinator
+class PrefixedCoordinator extends ServiceCoordinator
 {
-    #[Route('/', method: HttpMethod::GET)]
+    #[Route('/')]
     public function index(): Json
     {
         return new Json(['users' => ['Jane', 'John']]);
     }
 
-    #[Route('/{id}', method: HttpMethod::GET)]
+    #[Route('/{id}')]
     public function show(): Json
     {
         $id = $this->pathPlaceholders->getSegmentValue('id');

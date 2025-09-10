@@ -15,9 +15,15 @@ use Suphle\Response\RoutedRendererManager;
 use Closure;
 use Throwable;
 
+use Suphle\Contracts\Presentation\MirrorableRenderer;
+use Suphle\Contracts\Response\OpenApiRenderer;
+use Suphle\Response\Traits\OpenApiRendererTrait;
+
 #[VariableDependencies(["setCallbackDetails", "setSession" ])]
-class Redirect extends GenericRenderer
+class Redirect extends GenericRenderer implements MirrorableRenderer, OpenApiRenderer
 {
+    use OpenApiRendererTrait;
+
     public const STATUS_CODE = 302;
 
     protected CallbackDetails $callbackDetails;
@@ -81,5 +87,46 @@ class Redirect extends GenericRenderer
         $this->renderRedirect($this->destination);
 
         return "";
+    }
+
+    protected function serializableProperties(): array
+    {
+        return ["destination"];
+    }
+
+    /**
+     * Override default status code for Redirect
+     */
+    public static function getStatusCode(): int
+    {
+        return self::STATUS_CODE;
+    }
+
+    /**
+     * Override default response schema for Redirect
+     */
+    public static function getResponseSchema(): array
+    {
+        return [
+            'type' => 'string',
+            'description' => static::getDescription(),
+            'headers' => [
+                'Location' => [
+                    'description' => 'Redirect destination URL',
+                    'schema' => [
+                        'type' => 'string',
+                        'format' => 'uri'
+                    ]
+                ]
+            ]
+        ];
+    }
+
+    /**
+     * Override default description for Redirect
+     */
+    public static function getDescription(): string
+    {
+        return 'HTTP redirect response';
     }
 }

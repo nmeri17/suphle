@@ -2,49 +2,74 @@
 
 namespace Suphle\Tests\Integration\Routing\Canaries;
 
-use Suphle\Exception\Explosives\{NotFoundException, DevError\InvalidImplementor};
+use Suphle\Routing\Attributes\HttpMethod;
+use Suphle\Contracts\Config\Router;
+use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer, Condiments\BaseDatabasePopulator};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock};
+use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\CanaryCoordinator;
+use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
 
-use Suphle\Tests\Integration\Routing\TestsRouter;
-
-use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\CanaryRoutes;
-
-class CanaryTest extends TestsRouter
+class CanaryTest extends ModuleLevelTest
 {
-    protected bool $debugCaughtExceptions = true;
+    use BaseDatabasePopulator;
 
-    protected function getEntryCollection(): string
+    protected function getModules(): array
     {
-
-        return CanaryRoutes::class;
+        return [
+            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+                $container->replaceWithMock(Router::class, RouterMock::class, [
+                    "getCoordinatorClassesToScan" => [
+                        CanaryCoordinator::class
+                    ]
+                ]);
+            })
+        ];
     }
 
-    public function test_will_fail_on_invalid_canaries()
+    protected function getActiveEntity(): string
     {
-
-        $this->expectException(InvalidImplementor::class);
-
-        $this->fakeRequest("/load-default/same-url"); // when
+        return EloquentUser::class;
     }
 
-    public function test_no_matching_canary_will_throw_not_found()
+    public function test_canary_route_evaluation_beta_user()
     {
+        // Given: create a user in the beta group (userId < 1000)
+        $betaUser = $this->replicator->modifyInsertion(1)[0];
+        $this->actingAs($betaUser);
 
-        $this->expectException(NotFoundException::class);
+        // When
+        $response = $this->get("/api/v1/beta");
 
-        $matchingRenderer = $this->fakeRequest("/special-foo");
+        // Then
+        $this->assertNotNull($response);
+        $this->assertEquals(['beta' => true], $response->getData());
     }
 
-    public function test_can_hydrate_and_evaluate_dependencies()
+    public function test_canary_route_evaluation_stable_user()
     {
+        // Given: create a user NOT in the beta group (userId >= 1000)
+        $stableUser = $this->replicator->modifyInsertion(1, ["id" => 1001])[0];
+        $this->actingAs($stableUser);
 
-        $matchingRenderer = $this->fakeRequest(
-            "/special-foo/same-url",
-            "get",
-            ["foo" => 32]
-        );
+        // When
+        $response = $this->get("/api/v1/beta");
 
-        $this->assertNotNull($matchingRenderer);
+        // Then
+        $this->assertNotNull($response);
+        $this->assertEquals(['stable' => true], $response->getData());
+    }
 
-        $this->assertTrue($matchingRenderer->matchesHandler("fooHandler"));
+    public function test_stable_route_without_canary()
+    {
+        // Given
+        $user = $this->replicator->modifyInsertion(1, ["id" => 1001])[0];
+        $this->actingAs($user);
+
+        // When
+        $response = $this->get("/api/v1/stable");
+
+        // Then
+        $this->assertNotNull($response);
+        $this->assertEquals(['stable' => true], $response->getData());
     }
 }

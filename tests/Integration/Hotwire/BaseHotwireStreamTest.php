@@ -22,7 +22,7 @@ use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer, Proxi
 
 use Suphle\Tests\Integration\Services\CoodinatorManager\HttpValidationTest;
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\HotwireCollection, Meta\ModuleOneDescriptor, Config\RouterMock};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\HotwireCollection, Meta\ModuleOneDescriptor, Config\RouterMock, Coordinators\HotwireCoordinator};
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\CustomInterfaceCollection;
 
@@ -86,7 +86,9 @@ class BaseHotwireStreamTest extends ModuleLevelTest
 
                 $container->replaceWithMock(Router::class, RouterMock::class, [
 
-                    "browserEntryRoute" => HotwireCollection::class
+                    "getCoordinatorClassesToScan" => [
+                        HotwireCoordinator::class
+                    ]
                 ]);
             }, false, [
 

@@ -70,7 +70,7 @@ class HttpValidationTest extends ModuleLevelTest
     protected function getRendererManager(): RoutedRendererManager
     {
 
-        $renderer = new Json("postWithValidator");
+        $renderer = new Json([]);
 
         $renderer->setCoordinatorClass($this->positiveDouble(ValidatorCoordinator::class));
 

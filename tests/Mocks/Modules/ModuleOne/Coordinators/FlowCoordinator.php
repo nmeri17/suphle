@@ -3,6 +3,9 @@
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
 use Suphle\Services\ServiceCoordinator;
+use Suphle\Routing\Attributes\{Route, CollectionFlow, SingleFlow, CollectionFlowOperation, SingleFlowOperation};
+use Suphle\Response\Format\Json;
+use Suphle\Services\Structures\ModellessPayload;
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\PayloadReaders\ReadsId;
 
@@ -12,87 +15,166 @@ class FlowCoordinator extends ServiceCoordinator
 {
     public function __construct(protected readonly DummyModels $dummyModels, protected readonly BlankUpdateless $blankService)
     {
-
         //
     }
 
-    public function noFlowHandler()
+    #[Route("no-flow")]
+    public function noFlow(): Json
     {
-
-        return [];
+        return new Json([]);
     }
 
-    public function getPostDetails()
+    #[Route("posts/{id}")]
+    public function posts(): Json
     {
-
-        return [];
+        return new Json([]);
     }
 
-    public function preloaded()
+    #[Route("preloaded")]
+    public function preloaded(): Json
     {
-
-        return [];
+        return new Json([]);
     }
 
-    public function parentFlow()
+    #[Route("flow-with-flow/{id}")]
+    public function flowWithFlow(): Json
     {
-
-        return [];
+        return new Json([]);
     }
 
-    public function handleChildFlow()
+    #[Route("internal-flow/{id}")]
+    public function internalFlow(): Json
     {
-
-        return [];
+        return new Json([]);
     }
 
-    public function handleCombined()
+    #[Route("combine-flows")]
+    public function combineFlows(): Json
     {
-
-        return [];
+        return new Json([]);
     }
 
-    public function handleSingleNode()
+    #[Route("single-node")]
+    public function singleNode(): Json
     {
-
-        return [];
+        return new Json([]);
     }
 
-    public function handleFromService()
+    #[Route("from-service")]
+    public function fromService(): Json
     {
-
-        return [];
+        return new Json([]);
     }
 
-    public function handlePipeTo()
+    #[Route("pipe-to")]
+    public function pipeTo(): Json
     {
-
-        return [];
+        return new Json([]);
     }
 
-    public function handleOneOf()
+    #[Route("one-of")]
+    public function oneOf(): Json
     {
-
-        return [];
+        return new Json([]);
     }
 
-    public function readFlowPayload(ReadsId $payloadReader): array
+    #[Route("user-content/{id}")]
+    public function userContent(): Json
     {
-
-        return [
-
-            "id" => $payloadReader->getDomainObject(),
-
-            "user_id" => $this->blankService->getUserId()
-        ];
+        return new Json([]);
     }
 
-    public function getsTenModels(): array
+    #[Route("flow-to-module3")]
+    public function flowToModule3(): Json
     {
+        return new Json([]);
+    }
 
-        return [
+    // Collection node - Iterative operation
+    #[Route('catalog/{id}')]
+    #[CollectionFlow(
+        target: 'books/{id}',
+        source: 'data',
+        operation: CollectionFlowOperation::PIPE_TO
+    )]
+    public function getCatalog(): Json
+    {
+        return new Json([
+            'data' => [
+                ['id' => 1, 'name' => 'Book 1'],
+                ['id' => 2, 'name' => 'Book 2'],
+                ['id' => 3, 'name' => 'Book 3']
+            ]
+        ]);
+    }
 
-            "anchor" => $this->dummyModels->fetchModels()
-        ];
+    // Collection node - Concatenated indexes
+    #[Route('catalog/special')]
+    #[CollectionFlow(
+        target: 'special-books',
+        source: 'data',
+        operation: CollectionFlowOperation::AS_ONE,
+        columnName: 'id'
+    )]
+    public function getSpecialCatalog(): Json
+    {
+        return new Json([
+            'data' => [
+                ['id' => 1, 'name' => 'Special Book 1'],
+                ['id' => 2, 'name' => 'Special Book 2']
+            ]
+        ]);
+    }
+
+    // Collection node - Contrasting indexes
+    #[Route('catalog/range')]
+    #[CollectionFlow(
+        target: 'isbn/between',
+        source: 'data',
+        operation: CollectionFlowOperation::IN_RANGE,
+        rangeContext: ['min', 'max']
+    )]
+    public function getCatalogRange(): Json
+    {
+        return new Json([
+            'data' => [
+                ['id' => 1, 'isbn' => 100],
+                ['id' => 2, 'isbn' => 200],
+                ['id' => 3, 'isbn' => 300]
+            ]
+        ]);
+    }
+
+    // Single node - Query updating
+    #[Route('products/{id}')]
+    #[SingleFlow(
+        target: '/products/recommended',
+        source: 'next_page_url',
+        operation: SingleFlowOperation::ALTERS_QUERY
+    )]
+    public function getProduct(): Json
+    {
+        return new Json([
+            'next_page_url' => '/products/recommended?page=2&category=electronics'
+        ]);
+    }
+
+    // Collection node - Custom service
+    #[Route('catalog/service')]
+    #[CollectionFlow(
+        target: 'segment',
+        source: 'data',
+        operation: CollectionFlowOperation::SET_FROM_SERVICE,
+        serviceClass: \Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\FlowService::class,
+        serviceMethod: 'customHandlePrevious'
+    )]
+    public function getCatalogWithService(): Json
+    {
+        return new Json([
+            'data' => [
+                ['id' => 1, 'name' => 'Service Book 1'],
+                ['id' => 2, 'name' => 'Service Book 2']
+            ]
+        ]);
     }
 }

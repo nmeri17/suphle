@@ -13,7 +13,6 @@ class ApiUpdate3Entry extends BaseApiCollection
 {
     public function CASCADE()
     {
-
-        $this->_httpGet(new Json("thirdCascade"));
+        $this->_httpGet(new Json([]));
     }
 }

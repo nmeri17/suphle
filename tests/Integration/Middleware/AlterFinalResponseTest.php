@@ -32,7 +32,7 @@ class AlterFinalResponseTest extends ModuleLevelTest
                 ])
                 ->replaceWithMock($finalName, $finalName, [
 
-                    "process" => (new Json(""))->setRawResponse(["foo" => "bar"])
+                    "process" => (new Json([]))->setRawResponse(["foo" => "bar"])
                 ], [], false);
             })
         ];

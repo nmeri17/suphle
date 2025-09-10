@@ -3,20 +3,21 @@
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
 use Suphle\Services\ServiceCoordinator;
-
+use Suphle\Routing\Attributes\{Route, RoutePrefix};
+use Suphle\Response\Format\Json;
 use Suphle\Request\PayloadStorage;
 
+#[RoutePrefix('')]
 class ReadsPayloadCoordinator extends ServiceCoordinator
 {
     public function __construct(protected readonly PayloadStorage $payloadStorage)
     {
-
         //
     }
 
-    public function mirrorPayload()
+    #[Route("all-payload")]
+    public function mirrorPayload(): Json
     {
-
-        return $this->payloadStorage->fullPayload();
+        return new Json($this->payloadStorage->fullPayload());
     }
 }

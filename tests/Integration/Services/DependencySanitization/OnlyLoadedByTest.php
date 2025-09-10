@@ -42,6 +42,7 @@ class OnlyLoadedByTest extends TestSanitization
 
         $this->sanitizer->cleanseConsumers(); // when
 
-        $this->assertTrue(true);
+        // Then - verify the method executed successfully without throwing an exception
+        $this->assertTrue(true); // Method executed without exception
     }
 }

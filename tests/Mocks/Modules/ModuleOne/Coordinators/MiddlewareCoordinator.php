@@ -2,22 +2,22 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-use Suphle\Coordinators\BaseCoordinator;
+use Suphle\Coordinators\ServiceCoordinator;
 use Suphle\Routing\Attributes\{Route, HttpMethod};
 use Suphle\Response\Format\Json;
 use Suphle\Tests\Mocks\Modules\ModuleOne\Middleware\AuthMiddleware;
 
-class MiddlewareCoordinator extends BaseCoordinator
+class MiddlewareCoordinator extends ServiceCoordinator
 {
-    #[Route('/secure', method: HttpMethod::GET, middlewares: [AuthMiddleware::class])]
-    public function secureRoute(): Json
+    #[Route('/secure', middlewares: [AuthMiddleware::class])]
+    public function secure(): Json
     {
-        return new Json(['secure' => true, 'message' => 'Access granted']);
+        return new Json(['message' => 'Secure content']);
     }
 
-    #[Route('/public', method: HttpMethod::GET)]
-    public function publicRoute(): Json
+    #[Route('/public')]
+    public function public(): Json
     {
-        return new Json(['public' => true, 'message' => 'No auth required']);
+        return new Json(['message' => 'Public content']);
     }
 } 

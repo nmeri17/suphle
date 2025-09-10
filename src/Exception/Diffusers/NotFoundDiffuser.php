@@ -44,7 +44,7 @@ class NotFoundDiffuser implements ExceptionHandler
 
         if ($this->requestDetails->isApiRoute()) {
 
-            $this->renderer = new Json("");
+            $this->renderer = new Json([]);
         } else {
             $this->renderer = $this->getMarkupRenderer();
         }

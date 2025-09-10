@@ -12,7 +12,7 @@ use Suphle\Testing\Proxies\{WriteOnlyContainer, SecureUserAssertions};
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor,Config\RouterMock};
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\ApiRoutes\{V1\LowerMirror, V2\ApiUpdate2Entry};
+use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\ApiRoutes\{V2\ApiUpdate2Entry};
 
 class BrowserVersioningTest extends ModuleLevelTest
 {
@@ -32,9 +32,8 @@ class BrowserVersioningTest extends ModuleLevelTest
 
                         "apiStack" => [
 
-                            "v2" => ApiUpdate2Entry::class,
+                            "v2" => ApiUpdate2Entry::class
 
-                            "v1" => LowerMirror::class
                         ]
                     ]
                 );

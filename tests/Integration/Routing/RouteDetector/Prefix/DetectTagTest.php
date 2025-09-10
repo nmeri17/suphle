@@ -2,58 +2,54 @@
 namespace Suphle\Tests\Integration\Routing\RouteDetector\Prefix;
 
 use Suphle\Contracts\Config\Router;
-
-use Suphle\Auth\RequestScrutinizers\AuthenticateMetaFunnel;
-
-use Suphle\Routing\CollectionRouteDetector;
-
+use Suphle\Routing\RouteDetectorService;
 use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
-
 use Suphle\Tests\Integration\Routing\RouteDetector\RouteDetectorAsserter;
-
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Config\RouterMock, Routes\Prefix\Secured\UpperCollection, Meta\ModuleOneDescriptor};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Config\RouterMock, Coordinators\TestCoordinator, Meta\ModuleOneDescriptor};
 
 class DetectTagTest extends ModuleLevelTest {
     
     use RouteDetectorAsserter;
 
-    protected function getModules ():array {
-
+    protected function getModules(): array {
         return [
             $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
-
                 $container->replaceWithMock(Router::class, RouterMock::class, [
-
-                    "mirrorsCollections" => false,
-
-                    "browserEntryRoute" => UpperCollection::class
+                    "getCoordinatorClassesToScan" => [TestCoordinator::class]
                 ]);
             })
         ];
     }
 
-    public function test_detects_tagged_patterns () { // continue by investigating the reason AuthenticateMetaFunnel returns an empty array in crdetec
+    public function test_detects_routes_from_coordinator() {
+        $service = $this->getService();
+        $routeDetails = $service->compileRouteDetails();
 
-        $detector = $this->getDetector();
-
-        $collectionDetails = $detector->compileCollectionDetails()[0];
-
-        $indicatedStatus = $detector->assignMetaStatus([
-
-            AuthenticateMetaFunnel::class
-        ], $collectionDetails);
-
-        //$this->assertMatchesChildPatterns(
-
-            var_dump( $indicatedStatus)/*,
-
-            "PREFIX/RETAIN__AUTHh"
-        )*/;
-        $this->assertTrue(true);
+        $this->assertIsArray($routeDetails);
+        $this->assertArrayHasKey(TestCoordinator::class, $routeDetails);
+        $this->assertIsArray($routeDetails[TestCoordinator::class]);
     }
 
-    public function test_detects_untagged_patterns () {
+    public function test_extracts_route_information() {
+        $service = $this->getService();
+        $allRoutes = $service->getAllRoutes();
 
-        //
+        $this->assertIsArray($allRoutes);
+        $this->assertNotEmpty($allRoutes);
+
+        foreach ($allRoutes as $route) {
+            $this->assertArrayHasKey('method', $route);
+            $this->assertArrayHasKey('path', $route);
+            $this->assertArrayHasKey('handler', $route);
+            $this->assertArrayHasKey('renderer', $route);
+            $this->assertArrayHasKey('middleware', $route);
+            $this->assertArrayHasKey('canary_state', $route);
+            $this->assertArrayHasKey('placeholders', $route);
+            $this->assertArrayHasKey('coordinator', $route);
+        }
+    }
+
+    protected function getService(): RouteDetectorService {
+        return $this->getContainer()->getClass(RouteDetectorService::class);
     }
 }

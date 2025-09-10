@@ -13,13 +13,11 @@ class ApiUpdate2Entry extends BaseApiCollection
 {
     public function CASCADE()
     {
-
-        $this->_httpGet(new Json("secondCascade"));
+        $this->_httpGet(new Json([]));
     }
 
     public function SEGMENT__IN__SECONDh()
     {
-
-        $this->_httpGet(new Json("segmentInSecond"));
+        $this->_httpGet(new Json([]));
     }
 }

@@ -30,7 +30,7 @@ class MultiModuleTest extends JobFactory
 
                 $container->replaceWithMock(Router::class, RouterMock::class, [
 
-                    "browserEntryRoute" => FlowRoutes::class
+                    // "browserEntryRoute" => FlowRoutes::class
                 ]);
             }
         );

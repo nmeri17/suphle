@@ -3,9 +3,13 @@
 namespace Suphle\Response\Format;
 
 use Suphle\Request\PayloadStorage;
+use Suphle\Contracts\Response\OpenApiRenderer;
+use Suphle\Response\Traits\OpenApiRendererTrait;
 
-class Json extends GenericRenderer
+class Json extends GenericRenderer implements OpenApiRenderer
 {
+    use OpenApiRendererTrait;
+
     protected bool $shouldDeferValidationFailure = false;
 
     public function __construct(array $data)
@@ -28,5 +32,32 @@ class Json extends GenericRenderer
     public function deferValidationContent(): bool
     {
         return false;
+    }
+
+    /**
+     * Override default content type for JSON
+     */
+    public static function getContentType(): string
+    {
+        return PayloadStorage::JSON_HEADER_VALUE;
+    }
+
+    /**
+     * Override default response schema for JSON
+     */
+    public static function getResponseSchema(): array
+    {
+        return [
+            'type' => 'object',
+            'description' => static::getDescription()
+        ];
+    }
+
+    /**
+     * Override default description for JSON
+     */
+    public static function getDescription(): string
+    {
+        return 'JSON response';
     }
 }

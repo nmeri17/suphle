@@ -1,28 +1,23 @@
 <?php
 namespace Suphle\Tests\Integration\Routing\RouteDetector;
 
-use Suphle\Routing\CollectionRouteDetector;
+use Suphle\Routing\RouteDetectorService;
 
 trait RouteDetectorAsserter {
 
     /**
-     * Cycles through each entry in {expectedUrls} expecting to find a match on the first dimension of {collectionDetails} ie doesn't go beyond the first depth of details
+     * Asserts that the given routes contain the expected patterns
     */
-    protected function assertFoundGivenPatterns (array $collectionDetails, array $expectedUrls):void {
-
+    protected function assertFoundGivenPatterns(array $routes, array $expectedPatterns): void {
         $matchedAll = true;
 
-    	foreach ($expectedUrls as $detailEntry) {
-
-            $matchedAll = !empty(array_filter($collectionDetails,
-
-                fn ($details) => $detailEntry[0] == strtolower($details["url"]) // this assertion doesn't really care about placeholder positions--just that the pattern matches
-            ));
+        foreach ($expectedPatterns as $expectedPattern) {
+            $matchedAll = !empty(array_filter($routes, function ($route) use ($expectedPattern) {
+                return $expectedPattern === $route['path'];
+            }));
 
             if (!$matchedAll) {
-
-                var_dump($detailEntry, $collectionDetails);
-
+                var_dump($expectedPattern, $routes);
                 break;
             }
         }
@@ -31,23 +26,18 @@ trait RouteDetectorAsserter {
     }
 
     /**
-     * Produced urls are suffixed with trailing slashes. So, to be recognised as a match, given paths must equally have that
+     * Asserts that the given routes do not contain the expected patterns
     */
-    protected function assertNotFoundGivenPatterns (array $collectionDetails, array $expectedUrls):void {
-
+    protected function assertNotFoundGivenPatterns(array $routes, array $expectedPatterns): void {
         $missedAll = true;
 
-        foreach ($expectedUrls as $detailEntry) {
-
-            $missedAll = empty(array_filter($collectionDetails,
-
-                fn ($details) => $detailEntry[0] == strtolower($details["url"])
-            ));
+        foreach ($expectedPatterns as $expectedPattern) {
+            $missedAll = empty(array_filter($routes, function ($route) use ($expectedPattern) {
+                return $expectedPattern === $route['path'];
+            }));
 
             if (!$missedAll) {
-
-                var_dump($detailEntry, $collectionDetails);
-
+                var_dump($expectedPattern, $routes);
                 break;
             }
         }
@@ -55,43 +45,43 @@ trait RouteDetectorAsserter {
         $this->assertTrue($missedAll);
     }
 
-    protected function getDetector ():CollectionRouteDetector {
-
-        return $this->getContainer()
-
-        ->getClass(CollectionRouteDetector::class);
+    protected function getService(): RouteDetectorService {
+        return $this->getContainer()->getClass(RouteDetectorService::class);
     }
 
-    protected function assertMatchesChildPatterns (array $routeTree, string $toSearch):void {
-
-        $foundMatch = false;
-
-        $toSearch = rtrim($toSearch, "/");
-
-        foreach ($routeTree as $patternDetails) {
-
-            $detailUrl = rtrim(strtolower($patternDetails["url"]), "/");
-
-            $foundMatch = str_contains($toSearch, $detailUrl);
-
-            if (!$foundMatch) continue;
-
-            $remainder = explode($detailUrl, $toSearch)[1];
-
-            if (!empty($remainder)) {
-
-                $this->assertMatchesChildPatterns(
-                    $patternDetails[CollectionRouteDetector::HAS_CHILD_NODE],
-
-                    $remainder
-                );
-
-                break;
-            }
+    /**
+     * Asserts that routes contain the expected HTTP methods
+    */
+    protected function assertRoutesHaveMethods(array $routes, array $expectedMethods): void {
+        $routeMethods = array_column($routes, 'method');
+        
+        foreach ($expectedMethods as $expectedMethod) {
+            $this->assertContains($expectedMethod, $routeMethods);
         }
-
-        $this->assertTrue($foundMatch);
     }
 
-    // protected function assertMatchesChildPatterns
+    /**
+     * Asserts that routes have the expected renderers
+    */
+    protected function assertRoutesHaveRenderers(array $routes, array $expectedRenderers): void {
+        $routeRenderers = array_filter(array_column($routes, 'renderer'));
+        
+        foreach ($expectedRenderers as $expectedRenderer) {
+            $this->assertContains($expectedRenderer, $routeRenderers);
+        }
+    }
+
+    /**
+     * Asserts that routes have the expected placeholders
+    */
+    protected function assertRoutesHavePlaceholders(array $routes, array $expectedPlaceholders): void {
+        $allPlaceholders = [];
+        foreach ($routes as $route) {
+            $allPlaceholders = array_merge($allPlaceholders, $route['placeholders']);
+        }
+        
+        foreach ($expectedPlaceholders as $expectedPlaceholder) {
+            $this->assertContains($expectedPlaceholder, $allPlaceholders);
+        }
+    }
 }

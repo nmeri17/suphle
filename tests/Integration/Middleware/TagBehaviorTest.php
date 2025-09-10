@@ -105,4 +105,21 @@ class TagBehaviorTest extends ModuleLevelTest
 
         $this->get("/first-single"); // when
     }
+
+    public function test_detects_tagged_patterns()
+    {
+        // given => @see [getModules]
+        // then
+        $this->provideMiddleware([
+            BlankMiddlewareHandler::class => $this->getMiddlewareMock(BlankMiddlewareHandler::class, 1),
+            BlankMiddleware2Handler::class => $this->getMiddlewareMock(BlankMiddleware2Handler::class, 1),
+            BlankMiddleware3Handler::class => $this->getMiddlewareMock(BlankMiddleware3Handler::class, 1)
+        ]);
+
+        // Test that patterns tagged with specific middleware are detected and applied
+        $this->get("/first-single"); // when - should trigger BlankMiddlewareHandler
+        $this->get("/fourth-single"); // when - should trigger BlankMiddleware3Handler  
+        $this->get("/fifth-single"); // when - should trigger BlankMiddlewareHandler
+        $this->get("/negotiate"); // when - should trigger JsonNegotiatorCollector
+    }
 }

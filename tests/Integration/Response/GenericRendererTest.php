@@ -22,7 +22,7 @@ class GenericRendererTest extends IsolatedComponentTest
 
         $newMessage = ["message" => "extra data"];
 
-        $renderer = (new Json(""))->setRawResponse($response); // given
+        $renderer = (new Json([]))->setRawResponse($response); // given
 
         $renderer->forceArrayShape($newMessage); // when
 
