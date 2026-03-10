@@ -6,7 +6,7 @@ use Suphle\Contracts\Routing\RouteDispatcher;
 use Suphle\Contracts\Presentation\BaseRenderer;
 use Suphle\Routing\Structures\RouteInfo;
 use Suphle\Request\RequestDetails;
-use Suphle\Response\ResponseManager;
+use Suphle\Contracts\Response\RendererManager;
 use Suphle\Exception\Explosives\NotFoundException;
 use Suphle\Exception\Explosives\DevError\InvalidRendererException;
 
@@ -15,7 +15,7 @@ class AttributeRouteDispatcher implements RouteDispatcher
     public function __construct(
         private readonly AttributeRouteManager $routeManager,
         private readonly RequestDetails $requestDetails,
-        private readonly ResponseManager $responseManager
+        private readonly RendererManager $rendererManager
     ) {
         //
     }
@@ -35,10 +35,15 @@ class AttributeRouteDispatcher implements RouteDispatcher
         }
 
         // Dispatch the route and get response
-        $response = $this->routeManager->dispatchRoute($route);
+        $response = $this->dispatchRoute($route);
 
         // Handle the response
         return $this->handleResponse($response);
+    }
+
+    public function dispatchRoute(RouteInfo $route): mixed
+    {
+        return $this->routeManager->dispatchRoute($route);
     }
 
     private function handleResponse(mixed $response): BaseRenderer

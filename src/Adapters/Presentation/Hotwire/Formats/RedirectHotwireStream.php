@@ -37,14 +37,6 @@ class RedirectHotwireStream extends BaseHotwireStream implements OpenApiRenderer
     }
 
     /**
-     * Override default status code for RedirectHotwireStream
-     */
-    public static function getStatusCode(): int
-    {
-        return self::STATUS_CODE;
-    }
-
-    /**
      * Override default response schema for RedirectHotwireStream
      */
     public static function getResponseSchema(): array

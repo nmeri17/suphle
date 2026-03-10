@@ -318,6 +318,6 @@ class OpenApiGeneratorServiceInterfaceTest extends TestCase
             $pathItem['responses']['401']['content']['application/json']['schema']['properties']['message']['example']);
         
         $this->assertEquals('Insufficient permissions', 
-            $pathItem['responses']['403']['content']['application/json']['schema']['properties']['errors']['example']);
+            $pathItem['responses']['403']['content']['application/json']['schema']['properties'][\Suphle\Exception\Diffusers\UnauthorizedDiffuser::ERRORS_PRESENCE]['example']);
     }
 } 

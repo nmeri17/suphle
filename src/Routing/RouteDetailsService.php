@@ -10,7 +10,7 @@ use Suphle\Contracts\Presentation\BaseRenderer;
 use Suphle\Coordinators\BaseCoordinator;
 use Suphle\Flows\{OuterFlowWrapper, Structures\RouteUserNode};
 use Suphle\Contracts\Flows\FlowHydrator;
-use Suphle\Routing\Analysis\RouteAnalysisService;
+use Suphle\Routing\Analysis\{RouteAnalysisService, RendererAnalyzerRegistry};
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionParameter;
@@ -21,9 +21,10 @@ class RouteDetailsService extends RouteAnalysisService
     public function __construct(
         protected readonly RouterConfig $config,
         protected readonly Container $container,
-        protected readonly FlowHydrator $flowHydrator
+        protected readonly FlowHydrator $flowHydrator,
+        protected readonly RendererAnalyzerRegistry $rendererAnalyzerRegistry
     ) {
-        //
+        parent::__construct($config, $container, $flowHydrator, $rendererAnalyzerRegistry);
     }
 
     public function getDetailedRouteInfo(): array
@@ -260,20 +261,11 @@ class RouteDetailsService extends RouteAnalysisService
 
     protected function getRendererType(string $rendererClass): string
     {
-        if (str_contains($rendererClass, 'Json')) {
-            return 'json';
-        }
+        $analyzer = $this->rendererAnalyzerRegistry->getAnalyzer($rendererClass);
         
-        if (str_contains($rendererClass, 'Markup')) {
-            return 'html';
-        }
-        
-        if (str_contains($rendererClass, 'Redirect')) {
-            return 'redirect';
-        }
-        
-        if (str_contains($rendererClass, 'Reload')) {
-            return 'reload';
+        if ($analyzer) {
+            $schema = $analyzer->analyzeSchema($rendererClass, new \ReflectionMethod(__CLASS__, __METHOD__));
+            return $schema['type'] ?? 'unknown';
         }
         
         return 'unknown';

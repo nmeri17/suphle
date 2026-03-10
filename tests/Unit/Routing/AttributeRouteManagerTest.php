@@ -44,22 +44,20 @@ class AttributeRouteManagerTest extends IsolatedComponentTest
     {
         // Given
         $manager = $this->container->getClass(AttributeRouteManager::class);
-        $manager->scanAndRegisterRoutes();
 
         // When
-        $route = $manager->findRoute("/api/v1/users", HttpMethod::GET->value);
+        $route = $manager->findRoute("/api/v1/test/", HttpMethod::GET->value);
 
         // Then
         $this->assertNotNull($route);
         $this->assertEquals(HttpMethod::GET->value, $route->method);
-        $this->assertEquals("/api/v1/users", $route->path);
+        $this->assertEquals("/api/v1/test/", $route->path);
     }
 
     public function test_returns_null_for_non_matching_route()
     {
         // Given
         $manager = $this->container->getClass(AttributeRouteManager::class);
-        $manager->scanAndRegisterRoutes();
 
         // When
         $route = $manager->findRoute("/non-existent", HttpMethod::GET->value);
@@ -74,14 +72,15 @@ class AttributeRouteManagerTest extends IsolatedComponentTest
         $this->stubConfig([
             "getCoordinatorClassesToScan" => [
                 MiddlewareCoordinator::class
-            ]
+            ],
+            "getCoordinatorPath" => "Coordinators"
         ]);
 
         $manager = $this->container->getClass(AttributeRouteManager::class);
-        $manager->scanAndRegisterRoutes();
 
         // When
-        $route = $manager->findRoute("/api/v1/secure", HttpMethod::GET->value);
+        // Assuming MiddlewareCoordinator has a route at /api/v1/secure
+        $route = $manager->findRoute("/api/v1/secure/", HttpMethod::GET->value);
 
         // Then
         $this->assertNotNull($route);
@@ -94,14 +93,14 @@ class AttributeRouteManagerTest extends IsolatedComponentTest
         $this->stubConfig([
             "getCoordinatorClassesToScan" => [
                 CanaryCoordinator::class
-            ]
+            ],
+            "getCoordinatorPath" => "Coordinators"
         ]);
 
         $manager = $this->container->getClass(AttributeRouteManager::class);
-        $manager->scanAndRegisterRoutes();
 
         // When
-        $route = $manager->findRoute("/api/v1/beta", HttpMethod::GET->value);
+        $route = $manager->findRoute("/api/v1/beta/", HttpMethod::GET->value);
 
         // Then
         $this->assertNotNull($route);
@@ -114,14 +113,14 @@ class AttributeRouteManagerTest extends IsolatedComponentTest
         $this->stubConfig([
             "getCoordinatorClassesToScan" => [
                 PrefixedCoordinator::class
-            ]
+            ],
+            "getCoordinatorPath" => "Coordinators"
         ]);
 
         $manager = $this->container->getClass(AttributeRouteManager::class);
-        $manager->scanAndRegisterRoutes();
 
         // When
-        $route = $manager->findRoute("/api/v1/admin/users", HttpMethod::GET->value);
+        $route = $manager->findRoute("/api/v1/admin/users/", HttpMethod::GET->value);
 
         // Then
         $this->assertNotNull($route);

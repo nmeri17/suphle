@@ -111,6 +111,12 @@ abstract class GenericRenderer implements BaseRenderer
         return $this->handler;
     }
 
+    public function setHandler(string $handler): void
+    {
+
+        $this->handler = $handler;
+    }
+
     public function matchesHandler(string $name): bool
     {
 

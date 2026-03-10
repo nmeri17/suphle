@@ -39,6 +39,7 @@
 		"psr/http-client": "^1.0",
 		"psr/http-message": "^1.0.1",
 		"spiral/roadrunner": "^2.10",
+		"spiral/roadrunner-broadcast": "^2.1",
 		"spiral/roadrunner-jobs": "^2.3",
 		"spiral/roadrunner-kv": "^2.1",
 		"symfony/mailer": "^6.0",

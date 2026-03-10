@@ -16,6 +16,9 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 use Psr\Http\Message\{ServerRequestInterface, ResponseInterface};
 
+use Suphle\Routing\AttributeRouteManager;
+use Suphle\WebSockets\WebSocketRouter;
+
 use Throwable;
 
 /**
@@ -60,6 +63,29 @@ class ModuleWorkerAccessor
     {
 
         $this->handlerIdentifier->bootModules();
+
+        // Index all routes in memory OUTSIDE the request loop, per user instruction
+        if ($this->isHttpMode) {
+            $container = $this->handlerIdentifier->firstContainer();
+            if (class_exists(AttributeRouteManager::class)) {
+                try {
+                    $routeManager = $container->getClass(AttributeRouteManager::class);
+                    $routeManager->getAllRoutes();
+                } catch (\Exception $e) {
+                    // Ignore if it can't be resolved yet
+                }
+            }
+            
+            // Also index WebSocket routes on boot
+            if (class_exists(WebSocketRouter::class)) {
+                try {
+                    $wsRouter = $container->getClass(WebSocketRouter::class);
+                    $wsRouter->registerRoutes();
+                } catch (\Exception $e) {
+                    // Ignore if it can't be resolved yet
+                }
+            }
+        }
 
         return $this;
     }

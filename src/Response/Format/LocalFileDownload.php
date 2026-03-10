@@ -14,13 +14,13 @@ class LocalFileDownload extends Redirect implements OpenApiRenderer
 {
     use OpenApiRendererTrait;
 
+    public const STATUS_CODE = 200;
+
     public function __construct(
         protected string $handler,
         protected Closure $deriveFilePath,
         protected ?Closure $fallbackRedirect = null
     ) {
-
-        $this->statusCode = 200;
     }
 
     protected function serializableProperties(): array
@@ -94,14 +94,6 @@ class LocalFileDownload extends Redirect implements OpenApiRenderer
     public static function getContentType(): string
     {
         return 'application/octet-stream';
-    }
-
-    /**
-     * Override default status code for LocalFileDownload
-     */
-    public static function getStatusCode(): int
-    {
-        return 200;
     }
 
     /**

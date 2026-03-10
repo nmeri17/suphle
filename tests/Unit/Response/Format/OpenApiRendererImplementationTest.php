@@ -42,7 +42,7 @@ class OpenApiRendererImplementationTest extends TestCase
         $this->assertTrue(is_subclass_of(Redirect::class, \Suphle\Contracts\Response\OpenApiRenderer::class));
         
         // Test status code matches actual redirect behavior
-        $this->assertEquals(Redirect::STATUS_CODE, Redirect::getStatusCode());
+        $this->assertEquals(Redirect::STATUS_CODE, Redirect::getOpenApiStatusCode());
         
         // Test response schema includes Location header
         $schema = Redirect::getResponseSchema();
@@ -56,7 +56,7 @@ class OpenApiRendererImplementationTest extends TestCase
         $this->assertTrue(is_subclass_of(Reload::class, \Suphle\Contracts\Response\OpenApiRenderer::class));
         
         // Test status code matches actual reload behavior
-        $this->assertEquals(Reload::STATUS_CODE, Reload::getStatusCode());
+        $this->assertEquals(Reload::STATUS_CODE, Reload::getOpenApiStatusCode());
         
         // Test response schema is appropriate for reload
         $schema = Reload::getResponseSchema();
@@ -88,7 +88,7 @@ class OpenApiRendererImplementationTest extends TestCase
         
         // Test redirect Hotwire stream
         $this->assertTrue(is_subclass_of(RedirectHotwireStream::class, \Suphle\Contracts\Response\OpenApiRenderer::class));
-        $this->assertEquals(RedirectHotwireStream::STATUS_CODE, RedirectHotwireStream::getStatusCode());
+        $this->assertEquals(RedirectHotwireStream::STATUS_CODE, RedirectHotwireStream::getOpenApiStatusCode());
         
         // Test reload Hotwire stream
         $this->assertTrue(is_subclass_of(ReloadHotwireStream::class, \Suphle\Contracts\Response\OpenApiRenderer::class));
@@ -115,7 +115,7 @@ class OpenApiRendererImplementationTest extends TestCase
 
         foreach ($renderers as $rendererClass) {
             $this->assertIsString($rendererClass::getContentType());
-            $this->assertIsInt($rendererClass::getStatusCode());
+            $this->assertIsInt($rendererClass::getOpenApiStatusCode());
             $this->assertIsArray($rendererClass::getResponseSchema());
             $this->assertIsString($rendererClass::getDescription());
         }
@@ -184,7 +184,7 @@ class OpenApiRendererImplementationTest extends TestCase
         ];
 
         foreach ($renderers as $rendererClass) {
-            $statusCode = $rendererClass::getStatusCode();
+            $statusCode = $rendererClass::getOpenApiStatusCode();
             
             // Valid HTTP status code range
             $this->assertGreaterThanOrEqual(100, $statusCode);

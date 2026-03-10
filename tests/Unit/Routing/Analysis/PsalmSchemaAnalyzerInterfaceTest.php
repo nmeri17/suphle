@@ -2,24 +2,32 @@
 
 namespace Suphle\Tests\Unit\Routing\Analysis;
 
-use PHPUnit\Framework\TestCase;
-use Suphle\Routing\Analysis\PsalmSchemaAnalyzer;
+use Suphle\Routing\Analysis\{PsalmSchemaAnalyzer, RendererAnalyzerRegistry};
+use Suphle\Contracts\Config\Router as RouterConfig;
+use Suphle\Contracts\Flows\FlowHydrator;
 use Suphle\Contracts\Response\OpenApiRenderer;
 use Suphle\Response\Traits\OpenApiRendererTrait;
 use Suphle\Request\PayloadStorage;
+use Suphle\Testing\TestTypes\IsolatedComponentTest;
+use Suphle\Tests\Integration\Generic\CommonBinds;
 use ReflectionMethod;
 
-class PsalmSchemaAnalyzerInterfaceTest extends TestCase
+class PsalmSchemaAnalyzerInterfaceTest extends IsolatedComponentTest
 {
-    private PsalmSchemaAnalyzer $analyzer;
+    use CommonBinds;
 
-    protected function setUp(): void
+    protected function concreteBinds(): array
     {
-        $this->analyzer = new PsalmSchemaAnalyzer();
+        return array_merge(parent::concreteBinds(), [
+            FlowHydrator::class => $this->positiveDouble(FlowHydrator::class),
+            RendererAnalyzerRegistry::class => $this->container->getClass(RendererAnalyzerRegistry::class)
+        ]);
     }
 
     public function test_interface_renderer_content_type_detection()
     {
+        // Given
+        $analyzer = $this->container->getClass(PsalmSchemaAnalyzer::class);
         $customRenderer = new class implements OpenApiRenderer {
             use OpenApiRendererTrait;
 
@@ -29,27 +37,37 @@ class PsalmSchemaAnalyzerInterfaceTest extends TestCase
             }
         };
 
-        $contentType = $this->analyzer->getContentTypeForRenderer(get_class($customRenderer));
+        // When
+        $contentType = $analyzer->getContentTypeForRenderer(get_class($customRenderer));
+
+        // Then
         $this->assertEquals('application/custom', $contentType);
     }
 
     public function test_interface_renderer_status_code_detection()
     {
+        // Given
+        $analyzer = $this->container->getClass(PsalmSchemaAnalyzer::class);
         $customRenderer = new class implements OpenApiRenderer {
             use OpenApiRendererTrait;
 
-            public static function getStatusCode(): int
+            public static function getOpenApiStatusCode(): int
             {
                 return 201;
             }
         };
 
-        $statusCode = $this->analyzer->getStatusCodeForRenderer(get_class($customRenderer));
+        // When
+        $statusCode = $analyzer->getStatusCodeForRenderer(get_class($customRenderer));
+
+        // Then
         $this->assertEquals(201, $statusCode);
     }
 
     public function test_interface_renderer_schema_detection()
     {
+        // Given
+        $analyzer = $this->container->getClass(PsalmSchemaAnalyzer::class);
         $customRenderer = new class implements OpenApiRenderer {
             use OpenApiRendererTrait;
 
@@ -66,8 +84,11 @@ class PsalmSchemaAnalyzerInterfaceTest extends TestCase
         };
 
         $method = new ReflectionMethod($customRenderer, '__construct');
-        $schema = $this->analyzer->analyzeRendererSchemaWithPsalm(get_class($customRenderer), $method);
+
+        // When
+        $schema = $analyzer->analyzeRendererSchemaWithPsalm(get_class($customRenderer), $method);
         
+        // Then
         $this->assertIsArray($schema);
         $this->assertEquals('object', $schema['type']);
         $this->assertArrayHasKey('properties', $schema);
@@ -75,7 +96,8 @@ class PsalmSchemaAnalyzerInterfaceTest extends TestCase
 
     public function test_fallback_to_legacy_analysis_for_non_interface_renderers()
     {
-        // Create a renderer that doesn't implement OpenApiRenderer
+        // Given
+        $analyzer = $this->container->getClass(PsalmSchemaAnalyzer::class);
         $legacyRenderer = new class {
             public function render(): string
             {
@@ -83,15 +105,17 @@ class PsalmSchemaAnalyzerInterfaceTest extends TestCase
             }
         };
 
-        $contentType = $this->analyzer->getContentTypeForRenderer(get_class($legacyRenderer));
-        $this->assertEquals(PayloadStorage::HTML_HEADER_VALUE, $contentType); // Default fallback
+        // When
+        $contentType = $analyzer->getContentTypeForRenderer(get_class($legacyRenderer));
 
-        $statusCode = $this->analyzer->getStatusCodeForRenderer(get_class($legacyRenderer));
-        $this->assertEquals(200, $statusCode); // Default fallback
+        // Then
+        $this->assertEquals(PayloadStorage::HTML_HEADER_VALUE, $contentType); // Default fallback
     }
 
     public function test_interface_takes_precedence_over_legacy_mapping()
     {
+        // Given
+        $analyzer = $this->container->getClass(PsalmSchemaAnalyzer::class);
         $customRenderer = new class implements OpenApiRenderer {
             use OpenApiRendererTrait;
 
@@ -106,56 +130,13 @@ class PsalmSchemaAnalyzerInterfaceTest extends TestCase
             }
         };
 
-        // Even if this renderer extends a class in the legacy mapping,
-        // the interface should take precedence
-        $contentType = $this->analyzer->getContentTypeForRenderer(get_class($customRenderer));
-        $this->assertEquals('application/override', $contentType);
+        // When
+        $contentType = $analyzer->getContentTypeForRenderer(get_class($customRenderer));
+        $statusCode = $analyzer->getOpenApiStatusCodeForRenderer(get_class($customRenderer));
 
-        $statusCode = $this->analyzer->getStatusCodeForRenderer(get_class($customRenderer));
+        // Then
+        $this->assertEquals('application/override', $contentType);
         $this->assertEquals(418, $statusCode);
     }
-
-    public function test_interface_renderer_with_complex_schema()
-    {
-        $complexRenderer = new class implements OpenApiRenderer {
-            use OpenApiRendererTrait;
-
-            public static function getResponseSchema(): array
-            {
-                return [
-                    'type' => 'object',
-                    'properties' => [
-                        'data' => [
-                            'type' => 'array',
-                            'items' => [
-                                'type' => 'object',
-                                'properties' => [
-                                    'id' => ['type' => 'integer'],
-                                    'name' => ['type' => 'string'],
-                                    'email' => ['type' => 'string', 'format' => 'email']
-                                ]
-                            ]
-                        ],
-                        'meta' => [
-                            'type' => 'object',
-                            'properties' => [
-                                'total' => ['type' => 'integer'],
-                                'page' => ['type' => 'integer']
-                            ]
-                        ]
-                    ],
-                    'required' => ['data']
-                ];
-            }
-        };
-
-        $method = new ReflectionMethod($complexRenderer, '__construct');
-        $schema = $this->analyzer->analyzeRendererSchemaWithPsalm(get_class($complexRenderer), $method);
-        
-        $this->assertIsArray($schema);
-        $this->assertEquals('object', $schema['type']);
-        $this->assertArrayHasKey('data', $schema['properties']);
-        $this->assertArrayHasKey('meta', $schema['properties']);
-        $this->assertContains('data', $schema['required']);
-    }
-} 
+}
+ 

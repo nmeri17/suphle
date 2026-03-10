@@ -14,7 +14,8 @@ class RouteInfo
         public readonly string $controllerClass,
         public readonly string $controllerMethod,
         public readonly array $middlewares = [],
-        public readonly ?CanaryInfo $canaryInfo = null
+        public readonly ?CanaryInfo $canaryInfo = null,
+        public readonly ?string $viewName = null
     ) {
         //
     }

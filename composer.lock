@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e43ea840741d8f50a6d848a0ccb42fa9",
+    "content-hash": "292bf549d434161e4cea41213ef3bd8b",
     "packages": [
         {
             "name": "amphp/amp",
@@ -7758,6 +7758,76 @@
                 }
             ],
             "time": "2023-02-16T13:00:26+00:00"
+        },
+        {
+            "name": "spiral/roadrunner-broadcast",
+            "version": "v2.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/spiral/roadrunner-broadcast.git",
+                "reference": "693f92e9c34a552b060d6a0aa0e727caf80dcb24"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/spiral/roadrunner-broadcast/zipball/693f92e9c34a552b060d6a0aa0e727caf80dcb24",
+                "reference": "693f92e9c34a552b060d6a0aa0e727caf80dcb24",
+                "shasum": ""
+            },
+            "require": {
+                "ext-json": "*",
+                "google/protobuf": "^3.7",
+                "php": ">=7.4",
+                "spiral/goridge": "^3.1",
+                "spiral/roadrunner": "^2.0",
+                "symfony/polyfill-php80": "^1.23"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^8.0",
+                "roave/security-advisories": "dev-master",
+                "spiral/code-style": "^1.0",
+                "symfony/var-dumper": "^5.1",
+                "vimeo/psalm": ">=4.4"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "GPBMetadata\\": "generated/GPBMetadata",
+                    "Spiral\\RoadRunner\\Broadcast\\": [
+                        "src",
+                        "generated/Spiral/RoadRunner/Broadcast"
+                    ]
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Wolfy-J",
+                    "email": "wolfy.jd@gmail.com"
+                },
+                {
+                    "name": "Kirill Nesmeyanov (SerafimArts)",
+                    "email": "kirill.nesmeyanov@spiralscout.com"
+                },
+                {
+                    "name": "RoadRunner Community",
+                    "homepage": "https://github.com/spiral/roadrunner/graphs/contributors"
+                }
+            ],
+            "description": "RoadRunner broadcast plugin bridge",
+            "support": {
+                "issues": "https://github.com/spiral/roadrunner-broadcast/issues",
+                "source": "https://github.com/spiral/roadrunner-broadcast/tree/v2.1.0"
+            },
+            "abandoned": true,
+            "time": "2022-08-30T13:52:06+00:00"
         },
         {
             "name": "spiral/roadrunner-cli",

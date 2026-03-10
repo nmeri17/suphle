@@ -2,13 +2,13 @@
 
 namespace Suphle\Modules;
 
-use Suphle\Routing\{RouteManager, CollectionMetaQueue};
+
+use Suphle\Routing\AttributeRouteManager;
 
 use Suphle\Request\{RequestDetails, PayloadStorage};
 
-use Suphle\Middleware\MiddlewareQueue;
-
 use Suphle\Hydration\{Container, DecoratorHydrator};
+use Suphle\Routing\Structures\RouteInfo;
 
 use Suphle\Contracts\{Presentation\BaseRenderer, Response\RendererManager};
 
@@ -24,11 +24,13 @@ class ModuleInitializer implements HighLevelRequestHandler
 
     protected ?BaseRenderer $finalRenderer = null;
 
+    protected ?RouteInfo $activeRoute = null;
+
     public function __construct(
         protected readonly DescriptorInterface $descriptor,
         protected readonly RequestDetails $requestDetails,
         protected readonly DecoratorHydrator $decoratorHydrator,
-        protected readonly RouteManager $router
+        protected readonly AttributeRouteManager $router
     ) {
 
         $this->container = $descriptor->getContainer();
@@ -37,12 +39,17 @@ class ModuleInitializer implements HighLevelRequestHandler
     public function assignRoute(): self
     {
 
-        $this->router->findRenderer();
+        $route = $this->router->findRoute(
+            $this->requestDetails->getPath(),
+            $this->requestDetails->getHttpMethod()
+        );
 
-        if ($this->router->getActiveRenderer()) {
+        if ($route) {
 
             $this->foundRoute = true;
 
+            $this->activeRoute = $route;
+            
             $this->bindRoutingSideEffects();
         }
 
@@ -52,11 +59,7 @@ class ModuleInitializer implements HighLevelRequestHandler
     protected function bindRoutingSideEffects(): void
     {
 
-        $this->router->getPlaceholderStorage()
-
-        ->exchangeTokenValues($this->requestDetails->getPath()); // thanks to object references, this update affects the object stored in Container without explicitly rebinding
-
-        $renderer = $this->router->getActiveRenderer();
+        $renderer = $this->finalRenderer;
 
         /**
          * Not really necessary but just a slight optimization to save callers from demeter on the router.
@@ -67,14 +70,16 @@ class ModuleInitializer implements HighLevelRequestHandler
         */
         $this->container->whenTypeAny()->needsAny([
 
-            BaseRenderer::class => $renderer
+            BaseRenderer::class => function () {
+
+                if (is_null($this->finalRenderer)) {
+
+                    $this->setHandlingRenderer();
+                }
+
+                return $this->finalRenderer;
+            }
         ]);
-
-        $this->decoratorHydrator->scopeInjecting( // this is where all renderer dependencies are being injected
-
-            $renderer,
-            self::class
-        );
     }
 
     /**
@@ -85,9 +90,6 @@ class ModuleInitializer implements HighLevelRequestHandler
     public function fullRequestProtocols(RendererManager $rendererManager): self
     {
 
-        $this->container->getClass(CollectionMetaQueue::class)
-
-        ->executeRoutedMetaFunnels();
 
         $rendererManager->mayBeInvalid()->bootDefaultRenderer();
 
@@ -97,9 +99,11 @@ class ModuleInitializer implements HighLevelRequestHandler
     public function setHandlingRenderer(): void
     {
 
-        $this->finalRenderer = $this->container->getClass(MiddlewareQueue::class)
+        $rendererManager = $this->container->getClass(RendererManager::class);
 
-        ->runStack();
+        $this->finalRenderer = $rendererManager->handleValidRequest(
+            $this->container->getClass(PayloadStorage::class)
+        );
     }
 
     public function handlingRenderer(): ?BaseRenderer

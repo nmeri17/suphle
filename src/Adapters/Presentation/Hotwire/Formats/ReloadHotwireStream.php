@@ -16,7 +16,9 @@ class ReloadHotwireStream extends BaseHotwireStream implements OpenApiRenderer
 {
     use OpenApiRendererTrait;
 
-    protected int $statusCode = RedirectHotwireStream::STATUS_CODE;
+    public const STATUS_CODE = 303;
+
+    protected int $statusCode = self::STATUS_CODE;
 
     public function __construct()
     {

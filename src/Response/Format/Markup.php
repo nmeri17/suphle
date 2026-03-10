@@ -19,7 +19,7 @@ class Markup extends BaseHtmlRenderer implements MirrorableRenderer, OpenApiRend
     public function __construct(
         protected string $markupName
     ) {
-        $this->setHeaders(200, [
+        $this->setHeaders(self::STATUS_CODE, [
             PayloadStorage::CONTENT_TYPE_KEY => PayloadStorage::HTML_HEADER_VALUE
         ]);
     }

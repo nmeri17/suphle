@@ -34,72 +34,54 @@ class AttributeRouteScannerTest extends IsolatedComponentTest
         $scanner = $this->container->getClass(AttributeRouteScanner::class);
 
         // When
-        $routes = $scanner->scanAndRegisterRoutes();
+        $routes = $scanner->scanClass(TestCoordinator::class);
 
         // Then
         $this->assertNotEmpty($routes);
-        $this->assertArrayHasKey(HttpMethod::GET->value, $routes);
-        $this->assertArrayHasKey(HttpMethod::POST->value, $routes);
+        $this->assertEquals(HttpMethod::GET->value, $routes[0]->method);
+        $this->assertEquals(HttpMethod::POST->value, $routes[1]->method);
     }
 
     public function test_registers_route_prefix_attributes()
     {
         // Given
-        $this->stubConfig([
-            "getCoordinatorClassesToScan" => [
-                PrefixedCoordinator::class
-            ]
-        ]);
-
         $scanner = $this->container->getClass(AttributeRouteScanner::class);
 
         // When
-        $routes = $scanner->scanAndRegisterRoutes();
+        $routes = $scanner->scanClass(PrefixedCoordinator::class);
 
         // Then
         $this->assertNotEmpty($routes);
         // Should have routes with the prefix applied
-        $this->assertArrayHasKey(HttpMethod::GET->value, $routes);
+        $this->assertStringContainsString("admin", $routes[0]->path);
     }
 
     public function test_handles_canary_routes()
     {
         // Given
-        $this->stubConfig([
-            "getCoordinatorClassesToScan" => [
-                CanaryCoordinator::class
-            ]
-        ]);
-
         $scanner = $this->container->getClass(AttributeRouteScanner::class);
 
         // When
-        $routes = $scanner->scanAndRegisterRoutes();
+        $routes = $scanner->scanClass(CanaryCoordinator::class);
 
         // Then
         $this->assertNotEmpty($routes);
         // Should have canary routes registered
-        $this->assertArrayHasKey(HttpMethod::GET->value, $routes);
+        $this->assertNotNull($routes[0]->canaryInfo);
     }
 
     public function test_applies_middleware_from_attributes()
     {
         // Given
-        $this->stubConfig([
-            "getCoordinatorClassesToScan" => [
-                MiddlewareCoordinator::class
-            ]
-        ]);
-
         $scanner = $this->container->getClass(AttributeRouteScanner::class);
 
         // When
-        $routes = $scanner->scanAndRegisterRoutes();
+        $routes = $scanner->scanClass(MiddlewareCoordinator::class);
 
         // Then
         $this->assertNotEmpty($routes);
         // Should have middleware applied to routes
-        $this->assertArrayHasKey(HttpMethod::GET->value, $routes);
+        $this->assertNotEmpty($routes[0]->middlewares);
     }
 
     private function stubConfig(array $stubMethods): void

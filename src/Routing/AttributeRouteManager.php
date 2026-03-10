@@ -6,8 +6,9 @@ use Suphle\Contracts\Config\Router as RouterConfig;
 use Suphle\Hydration\Container;
 use Suphle\Request\RequestDetails;
 use Suphle\Routing\Structures\{RouteInfo, CanaryInfo};
+use Suphle\Contracts\Presentation\BaseRenderer;
 use Suphle\Services\Decorators\BindsAsSingleton;
-use Suphle\Modules\ModuleHandlerIdentifier;
+use Suphle\Modules\Structures\ActiveDescriptors;
 
 #[BindsAsSingleton]
 class AttributeRouteManager
@@ -63,11 +64,21 @@ class AttributeRouteManager
         
         // Check canary conditions
         if ($route->canaryInfo) {
-            $controller = $this->evaluateCanary($route->canaryInfo, $controller);
+
+            $this->evaluateCanary($route->canaryInfo);
         }
         
         // Execute the controller method
-        return $controller->{$route->controllerMethod}();
+        $renderer = $controller->{$route->controllerMethod}();
+
+        if ($renderer instanceof BaseRenderer) {
+
+            $renderer->setCoordinatorClass($controller);
+
+            $renderer->setHandler($route->controllerMethod);
+        }
+
+        return $renderer;
     }
 
     private function setRouteParameters(RouteInfo $route): void
@@ -91,17 +102,21 @@ class AttributeRouteManager
         }
     }
 
-    private function evaluateCanary(CanaryInfo $canaryInfo, object $controller): object
+    private function evaluateCanary(CanaryInfo $canaryInfo): void
     {
         foreach ($canaryInfo->evaluators as $evaluatorClass) {
+
             $evaluator = $this->container->getClass($evaluatorClass);
             
-            if (method_exists($evaluator, 'shouldUseCanary') && $evaluator->shouldUseCanary()) {
-                return $this->container->getClass($canaryInfo->fallback);
+            $result = $evaluator->willLoad();
+
+            if (!is_null($result)) {
+
+                $this->requestDetails->setCanaryState($result);
+
+                return;
             }
         }
-        
-        return $controller;
     }
 
     private function getCoordinatorDirectories(): array
@@ -109,9 +124,9 @@ class AttributeRouteManager
         $coordinatorPath = $this->config->getCoordinatorPath();
         $directories = [];
         
-        // Get the module handler to find all modules
-        $moduleHandler = $this->container->getClass(ModuleHandlerIdentifier::class);
-        $modules = $moduleHandler->getModules();
+        // Get ActiveDescriptors to find all modules
+        $activeDescriptors = $this->container->getClass(ActiveDescriptors::class);
+        $modules = $activeDescriptors->getOriginalDescriptors();
         
         foreach ($modules as $module) {
             // Get the module's ModuleFiles instance to get the module root path
@@ -124,7 +139,7 @@ class AttributeRouteManager
                 $directories = array_merge($directories, $this->getApiVersionDirectories($moduleRoot, $coordinatorPath));
             } else {
                 // Build the coordinator directory path for browser routes
-                $coordinatorDir = $moduleRoot . $coordinatorPath;
+                $coordinatorDir = rtrim($moduleRoot, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . ltrim($coordinatorPath, DIRECTORY_SEPARATOR);
                 
                 if (is_dir($coordinatorDir)) {
                     $directories[] = $coordinatorDir;
@@ -140,16 +155,17 @@ class AttributeRouteManager
         $directories = [];
         
         // Scan for version directories automatically
-        $versionsDir = $moduleRoot . $coordinatorPath . '/Versions';
+        $versionsDir = rtrim($moduleRoot, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 
+                       trim($coordinatorPath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'Versions';
         if (is_dir($versionsDir)) {
-            $versionDirs = glob($versionsDir . '/V*', GLOB_ONLYDIR);
+            $versionDirs = glob($versionsDir . DIRECTORY_SEPARATOR . 'V*', GLOB_ONLYDIR);
             // Sort in descending order (newest first)
             rsort($versionDirs);
             $directories = array_merge($directories, $versionDirs);
         }
         
         // Add base coordinator directory for fallback
-        $baseDir = $moduleRoot . $coordinatorPath;
+        $baseDir = rtrim($moduleRoot, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . trim($coordinatorPath, DIRECTORY_SEPARATOR);
         if (is_dir($baseDir)) {
             $directories[] = $baseDir;
         }
@@ -164,6 +180,12 @@ class AttributeRouteManager
     {
         $this->scanAndRegisterRoutes();
         return $this->routes;
+    }
+
+    public function hasRoutes(): bool
+    {
+        $this->scanAndRegisterRoutes();
+        return !empty($this->routes);
     }
 
     /**

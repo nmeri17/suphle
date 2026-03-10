@@ -2,5 +2,22 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleTwo\Config;
 
-// This class is no longer needed as it only returns default values
-// The base Router config provides all the necessary defaults
+use Suphle\Contracts\Config\Router;
+
+class RouterMock implements Router
+{
+    public function getCoordinatorPath(): string
+    {
+        return "Coordinators";
+    }
+
+    public function getCoordinatorClassesToScan(): array
+    {
+        return [];
+    }
+
+    public function mirrorAuthenticator(): string
+    {
+        return "";
+    }
+}

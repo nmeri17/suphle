@@ -25,9 +25,9 @@ trait OpenApiRendererTrait
     /**
      * Default status code - override in renderer if needed
      */
-    public static function getStatusCode(): int
+    public static function getOpenApiStatusCode(): int
     {
-        return 200;
+        return defined('static::STATUS_CODE') ? static::STATUS_CODE : 200;
     }
 
     /**

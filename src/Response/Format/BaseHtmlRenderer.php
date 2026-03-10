@@ -11,7 +11,11 @@ use Suphle\Services\Decorators\VariableDependencies;
 #[VariableDependencies(["setHtmlParser", "setSession" ])]
 abstract class BaseHtmlRenderer extends GenericRenderer implements RendersMarkup
 {
+    public const STATUS_CODE = 200;
+
     protected string $markupName;
+
+    protected int $statusCode = self::STATUS_CODE;
 
     protected HtmlParser $htmlParser;
 

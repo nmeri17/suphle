@@ -10,7 +10,8 @@ class Route
     public function __construct(
         public readonly string $path,
         public readonly HttpMethod $method = HttpMethod::GET,
-        public readonly array $middlewares = []
+        public readonly array $middlewares = [],
+        public readonly ?string $view_name = null
     ) {
         //
     }

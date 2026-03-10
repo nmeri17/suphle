@@ -16,7 +16,7 @@ class OpenApiRendererInterfaceTest extends TestCase
         };
 
         $this->assertEquals(PayloadStorage::HTML_HEADER_VALUE, $renderer::getContentType());
-        $this->assertEquals(200, $renderer::getStatusCode());
+        $this->assertEquals(200, $renderer::getOpenApiStatusCode());
         $this->assertIsArray($renderer::getResponseSchema());
         $this->assertStringContainsString('response', $renderer::getDescription());
     }

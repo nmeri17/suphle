@@ -4,7 +4,7 @@ namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
 use Suphle\Request\PayloadStorage;
 use Suphle\Services\{ServiceCoordinator, Decorators\ValidationRules};
-use Suphle\Routing\Attributes\{Route, HttpMethod, Middleware};
+use Suphle\Routing\Attributes\{Route, HttpMethod, PreMiddleware};
 use Suphle\Response\Format\Json;
 use Suphle\Auth\RequestScrutinizers\AuthorizeMetaFunnel;
 use Suphle\Tests\Mocks\Modules\ModuleOne\{Concretes\Services\EmploymentEditMock, PayloadReaders\BaseEmploymentBuilder};
@@ -20,14 +20,14 @@ class EmploymentEditCoordinator extends ServiceCoordinator
     }
 
     #[Route("retain")]
-    #[Middleware([new AuthorizeMetaFunnel([], EmploymentEditRule::class)])]
+    #[PreMiddleware(AuthorizeMetaFunnel::class)]
     public function retain(): Json
     {
         return new Json([]);
     }
 
     #[Route("additional-rule")]
-    #[Middleware([new AuthorizeMetaFunnel([], EmploymentEditRule::class)])]
+    #[PreMiddleware(AuthorizeMetaFunnel::class)]
     public function additionalRule(): Json
     {
         return new Json([]);
@@ -40,7 +40,7 @@ class EmploymentEditCoordinator extends ServiceCoordinator
     }
 
     #[Route("gmulti-edit/{id}")]
-    #[Middleware([new AuthorizeMetaFunnel([], EmploymentEditRule::class)])]
+    #[PreMiddleware(AuthorizeMetaFunnel::class)]
     public function gmultiEdit(): Json
     {
         return new Json([]);
@@ -53,7 +53,7 @@ class EmploymentEditCoordinator extends ServiceCoordinator
     }
 
     #[Route("gmulti-edit/{id}")]
-    #[Middleware([new AuthorizeMetaFunnel([], EmploymentEditRule::class)])]
+    #[PreMiddleware(AuthorizeMetaFunnel::class)]
     public function getEmploymentDetails(BaseEmploymentBuilder $employmentBuilder): Json
     {
         return new Json([
@@ -62,7 +62,7 @@ class EmploymentEditCoordinator extends ServiceCoordinator
     }
 
     #[Route("pmulti-edit/{id}")]
-    #[Middleware([new AuthorizeMetaFunnel([], EmploymentEditRule::class)])]
+    #[PreMiddleware(AuthorizeMetaFunnel::class)]
     #[ValidationRules([
         "id" => "required|numeric|exists:employment,id",
         "salary" => "numeric|min:20000"

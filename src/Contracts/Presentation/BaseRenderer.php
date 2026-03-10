@@ -19,6 +19,8 @@ interface BaseRenderer
 
     public function getHandler(): string;
 
+    public function setHandler(string $handler): void;
+
     public function setCoordinatorClass(ServiceCoordinator $class): void;
 
     public function getCoordinator(): ServiceCoordinator;

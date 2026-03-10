@@ -7,7 +7,7 @@ use Suphle\Hydration\Container;
 use Suphle\Routing\Attributes\{Route, RoutePrefix, CanaryState, HttpMethod, PreMiddleware};
 use Suphle\Contracts\Presentation\BaseRenderer;
 use Suphle\Coordinators\BaseCoordinator;
-use Suphle\Routing\Analysis\RouteAnalysisService;
+use Suphle\Routing\Analysis\{RouteAnalysisService, RendererAnalyzerRegistry};
 use Suphle\Flows\FlowHydrator;
 use ReflectionClass;
 use ReflectionMethod;
@@ -15,11 +15,12 @@ use ReflectionMethod;
 class RouteDetectorService extends RouteAnalysisService
 {
     public function __construct(
-        protected readonly RouterConfig $config,
-        protected readonly Container $container,
-        FlowHydrator $flowHydrator
+        RouterConfig $config,
+        Container $container,
+        FlowHydrator $flowHydrator,
+        RendererAnalyzerRegistry $rendererAnalyzerRegistry
     ) {
-        parent::__construct($config, $container, $flowHydrator);
+        parent::__construct($config, $container, $flowHydrator, $rendererAnalyzerRegistry);
     }
 
     public function getAllRoutes(): array

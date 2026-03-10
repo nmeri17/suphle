@@ -7,12 +7,11 @@ use Suphle\Services\Decorators\VariableDependencies;
 use Suphle\Request\PayloadStorage;
 
 use Suphle\Contracts\Response\RendererManager;
-use Suphle\Contracts\Presentation\MirrorableRenderer;
 use Suphle\Contracts\Response\OpenApiRenderer;
 use Suphle\Response\Traits\OpenApiRendererTrait;
 
 #[VariableDependencies([ "setRendererManager" ])]
-class Reload extends GenericRenderer implements MirrorableRenderer, OpenApiRenderer
+class Reload extends GenericRenderer implements OpenApiRenderer
 {
     use OpenApiRendererTrait;
 
@@ -20,31 +19,13 @@ class Reload extends GenericRenderer implements MirrorableRenderer, OpenApiRende
 
     protected RendererManager $rendererManager;
 
-    public function __construct()
-    {
-        $this->setHeaders(self::STATUS_CODE, [
-            PayloadStorage::CONTENT_TYPE_KEY => PayloadStorage::HTML_HEADER_VALUE
-        ]);
-    }
-
-    public function setRendererManager(RendererManager $rendererManager): void
-    {
-        $this->rendererManager = $rendererManager;
-    }
+    protected int $statusCode = self::STATUS_CODE;
 
     public function render(): string
     {
         return $this->rendererManager
             ->invokePreviousRenderer()
             ->render();
-    }
-
-    /**
-     * Override default status code for Reload
-     */
-    public static function getStatusCode(): int
-    {
-        return self::STATUS_CODE;
     }
 
     /**

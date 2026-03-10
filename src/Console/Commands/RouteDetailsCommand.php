@@ -4,9 +4,9 @@ namespace Suphle\Console\Commands;
 
 use Suphle\Console\BaseCliCommand;
 use Suphle\Routing\RouteDetailsService;
+use Suphle\Console\Services\RouteFormatterService;
 use Symfony\Component\Console\{Output\OutputInterface, Command\Command};
 use Symfony\Component\Console\Input\{InputInterface, InputOption};
-use Symfony\Component\Console\Helper\Table;
 
 class RouteDetailsCommand extends BaseCliCommand
 {
@@ -50,6 +50,7 @@ class RouteDetailsCommand extends BaseCliCommand
         $moduleInterface = $input->getOption(self::HYDRATOR_MODULE_OPTION);
         $container = $this->getExecutionContainer($moduleInterface);
         $detailsService = $container->getClass(RouteDetailsService::class);
+        $formatterService = $container->getClass(RouteFormatterService::class);
 
         $routes = $detailsService->getAllDetailedRoutes();
 
@@ -80,87 +81,12 @@ class RouteDetailsCommand extends BaseCliCommand
         }
 
         if ($input->getOption('json')) {
-            $this->outputJson($output, $routes);
+            $formatterService->formatJson($output, $routes);
         } else {
-            $this->outputTable($output, $routes);
+            $formatterService->formatDetailedRouteTable($output, $routes);
         }
 
         return Command::SUCCESS;
     }
 
-    protected function outputTable(OutputInterface $output, array $routes): void
-    {
-        $output->writeln("\n<info>Route Details</info>");
-        $output->writeln("==============\n");
-
-        $table = new Table($output);
-        $table->setHeaders([
-            'Method',
-            'Path',
-            'Handler',
-            'Renderer',
-            'Flows',
-            'Canary',
-            'Validators',
-            'Builders',
-            'Response',
-            'Summary'
-        ]);
-
-        foreach ($routes as $route) {
-            $table->addRow([
-                $route['method'],
-                $route['path'],
-                $route['coordinator'] . '::' . $route['handler'],
-                $route['renderer'] ?? '-',
-                $this->formatFlows($route['flows']),
-                $this->formatCanary($route['canary_state']),
-                $this->formatValidators($route['validation_rules']),
-                $this->formatBuilders($route['parameters']),
-                $this->formatResponse($route['response_shape']),
-                $route['summary'] ?? ''
-            ]);
-        }
-
-        $table->render();
-        $output->writeln(sprintf("\n<info>Total: %d routes</info>", count($routes)));
-    }
-
-    protected function outputJson(OutputInterface $output, array $routes): void
-    {
-        $output->writeln(json_encode(array_values($routes), JSON_PRETTY_PRINT));
-    }
-
-    protected function formatFlows($flows): string
-    {
-        if (empty($flows)) return '-';
-        return implode(", ", array_map(fn($f) => $f['type'], $flows));
-    }
-
-    protected function formatCanary($canary): string
-    {
-        if (empty($canary)) return '-';
-        if (is_array($canary)) return implode(", ", array_map('basename', $canary));
-        return (string)$canary;
-    }
-
-    protected function formatValidators($rules): string
-    {
-        if (empty($rules)) return '-';
-        return implode(", ", array_map(fn($k, $v) => "$k: $v", array_keys($rules), $rules));
-    }
-
-    protected function formatBuilders($params): string
-    {
-        $builders = array_filter($params, fn($p) => !empty($p['is_payload_reader']));
-        if (empty($builders)) return '-';
-        return implode(", ", array_map(fn($b) => $b['payload_class'], $builders));
-    }
-
-    protected function formatResponse($response): string
-    {
-        if (empty($response)) return '-';
-        if (isset($response['renderer_type'])) return $response['renderer_type'];
-        return $response['type'] ?? '-';
-    }
 } 

@@ -67,7 +67,7 @@ class AttributeRouteScanner
         return null;
     }
 
-    private function scanClass(string $className): array
+    public function scanClass(string $className): array
     {
         $routes = [];
         $reflection = new ReflectionClass($className);
@@ -89,6 +89,9 @@ class AttributeRouteScanner
                 $canaryInfo = $this->getCanaryInfo($method);
                 
                 $fullPath = $prefix ? $prefix . $route->path : $route->path;
+                if (!str_starts_with($fullPath, '/')) {
+                    $fullPath = '/' . $fullPath;
+                }
                 
                 $routes[] = new RouteInfo(
                     path: $fullPath,
@@ -96,7 +99,8 @@ class AttributeRouteScanner
                     controllerClass: $className,
                     controllerMethod: $method->getName(),
                     middlewares: $route->middlewares,
-                    canaryInfo: $canaryInfo
+                    canaryInfo: $canaryInfo,
+                    viewName: $route->view_name
                 );
             }
         }

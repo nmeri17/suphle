@@ -235,35 +235,15 @@ class RequestDetails
         return preg_match("/^\/?" . $sanitizedPath . "\/?$/i", $this->getPath());
     }
 
+    public function setCanaryState(?string $state): void
+    {
+
+        $this->canaryState = $state;
+    }
+
     public function getCanaryState(): ?string
     {
-        if ($this->canaryState !== null) {
-            return $this->canaryState;
-        }
 
-        $controllerClass = $this->getActiveControllerClass(); // You may need to implement this
-        if (!$controllerClass || !class_exists($controllerClass)) {
-            $this->canaryState = null;
-            return null;
-        }
-
-        $reflection = new \ReflectionClass($controllerClass);
-        $attributes = $reflection->getAttributes(\Suphle\Routing\Attributes\CanaryState::class);
-
-        if ($attributes) {
-            $canaryAttr = $attributes[0]->newInstance();
-            foreach ($canaryAttr->canaries as $canaryClass) {
-                if (class_exists($canaryClass)) {
-                    $result = (new $canaryClass())->willLoad();
-                    if ($result !== null) {
-                        $this->canaryState = $result;
-                        return $result;
-                    }
-                }
-            }
-        }
-
-        $this->canaryState = null;
-        return null;
+        return $this->canaryState;
     }
 }

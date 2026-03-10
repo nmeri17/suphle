@@ -10,17 +10,21 @@ use Suphle\Contracts\Presentation\BaseRenderer;
 use Suphle\Coordinators\BaseCoordinator;
 use Suphle\Flows\{OuterFlowWrapper, Structures\RouteUserNode};
 use Suphle\Contracts\Flows\FlowHydrator;
+use Suphle\Routing\Analysis\RendererAnalyzerRegistry;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionParameter;
 use ReflectionType;
+use ReflectionAttribute;
+use Exception;
 
 abstract class RouteAnalysisService
 {
     public function __construct(
         protected readonly RouterConfig $config,
         protected readonly Container $container,
-        protected readonly FlowHydrator $flowHydrator
+        protected readonly FlowHydrator $flowHydrator,
+        protected readonly RendererAnalyzerRegistry $rendererAnalyzerRegistry
     ) {
         //
     }
@@ -63,7 +67,7 @@ abstract class RouteAnalysisService
      */
     protected function analyzeMethod(
         ReflectionMethod $method, 
-        \ReflectionAttribute $routeAttribute, 
+        ReflectionAttribute $routeAttribute, 
         string $routePrefix, 
         ?array $canaryState, 
         array $flows, 
@@ -132,7 +136,7 @@ abstract class RouteAnalysisService
         try {
             $flows = $this->flowHydrator->getFlows($coordinatorClass);
             return $flows ?? [];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return [];
         }
     }
@@ -304,20 +308,11 @@ abstract class RouteAnalysisService
      */
     protected function getRendererType(string $rendererClass): string
     {
-        if (str_contains($rendererClass, 'Json')) {
-            return 'json';
-        }
+        $analyzer = $this->rendererAnalyzerRegistry->getAnalyzer($rendererClass);
         
-        if (str_contains($rendererClass, 'Markup')) {
-            return 'html';
-        }
-        
-        if (str_contains($rendererClass, 'Redirect')) {
-            return 'redirect';
-        }
-        
-        if (str_contains($rendererClass, 'Stream')) {
-            return 'stream';
+        if ($analyzer) {
+            $schema = $analyzer->analyzeSchema($rendererClass, new \ReflectionMethod(__CLASS__, __METHOD__));
+            return $schema['type'] ?? 'unknown';
         }
         
         return 'unknown';
@@ -415,7 +410,7 @@ abstract class RouteAnalysisService
     /**
      * Filter routes by various criteria
      */
-    protected function filterRoutes(array $routes, array $filters = []): array
+    protected function filterRoutes(array $routes, array $filters): array
     {
         return array_filter($routes, function ($route) use ($filters) {
             foreach ($filters as $key => $value) {

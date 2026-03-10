@@ -3,10 +3,11 @@
 namespace Suphle\Tests\Unit\Routing;
 
 use Suphle\Routing\RouteDetectorService;
-use Suphle\Contracts\Config\Router as RouterConfig;
-use Suphle\Flows\FlowHydrator;
-use Suphle\Hydration\Container;
+use Suphle\Routing\Analysis\RendererAnalyzerRegistry;
 use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\TestCoordinator;
+use Suphle\Contracts\Config\Router as RouterConfig;
+use Suphle\Hydration\Container;
+use Suphle\Contracts\Flows\FlowHydrator;
 use PHPUnit\Framework\TestCase;
 
 class RouteDetectorServiceTest extends TestCase
@@ -15,14 +16,21 @@ class RouteDetectorServiceTest extends TestCase
     private RouterConfig $config;
     private Container $container;
     private FlowHydrator $flowHydrator;
+    private RendererAnalyzerRegistry $rendererAnalyzerRegistry;
 
     protected function setUp(): void
     {
         $this->config = $this->createMock(RouterConfig::class);
         $this->container = $this->createMock(Container::class);
         $this->flowHydrator = $this->createMock(FlowHydrator::class);
+        $this->rendererAnalyzerRegistry = $this->createMock(RendererAnalyzerRegistry::class);
         
-        $this->service = new RouteDetectorService($this->config, $this->container, $this->flowHydrator);
+        $this->service = new RouteDetectorService(
+            $this->config, 
+            $this->container, 
+            $this->flowHydrator, 
+            $this->rendererAnalyzerRegistry
+        );
     }
 
     public function test_compiles_route_details_from_coordinator()

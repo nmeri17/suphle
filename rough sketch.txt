@@ -1,10 +1,70 @@
-Named renderers for the purpose of portable links that don't break in transit
-	- only way this can work is by searching while building the full route tree
-Url map generation
-	- if it's not the end of the thread (contains a _prefixFor), we create a sub to contain the patterns below it
-	- will likely use a recursive method somewhere
+phpunit "C:\wamp64\www\suphle\tests\Feature\SmsSentTest.php" --filter="test_can_send_saved_drafts" --stop-on-error --stop-on-failure
 
-4) pending tests:
-	- only and except from routeCollection?
+phpunit "C:\wamp64\www\suphle\tests\Feature\EducationProductTest.php" --stop-on-error --stop-on-failure
+
+php artisan migrate:fresh --seed
+=========
+cd vendor/bin
+rector process --config="C:\wamp64\www\suphle\rector.php"
+
+=========
 
 test the multi-layer transaction failure theory. maybe an event handler emitted within a decorated service fails. what happens to the calls and possibly committed data
+
+
+"postbuild": "vuepress-sitemap -H https://suphle.com -d dist"
+
+As you are now sure of master's stability, implement what needs to be done on the dev branch, so someone can safely do anything with master. Then after merge/completion, tag the current master
+
+https://nmeri.hashnode.dev/a-synopsis-of-the-suphle-framework
+
+tweak cover letter for internship in other stacks
+
+https://www.linkedin.com/in/nmeri-alphonsus-905a47100/
+
+php suphle server:start AllModules --no_static_refactor --ignore_static_correct
+
+php suphle server:start AllModules --insane
+
+
+####
+
+- auto-testing component. 
+	- impossible for placeholders to be guessed. post/put can use validation array keys. treat id(exists) specially ie reading the table
+- docs generation
+	- is it possible to include authentication and authorization failure tabs on the resulting openapi/swagger/dedoc doc? in suphle exception config, we have a response error map, so we can look at its handlers and extract their return values, refer to the docs if you have questions
+
+- is it possible for static analysis to include new descriptor at the end of the array after creating new module. read the docs module and command chapters. write tests and update docs when done
+
+- low hanging fruits
+	- file api should include replaceFile method, accepting name of current file it deletes on behalf of the dev. read the docs coordinator chapters for how file reception works. write tests and update docs when done
+
+	- A lot of the tests using FlowRoutes incorrectly use the old pattern of configuring routes (v1). i need you to replace them with the v2 pattern of specifying what routes to load during this test. Connect the appropriate controllers. Use docs routing chapter to know what the new design is
+	$this->moduleOne = $this->replicateModule(
+            ModuleOneDescriptor::class,
+            function (WriteOnlyContainer $container) {
+
+                $container->replaceWithMock(Router::class, RouterMock::class, [
+
+                    // "browserEntryRoute" => FlowRoutes::class
+                ]);
+            }
+        );
+
+	- can we use the cache component to develop a rate limiter middleware? read the docs io/cache and middleware chapters. write tests and update docs when done
+
+
+php artisan make:model Payment --migration
+
+http => outbound request
+receive modelless payload => 
+
+- v2 considerations
+	- should ModuleHandlerIdentifier still have 3 distinct request paths? aside speed of handling auth requests, any other benefit? can they be merged?
+	- progress
+		- we're done impl new features. currently in the process of running the unit tests. just ask the agent whether it can pick up from task previous agent was working on and can continue
+
+//////////
+Fatal error: Class Suphle\Tests\Mocks\Modules\ModuleTwo\Config\RouterMock contains 5 abstract methods and must therefore be declared abstract or implement the remaining methods (Suphle\Contracts\Config\Router::apiPrefix, Suphle\Contracts\Config\Router::defaultMiddleware, Suphle\Contracts\Config\Router::collectorHandlers, ...) in C:\wamp64\www\suphle\tests\Mocks\Modules\ModuleTwo\Config\RouterMock.php on line 7
+
+now we're going round in circles lol. you either aren't reading the docs or at your wits end. if that config is deprecated, delete it and its contract. quit restoring it. is it used in the routing chain? if no, get rid of it in the docs and everywhere. if yes, follow the recommendation in the docs to give moduleTwo a compatible config

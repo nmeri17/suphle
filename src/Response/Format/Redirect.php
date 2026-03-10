@@ -32,6 +32,8 @@ class Redirect extends GenericRenderer implements MirrorableRenderer, OpenApiRen
 
     protected int $statusCode = self::STATUS_CODE;
 
+    protected bool $wantsJson = false;
+
     /**
      * @param destination Since PDO instances can't be serialized, when using this renderer with PDO in scope, wrap this parameter in a curried/doubly wrapped function
      * 
@@ -82,9 +84,29 @@ class Redirect extends GenericRenderer implements MirrorableRenderer, OpenApiRen
         return $this->sessionClient->getValue(RoutedRendererManager::PREVIOUS_GET_URL);
     }
 
+    public function setWantsJson(): void
+    {
+        $this->wantsJson = true;
+        $this->shouldDeferValidationFailure = false;
+    }
+
     public function render(): string
     {
         $this->renderRedirect($this->destination);
+
+        if ($this->wantsJson) {
+            // API/mobile clients cannot follow a browser redirect.
+            // Return the resolved destination URL as JSON so the client
+            // can navigate programmatically.
+            $this->setHeaders(200, [
+                PayloadStorage::CONTENT_TYPE_KEY => PayloadStorage::JSON_HEADER_VALUE
+            ]);
+
+            return json_encode(
+                ['redirect' => $this->headers[PayloadStorage::LOCATION_KEY] ?? null],
+                JSON_THROW_ON_ERROR
+            );
+        }
 
         return "";
     }
@@ -92,14 +114,6 @@ class Redirect extends GenericRenderer implements MirrorableRenderer, OpenApiRen
     protected function serializableProperties(): array
     {
         return ["destination"];
-    }
-
-    /**
-     * Override default status code for Redirect
-     */
-    public static function getStatusCode(): int
-    {
-        return self::STATUS_CODE;
     }
 
     /**

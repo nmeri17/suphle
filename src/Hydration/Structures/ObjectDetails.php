@@ -51,7 +51,13 @@ class ObjectDetails
     public function implementsInterface(string $target, string $interface): bool
     {
 
-        return in_array($interface, class_implements($target));
+        $interfaces = class_implements($target);
+
+        if ($interfaces === false) {
+             throw new HydrationException("Unable to reflect on class '$target'. It may not exist or cannot be autoloaded.");
+        }
+
+        return in_array($interface, $interfaces);
     }
 
     private function getReturnType(string $className, string $method): ?ReflectionType

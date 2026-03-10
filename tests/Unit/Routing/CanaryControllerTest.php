@@ -2,85 +2,101 @@
 
 namespace Suphle\Tests\Unit\Routing;
 
+use Suphle\Testing\TestTypes\IsolatedComponentTest;
+use Suphle\Tests\Integration\Generic\CommonBinds;
 use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\{User5CanaryController, FooCanaryController, DefaultCanaryController};
-use Suphle\Tests\Unit\TestRunner;
-use Suphle\Contracts\Auth\AuthStorage;
+use Suphle\Request\RequestDetails;
 use Suphle\Request\PayloadStorage;
 
-class CanaryControllerTest extends TestRunner
+/**
+ * Unit tests for Canary coordinator branching logic.
+ *
+ * These tests use IsolatedComponentTest so the Container is available without
+ * a full module boot. We stub RequestDetails::getCanaryState() to simulate
+ * which canary evaluator matched, then assert the coordinator returns the
+ * expected JSON payload for that state.
+ */
+class CanaryControllerTest extends IsolatedComponentTest
 {
-    public function test_user5_canary_controller_with_user5()
+    use CommonBinds;
+
+    protected bool $usesRealDecorator = false;
+
+    // ---- User5CanaryController ----
+
+    public function test_user5_coordinator_returns_user5_profile_for_user5_canary()
     {
-        // Given user ID is 5
-        $this->mock(AuthStorage::class, function ($mock) {
-            $mock->shouldReceive('getId')->andReturn(5);
-        });
+        // Given: stub canary state to 'user5'
+        $this->massProvide([
+            RequestDetails::class => $this->positiveDouble(RequestDetails::class, [
+                'getCanaryState' => 'user5',
+            ])
+        ]);
 
         $controller = $this->container->getClass(User5CanaryController::class);
-        
-        // When accessing user5-profile
+
+        // When
         $response = $controller->user5Handler();
-        
-        // Then should return USER5 profile
-        $this->assertEquals(['profile' => 'USER5 user profile!'], $response->getResponseData());
+
+        // Then
+        $this->assertEquals(['profile' => 'USER5 user profile!'], $response->getRawResponse());
     }
 
-    public function test_user5_canary_controller_with_other_user()
+    public function test_user5_coordinator_returns_stable_profile_for_null_canary()
     {
-        // Given user ID is not 5
-        $this->mock(AuthStorage::class, function ($mock) {
-            $mock->shouldReceive('getId')->andReturn(1);
-        });
+        $this->massProvide([
+            RequestDetails::class => $this->positiveDouble(RequestDetails::class, [
+                'getCanaryState' => null,
+            ])
+        ]);
 
         $controller = $this->container->getClass(User5CanaryController::class);
-        
-        // When accessing user5-profile
+
         $response = $controller->user5Handler();
-        
-        // Then should return STABLE profile
-        $this->assertEquals(['profile' => 'STABLE user profile.'], $response->getResponseData());
+
+        $this->assertEquals(['profile' => 'STABLE user profile.'], $response->getRawResponse());
     }
 
-    public function test_foo_canary_controller_with_foo_in_payload()
+    // ---- FooCanaryController ----
+
+    public function test_foo_coordinator_returns_foo_profile_when_canary_is_foo()
     {
-        // Given payload has 'foo' key
-        $this->mock(PayloadStorage::class, function ($mock) {
-            $mock->shouldReceive('hasKey')->with('foo')->andReturn(true);
-        });
+        $this->massProvide([
+            RequestDetails::class => $this->positiveDouble(RequestDetails::class, [
+                'getCanaryState' => 'foo',
+            ])
+        ]);
 
         $controller = $this->container->getClass(FooCanaryController::class);
-        
-        // When accessing foo-profile
+
         $response = $controller->fooHandler();
-        
-        // Then should return FOO profile
-        $this->assertEquals(['profile' => 'FOO user profile!'], $response->getResponseData());
+
+        $this->assertEquals(['profile' => 'FOO user profile!'], $response->getRawResponse());
     }
 
-    public function test_foo_canary_controller_without_foo_in_payload()
+    public function test_foo_coordinator_returns_stable_profile_when_canary_is_null()
     {
-        // Given payload doesn't have 'foo' key
-        $this->mock(PayloadStorage::class, function ($mock) {
-            $mock->shouldReceive('hasKey')->with('foo')->andReturn(false);
-        });
+        $this->massProvide([
+            RequestDetails::class => $this->positiveDouble(RequestDetails::class, [
+                'getCanaryState' => null,
+            ])
+        ]);
 
         $controller = $this->container->getClass(FooCanaryController::class);
-        
-        // When accessing foo-profile
+
         $response = $controller->fooHandler();
-        
-        // Then should return STABLE profile
-        $this->assertEquals(['profile' => 'STABLE user profile.'], $response->getResponseData());
+
+        $this->assertEquals(['profile' => 'STABLE user profile.'], $response->getRawResponse());
     }
 
-    public function test_default_canary_controller()
+    // ---- DefaultCanaryController ----
+
+    public function test_default_coordinator_always_returns_stable_profile()
     {
         $controller = $this->container->getClass(DefaultCanaryController::class);
-        
-        // When accessing default-profile
+
         $response = $controller->defaultHandler();
-        
-        // Then should return STABLE profile
-        $this->assertEquals(['profile' => 'STABLE user profile.'], $response->getResponseData());
+
+        $this->assertEquals(['profile' => 'STABLE user profile.'], $response->getRawResponse());
     }
-} 
+}

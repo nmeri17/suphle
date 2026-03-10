@@ -7,6 +7,7 @@ use Suphle\Contracts\{Config\ModuleFiles, Bridge\LaravelContainer};
 use Suphle\Contracts\Presentation\{HtmlParser, RendersMarkup};
 
 use Suphle\Services\Decorators\BindsAsSingleton;
+use Suphle\Routing\NamedRouteReader;
 
 use Illuminate\{Filesystem\Filesystem, Events\Dispatcher};
 
@@ -32,7 +33,8 @@ class DefaultBladeAdapter implements HtmlParser
 
     public function __construct(
         protected readonly LaravelContainer $laravelContainer,
-        protected readonly ModuleFiles $fileConfig
+        protected readonly ModuleFiles $fileConfig,
+        protected readonly NamedRouteReader $namedRouteReader
     ) {
 
         $this->viewPaths = [$fileConfig->defaultViewPath()];
@@ -90,6 +92,8 @@ class DefaultBladeAdapter implements HtmlParser
             new FileViewFinder($filesystem, $this->viewPaths),
             $this->laravelContainer->make(Dispatcher::class)
         );
+
+        $this->viewFactory->share('namedRoutes', $this->namedRouteReader);
 
         $this->bindInstancesToLaravelContainer();
     }

@@ -141,7 +141,7 @@ class OpenApiGeneratorService
         // Use interface if available, fallback to analyzer
         if (is_subclass_of($rendererClass, OpenApiRenderer::class)) {
             $contentType = $rendererClass::getContentType();
-            $statusCode = $rendererClass::getStatusCode();
+            $statusCode = $rendererClass::getOpenApiStatusCode();
         } else {
             $contentType = $this->responseSchemaAnalyzer->getContentTypeForRenderer($rendererClass);
             $statusCode = $this->responseSchemaAnalyzer->getStatusCodeForRenderer($rendererClass);

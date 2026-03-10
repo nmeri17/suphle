@@ -19,7 +19,7 @@ interface OpenApiRenderer
     /**
      * Get the default status code for this renderer
      */
-    public static function getStatusCode(): int;
+    public static function getOpenApiStatusCode(): int;
 
     /**
      * Get the response schema for this renderer

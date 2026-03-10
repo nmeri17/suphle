@@ -342,11 +342,11 @@ class PsalmSchemaAnalyzer extends RouteAnalysisService
     /**
      * Get status code for a renderer class using interface
      */
-    public function getStatusCodeForRenderer(string $rendererClass): int
+    public function getOpenApiStatusCodeForRenderer(string $rendererClass): int
     {
         // Check if renderer implements OpenApiRenderer interface
         if (is_subclass_of($rendererClass, OpenApiRenderer::class)) {
-            return $rendererClass::getStatusCode();
+            return $rendererClass::getOpenApiStatusCode();
         }
 
         // Fallback to legacy mapping

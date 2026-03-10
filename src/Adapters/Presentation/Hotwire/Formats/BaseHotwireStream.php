@@ -85,6 +85,14 @@ abstract class BaseHotwireStream extends BaseHtmlRenderer implements MirrorableR
         );
     }
 
+    public function setWantsJson(): void
+    {
+        if ($this->fallbackRenderer instanceof MirrorableRenderer) {
+
+            $this->fallbackRenderer->setWantsJson();
+        }
+    }
+
     public function addAppend(string $handler, callable $target, string $markupName): self
     {
 
@@ -328,6 +336,14 @@ abstract class BaseHotwireStream extends BaseHtmlRenderer implements MirrorableR
         parent::setCoordinatorClass($coordinator);
 
         $this->fallbackRenderer->setCoordinatorClass($coordinator);
+    }
+
+    public function setHandler(string $handler): void
+    {
+
+        parent::setHandler($handler);
+
+        $this->fallbackRenderer->setHandler($handler);
     }
 
     public function setRawResponse(iterable $response): BaseRenderer
