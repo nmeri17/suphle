@@ -1,16 +1,12 @@
 <?php
-
 namespace Suphle\Auth\RequestScrutinizers;
 
-use Suphle\Routing\CollectionMetaFunnel;
-
-class AuthorizeMetaFunnel extends CollectionMetaFunnel
+class AuthorizeMetaFunnel
 {
+    /**
+     * @param string $ruleClass FQN of a class extending RouteRule
+     */
     public function __construct(
-        protected readonly array $activePatterns,
         public readonly string $ruleClass
-    ) {
-
-        //
-    }
+    ) {}
 }

@@ -92,7 +92,7 @@ class RoutedRendererManager implements RendererManager, BaseResponseManager, Val
 
         return $this->requestDetails->isGetRequest() &&
 
-        !$this->requestDetails->isApiRoute();
+        !$this->requestDetails->isApiRoute(); // this and other usages all broken now. work with Suphle\Routing\Structures\RouteInfo; or better still, check whether session mode is active
     }
 
     /**

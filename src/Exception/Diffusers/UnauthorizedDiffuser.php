@@ -20,6 +20,11 @@ class UnauthorizedDiffuser implements ExceptionHandler
 
     public const ERRORS_PRESENCE = "authorization_failure_message";
 
+    public const RAW_RESPONSE = [
+
+        self::ERRORS_PRESENCE => "Unauthorized"
+    ];
+
     protected string $newMarkupName = "authorization-failure";
 
     public function __construct(
@@ -45,10 +50,7 @@ class UnauthorizedDiffuser implements ExceptionHandler
 
         $this->setMarkupDetails();
 
-        $this->renderer->setRawResponse([
-
-            self::ERRORS_PRESENCE => "Unauthorized"
-        ])->setHeaders(403, []);
+        $this->renderer->setRawResponse(static::RAW_RESPONSE)->setHeaders(403, []);
     }
 
     public function getRenderer(): BaseRenderer

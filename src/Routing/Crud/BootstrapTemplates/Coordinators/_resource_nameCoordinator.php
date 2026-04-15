@@ -10,10 +10,9 @@ use Suphle\Contracts\IO\Session;
 use _modules_shell\_module_name\PayloadReaders\{Base_resource_nameBuilder, Search_resource_nameBuilder};
 use _modules_shell\_module_name\Services\Eloquent\{_resource_nameAccessor, _resource_nameSearcher};
 
-#[RoutePrefix("_resource_name")]
+#[RoutePrefix(prefix: "_resource_name", _mirror_config)]
 class _resource_nameCoordinator extends ServiceCoordinator
 {
-    use _resource_nameGenericCoordinator;
 
     public function __construct(
         protected readonly PayloadStorage $payloadStorage,
@@ -116,5 +115,70 @@ class _resource_nameCoordinator extends ServiceCoordinator
         return new Markup('_resource_name.search', [
             'results' => $results
         ]);
+    }
+
+    #[ValidationRules(["name" => "required"])]
+    public function saveNew(): iterable
+    {
+
+        return [
+
+            BrowserBuilder::SAVE_NEW_KEY => $this->_resource_nameAccessor
+
+            ->createSingle($this->payloadStorage->fullPayload())
+        ];
+    }
+
+    public function showAll(): iterable
+    {
+
+        return [
+
+            "data" => $this->_resource_nameAccessor->paginate()
+        ];
+    }
+
+    #[ValidationRules([
+        "id" => "required|numeric|exists:_resource_name,id"
+    ])]
+    public function showOne(Base_resource_nameBuilder $_resource_nameBuilder): iterable
+    {
+
+        return [
+
+            "data" => $this->_resource_nameAccessor
+
+            ->getResource($_resource_nameBuilder->getBuilder())
+        ];
+    }
+
+    #[ValidationRules([
+        "id" => "required|numeric|exists:_resource_name,id"
+    ])]
+    public function updateOne(Base_resource_nameBuilder $_resource_nameBuilder): iterable
+    {
+
+        return [
+            "message" => $this->_resource_nameAccessor->updateResource(
+
+                $_resource_nameBuilder->getBuilder(),
+
+                $this->payloadStorage->fullPayload()
+            )
+        ];
+    }
+
+    #[ValidationRules([
+        "id" => "required|numeric|exists:_resource_name,id"
+    ])]
+    public function deleteOne(): iterable
+    {
+
+        return [
+            "message" => $this->_resource_nameAccessor->deleteById(
+
+                $this->payloadStorage->getKey("id")
+            )
+        ];
     }
 }

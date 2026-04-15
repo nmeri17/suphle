@@ -2,9 +2,9 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleTwo\Config;
 
-use Suphle\Contracts\Config\Router;
+use Suphle\Config\Router;
 
-class RouterMock implements Router
+class RouterMock extends Router
 {
     public function getCoordinatorPath(): string
     {
@@ -14,10 +14,5 @@ class RouterMock implements Router
     public function getCoordinatorClassesToScan(): array
     {
         return [];
-    }
-
-    public function mirrorAuthenticator(): string
-    {
-        return "";
     }
 }

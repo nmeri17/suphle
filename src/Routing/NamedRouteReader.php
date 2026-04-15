@@ -1,13 +1,19 @@
 <?php
-
 namespace Suphle\Routing;
 
+use Suphle\Routing\Analysis\RouteAnalysisService;
+
+use Suphle\Contracts\Config\Router as RouterConfig;
+
 use Suphle\Hydration\Container;
+
+use RuntimeException;
 
 class NamedRouteReader
 {
     public function __construct(
-        private readonly AttributeRouteManager $routeManager,
+        protected readonly AttributeRouteScanner $routeScanner,
+        private readonly RouteAnalysisService $analyzerService,
         private readonly PathPlaceholders $placeholders
     ) {}
 
@@ -16,7 +22,12 @@ class NamedRouteReader
      */
     public function expandRoute(string $viewName, array $parameters = []): string
     {
-        $allRoutes = $this->routeManager->getAllRoutes();
+        $allRoutes = $this->routeScanner->scanModulesByPath(
+            fn (Container $container) => $container->getClass(RouterConfig::class)
+            ->getCoordinatorPath(),
+            
+            $this->analyzerService->analyzeCoordinator(...)
+        );
 
         foreach ($allRoutes as $route) {
             if ($route->viewName === $viewName) {
@@ -24,7 +35,7 @@ class NamedRouteReader
             }
         }
 
-        throw new \RuntimeException(sprintf('Named route "%s" not found', $viewName));
+        throw new RuntimeException(sprintf('Named route "%s" not found', $viewName));
     }
 
     private function interpolatePath(string $path, array $parameters): string

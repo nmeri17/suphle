@@ -66,19 +66,6 @@ class Container implements ClassHydrationBehavior
         $this->provisionedClasses[self::UNIVERSAL_SELECTOR] = new ProvisionUnit(self::UNIVERSAL_SELECTOR);
     }
 
-    /**
-     * Should be called when preparing container for use i.e. before the very first user facing getClass
-    */
-    public function setExternalContainerManager(ExternalPackageManagerHydrator $externalContainers): void
-    {
-
-        $externalContainers->setManagers(
-            $this->config->getExternalHydrators()
-        );
-
-        $this->externalContainers = $externalContainers;
-    }
-
     public function setInterfaceHydrator(string $collection): void
     {
 

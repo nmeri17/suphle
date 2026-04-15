@@ -1,18 +1,15 @@
 <?php
-
 namespace Suphle\Auth\RequestScrutinizers;
 
 use Suphle\Contracts\Auth\AuthStorage;
 
-use Suphle\Routing\CollectionMetaFunnel;
-
-class AuthenticateMetaFunnel extends CollectionMetaFunnel
+class AuthenticateMetaFunnel
 {
+    /**
+     * The framework injects the specific mechanism (Session, Token, etc.) 
+     * decided during the "Implicit Swap" phase.
+     */
     public function __construct(
-        protected readonly array $activePatterns,
         public readonly AuthStorage $authStorage
-    ) {
-
-        //
-    }
+    ) {}
 }

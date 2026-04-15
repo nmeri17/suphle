@@ -1,30 +1,39 @@
 <?php
-
 namespace Suphle\Tests\Unit\WebSockets;
 
-use PHPUnit\Framework\TestCase;
 use Suphle\WebSockets\WebSocketRouter;
-use Suphle\WebSockets\WebSocketGateway;
-use Suphle\Hydration\Container;
+use Suphle\Routing\AttributeRouteScanner;
+use Suphle\Contracts\Config\Router as RouterConfig;
+use Suphle\Testing\TestTypes\IsolatedComponentTest;
+use Suphle\Tests\Integration\Generic\CommonBinds;
 
-class WebSocketRouterTest extends TestCase
+class WebSocketRouterTest extends IsolatedComponentTest
 {
-    public function test_can_register_and_retrieve_routes()
-    {
-        $container = $this->createMock(Container::class);
-        $gatewayMock = $this->createMock(WebSocketGateway::class);
-        
-        $container->method('getClass')
-            ->willReturn($gatewayMock);
+    use CommonBinds;
 
-        $router = new WebSocketRouter($container);
-        
-        // Simulating the result of scanModuleForGateways
-        $router->addRoute('/chat', get_class($gatewayMock));
-        
-        $handler = $router->getHandlerFor('/chat');
-        
-        $this->assertInstanceOf(WebSocketGateway::class, $handler);
-        $this->assertNull($router->getHandlerFor('/missing'));
+    public function test_registerRoutes_populates_from_scanner()
+    {
+        $scannerStub = $this->positiveDouble(AttributeRouteScanner::class, [ // given
+            "scanModulesByPath" => ["/news" => "NewsGatewayClass"]
+        ]);
+
+        $configStub = $this->positiveDouble(RouterConfig::class, [
+            "getWebSocketPath" => "Gateways"
+        ]);
+
+        // 3. Instantiate SUT via replaceConstructorArguments to satisfy the constructor
+        // Signature: (Scanner $scanner, Router $routerConfig)
+        $router = $this->replaceConstructorArguments(WebSocketRouter::class, [
+            AttributeRouteScanner::class => $scannerStub,
+            RouterConfig::class => $configStub
+        ]);
+
+        // when
+        $router->registerRoutes();
+
+        // then
+        $this->assertEquals("ChatGateway", $router->getHandlerFor("/chat"));
+    
+        $this->assertNull($router->getHandlerFor("/non-existent"));
     }
 }

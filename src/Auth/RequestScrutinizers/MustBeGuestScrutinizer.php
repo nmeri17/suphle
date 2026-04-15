@@ -20,10 +20,6 @@ class MustBeGuestScrutinizer extends BaseScrutinizerHandler
 
     public function scrutinizeRequest(): void
     {
-        foreach ($this->metaFunnels as $funnel)
-
-            $this->authScrutinizer->addMetaFunnel($funnel);
-
         $foundUser = null;
 
         try {

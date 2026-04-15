@@ -1,22 +1,15 @@
 <?php
-
 namespace Suphle\Routing\Analysis;
 
 use Suphle\Contracts\Config\Router as RouterConfig;
 use Suphle\Hydration\Container;
-use Suphle\Routing\Attributes\{Route, RoutePrefix, CanaryState, HttpMethod};
-use Suphle\Services\Decorators\ValidationRules;
-use Suphle\Contracts\Presentation\BaseRenderer;
-use Suphle\Coordinators\BaseCoordinator;
-use Suphle\Flows\{OuterFlowWrapper, Structures\RouteUserNode};
 use Suphle\Contracts\Flows\FlowHydrator;
-use Suphle\Routing\Analysis\RendererAnalyzerRegistry;
-use ReflectionClass;
-use ReflectionMethod;
-use ReflectionParameter;
-use ReflectionType;
-use ReflectionAttribute;
-use Exception;
+use Suphle\Hydration\Structures\ObjectDetails;
+use Suphle\Routing\Attributes\{Route, RoutePrefix, CanaryState, HttpMethod, PreMiddleware, Middleware, ClearMiddleware};
+use Suphle\Auth\RequestScrutinizers\{AuthenticateHandler, AuthorizeMetaFunnel};
+use Suphle\Services\Decorators\ValidationRules;
+use Suphle\Flows\Structures\RouteUserNode;
+use ReflectionClass, ReflectionMethod, ReflectionAttribute, Exception, RuntimeException;
 
 abstract class RouteAnalysisService
 {
@@ -24,418 +17,291 @@ abstract class RouteAnalysisService
         protected readonly RouterConfig $config,
         protected readonly Container $container,
         protected readonly FlowHydrator $flowHydrator,
-        protected readonly RendererAnalyzerRegistry $rendererAnalyzerRegistry
-    ) {
-        //
-    }
+        protected readonly ObjectDetails $objectDetails
+    ) {}
 
     /**
-     * Get all coordinator classes to scan for routes
+     * Requirement: Each child (Psalm or Response) must define how it 
+     * perceives the final output of a method.
      */
-    protected function getCoordinatorClasses(): array
-    {
-        return $this->config->getCoordinatorClassesToScan();
-    }
+    abstract public function getResponseShape(ReflectionMethod $method): array;
 
     /**
-     * Analyze a single coordinator class and extract route information
+     * this is essentially same as scanAllModules but enables filters
+     * * @param module, method, path
      */
-    protected function analyzeCoordinator(string $coordinatorClass): array
-    {
-        $reflection = new ReflectionClass($coordinatorClass);
-        $routeDetails = [];
-
-        // Get class-level attributes
-        $routePrefix = $this->getRoutePrefix($reflection);
-        $canaryState = $this->getCanaryState($reflection);
-        $flows = $this->getFlows($coordinatorClass);
-
-        // Get method-level routes
-        foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
-            $routeAttribute = $method->getAttributes(Route::class)[0] ?? null;
-            
-            if ($routeAttribute) {
-                $routeDetails[] = $this->analyzeMethod($method, $routeAttribute, $routePrefix, $canaryState, $flows, $coordinatorClass);
-            }
-        }
-
-        return $routeDetails;
-    }
-
-    /**
-     * Analyze a single method and extract route information
-     */
-    protected function analyzeMethod(
-        ReflectionMethod $method, 
-        ReflectionAttribute $routeAttribute, 
-        string $routePrefix, 
-        ?array $canaryState, 
-        array $flows, 
-        string $coordinatorClass
-    ): array {
-        $routeArgs = $routeAttribute->getArguments();
-        $routePattern = $routeArgs[0] ?? '';
-        $httpMethod = $routeArgs[1] ?? HttpMethod::GET;
-        $middleware = $routeArgs[2] ?? [];
-
-        $fullPath = $this->buildFullPath($routePrefix, $routePattern);
-        
-        return [
-            'method' => $httpMethod->value,
-            'path' => $fullPath,
-            'handler' => $method->getName(),
-            'middleware' => $middleware,
-            'canary_state' => $canaryState,
-            'placeholders' => $this->extractPlaceholders($routePattern),
-            'renderer' => $this->getReturnType($method),
-            'coordinator' => $coordinatorClass,
-            'validation_rules' => $this->getValidationRules($method),
-            'parameters' => $this->getMethodParameters($method),
-            'flows' => $this->getMethodFlows($flows, $method->getName()),
-            'response_shape' => $this->getResponseShape($method),
-            'summary' => $this->extractMethodSummary($method),
-            'description' => $this->extractMethodDescription($method)
-        ];
-    }
-
-    /**
-     * Extract route prefix from class attributes
-     */
-    protected function getRoutePrefix(ReflectionClass $reflection): string
-    {
-        $prefixAttributes = $reflection->getAttributes(RoutePrefix::class);
-        
-        if (!empty($prefixAttributes)) {
-            $prefixArgs = $prefixAttributes[0]->getArguments();
-            return $prefixArgs[0] ?? '';
-        }
-
-        return '';
-    }
-
-    /**
-     * Extract canary state from class attributes
-     */
-    protected function getCanaryState(ReflectionClass $reflection): ?array
-    {
-        $canaryAttributes = $reflection->getAttributes(CanaryState::class);
-        
-        if (!empty($canaryAttributes)) {
-            $canaryArgs = $canaryAttributes[0]->getArguments();
-            return $canaryArgs[0] ?? null;
-        }
-
-        return null;
-    }
-
-    /**
-     * Get flows for a coordinator class
-     */
-    protected function getFlows(string $coordinatorClass): array
-    {
-        try {
-            $flows = $this->flowHydrator->getFlows($coordinatorClass);
-            return $flows ?? [];
-        } catch (Exception $e) {
-            return [];
-        }
-    }
-
-    /**
-     * Get flows for a specific method
-     */
-    protected function getMethodFlows(array $flows, string $methodName): array
-    {
-        $methodFlows = [];
-        
-        foreach ($flows as $flow) {
-            if ($flow instanceof RouteUserNode && $flow->getMethodName() === $methodName) {
-                $methodFlows[] = [
-                    'type' => get_class($flow),
-                    'details' => $this->extractFlowDetails($flow)
-                ];
-            }
-        }
-        
-        return $methodFlows;
-    }
-
-    /**
-     * Extract flow details
-     */
-    protected function extractFlowDetails($flow): array
-    {
-        if (method_exists($flow, 'getFlowDetails')) {
-            return $flow->getFlowDetails();
-        }
-        
-        return [
-            'class' => get_class($flow),
-            'method' => method_exists($flow, 'getMethodName') ? $flow->getMethodName() : null
-        ];
-    }
-
-    /**
-     * Extract validation rules from method attributes
-     */
-    protected function getValidationRules(ReflectionMethod $method): array
-    {
-        $validationAttributes = $method->getAttributes(ValidationRules::class);
-        
-        if (!empty($validationAttributes)) {
-            $validationArgs = $validationAttributes[0]->getArguments();
-            return $validationArgs[0] ?? [];
-        }
-
-        return [];
-    }
-
-    /**
-     * Get method parameters with type information
-     */
-    protected function getMethodParameters(ReflectionMethod $method): array
-    {
-        $parameters = [];
-        
-        foreach ($method->getParameters() as $param) {
-            $paramInfo = [
-                'name' => $param->getName(),
-                'type' => $this->getParameterType($param),
-                'required' => !$param->isOptional(),
-                'default' => $param->isOptional() ? $param->getDefaultValue() : null
-            ];
-            
-            // Check if it's a payload reader/builder
-            if ($param->getType() && !$param->getType()->isBuiltin()) {
-                $typeName = $param->getType()->getName();
-                if (str_contains($typeName, 'Builder') || str_contains($typeName, 'Reader')) {
-                    $paramInfo['is_payload_reader'] = true;
-                    $paramInfo['payload_class'] = $typeName;
-                    $paramInfo['payload_structure'] = $this->getPayloadStructure($typeName);
-                }
-            }
-            
-            $parameters[] = $paramInfo;
-        }
-        
-        return $parameters;
-    }
-
-    /**
-     * Get parameter type as string
-     */
-    protected function getParameterType(ReflectionParameter $param): string
-    {
-        $type = $param->getType();
-        
-        if ($type instanceof ReflectionType) {
-            return $type->getName();
-        }
-        
-        return 'mixed';
-    }
-
-    /**
-     * Get payload structure for ModelfulPayload classes
-     */
-    protected function getPayloadStructure(string $payloadClass): array
-    {
-        try {
-            if (!class_exists($payloadClass)) {
-                return [];
-            }
-
-            $reflection = new ReflectionClass($payloadClass);
-            
-            // Check if it extends ModelfulPayload
-            if (!$reflection->isSubclassOf(\Suphle\Services\Structures\ModelfulPayload::class)) {
-                return [];
-            }
-
-            // Try to get onlyFields method
-            if ($reflection->hasMethod('onlyFields')) {
-                $method = $reflection->getMethod('onlyFields');
-                if ($method->isProtected() && $method->getDeclaringClass()->getName() === $payloadClass) {
-                    $instance = $reflection->newInstanceWithoutConstructor();
-                    $method->setAccessible(true);
-                    return $method->invoke($instance);
-                }
-            }
-
-        } catch (\Exception $e) {
-            return [];
-        }
-
-        return [];
-    }
-
-    /**
-     * Get method return type
-     */
-    protected function getReturnType(ReflectionMethod $method): ?string
-    {
-        $returnType = $method->getReturnType();
-        
-        if ($returnType instanceof ReflectionType) {
-            return $returnType->getName();
-        }
-        
-        return null;
-    }
-
-    /**
-     * Get response shape information
-     */
-    protected function getResponseShape(ReflectionMethod $method): array
-    {
-        $returnType = $this->getReturnType($method);
-        
-        if (!$returnType) {
-            return ['type' => 'unknown'];
-        }
-
-        $rendererType = $this->getRendererType($returnType);
-        
-        return [
-            'type' => $rendererType,
-            'renderer_class' => $returnType,
-            'renderer_type' => $rendererType
-        ];
-    }
-
-    /**
-     * Determine renderer type from class name
-     */
-    protected function getRendererType(string $rendererClass): string
-    {
-        $analyzer = $this->rendererAnalyzerRegistry->getAnalyzer($rendererClass);
-        
-        if ($analyzer) {
-            $schema = $analyzer->analyzeSchema($rendererClass, new \ReflectionMethod(__CLASS__, __METHOD__));
-            return $schema['type'] ?? 'unknown';
-        }
-        
-        return 'unknown';
-    }
-
-    /**
-     * Extract method summary from docblock
-     */
-    protected function extractMethodSummary(ReflectionMethod $method): string
-    {
-        $docComment = $method->getDocComment();
-        
-        if (!$docComment) {
-            return ucfirst($method->getName());
-        }
-
-        // Extract first line of docblock
-        $lines = explode("\n", $docComment);
-        foreach ($lines as $line) {
-            $line = trim($line, " \t\n\r\0\x0B*/");
-            if (!empty($line) && !str_starts_with($line, '@')) {
-                return $line;
-            }
-        }
-
-        return ucfirst($method->getName());
-    }
-
-    /**
-     * Extract method description from docblock
-     */
-    protected function extractMethodDescription(ReflectionMethod $method): string
-    {
-        $docComment = $method->getDocComment();
-        
-        if (!$docComment) {
-            return '';
-        }
-
-        $lines = explode("\n", $docComment);
-        $description = [];
-        
-        foreach ($lines as $line) {
-            $line = trim($line, " \t\n\r\0\x0B*/");
-            if (empty($line) || str_starts_with($line, '@')) {
-                break;
-            }
-            $description[] = $line;
-        }
-
-        return implode(' ', $description);
-    }
-
-    /**
-     * Build full path from prefix and pattern
-     */
-    protected function buildFullPath(string $prefix, string $pattern): string
-    {
-        if (empty($prefix)) {
-            return '/' . ltrim($pattern, '/');
-        }
-
-        if (empty($pattern)) {
-            return '/' . ltrim($prefix, '/');
-        }
-
-        return '/' . ltrim($prefix, '/') . '/' . ltrim($pattern, '/');
-    }
-
-    /**
-     * Extract placeholders from route pattern
-     */
-    protected function extractPlaceholders(string $pattern): array
-    {
-        preg_match_all('/\{([^}]+)\}/', $pattern, $matches);
-        return $matches[1] ?? [];
-    }
-
-    /**
-     * Get all routes from all coordinators
-     */
-    protected function getAllRoutes(): array
+    public function analyzeAll(array $filters = []): array
     {
         $allRoutes = [];
-        $coordinatorClasses = $this->getCoordinatorClasses();
+        $coordinators = $this->config->getCoordinatorClassesToScan(); // this should run each container. however this isn't our primary entry point
 
-        foreach ($coordinatorClasses as $coordinatorClass) {
-            $routes = $this->analyzeCoordinator($coordinatorClass);
-            $allRoutes = array_merge($allRoutes, $routes);
+        foreach ($coordinators as $className) {
+
+            $coordinatorRoutes = $this->analyzeCoordinator($className, $filters["module"] ?? "");
+
+            foreach ($coordinatorRoutes as $route) {
+            
+                if ($filters["module"] && $route["module_name"] != $filters["module"]) {
+                    continue;
+                }
+                // Filter by HTTP Method
+                if (isset($filters["method"]) && strtoupper($route["method"]) !== strtoupper($filters["method"])) {
+                    continue;
+                }
+                
+                // Filter by Path segment
+                if (isset($filters["path"]) && !str_contains($route["path"], $filters["path"])) {
+                    continue;
+                }
+
+                $allRoutes[] = $route;
+            }
         }
 
         return $allRoutes;
     }
 
     /**
-     * Filter routes by various criteria
+     * Scans a single coordinator class for all routes.
      */
-    protected function filterRoutes(array $routes, array $filters): array
+    public function analyzeCoordinator(string $coordinatorClass, string $moduleName): array
     {
-        return array_filter($routes, function ($route) use ($filters) {
-            foreach ($filters as $key => $value) {
-                if (!empty($value)) {
-                    switch ($key) {
-                        case 'method':
-                            if ($route['method'] !== $value) {
-                                return false;
-                            }
-                            break;
-                        case 'module':
-                            $moduleName = explode('\\', $route['coordinator'])[1] ?? '';
-                            if ($moduleName !== $value) {
-                                return false;
-                            }
-                            break;
-                        case 'path':
-                            if (!str_contains($route['path'], $value)) {
-                                return false;
-                            }
-                            break;
-                    }
+        $reflection = $this->objectDetails->getReflectedClass($coordinatorClass);
+        
+        $prefixAttr = $reflection->getAttributes(RoutePrefix::class)[0] ?? null;
+        if (!$prefixAttr) {
+            throw new RuntimeException("Coordinator $coordinatorClass requires a ". RoutePrefix::class);
+        }
+        
+        $prefixInstance = $prefixAttr->newInstance();
+        
+        // Extract Class-Level Defaults
+        $classPreMiddleware = $this->findMiddlewareList($reflection, PreMiddleware::class);
+        $classMiddleware = $this->findMiddlewareList($reflection, Middleware::class); 
+        
+        $flows = $this->getFlows($coordinatorClass);
+        $canaryState = $this->getCanaryState($reflection);
+
+        $allRouteDetails = [];
+
+        foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+            $routeAttrs = $method->getAttributes(Route::class);
+            if (empty($routeAttrs)) continue;
+
+            $primaryRoute = $this->analyzeMethod(
+                $method, 
+                $routeAttrs[0], 
+                $prefixInstance->prefix, 
+                $canaryState, 
+                $classPreMiddleware,
+                $classMiddleware,
+                $flows, 
+                $coordinatorClass,
+                $moduleName
+            );
+            $allRouteDetails[] = $primaryRoute;
+
+            // 2. Mirror Fork
+            if ($prefixInstance->mirrorPrefix && !in_array($method->getName(), $prefixInstance->excludeMethods)) {
+                $mirrorRoute = $primaryRoute;
+                $mirrorRoute["path"] = $this->buildFullPath($prefixInstance->mirrorPrefix, $primaryRoute["path"]);
+                $mirrorRoute["is_mirror"] = true;
+
+                if ($prefixInstance->mirrorAuthenticator) {
+                    // Prepend the authenticator to the already-resolved pre_middleware
+                    $mirrorRoute["pre_middleware"] = array_values(array_unique(array_merge(
+                        [$prefixInstance->mirrorAuthenticator], 
+                        $primaryRoute["pre_middleware"]
+                    )));
                 }
+                $allRouteDetails[] = $mirrorRoute;
             }
-            return true;
-        });
+        }
+
+        return $allRouteDetails;
     }
-} 
+
+    /**
+     * Deep-dives into a specific method to extract metadata.
+     */
+    protected function analyzeMethod(
+        ReflectionMethod $method, 
+        ReflectionAttribute $routeAttribute, 
+        string $routePrefix, 
+        ?array $canaryState, 
+        array $classPreMiddleware,
+        array $classMiddleware,
+        array $flows, 
+        string $coordinatorClass,
+        string $moduleName
+    ): array {
+        $routeArgs = $routeAttribute->getArguments();
+        
+        // 1. Collect all "Explicit Negations"
+        $toClear = array_map(
+            fn($attr) => $attr->getArguments()[0],
+            $method->getAttributes(ClearMiddleware::class)
+        );
+
+        // 2. Aggregate Pre-Middleware (Class + Method)
+        $allPre = array_merge($classPreMiddleware, $this->findMiddlewareList($method, PreMiddleware::class));
+        $finalPre = array_values(array_diff(array_unique($allPre), $toClear));
+
+        $allMidw = array_merge($classMiddleware, $this->findMiddlewareList($method, Middleware::class));
+        $finalMidw = array_values(array_diff(array_unique($allMidw), $toClear));
+
+        return [
+            "method" => ($routeArgs[1] ?? HttpMethod::GET)->value,
+            "path" => $this->buildFullPath($routePrefix, $routeArgs[0] ?? ""),
+            "handler" => $method->getName(),
+            "middleware" => $finalMidw,
+            "pre_middleware" => $finalPre, 
+            "view_name" => $routeArgs[2] ?? null,
+            "coordinator" => $coordinatorClass,
+            "placeholders" => $this->extractPlaceholders($routeArgs[0] ?? ""),
+            "validation_rules" => $this->getValidationRules($method),
+            "parameters" => $this->getMethodParameters($method),
+            "flows" => $this->getMethodFlows($flows, $method->getName()),
+            "response_shape" => $this->getResponseShape($method),
+            "module_name" => $moduleName
+        ];
+    }
+
+    /**
+     * Inspects method parameters for Payload Readers/Builders.
+     */
+    protected function getMethodParameters(ReflectionMethod $method): array
+    {
+        $parameters = [];
+        foreach ($method->getParameters() as $param) {
+            $type = $param->getType();
+            $typeName = $type?->getName();
+
+            $paramInfo = [
+                "name" => $param->getName(),
+                "type" => $typeName ?? "mixed",
+                "required" => !$param->isOptional()
+            ];
+
+            if ($typeName && (str_contains($typeName, "Builder") || str_contains($typeName, "Reader"))) {
+                $paramInfo["is_payload_reader"] = true;
+                $paramInfo["payload_structure"] = $this->getPayloadStructure($typeName);
+            }
+
+            $parameters[] = $paramInfo;
+        }
+
+        return $parameters;
+    }
+
+    /**
+     * Checks if a Payload class has Domain Object or Builder links.
+     */
+    protected function getPayloadStructure(string $payloadClass): array
+    {
+        try {
+            if (!class_exists($payloadClass)) return [];
+
+            $structure = [];
+
+            if ($this->objectDetails->methodReturnType($payloadClass, "getDomainObject")) {
+                $structure["has_domain_object"] = true;
+                $structure["domain_class"] = $this->objectDetails->methodReturnType($payloadClass, "getDomainObject");
+            }
+            // Using getPublicMethods or simple method check
+            if (in_array("getBuilder", $this->objectDetails->getPublicMethods($payloadClass))) {
+                $structure["has_builder"] = true;
+            }
+
+            return $structure;
+        } catch (Exception $e) {
+            return [];
+        }
+    }
+
+    protected function getMethodFlows(array $flows, string $methodName): array
+    {
+        $methodFlows = [];
+        foreach ($flows as $flow) {
+            if ($flow instanceof RouteUserNode && $flow->getMethodName() === $methodName) {
+                $methodFlows[] = [
+                    "type" => $this->objectDetails->getValueType($flow),
+                    "details" => method_exists($flow, "getFlowDetails") 
+                        ? $flow->getFlowDetails() 
+                        : ["class" => $this->objectDetails->getValueType($flow)]
+                ];
+            }
+        }
+        return $methodFlows;
+    }
+
+    protected function getRoutePrefix(ReflectionClass $reflection): string
+    {
+        $attr = $reflection->getAttributes(RoutePrefix::class);
+        return !empty($attr) ? ($attr[0]->getArguments()[0] ?? "") : "";
+    }
+
+    protected function getCanaryState(ReflectionClass $reflection): ?array
+    {
+        $attr = $reflection->getAttributes(CanaryState::class);
+        return !empty($attr) ? ($attr[0]->getArguments()[0] ?? null) : null;
+    }
+
+    /**
+     * Scans for multiple instances of PreMiddleware attributes 
+     * and returns them as a flat array of class strings.
+     */
+    protected function findMiddlewareList(
+        ReflectionClass|ReflectionMethod $reflection,
+        string $middlewareMarker
+    ): array
+    {
+        $attributes = $reflection instanceof ReflectionClass ?
+            $this->objectDetails->getClassAttributes($reflection->getName(), $middlewareMarker) :
+            $reflection->getAttributes($middlewareMarker);
+        
+        return array_map(
+            fn($attr) => $attr->getArguments()[0], 
+            $attributes
+        );
+    }
+
+    protected function getFlows(string $coordinatorClass): array
+    {
+        try {
+            return $this->flowHydrator->getFlows($coordinatorClass) ?? [];
+        } catch (Exception $e) {
+            return [];
+        }
+    }
+
+    protected function getValidationRules(ReflectionMethod $method): array
+    {
+        $attr = $method->getAttributes(ValidationRules::class);
+        return !empty($attr) ? ($attr[0]->getArguments()[0] ?? []) : [];
+    }
+
+    protected function extractPlaceholders(string $pattern): array
+    {
+        preg_match_all("/\{([^}]+)\}/", $pattern, $matches);
+        return $matches[1] ?? [];
+    }
+
+    protected function buildFullPath(string $prefix, string $pattern): string
+    {
+        return "/" . trim(trim($prefix, "/") . "/" . trim($pattern, "/"), "/");
+    }
+
+    public function hasAuthBarriers (array $routeDetails):bool {
+
+        for ($routeDetails["pre_middleware"] as $middleware) {
+
+            if (
+                $this->objectDetails->stringInClassTree($middleware, AuthorizeMetaFunnel::class) ||
+                $this->objectDetails->stringInClassTree($middleware, AuthenticateHandler::class)
+            )
+                return true;
+        }
+        return false;
+    }
+}

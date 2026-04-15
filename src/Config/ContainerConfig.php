@@ -11,13 +11,4 @@ class ContainerConfig implements IContainerConfig
 
         return "container-log.txt";
     }
-
-    /**
-     * {@inheritdoc}
-    */
-    public function getExternalHydrators(): array
-    {
-
-        return [];
-    }
 }

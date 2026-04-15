@@ -191,10 +191,6 @@ abstract class ModuleDescriptor implements DescriptorInterface
 
         $this->registerConcreteBindings(); // this has to come first, since it contains instances crucial to hydration of core objects
 
-        $this->container->setExternalContainerManager(
-            new ExternalPackageManagerHydrator($this->container)
-        );
-
         $this->hasPreparedExpatriates = true;
 
         return $this;

@@ -1,68 +1,50 @@
 <?php
-
 namespace Suphle\Middleware;
 
 use Suphle\Hydration\Container;
-
 use Suphle\Request\PayloadStorage;
-
-use Suphle\Contracts\{Presentation\BaseRenderer, Config\Router as RouterConfig};
+use Suphle\Contracts\Config\Router as RouterConfig;
+use Suphle\Contracts\Presentation\BaseRenderer;
 
 class MiddlewareQueue
 {
     protected array $mergedStack = [];
-    protected array $routedCollectors = [];
 
     public function __construct(
-        MiddlewareRegistry $registry,
-        protected readonly PayloadStorage $payloadStorage,
+        protected readonly Container $container,
         protected readonly RouterConfig $routerConfig,
-        protected readonly Container $container
-    ) {
-
-        $this->routedCollectors = $registry->getFunnelsForInteracted();
-    }
+        protected readonly PayloadStorage $payloadStorage,
+        protected readonly array $boundPreMidw,
+        protected readonly array $boundMidw
+    ) {}
 
     public function runStack(): BaseRenderer
     {
-
         if (empty($this->mergedStack)) {
             $this->setMergedStack();
         }
 
-        $mergedStack = $this->mergedStack; // copy to avoid mutating the main stack with array_shift
-
-        $outermost = array_shift($mergedStack);
+        $stack = $this->mergedStack;
+        $outermost = array_shift($stack);
 
         return $outermost->process(
             $this->payloadStorage,
-            $this->getHandlerChain($mergedStack)
+            $this->getHandlerChain($stack)
         );
     }
 
-    protected function setMergedStack(): void
-    {
+    protected function setMergedStack(): void {
 
-        $routedHandlers = [];
-
-        foreach ($this->routedCollectors as $collector) {
-
-            $handlerName = $this->routerConfig->collectorHandlers()[$collector::class];
-
-            $handler = $this->container->getClass($handlerName); // since multiple instances can exist for those patterns down the collection trie, a handler may be called up more than once, as well
-
-            $handler->addMetaFunnel($collector);
-
-            $routedHandlers[] = $handler;
-        }
-
-        $this->mergedStack = array_merge( // any temporary ones attached to route precede the defaults
-            $routedHandlers,
-            array_map(
-                fn (string $name) => $this->container->getClass($name),
-                $this->routerConfig->defaultMiddleware()
-            )
+        $this->mergedStack = array_merge(
+            array_map($this->hydrateClass(...), $this->boundPreMidw() ),
+            array_map($this->hydrateClass(...), $this->boundMidw() )
+            array_map($this->hydrateClass(...), $this->routerConfig->defaultMiddleware() )
         );
+    }
+
+    protected function hydrateClass (string $className):object {
+
+        return $this->container->getClass($className);
     }
 
     /**

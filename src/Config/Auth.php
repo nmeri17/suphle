@@ -4,49 +4,11 @@ namespace Suphle\Config;
 
 use Suphle\Contracts\Config\AuthContract;
 
-use Suphle\Auth\Renderers\{BrowserLoginMediator, ApiLoginMediator};
-
-use Suphle\Request\RequestDetails;
+use Suphle\Auth\Renderers\{BrowserLoginMediator, ApiLoginMediator}; // just make these backing services that can be used in controllers
 
 class Auth implements AuthContract
 {
     final public const API_LOGIN_PATH = "api/v1/login";
-
-    public function __construct(protected readonly RequestDetails $requestDetails)
-    {
-
-        //
-    }
-
-    protected function getLoginPaths(): array
-    {
-
-        return [
-            $this->markupRedirect() => BrowserLoginMediator::class,
-
-            self::API_LOGIN_PATH => ApiLoginMediator::class
-        ];
-    }
-
-    public function getLoginCollection(): ?string
-    {
-
-        foreach ($this->getLoginPaths() as $key => $renderer) {
-
-            if ($this->requestDetails->matchesPath($key)) {
-
-                return $renderer;
-            }
-        }
-
-        return null;
-    }
-
-    public function isLoginRequest(): bool
-    {
-
-        return $this->requestDetails->isPostRequest() && !is_null($this->getLoginCollection());
-    }
 
     public function getModelObservers(): array
     {

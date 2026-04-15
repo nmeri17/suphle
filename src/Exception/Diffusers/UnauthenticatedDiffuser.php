@@ -18,6 +18,11 @@ use Throwable;
 
 class UnauthenticatedDiffuser implements ExceptionHandler
 {
+    public const ERRORS_PRESENCE = "message";
+    public const RAW_RESPONSE = [
+
+        self::ERRORS_PRESENCE => "Unauthenticated"
+    ];
     private $renderer;
     protected string $controllerAction = "virtualWall";
 
@@ -52,10 +57,7 @@ class UnauthenticatedDiffuser implements ExceptionHandler
 
         $renderer = new Json($this->controllerAction);
 
-        return $renderer->setRawResponse([
-
-            "message" => "Unauthenticated"
-        ]);
+        return $renderer->setRawResponse(static::RAW_RESPONSE);
     }
 
     protected function getSessionRenderer(): BaseRenderer

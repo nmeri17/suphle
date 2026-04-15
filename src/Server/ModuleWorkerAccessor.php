@@ -6,7 +6,9 @@ use Suphle\Modules\ModuleHandlerIdentifier;
 
 use Suphle\Contracts\{Presentation\BaseRenderer, Queues\Adapter as QueueAdapter};
 
-use Spiral\RoadRunner\{Worker, Http\PSR7Worker};
+use Suphle\WebSockets\{WebSocketRouter, WebSocketWorker};
+
+use Spiral\RoadRunner\{Worker, Environment\Mode};
 
 use Nyholm\Psr7\Factory\Psr17Factory;
 
@@ -16,10 +18,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 use Psr\Http\Message\{ServerRequestInterface, ResponseInterface};
 
-use Suphle\Routing\AttributeRouteManager;
-use Suphle\WebSockets\WebSocketRouter;
-
-use Throwable;
+use Throwable, InvalidArgumentException;
 
 /**
  * RoadRunner will spin this up multiple times for each worker it has to create to service a request type
@@ -30,9 +29,11 @@ class ModuleWorkerAccessor
 
     protected QueueAdapter $queueWorker;
 
+    protected WebSocketWorker $wsWorker;
+
     public function __construct(
         protected readonly ModuleHandlerIdentifier $handlerIdentifier,
-        protected readonly bool $isHttpMode
+        protected readonly string $rrMode
     ) {
 
         //
@@ -40,7 +41,6 @@ class ModuleWorkerAccessor
 
     public function runInSandbox(callable $serverAction, callable $onServerError = null): void
     {
-
         try {
 
             $serverAction($this);
@@ -62,43 +62,24 @@ class ModuleWorkerAccessor
     public function buildIdentifier(): self
     {
 
-        $this->handlerIdentifier->bootModules();
-
-        // Index all routes in memory OUTSIDE the request loop, per user instruction
-        if ($this->isHttpMode) {
-            $container = $this->handlerIdentifier->firstContainer();
-            if (class_exists(AttributeRouteManager::class)) {
-                try {
-                    $routeManager = $container->getClass(AttributeRouteManager::class);
-                    $routeManager->getAllRoutes();
-                } catch (\Exception $e) {
-                    // Ignore if it can't be resolved yet
-                }
-            }
-            
-            // Also index WebSocket routes on boot
-            if (class_exists(WebSocketRouter::class)) {
-                try {
-                    $wsRouter = $container->getClass(WebSocketRouter::class);
-                    $wsRouter->registerRoutes();
-                } catch (\Exception $e) {
-                    // Ignore if it can't be resolved yet
-                }
-            }
-        }
-
+        $this->handlerIdentifier->bootModules();// Index all routes in memory OUTSIDE the request loop
+        
         return $this;
     }
 
     public function setActiveWorker(): self
     {
-
-        if ($this->isHttpMode) {
+        if ($this->rrMode == Mode::MODE_HTTP)
 
             $this->httpWorker = $this->getHttpWorker();
-        } else {
+            
+        elseif ($this->rrMode == Mode::MODE_JOBS)
+
             $this->queueWorker = $this->getQueueWorker();
-        }
+
+        elseif ($this->rrMode == Mode::MODE_CENTRIFUGE)
+
+            $this->wsWorker = $this->getWsWorker();
 
         return $this;
     }
@@ -124,17 +105,28 @@ class ModuleWorkerAccessor
         ->firstContainer()->getClass(QueueAdapter::class);
     }
 
+    public function getWsWorker(): WebSocketWorker
+    {
+
+        return $this->handlerIdentifier
+
+        ->firstContainer()->getClass(WebSocketWorker::class);
+    }
+
     /**
      * It's only safe to start outputing things from this point, after workers have been setup
     */
     public function openEventLoop(): void
     {
+        match ($this->rrMode) {
+            Mode::MODE_HTTP => $this->processHttpTasks(),
+            
+            Mode::MODE_JOBS => $this->queueWorker->processTasks(),
 
-        if ($this->isHttpMode) {
-            $this->processHttpTasks();
-        } else {
-            $this->queueWorker->processTasks();
-        }
+            Mode::MODE_CENTRIFUGE => $this->wsWorker->processWebSocketTasks(),
+
+            default => throw new InvalidArgumentException("Unsupported RoadRunner mode: {$this->rrMode}")
+        };
     }
 
     protected function processHttpTasks(): void
@@ -170,12 +162,12 @@ class ModuleWorkerAccessor
         );
     }
 
-    public function getRequestRenderer(string $urlPattern, bool $outputHeaders, ServerRequestInterface $contextualRequest): BaseRenderer
+    public function getRequestRenderer(string $urlPattern, bool $shouldOutputHeaders, ServerRequestInterface $contextualRequest): BaseRenderer
     {
 
         $this->handlerIdentifier->setRequestPath($urlPattern, null, $contextualRequest);
 
-        $this->handlerIdentifier->diffuseSetResponse($outputHeaders);
+        $this->handlerIdentifier->diffuseSetResponse($shouldOutputHeaders);
 
         return $this->handlerIdentifier->underlyingRenderer();
     }

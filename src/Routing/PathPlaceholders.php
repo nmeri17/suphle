@@ -19,75 +19,6 @@ class PathPlaceholders
 
     protected bool $hasExchangedTokens = false;
 
-    public function __construct(protected readonly CollectionMethodToUrl $urlReplacer)
-    {
-
-        //
-    }
-
-    public function setMethodSegments(array $methods): void
-    {
-
-        $this->methodSegments = $methods;
-    }
-
-    /**
-     * Given computed path such as FOO/id, and incoming request with path foo/5, it synchronizes in-app storage of placeholders, recording id as 5
-    */
-    public function exchangeTokenValues(string $requestPath): void
-    {
-
-        if (empty($this->stack) || $this->hasExchangedTokens) {
-
-            return;
-        }
-
-        $realSegments = explode("/", trim($requestPath, "/"));
-
-        foreach ($this->splitMethodSegments() as $index => $segment) {
-
-            if (array_key_exists($segment, $this->stack)) {
-
-                $this->stack[$segment] = $realSegments[$index];
-            }
-        }
-
-        $this->hasExchangedTokens = true;
-    }
-
-    public function getPathFromStack(string $urlPattern): string
-    {
-
-        if (empty($this->stack)) {
-            return $urlPattern;
-        }
-
-        $realSegments = explode("/", trim($urlPattern, "/"));
-
-        foreach ($this->splitMethodSegments() as $index => $segment) {
-
-            if (array_key_exists($segment, $this->stack)) {
-
-                $realSegments[$index] = $this->stack[$segment];
-            }
-        }
-
-        return implode("/", $realSegments);
-    }
-
-    private function splitMethodSegments(): array
-    {
-
-        $tokenizedUrl = $this->urlReplacer->replacePlaceholders(
-            implode("_", $this->methodSegments), // rebuild url for us to identify all placeholders present
-
-            CollectionMethodToUrl::REPLACEMENT_TYPE_PLACEHOLDER
-        )
-        ->regexifiedUrl();
-
-        return $this->urlReplacer->splitIntoSegments($tokenizedUrl);
-    }
-
     public function getSegmentValue(string $name)
     {
 
@@ -115,16 +46,9 @@ class PathPlaceholders
         return $this->positiveIntValue($this->stack[$key]);
     }
 
-    public function overwriteValues(array $newStack): void
+    public function setSegmentValues(array $values): void
     {
-
-        foreach ($newStack as $index => $value) {
-
-            if (array_key_exists($index, $this->stack)) {
-
-                $this->stack[$index] = $value;
-            }
-        }
+        $this->stack = $values;
     }
 
     public function clearAllSegments(): void
@@ -133,14 +57,5 @@ class PathPlaceholders
         $this->stack = [];
 
         $this->hasExchangedTokens = false; // since this object may be long-lived, without this, the placeholder stack won't be re-computed
-    }
-
-    public function foundSegments(array $placeholders): void
-    {
-
-        foreach ($placeholders as $key) {
-
-            $this->stack[$key] = null;
-        }
     }
 }

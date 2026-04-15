@@ -2,42 +2,36 @@
 
 namespace Suphle\Routing\Documentation;
 
-use Suphle\Routing\RouteDetailsService;
-use Suphle\Routing\Analysis\PsalmSchemaAnalyzer;
-use Suphle\Services\Structures\ModelfulPayload;
-use Suphle\Services\Decorators\ValidationRules;
-use Suphle\Contracts\Response\OpenApiRenderer;
+use Suphle\Routing\{AttributeRouteScanner, Analysis\PsalmSchemaAnalyzer};
+use Suphle\Contracts\Database\ModelSchemaDetector;
+use Suphle\Exception\Diffusers\{UnauthorizedDiffuser, UnauthenticatedDiffuser};
 use ReflectionClass;
 use ReflectionMethod;
 
 class OpenApiGeneratorService
 {
     public function __construct(
-        protected readonly RouteDetailsService $routeDetailsService,
-        protected readonly PsalmSchemaAnalyzer $responseSchemaAnalyzer
+        protected readonly AttributeRouteScanner $routeScanner,
+        protected readonly PsalmSchemaAnalyzer $responseSchemaAnalyzer,
+        protected readonly ModelSchemaDetector $schemaDetector
     ) {
         //
     }
 
     public function generateOpenApiSpec(): array
     {
-        $routes = $this->routeDetailsService->getAllDetailedRoutes();
-        $responseSchemas = $this->responseSchemaAnalyzer->analyzeResponseSchemas();
-        $modelSchemas = $this->responseSchemaAnalyzer->generateModelSchemas();
+        $routes = $this->getAllRoutes();
         
         $spec = [
             'openapi' => '3.0.0',
             'info' => [
                 'title' => 'Suphle API Documentation',
-                'version' => '1.0.0',
-                'description' => 'Auto-generated API documentation from Suphle routes'
-            ],
-            'servers' => [
-                ['url' => '/', 'description' => 'Default server']
+                'version' => '1.0.0'
             ],
             'paths' => [],
             'components' => [
-                'schemas' => $modelSchemas,
+                // Retrieve all models registered by the detector during the route scan
+                'schemas' => $this->schemaDetector->getGeneratedSchemas(),
                 'parameters' => []
             ]
         ];
@@ -50,7 +44,8 @@ class OpenApiGeneratorService
                 $spec['paths'][$path] = [];
             }
 
-            $spec['paths'][$path][$method] = $this->buildPathItem($route, $responseSchemas[$path] ?? null);
+            // Pass the shape directly from the route array
+            $spec['paths'][$path][$method] = $this->buildPathItem($route, $route['response_shape'] ?? null);
         }
 
         return $spec;
@@ -58,12 +53,19 @@ class OpenApiGeneratorService
 
     protected function buildPathItem(array $route, ?array $responseSchema = null): array
     {
+        $isMirror = $route['is_mirror'] ?? false;
+    
         $pathItem = [
-            'summary' => $route['summary'] ?? ucfirst($route['handler']),
-            'description' => $route['description'] ?? '',
-            'tags' => [$this->extractModuleName($route['coordinator'])],
+            'summary' => ($isMirror ? '[API] ' : '') . ($route['summary'] ?? ucfirst($route['handler'])),
+            'description' => $isMirror 
+                ? "Mirrored API endpoint for " . $route['handler'] 
+                : ($route['description'] ?? ''),
+            'tags' => [
+                $this->extractModuleName($route['coordinator']),
+                $isMirror ? 'API' : 'Web' // Additional tagging for filtering in Swagger UI
+            ],
             'parameters' => $this->buildParameters($route),
-            'responses' => $this->buildResponses($route, $responseSchema)
+            'responses' => $this->buildResponses($route, $route['response_shape'] ?? null)
         ];
 
         // Add request body for POST/PUT/PATCH methods
@@ -139,13 +141,8 @@ class OpenApiGeneratorService
         $rendererClass = $route['renderer'];
         
         // Use interface if available, fallback to analyzer
-        if (is_subclass_of($rendererClass, OpenApiRenderer::class)) {
-            $contentType = $rendererClass::getContentType();
-            $statusCode = $rendererClass::getOpenApiStatusCode();
-        } else {
-            $contentType = $this->responseSchemaAnalyzer->getContentTypeForRenderer($rendererClass);
-            $statusCode = $this->responseSchemaAnalyzer->getStatusCodeForRenderer($rendererClass);
-        }
+        $contentType = $this->responseSchemaAnalyzer->getContentTypeForRenderer($rendererClass);
+        $statusCode = $this->responseSchemaAnalyzer->getStatusCodeForRenderer($rendererClass);
         
         $responses = [
             (string)$statusCode => [
@@ -187,7 +184,7 @@ class OpenApiGeneratorService
                         'schema' => [
                             'type' => 'object',
                             'properties' => [
-                                'message' => [
+                                Unauthenticated::ERRORS_PRESENCE => [
                                     'type' => 'string', 
                                     'example' => $authMessage
                                 ]
@@ -204,7 +201,7 @@ class OpenApiGeneratorService
                         'schema' => [
                             'type' => 'object',
                             'properties' => [
-                                \Suphle\Exception\Diffusers\UnauthorizedDiffuser::ERRORS_PRESENCE => [
+                                UnauthorizedDiffuser::ERRORS_PRESENCE => [
                                     'type' => 'string', 
                                     'example' => $authzMessage
                                 ]
@@ -304,6 +301,11 @@ class OpenApiGeneratorService
 
     public function getAllRoutes(): array
     {
-        return $this->routeDetailsService->getAllDetailedRoutes();
+        return $this->routeScanner->scanModulesByPath(
+            fn (Container $container) => $container->getClass(RouterConfig::class)
+            ->getCoordinatorPath(),
+            
+            $this->responseSchemaAnalyzer->analyzeCoordinator(...)
+        );
     }
 } 

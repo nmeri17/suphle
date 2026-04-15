@@ -7,13 +7,15 @@ use Suphle\Server\ModuleWorkerAccessor;
 
 use Suphle\Tests\Mocks\PublishedTestModules;
 
+use Spiral\RoadRunner\{Environment, Environment\Mode};
+
 use GuzzleHttp\Psr7\ServerRequest;
 
 require_once "vendor/autoload.php";
 
 $writeHeaders = php_sapi_name() !== "cli";
 
-echo (new ModuleWorkerAccessor(new PublishedTestModules(), true))
+echo (new ModuleWorkerAccessor(new PublishedTestModules(), Mode::MODE_HTTP))
 
 ->buildIdentifier()->getRequestRenderer(
     $_GET["suphle_path"],

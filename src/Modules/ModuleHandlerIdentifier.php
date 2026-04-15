@@ -22,6 +22,10 @@ use Suphle\Exception\Explosives\{ValidationFailure, NotFoundException};
 
 use Suphle\Request\RequestDetails;
 
+use Suphle\Routing\{AttributeRouteScanner, ModuleRequestRouter};
+
+use Suphle\WebSockets\WebSocketRouter;
+
 use Psr\Http\Message\ServerRequestInterface;
 
 use Throwable;
@@ -37,6 +41,8 @@ abstract class ModuleHandlerIdentifier
     protected array $descriptorInstances;
 
     protected ActiveDescriptors $descriptorsHolder;
+
+    protected ?array $httpRoutes = null;
 
     public function __construct()
     {
@@ -64,19 +70,28 @@ abstract class ModuleHandlerIdentifier
 
     public function bootModules(): void
     {
-
         $this->container->getClass(ModulesBooter::class)
 
         ->bootOuterModules($this->descriptorsHolder);
+
+        $this->cacheAppRoutes();
+    }
+
+    public function cacheAppRoutes(): void {
+            
+        $this->httpRoutes = $this->container->getClass(AttributeRouteScanner::class)
+
+        ->scanAllModules();
+
+        $this->container->getClass(WebSocketRouter::class)->registerRoutes();
     }
 
     public function setRequestPath (
-        string $requestPath, string $httpMethod = null,
+        string $requestPath, string $httpMethod = null, // when null, RequestDetails::deriveHttpMethod will detect it
 
         ServerRequestInterface $contextualRequest = null
     ): void
     {
-
         RequestDetails::setLoopInput($contextualRequest);
 
         RequestDetails::fromModules(
@@ -136,59 +151,18 @@ abstract class ModuleHandlerIdentifier
             return $routedRenderer;
         }
 
-        if ($container->getClass(AuthContract::class)->isLoginRequest()) {
-
-            return $this->handleLoginRequest();
-        }
-
         throw new NotFoundException();
-    }
-
-    public function handleLoginRequest(): BaseRenderer
-    {
-
-        $loginHandler = $this->getLoginHandler();
-
-        if (!$loginHandler->isValidRequest()) {
-
-            throw new ValidationFailure($loginHandler);
-        }
-
-        $this->identifiedHandler = $loginHandler;
-
-        $loginHandler->setResponseRenderer()->processLoginRequest();
-
-        return $loginHandler->handlingRenderer();
-    }
-
-    public function getLoginHandler(): ModuleLoginHandler
-    {
-
-        return $this->container->getClass(ModuleLoginHandler::class);
     }
 
     public function handleGenericRequest(): ?BaseRenderer
     {
+        $moduleRouter = $this->identifiedHandler = $this->container->getClass(ModuleRequestRouter::class);
 
-        $moduleRouter = $this->container->getClass(ModuleToRoute::class); // pulling from a container so tests can replace properties on the singleton
-
-        $initializer = $moduleRouter->findContext($this->descriptorInstances);
-
-        if (!$initializer) {
-            return null;
-        }
-
-        $this->identifiedHandler = $initializer;
+        if (!$moduleRouter->canSetHandlingModule($this->httpRoutes)) return null;
 
         $this->routedModule = $moduleRouter->getActiveModule();
 
-        $initializer->fullRequestProtocols(
-            $this->getActiveContainer()->getClass(
-                RendererManager::class
-            )
-        )->setHandlingRenderer();
-
-        return $initializer->handlingRenderer();
+        return $moduleRouter->triggerInfoModule($this->descriptorsHolder);
     }
 
     public function flowRequestHandler(OuterFlowWrapper $wrapper): BaseRenderer
@@ -254,5 +228,15 @@ abstract class ModuleHandlerIdentifier
     {
 
         return $this->container;
+    }
+
+    public function getAllRoutes(): array
+    {
+        return $this->httpRoutes;
+    }
+
+    public function getCachedRoutes(): ?array
+    {
+        return $this->httpRoutes;
     }
 }

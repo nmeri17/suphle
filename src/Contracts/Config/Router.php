@@ -2,9 +2,7 @@
 
 namespace Suphle\Contracts\Config;
 
-interface Router extends ConfigMarker
-{
-    public function apiPrefix(): string;
+interface Router extends ConfigMarker {
 
     /**
      * List in ascending order of execution
@@ -12,26 +10,12 @@ interface Router extends ConfigMarker
     public function defaultMiddleware(): array;
 
     /**
-     * @return [CollectionMetaFunnel => CollectibleMiddlewareHandler]
-     */
-    public function collectorHandlers(): array;
-
-    /**
-     * @return [CollectionMetaFunnel => BaseScrutinizerHandler]
-     */
-    public function scrutinizerHandlers(): array;
-
-    public function mirrorsCollections(): bool;
-
-    // names the storage mechanism to be used on the browser collection when we've switched to those collections
-    // This is still needed for browser-based AJAX requests that use session cookies instead of bearer tokens
-    public function mirrorAuthenticator(): string;
-
-    /**
      * Get the relative path to coordinator directories within modules
      * Default should be "Coordinators" for the new attribute-based system
      */
     public function getCoordinatorPath(): string;
+
+    public function getWebSocketPath(): string;
 
     /**
      * Get specific coordinator directories to scan for routes

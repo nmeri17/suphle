@@ -51,23 +51,4 @@ class ManagerHydratorTest extends TestVirginContainer
             ModuleFiles::class => new AscendingHierarchy($anchorPath, "\Suphle\Tests\Mocks\Modules\ModuleOne\\", $systemReader)
         ]);
     }
-
-    public function test_can_set_bridge_package_manager()
-    {
-
-        $container = $this->getContainer();
-
-        // given
-        $this->injectBindings($container);
-
-        $container->setInterfaceHydrator(
-            $this->positiveDouble(BaseInterfaceCollection::class, [])::class
-        );
-
-        $sut = new ExternalPackageManagerHydrator($container);
-
-        $container->setExternalContainerManager($sut); // when
-
-        $this->assertTrue($sut->hasManagers()); // then
-    }
 }

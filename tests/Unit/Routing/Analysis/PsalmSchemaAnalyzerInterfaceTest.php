@@ -5,8 +5,6 @@ namespace Suphle\Tests\Unit\Routing\Analysis;
 use Suphle\Routing\Analysis\{PsalmSchemaAnalyzer, RendererAnalyzerRegistry};
 use Suphle\Contracts\Config\Router as RouterConfig;
 use Suphle\Contracts\Flows\FlowHydrator;
-use Suphle\Contracts\Response\OpenApiRenderer;
-use Suphle\Response\Traits\OpenApiRendererTrait;
 use Suphle\Request\PayloadStorage;
 use Suphle\Testing\TestTypes\IsolatedComponentTest;
 use Suphle\Tests\Integration\Generic\CommonBinds;
@@ -28,14 +26,7 @@ class PsalmSchemaAnalyzerInterfaceTest extends IsolatedComponentTest
     {
         // Given
         $analyzer = $this->container->getClass(PsalmSchemaAnalyzer::class);
-        $customRenderer = new class implements OpenApiRenderer {
-            use OpenApiRendererTrait;
-
-            public static function getContentType(): string
-            {
-                return 'application/custom';
-            }
-        };
+        $customRenderer = ;
 
         // When
         $contentType = $analyzer->getContentTypeForRenderer(get_class($customRenderer));
@@ -48,14 +39,7 @@ class PsalmSchemaAnalyzerInterfaceTest extends IsolatedComponentTest
     {
         // Given
         $analyzer = $this->container->getClass(PsalmSchemaAnalyzer::class);
-        $customRenderer = new class implements OpenApiRenderer {
-            use OpenApiRendererTrait;
-
-            public static function getOpenApiStatusCode(): int
-            {
-                return 201;
-            }
-        };
+        $customRenderer = ; // what's this nonsense? use regular suphle renderers
 
         // When
         $statusCode = $analyzer->getStatusCodeForRenderer(get_class($customRenderer));
@@ -68,20 +52,7 @@ class PsalmSchemaAnalyzerInterfaceTest extends IsolatedComponentTest
     {
         // Given
         $analyzer = $this->container->getClass(PsalmSchemaAnalyzer::class);
-        $customRenderer = new class implements OpenApiRenderer {
-            use OpenApiRendererTrait;
-
-            public static function getResponseSchema(): array
-            {
-                return [
-                    'type' => 'object',
-                    'properties' => [
-                        'id' => ['type' => 'integer'],
-                        'name' => ['type' => 'string']
-                    ]
-                ];
-            }
-        };
+        $customRenderer = ;
 
         $method = new ReflectionMethod($customRenderer, '__construct');
 
@@ -116,19 +87,7 @@ class PsalmSchemaAnalyzerInterfaceTest extends IsolatedComponentTest
     {
         // Given
         $analyzer = $this->container->getClass(PsalmSchemaAnalyzer::class);
-        $customRenderer = new class implements OpenApiRenderer {
-            use OpenApiRendererTrait;
-
-            public static function getContentType(): string
-            {
-                return 'application/override';
-            }
-
-            public static function getStatusCode(): int
-            {
-                return 418; // I'm a teapot
-            }
-        };
+        $customRenderer = ;
 
         // When
         $contentType = $analyzer->getContentTypeForRenderer(get_class($customRenderer));

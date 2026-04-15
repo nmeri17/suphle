@@ -13,8 +13,6 @@ require_once "vendor/autoload.php";
 
 $publishedModules = new PublishedTestModules();
 
-$isHttpMode = Environment::fromGlobals()->getMode() === Mode::MODE_HTTP;
-
-(new ModuleWorkerAccessor($publishedModules, $isHttpMode))
+(new ModuleWorkerAccessor($publishedModules, Mode::MODE_HTTP))
 
 ->safeSetupWorker();

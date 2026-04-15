@@ -29,6 +29,11 @@ class ResourceBootstrapper
 
         $contentsReplacement = $this->getContentReplacements($resourceName);
 
+        // Add a specific replacement for the RoutePrefix attribute logic
+        $contentsReplacement["_mirror_config"] = $isApi 
+        ? 'mirrorPrefix: "api/v1"' // If it's an API resource, we definitely want a prefix
+        : '';
+
         $this->folderCloner->setEntryReplacements(
             $contentsReplacement,
             $contentsReplacement,

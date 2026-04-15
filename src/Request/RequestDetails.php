@@ -15,9 +15,7 @@ use InvalidArgumentException;
 #[BindsAsSingleton]
 class RequestDetails
 {
-    protected ?string $computedPath = null,
-    
-    $versionPresent, $permanentPath = null, // readonly version of [computedPath]
+    protected ?string $permanentPath = null,
     
     $httpMethod = null;
 
@@ -46,13 +44,13 @@ class RequestDetails
     public function getPath(): ?string
     {
 
-        return $this->computedPath;
+        return $this->permanentPath;
     }
 
     public function setPath(string $requestPath): void
     {
 
-        $this->permanentPath = $this->computedPath = $requestPath;
+        $this->permanentPath = $requestPath;
     }
 
     public function setQueries(array $queryParameters): void
@@ -119,12 +117,6 @@ class RequestDetails
         return $container->getClass($selfName); // automatically binds it
     }
 
-    public function getPermanentPath(): ?string
-    {
-
-        return $this->permanentPath;
-    }
-
     protected function setHttpMethod(string $method): void
     {
 
@@ -175,64 +167,6 @@ class RequestDetails
     {
 
         return $this->matchesMethod("post");
-    }
-
-    private function regexApiPrefix(): string
-    {
-
-        return "^\/?" . $this->config->apiPrefix();
-    }
-
-    public function isApiRoute(): bool
-    {
-
-        $matches = preg_match("/" . $this->regexApiPrefix() . "/", (string) $this->permanentPath); // using permanent since computed may have been changed by the time this method is being read
-
-        if ($matches) {
-            $this->setIncomingVersion();
-        }
-
-        return $matches;
-    }
-
-    /**
-    * Given a request to api(?:/v3)/verb/noun, set computed path to verb/noun
-    */
-    public function stripApiPrefix(): void
-    {
-
-        $possibleVersion = $this->versionPresent ?
-
-            "(?:\/". $this->versionPresent .")?" :
-
-            "";
-
-        $pattern = $this->regexApiPrefix() . $possibleVersion. "\/(.+)";
-
-        preg_match("/" . $pattern . "/i", (string) $this->permanentPath, $pathArray);
-
-        $this->computedPath = $pathArray[1];
-    }
-
-    /**
-     * Given a request to api/v3/verb/noun, sets property to v3
-    */
-    public function setIncomingVersion(): void
-    {
-
-        $pattern = $this->regexApiPrefix() . "\/(.+?)\/";
-
-        preg_match("/" . $pattern . "/i", (string) $this->permanentPath, $version);
-
-        $this->versionPresent = $version[1] ?? null;
-    }
-
-    public function matchesPath(string $path): bool
-    {
-
-        $sanitizedPath = preg_quote(trim($path, "/"), "/");
-
-        return preg_match("/^\/?" . $sanitizedPath . "\/?$/i", $this->getPath());
     }
 
     public function setCanaryState(?string $state): void

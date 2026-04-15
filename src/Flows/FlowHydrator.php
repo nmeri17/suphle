@@ -331,7 +331,7 @@ class FlowHydrator
     protected function updatePlaceholders(array $updates): self
     {
 
-        $this->placeholderStorage->overwriteValues($updates);
+        $this->placeholderStorage->setSegmentValues($updates);
 
         return $this;
     }
