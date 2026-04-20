@@ -33,21 +33,6 @@ abstract class BaseHtmlRenderer extends GenericRenderer implements RendersMarkup
         $this->sessionClient = $sessionClient;
     }
 
-    /**
-     * {@inheritdoc}
-    */
-    public function setMarkupName(string $markupName): void
-    {
-
-        $this->markupName = $markupName;
-    }
-
-    public function getMarkupName(): string
-    {
-
-        return $this->markupName;
-    }
-
     public function getHeaders(): array
     {
         $cookieContent = $this->sessionClient->getAsCookieString();

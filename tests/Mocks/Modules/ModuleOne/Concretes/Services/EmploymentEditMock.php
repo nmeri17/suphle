@@ -6,16 +6,17 @@ use Suphle\Contracts\Services\CallInterceptors\MultiUserModelEdit;
 
 use Suphle\Contracts\Services\Models\IntegrityModel;
 
-use Suphle\Services\{UpdatefulService, Structures\BaseErrorCatcherService};
+use Suphle\Services\Structures\BaseErrorCatcherService;
 
-use Suphle\Services\Decorators\{InterceptsCalls, VariableDependencies};
+use Suphle\Services\Decorators\{InterceptsCalls, VariableDependencies, DomainService};
 
 #[InterceptsCalls(MultiUserModelEdit::class)]
+#[DomainService(mutation: true)]
 #[VariableDependencies([
 
-    "setPayloadStorage", "setPlaceholderStorage"
+    "setPayloadStorage", "setRouteInfo"
 ])]
-class EmploymentEditMock extends UpdatefulService implements MultiUserModelEdit
+class EmploymentEditMock implements MultiUserModelEdit
 {
     use BaseErrorCatcherService;
 

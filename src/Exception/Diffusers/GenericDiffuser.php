@@ -56,17 +56,11 @@ class GenericDiffuser implements ExceptionHandler
             );
         }
 
-        try {
+        if ($this->requestDetails->isApiRoute()) {
 
-            $this->renderer = $this->container->getClass(BaseRenderer::class);
-        } catch (InvalidImplementor $exception) { // exception occured before routing completion
-
-            if ($this->requestDetails->isApiRoute()) {
-
-                $this->renderer = new Json([]);
-            } else {
-                $this->renderer = new Markup("genericHandler", $this->newMarkupName);
-            }
+            $this->renderer = new Json([]);
+        } else {
+            $this->renderer = new Markup($this->newMarkupName, []);
         }
 
         $this->setMarkupDetails();

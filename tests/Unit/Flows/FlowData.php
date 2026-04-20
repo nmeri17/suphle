@@ -1,44 +1,37 @@
 <?php
-
 namespace Suphle\Tests\Unit\Flows;
 
-use Suphle\Flows\Previous\CollectionNode;
+use Suphle\Routing\Attributes\{CollectionFlow, CollectionFlowOperation};
 
 trait FlowData
 {
-    protected $payloadKey = "data";
-    protected $columnName = "id";
-    protected $indexes;
+    protected string $payloadKey = "data";
+    protected string $columnName = "id";
+    protected array $indexes;
 
     protected function getIndexes(): array
     {
-
-        $indexes = [];
-
-        for ($i=1; $i < 11; $i++) {
-            $indexes[] = $i;
-        }
-
-        return $indexes;
+        return range(1, 10);
     }
 
     protected function indexesToModels(): array
     {
-
-        return array_map(fn ($id) => compact("id"), $this->indexes);
+        return array_map(fn ($id) => ["id" => $id], $this->indexes);
     }
 
-    protected function createCollectionNode(): CollectionNode
+    protected function createCollectionFlow(CollectionFlowOperation $operation): CollectionFlow
     {
-
-        return new CollectionNode($this->payloadKey, $this->columnName);
+        return new CollectionFlow(
+            target: "symbols/{id}/chart",
+            source: $this->payloadKey,
+            operation: $operation,
+            columnName: $this->columnName
+        );
     }
 
     protected function payloadFromPrevious(): array
     {
-
-        return [ // should this be returned, or the models, directly
-
+        return [
             $this->payloadKey => $this->indexesToModels()
         ];
     }

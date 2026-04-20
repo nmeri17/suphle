@@ -2,11 +2,12 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services;
 
-use Suphle\Services\UpdatelessService;
+use Suphle\Services\Decorators\DomainService;
 
 use Illuminate\Support\Collection;
 
-class DummyModels extends UpdatelessService
+#[DomainService]
+class DummyModels
 {
     public function fetchModels(int $amount = 10): Collection
     {

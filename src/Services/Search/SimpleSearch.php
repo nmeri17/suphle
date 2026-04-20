@@ -2,14 +2,15 @@
 
 namespace Suphle\Services\Search;
 
-use Suphle\Services\UpdatelessService;
+use Suphle\Services\Decorators\{VariableDependencies, DomainService};
 
 use Suphle\Request\PayloadStorage;
 
-use Suphle\Contracts\{Database\OrmDialect, Services\Decorators\VariableDependencies};
+use Suphle\Contracts\Database\OrmDialect;
 
 #[VariableDependencies([ "setPayloadStorage", "setOrmDialect"])]
-class SimpleSearch extends UpdatelessService
+#[DomainService]
+class SimpleSearch
 {
     protected PayloadStorage $payloadStorage;
 

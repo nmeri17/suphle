@@ -2,18 +2,14 @@
 
 namespace Suphle\Adapters\Presentation\Hotwire\Formats;
 
-use Suphle\Contracts\Response\OpenApiRenderer;
-use Suphle\Response\Traits\OpenApiRendererTrait;
-
 use Suphle\Response\Format\Redirect;
 
 use Suphle\Hydration\Structures\CallbackDetails;
 
 use Closure;
 
-class RedirectHotwireStream extends BaseHotwireStream implements OpenApiRenderer
+class RedirectHotwireStream extends BaseHotwireStream
 {
-    use OpenApiRendererTrait;
 
     public const STATUS_CODE = 303;
 

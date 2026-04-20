@@ -43,4 +43,9 @@ class Router implements RouterConfig
     {
         return []; // Scan all coordinators by default
     }
+
+    public function matchesApi (string $path):bool {
+
+        return str_contains(strtolower($path), "/api/");
+    }
 }

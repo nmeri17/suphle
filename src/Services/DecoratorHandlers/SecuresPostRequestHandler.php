@@ -4,6 +4,8 @@ namespace Suphle\Services\DecoratorHandlers;
 
 use Suphle\Contracts\Services\CallInterceptors\{SystemModelEdit, MultiUserModelEdit};
 
+use Suphle\Services\Decorators\DomainService;
+
 use Suphle\Hydration\Structures\ObjectDetails;
 
 use Suphle\Request\RequestDetails;
@@ -35,14 +37,28 @@ class SecuresPostRequestHandler extends BaseArgumentModifier
 
         foreach ($arguments as $dependency) {
 
-            foreach ($this->postDecorators as $decorator) {
+            if (!is_object($dependency)) continue;
 
-                if (is_object($dependency) && $this->objectMeta->implementsInterface(
-                    $dependency::class,
-                    $decorator
-                )) {
+            $className = $dependency::class;
 
-                    return $arguments;
+            $domainAttrs = $this->objectMeta->getClassAttributes($className, DomainService::class);
+
+            if (empty($domainAttrs)) continue;
+
+            $domainService = $domainAttrs[0]->newInstance();
+
+            // 2. If marked for mutation, verify it also has the Interceptor (via Interface check)
+            if ($domainService->mutation === true) {
+
+                foreach ($this->postDecorators as $decorator) {
+
+                    if ($this->objectMeta->implementsInterface(
+                        $dependency::class,
+                        $decorator
+                    )) {
+
+                        return $arguments;
+                    }
                 }
             }
         }

@@ -4,6 +4,8 @@ namespace Suphle\Response;
 
 use Suphle\Contracts\{Auth\AuthStorage, Presentation\BaseRenderer};
 
+use Suphle\Routing\Structures\RouteInfo;
+
 use Suphle\Queues\AdapterManager;
 
 use Suphle\Flows\{Jobs\RouteBranches, Structures\PendingFlowDetails};
@@ -21,13 +23,13 @@ class FlowResponseQueuer
         //
     }
 
-    public function saveSubBranches(BaseRenderer $renderer): void
+    public function saveSubBranches(BaseRenderer $renderer, RouteInfo $routeDetails): void
     {
 
         $this->queueManager->addTask(RouteBranches::class, [
 
             PendingFlowDetails::class => new PendingFlowDetails(
-                $renderer,
+                $renderer, $routeDetails
                 $this->authStorage
             ),
 

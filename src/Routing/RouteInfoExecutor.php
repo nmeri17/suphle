@@ -22,14 +22,10 @@ class RouteInfoExecutor
     */
     public function handleFoundRoute(RouteInfo $route): BaseRenderer
     {
-        $this->rendererManager->mayBeInvalid() // this should probably happen only after auth ie it should be a midw placed before the final one
-        ->bootDefaultRenderer();
+        $this->container->whenTypeAny()->needsAny([RouteInfo::class => $route]);
 
-        /*$this->finalRenderer = $this->rendererManager->handleValidRequest(
-            $this->container->getClass(PayloadStorage::class)
-        );*/
-        // Sync dynamic path variables (e.g., /user/{id})
-        $this->placeholders->setSegmentValues($route->getAllParameters());
+        $this->rendererManager->mayBeInvalid($route) // this should probably happen only after auth ie it should be a midw placed before the final one
+        ->bootDefaultRenderer();
 
         $middlewareQueue = $this->container->whenType(MiddlewareQueue::class)
             ->needsArguments([

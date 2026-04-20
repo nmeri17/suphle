@@ -1,5 +1,4 @@
 <?php
-
 namespace Suphle\Flows\Structures;
 
 class ServiceContext
@@ -8,22 +7,10 @@ class ServiceContext
         /**
          * @property {serviceName} where we'll be pulling the data we intend to filter into another operation
          */
-        protected readonly string $serviceName,
-        protected readonly string $method
+        public readonly string $serviceName,
+        public readonly string $method
     ) {
 
         //
-    }
-
-    public function getServiceName(): string
-    {
-
-        return $this->serviceName;
-    }
-
-    public function getMethod(): string
-    {
-
-        return $this->method;
     }
 }

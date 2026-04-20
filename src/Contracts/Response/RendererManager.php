@@ -2,8 +2,6 @@
 
 namespace Suphle\Contracts\Response;
 
-use Suphle\Services\ServiceCoordinator;
-
 use Suphle\Request\PayloadStorage;
 
 use Suphle\Contracts\Presentation\BaseRenderer;
@@ -17,7 +15,7 @@ interface RendererManager
     public function handleValidRequest(PayloadStorage $payloadStorage): BaseRenderer;
 
     public function fetchHandlerParameters(
-        ServiceCoordinator $coodinator,
+        string $coodinator,
         string $handlingMethod
     ): array;
 
@@ -31,5 +29,5 @@ interface RendererManager
     /**
      * @throws NoCompatibleValidator
     */
-    public function acquireValidatorStatus(ServiceCoordinator $coodinator, string $handlingMethod): bool;
+    public function acquireValidatorStatus(string $coodinator, string $handlingMethod): bool;
 }

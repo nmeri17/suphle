@@ -35,31 +35,29 @@ class IntraModuleTest extends JobFactory
 
     public function test_stores_correct_data_in_cache()
     {
-
         $this->dataProvider([
-
             $this->contextParameters(...)
         ], function (PendingFlowDetails $context) {
-
-            // given => see setup
-            $this->makeRouteBranches($context)->handle(); // When
+            
+            // This triggers the FlowHydrator via the RouteBranches job
+            $this->makeRouteBranches($context)->handle(); 
 
             $flowSaver = $this->container->getClass(UmbrellaSaver::class);
-
             $location = $flowSaver->getPatternLocation($this->user5Url);
-
-            $umbrella = $flowSaver->getExistingUmbrella($location); // since it saves content for all given indexes, not just 5. This means that "/user-content/8" is available and will return 8
+            $umbrella = $flowSaver->getExistingUmbrella($location);
 
             $this->assertNotNull($umbrella);
 
-            $this->assertAssocArraySubset(
-                [ "id" => 5],
-                $this->extractResponse(
-                    $umbrella,
-                    $context->getStoredUserId()
-                )
-            ); // then
+            // Verify that data for ID 5 was actually rendered and cached
+            $cachedResponse = $this->extractResponse($umbrella, $context->getStoredUserId());
+            $this->assertEquals(5, $cachedResponse['id']); 
         });
+    }
+
+    public function test_no_flow_attribute_does_nothing()
+    {
+        // Ensure paths without the #[Flow] attribute don't trigger queue activity
+        $this->assertNotPushedToFlow("/no-flow-attribute");
     }
 
     /**

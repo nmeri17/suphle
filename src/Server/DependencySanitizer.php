@@ -1,5 +1,4 @@
 <?php
-
 namespace Suphle\Server;
 
 use Suphle\Server\Structures\DependencyRule;
@@ -14,7 +13,7 @@ use Suphle\IO\{Http\BaseHttpRequest, Mailing\MailBuilder};
 
 use Suphle\Request\PayloadStorage;
 
-use Suphle\Services\{ServiceCoordinator, UpdatefulService, UpdatelessService, ConditionalFactory};
+use Suphle\Services\{ServiceCoordinator, ConditionalFactory};
 
 use Suphle\Services\Structures\{ModelfulPayload, ModellessPayload};
 
@@ -122,9 +121,7 @@ class DependencySanitizer
 
                 PayloadStorage::class, // there may be items we don't want to pass to the builder but to a service?
 
-                BaseHttpRequest::class, UpdatefulService::class,
-
-                UpdatelessService::class, Session::class,
+                BaseHttpRequest::class, Session::class,
 
                 CsrfGenerator::class
             ]

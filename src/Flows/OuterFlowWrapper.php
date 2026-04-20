@@ -133,12 +133,12 @@ class OuterFlowWrapper implements BaseResponseManager, HighLevelRequestHandler
     private function emitEvents($cachedResponse): void
     {
 
-        $renderer = $this->responseRenderer();
+        $routeDetails = $this->routeUserNode->routeDetails;
 
         $this->eventManager->emit(
-            $renderer->getCoordinator()::class,
-            $renderer->getHandler(),
-            $cachedResponse // event handler can then inject payloadStorage/pathPlaceholders
+            $routeDetails->controllerClass,
+            $routeDetails->controllerMethod,
+            $cachedResponse // event handler can then inject payloadStorage/routeInfo
         );
     }
 
@@ -159,7 +159,7 @@ class OuterFlowWrapper implements BaseResponseManager, HighLevelRequestHandler
     public function responseRenderer(): BaseRenderer
     {
 
-        return $this->routeUserNode->getRenderer();
+        return $this->routeUserNode->renderer;
     }
 
     public function handlingRenderer(): ?BaseRenderer

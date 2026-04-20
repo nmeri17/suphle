@@ -1,8 +1,9 @@
 <?php
-
 namespace Suphle\Flows\Structures;
 
 use Suphle\Contracts\Presentation\BaseRenderer;
+
+use Suphle\Routing\Structures\RouteInfo;
 
 use DateTime;
 use DateInterval;
@@ -16,7 +17,10 @@ class RouteUserNode
     private $expiresAtHydrator;
     protected int $hits = 0;
 
-    public function __construct(protected readonly BaseRenderer $renderer)
+    public function __construct(
+        public readonly BaseRenderer $renderer,
+        public readonly RouteInfo $routeDetails
+    )
     {
 
         //
@@ -95,11 +99,5 @@ class RouteUserNode
         $this->expiresAtHydrator = $callback;
 
         return $this;
-    }
-
-    public function getRenderer(): BaseRenderer
-    {
-
-        return $this->renderer;
     }
 }

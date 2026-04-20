@@ -4,6 +4,8 @@ namespace Suphle\Flows\Structures;
 
 use Suphle\Contracts\{Auth\AuthStorage, Presentation\BaseRenderer};
 
+use Suphle\Routing\Structures\RouteInfo;
+
 use Suphle\Flows\OuterFlowWrapper;
 
 /**
@@ -13,8 +15,11 @@ class PendingFlowDetails
 {
     private $userId;
 
-    public function __construct(protected readonly BaseRenderer $renderer, protected readonly AuthStorage $authStorage)
-    {
+    public function __construct(
+        public readonly BaseRenderer $renderer,
+        public readonly RouteInfo $routeDetails,
+        public readonly AuthStorage $authStorage
+    ) {
 
         $this->getUserId(); // trigger property storage before task serialization
     }
@@ -25,18 +30,11 @@ class PendingFlowDetails
         return $this->userId;
     }
 
-    public function getRenderer(): BaseRenderer
-    {
-
-        return $this->renderer;
-    }
-
     /**
     * Whether a sub-flow or transition from organic flow, all flow queueing is triggered by a user request. This argument is that user
     */
     protected function getUserId(): string
     {
-
         if (is_null($this->userId)) {
 
             $user = $this->authStorage->getUser();
@@ -47,11 +45,5 @@ class PendingFlowDetails
         }
 
         return $this->userId;
-    }
-
-    public function getAuthStorage(): string
-    {
-
-        return $this->authStorage::class;
     }
 }

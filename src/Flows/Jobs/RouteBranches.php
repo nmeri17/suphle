@@ -1,146 +1,123 @@
 <?php
-
 namespace Suphle\Flows\Jobs;
 
-use Suphle\Modules\{ModuleToRoute, ModulesBooter, Structures\ActiveDescriptors};
-
-use Suphle\Flows\{FlowHydrator, Structures\PendingFlowDetails, Previous\UnitNode};
-
+use Suphle\Modules\{ModulesBooter, Structures\ActiveDescriptors};
+use Suphle\Flows\{FlowHydrator, Structures\PendingFlowDetails};
+use Suphle\Routing\{AttributeRouteScanner, ModuleRequestRouter, Attributes\FlowDefinition, Attributes\HttpMethod};
+use Suphle\Hydration\Container;
 use Suphle\Request\RequestDetails;
-
 use Suphle\Services\DecoratorHandlers\VariableDependenciesHandler;
-
-use Suphle\Contracts\{Queues\Task, IO\CacheManager};
+use Suphle\Contracts\{Queues\Task, IO\CacheManager, Modules\DescriptorInterface};
+use ReflectionMethod, ReflectionAttribute;
 
 class RouteBranches implements Task
 {
     final public const FLOW_MECHANISMS = "flow_wildcards";
 
-    protected array $modules;
+    protected array $httpRoutes;
 
-    protected bool $wildcardNotExist = false;
+    protected Container $container;
+
+    protected DescriptorInterface $activeModule;
+
+    protected ModuleRequestRouter $moduleRouter;
 
     public function __construct(
         protected readonly PendingFlowDetails $flowDetails,
-        protected readonly ModuleToRoute $moduleFinder,
-        protected readonly FlowHydrator $hydrator,
         protected readonly ModulesBooter $modulesBooter,
         protected readonly ActiveDescriptors $descriptorsHolder,
         protected readonly CacheManager $cacheManager
-    ) {
-
-        //
-    }
+    ) {}
 
     public function handle(): void
     {
+        $routeDetails = $this->flowDetails->routeDetails;
 
-        $outgoingRenderer = $this->flowDetails->getRenderer();
+        // V2: Get attributes instead of iterating $outgoingRenderer->getFlow()
+        $reflection = new ReflectionMethod($routeDetails->controllerClass, $routeDetails->controllerMethod);
 
-        if (!$outgoingRenderer->hasBranches()) {
-            return;
-        }
-
-        $this->modules = $this->descriptorsHolder->getOriginalDescriptors();
+        $attributes = $reflection->getAttributes(FlowDefinition::class, ReflectionAttribute::IS_INSTANCEOF);
 
         $this->modulesBooter->bootOuterModules($this->descriptorsHolder);
+            
+        $this->container = $this->descriptorsHolder->getOriginalDescriptors()->getContainer();
 
-        $outgoingRenderer->getFlow()
+        $this->httpRoutes = $this->container->getClass(AttributeRouteScanner::class)->scanAllModules();
 
-        ->eachBranch(function ($urlPattern, $structure) {
+        foreach ($attributes as $attr) {
+            $flowInstance = $attr->newInstance();
+            $urlPattern = $flowInstance->target;
 
             $mechanismPath = $this->getMechanismPath($urlPattern);
-
             if (!$this->patternMatchesMechanism($mechanismPath)) {
-
-                return;
-            } elseif ($this->wildcardNotExist) {
-
-                $this->setMechanismPath($mechanismPath);
+                continue;
             }
 
             if (!$this->findManagerForPattern($urlPattern)) {
-                return;
-            } // invalid url
+                continue; 
+            }
 
-            $this->executeFlowBranch($urlPattern, $structure);
-        });
+            $this->executeFlowBranch($urlPattern, $flowInstance);
+        }
     }
 
-    // Each pattern can only have one mechanism. If it's saved without this consideration, attempting to read it later on will fail
     protected function patternMatchesMechanism(string $mechanismPath): bool
     {
-
         $patternMechanism = $this->cacheManager->getItem($mechanismPath);
 
         if (is_null($patternMechanism)) {
-
-            return $this->wildcardNotExist = true;
+            $this->cacheManager->saveItem($mechanismPath, $this->flowDetails->getAuthStorage());
+            return true;
         }
-
         return $patternMechanism == $this->flowDetails->getAuthStorage();
     }
 
     protected function getMechanismPath(string $urlPattern): string
     {
-
         return self::FLOW_MECHANISMS . "/" . trim($urlPattern, "/");
     }
 
-    protected function setMechanismPath(string $mechanismPath): void
-    {
-
-        $this->cacheManager->saveItem(
-            $mechanismPath,
-            $this->flowDetails->getAuthStorage()
-        );
-    }
-
-    /**
-     * Given the origin path stored a flow pointing to "sub-path/id", this tries to uproot the responseManager in the module containing that path
-    */
     private function findManagerForPattern(string $pattern): bool
     {
+        $modules = $this->descriptorsHolder->getOriginalDescriptors();
 
-        RequestDetails::fromModules($this->modules, $pattern, "get");
+        RequestDetails::fromModules($modules, $pattern, HttpMethod::GET->value);
 
-        $moduleInitializer = $this->moduleFinder->findContext($this->modules);
+        $this->moduleRouter = $this->container->getClass(ModuleRequestRouter::class);
 
-        if (!is_null($moduleInitializer)) {
+        if (!$moduleRouter->canSetHandlingModule($this->httpRoutes, true))
 
-            return true;
-        }
+            return false;
 
-        return false;
+        $this->activeModule = $this->moduleRouter->getActiveModule();
+
+        return true;
     }
 
-    private function executeFlowBranch(string $urlPattern, UnitNode $structure): void
+    private function executeFlowBranch(string $urlPattern, FlowDefinition $flowInstance): void
     {
+        $container = $this->activeModule->getContainer();
 
-        $previousPayload = $this->flowDetails->getRenderer()
+        $hydrator = $container->getClass(FlowHydrator::class);
 
-        ->getRawResponse();
-
-        $this->hydrator->setRequestDetails(
-            $previousPayload,
-            $urlPattern
+        $hydrator->setRequestDetails(
+            $this->flowDetails->getRenderer()->getRawResponse(),
+            
+            $urlPattern, $this->getFoundRoute()
         );
 
-        $this->setHydratorDependencies();
+        $this->setHydratorDependencies($hydrator, $container);
 
-        $this->hydrator->runNodes($structure, $this->flowDetails);
+        // V2: Replacing runNodes with runAttribute
+        $hydrator->runAttribute($flowInstance, $this->flowDetails);
     }
 
-    private function setHydratorDependencies(): void
+    private function setHydratorDependencies(FlowHydrator $hydrator, Container $container): void
     {
+        $handler = $container->getClass(VariableDependenciesHandler::class);
 
-        $handler = $this->moduleFinder->getActiveModule()
-
-        ->getContainer()->getClass(VariableDependenciesHandler::class);
-
-        foreach ($this->hydrator->dependencyMethods() as $methodName) {
-
-            $handler->executeDependencyMethod($methodName, $this->hydrator);
+        foreach ($hydrator->dependencyMethods() as $methodName) {
+            $handler->executeDependencyMethod($methodName, $hydrator);
         }
     }
 }

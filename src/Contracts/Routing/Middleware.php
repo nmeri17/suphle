@@ -11,4 +11,6 @@ use Suphle\Middleware\MiddlewareNexts;
 interface Middleware
 {
     public function process(PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler): BaseRenderer;
+
+    public function setArgs(array $args): void;
 }

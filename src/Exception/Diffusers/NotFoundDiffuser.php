@@ -68,7 +68,7 @@ class NotFoundDiffuser implements ExceptionHandler
     protected function getMarkupRenderer(): BaseRenderer
     {
 
-        $renderer = new Markup("missingHandler", "not-found");
+        $renderer = new Markup("not-found", []);
 
         $this->decoratorHydrator->scopeInjecting(
             $renderer,

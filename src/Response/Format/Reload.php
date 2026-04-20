@@ -7,14 +7,10 @@ use Suphle\Services\Decorators\VariableDependencies;
 use Suphle\Request\PayloadStorage;
 
 use Suphle\Contracts\Response\RendererManager;
-use Suphle\Contracts\Response\OpenApiRenderer;
-use Suphle\Response\Traits\OpenApiRendererTrait;
 
 #[VariableDependencies([ "setRendererManager" ])]
-class Reload extends GenericRenderer implements OpenApiRenderer
+class Reload extends GenericRenderer
 {
-    use OpenApiRendererTrait;
-
     public const STATUS_CODE = 200;
 
     protected RendererManager $rendererManager;

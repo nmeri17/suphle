@@ -110,7 +110,7 @@ class SingleModuleRetainTest extends ModuleLevelTest
 
                 CsrfGenerator::TOKEN_FIELD => $csrfToken,
 
-                "id" => $this->lastInserted->id, // not necessary since id is already passed in the url but the payloadReader doesn't use placeholderStorage and I'm too lazy to differentiate for all consumers
+                "id" => $this->lastInserted->id, // not necessary since id is already passed in the url but the payloadReader doesn't use routeInfo and I'm too lazy to differentiate for all consumers
 
                 MultiUserEditHandler::INTEGRITY_KEY => $this->lastInserted
                 ->$columnProperty->toDateTimeString()

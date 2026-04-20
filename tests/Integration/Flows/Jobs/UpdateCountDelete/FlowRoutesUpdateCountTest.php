@@ -114,6 +114,57 @@ class FlowRoutesUpdateCountTest extends JobFactory
         ->getClass($jobName);
     }
 
+    public function test_empties_cache_entry_after_max_hits()
+    {
+        // 1. GIVEN: A cached flow set to 1 max hit
+        $this->setupCachedResource(maxHits: 1);
+
+        // 2. WHEN: We access the resource
+        $this->get($this->resourceUrl); 
+        $this->processQueuedTasks(); // Executes UpdateCountDelete
+
+        // 3. THEN: The flow should no longer be handled (deleted)
+        $this->assertNotHandledByFlow($this->resourceUrl);
+    }
+
+    public function test_retains_cache_if_hits_remaining()
+    {
+        // GIVEN: 2 hits allowed
+        $this->setupCachedResource(maxHits: 2);
+
+        // WHEN: Access once
+        $this->get($this->resourceUrl);
+        $this->processQueuedTasks();
+
+        // THEN: Still exists
+        $this->assertHandledByFlow($this->resourceUrl);
+    }
+
+    private function setupCachedResource(int $maxHits): void
+    {
+        $context = $this->makeAccessContext($maxHits);
+        
+        // Manually trigger the job that "warms" the cache
+        $this->getContainer()->getClass(UpdateCountDelete::class)
+            ->handle($context); 
+    }
+
+    public function test_wildcard_is_locked_to_mechanism()
+    {
+        $url = "/user-content/5";
+        
+        // 1. Warm cache for Session Auth
+        $sessionContext = $this->makePendingFlowDetails($this->contentOwner, SessionStorage::class);
+        $this->makeRouteBranches($sessionContext)->handle();
+
+        // 2. Try to access via Token Auth (Mirroring scenario)
+        $this->actingAs($this->contentOwner);
+        $this->setAuthMechanism(TokenStorage::class);
+
+        // 3. EXPECT: System should NOT find the session-based cache entry
+        $this->assertNotHandledByFlow($url);
+    }
+
     public function test_wont_empty_cache_entry()
     {
 

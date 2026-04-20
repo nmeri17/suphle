@@ -8,9 +8,9 @@ use Suphle\Contracts\Services\{CallInterceptors\MultiUserModelEdit, Models\Integ
 
 use Suphle\Contracts\Routing\Crud\ResourceMultiEdit;
 
-use Suphle\Services\{UpdatefulService, Structures\BaseErrorCatcherService};
+use Suphle\Services\Structures\BaseErrorCatcherService;
 
-use Suphle\Services\Decorators\{InterceptsCalls, VariableDependencies};
+use Suphle\Services\Decorators\{InterceptsCalls, VariableDependencies, DomainService};
 
 use _database_namespace\_resource_name;
 
@@ -19,7 +19,8 @@ use _database_namespace\_resource_name;
 
     "setPayloadStorage", "setPlaceholderStorage"
 ])]
-class _resource_nameAccessor extends UpdatefulService implements ResourceMultiEdit { // idk if systemEdit is used in the crud context. It seems like mainly get/update; so no need for an accessor wrapper
+#[DomainService(mutation: true)]
+class _resource_nameAccessor implements ResourceMultiEdit { // idk if systemEdit is used in the crud context. It seems like mainly get/update; so no need for an accessor wrapper
 
 	use BaseErrorCatcherService;
 

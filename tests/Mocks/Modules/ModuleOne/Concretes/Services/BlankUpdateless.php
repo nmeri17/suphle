@@ -2,12 +2,13 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services;
 
-use Suphle\Services\UpdatelessService;
+use Suphle\Services\Decorators\DomainService;
 
 use Suphle\Contracts\Auth\AuthStorage;
 
 // these methods are redundant to the class btw
-class BlankUpdateless extends UpdatelessService
+#[DomainService]
+class BlankUpdateless
 {
     public function __construct(protected readonly AuthStorage $authStorage)
     {

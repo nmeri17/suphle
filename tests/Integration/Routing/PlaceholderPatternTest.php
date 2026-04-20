@@ -2,7 +2,7 @@
 
 namespace Suphle\Tests\Integration\Routing;
 
-use Suphle\Routing\PathPlaceholders;
+use Suphle\Routing\Structures\RouteInfo;
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\CanaryCollections\DefaultCollection;
 
@@ -33,7 +33,7 @@ class PlaceholderPatternTest extends TestsRouter
 
         	$this->get("/$idToSend"); // when
 
-	        $idBeingRead = $this->getContainer()->getClass(PathPlaceholders::class)
+	        $idBeingRead = $this->getContainer()->getClass(RouteInfo::class)
 
 	        ->getSegmentValue("id");
 

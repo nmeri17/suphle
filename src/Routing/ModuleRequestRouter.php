@@ -20,20 +20,24 @@ class ModuleRequestRouter implements HighLevelRequestHandler
         protected readonly RequestDetails $requestDetails,
     ) {}
 
-    public function canSetHandlingModule (array $routeList):bool {
+    public function canSetHandlingModule (array $routeList, bool $literal = false):bool {
 
         $this->foundRoute = $this->getRouteInfo(
             $routeList, $this->requestDetails->getPath(),
 
-            $this->requestDetails->getMethod()
+            $this->requestDetails->getMethod(), $literal
         );
 
         return !is_null($this->foundRoute);
     }
 
-    protected function getRouteInfo(array $routeList, string $path, string $method): ?RouteInfo {
+    protected function getRouteInfo(array $routeList, string $path, string $method, bool $literal): ?RouteInfo {
 
-        foreach ($routeList as $details) {
+        foreach ($routeList as $details) {/*
+            "placeholders" => $this->extractPlaceholders($routeArgs[0] ?? ""),
+            "validation_rules" => $this->getValidationRules($method),
+            "parameters" => $this->getMethodParameters($method),
+            "response_shape" => $this->getResponseShape($method)*/
             $routeInfo = new RouteInfo(
                 path: $details["path"],
                 method: $details["method"], 
@@ -42,12 +46,16 @@ class ModuleRequestRouter implements HighLevelRequestHandler
                 preMiddlewares: $details["pre_middleware"],
                 middlewares: $details["middleware"],
                 moduleName: $details["module_name"],
-                viewName: $details["view_name"]
+                viewName: @$details["view_name"],
+                flows: @$details["flows"],
+                canaryInfo: @$details["canary_state"]
             );
 
-            if ($routeInfo->matches($path, $method)) {
+            if (!$literal && $routeInfo->matches($path, $method)) return $routeInfo;
+
+            if ($literal && $routeInfo->literalMatches($path, $method))
+
                 return $routeInfo;
-            }
         }
         return null;
     }
@@ -70,5 +78,9 @@ class ModuleRequestRouter implements HighLevelRequestHandler
     public function getActiveModule():DescriptorInterface {
 
         return $this->descriptor;
+    }
+    public function getFoundRoute():?RouteInfo {
+
+        return $this->foundRoute;
     }
 }

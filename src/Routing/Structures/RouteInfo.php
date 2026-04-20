@@ -1,11 +1,17 @@
 <?php
-
 namespace Suphle\Routing\Structures;
 
 use Suphle\Routing\Attributes\HttpMethod;
 
+use Suphle\Request\SanitizesIntegerInput;
+
+use Suphle\Services\Decorators\BindsAsSingleton;
+
+#[BindsAsSingleton]
 class RouteInfo
 {
+    use SanitizesIntegerInput;
+
     private array $parameters = [];
 
     public function __construct(
@@ -16,8 +22,9 @@ class RouteInfo
         public readonly array $preMiddlewares = [],
         public readonly array $middlewares = [],
         public readonly string $moduleName = "",
-        public readonly ?CanaryInfo $canaryInfo = null,
-        public readonly ?string $viewName = null
+        public readonly ?array $canaryInfo = null,
+        public readonly ?string $viewName = null,
+        public readonly ?array $flows = null
     ) {
         //
     }
@@ -31,6 +38,13 @@ class RouteInfo
     {
         return $this->method->value === strtoupper($requestMethod) && 
                $this->pathMatches($requestPath);
+    }
+
+    public function literalMatches(string $requestPath, string $requestMethod): bool
+    {
+        return $this->method->value === strtoupper($requestMethod) && 
+        
+        strtolower($requestPath) == strtolower($this->path);
     }
 
     private function pathMatches(string $requestPath): bool
@@ -73,14 +87,53 @@ class RouteInfo
             }
         }
     }
-
-    public function getParameter(string $name): ?string
+    public function getPathFromStack(): string
     {
+        $url = $this->path;
+
+        foreach ($this->parameters as $key => $value) {
+            $url = str_replace("{{$key}}", $value, $url);
+        }
+
+        // Optional: Check if any placeholders remain unreplaced
+        if (preg_match('/\{([^}]+)\}/', $url)) {
+            throw new InvalidArgumentException("Missing parameters for route: $url");
+        }
+
+        return $url;
+    }
+
+    public function setSegmentValues(array $values): void
+    {
+        $this->parameters = $values;
+    }
+
+    public function getSegmentValue(string $name): ?string
+    {
+
         return $this->parameters[$name] ?? null;
     }
 
-    public function getAllParameters(): array
+    public function getAllSegmentValues(): array
     {
+
         return $this->parameters;
+    }
+
+    /**
+     * Should be called before the readers start calling [getSegmentValue]
+    */
+    public function allNumericToPositive(): void
+    {
+
+        $this->parameters = $this->allInputToPositive($this->parameters);
+    }
+
+    public function clearAllSegments(): void
+    {
+
+        $this->parameters = [];
+
+        $this->hasExchangedTokens = false; // since this object may be long-lived, without this, the placeholder stack won't be re-computed
     }
 } 

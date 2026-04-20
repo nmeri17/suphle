@@ -1,24 +1,20 @@
 <?php
-
 namespace Suphle\Config;
 
-use Suphle\Contracts\Config\AuthContract;
+use Suphle\Contracts\Config\Auth as AuthConfig;
 
-use Suphle\Auth\Renderers\{BrowserLoginMediator, ApiLoginMediator}; // just make these backing services that can be used in controllers
-
-class Auth implements AuthContract
-{
-    final public const API_LOGIN_PATH = "api/v1/login";
+class Auth implements AuthConfig {
 
     public function getModelObservers(): array
     {
-
         return [];
     }
 
-    public function markupRedirect(): string
-    {
+    /**
+     * {@inheritdoc}
+    */
+    public function markupRedirect ():string {
 
-        return "login";
+        return "/auth/login";
     }
 }

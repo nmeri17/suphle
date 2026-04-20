@@ -1,12 +1,9 @@
 <?php
-
 namespace Suphle\Response;
 
 use Suphle\Modules\ModuleDescriptor;
 
 use Suphle\Hydration\{Container, DecoratorHydrator, Structures\CallbackDetails};
-
-use Suphle\Services\ServiceCoordinator;
 
 use Suphle\Services\Decorators\{BindsAsSingleton, ValidationRules};
 
@@ -17,6 +14,8 @@ use Suphle\Contracts\Response\{BaseResponseManager, RendererManager};
 use Suphle\Response\Format\Redirect;
 
 use Suphle\Request\{ PayloadStorage, RequestDetails, ValidatorManager};
+
+use Suphle\Routing\Structures\RouteInfo;
 
 use Suphle\Exception\Explosives\{ValidationFailure, DevError\NoCompatibleValidator};
 
@@ -31,9 +30,12 @@ class RoutedRendererManager implements RendererManager, BaseResponseManager, Val
 
     protected ValidatorManager $validatorManager;
 
+    protected BaseRenderer $renderer;
+
+    protected RouteInfo $routeDetails;
+
     public function __construct(
         protected readonly Container $container,
-        protected readonly BaseRenderer $renderer,
         protected readonly Session $sessionClient,
         protected readonly FlowResponseQueuer $flowQueuer,
         protected readonly RequestDetails $requestDetails,
@@ -52,9 +54,9 @@ class RoutedRendererManager implements RendererManager, BaseResponseManager, Val
     public function afterRender($data = null): void
     {
 
-        if ($this->renderer->hasBranches()) {// the first organic request needs to trigger the flows below it
+        if (!is_null($this->routeDetails->flows)) {// the first organic request needs to trigger the flows below it
 
-            $this->flowQueuer->saveSubBranches($this->renderer);
+            $this->flowQueuer->saveSubBranches($this->renderer, $this->routeDetails);
         }
 
         if ($this->shouldStoreRenderer())
@@ -64,12 +66,24 @@ class RoutedRendererManager implements RendererManager, BaseResponseManager, Val
 
     public function bootDefaultRenderer(): self
     {
-
         $this->handlerParameters = $this->fetchHandlerParameters(
-            $this->renderer->getCoordinator(),
-            $this->renderer->getHandler()
-        );
+            $this->routeDetails->controllerClass,
 
+            $this->routeDetails->controllerMethod
+        );
+        $canaryList = $this->routeDetails->canaryInfo;
+
+        if (!is_null($canaryList)) {
+
+            foreach ($canaryList as $canary) {
+
+                $loadVal = $this->container->getClass($canary)->willLoad();
+
+                if (!is_null($loadVal))
+
+                    $this->requestDetails->setCanaryState($loadVal);
+            }
+        }
         return $this;
     }
 
@@ -84,15 +98,18 @@ class RoutedRendererManager implements RendererManager, BaseResponseManager, Val
             );
         }
 
-        return $this->renderer->invokeActionHandler($this->handlerParameters);
+        return $this->renderer = call_user_func_array(
+            [$this->routeDetails->controllerClass, $this->routeDetails->controllerMethod],
+            
+            $this->handlerParameters
+        );
     }
 
     protected function shouldStoreRenderer(): bool
     {
-
         return $this->requestDetails->isGetRequest() &&
 
-        !$this->requestDetails->isApiRoute(); // this and other usages all broken now. work with Suphle\Routing\Structures\RouteInfo; or better still, check whether session mode is active
+        !$this->requestDetails->isApiRoute();
     }
 
     /**
@@ -131,29 +148,25 @@ class RoutedRendererManager implements RendererManager, BaseResponseManager, Val
     }
 
     public function fetchHandlerParameters(
-        ServiceCoordinator $coodinator,
+        string $coodinator,
         string $handlingMethod
     ): array {
 
         return $this->container
 
-        ->getMethodParameters($handlingMethod, $coodinator::class);
+        ->getMethodParameters($handlingMethod, $coodinator);
     }
 
     /**
      * {@inheritdoc}
     */
-    public function mayBeInvalid(?BaseRenderer $renderer = null): self
+    public function mayBeInvalid(RouteInfo $routeDetails): self
     {
-
-        if (is_null($renderer)) {
-            $renderer = $this->renderer;
-        }
-
         $shouldValidate = $this->acquireValidatorStatus(
-            $renderer->getCoordinator(),
-            $renderer->getHandler()
+            
+            $routeDetails->controllerClass, $routeDetails->controllerMethod
         );
+        $this->routeDetails = $routeDetails;
 
         if ($shouldValidate) {
 
@@ -164,24 +177,23 @@ class RoutedRendererManager implements RendererManager, BaseResponseManager, Val
 
             $this->sessionClient->resetOldInput(); // discard any validation errors
         }
-
         return $this;
     }
 
     /**
      * {@inheritdoc}
     */
-    public function acquireValidatorStatus(ServiceCoordinator $coodinator, string $handlingMethod): bool
+    public function acquireValidatorStatus(string $coodinator, string $handlingMethod): bool
     {
 
         $attributesList = $this->callbackDetails->getMethodAttributes(
-            $coodinator::class,
+            $coodinator,
             $handlingMethod,
             ValidationRules::class
         );
 
         if ($this->eligibleToValidate(
-            $coodinator::class,
+            $coodinator,
             $handlingMethod,
             $attributesList
         )) {

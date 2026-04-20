@@ -12,6 +12,8 @@ use Suphle\Adapters\Orms\Eloquent\ComponentEntry as EloquentComponentEntry;
 
 use Suphle\Services\ComponentEntry as ServicesComponentEntry;
 
+use Suphle\Auth\ComponentEntry as AuthComponentEntry;
+
 class DefaultTemplateConfig implements ComponentTemplates
 {
     public function getTemplateEntries(): array
@@ -24,7 +26,9 @@ class DefaultTemplateConfig implements ComponentTemplates
 
             EloquentComponentEntry::class,
 
-            ServicesComponentEntry::class
+            ServicesComponentEntry::class,
+
+            AuthComponentEntry::class
         ];
     }
 }

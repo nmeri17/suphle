@@ -1,23 +1,32 @@
 <?php
-
 namespace Suphle\Routing\Attributes;
 
-use Attribute;
+use Suphle\Flows\Structures\{RangeContext, ServiceContext};
 
-#[Attribute(Attribute::TARGET_METHOD)]
-class CollectionFlow extends FlowDefinition
-{
+use Attribute, InvalidArgumentException;
+
+#[Attribute(Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
+class CollectionFlow extends FlowDefinition {
     public function __construct(
-        string $target,
-        string $source,
-        public readonly CollectionFlowOperation $operation,
-        public readonly ?string $columnName = null,
-        public readonly ?array $rangeContext = null,
-        public readonly ?string $serviceClass = null,
-        public readonly ?string $serviceMethod = null,
-        ?string $ttl = null,
-        ?int $maxHits = null
+        string $target, string $source,
+        public readonly CollectionFlowOperation $operation = CollectionFlowOperation::PIPE_TO,
+        public readonly string $columnName = "id", // The leaf key inside the collection
+        public readonly ?ServiceContext $serviceContext = null,
+
+        public readonly ?RangeContext $rangeContext = null,
+        int $ttl = 600, int $maxHits = 1
     ) {
+        $this->modeHasType(CollectionFlowOperation::RANGE, $this->rangeContext);
+
+        $this->modeHasType(CollectionFlowOperation::SET_FROM_SERVICE, $this->serviceContext);
+
         parent::__construct($target, $source, $ttl, $maxHits);
     }
-} 
+
+    protected function modeHasType (CollectionFlowOperation $mode, ?object $context):void {
+
+        if ($this->operation === $mode && is_null($context))
+
+            throw new InvalidArgumentException;
+    }
+}

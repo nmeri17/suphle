@@ -7,14 +7,14 @@ use Suphle\Response\Format\{Json, Redirect, Reload, Markup};
 use Suphle\Tests\Mocks\Modules\ModuleOne\Middleware\AuthMiddleware;
 use Suphle\Tests\Mocks\Modules\ModuleOne\Canary\{BetaUserCanary, SpecialUserCanary};
 use Suphle\Coordinators\ServiceCoordinator;
-use Suphle\Auth\RequestScrutinizers\AuthenticateMetaFunnel;
+use Suphle\Auth\RequestScrutinizers\AuthenticateHandler;
 
 #[CanaryState([BetaUserCanary::class, SpecialUserCanary::class])]
 #[RoutePrefix('api/v1/users')]
 class UserCoordinator extends ServiceCoordinator
 {
     #[Route('/')]
-    #[PreMiddleware(AuthenticateMetaFunnel::class)]
+    #[PreMiddleware(AuthenticateHandler::class)]
     public function index(): Json
     {
         $canary = $this->requestDetails->getCanaryState();
@@ -32,7 +32,7 @@ class UserCoordinator extends ServiceCoordinator
     }
 
     #[Route('/secure')]
-    #[PreMiddleware(AuthenticateMetaFunnel::class)]
+    #[PreMiddleware(AuthenticateHandler::class)]
     public function secure(): Json
     {
         return new Json(['message' => 'Secure content']);

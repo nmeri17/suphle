@@ -2,7 +2,9 @@
 
 namespace Suphle\Tests\Integration\Flows\Jobs\RouteBranches;
 
-use Suphle\Flows\{ ControllerFlows, Jobs\RouteBranches, Structures\PendingFlowDetails};
+use Suphle\Flows\{ Jobs\RouteBranches, Structures\PendingFlowDetails};
+
+use Suphle\Routing\Attributes\FlowDefinition;
 
 use Suphle\Contracts\{Auth\UserContract, Presentation\BaseRenderer, Database\OrmDialect};
 
@@ -19,6 +21,8 @@ use Suphle\Tests\Integration\Modules\ModuleDescriptor\DescriptorCollection;
 use Suphle\Tests\Mocks\Modules\ModuleOne\{Coordinators\FlowCoordinator, Concretes\Services\DummyModels};
 
 use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
+
+use ReflectionMethod, ReflectionAttribute;
 
 /**
  * This doesn't send the originating requests. It helps for mocking the task of an originated flow, executing that task, then verifying its behavior under certain conditions
@@ -43,6 +47,8 @@ abstract class JobFactory extends DescriptorCollection
 
     protected string // this is expected to exist in one of the module entry collections
     $originDataName = "all_users";
+
+    protected string $originMethod = "getCatalog"; // Default
 
     protected string $rendererController = FlowCoordinator::class;
 
@@ -72,36 +78,28 @@ abstract class JobFactory extends DescriptorCollection
         return 5;
     }
 
-    /**
-     * Stub out the renderer for an imaginary previous request before the flow one we are about to make
-    */
     protected function getPrecedingRenderer(): BaseRenderer
     {
-
         return $this->positiveDouble(Json::class, [
-
             "getRawResponse" => [
-
-                $this->originDataName => (new DummyModels())->fetchModels() // the list the flow is gonna iterate over
-            ],
-
-            "getFlow" => $this->constructFlow(),
-
-            "getCoordinator" => $this->positiveDouble($this->rendererController)
-
-        ], [], ["handler" => "preloaded"]);
+                $this->originDataName => [
+                    ["id" => 1, "name" => "Book 1"], // Mock data
+                    ["id" => 2, "name" => "Book 2"]
+                ]
+            ],// these are no longer read from here
+            // Pull the real #[CollectionFlow] or #[SingleFlow] from the coordinator
+            "getFlows" => $this->extractAttributes(FlowCoordinator::class, $this->originMethod),
+            "getCoordinator" => $this->positiveDouble(FlowCoordinator::class),
+            "getHandler" => $this->originMethod
+        ]);
     }
 
-    protected function constructFlow(): ControllerFlows
+    protected function extractAttributes(string $class, string $method): array
     {
-
-        $flow = new ControllerFlows();
-
-        return $flow->linksTo(
-            $this->flowUrl,
-            $flow->previousResponse()
-
-            ->collectionNode($this->originDataName)->pipeTo(),
+        $reflection = new ReflectionMethod($class, $method);
+        return array_map(
+            fn($attr) => $attr->newInstance(),
+            $reflection->getAttributes(FlowDefinition::class, ReflectionAttribute::IS_INSTANCEOF)
         );
     }
 

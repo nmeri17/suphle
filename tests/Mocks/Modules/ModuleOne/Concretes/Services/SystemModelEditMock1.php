@@ -2,18 +2,19 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services;
 
-use Suphle\Services\{UpdatefulService, Structures\BaseErrorCatcherService};
+use Suphle\Services\Structures\BaseErrorCatcherService;
 
 use Suphle\Contracts\Services\CallInterceptors\SystemModelEdit;
 
-use Suphle\Services\Decorators\{InterceptsCalls, VariableDependencies};
+use Suphle\Services\Decorators\{InterceptsCalls, VariableDependencies, DomainService};
 
 #[InterceptsCalls(SystemModelEdit::class)]
 #[VariableDependencies([
 
-    "setPayloadStorage", "setPlaceholderStorage"
+    "setPayloadStorage", "setRouteInfo"
 ])]
-class SystemModelEditMock1 extends UpdatefulService implements SystemModelEdit
+#[DomainService(mutation: true)]
+class SystemModelEditMock1 implements SystemModelEdit
 {
     use BaseErrorCatcherService;
 

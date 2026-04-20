@@ -36,15 +36,28 @@ class MiddlewareQueue
     protected function setMergedStack(): void {
 
         $this->mergedStack = array_merge(
-            array_map($this->hydrateClass(...), $this->boundPreMidw() ),
-            array_map($this->hydrateClass(...), $this->boundMidw() )
-            array_map($this->hydrateClass(...), $this->routerConfig->defaultMiddleware() )
+            $this->hydrateMap($this->boundPreMidw ),
+            $this->hydrateMap($this->boundMidw ),
+            array_map(
+                fn () => $this->container->getClass(...),
+
+                $this->routerConfig->defaultMiddleware()
+            )
         );
     }
 
-    protected function hydrateClass (string $className):object {
+    protected function hydrateMap (array $midwList):array {
 
-        return $this->container->getClass($className);
+        $hydrated = [];
+        foreach ($middlewareMap as $handlerClass => $args) {
+            
+            $concrete = $this->container->getClass($handlerClass);
+
+            $concrete->setUserArgs($args);
+
+            $hydrated[] = $concrete;
+        }
+        return $hydrated;
     }
 
     /**

@@ -140,9 +140,8 @@ class OpenApiGeneratorService
     {
         $rendererClass = $route['renderer'];
         
-        // Use interface if available, fallback to analyzer
         $contentType = $this->responseSchemaAnalyzer->getContentTypeForRenderer($rendererClass);
-        $statusCode = $this->responseSchemaAnalyzer->getStatusCodeForRenderer($rendererClass);
+        $statusCode = $rendererClass::STATUS_CODE;
         
         $responses = [
             (string)$statusCode => [

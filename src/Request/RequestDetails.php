@@ -25,7 +25,7 @@ class RequestDetails
 
     protected ?string $canaryState = null;
 
-    public function __construct(protected readonly Router $config)
+    public function __construct(protected readonly Router $routeConfig)
     {
 
         //
@@ -179,5 +179,9 @@ class RequestDetails
     {
 
         return $this->canaryState;
+    }
+
+    public function isApiRoute():bool { // not reliable checking this from SessionStorage cuz what if it's an unprotected route or not found
+        return $this->routeConfig->matchesApi($this->permanentPath);
     }
 }

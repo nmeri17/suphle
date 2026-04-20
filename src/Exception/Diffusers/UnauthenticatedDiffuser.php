@@ -2,7 +2,7 @@
 
 namespace Suphle\Exception\Diffusers;
 
-use Suphle\Contracts\{Exception\ExceptionHandler, Config\AuthContract, Presentation\BaseRenderer};
+use Suphle\Contracts\{Exception\ExceptionHandler, Config\AuthConfig, Presentation\BaseRenderer};
 
 use Suphle\Request\RequestDetails;
 
@@ -24,7 +24,6 @@ class UnauthenticatedDiffuser implements ExceptionHandler
         self::ERRORS_PRESENCE => "Unauthenticated"
     ];
     private $renderer;
-    protected string $controllerAction = "virtualWall";
 
     /**
      * @param {origin} Unauthenticated
@@ -55,20 +54,17 @@ class UnauthenticatedDiffuser implements ExceptionHandler
     protected function getTokenRenderer(): BaseRenderer
     {
 
-        $renderer = new Json($this->controllerAction);
-
-        return $renderer->setRawResponse(static::RAW_RESPONSE);
+        return new Json(static::RAW_RESPONSE);
     }
 
     protected function getSessionRenderer(): BaseRenderer
     {
 
-        return new Redirect($this->controllerAction, function (
+        return new Redirect(function (
             RequestDetails $requestDetails,
-            AuthContract $authContract,
+            AuthConfig $authContract,
             PayloadStorage $payloadStorage
         ) {
-
             return $authContract->markupRedirect() . "?". http_build_query([
 
                 "path" => $requestDetails->getPath(),

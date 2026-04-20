@@ -3,14 +3,27 @@ namespace Suphle\Routing\Analysis;
 
 use Suphle\Contracts\Config\Router as RouterConfig;
 use Suphle\Hydration\Container;
-use Suphle\Contracts\Flows\FlowHydrator;
+use Suphle\Flows\FlowHydrator;
 use Suphle\Hydration\Structures\ObjectDetails;
-use Suphle\Routing\Attributes\{Route, RoutePrefix, CanaryState, HttpMethod, PreMiddleware, Middleware, ClearMiddleware};
-use Suphle\Auth\RequestScrutinizers\{AuthenticateHandler, AuthorizeMetaFunnel};
+use Suphle\Routing\Attributes\{Route, RoutePrefix, CanaryState, HttpMethod, PreMiddleware, Middleware, ClearMiddleware, FlowDefinition};
+use Suphle\Auth\Middleware\{AuthenticateHandler, AuthorizeMetaFunnel};
 use Suphle\Services\Decorators\ValidationRules;
-use Suphle\Flows\Structures\RouteUserNode;
 use ReflectionClass, ReflectionMethod, ReflectionAttribute, Exception, RuntimeException;
 
+/**
+ * 
+Tier 1: The Parent (RouteAnalysisService)
+
+The Engine: Finds the classes, builds the URLs, identifies the methods, and finds the Payload Readers.
+
+Tier 2: The Kids (PsalmSchemaAnalyzer & ResponseSchemaAnalyzer)
+
+The Specialized Eyes: They look at the Return Type only. One looks at Psalm types (for docs), the other looks at Json/Markup (for testing).
+
+Tier 3: The External Services (RouteListingService & NamedRouteReader)
+
+The Consumers: They use the Parent/Kids to actually do something, like print a table in the console or generate a link in a view.
+*/
 abstract class RouteAnalysisService
 {
     public function __construct(
@@ -79,8 +92,7 @@ abstract class RouteAnalysisService
         $classPreMiddleware = $this->findMiddlewareList($reflection, PreMiddleware::class);
         $classMiddleware = $this->findMiddlewareList($reflection, Middleware::class); 
         
-        $flows = $this->getFlows($coordinatorClass);
-        $canaryState = $this->getCanaryState($reflection);
+        $canaryState = $this->getCanaryAttrs($reflection);
 
         $allRouteDetails = [];
 
@@ -95,7 +107,6 @@ abstract class RouteAnalysisService
                 $canaryState, 
                 $classPreMiddleware,
                 $classMiddleware,
-                $flows, 
                 $coordinatorClass,
                 $moduleName
             );
@@ -131,7 +142,6 @@ abstract class RouteAnalysisService
         ?array $canaryState, 
         array $classPreMiddleware,
         array $classMiddleware,
-        array $flows, 
         string $coordinatorClass,
         string $moduleName
     ): array {
@@ -144,10 +154,18 @@ abstract class RouteAnalysisService
         );
 
         // 2. Aggregate Pre-Middleware (Class + Method)
-        $allPre = array_merge($classPreMiddleware, $this->findMiddlewareList($method, PreMiddleware::class));
+        $allPre = array_merge(
+            $classPreMiddleware,
+
+            $this->findMiddlewareList($method, PreMiddleware::class, $toClear)
+        );
         $finalPre = array_values(array_diff(array_unique($allPre), $toClear));
 
-        $allMidw = array_merge($classMiddleware, $this->findMiddlewareList($method, Middleware::class));
+        $allMidw = array_merge(
+            $classMiddleware,
+
+            $this->findMiddlewareList($method, Middleware::class, $toClear)
+        );
         $finalMidw = array_values(array_diff(array_unique($allMidw), $toClear));
 
         return [
@@ -161,9 +179,10 @@ abstract class RouteAnalysisService
             "placeholders" => $this->extractPlaceholders($routeArgs[0] ?? ""),
             "validation_rules" => $this->getValidationRules($method),
             "parameters" => $this->getMethodParameters($method),
-            "flows" => $this->getMethodFlows($flows, $method->getName()),
+            "flows" => $this->getMethodFlows($method),
             "response_shape" => $this->getResponseShape($method),
-            "module_name" => $moduleName
+            "module_name" => $moduleName,
+            "canary_state" => $canaryState
         ];
     }
 
@@ -219,20 +238,13 @@ abstract class RouteAnalysisService
         }
     }
 
-    protected function getMethodFlows(array $flows, string $methodName): array
-    {
-        $methodFlows = [];
-        foreach ($flows as $flow) {
-            if ($flow instanceof RouteUserNode && $flow->getMethodName() === $methodName) {
-                $methodFlows[] = [
-                    "type" => $this->objectDetails->getValueType($flow),
-                    "details" => method_exists($flow, "getFlowDetails") 
-                        ? $flow->getFlowDetails() 
-                        : ["class" => $this->objectDetails->getValueType($flow)]
-                ];
-            }
-        }
-        return $methodFlows;
+    /**
+     * Scans method for #[FlowDefinition] attributes and normalizes the UnitNode structures.
+     */
+    protected function getMethodFlows(ReflectionMethod $method): array {
+        $attributes = $method->getAttributes(FlowDefinition::class, ReflectionAttribute::IS_INSTANCEOF);
+        
+        return array_map(fn($attr) => $attr->newInstance(), $attributes);
     }
 
     protected function getRoutePrefix(ReflectionClass $reflection): string
@@ -241,38 +253,38 @@ abstract class RouteAnalysisService
         return !empty($attr) ? ($attr[0]->getArguments()[0] ?? "") : "";
     }
 
-    protected function getCanaryState(ReflectionClass $reflection): ?array
+    protected function getCanaryAttrs(ReflectionClass $reflection): ?array
     {
         $attr = $reflection->getAttributes(CanaryState::class);
-        return !empty($attr) ? ($attr[0]->getArguments()[0] ?? null) : null;
+        return !empty($attr) ? ($attr[0]->getArguments() ?? null) : null;
     }
 
     /**
      * Scans for multiple instances of PreMiddleware attributes 
-     * and returns them as a flat array of class strings.
+     * and returns them as [midwName => [args]]
      */
     protected function findMiddlewareList(
         ReflectionClass|ReflectionMethod $reflection,
-        string $middlewareMarker
+        string $middlewareMarker,
+        array $exclude
     ): array
     {
         $attributes = $reflection instanceof ReflectionClass ?
             $this->objectDetails->getClassAttributes($reflection->getName(), $middlewareMarker) :
             $reflection->getAttributes($middlewareMarker);
         
-        return array_map(
-            fn($attr) => $attr->getArguments()[0], 
-            $attributes
-        );
-    }
+        $list = [];
 
-    protected function getFlows(string $coordinatorClass): array
-    {
-        try {
-            return $this->flowHydrator->getFlows($coordinatorClass) ?? [];
-        } catch (Exception $e) {
-            return [];
+        foreach ($attributes as $attr) {
+            $instance = $attr->newInstance();
+            // Index by handler class, value is the array of args
+            $list[$instance->handlerClass] = $instance->args;
         }
+        foreach ($exclude as $clearedHandler)
+            
+            unset($list[$clearedHandler]);
+
+        return $list;
     }
 
     protected function getValidationRules(ReflectionMethod $method): array

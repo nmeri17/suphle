@@ -25,4 +25,6 @@ interface Router extends ConfigMarker {
      *                  Example: ['HomeCoordinator', 'UserCoordinator'] or [] for all
      */
     public function getCoordinatorClassesToScan(): array;
+
+    public function matchesApi (string $path):bool;
 }

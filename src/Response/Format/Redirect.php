@@ -16,13 +16,10 @@ use Closure;
 use Throwable;
 
 use Suphle\Contracts\Presentation\MirrorableRenderer;
-use Suphle\Contracts\Response\OpenApiRenderer;
-use Suphle\Response\Traits\OpenApiRendererTrait;
 
 #[VariableDependencies(["setCallbackDetails", "setSession" ])]
-class Redirect extends GenericRenderer implements MirrorableRenderer, OpenApiRenderer
+class Redirect extends GenericRenderer implements MirrorableRenderer
 {
-    use OpenApiRendererTrait;
 
     public const STATUS_CODE = 302;
 

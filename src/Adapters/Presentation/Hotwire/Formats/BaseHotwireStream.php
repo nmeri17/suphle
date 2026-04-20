@@ -5,8 +5,6 @@ namespace Suphle\Adapters\Presentation\Hotwire\Formats;
 use Suphle\Contracts\{Presentation\BaseRenderer, IO\Session};
 use Suphle\Contracts\Presentation\MirrorableRenderer;
 use Suphle\Request\PayloadStorage;
-use Suphle\Contracts\Response\OpenApiRenderer;
-use Suphle\Response\Traits\OpenApiRendererTrait;
 
 use Suphle\Response\Format\BaseHtmlRenderer;
 
@@ -20,9 +18,8 @@ use Suphle\Adapters\Presentation\Hotwire\HotwireStreamBuilder;
 
     "setPayloadStorage", "setCallbackDetails"
 ])]
-abstract class BaseHotwireStream extends BaseHtmlRenderer implements MirrorableRenderer, OpenApiRenderer
+abstract class BaseHotwireStream extends BaseHtmlRenderer implements MirrorableRenderer
 {
-    use OpenApiRendererTrait;
 
     public const TURBO_INDICATOR = "text/vnd.turbo-stream.html",
 
@@ -222,34 +219,6 @@ abstract class BaseHotwireStream extends BaseHtmlRenderer implements MirrorableR
         }
 
         return $allStreams;
-    }
-
-    /**
-     * Override default content type for Hotwire streams
-     */
-    public static function getContentType(): string
-    {
-        return self::TURBO_INDICATOR;
-    }
-
-    /**
-     * Override default response schema for Hotwire streams
-     */
-    public static function getResponseSchema(): array
-    {
-        return [
-            'type' => 'string',
-            'format' => 'html',
-            'description' => static::getDescription()
-        ];
-    }
-
-    /**
-     * Override default description for Hotwire streams
-     */
-    public static function getDescription(): string
-    {
-        return 'Turbo Stream response';
     }
 
     protected function setConditionalHeader(bool $notHot): void

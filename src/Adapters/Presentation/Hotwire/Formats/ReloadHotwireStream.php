@@ -2,9 +2,6 @@
 
 namespace Suphle\Adapters\Presentation\Hotwire\Formats;
 
-use Suphle\Contracts\Response\OpenApiRenderer;
-use Suphle\Response\Traits\OpenApiRendererTrait;
-
 use Suphle\Response\Format\Reload;
 
 use Suphle\Contracts\Response\RendererManager;
@@ -12,10 +9,8 @@ use Suphle\Contracts\Response\RendererManager;
 use Suphle\Services\Decorators\VariableDependencies;
 
 #[VariableDependencies([ "setRendererManager" ])]
-class ReloadHotwireStream extends BaseHotwireStream implements OpenApiRenderer
+class ReloadHotwireStream extends BaseHotwireStream
 {
-    use OpenApiRendererTrait;
-
     public const STATUS_CODE = 303;
 
     protected int $statusCode = self::STATUS_CODE;
