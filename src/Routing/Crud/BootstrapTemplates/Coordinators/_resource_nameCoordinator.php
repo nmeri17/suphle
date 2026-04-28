@@ -1,38 +1,34 @@
 <?php
-
 namespace _modules_shell\_module_name\Coordinators;
 
-use Suphle\Services\{ServiceCoordinator, Decorators\ValidationRules};
+use Suphle\Services\{BaseCoordinator, Decorators\ValidationRules};
 use Suphle\Routing\Attributes\{Route, RoutePrefix, HttpMethod};
 use Suphle\Response\Format\{Json, Markup, Reload};
 use Suphle\Security\CSRF\CsrfGenerator;
+use Suphle\Request\PayloadStorage;
 use Suphle\Contracts\IO\Session;
-use _modules_shell\_module_name\PayloadReaders\{Base_resource_nameBuilder, Search_resource_nameBuilder};
+use _modules_shell\_module_name\PayloadReaders\{Base_resource_nameBuilder, Search_resource_nameBuilder, _resource_nameSavePayload};
 use _modules_shell\_module_name\Services\Eloquent\{_resource_nameAccessor, _resource_nameSearcher};
 
 #[RoutePrefix(prefix: "_resource_name", _mirror_config)]
-class _resource_nameCoordinator extends ServiceCoordinator
+class _resource_nameCoordinator extends BaseCoordinator
 {
-
     public function __construct(
-        protected readonly PayloadStorage $payloadStorage,
         protected readonly CsrfGenerator $csrf,
         protected readonly Session $sessionClient,
-        protected readonly _resource_nameAccessor $_resource_nameAccessor,
-        protected readonly Search_resource_nameBuilder $_resource_nameSearcher
-    ) {
-        //
-    }
+        protected readonly _resource_nameAccessor $accessor,
+        protected readonly _resource_nameSearcher $searcher
+    ) {}
 
-    #[Route("", HttpMethod::GET)]
+    #[Route("/")]
     public function index(): Markup
     {
         return new Markup('_resource_name.index', [
-            'items' => $this->_resource_nameAccessor->getAll()
+            'items' => $this->accessor->paginate()
         ]);
     }
 
-    #[Route("create", HttpMethod::GET)]
+    #[Route("/create")]
     public function create(): Markup
     {
         return new Markup('_resource_name.create', [
@@ -45,140 +41,63 @@ class _resource_nameCoordinator extends ServiceCoordinator
         "name" => "required|string|max:255",
         "description" => "nullable|string"
     ])]
-    public function store(): Reload
+    public function store(_resource_nameSavePayload $payload): Reload
     {
-        $data = $this->payloadReader->getAll();
-        $this->_resource_nameAccessor->create($data);
+        $this->accessor->createSingle($payload->getDomainObject());
         
         return new Reload();
-    }
-
-    #[Route("{id}", HttpMethod::GET)]
-    public function show(int $id): Markup
-    {
-        $item = $this->_resource_nameAccessor->find($id);
-        
-        return new Markup('_resource_name.show', [
-            'item' => $item
-        ]);
-    }
-
-    #[Route("{id}/edit", HttpMethod::GET)]
-    #[ValidationRules([
-        "id" => "required|numeric|exists:_resource_name,id"
-    ])]
-    public function edit(Base_resource_nameBuilder $_resource_nameBuilder): Markup
-    {
-        $data = $this->_resource_nameAccessor->getResource($_resource_nameBuilder->getBuilder());
-        
-        return new Markup('_resource_name.edit', [
-            'item' => $data,
-            CsrfGenerator::TOKEN_FIELD => $this->csrf->newToken()
-        ]);
     }
 
     #[Route("{id}", HttpMethod::PUT)]
     #[ValidationRules([
-        "id" => "required|numeric|exists:_resource_name,id",
         "name" => "required|string|max:255",
         "description" => "nullable|string"
     ])]
-    public function update(Base_resource_nameBuilder $_resource_nameBuilder): Reload
+    public function update(Base_resource_nameBuilder $builder, _resource_nameSavePayload $payload): Reload
     {
-        $data = $this->payloadReader->getAll();
-        $this->_resource_nameAccessor->update($_resource_nameBuilder->getBuilder(), $data);
+        // We use the builder for the WHERE clause and the payload for the DATA
+        // MultiUserModelEdit interceptor will automatically validate _collision_protect
+        
+        $this->accessor->updateResource(
+            $builder->getBuilder(), 
+            $payload->getDomainObject()
+        );
         
         return new Reload();
     }
 
-    #[Route("{id}", HttpMethod::DELETE)]
-    #[ValidationRules([
-        "id" => "required|numeric|exists:_resource_name,id"
-    ])]
-    public function destroy(int $id): Json
+    #[Route("{/id}")]
+    public function show(Base_resource_nameBuilder $builder): Markup
     {
-        $this->_resource_nameAccessor->delete($id);
-        
-        return new Json(['message' => '_resource_name deleted successfully']);
-    }
-
-    #[Route("search", HttpMethod::GET)]
-    #[ValidationRules([
-        "query" => "required|alphanumeric"
-    ])]
-    public function search(Search_resource_nameBuilder $searchBuilder): Markup
-    {
-        $results = $this->_resource_nameSearcher->convertToQuery(
-            $searchBuilder->getBuilder(), ["query"]
-        )->paginate();
-        
-        return new Markup('_resource_name.search', [
-            'results' => $results
+        return new Markup('_resource_name.show', [
+            'item' => $this->accessor->getResource($builder->getBuilder())
         ]);
     }
 
-    #[ValidationRules(["name" => "required"])]
-    public function saveNew(): iterable
+    #[Route("{id}//edit")]
+    public function edit(Base_resource_nameBuilder $builder): Markup
     {
-
-        return [
-
-            BrowserBuilder::SAVE_NEW_KEY => $this->_resource_nameAccessor
-
-            ->createSingle($this->payloadStorage->fullPayload())
-        ];
+        return new Markup('_resource_name.edit', [
+            'item' => $this->accessor->getResource($builder->getBuilder()),
+            CsrfGenerator::TOKEN_FIELD => $this->csrf->newToken()
+        ]);
     }
 
-    public function showAll(): iterable
+    #[Route("{id}", HttpMethod::DELETE)]
+    public function destroy(Base_resource_nameBuilder $builder): Json
     {
-
-        return [
-
-            "data" => $this->_resource_nameAccessor->paginate()
-        ];
+        $this->accessor->deleteResource($builder->getBuilder());
+        return new Json(['message' => 'Deleted successfully']);
     }
 
-    #[ValidationRules([
-        "id" => "required|numeric|exists:_resource_name,id"
-    ])]
-    public function showOne(Base_resource_nameBuilder $_resource_nameBuilder): iterable
+    #[Route("/search")]
+    #[ValidationRules(["query" => "required"])]
+    public function search(Search_resource_nameBuilder $searchBuilder): Markup
     {
-
-        return [
-
-            "data" => $this->_resource_nameAccessor
-
-            ->getResource($_resource_nameBuilder->getBuilder())
-        ];
-    }
-
-    #[ValidationRules([
-        "id" => "required|numeric|exists:_resource_name,id"
-    ])]
-    public function updateOne(Base_resource_nameBuilder $_resource_nameBuilder): iterable
-    {
-
-        return [
-            "message" => $this->_resource_nameAccessor->updateResource(
-
-                $_resource_nameBuilder->getBuilder(),
-
-                $this->payloadStorage->fullPayload()
-            )
-        ];
-    }
-
-    #[ValidationRules([
-        "id" => "required|numeric|exists:_resource_name,id"
-    ])]
-    public function deleteOne(): iterable
-    {
-
-        return [
-            "message" => $this->_resource_nameAccessor->deleteById(
-
-                $this->payloadStorage->getKey("id")
-            )
-        ];
+        $results = $this->searcher->convertToQuery(
+            $searchBuilder->getBuilder(), ["query"]
+        )->paginate();
+        
+        return new Markup('_resource_name.search', ['results' => $results]);
     }
 }
