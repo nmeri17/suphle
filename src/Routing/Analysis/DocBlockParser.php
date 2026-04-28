@@ -1,32 +1,29 @@
 <?php
-
 namespace Suphle\Routing\Analysis;
 
 use ReflectionMethod;
 
 trait DocBlockParser
 {
-    protected function extractMethodSummary(ReflectionMethod $method): string
+    /**
+     * Returns all lines not starting with @ as a string
+     */
+    public function extractMethodDescription(): string
     {
-        $doc = $method->getDocComment();
-        if (!$doc) return ucfirst($method->getName());
-        foreach (explode("\n", $doc) as $line) {
-            $line = trim($line, " \t\n\r\0\x0B*/");
-            if (!empty($line) && !str_starts_with($line, "@")) return $line;
-        }
-        return ucfirst($method->getName());
-    }
+        $doc = $this->actionMethod->getDocComment();
 
-    protected function extractMethodDescription(ReflectionMethod $method): string
-    {
-        $doc = $method->getDocComment();
-        if (!$doc) return "";
-        $description = [];
-        foreach (explode("\n", $doc) as $line) {
+        $cleaned = [];
+
+        if ($doc) foreach (explode("\n", $doc) as $line) {
+
             $line = trim($line, " \t\n\r\0\x0B*/");
-            if (str_starts_with($line, "@")) break;
-            if (!empty($line)) $description[] = $line;
+
+            if (str_starts_with($line, "@")) continue; // @param and @return are captured more accurately by the psalm parser so there's no need maintaining a manual, hardcoded version
+            if (!empty($line)) $cleaned[] = $line;
         }
-        return implode(" ", $description);
+        
+        return empty($cleaned)?
+            ucfirst($this->actionMethod->getName()): // Fallback to method name 
+            implode(" ", $cleaned);
     }
 }

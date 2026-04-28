@@ -1,6 +1,5 @@
 <?php
-
-namespace Suphle\ComponentTemplates\ApiDocsComponent;
+namespace Suphle\Routing\Documentation;
 
 use Suphle\ComponentTemplates\BaseComponentEntry;
 
@@ -8,7 +7,7 @@ class ApiDocsComponentEntry extends BaseComponentEntry
 {
     public function uniqueName(): string
     {
-        return "SuphleApiDocsTemplates";
+        return "ApiDocsTemplates";
     }
 
     protected function templatesLocation(): string

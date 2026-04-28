@@ -23,23 +23,4 @@ class Reload extends GenericRenderer
             ->invokePreviousRenderer()
             ->render();
     }
-
-    /**
-     * Override default response schema for Reload
-     */
-    public static function getResponseSchema(): array
-    {
-        return [
-            'type' => 'string',
-            'description' => static::getDescription()
-        ];
-    }
-
-    /**
-     * Override default description for Reload
-     */
-    public static function getDescription(): string
-    {
-        return 'Page reload response';
-    }
 }

@@ -31,33 +31,4 @@ class RedirectHotwireStream extends BaseHotwireStream
         $this->callbackDetails = $callbackDetails;
         $this->fallbackRenderer->setCallbackDetails($callbackDetails);
     }
-
-    /**
-     * Override default response schema for RedirectHotwireStream
-     */
-    public static function getResponseSchema(): array
-    {
-        return [
-            'type' => 'string',
-            'format' => 'html',
-            'description' => static::getDescription(),
-            'headers' => [
-                'Location' => [
-                    'description' => 'Redirect destination URL',
-                    'schema' => [
-                        'type' => 'string',
-                        'format' => 'uri'
-                    ]
-                ]
-            ]
-        ];
-    }
-
-    /**
-     * Override default description for RedirectHotwireStream
-     */
-    public static function getDescription(): string
-    {
-        return 'Turbo Stream redirect response';
-    }
 }

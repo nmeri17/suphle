@@ -2,14 +2,15 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-use Suphle\Services\ServiceCoordinator;
+use Suphle\Services\BaseCoordinator;
 use Suphle\Routing\Attributes\{Route, HttpMethod, CanaryState};
 use Suphle\Response\Format\Json;
 use Suphle\Request\RequestDetails;
 use Suphle\Contracts\IO\Session;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Canaries\CanaryForUser5;
 
-#[CanaryState([\Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Canaries\CanaryForUser5::class])]
-class User5CanaryController extends ServiceCoordinator
+#[CanaryState([CanaryForUser5::class])]
+class User5CanaryController extends BaseCoordinator
 {
     public function __construct(
         Session $sessionClient,

@@ -2,7 +2,7 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleTwo\Coordinators;
 
-use Suphle\Coordinators\BaseCoordinator;
+use Suphle\Services\BaseCoordinator;
 use Suphle\Routing\Attributes\{Route, HttpMethod, RoutePrefix};
 use Suphle\Response\Format\Json;
 

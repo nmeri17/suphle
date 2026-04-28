@@ -19,6 +19,8 @@ class PsalmSchemaAnalyzer extends RouteAnalysisService
 {
     use AnalyzerUtils, DocBlockParser;
 
+    protected ReflectionMethod $actionMethod;
+
     public function __construct(
         // Parent Requirements
         protected readonly RouterConfig $config,
@@ -35,12 +37,13 @@ class PsalmSchemaAnalyzer extends RouteAnalysisService
     }
 
     /**
-     * Fulfills the abstract requirement from RouteAnalysisService.
      * Statically determines the shape by asking Psalm what the 
      * method actually returns at a type level.
      */
     public function getResponseShape(ReflectionMethod $method): array
     {
+        $this->actionMethod = $method;
+
         $fqcn = $method->getDeclaringClass()->getName();
         $methodId = $fqcn . '::' . $method->getName();
         

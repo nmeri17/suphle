@@ -24,24 +24,4 @@ class ReloadHotwireStream extends BaseHotwireStream
     {
         $this->fallbackRenderer->setRendererManager($rendererManager);
     }
-
-    /**
-     * Override default response schema for ReloadHotwireStream
-     */
-    public static function getResponseSchema(): array
-    {
-        return [
-            'type' => 'string',
-            'format' => 'html',
-            'description' => static::getDescription()
-        ];
-    }
-
-    /**
-     * Override default description for ReloadHotwireStream
-     */
-    public static function getDescription(): string
-    {
-        return 'Turbo Stream reload response';
-    }
 }

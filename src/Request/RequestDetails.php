@@ -1,5 +1,4 @@
 <?php
-
 namespace Suphle\Request;
 
 use Suphle\Contracts\Config\Router;
@@ -143,12 +142,6 @@ class RequestDetails
         }
 
         $this->httpMethod = strtolower((string) $methodName);
-    }
-
-    public function getHttpMethod(): ?string
-    {
-
-        return $this->httpMethod;
     }
 
     public function matchesMethod(string $method): bool

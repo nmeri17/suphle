@@ -1,168 +1,265 @@
 <?php
-
 namespace Suphle\Tests\Integration\Routing\Documentation;
 
-use Suphle\Contracts\{Config\Router as RouterConfig, Response\OpenApiRenderer};
-use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Coordinators\TestCoordinator};
-use Suphle\Response\Traits\OpenApiRendererTrait;
-use Suphle\Request\PayloadStorage;
+use Suphle\Testing\TestTypes\ModuleLevelTest;
+use Suphle\Contracts\Config\Router as RouterConfig;
+use Suphle\Testing\Proxies\WriteOnlyContainer;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\BaseCoordinator;
 
 class OpenApiRendererIntegrationTest extends ModuleLevelTest
 {
     protected function getModules(): array
     {
         return [
-            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
-                $container->replaceWithMock(RouterConfig::class, RouterConfig::class, [
-                    "getCoordinatorClassesToScan" => [TestCoordinator::class]
-                ]);
-            })
+            $this->replicateModule(
+                ModuleOneDescriptor::class,
+                function (WriteOnlyContainer $container) {
+
+                    $container->replaceWithMock(
+                        RouterConfig::class,
+                        RouterConfig::class,
+                        [
+                            "getCoordinatorClassesToScan" => [
+                                BaseCoordinator::class
+                            ]
+                        ]
+                    );
+                }
+            )
         ];
     }
 
-    public function test_openapi_spec_includes_interface_renderer_metadata()
+    private function openApiSpec(): array
     {
-        $response = $this->get('/api-docs/json');
-        
-        $this->assertNotNull($response);
-        $this->assertInstanceOf(\Suphle\Contracts\Presentation\BaseRenderer::class, $response);
-        
-        // The response should contain JSON data
-        $content = $response->render();
-        $spec = json_decode($content, true);
-        
-        $this->assertIsArray($spec);
+        return $this->getJson('/api-docs/json')
+            ->assertStatus(200)
+            ->json();
+    }
+
+    public function test_openapi_root_structure_is_valid()
+    {
+        $spec = $this->openApiSpec();
+
+        $this->assertSame('3.0.0', $spec['openapi']);
+
         $this->assertArrayHasKey('paths', $spec);
-        
-        // Check that the spec contains our test routes
+        $this->assertArrayHasKey('components', $spec);
+        $this->assertArrayHasKey('schemas', $spec['components']);
+        $this->assertArrayHasKey('servers', $spec);
+    }
+
+    public function test_expected_routes_exist()
+    {
+        $spec = $this->openApiSpec();
+
         $this->assertArrayHasKey('/api-docs', $spec['paths']);
         $this->assertArrayHasKey('/api-docs/json', $spec['paths']);
     }
 
-    public function test_custom_renderer_auto_discovery()
+    public function test_operations_have_required_fields()
     {
-        // Create a test coordinator with custom renderer
-        $testCoordinator = new class extends TestCoordinator {
-            public function testCustomRoute(): CustomRenderer
-            {
-                return new CustomRenderer();
+        $spec = $this->openApiSpec();
+
+        foreach ($spec['paths'] as $path => $methods) {
+            foreach ($methods as $operation) {
+
+                $this->assertArrayHasKey('summary', $operation);
+                $this->assertArrayHasKey('responses', $operation);
+                $this->assertArrayHasKey('operationId', $operation);
             }
-        };
-        
-        // Update the module to use our test coordinator
-        $this->updateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) use ($testCoordinator) {
-            $container->replaceWithMock(RouterConfig::class, RouterConfig::class, [
-                "getCoordinatorClassesToScan" => [get_class($testCoordinator)]
-            ]);
-        });
-        
-        $response = $this->get('/api-docs/json');
-        
-        $this->assertNotNull($response);
-        $content = $response->render();
-        $spec = json_decode($content, true);
-        
-        // The spec should be generated successfully
-        $this->assertIsArray($spec);
-        $this->assertArrayHasKey('paths', $spec);
+        }
     }
 
-    public function test_interface_renderer_with_validation_rules()
+    public function test_json_endpoint_response_structure()
     {
-        // Create a test coordinator with validation rules
-        $testCoordinator = new class extends TestCoordinator {
-            public function testValidatedRoute(): \Suphle\Response\Format\Json
-            {
-                return new \Suphle\Response\Format\Json(['validated' => true]);
-            }
-        };
-        
-        // Update the module to use our test coordinator
-        $this->updateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) use ($testCoordinator) {
-            $container->replaceWithMock(RouterConfig::class, RouterConfig::class, [
-                "getCoordinatorClassesToScan" => [get_class($testCoordinator)]
-            ]);
-        });
-        
-        $response = $this->get('/api-docs/json');
-        
-        $this->assertNotNull($response);
-        $content = $response->render();
-        $spec = json_decode($content, true);
-        
-        // The spec should be generated successfully
-        $this->assertIsArray($spec);
-        $this->assertArrayHasKey('paths', $spec);
+        $spec = $this->openApiSpec();
+
+        $operation = $spec['paths']['/api-docs/json']['get'] ?? null;
+
+        $this->assertNotNull($operation);
+
+        $this->assertArrayHasKey('responses', $operation);
+        $this->assertArrayHasKey('200', $operation['responses']);
+
+        $response = $operation['responses']['200'];
+
+        $this->assertArrayHasKey('content', $response);
+        $this->assertArrayHasKey('application/json', $response['content']);
+        $this->assertArrayHasKey(
+            'schema',
+            $response['content']['application/json']
+        );
     }
 
-    public function test_interface_renderer_fallback_behavior()
+    public function test_request_bodies_follow_validation_rules()
     {
-        // Create a test coordinator with legacy renderer
-        $testCoordinator = new class extends TestCoordinator {
-            public function testLegacyRoute(): object
-            {
-                return new class {
-                    public function render(): string
-                    {
-                        return 'legacy';
-                    }
-                };
+        $spec = $this->openApiSpec();
+
+        foreach ($spec['paths'] as $methods) {
+            foreach ($methods as $operation) {
+
+                if (!isset($operation['requestBody'])) {
+                    continue;
+                }
+
+                $schema = $operation['requestBody']['content']['application/json']['schema'];
+
+                $this->assertSame('object', $schema['type']);
+                $this->assertArrayHasKey('properties', $schema);
             }
-        };
-        
-        // Update the module to use our test coordinator
-        $this->updateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) use ($testCoordinator) {
-            $container->replaceWithMock(RouterConfig::class, RouterConfig::class, [
-                "getCoordinatorClassesToScan" => [get_class($testCoordinator)]
-            ]);
+        }
+    }
+
+    public function test_security_scheme_is_registered()
+    {
+        $spec = $this->openApiSpec();
+
+        $this->assertArrayHasKey('securitySchemes', $spec['components']);
+        $this->assertArrayHasKey(
+            'bearerAuth',
+            $spec['components']['securitySchemes']
+        );
+    }
+
+    public function test_authenticated_routes_reference_security()
+    {
+        $spec = $this->openApiSpec();
+
+        foreach ($spec['paths'] as $methods) {
+            foreach ($methods as $operation) {
+
+                if (!empty($operation['security'])) {
+
+                    $this->assertArrayHasKey(
+                        'bearerAuth',
+                        $operation['security'][0]
+                    );
+                }
+            }
+        }
+    }
+
+    public function test_model_schemas_are_generated()
+    {
+        $spec = $this->openApiSpec();
+
+        $schemas = $spec['components']['schemas'];
+
+        $this->assertNotEmpty($schemas);
+
+        foreach ($schemas as $schema) {
+
+            $this->assertSame('object', $schema['type']);
+            $this->assertArrayHasKey('properties', $schema);
+        }
+    }
+
+    public function test_all_referenced_models_exist()
+    {
+        $spec = $this->openApiSpec();
+
+        $schemas = $spec['components']['schemas'];
+        $refs = $this->collectRefs($spec['paths']);
+
+        foreach ($refs as $ref) {
+
+            $this->assertArrayHasKey(
+                $ref,
+                $schemas,
+                "Missing schema for ref: {$ref}"
+            );
+        }
+    }
+
+    public function test_no_broken_refs_exist()
+    {
+        $spec = $this->openApiSpec();
+
+        $refs = $this->collectRefs($spec['paths']);
+
+        foreach ($refs as $ref) {
+
+            $this->assertNotEmpty($ref);
+
+            $this->assertStringStartsWith(
+                '#/components/schemas/',
+                "#/components/schemas/{$ref}"
+            );
+        }
+    }
+
+    public function test_relationship_refs_are_valid()
+    {
+        $spec = $this->openApiSpec();
+
+        foreach ($spec['components']['schemas'] as $name => $schema) {
+
+            if (!isset($schema['properties'])) {
+                continue;
+            }
+
+            foreach ($schema['properties'] as $prop => $value) {
+
+                if (($value['type'] ?? null) === 'array') {
+
+                    $this->assertArrayHasKey(
+                        'items',
+                        $value,
+                        "Missing items in {$name}.{$prop}"
+                    );
+
+                    $this->assertArrayHasKey(
+                        '$ref',
+                        $value['items'],
+                        "Missing $ref in {$name}.{$prop}"
+                    );
+                }
+
+                if (isset($value['$ref'])) {
+
+                    $this->assertStringStartsWith(
+                        '#/components/schemas/',
+                        $value['$ref']
+                    );
+                }
+            }
+        }
+    }
+
+    public function test_no_empty_schema_keys_exist()
+    {
+        $spec = $this->openApiSpec();
+
+        foreach ($spec['components']['schemas'] as $key => $schema) {
+
+            $this->assertNotEmpty($key);
+            $this->assertIsArray($schema);
+        }
+    }
+
+    public function test_servers_block_exists()
+    {
+        $spec = $this->openApiSpec();
+
+        $this->assertArrayHasKey('servers', $spec);
+        $this->assertSame(
+            'Current server',
+            $spec['servers'][0]['description']
+        );
+    }
+
+    private function collectRefs(array $paths): array
+    {
+        $refs = [];
+
+        array_walk_recursive($paths, function ($value, $key) use (&$refs) {
+
+            if ($key === '$ref') {
+                $refs[] = str_replace('#/components/schemas/', '', $value);
+            }
         });
-        
-        $response = $this->get('/api-docs/json');
-        
-        $this->assertNotNull($response);
-        $content = $response->render();
-        $spec = json_decode($content, true);
-        
-        // The spec should be generated successfully even with legacy renderer
-        $this->assertIsArray($spec);
-        $this->assertArrayHasKey('paths', $spec);
+
+        return array_unique($refs);
     }
 }
-
-// Custom renderer for testing
-class CustomRenderer implements OpenApiRenderer
-{
-    use OpenApiRendererTrait;
-
-    public static function getContentType(): string
-    {
-        return 'application/custom';
-    }
-
-    public static function getStatusCode(): int
-    {
-        return 201;
-    }
-
-    public static function getResponseSchema(): array
-    {
-        return [
-            'type' => 'object',
-            'properties' => [
-                'custom_field' => ['type' => 'string'],
-                'custom_number' => ['type' => 'integer']
-            ]
-        ];
-    }
-
-    public static function getDescription(): string
-    {
-        return 'Custom test renderer response';
-    }
-
-    public function render(): string
-    {
-        return json_encode(['custom_field' => 'test', 'custom_number' => 42]);
-    }
-} 

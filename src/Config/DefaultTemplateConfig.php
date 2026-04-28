@@ -1,5 +1,4 @@
 <?php
-
 namespace Suphle\Config;
 
 use Suphle\Contracts\Config\ComponentTemplates;
@@ -13,6 +12,8 @@ use Suphle\Adapters\Orms\Eloquent\ComponentEntry as EloquentComponentEntry;
 use Suphle\Services\ComponentEntry as ServicesComponentEntry;
 
 use Suphle\Auth\ComponentEntry as AuthComponentEntry;
+
+use Suphle\Routing\Documentation\ApiDocsComponentEntry;
 
 class DefaultTemplateConfig implements ComponentTemplates
 {
@@ -28,7 +29,9 @@ class DefaultTemplateConfig implements ComponentTemplates
 
             ServicesComponentEntry::class,
 
-            AuthComponentEntry::class
+            AuthComponentEntry::class,
+
+            ApiDocsComponentEntry::class
         ];
     }
 }

@@ -1,5 +1,4 @@
 <?php
-
 namespace Suphle\Request;
 
 use Suphle\Services\Decorators\BindsAsSingleton;
@@ -33,7 +32,7 @@ class PayloadStorage extends ServerRequest
 
     public function __construct(
         protected readonly RequestDetails $requestDetails,
-        protected readonly Events $eventManager
+        protected readonly Events $eventManager // used on refresh ie on receipt of new payload. see indicateRefresh
     ) {
 
         $this->setPsrOrigin($requestDetails->getContextualRequest());

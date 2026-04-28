@@ -112,32 +112,4 @@ class Redirect extends GenericRenderer implements MirrorableRenderer
     {
         return ["destination"];
     }
-
-    /**
-     * Override default response schema for Redirect
-     */
-    public static function getResponseSchema(): array
-    {
-        return [
-            'type' => 'string',
-            'description' => static::getDescription(),
-            'headers' => [
-                'Location' => [
-                    'description' => 'Redirect destination URL',
-                    'schema' => [
-                        'type' => 'string',
-                        'format' => 'uri'
-                    ]
-                ]
-            ]
-        ];
-    }
-
-    /**
-     * Override default description for Redirect
-     */
-    public static function getDescription(): string
-    {
-        return 'HTTP redirect response';
-    }
 }

@@ -71,7 +71,7 @@ class RoutedRendererManager implements RendererManager, BaseResponseManager, Val
 
             $this->routeDetails->controllerMethod
         );
-        $canaryList = $this->routeDetails->canaryInfo;
+        $canaryList = $this->routeDetails->canaryInfo; // this would have been better impl on requestDetails for it to be read lazily. unfortunately, that would require passing a container as well for canary hydration, which is beyond his scope
 
         if (!is_null($canaryList)) {
 
@@ -99,8 +99,10 @@ class RoutedRendererManager implements RendererManager, BaseResponseManager, Val
         }
 
         return $this->renderer = call_user_func_array(
-            [$this->routeDetails->controllerClass, $this->routeDetails->controllerMethod],
-            
+            [
+                $this->routeDetails->controllerClass,
+                $this->routeDetails->controllerMethod
+            ],
             $this->handlerParameters
         );
     }

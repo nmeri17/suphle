@@ -2,8 +2,6 @@
 
 namespace _modules_shell\_module_name\Services\Eloquent;
 
-use Suphle\Services\UpdatefulService;
-
 use Suphle\Contracts\Services\{CallInterceptors\MultiUserModelEdit, Models\IntegrityModel};
 
 use Suphle\Contracts\Routing\Crud\ResourceMultiEdit;
@@ -17,7 +15,7 @@ use _database_namespace\_resource_name;
 #[InterceptsCalls(MultiUserModelEdit::class)]
 #[VariableDependencies([
 
-    "setPayloadStorage", "setPlaceholderStorage"
+    "setPayloadStorage", "setRouteInfo"
 ])]
 #[DomainService(mutation: true)]
 class _resource_nameAccessor implements ResourceMultiEdit { // idk if systemEdit is used in the crud context. It seems like mainly get/update; so no need for an accessor wrapper

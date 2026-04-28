@@ -1,24 +1,23 @@
 <?php
-
 namespace Suphle\Routing\Documentation;
 
 use Suphle\Routing\{AttributeRouteScanner, Analysis\PsalmSchemaAnalyzer};
+use Suphle\Request\PayloadStorage;
 use Suphle\Contracts\Database\ModelSchemaDetector;
 use Suphle\Exception\Diffusers\{UnauthorizedDiffuser, UnauthenticatedDiffuser};
-use ReflectionClass;
-use ReflectionMethod;
+use ReflectionClass, ReflectionMethod;
 
 class OpenApiGeneratorService
 {
     public function __construct(
         protected readonly AttributeRouteScanner $routeScanner,
-        protected readonly PsalmSchemaAnalyzer $responseSchemaAnalyzer,
+        protected readonly PsalmSchemaAnalyzer $psalmAnalyzer,
         protected readonly ModelSchemaDetector $schemaDetector
     ) {
         //
     }
 
-    public function generateOpenApiSpec(): array
+    public function generateOpenApiSpec (string $baseUrl): array // $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'];
     {
         $routes = $this->getAllRoutes();
         
@@ -32,8 +31,21 @@ class OpenApiGeneratorService
             'components' => [
                 // Retrieve all models registered by the detector during the route scan
                 'schemas' => $this->schemaDetector->getGeneratedSchemas(),
-                'parameters' => []
-            ]
+                'parameters' => [],
+                'securitySchemes' => [
+                    'bearerAuth' => [
+                        'type' => 'http',
+                        'scheme' => 'bearer',
+                        'bearerFormat' => 'JWT'
+                    ]
+                ]
+            ],
+            'servers' => [
+                [
+                    'url' => $baseUrl,
+                    'description' => 'Current server'
+                ]
+            ],
         ];
 
         foreach ($routes as $route) {
@@ -61,11 +73,12 @@ class OpenApiGeneratorService
                 ? "Mirrored API endpoint for " . $route['handler'] 
                 : ($route['description'] ?? ''),
             'tags' => [
-                $this->extractModuleName($route['coordinator']),
+                class_basename($route['coordinator']),
                 $isMirror ? 'API' : 'Web' // Additional tagging for filtering in Swagger UI
             ],
             'parameters' => $this->buildParameters($route),
-            'responses' => $this->buildResponses($route, $route['response_shape'] ?? null)
+            'responses' => $this->buildResponses($route, $responseSchema),
+            'operationId' => $this->buildOperationId($route),
         ];
 
         // Add request body for POST/PUT/PATCH methods
@@ -75,8 +88,21 @@ class OpenApiGeneratorService
                 $pathItem['requestBody'] = $requestBody;
             }
         }
+        if ($this->psalmAnalyzer->hasAuthBarriers($route)) {
+            $pathItem['security'] = [
+                ['bearerAuth' => []]
+            ];
+        }
 
         return $pathItem;
+    }
+
+    // required by postman and sdk generators
+    protected function buildOperationId(array $route): string
+    {
+        return strtolower($route['method']) . '_' .
+
+        str_replace(['\\', '@'], '_', $route['handler']);
     }
 
     protected function buildParameters(array $route): array
@@ -123,9 +149,9 @@ class OpenApiGeneratorService
         }
 
         return [
-            'required' => true,
+            'required' => !empty($required),
             'content' => [
-                'application/json' => [
+                PayloadStorage::JSON_HEADER_VALUE => [
                     'schema' => [
                         'type' => 'object',
                         'properties' => $properties,
@@ -140,13 +166,20 @@ class OpenApiGeneratorService
     {
         $rendererClass = $route['renderer'];
         
-        $contentType = $this->responseSchemaAnalyzer->getContentTypeForRenderer($rendererClass);
+        $contentTypeSchema = $this->psalmAnalyzer->getStandardFormatSchema($rendererClass);
+
+        $contentType = is_array($contentTypeSchema)
+            && ($contentTypeSchema['contentMediaType'] ?? null)
+                ? $contentTypeSchema['contentMediaType']
+                : PayloadStorage::JSON_HEADER_VALUE;
+
         $statusCode = $rendererClass::STATUS_CODE;
         
         $responses = [
             (string)$statusCode => [
-                'description' => 'Successful response',
-                'content' => $this->buildResponseContent($route, $responseSchema, $contentType)
+                'description' => $this->psalmAnalyzer->extractMethodDescription(),
+
+                'content' => $this->buildResponseContent($responseSchema, $contentType)
             ]
         ];
 
@@ -155,7 +188,7 @@ class OpenApiGeneratorService
             $responses['422'] = [
                 'description' => 'Validation error',
                 'content' => [
-                    'application/json' => [
+                    PayloadStorage::JSON_HEADER_VALUE => [
                         'schema' => [
                             'type' => 'object',
                             'properties' => [
@@ -172,18 +205,18 @@ class OpenApiGeneratorService
         }
 
         // Add auth responses if route has authentication/authorization barriers
-        if ($this->responseSchemaAnalyzer->hasAuthBarriers($route)) {
-            $authMessage = $this->responseSchemaAnalyzer->getAuthenticationErrorMessage();
-            $authzMessage = $this->responseSchemaAnalyzer->getAuthorizationErrorMessage();
+        if ($this->psalmAnalyzer->hasAuthBarriers($route)) {
+            $authMessage = $this->psalmAnalyzer->getAuthenticationErrorMessage();
+            $authzMessage = $this->psalmAnalyzer->getAuthorizationErrorMessage();
             
             $responses['401'] = [
                 'description' => 'Unauthorized - Authentication required',
                 'content' => [
-                    'application/json' => [
+                    PayloadStorage::JSON_HEADER_VALUE => [
                         'schema' => [
                             'type' => 'object',
                             'properties' => [
-                                Unauthenticated::ERRORS_PRESENCE => [
+                                UnauthenticatedDiffuser::ERRORS_PRESENCE => [
                                     'type' => 'string', 
                                     'example' => $authMessage
                                 ]
@@ -196,7 +229,7 @@ class OpenApiGeneratorService
             $responses['403'] = [
                 'description' => 'Forbidden - Insufficient permissions',
                 'content' => [
-                    'application/json' => [
+                    PayloadStorage::JSON_HEADER_VALUE => [
                         'schema' => [
                             'type' => 'object',
                             'properties' => [
@@ -214,42 +247,12 @@ class OpenApiGeneratorService
         return $responses;
     }
 
-    protected function buildResponseContent(array $route, ?array $responseSchema = null, string $contentType = 'application/json'): array
-    {
-        $rendererType = $route['response_shape']['type'] ?? 'unknown';
-        
-        switch ($rendererType) {
-            case 'json':
-                return [
-                    $contentType => [
-                        'schema' => $responseSchema ?? ['type' => 'object']
-                    ]
-                ];
-            
-            case 'html':
-                return [
-                    $contentType => [
-                        'schema' => ['type' => 'string']
-                    ]
-                ];
-            
-            case 'redirect':
-                return [
-                    $contentType => [
-                        'schema' => [
-                            'type' => 'string',
-                            'description' => 'Empty response with Location header'
-                        ]
-                    ]
-                ];
-            
-            default:
-                return [
-                    $contentType => [
-                        'schema' => ['type' => 'object']
-                    ]
-                ];
-        }
+    protected function buildResponseContent(string $contentType, ?array $responseSchema = null): array {
+        return [
+            $contentType => [
+                'schema' => $responseSchema ?? ['type' => 'object']
+            ]
+        ];
     }
 
     protected function buildSchemaFromRules(string $rules): array
@@ -267,16 +270,64 @@ class OpenApiGeneratorService
             $schema['items'] = ['type' => 'object'];
         }
 
-        // Add format for email
         if (str_contains($rules, 'email')) {
             $schema['format'] = 'email';
         }
 
-        // Add format for date
         if (str_contains($rules, 'date')) {
             $schema['format'] = 'date';
         }
 
+        if (str_contains($rules, 'nullable')) {
+            $schema['nullable'] = true;
+        }
+
+        $schema = $this->setMinMaxDetails($rules, $schema);
+
+        $schema = $this->setEnumDetails($rules, $schema);
+
+        return $schema;
+    }
+
+    protected function setMinMaxDetails (string $rules, array $schema):array {
+
+        $type = $schema['type'];
+
+        if (preg_match('/min:(\d+)/', $rules, $m)) {
+            $value = (int) $m[1];
+
+            match ($type) {
+                'string' => $schema['minLength'] = $value,
+                'array'  => $schema['minItems'] = $value,
+                default  => $schema['minimum'] = $value,
+            };
+        }
+
+        if (preg_match('/max:(\d+)/', $rules, $m)) {
+            $value = (int) $m[1];
+
+            match ($type) {
+                'string' => $schema['maxLength'] = $value,
+                'array'  => $schema['maxItems'] = $value,
+                default  => $schema['maximum'] = $value,
+            };
+        }
+        return $schema;
+    }
+
+    protected function setEnumDetails (string $rules, array $schema):array {
+
+        $type = $schema['type'];
+
+        if (preg_match('/in:([^|]+)/', $rules, $m)) {
+            $values = explode(',', $m[1]);
+
+            if ($type === 'array') {
+                $schema['items']['enum'] = $values;
+            } else {
+                $schema['enum'] = $values;
+            }
+        }
         return $schema;
     }
 
@@ -292,19 +343,13 @@ class OpenApiGeneratorService
         };
     }
 
-    protected function extractModuleName(string $coordinatorClass): string
-    {
-        $parts = explode('\\', $coordinatorClass);
-        return $parts[1] ?? 'Default';
-    }
-
     public function getAllRoutes(): array
     {
         return $this->routeScanner->scanModulesByPath(
             fn (Container $container) => $container->getClass(RouterConfig::class)
             ->getCoordinatorPath(),
             
-            $this->responseSchemaAnalyzer->analyzeCoordinator(...)
+            $this->psalmAnalyzer->analyzeCoordinator(...)
         );
     }
 } 
