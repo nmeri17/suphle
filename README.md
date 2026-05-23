@@ -1,24 +1,34 @@
 # Suphle PHP Framework (v2 Development)
 
 > An advanced, resilient PHP framework engineered to solve application fragmentation and failure points in data-dense, concurrent systems.
+
 This is the dev-facing project intended for contribution to Suphle itself. Its complete documentation is live at [netlify](https://angry-cray-9c191b.netlify.app).
 
 High-level details about what Suphle's capabilities are and why it was built have been migrated [here](https://dev.to/mmayboy_/introducing-suphle-the-tale-of-a-modern-php-framework-54i9) and [here](https://nmeri.hashnode.dev/a-synopsis-of-the-suphle-framework).
+
 ---
 
 ## 🦾 Support the v2 Production Sprint (Through September)
 
-Suphle is an independent open-source project moving toward its v2 production milestone. Unlike traditional architectures where a single service failure tanks an entire page, Suphle introduces native, decoupled architectural resilience.
+Suphle is an independent open-source project moving toward its v2 production milestone. Unlike traditional architectures where a single service failure tanks an entire page, Suphle introduces native, decoupled architectural resilience. It is built to eliminate the boilerplate and fragile glue-code common in enterprise PHP applications:
 
 ### Key Architectural Pillars
 
-Suphle is built to eliminate the boilerplate and fragile glue-code common in enterprise PHP applications:
+*   **Native Modular Monoliths:** A first for the PHP ecosystem. Build cleanly decoupled, domain-driven modules that scale independently without the operational complexity of microservices.
 
-*   **Native Modular Monoliths:** A first for the PHP ecosystem. Build cleanly decoupled, domain-driven modules that can scale independently without the operational overhead of microservices.
-*   **Suphle Flows:** A native architectural pattern that orchestrates complex, multi-step business logic across isolated services seamlessly.
-*   **Attribute-Driven Service Proxies:** Automatically wrap services to natively handle atomic database transactions, isolated fallback degradation, automated monitoring alerts, and strict soft/hard row-locking.
-*   **Enforced Data Safety (File Upload Readers):** Built-in security and optimization constraints that force developers to handle thumbnail generation or image resizing before files ever hit storage.
-*   **Modern V2 Engine:** Featuring native WebSockets, high-performance route caching, and flexible action method builders to maximize developer velocity.
+*   **Strict Compile-Time Safety (Zero-Tolerance Build Step):** Features a native build step powered by **Psalm** that scans userland code for static errors—completely refusing to boot the application server if errors exist.
+
+*   **Enforced Request Validation:** Severe runtime/compile protection that automatically throws errors if any non-GET action method lacks a dedicated Validator attribute. 
+
+*   **Suphle Flows (Preemptive Background Caching Engine):** A groundbreaking, native caching architecture. When configured on a route (e.g., an index), Suphle automatically extracts entity references (like record IDs) from the outgoing response payload, spins up a background process to load those target destinations individually, and pre-caches them. This eliminates manual cache-warming entirely, making subsequent user navigation instantaneous. Features multiple architectural modes (e.g., ranges, glued IDs) to match diverse traffic patterns.
+
+*   **Attribute-Driven Service Proxies:** Automatically wrap services to natively drive atomic database transactions, isolated fallback degradation, automated monitoring alerts (e.g., Bugsnag), and strict concurrency row-locking.
+
+*   **Data Integrity Guards (File Upload Readers):** Built-in constraints that programmatically force developers to define thumbnail generation or image resizing policies before files ever hit storage.
+
+*   **Native Testing Infrastructure:** Comes bundled with a native testing library built directly on top of PHPUnit to make testing complex decoupled modules seamless.
+
+*   **Modern V2 Productivity Engine:** Includes a native **Auto-Documentation Generator**, a brand new CLI route list command, native WebSockets, high-performance route caching, and flexible action method builders..
 
 Version 2 strips away legacy inheritance dependencies, overhauling this engine into a modern declarative system while introducing high-performance route caching and native WebSocket integrations.
 
@@ -36,7 +46,8 @@ We are running a hard sprint through **September** to finalize test coverage, re
 | **🔬 Architecture Insider** | **$100** *(One-Time)* | Senior Developers / Architects | Code-level access. Read-access to the private repositories of our two real-world pipeline showcase applications *while they are being built* to study Suphle's design patterns in production. |
 | **🌱 Ecosystem Booster** | **$25** *(One-Time)* | Open-Source Enthusiasts | Permanent name credit within the repository's foundational `SPONSORS.md` file. |
 
-### 💳 [Click Here to Process Your One-Time Sponsorship via Flutterwave](https://flutterwave.com/donate/3hysvmaxgfu2)
+### 💳
+[Click Here to Process Your One-Time Sponsorship via Flutterwave](https://flutterwave.com/donate/3hysvmaxgfu2)
 
 *Note: This is our sole, verified gateway for funding. To prevent security friction or identity confusion, please do not engage with unverified third-party outreach representatives.*
 
