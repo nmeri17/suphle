@@ -1,10 +1,45 @@
-## 🦾 Support Suphle v2 Development
+# Suphle PHP Framework (v2 Development)
 
-Suphle is an independent open-source project moving toward its v2 production milestone. If you or your organization benefit from native attribute-driven service proxies, automatic transaction handling, and decoupled page resilience, please consider sponsoring our active development pipeline through September.
+> An advanced, resilient PHP framework engineered to solve application fragmentation and failure points in data-dense, concurrent systems.
 
-*   **Global Credit/Debit Cards & Local Bank Rails:** [Secure One-Time Contribution via Flutterwave](https://flutterwave.com/donate/3hysvmaxgfu2)
+---
 
-*Note: This is our sole, verified gateway for funding the framework. For corporate partnerships or custom invoice inquiries, please contact the maintainer directly via the verified email listed on this profile.*
+## 🦾 Support the v2 Production Sprint (Through September)
+
+Suphle is an independent open-source project moving toward its v2 production milestone. Unlike traditional architectures where a single service failure tanks an entire page, Suphle introduces native, decoupled architectural resilience.
+
+### Our Flagship Engineering Feature: Attribute-Driven Service Proxies
+With a simple attribute declaration, Suphle natively wraps your services in an intelligent proxy to handle complex high-concurrency problems out of the box:
+*   **Atomic Transactions:** Automated database rollbacks on any method intercept failure.
+*   **Isolated Degradation:** Granular, configurable fallback responses so one failing downstream service never crashes the user experience.
+*   **Contextual Alerting:** Instant broadcast integration (e.g., Bugsnag) the moment an anomaly triggers.
+*   **Concurrency Control:** Native soft and hard row/model locking to completely eliminate race conditions.
+
+Version 2 strips away legacy inheritance dependencies, overhauling this engine into a modern declarative system while introducing high-performance route caching and native WebSocket integrations.
+
+---
+
+### 🚀 Sponsorship Tiers & Milestone Roadmap
+
+We are running a hard sprint through **September** to finalize test coverage, revamp documentation UI, and launch two real-world pipeline applications to showcase these capabilities. Choose a tier that matches your scale and back a next-gen PHP ecosystem:
+
+#### 🏢 Corporate & Enterprise
+*   **$2,500 — Premier Enterprise Partner**
+    Ultimate visibility. Your large organization logo sits at the absolute top of this README, the official documentation UI header, and all v2 release announcements.
+*   **$1,000 — Core Infrastructure Sponsor**
+    Prominent logo placement on this README, the documentation site footer, and dedicated attribution in the launch release notes.
+
+#### 🛠️ Individual & Independent Engineers
+*   **$500 — Elite Backer**
+    Designed for senior independent consultants and elite developers funding high-level R&D. Permanent text-link attribution on the project website and recognition in our `SPONSORS.md` index.
+*   **$100 — Architecture Insider**
+    Get code-level visibility. Includes read-access to the private repositories of our two real-world pipeline showcase applications *while they are being built*, providing an architectural masterclass on how Suphle's proxies function in production.
+*   **$25 — Ecosystem Booster**
+    Permanent name credit within the repository's foundational `SPONSORS.md` file.
+
+### 💳 [Click Here to Process Your One-Time Sponsorship via Flutterwave](https://flutterwave.com/donate/3hysvmaxgfu2)
+
+*Note: This is our sole, verified gateway for funding. To prevent security friction or identity confusion, please do not engage with unverified third-party outreach representatives.*
 
 Suphle Framework
 ==========================
