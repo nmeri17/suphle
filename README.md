@@ -18,13 +18,11 @@ Suphle is an independent open-source project moving toward its v2 production mil
 
 *   **Strict Compile-Time Safety (Zero-Tolerance Build Step):** Features a native build step powered by **Psalm** that scans userland code for static errors—completely refusing to boot the application server if errors exist.
 
-*   **Enforced Request Validation:** Severe runtime/compile protection that automatically throws errors if any non-GET action method lacks a dedicated Validator attribute. 
+*   **Enforced Request Validation:** Severe runtime/compile protection that automatically throws errors if any non-GET action method lacks a dedicated Validator attribute. Built-in constraints that programmatically force developers to define thumbnail generation or image resizing policies before files ever hit storage 
 
 *   **Suphle Flows (Preemptive Background Caching Engine):** A groundbreaking, native caching architecture. When configured on a route (e.g., an index), Suphle automatically extracts entity references (like record IDs) from the outgoing response payload, spins up a background process to load those target destinations individually, and pre-caches them. This eliminates manual cache-warming entirely, making subsequent user navigation instantaneous. Features multiple architectural modes (e.g., ranges, glued IDs) to match diverse traffic patterns.
 
 *   **Attribute-Driven Service Proxies:** Automatically wrap services to natively drive atomic database transactions, isolated fallback degradation, automated monitoring alerts (e.g., Bugsnag), and strict concurrency row-locking.
-
-*   **Data Integrity Guards (File Upload Readers):** Built-in constraints that programmatically force developers to define thumbnail generation or image resizing policies before files ever hit storage.
 
 *   **Native Testing Infrastructure:** Comes bundled with a native testing library built directly on top of PHPUnit to make testing complex decoupled modules seamless.
 
