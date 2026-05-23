@@ -1,8 +1,10 @@
-<p align="center">
-    <a href="https://suphle.com">
-        <img src="suphle-banner.png" title="Suphle Banner" alt="Suphle Banner">
-    </a>
-</p>
+## 🦾 Support Suphle v2 Development
+
+Suphle is an independent open-source project moving toward its v2 production milestone. If you or your organization benefit from native attribute-driven service proxies, automatic transaction handling, and decoupled page resilience, please consider sponsoring our active development pipeline through September.
+
+*   **Global Credit/Debit Cards & Local Bank Rails:** [Secure One-Time Contribution via Flutterwave](https://flutterwave.com/donate/3hysvmaxgfu2)
+
+*Note: This is our sole, verified gateway for funding the framework. For corporate partnerships or custom invoice inquiries, please contact the maintainer directly via the verified email listed on this profile.*
 
 Suphle Framework
 ==========================
