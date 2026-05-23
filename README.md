@@ -1,19 +1,24 @@
 # Suphle PHP Framework (v2 Development)
 
 > An advanced, resilient PHP framework engineered to solve application fragmentation and failure points in data-dense, concurrent systems.
+This is the dev-facing project intended for contribution to Suphle itself. Its complete documentation is live at [netlify](https://angry-cray-9c191b.netlify.app).
 
+High-level details about what Suphle's capabilities are and why it was built have been migrated [here](https://dev.to/mmayboy_/introducing-suphle-the-tale-of-a-modern-php-framework-54i9) and [here](https://nmeri.hashnode.dev/a-synopsis-of-the-suphle-framework).
 ---
 
 ## 🦾 Support the v2 Production Sprint (Through September)
 
 Suphle is an independent open-source project moving toward its v2 production milestone. Unlike traditional architectures where a single service failure tanks an entire page, Suphle introduces native, decoupled architectural resilience.
 
-### Our Flagship Engineering Feature: Attribute-Driven Service Proxies
-With a simple attribute declaration, Suphle natively wraps your services in an intelligent proxy to handle complex high-concurrency problems out of the box:
-*   **Atomic Transactions:** Automated database rollbacks on any method intercept failure.
-*   **Isolated Degradation:** Granular, configurable fallback responses so one failing downstream service never crashes the user experience.
-*   **Contextual Alerting:** Instant broadcast integration (e.g., Bugsnag) the moment an anomaly triggers.
-*   **Concurrency Control:** Native soft and hard row/model locking to completely eliminate race conditions.
+### Key Architectural Pillars
+
+Suphle is built to eliminate the boilerplate and fragile glue-code common in enterprise PHP applications:
+
+*   **Native Modular Monoliths:** A first for the PHP ecosystem. Build cleanly decoupled, domain-driven modules that can scale independently without the operational overhead of microservices.
+*   **Suphle Flows:** A native architectural pattern that orchestrates complex, multi-step business logic across isolated services seamlessly.
+*   **Attribute-Driven Service Proxies:** Automatically wrap services to natively handle atomic database transactions, isolated fallback degradation, automated monitoring alerts, and strict soft/hard row-locking.
+*   **Enforced Data Safety (File Upload Readers):** Built-in security and optimization constraints that force developers to handle thumbnail generation or image resizing before files ever hit storage.
+*   **Modern V2 Engine:** Featuring native WebSockets, high-performance route caching, and flexible action method builders to maximize developer velocity.
 
 Version 2 strips away legacy inheritance dependencies, overhauling this engine into a modern declarative system while introducing high-performance route caching and native WebSocket integrations.
 
@@ -21,34 +26,19 @@ Version 2 strips away legacy inheritance dependencies, overhauling this engine i
 
 ### 🚀 Sponsorship Tiers & Milestone Roadmap
 
-We are running a hard sprint through **September** to finalize test coverage, revamp documentation UI, and launch two real-world pipeline applications to showcase these capabilities. Choose a tier that matches your scale and back a next-gen PHP ecosystem:
+We are running a hard sprint through **September** to finalize test coverage, revamp documentation UI, and launch two real-world pipeline applications to showcase these capabilities. Choose a tier that matches your scale:
 
-#### 🏢 Corporate & Enterprise
-*   **$2,500 — Premier Enterprise Partner**
-    Ultimate visibility. Your large organization logo sits at the absolute top of this README, the official documentation UI header, and all v2 release announcements.
-*   **$1,000 — Core Infrastructure Sponsor**
-    Prominent logo placement on this README, the documentation site footer, and dedicated attribution in the launch release notes.
-
-#### 🛠️ Individual & Independent Engineers
-*   **$500 — Elite Backer**
-    Designed for senior independent consultants and elite developers funding high-level R&D. Permanent text-link attribution on the project website and recognition in our `SPONSORS.md` index.
-*   **$100 — Architecture Insider**
-    Get code-level visibility. Includes read-access to the private repositories of our two real-world pipeline showcase applications *while they are being built*, providing an architectural masterclass on how Suphle's proxies function in production.
-*   **$25 — Ecosystem Booster**
-    Permanent name credit within the repository's foundational `SPONSORS.md` file.
+| Tier | Investment | Target Backer | Core Benefits |
+| :--- | :--- | :--- | :--- |
+| **🏆 Premier Enterprise Partner** | **$2,500** *(One-Time)* | Mid-to-Large Corps / Hosting Providers | Ultimate visibility. Large logo at the absolute top of this README, the official documentation UI header, and all v2 release announcements. |
+| **⚡ Core Infrastructure Sponsor** | **$1,000** *(One-Time)* | Dev Shops / Tech Startups | Prominent logo placement on this README, the documentation site footer, and dedicated attribution in the launch release notes. |
+| **🛡️ Elite Backer** | **$500** *(One-Time)* | Senior Consultants / Independent Engineers | Dedicated medium logo/text-link attribution on the project website and prominent recognition in our foundational `SPONSORS.md` index. |
+| **🔬 Architecture Insider** | **$100** *(One-Time)* | Senior Developers / Architects | Code-level access. Read-access to the private repositories of our two real-world pipeline showcase applications *while they are being built* to study Suphle's design patterns in production. |
+| **🌱 Ecosystem Booster** | **$25** *(One-Time)* | Open-Source Enthusiasts | Permanent name credit within the repository's foundational `SPONSORS.md` file. |
 
 ### 💳 [Click Here to Process Your One-Time Sponsorship via Flutterwave](https://flutterwave.com/donate/3hysvmaxgfu2)
 
 *Note: This is our sole, verified gateway for funding. To prevent security friction or identity confusion, please do not engage with unverified third-party outreach representatives.*
-
-Suphle Framework
-==========================
-
-## Introduction
-
-This is the dev-facing project intended for contribution to Suphle itself. Its complete documentation is live at [netlify](https://angry-cray-9c191b.netlify.app).
-
-High-level details about what Suphle's capabilities are and why it was built have been migrated [here](https://dev.to/mmayboy_/introducing-suphle-the-tale-of-a-modern-php-framework-54i9) and [here](https://nmeri.hashnode.dev/a-synopsis-of-the-suphle-framework).
 
 ## Testing
 
