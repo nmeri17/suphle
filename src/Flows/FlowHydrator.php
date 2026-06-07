@@ -18,7 +18,6 @@ use Throwable;
 
 #[VariableDependenciesHandler([
     "setContainer",
-    "setRouteInfo",
     "setPayloadStorage"
 ])]
 class FlowHydrator
@@ -28,6 +27,8 @@ class FlowHydrator
     protected Container $container;
 
     protected RouteInfo $routeDetails;
+
+    protected iterable $previousResponse;
 
     public function __construct(
         protected readonly UmbrellaSaver $flowSaver
@@ -48,16 +49,7 @@ class FlowHydrator
         $this->payloadStorage = $payloadStorage;
     }
 
-    public function setRouteInfo(RouteInfo $routeInfo): void
-    {
-
-        $this->routeInfo = $routeInfo;
-    }
-
-    public function setRequestDetails(
-        $previousResponse,
-        RouteInfo $routeDetails
-    ): void {
+    public function setRequestDetails(iterable $previousResponse, RouteInfo $routeDetails ): void {
 
         $this->previousResponse = $previousResponse;
 
@@ -82,19 +74,14 @@ class FlowHydrator
 
         foreach ($generatedRenderers as $generationUnit) {
 
-            if (!$generationUnit)
-                continue;
+            if (!$generationUnit) continue;
 
             $unitPayload = new RouteUserNode(
 
                 $generationUnit->getRenderer(), $this->routeDetails
             );
 
-            $unitPayload->setMaxHitsHydrator(
-                fn () => $flow->maxHits
-            );
-
-            // Add TTL logic here if needed
+            $unitPayload->setMetaDetails($flow->ttl, $flow->maxHits);
 
             $this->flowSaver->saveNewUmbrella(
                 $generationUnit->getRequestPath(),
@@ -131,7 +118,7 @@ class FlowHydrator
         };
     }
 
-    protected function handleSingle(SingleFlow $flow): array
+    public function handleSingle(SingleFlow $flow): array
     {
 
         $value = Arr::get(
@@ -160,7 +147,7 @@ class FlowHydrator
         return [];
     }
 
-    protected function handlePipe(
+    public function handlePipe(
         array $indexes,
         string $column
     ): array {
@@ -176,7 +163,7 @@ class FlowHydrator
         ));
     }
 
-    protected function handleAsOne(
+    public function handleAsOne(
         array $indexes,
         string $column
     ): array {
@@ -310,7 +297,7 @@ class FlowHydrator
     ): void {
 
         $storageInstance = $this->container->getClass(
-            $originatingFlowDetails->getAuthStorage()
+            $originatingFlowDetails->authStorage::class
         );
 
         if ($originatingFlowDetails->getStoredUserId() !== '*')

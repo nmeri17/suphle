@@ -1,7 +1,7 @@
 <?php
 namespace Suphle\Tests\Unit\Flows;
 
-use Suphle\Routing\Attributes\{CollectionFlow, CollectionFlowOperation};
+use Suphle\Routing\Attributes\{CollectionFlow, CollectionFlowOperation, SingleFlowOperation, SingleFlow};
 
 trait FlowData
 {
@@ -19,13 +19,14 @@ trait FlowData
         return array_map(fn ($id) => ["id" => $id], $this->indexes);
     }
 
-    protected function createCollectionFlow(CollectionFlowOperation $operation): CollectionFlow
+    protected function createCollectionFlow(CollectionFlowOperation $operation, int $maxHits = 1): CollectionFlow
     {
         return new CollectionFlow(
             target: "symbols/{id}/chart",
             source: $this->payloadKey,
             operation: $operation,
-            columnName: $this->columnName
+            columnName: $this->columnName,
+            maxHits: $maxHits
         );
     }
 

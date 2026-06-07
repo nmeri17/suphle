@@ -2,7 +2,7 @@
 
 namespace Suphle\Tests\Integration\Authorization;
 
-use Suphle\Contracts\Config\{AuthContract, Router};
+use Suphle\Contracts\Config\{Auth as AuthContract, Router};
 
 use Suphle\Exception\Explosives\UnauthorizedServiceAccess;
 

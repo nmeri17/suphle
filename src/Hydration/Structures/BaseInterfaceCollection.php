@@ -4,21 +4,21 @@ namespace Suphle\Hydration\Structures;
 
 use Suphle\Contracts\Hydration\{InterfaceCollection, DecoratorChain};
 
-use Suphle\Contracts\{Events, Queues\Adapter as QueueAdapter, Modules\ControllerModule, Response\RendererManager };
+use Suphle\Contracts\{Events, PsalmCodebase, Queues\Adapter as QueueAdapter, Modules\ControllerModule, Response\RendererManager };
 
 use Suphle\Contracts\Exception\{FatalShutdownAlert, AlertAdapter};
 
 use Suphle\Contracts\IO\{Session, MailClient, EnvAccessor, CacheManager};
 
-use Suphle\Contracts\Requests\{RequestValidator, FileInputReader, ValidationFailureConvention, RequestEventsListener};
+use Suphle\Contracts\Requests\{RequestValidator, FileInputReader, RequestEventsListener};
 
-use Suphle\Contracts\Database\{OrmDialect, OrmReplicator, OrmTester, EntityDetails};
+use Suphle\Contracts\Database\{OrmDialect, OrmReplicator, OrmTester, EntityDetails, ModelSchemaDetector};
 
 use Suphle\Contracts\Bridge\{LaravelContainer, LaravelArtisan};
 
 use Suphle\Contracts\Auth\{AuthStorage, ModuleLoginHandler, ColumnPayloadComparer};
 
-use Suphle\Contracts\Config\{AuthContract, Database, DecoratorProxy, ExceptionInterceptor, ComponentTemplates, Laravel as LaravelConfig, Console as ConsoleContract, Flows as FlowConfig, ContainerConfig as IContainerConfig, CacheClient as CacheConfig};
+use Suphle\Contracts\Config\{Auth as AuthContract, Database, DecoratorProxy, ExceptionInterceptor, ComponentTemplates, Laravel as LaravelConfig, Console as ConsoleContract, Flows as FlowConfig, ContainerConfig as IContainerConfig, CacheClient as CacheConfig};
 
 use Suphle\Contracts\IO\Image\{ImageThumbnailClient, InferiorImageClient, ImageLocator, InferiorOperationHandler, ThumbnailOperationHandler};
 
@@ -32,13 +32,15 @@ use Suphle\IO\Cache\AdapterLoader as CacheAdapterLoader;
 
 use Suphle\Auth\{LoginHandlerInterfaceLoader, EmailPasswordComparer, Storage\SessionStorage};
 
-use Suphle\Adapters\Orms\Eloquent\{ UserEntityLoader, ModelReplicator, OrmLoader, DatabaseTester as EloquentTester, Models\ModelDetail};
+use Suphle\Routing\Analysis\PsalmCodebaseLoader;
+
+use Suphle\Adapters\Orms\Eloquent\{ UserEntityLoader, ModelReplicator, OrmLoader, DatabaseTester as EloquentTester};
+
+use Suphle\Adapters\Orms\Eloquent\Models\{ModelDetail, EloquentSchemaDetector};
 
 use Suphle\Adapters\Image\Optimizers\NativeReducerClient;
 
 use Suphle\Adapters\{Exception\Bugsnag, Session\CacheDrivenSession};
-
-use Suphle\Adapters\Presentation\Hotwire\FailureConventions\HttpMethodValidationConvention;
 
 use Suphle\Adapters\Presentation\Blade\DefaultBladeAdapter;
 
@@ -87,6 +89,8 @@ class BaseInterfaceCollection implements InterfaceCollection
 
             QueueAdapter::class => QueueAdapterLoader::class,
 
+            PsalmCodebase::class => PsalmCodebaseLoader::class,
+
             RequestValidator::class => ValidatorLoader::class
         ];
     }
@@ -122,6 +126,8 @@ class BaseInterfaceCollection implements InterfaceCollection
 
             InferiorImageClient::class => NativeReducerClient::class,
 
+            ModelSchemaDetector::class => EloquentSchemaDetector::class,
+
             OutgoingRequest::class => GuzzleClient::class,
 
             OrmReplicator::class => ModelReplicator::class,
@@ -135,8 +141,6 @@ class BaseInterfaceCollection implements InterfaceCollection
             Session::class => CacheDrivenSession::class,
 
             ThumbnailOperationHandler::class => DefaultThumbnailHandler::class,
-
-            ValidationFailureConvention::class => HttpMethodValidationConvention::class
         ];
     }
 

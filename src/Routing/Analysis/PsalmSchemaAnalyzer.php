@@ -1,39 +1,39 @@
 <?php
 namespace Suphle\Routing\Analysis;
 
-// docs gen
-use Suphle\Contracts\Config\{Router as RouterConfig, ExceptionInterceptor};
-use Suphle\Hydration\Container;
-use Suphle\Contracts\Flows\FlowHydrator;
-use Suphle\Contracts\Routing\ModelSchemaDetector;
-use Suphle\Hydration\Structures\ObjectDetails;
+use Suphle\Contracts\Config\{Router as RouterConfig};
+
+use Suphle\Hydration\{Container, Structures\ObjectDetails};
+
+use Suphle\Contracts\{PsalmCodebase, Database\ModelSchemaDetector};
+
 use Suphle\Exception\Explosives\{Unauthenticated, UnauthorizedServiceAccess};
-use Psalm\Codebase;
-use Psalm\Type\Union;
+
+use Psalm\{Internal\MethodIdentifier, Type\Union};
+
 use Psalm\Type\Atomic\{
     TInt, TFloat, TBool, TNamedObject, TGenericObject, TKeyedArray, TString
 };
 use ReflectionMethod;
 
+// docs gen
 class PsalmSchemaAnalyzer extends RouteAnalysisService
 {
     use AnalyzerUtils, DocBlockParser;
 
-    protected ReflectionMethod $actionMethod;
+    protected ReflectionMethod $actionMethod; // used by DocBlockParser to contruct docs
 
     public function __construct(
         // Parent Requirements
-        protected readonly RouterConfig $config,
-        protected readonly Container $container,
-        protected readonly FlowHydrator $flowHydrator,
+        RouterConfig $config,
+        Container $container,
+        ObjectDetails $objectDetails,
 
         // Analysis Dependencies
         protected readonly ModelSchemaDetector $modelDetector,
-        protected readonly ObjectDetails $objectDetails,
-        protected readonly Codebase $psalmCodebase
-        protected readonly ExceptionInterceptor $exceptionConfig
+        protected readonly PsalmCodebase $psalmCodebase,
     ) {
-        parent::__construct($config, $container, $flowHydrator);
+        parent::__construct($config, $container, $objectDetails);
     }
 
     /**
@@ -45,7 +45,6 @@ class PsalmSchemaAnalyzer extends RouteAnalysisService
         $this->actionMethod = $method;
 
         $fqcn = $method->getDeclaringClass()->getName();
-        $methodId = $fqcn . '::' . $method->getName();
         
         // 1. Check for basic Markup/Redirect types first (AnalyzerUtils)
         $returnTypeString = $this->objectDetails->methodReturnType($fqcn, $method->getName());
@@ -53,9 +52,12 @@ class PsalmSchemaAnalyzer extends RouteAnalysisService
             $standardSchema = $this->getStandardFormatSchema($returnTypeString);
             if ($standardSchema) return $standardSchema;
         }
+        $methodId = new MethodIdentifier($fqcn, $method->getName());
 
         // 2. Fallback to Deep Psalm Analysis for Data Renderers (Json, etc)
-        $psalmReturnType = $this->psalmCodebase->methods->getMethodReturnType($methodId, $fqcn);
+        $psalmReturnType = $this->psalmCodebase->getMethodAnalyzer()
+
+        ->getMethodReturnType($methodId, $fqcn);
 
         if (!$psalmReturnType) return ['type' => 'object'];
 

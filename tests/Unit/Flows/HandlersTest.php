@@ -23,7 +23,7 @@ class HandlersTest extends IsolatedComponentTest
             "updatePlaceholders" => $this->returnSelf(),
             "executeGeneratedUrl" => $this->positiveDouble(GeneratedUrlExecution::class)
         ], [
-            "updatePlaceholders" => [count($indexes), $this->anything()],
+            "updatePlaceholders" => [count($indexes), [$this->anything()]],
             "executeGeneratedUrl" => [count($indexes), []]
         ]);
 

@@ -12,12 +12,6 @@ use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Canaries\CanaryForUser5;
 #[CanaryState([CanaryForUser5::class])]
 class User5CanaryController extends BaseCoordinator
 {
-    public function __construct(
-        Session $sessionClient,
-        protected RequestDetails $requestDetails
-    ) {
-        parent::__construct($sessionClient);
-    }
     #[Route("user5-profile", method: HttpMethod::GET)]
     public function user5Handler(): Json
     {

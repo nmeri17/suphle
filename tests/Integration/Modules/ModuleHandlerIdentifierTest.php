@@ -4,7 +4,7 @@ namespace Suphle\Tests\Integration\Modules;
 
 use Suphle\Contracts\Auth\{ModuleLoginHandler, LoginFlowMediator};
 
-use Suphle\Contracts\Config\{Router, AuthContract};
+use Suphle\Contracts\Config\{Router, Auth as AuthContract};
 
 use Suphle\Flows\OuterFlowWrapper;
 

@@ -3,7 +3,7 @@ namespace Suphle\Routing\Attributes;
 
 use Suphle\Flows\Structures\{RangeContext, ServiceContext};
 
-use Attribute, InvalidArgumentException;
+use Attribute, InvalidArgumentException, DateTime;
 
 #[Attribute(Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
 class CollectionFlow extends FlowDefinition {
@@ -11,16 +11,18 @@ class CollectionFlow extends FlowDefinition {
         string $target, string $source,
         public readonly CollectionFlowOperation $operation = CollectionFlowOperation::PIPE_TO,
         public readonly string $columnName = "id", // The leaf key inside the collection
-        public readonly ?ServiceContext $serviceContext = null,
-
         public readonly ?RangeContext $rangeContext = null,
-        int $ttl = 600, int $maxHits = 1
+
+        public readonly ?ServiceContext $serviceContext = null,
+        int $maxHits = 1,
+        
+        ?DateTime $ttl = null
     ) {
         $this->modeHasType(CollectionFlowOperation::RANGE, $this->rangeContext);
 
         $this->modeHasType(CollectionFlowOperation::SET_FROM_SERVICE, $this->serviceContext);
 
-        parent::__construct($target, $source, $ttl, $maxHits);
+        parent::__construct($target, $source, $maxHits, $ttl);
     }
 
     protected function modeHasType (CollectionFlowOperation $mode, ?object $context):void {

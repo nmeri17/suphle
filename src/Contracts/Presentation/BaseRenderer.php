@@ -13,10 +13,6 @@ interface BaseRenderer
 {
     public function render(): string;
 
-    public function getHandler(): string;
-
-    public function setHandler(string $handler): void;
-
     public function setHeaders(int $statusCode, array $headers): void;
 
     public function setRawResponse(iterable $response): self;

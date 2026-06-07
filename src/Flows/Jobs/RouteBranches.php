@@ -57,7 +57,7 @@ class RouteBranches implements Task
                 continue; 
             }
 
-            $this->executeFlowBranch($urlPattern, $flowInstance);
+            $this->executeFlowBranch($flowInstance);
         }
     }
 
@@ -94,7 +94,7 @@ class RouteBranches implements Task
         return true;
     }
 
-    private function executeFlowBranch(string $urlPattern, FlowDefinition $flowInstance): void
+    private function executeFlowBranch(FlowDefinition $flowInstance): void
     {
         $container = $this->activeModule->getContainer();
 
@@ -103,7 +103,7 @@ class RouteBranches implements Task
         $hydrator->setRequestDetails(
             $this->flowDetails->getRenderer()->getRawResponse(),
             
-            $urlPattern, $this->getFoundRoute()
+            $this->moduleRouter->getFoundRoute()
         );
 
         $this->setHydratorDependencies($hydrator, $container);

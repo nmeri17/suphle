@@ -10,7 +10,7 @@ use Suphle\Modules\Structures\ActiveDescriptors;
 
 use Suphle\Flows\OuterFlowWrapper;
 
-use Suphle\Contracts\Config\{AuthContract, Flows as FlowConfig};
+use Suphle\Contracts\Config\{Flows as FlowConfig};
 
 use Suphle\Contracts\{ Auth\ModuleLoginHandler, Presentation\BaseRenderer, Response\RendererManager};
 

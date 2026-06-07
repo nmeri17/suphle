@@ -4,8 +4,6 @@ namespace Suphle\Auth\Storage;
 
 use Suphle\Contracts\IO\Session;
 
-use Suphle\Contracts\Config\AuthContract;
-
 class SessionStorage extends BaseAuthStorage
 {
     protected string $identifierKey = "suphle_user_id";

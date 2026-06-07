@@ -12,7 +12,7 @@ use Suphle\Hydration\Structures\ObjectDetails;
 
 use Suphle\Response\Format\Json;
 
-use Suphle\Services\ServiceCoordinator;
+use Suphle\Services\BaseCoordinator;
 
 use Suphle\Testing\Proxies\WriteOnlyContainer;
 
@@ -78,7 +78,7 @@ class FlowRoutesUpdateCountTest extends JobFactory
 
             "renderer" => $this->replaceConstructorArguments(Json::class, [], [
 
-                "getCoordinator" => $this->positiveDouble(ServiceCoordinator::class)
+                "getCoordinator" => $this->positiveDouble(BaseCoordinator::class)
             ])
         ];
     }

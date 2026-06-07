@@ -13,7 +13,7 @@ use Suphle\Flows\OuterFlowWrapper;
 */
 class PendingFlowDetails
 {
-    private $userId;
+    private ?string $userId = null;
 
     public function __construct(
         public readonly BaseRenderer $renderer,
@@ -24,9 +24,8 @@ class PendingFlowDetails
         $this->getUserId(); // trigger property storage before task serialization
     }
 
-    public function getStoredUserId(): string
+    public function getStoredUserId():?string
     {
-
         return $this->userId;
     }
 

@@ -2,13 +2,13 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-use Suphle\Coordinators\ServiceCoordinator;
+use Suphle\Services\BaseCoordinator;
 use Suphle\Routing\Attributes\{Route, HttpMethod, CanaryState};
 use Suphle\Response\Format\Json;
 use Suphle\Tests\Mocks\Modules\ModuleOne\Canary\BetaUserCanary;
 
 #[CanaryState([BetaUserCanary::class])]
-class CanaryCoordinator extends ServiceCoordinator
+class CanaryCoordinator extends BaseCoordinator
 {
     #[Route('/beta')]
     public function beta(): Json

@@ -5,99 +5,40 @@ use Suphle\Contracts\Presentation\BaseRenderer;
 
 use Suphle\Routing\Structures\RouteInfo;
 
-use DateTime;
-use DateInterval;
+use DateTime, DateInterval;
 
 /**
  *  This is the smallest unit where the ultimate user related cached information is stored
 */
 class RouteUserNode
 {
-    private $maxHitsHydrator;
-    private $expiresAtHydrator;
-    protected int $hits = 0;
+    protected DateTime $expiresAt;
+
+    protected int $hits = 0, $maxHits = 0;
 
     public function __construct(
         public readonly BaseRenderer $renderer,
         public readonly RouteInfo $routeDetails
-    )
+    ) { }
+
+    public function hasExceededMaxHits():bool
     {
-
-        //
-    }
-
-    public function currentHits(): int
-    {
-
-        return $this->hits;
-    }
-
-    public function getMaxHits(string $userId, string $pattern): int
-    {
-
-        $callback = $this->maxHitsHydrator;
-
-        if (is_null($callback)) {
-
-            $callback = $this->defaultMaxHits();
-        }
-
-        return call_user_func_array($callback, [$userId, $pattern]);
-    }
-
-    protected function defaultMaxHits(): callable
-    {
-
-        return fn ($userId, $pattern) => 1;
-    }
-
-    /**
-     * @param {callback} => Function (string $userId, string $pattern):int
-    */
-    public function setMaxHitsHydrator(callable $callback): self
-    {
-
-        $this->maxHitsHydrator = $callback;
-
-        return $this;
+        return $this->hits >= $this->maxHits-1;
     }
 
     public function incrementHits(): void
     {
-
         $this->hits++;
     }
 
-    public function getExpiresAt(string $userId, string $pattern): DateTime
+    public function setMetaDetails(DateTime $time, int $maxHits):void
     {
+        $this->expiresAt = $time;
 
-        $callback = $this->expiresAtHydrator;
-
-        if (is_null($callback)) {
-
-            $callback = $this->defaultExpiresAt();
-        }
-
-        return call_user_func_array($callback, [$userId, $pattern]);
+        $this->maxHits = $maxHits;
     }
+    public function notExpired (DateTime $time):bool {
 
-    protected function defaultExpiresAt(): callable
-    {
-
-        return function ($userId, $pattern) {
-
-            return (new DateTime())->add(new DateInterval("PT10M")); // store for 10 minutes
-        };
-    }
-
-    /**
-     * @param {callback} => Function (string $userId, string $pattern):DateTime
-    */
-    public function setExpiresAtHydrator(callable $callback): self
-    {
-
-        $this->expiresAtHydrator = $callback;
-
-        return $this;
+        return $this->expiresAt >= $time;
     }
 }

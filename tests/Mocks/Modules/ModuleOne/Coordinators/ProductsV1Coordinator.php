@@ -2,17 +2,12 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-use Suphle\Coordinators\ServiceCoordinator;
+use Suphle\Services\BaseCoordinator;
 use Suphle\Routing\Attributes\{Route, RoutePrefix, HttpMethod};
 use Suphle\Response\Format\Json;
 
-/**
- * Simulates a v1 API coordinator with three endpoints.
- * V2 will extend this, inheriting the stable endpoints without
- * redefining them, and only overriding the one that changed.
- */
 #[RoutePrefix("api/v1/products")]
-class ProductsV1Coordinator extends ServiceCoordinator
+class ProductsV1Coordinator extends BaseCoordinator
 {
     // Stable: inherited as-is in v2
     #[Route("/", HttpMethod::GET)]

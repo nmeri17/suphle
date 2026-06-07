@@ -7,8 +7,7 @@ namespace Suphle\Routing\Analysis;
 use Suphle\Response\Format\Json;
 use Suphle\Contracts\Routing\ModelSchemaDetector;
 use Suphle\Contracts\Config\Router as RouterConfig;
-use Suphle\Hydration\Container;
-use Suphle\Contracts\Flows\FlowHydrator;
+use Suphle\Hydration\{Container, Structures\ObjectDetails};
 use ReflectionClass, ReflectionMethod;
 
 class ResponseSchemaAnalyzer extends RouteAnalysisService
@@ -16,12 +15,14 @@ class ResponseSchemaAnalyzer extends RouteAnalysisService
     use AnalyzerUtils;
 
     public function __construct(
+        // Parent Requirements
         RouterConfig $config,
         Container $container,
-        FlowHydrator $flowHydrator,
+        ObjectDetails $objectDetails,
+        //
         protected readonly ModelSchemaDetector $modelDetector
     ) {
-        parent::__construct($config, $container, $flowHydrator);
+        parent::__construct($config, $container, $objectDetails);
     }
 
     public function getResponseShape(ReflectionMethod $method): array

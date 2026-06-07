@@ -2,11 +2,11 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-use Suphle\Services\ServiceCoordinator;
+use Suphle\Services\BaseCoordinator;
 use Suphle\Routing\Attributes\{Route, HttpMethod};
 use Suphle\Response\Format\Json;
 
-class TestUrlController extends ServiceCoordinator
+class TestUrlController extends BaseCoordinator
 {
     #[Route("test-url", method: HttpMethod::GET)]
     public function sameUrl(): Json

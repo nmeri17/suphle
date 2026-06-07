@@ -1,11 +1,9 @@
 <?php
-
 namespace Suphle\Flows\Structures;
 
 use Suphle\Hydration\Structures\ObjectDetails;
 
-use DateTime;
-use Exception;
+use DateTime, Exception;
 
 /**
  * This is the object value for each route key in the cache i.e. cache = ["path-x" => RouteUmbrella]
@@ -23,10 +21,7 @@ class RouteUmbrella
     public function __construct(
         protected readonly string $routeName,
         protected readonly ObjectDetails $objectMeta
-    ) {
-
-        //
-    }
+    ) { }
 
     public function setAuthMechanism(string $storageName): void
     {
@@ -60,9 +55,7 @@ class RouteUmbrella
 
         $context = $this->users[$userId];
 
-        $expiresAt = $context->getExpiresAt($userId, $this->routeName);
-
-        if ($expiresAt >= new DateTime()) {
+        if ($context->notExpired(new DateTime()) ) {//getExpiresAt($userId, $this->routeName);
             return $context;
         }
 

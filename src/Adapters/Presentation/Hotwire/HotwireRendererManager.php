@@ -2,17 +2,17 @@
 
 namespace Suphle\Adapters\Presentation\Hotwire;
 
-use Suphle\Hydration\{Container, Structures\CallbackDetails};
+use Suphle\Hydration\{Container, DecoratorHydrator, Structures\CallbackDetails};
 
-use Suphle\Contracts\{IO\Session, Requests\ValidationFailureConvention, Presentation\BaseRenderer};
+use Suphle\Contracts\{IO\Session, Presentation\BaseRenderer};
 
 use Suphle\Response\{FlowResponseQueuer, RoutedRendererManager};
 
-use Suphle\Request\{ValidatorManager, RequestDetails};
+use Suphle\Request\{ValidatorManager, RequestDetails, PayloadStorage};
 
-use Suphle\Adapters\Presentation\Hotwire\Formats\BaseHotwireStream;
+use Suphle\Adapters\Presentation\Hotwire\Formats\{BaseHotwireStream, RedirectHotwireStream};
 
-use Suphle\Services\ServiceCoordinator;
+use Suphle\Services\BaseCoordinator;
 
 use Suphle\Exception\Explosives\ValidationFailure;
 
@@ -20,92 +20,51 @@ class HotwireRendererManager extends RoutedRendererManager
 {
     public function __construct(
         protected readonly Container $container,
-        protected readonly BaseRenderer $renderer,
         protected readonly Session $sessionClient,
         protected readonly FlowResponseQueuer $flowQueuer,
         protected readonly RequestDetails $requestDetails,
         protected readonly CallbackDetails $callbackDetails,
-        protected readonly ValidationFailureConvention $failureConvention
+        protected readonly PayloadStorage $payloadStorage
     ) {
 
         //
     }
 
-    public function bootDefaultRenderer(): self
-    {
-
-        if ($this->avoidHotwireConditions()) {
-
-            return parent::bootDefaultRenderer();
-        }
-
-        foreach ($this->renderer->getHotwireHandlers() as [, $handler]) {
-
-            $this->handlerParameters[] = $this->fetchHandlerParameters(
-                $this->renderer->getCoordinator(),
-                $handler
-            );
-        }
-
-        return $this;
-    }
-
-    protected function avoidHotwireConditions(): bool
-    {
-
-        return !($this->renderer instanceof BaseHotwireStream) ||
-
-        !$this->renderer->isHotwireRequest();
-    }
-
     public function validationRenderer(array $failureDetails): BaseRenderer
     {
+        $previousUrl = $this->sessionClient->getValue(self::PREVIOUS_GET_URL);
+        
+        // The fallback is a redirect to the previous form if Hotwire fails or needs a clean reload
+        $errorRenderer = new RedirectHotwireStream(fn () => $previousUrl);
 
-        if ($this->avoidHotwireConditions()) {
+        $decoratorHydrator = $this->container->getClass(DecoratorHydrator::class);
+        
+        $decoratorHydrator->scopeInjecting($errorRenderer, self::class);
+
+        if (!$errorRenderer->isHotwireRequest()) {
 
             return $this->invokePreviousRenderer($failureDetails);
         }
 
-        return $this->failureConvention
+        $domTarget = "_turbo_target";
 
-        ->deriveFormPartial($this->renderer, $failureDetails);
-    }
+        $targetContainer = $this->payloadStorage->keyHasContent($domTarget)?
 
-    /**
-     * {@inheritdoc}
-    */
-    public function mayBeInvalid(?BaseRenderer $renderer = null): self
-    {
+        $this->payloadStorage->getKey($domTarget): "#form-container";
 
-        if (is_null($renderer)) {
-            $renderer = $this->renderer;
-        }
+        $errorRenderer->addReplace(
+            $failureDetails, // The data source payload (errors + old input)
+            
+            fn ($result) => $targetContainer, // The target container to dump the error markup into
+            "hotwire/form-fragment" // The UI partial designed to read and display errors
+        );
 
-        if ($this->avoidHotwireConditions()) {
-
-            return parent::mayBeInvalid($renderer);
-        }
-
-        foreach ($renderer->getHotwireHandlers() as [, $handler]) {
-
-            $shouldValidate = $this->acquireValidatorStatus(
-                $renderer->getCoordinator(),
-                $handler
-            );
-
-            if ($shouldValidate && !$this->validatorManager->isValidated()) {
-
-                throw new ValidationFailure($this);
-            }
-        }
-
-        return $this;
+        return $errorRenderer;
     }
 
     public function shouldSetCode(RequestDetails $requestDetails, BaseRenderer $renderer): bool
     {
-
-        $isHotwireRenderer = !$this->avoidHotwireConditions();
+        $isHotwireRenderer = $renderer instanceof BaseHotwireStream && $renderer->isHotwireRequest();
 
         return $isHotwireRenderer ||
 

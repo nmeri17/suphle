@@ -22,7 +22,7 @@ class HotwireStreamBuilder
         return $this;
     }
 
-    public function __toString(): string
+    public function getTurboTags(): string
     {
 
         $wrappedContent = !is_null($this->nodeContent) ?

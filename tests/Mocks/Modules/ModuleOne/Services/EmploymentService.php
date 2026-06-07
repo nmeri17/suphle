@@ -2,14 +2,12 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-use Suphle\Services\BaseCoordinator;
+use Suphle\Services\{BaseCoordinator, Decorators\ValidationRules};
 use Suphle\Routing\Attributes\{Route, HttpMethod, RoutePrefix};
 use Suphle\Response\Format\{Redirect, Markup};
 use Suphle\Adapters\Presentation\Hotwire\Formats\{RedirectHotwireStream, ReloadHotwireStream};
 use Suphle\Adapters\Orms\Eloquent\Models\ModelDetail;
-use Suphle\Services\Decorators\ValidationRules;
-use Suphle\Tests\Mocks\Modules\ModuleOne\PayloadReaders\{BaseEmploymentBuilder, EmploymentId2Builder};
-use Suphle\Tests\Mocks\Modules\ModuleOne\Services\EmploymentService;
+use Suphle\Tests\Mocks\Modules\ModuleOne\{PayloadReaders\BaseEmploymentBuilder, PayloadReaders\EmploymentId2Builder, Services\EmploymentService};
 
 #[RoutePrefix("/hotwire")]
 class HotwireCoordinator extends BaseCoordinator
@@ -88,6 +86,9 @@ class HotwireCoordinator extends BaseCoordinator
     }
 
     #[Route("no-replace-node", method: HttpMethod::POST)]
+    #[ValidationRules([
+        'field1' => 'required|string'
+    ])]
     public function noReplaceNode(BaseEmploymentBuilder $employmentBuilder): RedirectHotwireStream
     {
         $mutationResult = $this->employmentService->updateModels($employmentBuilder);
@@ -106,31 +107,37 @@ class HotwireCoordinator extends BaseCoordinator
     }
 
     #[Route("delete-single", method: HttpMethod::DELETE)]
+    #[ValidationRules([
+        'id' => 'required|integer'
+    ])]
     public function deleteSingle(EmploymentId2Builder $employmentBuilder): RedirectHotwireStream
     {
-        // Mutative write triggers deletion processing via contract entry
-        $this->employmentService->updateModels($employmentBuilder);
+        // Mutative write triggers deletion processing via contract entry assigned to payload stream visibility
+        $mutationResult = $this->employmentService->updateModels($employmentBuilder);
 
         return (new RedirectHotwireStream(fn () => "/items"))
             ->addRemove(
-                [],
+                $mutationResult,
                 fn () => "#employment_" . $employmentBuilder->id
             );
     }
 
     #[Route("combine-delete", method: HttpMethod::DELETE)]
+    #[ValidationRules([
+        'id' => 'required|integer'
+    ])]
     public function combineDelete(EmploymentId2Builder $employmentBuilder): RedirectHotwireStream
     {
         $renderer = new RedirectHotwireStream(fn () => "/");
         
         // Mutative structural deletion action
-        $this->employmentService->updateModels($employmentBuilder);
+        $mutationResult = $this->employmentService->updateModels($employmentBuilder);
         
         // Safe data fetch wrapper for the secondary layout append tracking
         $ancillaryViewData = $this->employmentService->fetchAncillaryRecord($employmentBuilder);
         
         return $renderer->addRemove(
-            [],
+            $mutationResult,
             fn () => "#employment_" . $employmentBuilder->id
         )
         ->addAfter(

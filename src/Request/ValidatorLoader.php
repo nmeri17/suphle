@@ -6,7 +6,7 @@ use Suphle\Hydration\BaseInterfaceLoader;
 
 use Suphle\Adapters\Validators\LaravelValidator;
 
-use Suphle\Contracts\{ Config\AuthContract, Bridge\LaravelContainer, Database\OrmDialect};
+use Suphle\Contracts\{ Bridge\LaravelContainer, Database\OrmDialect};
 
 use Illuminate\Database\Capsule\Manager as Capsule;
 

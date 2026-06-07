@@ -1,5 +1,4 @@
 <?php
-
 namespace Suphle\Adapters\Presentation\Hotwire\Formats;
 
 use Suphle\Contracts\{Presentation\BaseRenderer, IO\Session};
@@ -8,15 +7,13 @@ use Suphle\Request\PayloadStorage;
 
 use Suphle\Response\Format\BaseHtmlRenderer;
 
-use Suphle\Hydration\Structures\CallbackDetails;
-
-use Suphle\Services\{ServiceCoordinator, Decorators\VariableDependencies};
+use Suphle\Services\{BaseCoordinator, Decorators\VariableDependencies};
 
 use Suphle\Adapters\Presentation\Hotwire\HotwireStreamBuilder;
 
 #[VariableDependencies([
 
-    "setPayloadStorage", "setCallbackDetails"
+    "setPayloadStorage"
 ])]
 abstract class BaseHotwireStream extends BaseHtmlRenderer implements MirrorableRenderer
 {
@@ -31,13 +28,9 @@ abstract class BaseHotwireStream extends BaseHtmlRenderer implements MirrorableR
 
     REMOVE_ACTION = "remove";
 
-    protected array $hotwireHandlers = [];
-    protected array // details about each handler being bound
-
-    $nodeResponses = [];
-    protected array // result of executing each handler
-
-    $streamBuilders = []; // houses each node and its corresponding parsed content
+    protected array $hotwireHandlers = [], // details about each handler being bound
+    $streamBuilders = [], // houses each node and its corresponding parsed content
+    $streams = [];
 
     protected PayloadStorage $payloadStorage;
 
@@ -45,24 +38,11 @@ abstract class BaseHotwireStream extends BaseHtmlRenderer implements MirrorableR
 
     protected string $markupName;
 
-    protected CallbackDetails $callbackDetails;
-
     protected int $statusCode = 200;
-
-    protected bool $trimmedActions = false;
-
-    protected array $streams = [];
 
     public function setPayloadStorage(PayloadStorage $payloadStorage): void
     {
-
         $this->payloadStorage = $payloadStorage;
-    }
-
-    public function setCallbackDetails(CallbackDetails $callbackDetails): void
-    {
-
-        $this->callbackDetails = $callbackDetails;
     }
 
     public function setSession(Session $sessionClient): void
@@ -90,7 +70,7 @@ abstract class BaseHotwireStream extends BaseHtmlRenderer implements MirrorableR
         }
     }
 
-    public function addAppend(string $handler, callable $target, string $markupName): self
+    public function addAppend(iterable $data, callable $target, string $markupName): self
     {
 
         $this->hotwireHandlers[] = [ // keying by action will limit each renderer to one action type
@@ -101,7 +81,7 @@ abstract class BaseHotwireStream extends BaseHtmlRenderer implements MirrorableR
         return $this;
     }
 
-    public function addPrepend(string $handler, callable $target, string $markupName): self
+    public function addPrepend(iterable $data, callable $target, string $markupName): self
     {
 
         $this->hotwireHandlers[] = [
@@ -112,7 +92,7 @@ abstract class BaseHotwireStream extends BaseHtmlRenderer implements MirrorableR
         return $this;
     }
 
-    public function addReplace(string $handler, callable $target, string $markupName): self
+    public function addReplace(iterable $data, callable $target, string $markupName): self
     {
 
         $this->hotwireHandlers[] = [
@@ -123,7 +103,7 @@ abstract class BaseHotwireStream extends BaseHtmlRenderer implements MirrorableR
         return $this;
     }
 
-    public function addUpdate(string $handler, callable $target, string $markupName): self
+    public function addUpdate(iterable $data, callable $target, string $markupName): self
     {
 
         $this->hotwireHandlers[] = [
@@ -134,7 +114,7 @@ abstract class BaseHotwireStream extends BaseHtmlRenderer implements MirrorableR
         return $this;
     }
 
-    public function addBefore(string $handler, callable $target, string $markupName): self
+    public function addBefore(iterable $data, callable $target, string $markupName): self
     {
 
         $this->hotwireHandlers[] = [
@@ -145,7 +125,7 @@ abstract class BaseHotwireStream extends BaseHtmlRenderer implements MirrorableR
         return $this;
     }
 
-    public function addAfter(string $handler, callable $target, string $markupName): self
+    public function addAfter(iterable $data, callable $target, string $markupName): self
     {
 
         $this->hotwireHandlers[] = [
@@ -156,29 +136,10 @@ abstract class BaseHotwireStream extends BaseHtmlRenderer implements MirrorableR
         return $this;
     }
 
-    public function addRemove(string $handler, callable $target): self
+    public function addRemove(iterable $data, callable $target): self
     {
 
-        $this->hotwireHandlers[] = [self::REMOVE_ACTION, $handler, $target];
-
-        return $this;
-    }
-
-    public function invokeActionHandler(array $handlerParameters): BaseRenderer
-    {
-
-        if (!$this->isHotwireRequest()) {
-
-            $this->fallbackRenderer->invokeActionHandler($handlerParameters);
-        } else {
-            foreach ($this->hotwireHandlers as $index => [, $handler]) {
-
-                $this->nodeResponses[] = call_user_func_array(
-                    [$this->coordinator, $handler],
-                    $handlerParameters[$index]
-                );
-            }
-        }
+        $this->hotwireHandlers[] = [self::REMOVE_ACTION, $data, $target];
 
         return $this;
     }
@@ -199,24 +160,23 @@ abstract class BaseHotwireStream extends BaseHtmlRenderer implements MirrorableR
 
         $allStreams = "";
 
-        foreach ($this->hotwireHandlers as $index => $handlerDetails) {
-            [$hotwireAction,, $targets ] = $handlerDetails;
+        $nodeResponses = [];
 
-            $this->rawResponse = $this->nodeResponses[$index]; // for use by the target derivator and the html parser at each node
+        foreach ($this->hotwireHandlers as [$hotwireAction, $dataSource, $genTarget, $uiPartial ]) {
 
-            $targetString = $this->callbackDetails
-                ->recursiveValueDerivation($targets, $this);
+            $nodeResponses[] = $result = $this->rawResponse = $dataSource; // htmlParser requires active data to be set on rawResponse;
 
-            $builder = new HotwireStreamBuilder($hotwireAction, $targetString);
+            $uiTarget = $genTarget($result);
 
-            $builder->wrapContent(
-                $this->parseNodeContent(@$handlerDetails[3])
-            );
+            $builder = new HotwireStreamBuilder($hotwireAction, $uiTarget);
 
-            $this->streamBuilders[] = $builder;
+            $builder->wrapContent($this->parseNodeContent($uiPartial));
 
-            $allStreams .= $builder->getStream();
+            $this->streamBuilders[] = $builder; // strictly for testing
+
+            $allStreams .= $builder->getTurboTags();
         }
+        $this->rawResponse = $nodeResponses;
 
         return $allStreams;
     }
@@ -249,44 +209,6 @@ abstract class BaseHotwireStream extends BaseHtmlRenderer implements MirrorableR
         return $this->htmlParser->parseRenderer($this);
     }
 
-    /**
-     * These methods expect the partials to check the PayloadStorage for presence of data from previous request
-    */
-    public function retainCreateNodes(): self
-    {
-
-        return $this->trimUnwantedActions([self::REPLACE_ACTION]);
-    }
-
-    public function retainUpdateNodes(): self
-    {
-
-        return $this->trimUnwantedActions([self::UPDATE_ACTION]);
-    }
-
-    protected function trimUnwantedActions(array $permittedActions): self
-    {
-
-        $handlersCopy = $this->hotwireHandlers;
-
-        $this->trimmedActions = true;
-
-        foreach ($handlersCopy as $index => [$hotwireAction]) {
-
-            if (!in_array($hotwireAction, $permittedActions)) {
-
-                unset($handlersCopy[$index]);
-            }
-        }
-
-        if (!empty($handlersCopy)) {
-
-            $this->hotwireHandlers = array_values($handlersCopy);
-        }
-
-        return $this;
-    }
-
     public function getStreamBuilders(): array
     {
 
@@ -297,47 +219,6 @@ abstract class BaseHotwireStream extends BaseHtmlRenderer implements MirrorableR
     {
 
         return $this->hotwireHandlers;
-    }
-
-    public function setCoordinatorClass(ServiceCoordinator $coordinator): void
-    {
-
-        parent::setCoordinatorClass($coordinator);
-
-        $this->fallbackRenderer->setCoordinatorClass($coordinator);
-    }
-
-    public function setHandler(string $handler): void
-    {
-
-        parent::setHandler($handler);
-
-        $this->fallbackRenderer->setHandler($handler);
-    }
-
-    public function setRawResponse(iterable $response): BaseRenderer
-    {
-
-        $this->forceArrayShape($response);
-
-        if ($this->trimmedActions) {
-
-            /**
-             * Wrap in extra array to match nodeResponse structure ([[], []...]).
-             *
-             * Since no action handler will be called in the eventuality of a validation failure, set this for all nodes found.
-             *
-             * Can either be one (on trim success), or all otherwise
-            */
-            foreach ($this->hotwireHandlers as $handlerDetails) {
-
-                $this->nodeResponses[] = $this->rawResponse;
-            }
-        } else {
-            $this->nodeResponses = $this->rawResponse;
-        }
-
-        return $this;
     }
 
     public function addStream(string $action, string $target, string $template, array $data = []): void

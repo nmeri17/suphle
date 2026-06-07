@@ -1,18 +1,25 @@
 <?php
-namespace Suphle\Tests\Unit\Routing;
+namespace Suphle\Tests\Integration\Routing;
 
-use Suphle\Routing\AttributeRouteScanner;
-use Suphle\Routing\Analysis\RouteAnalysisService;
-use Suphle\Modules\Structures\ActiveDescriptors;
-use Suphle\Contracts\Modules\DescriptorInterface;
+use Suphle\Routing\{AttributeRouteScanner, Analysis\RouteAnalysisService};
+
 use Suphle\Contracts\Config\Router;
-use Suphle\Testing\TestTypes\IsolatedComponentTest;
-use Suphle\Tests\Integration\Generic\CommonBinds;
-use Suphle\Tests\Mocks\Modules\ModuleOne\Config\RouterMock;
 
-class AttributeRouteScannerTest extends IsolatedComponentTest {
+use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
-    use CommonBinds;
+use Suphle\Tests\Mocks\Modules\ModuleOne\{ Meta\ModuleOneDescriptor, Config\RouterMock};
+
+class AttributeRouteScannerTest extends ModuleLevelTest {
+
+    protected function getModules(): array {
+
+        return [
+            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+
+                $container->replaceWithMock(Router::class, RouterMock::class, []);
+            })
+        ];
+    }
 
     /**
      * Verifies that the scanner correctly traverses the filesystem and 
@@ -22,32 +29,18 @@ class AttributeRouteScannerTest extends IsolatedComponentTest {
 
         $container = $this->getContainer();
 
-        // 1. Create a MOCK for the Analyzer (3rd argument of positiveDouble)
-        // Configuration: [invocations, [expected_arguments]]
         $analyzerMock = $this->positiveDouble(RouteAnalysisService::class, [
 
-            "analyzeCoordinator" => [["path" => "/found"]] // Stub return value
+            "analyzeCoordinator" => [["path" => "/found"]]
         ], [
-            "analyzeCoordinator" => [1, [$this->stringContains("TestCoordinator"), "ModuleOne"]] // Mock verification
+            "analyzeCoordinator" => [1, [$this->stringContains("TestCoordinator"), "ModuleOne"]]
         ]);
 
-        // 2. Stub ActiveDescriptors to return the descriptor defined in CommonBinds
-        $descriptor = $container->getClass(DescriptorInterface::class);
-
-        $activeDescriptors = $this->positiveDouble(ActiveDescriptors::class, [
-
-            "getOriginalDescriptors" => [$descriptor]
-        ]);
-
-        // 3. Inject our doubles into the container environment
         $this->massProvide([
 
             RouteAnalysisService::class => $analyzerMock,
-
-            ActiveDescriptors::class => $activeDescriptors, // is this necessary
         ]);
 
-        // 4. Hydrate SUT from container
         $scanner = $container->getClass(AttributeRouteScanner::class);
 
         // When

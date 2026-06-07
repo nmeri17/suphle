@@ -3,7 +3,7 @@ namespace Suphle\Routing\Documentation;
 
 use Suphle\Routing\{AttributeRouteScanner, Analysis\PsalmSchemaAnalyzer};
 use Suphle\Request\PayloadStorage;
-use Suphle\Contracts\Database\ModelSchemaDetector;
+use Suphle\Contracts\{PsalmCodebase, Database\ModelSchemaDetector};
 use Suphle\Exception\Diffusers\{UnauthorizedDiffuser, UnauthenticatedDiffuser};
 use ReflectionClass, ReflectionMethod;
 
@@ -12,10 +12,9 @@ class OpenApiGeneratorService
     public function __construct(
         protected readonly AttributeRouteScanner $routeScanner,
         protected readonly PsalmSchemaAnalyzer $psalmAnalyzer,
-        protected readonly ModelSchemaDetector $schemaDetector
-    ) {
-        //
-    }
+        protected readonly ModelSchemaDetector $schemaDetector,
+        protected readonly PsalmCodebase $psalmCodebase
+    ) { }
 
     public function generateOpenApiSpec (string $baseUrl): array // $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'];
     {
@@ -255,7 +254,7 @@ class OpenApiGeneratorService
         ];
     }
 
-    protected function buildSchemaFromRules(string $rules): array
+    public function buildSchemaFromRules(string $rules): array
     {
         $schema = ['type' => 'string'];
 
@@ -331,7 +330,7 @@ class OpenApiGeneratorService
         return $schema;
     }
 
-    protected function mapPhpTypeToOpenApi(string $phpType): string
+    public function mapPhpTypeToOpenApi(string $phpType): string
     {
         return match ($phpType) {
             'string' => 'string',
@@ -349,7 +348,12 @@ class OpenApiGeneratorService
             fn (Container $container) => $container->getClass(RouterConfig::class)
             ->getCoordinatorPath(),
             
-            $this->psalmAnalyzer->analyzeCoordinator(...)
+            function (string $coordinatorClass, string $moduleName) {
+
+                $this->psalmCodebase->scanSingleClass($coordinatorClass);
+
+                $this->psalmAnalyzer->analyzeCoordinator($coordinatorClass, $moduleName);
+            }
         );
     }
 } 

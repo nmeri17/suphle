@@ -2,14 +2,14 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-use Suphle\Services\BaseCoordinator;
+use Suphle\Services\BaseCoordinator as SuphleController;
 use Suphle\Routing\Attributes\{Route, RoutePrefix, HttpMethod};
 use Suphle\Response\Format\Json;
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\{PayloadReaders\ImagePayloadReader, Concretes\ARequiresBCounter};
 
 #[RoutePrefix('')]
-class BaseCoordinator extends BaseCoordinator
+class BaseCoordinator extends SuphleController
 {
     #[Route("")]
     public function indexHandler(): Json

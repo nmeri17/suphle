@@ -2,12 +2,14 @@
 namespace Suphle\Routing\Analysis;
 
 use Suphle\Contracts\Config\Router as RouterConfig;
-use Suphle\Hydration\Container;
-use Suphle\Flows\FlowHydrator;
-use Suphle\Hydration\Structures\ObjectDetails;
+use Suphle\Hydration\{Container, Structures\ObjectDetails};
+
 use Suphle\Routing\Attributes\{Route, RoutePrefix, CanaryState, HttpMethod, PreMiddleware, Middleware, ClearMiddleware, FlowDefinition};
-use Suphle\Auth\Middleware\{AuthenticateHandler, AuthorizeMetaFunnel};
+
+use Suphle\Auth\Middleware\{AuthenticateHandler, PathAuthorization};
+
 use Suphle\Services\Decorators\ValidationRules;
+
 use ReflectionClass, ReflectionMethod, ReflectionAttribute, Exception, RuntimeException;
 
 /**
@@ -29,7 +31,6 @@ abstract class RouteAnalysisService
     public function __construct(
         protected readonly RouterConfig $config,
         protected readonly Container $container,
-        protected readonly FlowHydrator $flowHydrator,
         protected readonly ObjectDetails $objectDetails
     ) {}
 
@@ -266,7 +267,7 @@ abstract class RouteAnalysisService
     protected function findMiddlewareList(
         ReflectionClass|ReflectionMethod $reflection,
         string $middlewareMarker,
-        array $exclude
+        array $exclude = []
     ): array
     {
         $attributes = $reflection instanceof ReflectionClass ?
@@ -306,10 +307,10 @@ abstract class RouteAnalysisService
 
     public function hasAuthBarriers (array $routeDetails):bool {
 
-        for ($routeDetails["pre_middleware"] as $middleware) {
+        foreach ($routeDetails["pre_middleware"] as $middleware) {
 
             if (
-                $this->objectDetails->stringInClassTree($middleware, AuthorizeMetaFunnel::class) ||
+                $this->objectDetails->stringInClassTree($middleware, PathAuthorization::class) ||
                 $this->objectDetails->stringInClassTree($middleware, AuthenticateHandler::class)
             )
                 return true;

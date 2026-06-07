@@ -11,7 +11,7 @@ class RouteInfoExecutor
     public function __construct(
         protected readonly Container $container,
 
-        protected readonly PathPlaceholders $placeholders,
+        protected readonly RouteInfo $placeholders,
 
         protected readonly RendererManager $rendererManager
     ) {}

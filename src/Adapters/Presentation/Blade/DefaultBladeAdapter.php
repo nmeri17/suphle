@@ -4,7 +4,9 @@ namespace Suphle\Adapters\Presentation\Blade;
 
 use Suphle\Contracts\{Config\ModuleFiles, Bridge\LaravelContainer};
 
-use Suphle\Contracts\Presentation\{HtmlParser, RendersMarkup};
+use Suphle\Contracts\Presentation\{HtmlParser};
+
+use Suphle\Response\Format\BaseHtmlRenderer;
 
 use Suphle\Services\Decorators\BindsAsSingleton;
 use Suphle\Routing\NamedRouteReader;
@@ -52,7 +54,7 @@ class DefaultBladeAdapter implements HtmlParser
         return __DIR__ . DIRECTORY_SEPARATOR. "CrudTemplates". DIRECTORY_SEPARATOR;
     }
 
-    public function parseRenderer(RendersMarkup $renderer): string
+    public function parseRenderer(BaseHtmlRenderer $renderer): string
     {
 
         $this->setViewFactory(); // these calls ought to reside in an interface loader but if they're called before all paths are being set, the factory won't include those sources
@@ -60,7 +62,7 @@ class DefaultBladeAdapter implements HtmlParser
         $this->bindComponentTags();
 
         return $this->parseRaw(
-            $renderer->getMarkupName(),
+            $renderer->markupName,
             $renderer->getRawResponse()
         );
     }

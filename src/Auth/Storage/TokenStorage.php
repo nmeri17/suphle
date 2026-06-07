@@ -2,7 +2,7 @@
 
 namespace Suphle\Auth\Storage;
 
-use Suphle\Contracts\{Config\AuthContract, IO\EnvAccessor};
+use Suphle\Contracts\{IO\EnvAccessor};
 
 use Suphle\Request\PayloadStorage;
 

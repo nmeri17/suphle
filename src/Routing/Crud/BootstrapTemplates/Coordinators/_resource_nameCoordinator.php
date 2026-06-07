@@ -2,10 +2,11 @@
 namespace _modules_shell\_module_name\Coordinators;
 
 use Suphle\Services\{BaseCoordinator, Decorators\ValidationRules};
-use Suphle\Routing\Attributes\{Route, RoutePrefix, HttpMethod};
+use Suphle\Routing\Attributes\{Route, RoutePrefix, HttpMethod, PreMiddleware};
 use Suphle\Response\Format\{Json, Markup, Reload};
 use Suphle\Security\CSRF\CsrfGenerator;
 use Suphle\Request\PayloadStorage;
+use Suphle\Auth\Middleware\{AuthenticateHandler, PathAuthorization};
 use Suphle\Contracts\IO\Session;
 use _modules_shell\_module_name\PayloadReaders\{Base_resource_nameBuilder, Search_resource_nameBuilder, _resource_nameSavePayload};
 use _modules_shell\_module_name\Services\Eloquent\{_resource_nameAccessor, _resource_nameSearcher};
@@ -37,6 +38,7 @@ class _resource_nameCoordinator extends BaseCoordinator
     }
 
     #[Route("", HttpMethod::POST)]
+    #[PreMiddleware(AuthenticateHandler::class)]
     #[ValidationRules([
         "name" => "required|string|max:255",
         "description" => "nullable|string"
@@ -49,6 +51,7 @@ class _resource_nameCoordinator extends BaseCoordinator
     }
 
     #[Route("{id}", HttpMethod::PUT)]
+    #[PreMiddleware(AuthenticateHandler::class)]
     #[ValidationRules([
         "name" => "required|string|max:255",
         "description" => "nullable|string"
@@ -74,7 +77,8 @@ class _resource_nameCoordinator extends BaseCoordinator
         ]);
     }
 
-    #[Route("{id}//edit")]
+    #[Route("{id}/edit")]
+    #[PreMiddleware(PathAuthorization::class, [])] // some rule here
     public function edit(Base_resource_nameBuilder $builder): Markup
     {
         return new Markup('_resource_name.edit', [
@@ -84,6 +88,7 @@ class _resource_nameCoordinator extends BaseCoordinator
     }
 
     #[Route("{id}", HttpMethod::DELETE)]
+    #[PreMiddleware(AuthenticateHandler::class)]
     public function destroy(Base_resource_nameBuilder $builder): Json
     {
         $this->accessor->deleteResource($builder->getBuilder());

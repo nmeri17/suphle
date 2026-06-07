@@ -12,7 +12,7 @@ use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\BrowserNoPrefix, Meta\ModuleOne
 
 class TestsRouter extends ModuleLevelTest
 {
-    protected function getEntryCollection(): string
+    protected function getEntryCollection(): string // see BasicRoutingTest for new design for this
     {
 
         return BrowserNoPrefix::class;

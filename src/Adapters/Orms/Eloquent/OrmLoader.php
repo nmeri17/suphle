@@ -4,7 +4,7 @@ namespace Suphle\Adapters\Orms\Eloquent;
 
 use Suphle\Hydration\{BaseInterfaceLoader, Container};
 
-use Suphle\Contracts\{ Config\AuthContract, Bridge\LaravelContainer, Database\OrmDialect, Auth\AuthStorage};
+use Suphle\Contracts\{ Config\Auth, Bridge\LaravelContainer, Database\OrmDialect, Auth\AuthStorage};
 
 use Suphle\Adapters\Orms\Eloquent\Models\BaseModel;
 
@@ -13,7 +13,7 @@ use Illuminate\Events\Dispatcher;
 class OrmLoader extends BaseInterfaceLoader
 {
     public function __construct(
-        protected readonly AuthContract $authContract,
+        protected readonly Auth $authContract,
         protected readonly AuthStorage $authStorage,
         protected readonly LaravelContainer $laravelContainer,
         protected readonly Container $container

@@ -37,7 +37,7 @@ class UmbrellaSaver
             $existing = new RouteUmbrella($location, $this->objectMeta);
 
             $existing->setAuthMechanism(
-                $originatingFlowDetails->getAuthStorage()
+                $originatingFlowDetails->authStorage::class
             );
         }
 
@@ -48,7 +48,7 @@ class UmbrellaSaver
 
         $saved = $this->cacheManager->saveItem($location, $existing);
 
-        $contentType = $this->getContentType($nodeContent->getRenderer());
+        $contentType = $this->getContentType($nodeContent->renderer);
 
         if ($contentType) {
 
@@ -80,7 +80,6 @@ class UmbrellaSaver
 
     public function getExistingUmbrella(string $urlPattern): ?RouteUmbrella
     {
-
         return $this->cacheManager->getItem($urlPattern); // or combine [tag] with the [get]
     }
 

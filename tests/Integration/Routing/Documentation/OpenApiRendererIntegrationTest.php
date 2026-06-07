@@ -1,4 +1,5 @@
 <?php
+
 namespace Suphle\Tests\Integration\Routing\Documentation;
 
 use Suphle\Testing\TestTypes\ModuleLevelTest;
@@ -7,6 +8,9 @@ use Suphle\Testing\Proxies\WriteOnlyContainer;
 use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\BaseCoordinator;
 
+/**
+ * Confirms the whole pipeline works together and spits out valid JSON at an actual endpoint.
+ */
 class OpenApiRendererIntegrationTest extends ModuleLevelTest
 {
     protected function getModules(): array
@@ -15,7 +19,6 @@ class OpenApiRendererIntegrationTest extends ModuleLevelTest
             $this->replicateModule(
                 ModuleOneDescriptor::class,
                 function (WriteOnlyContainer $container) {
-
                     $container->replaceWithMock(
                         RouterConfig::class,
                         RouterConfig::class,
@@ -30,11 +33,16 @@ class OpenApiRendererIntegrationTest extends ModuleLevelTest
         ];
     }
 
+    /**
+     * Hits the actual application endpoint running the OpenApiGeneratorService
+     */
     private function openApiSpec(): array
     {
-        return $this->getJson('/api-docs/json')
-            ->assertStatus(200)
-            ->json();
+        $responseAsserter = $this->getJson('/api-docs/json');
+        
+        $responseAsserter->assertStatus(200);
+
+        return json_decode($responseAsserter->getResponseBody(), true) ?? [];
     }
 
     public function test_openapi_root_structure_is_valid()
@@ -42,7 +50,6 @@ class OpenApiRendererIntegrationTest extends ModuleLevelTest
         $spec = $this->openApiSpec();
 
         $this->assertSame('3.0.0', $spec['openapi']);
-
         $this->assertArrayHasKey('paths', $spec);
         $this->assertArrayHasKey('components', $spec);
         $this->assertArrayHasKey('schemas', $spec['components']);
@@ -53,17 +60,16 @@ class OpenApiRendererIntegrationTest extends ModuleLevelTest
     {
         $spec = $this->openApiSpec();
 
-        $this->assertArrayHasKey('/api-docs', $spec['paths']);
-        $this->assertArrayHasKey('/api-docs/json', $spec['paths']);
+        $this->assertArrayHasKey('/api-docs', $spec['paths'] ?? []);
+        $this->assertArrayHasKey('/api-docs/json', $spec['paths'] ?? []);
     }
 
     public function test_operations_have_required_fields()
     {
         $spec = $this->openApiSpec();
 
-        foreach ($spec['paths'] as $path => $methods) {
+        foreach ($spec['paths'] ?? [] as $path => $methods) {
             foreach ($methods as $operation) {
-
                 $this->assertArrayHasKey('summary', $operation);
                 $this->assertArrayHasKey('responses', $operation);
                 $this->assertArrayHasKey('operationId', $operation);
@@ -78,7 +84,6 @@ class OpenApiRendererIntegrationTest extends ModuleLevelTest
         $operation = $spec['paths']['/api-docs/json']['get'] ?? null;
 
         $this->assertNotNull($operation);
-
         $this->assertArrayHasKey('responses', $operation);
         $this->assertArrayHasKey('200', $operation['responses']);
 
@@ -96,9 +101,8 @@ class OpenApiRendererIntegrationTest extends ModuleLevelTest
     {
         $spec = $this->openApiSpec();
 
-        foreach ($spec['paths'] as $methods) {
+        foreach ($spec['paths'] ?? [] as $methods) {
             foreach ($methods as $operation) {
-
                 if (!isset($operation['requestBody'])) {
                     continue;
                 }
@@ -115,6 +119,7 @@ class OpenApiRendererIntegrationTest extends ModuleLevelTest
     {
         $spec = $this->openApiSpec();
 
+        $this->assertArrayHasKey('components', $spec);
         $this->assertArrayHasKey('securitySchemes', $spec['components']);
         $this->assertArrayHasKey(
             'bearerAuth',
@@ -126,11 +131,9 @@ class OpenApiRendererIntegrationTest extends ModuleLevelTest
     {
         $spec = $this->openApiSpec();
 
-        foreach ($spec['paths'] as $methods) {
+        foreach ($spec['paths'] ?? [] as $methods) {
             foreach ($methods as $operation) {
-
                 if (!empty($operation['security'])) {
-
                     $this->assertArrayHasKey(
                         'bearerAuth',
                         $operation['security'][0]
@@ -144,12 +147,11 @@ class OpenApiRendererIntegrationTest extends ModuleLevelTest
     {
         $spec = $this->openApiSpec();
 
-        $schemas = $spec['components']['schemas'];
+        $schemas = $spec['components']['schemas'] ?? [];
 
         $this->assertNotEmpty($schemas);
 
         foreach ($schemas as $schema) {
-
             $this->assertSame('object', $schema['type']);
             $this->assertArrayHasKey('properties', $schema);
         }
@@ -159,11 +161,10 @@ class OpenApiRendererIntegrationTest extends ModuleLevelTest
     {
         $spec = $this->openApiSpec();
 
-        $schemas = $spec['components']['schemas'];
-        $refs = $this->collectRefs($spec['paths']);
+        $schemas = $spec['components']['schemas'] ?? [];
+        $refs = $this->collectRefs($spec['paths'] ?? []);
 
         foreach ($refs as $ref) {
-
             $this->assertArrayHasKey(
                 $ref,
                 $schemas,
@@ -176,12 +177,10 @@ class OpenApiRendererIntegrationTest extends ModuleLevelTest
     {
         $spec = $this->openApiSpec();
 
-        $refs = $this->collectRefs($spec['paths']);
+        $refs = $this->collectRefs($spec['paths'] ?? []);
 
         foreach ($refs as $ref) {
-
             $this->assertNotEmpty($ref);
-
             $this->assertStringStartsWith(
                 '#/components/schemas/',
                 "#/components/schemas/{$ref}"
@@ -193,16 +192,13 @@ class OpenApiRendererIntegrationTest extends ModuleLevelTest
     {
         $spec = $this->openApiSpec();
 
-        foreach ($spec['components']['schemas'] as $name => $schema) {
-
+        foreach ($spec['components']['schemas'] ?? [] as $name => $schema) {
             if (!isset($schema['properties'])) {
                 continue;
             }
 
             foreach ($schema['properties'] as $prop => $value) {
-
                 if (($value['type'] ?? null) === 'array') {
-
                     $this->assertArrayHasKey(
                         'items',
                         $value,
@@ -212,12 +208,11 @@ class OpenApiRendererIntegrationTest extends ModuleLevelTest
                     $this->assertArrayHasKey(
                         '$ref',
                         $value['items'],
-                        "Missing $ref in {$name}.{$prop}"
+                        "Missing \$ref in {$name}.{$prop}"
                     );
                 }
 
                 if (isset($value['$ref'])) {
-
                     $this->assertStringStartsWith(
                         '#/components/schemas/',
                         $value['$ref']
@@ -231,8 +226,7 @@ class OpenApiRendererIntegrationTest extends ModuleLevelTest
     {
         $spec = $this->openApiSpec();
 
-        foreach ($spec['components']['schemas'] as $key => $schema) {
-
+        foreach ($spec['components']['schemas'] ?? [] as $key => $schema) {
             $this->assertNotEmpty($key);
             $this->assertIsArray($schema);
         }
@@ -254,7 +248,6 @@ class OpenApiRendererIntegrationTest extends ModuleLevelTest
         $refs = [];
 
         array_walk_recursive($paths, function ($value, $key) use (&$refs) {
-
             if ($key === '$ref') {
                 $refs[] = str_replace('#/components/schemas/', '', $value);
             }

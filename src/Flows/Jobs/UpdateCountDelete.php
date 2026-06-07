@@ -1,5 +1,4 @@
 <?php
-
 namespace Suphle\Flows\Jobs;
 
 use Suphle\Flows\{OuterFlowWrapper, UmbrellaSaver, Structures\AccessContext};
@@ -14,14 +13,10 @@ class UpdateCountDelete implements Task
     public function __construct(
         protected readonly AccessContext $theAccessed,
         protected readonly UmbrellaSaver $flowSaver
-    ) {
-
-        //
-    }
+    ) { }
 
     public function handle(): void
     {
-
         $accessed = $this->theAccessed;
 
         $routeUmbrella = $accessed->getRouteUmbrella();
@@ -32,9 +27,8 @@ class UpdateCountDelete implements Task
 
         $urlPattern = $accessed->getPath();
 
-        $hits = $mainFlow->currentHits();
-
-        if ($hits >= $mainFlow->getMaxHits($accessingUser, $urlPattern)-1) { // this task only runs when a flow has been accessed. If maxHits = 0, we don't want to access it on the next visit
+        // $mainFlow->getMaxHits($accessingUser, $urlPattern)-1
+        if ($mainFlow->hasExceededMaxHits()) { // this task only runs when a flow has been accessed. If maxHits = 0, we don't want to access it on the next visit
 
             $routeUmbrella->clearUser($accessingUser);
         } else {

@@ -2,12 +2,12 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-use Suphle\Coordinators\ServiceCoordinator;
+use Suphle\Services\BaseCoordinator;
 use Suphle\Routing\Attributes\{Route, RoutePrefix, HttpMethod};
 use Suphle\Response\Format\{Json, Redirect, Reload, Markup};
 
 #[RoutePrefix('api/v1/test')]
-class TestCoordinator extends ServiceCoordinator
+class TestCoordinator extends BaseCoordinator
 {
     #[Route('/')]
     public function index(): Json
