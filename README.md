@@ -44,10 +44,8 @@ We are running a hard sprint through **September** to finalize test coverage, re
 | **🔬 Architecture Insider** | **$100** *(One-Time)* | Senior Developers / Architects | Code-level access. Read-access to the private repositories of our two real-world pipeline showcase applications *while they are being built* to study Suphle's design patterns in production. |
 | **🌱 Ecosystem Booster** | **$25** *(One-Time)* | Open-Source Enthusiasts | Permanent name credit within the repository's foundational `SPONSORS.md` file. |
 
-### bank details 💳
-Account holder : nmeri alphonsus 
-ACCOUNT NUMBER : 42723560 
-BANK NAME : Clear Junction Limited
+### 💳
+[Click Here to Process Your Sponsorship via Selar](https://selar.com/showlove/suphle)
 
 *Note: This is our sole, verified gateway for funding. To prevent security friction or identity confusion, please do not engage with unverified third-party outreach representatives.*
 
