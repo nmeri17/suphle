@@ -4,13 +4,13 @@ namespace Suphle\Routing;
 use Suphle\Hydration\{Container, Structures\ObjectDetails};
 use Suphle\Modules\Structures\ActiveDescriptors;
 use Suphle\Contracts\Config\{ModuleFiles, Router as RouterConfig};
-use Suphle\Routing\Analysis\RouteAnalysisService;
+use Suphle\Routing\Analysis\ResponseSchemaAnalyzer;
 use RecursiveDirectoryIterator, RecursiveIteratorIterator, RegexIterator, RecursiveRegexIterator;
 
 class AttributeRouteScanner
 {
     public function __construct(
-        protected readonly RouteAnalysisService $analyzerService,
+        protected readonly ResponseSchemaAnalyzer $analyzerService,
         protected readonly ActiveDescriptors $activeDescriptors,
         protected readonly ObjectDetails $objectMeta
     ) {}

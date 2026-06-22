@@ -3,19 +3,19 @@
 namespace Suphle\Tests\Unit\Response\Format;
 
 use Suphle\Testing\TestTypes\IsolatedComponentTest;
-use Suphle\Routing\Analysis\PsalmSchemaAnalyzer;
+use Suphle\Routing\Analysis\RendererContentShape;
 use Suphle\Response\Format\{Json, Markup, Redirect, Reload, LocalFileDownload};
 use Suphle\Adapters\Presentation\Hotwire\Formats\BaseHotwireStream;
 use Suphle\Tests\Integration\Generic\CommonBinds;
 
-/*sut passes renderer names into PsalmSchemaAnalyzer to figure out the schema. This verifies that your analyzer successfully recognizes each response type and outputs valid OpenAPI boilerplate for them.*/
+/*sut passes renderer names into RendererContentShape to figure out the schema. This verifies that your analyzer successfully recognizes each response type and outputs valid OpenAPI boilerplate for them.*/
 class OpenApiRendererImplementationTest extends IsolatedComponentTest
 {
     use CommonBinds;
     
     public function test_markup_renderer_schema_resolution()
     {
-        $analyzer = $this->getContainer()->getClass(PsalmSchemaAnalyzer::class);
+        $analyzer = $this->getContainer()->getClass(RendererContentShape::class);
         $schema = $analyzer->getStandardFormatSchema(Markup::class);
         
         $this->assertIsArray($schema);var_dump($schema);
@@ -26,7 +26,7 @@ class OpenApiRendererImplementationTest extends IsolatedComponentTest
 
     public function test_hotwire_stream_renderer_schema_resolution()
     {
-        $analyzer = $this->getContainer()->getClass(PsalmSchemaAnalyzer::class);
+        $analyzer = $this->getContainer()->getClass(RendererContentShape::class);
         $schema = $analyzer->getStandardFormatSchema(BaseHotwireStream::class);
         
         $this->assertIsArray($schema);
@@ -39,7 +39,7 @@ class OpenApiRendererImplementationTest extends IsolatedComponentTest
 
     public function test_all_core_renderers_produce_valid_openapi_specifications()
     {
-        $analyzer = $this->getContainer()->getClass(PsalmSchemaAnalyzer::class);
+        $analyzer = $this->getContainer()->getClass(RendererContentShape::class);
 
         $renderers = [
             Json::class,

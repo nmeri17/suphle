@@ -15,13 +15,6 @@ trait AnalyzerUtils
             ];
         }
 
-        if (is_subclass_of($rendererClass, Json::class)) {
-            return [
-                'type' => 'object',
-                'contentMediaType' => PayloadStorage::JSON_HEADER_VALUE
-            ];
-        }
-
         if (is_subclass_of($rendererClass, Redirect::class)) {
             return [
                 'type' => 'string',

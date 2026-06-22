@@ -10,7 +10,7 @@ class FileSystemReader
     protected array $filesFinalDestination = [];
 
     /**
-     * Traverse {currentWorkingDirectory} backwards, for the number of levels given by dots in {relativePath}
+     * Traverse {currentWorkingDirectory} backwards, for the number of levels given by dots in {relativePath} eg given "C:\wamp64\www\suphle\src\Routing\Analysis" and "../../Config/ModuleFiles.php", 2 levels are chopped off to produce C:\wamp64\www\suphle\src\Config\ModuleFiles.php
      *
      * @param {relativePath}: Expects a location relative to given absolute path
      * @param {currentWorkingDirectory}: Absolute path to use as anchor for the operation

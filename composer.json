@@ -45,7 +45,7 @@
 		"symfony/mailer": "^6.0",
 		"symfony/process": "^6.0",
 		"symfony/psr-http-message-bridge": "^2.1",
-		"vimeo/psalm": "*",
+		"vimeo/psalm": "6.0",
 		"vlucas/phpdotenv": "*",
 		"wyrihaximus/json-throwable": "^4.1"
 	},

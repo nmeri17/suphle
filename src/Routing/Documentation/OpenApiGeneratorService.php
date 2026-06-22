@@ -1,9 +1,9 @@
 <?php
 namespace Suphle\Routing\Documentation;
 
-use Suphle\Routing\{AttributeRouteScanner, Analysis\PsalmSchemaAnalyzer};
+use Suphle\Routing\{AttributeRouteScanner, Analysis\RendererContentShape};
 use Suphle\Request\PayloadStorage;
-use Suphle\Contracts\{PsalmCodebase, Database\ModelSchemaDetector};
+use Suphle\Contracts\{ Database\ModelSchemaDetector};
 use Suphle\Exception\Diffusers\{UnauthorizedDiffuser, UnauthenticatedDiffuser};
 use ReflectionClass, ReflectionMethod;
 
@@ -11,9 +11,8 @@ class OpenApiGeneratorService
 {
     public function __construct(
         protected readonly AttributeRouteScanner $routeScanner,
-        protected readonly PsalmSchemaAnalyzer $psalmAnalyzer,
+        protected readonly RendererContentShape $staticMethodShape,
         protected readonly ModelSchemaDetector $schemaDetector,
-        protected readonly PsalmCodebase $psalmCodebase
     ) { }
 
     public function generateOpenApiSpec (string $baseUrl): array // $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'];
@@ -28,7 +27,7 @@ class OpenApiGeneratorService
             ],
             'paths' => [],
             'components' => [
-                // Retrieve all models registered by the detector during the route scan
+                // Retrieve all models registered by the detector during the route scan above
                 'schemas' => $this->schemaDetector->getGeneratedSchemas(),
                 'parameters' => [],
                 'securitySchemes' => [
@@ -87,7 +86,7 @@ class OpenApiGeneratorService
                 $pathItem['requestBody'] = $requestBody;
             }
         }
-        if ($this->psalmAnalyzer->hasAuthBarriers($route)) {
+        if ($this->staticMethodShape->hasAuthBarriers($route)) {
             $pathItem['security'] = [
                 ['bearerAuth' => []]
             ];
@@ -165,7 +164,7 @@ class OpenApiGeneratorService
     {
         $rendererClass = $route['renderer'];
         
-        $contentTypeSchema = $this->psalmAnalyzer->getStandardFormatSchema($rendererClass);
+        $contentTypeSchema = $this->staticMethodShape->getStandardFormatSchema($rendererClass);
 
         $contentType = is_array($contentTypeSchema)
             && ($contentTypeSchema['contentMediaType'] ?? null)
@@ -176,9 +175,9 @@ class OpenApiGeneratorService
         
         $responses = [
             (string)$statusCode => [
-                'description' => $this->psalmAnalyzer->extractMethodDescription(),
+                'description' => $this->staticMethodShape->extractMethodDescription(),
 
-                'content' => $this->buildResponseContent($responseSchema, $contentType)
+                'content' => $this->buildResponseContent($contentType, $responseSchema)
             ]
         ];
 
@@ -204,9 +203,9 @@ class OpenApiGeneratorService
         }
 
         // Add auth responses if route has authentication/authorization barriers
-        if ($this->psalmAnalyzer->hasAuthBarriers($route)) {
-            $authMessage = $this->psalmAnalyzer->getAuthenticationErrorMessage();
-            $authzMessage = $this->psalmAnalyzer->getAuthorizationErrorMessage();
+        if ($this->staticMethodShape->hasAuthBarriers($route)) {
+            $authMessage = $this->staticMethodShape->getAuthenticationErrorMessage();
+            $authzMessage = $this->staticMethodShape->getAuthorizationErrorMessage();
             
             $responses['401'] = [
                 'description' => 'Unauthorized - Authentication required',
@@ -348,12 +347,7 @@ class OpenApiGeneratorService
             fn (Container $container) => $container->getClass(RouterConfig::class)
             ->getCoordinatorPath(),
             
-            function (string $coordinatorClass, string $moduleName) {
-
-                $this->psalmCodebase->scanSingleClass($coordinatorClass);
-
-                $this->psalmAnalyzer->analyzeCoordinator($coordinatorClass, $moduleName);
-            }
+            $this->staticMethodShape->analyzeCoordinator(...)
         );
     }
 } 

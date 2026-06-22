@@ -4,7 +4,7 @@ namespace Suphle\Hydration\Structures;
 
 use Suphle\Contracts\Hydration\{InterfaceCollection, DecoratorChain};
 
-use Suphle\Contracts\{Events, PsalmCodebase, Queues\Adapter as QueueAdapter, Modules\ControllerModule, Response\RendererManager };
+use Suphle\Contracts\{Events, Queues\Adapter as QueueAdapter, Modules\ControllerModule, Response\RendererManager };
 
 use Suphle\Contracts\Exception\{FatalShutdownAlert, AlertAdapter};
 
@@ -31,8 +31,6 @@ use Suphle\IO\{Mailing\MailClientLoader, Env\DatabaseEnvReader};
 use Suphle\IO\Cache\AdapterLoader as CacheAdapterLoader;
 
 use Suphle\Auth\{LoginHandlerInterfaceLoader, EmailPasswordComparer, Storage\SessionStorage};
-
-use Suphle\Routing\Analysis\PsalmCodebaseLoader;
 
 use Suphle\Adapters\Orms\Eloquent\{ UserEntityLoader, ModelReplicator, OrmLoader, DatabaseTester as EloquentTester};
 
@@ -88,8 +86,6 @@ class BaseInterfaceCollection implements InterfaceCollection
             OrmDialect::class => OrmLoader::class,
 
             QueueAdapter::class => QueueAdapterLoader::class,
-
-            PsalmCodebase::class => PsalmCodebaseLoader::class,
 
             RequestValidator::class => ValidatorLoader::class
         ];

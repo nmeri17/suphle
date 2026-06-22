@@ -18,7 +18,7 @@ class RouteListingService
     public function __construct(
         protected readonly AttributeRouteScanner $routeScanner,
 
-        protected readonly PsalmSchemaAnalyzer $analyzerService
+        protected readonly ResponseSchemaAnalyzer $analyzerService
     ) {}
  
     public function getFormattedRows(?string $targetModule = null): array

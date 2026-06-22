@@ -1,7 +1,7 @@
 <?php
 namespace Suphle\Tests\Unit\Routing;
 
-use Suphle\Routing\Analysis\PsalmSchemaAnalyzer;
+use Suphle\Routing\Analysis\RendererContentShape;
 use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\PrefixedCoordinator;
 use Suphle\Testing\TestTypes\IsolatedComponentTest;
 use Suphle\Tests\Integration\Generic\CommonBinds;
@@ -11,7 +11,7 @@ class RouteAnalysisServiceTest extends IsolatedComponentTest {
     use CommonBinds;
 
     public function test_analyzeCoordinator_resolves_prefixes_and_methods() {
-        $analyzer = $this->getContainer()->getClass(PsalmSchemaAnalyzer::class);
+        $analyzer = $this->getContainer()->getClass(RendererContentShape::class);
         
         // When
         $routes = $analyzer->analyzeCoordinator(PrefixedCoordinator::class, "ModuleOne");
@@ -23,7 +23,7 @@ class RouteAnalysisServiceTest extends IsolatedComponentTest {
     }
 
     public function test_analyzeMethod_merges_middleware_correctly() {
-        $analyzer = $this->getContainer()->getClass(PsalmSchemaAnalyzer::class);
+        $analyzer = $this->getContainer()->getClass(RendererContentShape::class);
         $reflection = new ReflectionClass(PrefixedCoordinator::class);
         $method = $reflection->getMethod("someMethod");
 
@@ -35,7 +35,7 @@ class RouteAnalysisServiceTest extends IsolatedComponentTest {
     }
 
     public function test_psalm_analyzer_detects_renderer_shapes() {
-        $analyzer = $this->getContainer()->getClass(PsalmSchemaAnalyzer::class);
+        $analyzer = $this->getContainer()->getClass(RendererContentShape::class);
         $reflection = new ReflectionClass(PrefixedCoordinator::class);
         $method = $reflection->getMethod("methodReturningJson");
 

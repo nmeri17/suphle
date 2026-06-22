@@ -1,7 +1,7 @@
 <?php
 namespace Suphle\Routing;
 
-use Suphle\Routing\Analysis\RouteAnalysisService;
+use Suphle\Routing\Analysis\ResponseSchemaAnalyzer;
 
 use Suphle\Contracts\Config\Router as RouterConfig;
 
@@ -13,8 +13,8 @@ class NamedRouteReader
 {
     public function __construct(
         protected readonly AttributeRouteScanner $routeScanner,
-        private readonly RouteAnalysisService $analyzerService,
-        private readonly PathPlaceholders $placeholders
+        private readonly ResponseSchemaAnalyzer $analyzerService,
+        private readonly RouteInfo $placeholders
     ) {}
 
     /**
@@ -40,7 +40,7 @@ class NamedRouteReader
 
     private function interpolatePath(string $path, array $parameters): string
     {
-        // Replace {param} placeholders with actual values from $parameters or PathPlaceholders
+        // Replace {param} placeholders with actual values from $parameters or RouteInfo
         return preg_replace_callback('/\{([^}]+)\}/', function ($matches) use ($parameters) {
             $paramName = $matches[1];
             

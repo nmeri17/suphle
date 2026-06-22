@@ -18,13 +18,13 @@ Tier 1: The Parent (RouteAnalysisService)
 
 The Engine: Finds the classes, builds the URLs, identifies the methods, and finds the Payload Readers.
 
-Tier 2: The Kids (PsalmSchemaAnalyzer & ResponseSchemaAnalyzer)
+Tier 2: The Kids (RendererContentShape & ResponseSchemaAnalyzer)
 
-The Specialized Eyes: They look at the Return Type only. One looks at Psalm types (for docs), the other looks at Json/Markup (for testing).
+The Specialized Eyes: They look at the Return Type only. One looks at static types (for docs), the other looks at Json/Markup (for testing).
 
-Tier 3: The External Services (RouteListingService & NamedRouteReader)
+Tier 3: The External Services (RouteListingService, OpenApiGeneratorService, NamedRouteReader)
 
-The Consumers: They use the Parent/Kids to actually do something, like print a table in the console or generate a link in a view.
+The Consumers: They use the Kids to actually do something, like print a table in the console or generate a link in a view.
 */
 abstract class RouteAnalysisService
 {
