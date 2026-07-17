@@ -2,13 +2,15 @@
 
 namespace Suphle\Tests\Integration\Middleware;
 
-use Suphle\Contracts\Config\Router;
+use Suphle\Contracts\Config\Router as RouterContract;
+
+use Suphle\Config\Router;
 
 use Suphle\Middleware\Handlers\FinalHandlerWrapper;
 
 use Suphle\Testing\{ TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer };
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock, Middlewares\AltersPayloadStorage, Routes\Middlewares\PayloadCollection};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Middlewares\AltersPayloadStorage};
 
 class AlterPayloadStorageTest extends ModuleLevelTest
 {
@@ -20,9 +22,7 @@ class AlterPayloadStorageTest extends ModuleLevelTest
         return [
             $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-                $container->replaceWithMock(Router::class, RouterMock::class, [
-
-                    "browserEntryRoute" => PayloadCollection::class,
+                $container->replaceWithMock(RouterContract::class, Router::class, [
 
                     "defaultMiddleware" => [
                         $this->modifierMiddleware,
@@ -37,7 +37,7 @@ class AlterPayloadStorageTest extends ModuleLevelTest
     // this works because of object references. Changes to payloadStorage within the middleware affect the one stored in container
     public function test_container_must_not_provide_altered_payloadStorage()
     {
-
+// find the cdtr this route belongs to
         $response = $this->get("/all-payload"); // when
 
         $middlewareInstance = $this->getContainer()->getClass($this->modifierMiddleware);

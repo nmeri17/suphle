@@ -3,10 +3,13 @@
 namespace Suphle\Tests\Integration\Routing\Canaries;
 
 use Suphle\Routing\Attributes\HttpMethod;
-use Suphle\Contracts\Config\Router;
+use Suphle\Contracts\Config\Router as RouterContract;
+
+use Suphle\Config\Router;
+
 use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer, Condiments\BaseDatabasePopulator};
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock};
-use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\CanaryCoordinator;
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Coordinators\CanaryCoordinator};
+
 use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
 
 class CanaryTest extends ModuleLevelTest
@@ -17,7 +20,7 @@ class CanaryTest extends ModuleLevelTest
     {
         return [
             $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
-                $container->replaceWithMock(Router::class, RouterMock::class, [
+                $container->replaceWithMock(RouterContract::class, Router::class, [
                     "getCoordinatorClassesToScan" => [
                         CanaryCoordinator::class
                     ]

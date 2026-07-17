@@ -24,7 +24,7 @@ class TestsRouter extends ModuleLevelTest
         return [
             $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-                $container->replaceWithMock(Router::class, RouterMock::class, []);
+                // $container->replaceWithMock(RouterContract::class, Router::class, []);
             })
         ];
     }

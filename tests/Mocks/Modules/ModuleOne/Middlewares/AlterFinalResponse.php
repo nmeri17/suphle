@@ -4,11 +4,11 @@ namespace Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares;
 
 use Suphle\Contracts\{Presentation\BaseRenderer, Routing\Middleware};
 
-use Suphle\Middleware\MiddlewareNexts;
+use Suphle\Middleware\{MiddlewareNexts, BaseMiddleware};
 
 use Suphle\Request\PayloadStorage;
 
-class AlterFinalResponse implements Middleware
+class AlterFinalResponse extends BaseMiddleware
 {
     public function process(PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler): BaseRenderer
     {

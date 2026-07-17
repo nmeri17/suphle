@@ -6,7 +6,7 @@ use Suphle\Contracts\{Config\Laravel, Bridge\LaravelContainer};
 
 use Suphle\Services\Decorators\BindsAsSingleton;
 
-use Suphle\Bridge\Laravel\{DefaultExceptionHandler, Config\ConfigLoader};
+use Suphle\Bridge\Laravel\DefaultExceptionHandler;
 
 use Suphle\Request\{RequestDetails, PayloadStorage};
 
@@ -17,6 +17,8 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Bootstrap\{RegisterFacades, RegisterProviders, BootProviders};
 
 use Illuminate\Contracts\Debug\ExceptionHandler;
+
+use Illuminate\Config\Repository as ConfigRepo;
 
 use ReflectionClass;
 
@@ -34,7 +36,7 @@ class LaravelAppConcrete extends Application implements LaravelContainer
 
     public function __construct(
         protected readonly RequestDetails $requestDetails,
-        protected readonly ConfigLoader $configLoader,
+        protected readonly ConfigRepo $configRepo,
         protected readonly PayloadStorage $payloadStorage,
         string $basePath
     ) {
@@ -54,7 +56,7 @@ class LaravelAppConcrete extends Application implements LaravelContainer
         return [
             "app" => $this,
 
-            "config" => $this->configLoader,
+            "config" => $this->configRepo,
 
             LaravelContainer::INCOMING_REQUEST_KEY => $this->provideRequest(
                 $this->requestDetails,
@@ -98,7 +100,7 @@ class LaravelAppConcrete extends Application implements LaravelContainer
         return LaravelRequest::create(
             $requestDetails->getPath()?? "", // in case this container is requested outside a http context
 
-            $requestDetails->getHttpMethod()?? "",
+            "", // this should come from routeInfo but i don't think they need the accurate values anymore
             $payloadStorage->fullPayload(),
             $_COOKIE, /*$payloadStorage->getCookieParams/getUploadedFiles/getServerParams(). Can't use these psr equivalents cuz they're strongly typed and these methods return null if called outside a request context, as it's often is here*/
             $_FILES,

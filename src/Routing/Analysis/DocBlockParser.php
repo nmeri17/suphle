@@ -6,7 +6,7 @@ use ReflectionMethod;
 trait DocBlockParser
 {
     /**
-     * Returns all lines not starting with @ as a string
+     * Returns all lines not starting with @ as a string. expected to be called immediately after analysis of a method
      */
     public function extractMethodDescription(): string
     {

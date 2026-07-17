@@ -15,12 +15,11 @@ class AuthenticateHandler extends BaseMiddleware
     /**
      * @throws Unauthenticated
      */
-    public function process(
-        PayloadStorage $payloadStorage, 
-        ?MiddlewareNexts $requestHandler
-    ): BaseRenderer {
+    public function process(PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler): BaseRenderer {
 
-        if (is_null($this->tryGetUserId())) throw new Unauthenticated($this->storage);
+        if (is_null($this->tryGetUserId()))
+
+            throw new Unauthenticated($this->storage);
 
         /**
          * Finalize the global binding. This ensures that any service 

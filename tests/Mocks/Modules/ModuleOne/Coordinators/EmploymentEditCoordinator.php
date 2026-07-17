@@ -4,12 +4,13 @@ namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
 use Suphle\Request\PayloadStorage;
 use Suphle\Services\{BaseCoordinator, Decorators\ValidationRules};
-use Suphle\Routing\Attributes\{Route, HttpMethod, PreMiddleware};
+use Suphle\Routing\Attributes\{Route, HttpMethod, PreMiddleware, RoutePrefix};
 use Suphle\Response\Format\Json;
 use Suphle\Auth\Middleware\PathAuthorization;
 use Suphle\Tests\Mocks\Modules\ModuleOne\{Concretes\Services\EmploymentEditMock, PayloadReaders\BaseEmploymentBuilder};
 use Suphle\Tests\Mocks\Modules\ModuleOne\Authorization\Paths\{EmploymentEditRule, AdminRule};
 
+#[RoutePrefix("/employment")]
 class EmploymentEditCoordinator extends BaseCoordinator
 {
     public function __construct(

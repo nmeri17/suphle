@@ -2,11 +2,13 @@
 
 namespace Suphle\Tests\Integration\Routing;
 
-use Suphle\Contracts\Config\Router;
+use Suphle\Contracts\Config\Router as RouterContract;
+
+use Suphle\Config\Router;
 
 use Suphle\Testing\Proxies\WriteOnlyContainer;
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{ Meta\ModuleOneDescriptor, Config\RouterMock};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{ Meta\ModuleOneDescriptor};
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\ApiRoutes\{V2\ApiUpdate2Entry, V3\ApiUpdate3Entry};
 
@@ -18,7 +20,7 @@ class VersioningTest extends TestsRouter
         return [
             $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-                $container->replaceWithMock(Router::class, RouterMock::class, [
+                $container->replaceWithMock(RouterContract::class, Router::class, [
 
                     "browserEntryRoute" => $this->getEntryCollection(),
 

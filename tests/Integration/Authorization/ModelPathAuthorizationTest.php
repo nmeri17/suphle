@@ -2,7 +2,9 @@
 
 namespace Suphle\Tests\Integration\Authorization;
 
-use Suphle\Contracts\{Config\Router, Auth\UserContract};
+use Suphle\Contracts\{Config\Router as RouterContract, Auth\UserContract};
+
+use Suphle\Config\Router;
 
 use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
 
@@ -12,7 +14,7 @@ use Suphle\Testing\Proxies\{WriteOnlyContainer, SecureUserAssertions};
 
 use Suphle\Tests\Mocks\Models\Eloquent\{Employment, Employer};
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Auth\AuthorizeRoutes, Meta\ModuleOneDescriptor, Config\RouterMock};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Auth\AuthorizeRoutes, Meta\ModuleOneDescriptor};
 
 class ModelPathAuthorizationTest extends ModuleLevelTest
 {
@@ -62,9 +64,9 @@ class ModelPathAuthorizationTest extends ModuleLevelTest
         return [
             $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-                $container->replaceWithMock(Router::class, RouterMock::class, [
+                $container->replaceWithMock(RouterContract::class, Router::class, [
 
-                    "browserEntryRoute" => AuthorizeRoutes::class
+                    "getCoordinatorClassesToScan" => [AuthorizeRoutes::class] // invalid. find who now has these routes
                 ]);
             })
         ];

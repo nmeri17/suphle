@@ -8,8 +8,7 @@ class MiddlewareManipulator extends MiddlewareRegistry
 {
     protected bool $stackAlwaysEmpty = false;
 
-    protected array $preExclude = [];
-    protected array $preInclude = [];
+    protected array $preExclude = [], $preInclude = [];
 
     /**
      * Whenever router decides on the active pattern, it'll ultimately include middlewares applied here
@@ -24,12 +23,6 @@ class MiddlewareManipulator extends MiddlewareRegistry
         $this->preInclude = $collectors;
     }
 
-    public function disableAll(): void
-    {
-
-        $this->stackAlwaysEmpty = true;
-    }
-
     /**
      * @param {collectorNames} CollectionMetaFunnel::class[]
     */
@@ -37,6 +30,12 @@ class MiddlewareManipulator extends MiddlewareRegistry
     {
 
         $this->preExclude = $collectorNames;
+    }
+
+    public function disableAll(): void
+    {
+
+        $this->stackAlwaysEmpty = true;
     }
 
     /**
@@ -51,7 +50,7 @@ class MiddlewareManipulator extends MiddlewareRegistry
 
         $stack = $this->preInclude;
 
-        $parentStack = parent::getFunnelsForInteracted($interactedPatterns);
+        $parentStack = parent::getFunnelsForInteracted($interactedPatterns); // no longer exists. i think it should be read from route details
 
         foreach ($parentStack as $index => $collector) {
 

@@ -2,11 +2,14 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-use Suphle\Services\{ServiceCoordinator, Decorators\ValidationRules};
+use Suphle\Services\{BaseCoordinator, Decorators\ValidationRules};
+use Suphle\Routing\Attributes\{Route, RoutePrefix, HttpMethod};
+use Suphle\Response\Format\Json;
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\SystemModelEditMock1;
 
-class SystemModelController extends ServiceCoordinator
+#[RoutePrefix("/sme")]
+class SystemModelController extends BaseCoordinator
 {
     public function __construct(protected readonly SystemModelEditMock1 $editService)
     {
@@ -15,19 +18,22 @@ class SystemModelController extends ServiceCoordinator
     }
 
     #[ValidationRules([])] // Empty since test doesn't require routing to this controller
-    public function handlePutRequest(object $builder) {
+    #[Route("/handlePut", HttpMethod::PUT)]
+    public function handlePutRequest(object $builder):Json {
+        $contents  = ["message" => "failed"];
 
     	if ($this->editService->updateModels($builder)) {
 
-	        return ["message" => "success"];
+	        $contents = ["message" => "success"];
 	    }
 
-        return ["message" => "failed"];
+        return new Json($contents);
     }
 
-    public function putOtherServiceMethod()
+    #[Route("/handlePut2", HttpMethod::PUT)]
+    public function putOtherServiceMethod():Json
     {
 
-        $this->editService->unrelatedToUpdate();
+        return new Json(["data" => $this->editService->unrelatedToUpdate()]);
     }
 }

@@ -2,13 +2,15 @@
 
 namespace Suphle\Tests\Integration\Middleware;
 
-use Suphle\Contracts\Config\Router;
+use Suphle\Contracts\Config\Router as RouterContract;
+
+use Suphle\Config\Router;
 
 use Suphle\Middleware\Handlers\FinalHandlerWrapper;
 
 use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor};
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares\{AltersPayloadStorage, BlankMiddlewareHandler};
 
@@ -16,7 +18,7 @@ use Suphle\Tests\Mocks\Interactions\ModuleOne;
 
 class InterjectsRequestTest extends ModuleLevelTest
 {
-    private string $sutName = BlankMiddlewareHandler::class; // continue here
+    private string $sutName = BlankMiddlewareHandler::class;
 
     protected function getModules(): array
     {
@@ -24,7 +26,7 @@ class InterjectsRequestTest extends ModuleLevelTest
         return [
             $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-                $container->replaceWithMock(Router::class, RouterMock::class, [
+                $container->replaceWithMock(RouterContract::class, Router::class, [
 
                     "defaultMiddleware" => [
                         AltersPayloadStorage::class,

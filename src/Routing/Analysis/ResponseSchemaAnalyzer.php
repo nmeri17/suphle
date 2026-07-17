@@ -2,7 +2,7 @@
 namespace Suphle\Routing\Analysis;
 
 use Suphle\Response\Format\Json;
-use Suphle\Contracts\{Routing\ModelSchemaDetector, Config\Router as RouterConfig};
+use Suphle\Contracts\{Database\ModelSchemaDetector, Config\Router as RouterConfig};
 
 use Suphle\Request\PayloadStorage;
 use Suphle\Hydration\{Container, Structures\ObjectDetails};
@@ -25,10 +25,10 @@ class ResponseSchemaAnalyzer extends RouteAnalysisService
     }
 
     public function getResponseShape(ReflectionMethod $method): array
-    {
+    {if (is_null($method->getReturnType())) var_dump($method->getName());
         $typeName = $method->getReturnType()->getName();
 
-        if ($schema = $this->getStandardFormatSchema($typeName)) return $schema;
+        if ($schema = $this->rendererTypeSummary($typeName)) return $schema;
 
         if (is_subclass_of($typeName, Json::class)) return [
 

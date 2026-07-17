@@ -7,7 +7,7 @@ use Suphle\Hydration\Container;
 
 use Suphle\Testing\TestTypes\ModuleLevelTest;
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Config\RouterMock, Meta\ModuleOneDescriptor};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{ Meta\ModuleOneDescriptor};
 
 class ApiDetectorTest extends ModuleLevelTest {
     

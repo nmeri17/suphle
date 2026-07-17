@@ -2,17 +2,30 @@
 
 namespace Suphle\Tests\Integration\Hotwire;
 
-use Suphle\Contracts\{Requests\CoodinatorManager, Config\Router, Response\RendererManager, Presentation\HtmlParser};
+use Suphle\Contracts\{Requests\CoodinatorManager, Config\Router as RouterContract, Response\RendererManager, Presentation\HtmlParser};
+
+use Suphle\Config\Router;
+
 use Suphle\Adapters\Presentation\Hotwire\{HotwireRendererManager, HotwireAsserter, Formats\BaseHotwireStream};
+
 use Suphle\Adapters\Presentation\Blade\DefaultBladeAdapter;
+
 use Suphle\Response\Format\{Reload, Redirect};
+
 use Suphle\Security\CSRF\CsrfGenerator;
+
 use Suphle\Request\PayloadStorage;
+
 use Suphle\Adapters\Orms\Eloquent\Models\ModelDetail;
+
 use Suphle\Exception\{Diffusers\ValidationFailureDiffuser, Explosives\ValidationFailure};
+
 use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer, Proxies\Extensions\TestResponseBridge, Condiments\BaseDatabasePopulator};
+
 use Suphle\Tests\Integration\Services\CoodinatorManager\HttpValidationTest;
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\HotwireCollection, Meta\ModuleOneDescriptor, Config\RouterMock, Coordinators\HotwireCoordinator, Meta\CustomInterfaceCollection};
+
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\HotwireCollection, Meta\ModuleOneDescriptor, Coordinators\HotwireCoordinator, Meta\CustomInterfaceCollection};
+
 use Suphle\Tests\Mocks\Models\Eloquent\Employment;
 
 /**
@@ -52,7 +65,7 @@ class BaseHotwireStreamTest extends ModuleLevelTest
     {
         return [
             $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
-                $container->replaceWithMock(Router::class, RouterMock::class, [
+                $container->replaceWithMock(RouterContract::class, Router::class, [
                     "getCoordinatorClassesToScan" => [
                         HotwireCoordinator::class
                     ]

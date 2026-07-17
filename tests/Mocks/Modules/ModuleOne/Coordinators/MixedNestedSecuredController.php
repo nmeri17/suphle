@@ -2,11 +2,12 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-use Suphle\Services\ServiceCoordinator;
-use Suphle\Routing\Attributes\{Route, HttpMethod};
+use Suphle\Services\BaseCoordinator;
+use Suphle\Routing\Attributes\{Route, HttpMethod, RoutePrefix};
 use Suphle\Response\Format\Json;
 
-class MixedNestedSecuredController extends ServiceCoordinator
+#[RoutePrefix("/nested")]
+class MixedNestedSecuredController extends BaseCoordinator
 {
     #[Route("unlink")]
     public function handleUnlinked(): Json

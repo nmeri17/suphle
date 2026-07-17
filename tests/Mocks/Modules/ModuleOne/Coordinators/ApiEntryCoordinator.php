@@ -2,12 +2,12 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-use Suphle\Services\ServiceCoordinator;
+use Suphle\Services\BaseCoordinator;
 use Suphle\Routing\Attributes\{Route, RoutePrefix};
 use Suphle\Response\Format\Json;
 
 #[RoutePrefix('api/v1')]
-class ApiEntryCoordinator extends ServiceCoordinator
+class ApiEntryCoordinator extends BaseCoordinator
 {
     #[Route('api-segment')]
     public function segmentHandler(): Json

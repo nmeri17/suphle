@@ -1,10 +1,12 @@
 <?php
 
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\Versions\V3;
+use Suphle\Routing\Attributes\{Route, RoutePrefix, HttpMethod};
 
-use Suphle\Services\ServiceCoordinator;
+use Suphle\Services\BaseCoordinator;
 
-class ApiUpdate3Coordinator extends ServiceCoordinator
+#[RoutePrefix("/versions")]
+class ApiUpdate3Coordinator extends BaseCoordinator
 {
     public function thirdCascade()
     {

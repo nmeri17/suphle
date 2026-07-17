@@ -7,9 +7,8 @@ use Suphle\Hydration\{Container, Structures\ObjectDetails};
 use Suphle\Contracts\{Database\ModelSchemaDetector};
 use Suphle\Exception\Explosives\{Unauthenticated, UnauthorizedServiceAccess};
 use Suphle\Services\Structures\ModelfulPayload;
-use PhpParser\{Node, Expr};
-use PhpParser\Expr\{MethodCall, Variable, StaticCall, Array_, New_, Ternary, Match_};
-use PhpParser\Node\{Identifier, Name};
+use PhpParser\Node\{Identifier, Name, Expr};
+use PhpParser\Node\Expr\{MethodCall, Variable, StaticCall, Array_, New_, Ternary, Match_, PropertyFetch};
 use ReflectionMethod, ReflectionNamedType, ReflectionException, ReflectionClass, ReflectionProperty;
 
 /*
@@ -46,7 +45,7 @@ class RendererContentShape extends RouteAnalysisService
         $this->actionMethod = $method;
 
         $stmts  = $this->getMethodAst($method);
-        $return = $this->findAllReturnExpressions($stmts);
+        $returns = $this->findAllReturnExpressions($stmts);
 
         if (empty($returns)) {
             return ['type' => 'object'];
@@ -192,26 +191,134 @@ class RendererContentShape extends RouteAnalysisService
             }
             $current = $current->var;
         }
-
+//dd($chain);
         $chain        = array_reverse($chain);
-        $contextClass = $ctx;
 
-        if ($current instanceof Variable && is_string($current->name)) {
-            $contextClass = $this->resolveVariableClass($current->name, $ctx);
-        }
+        $receiverClass = $this->resolveRootContextClass($current, $ctx);
 
-        // ORM territory (ModelfulPayload / BaseModel) is ESD's job exclusively.
-        // Anything else — plain services, ModellessPayload-derived DTOs, etc. —
-        // is not an ORM concern and must never be routed through ESD. Instead
-        // we ask PHP itself: does the terminal method on $contextClass declare
-        // a return type? If so, that IS the shape, no ORM tracing involved.
+        $builderFromArgs = $this->findBuilderInArguments($call);
+
+        $contextClass = $builderFromArgs ?? $receiverClass;
+
+        // ORM territory (ModelfulPayload / BaseModel) is ESD's job exclusively. Anything else — plain services, ModellessPayload-derived DTOs, etc. — is not an ORM concern and must never be routed through ESD. Instead we ask PHP itself: does the terminal method on $contextClass declare a return type? If so, that IS the shape, no ORM tracing involved.
         if ($this->modelDetector->isOrmRelevant($contextClass)) {
+
+            // If builder arrived as an argument to a service method, the ORM terminal (first/get/etc.) is buried inside that service method, not visible in the coordinator chain. We re-run resolveExpression against the service method's body to excavate it, temporarily adopting that method as $this->actionMethod so variable resolution inside it works correctly. The result is a single-element chain carrying just the terminal, which is all ESD needs alongside the already-resolved builder class.
+            if ($builderFromArgs !== null) {
+                $serviceMethodName = end($chain);
+
+                if ($serviceMethodName && method_exists($receiverClass, $serviceMethodName)) {
+                    $serviceReflection  = new ReflectionMethod($receiverClass, $serviceMethodName);
+                    $previousMethod     = $this->actionMethod;
+                    $this->actionMethod = $serviceReflection;
+
+                    $stmts   = $this->getMethodAst($serviceReflection);
+                    $returns = $this->findAllReturnExpressions($stmts);
+                    $shapes  = [];
+
+                    foreach ($returns as $returnNode) {
+                        $terminal = $this->extractOrmTerminal($returnNode->expr);
+
+                        if ($terminal) {
+                            $shapes[] = $this->modelDetector->resolveCallChain(
+                                $contextClass,
+                                [$terminal]
+                            );
+                        }
+                    }
+
+                    $this->actionMethod = $previousMethod;
+
+                    if (empty($shapes)) return ['type' => 'object'];
+
+                    $unique = array_unique($shapes, SORT_REGULAR);
+                    return count($unique) === 1
+                        ? $unique[0]
+                        : ['oneOf' => array_values($unique)];
+                }
+            }
+
             return $this->modelDetector->resolveCallChain($contextClass, $chain);
         }
 
-        return $this->resolveFromNativeReturnType($contextClass, $chain, $ctx);
+        return $this->resolveFromNativeReturnType($receiverClass, $chain, $ctx);
     }
 
+    /**
+     * Looks for ModelfulPayload / Builder in the arguments of a method call.
+     * This is critical for patterns like $service->method($builder->getBuilder())
+     */
+    protected function findBuilderInArguments(MethodCall $call): ?string
+    {
+        foreach ($call->args as $arg) {
+            $value = $arg->value;
+
+            // Direct variable: $employmentBuilder
+            if ($value instanceof Variable && is_string($value->name)) {
+                $class = $this->resolveVariableClass($value->name, $this->actionMethod->getDeclaringClass()->getName());
+                if ($this->modelDetector->isOrmRelevant($class)) {
+                    return $class;
+                }
+            }
+
+            // Method call inside argument: $employmentBuilder->getBuilder()
+            if ($value instanceof MethodCall) {
+                // Recurse into the inner call
+                $innerClass = $this->resolveRootContextClass($value->var, $this->actionMethod->getDeclaringClass()->getName());
+                if ($this->modelDetector->isOrmRelevant($innerClass)) {
+                    return $innerClass;
+                }
+            }
+        }
+
+        return null;
+    }
+    protected function resolveRootContextClass(Expr $rootExpr, string $ctx): string
+    {
+        // Case 1: Variable from action method parameter or local assignment
+        if ($rootExpr instanceof Variable && is_string($rootExpr->name)) {// $current->name is string|Expr in PhpParser — it's a plain string for normal variables ($employmentBuilder) but an Expr node for variable variables ($$dynamic). We can only resolve statically-named variables, so variable variables fall through to $ctx as the contextClass.
+
+            return $this->resolveVariableClass($rootExpr->name, $ctx);
+        }
+
+        // Case 2: $this->someService (most common for service calls)
+        if ($this->isThisPropertyFetch($rootExpr)) {
+
+            $serviceProperty = $rootExpr->name->toString();
+            return $this->resolveInjectedServiceType($serviceProperty, $ctx);
+        }
+
+        return $ctx; // safe fallback
+    }
+    // check if an expression IS a $this->something property fetch
+    protected function isThisPropertyFetch(Expr $expr): bool {
+
+        return $expr instanceof PropertyFetch &&
+            $expr->var instanceof Variable &&
+            $expr->var->name === 'this' &&
+            $expr->name instanceof Identifier;
+    }
+    protected function resolveInjectedServiceType(string $propertyName, string $coordinatorClass): string
+    {
+        try {
+            $ref = new ReflectionClass($coordinatorClass);
+
+            // Check constructor parameters (including promoted properties)
+            $constructor = $ref->getConstructor();
+            foreach ($constructor->getParameters() as $param) {
+                if ($param->getName() === $propertyName) {
+                    $type = $param->getType();
+                    if ($type instanceof ReflectionNamedType && !$type->isBuiltin()) {
+                        return $type->getName();
+                    }
+                }
+            }
+        } catch (Throwable) {
+            // silent fallback
+        }
+
+        return $coordinatorClass;
+    }
     /**
      * Resolves shape from the terminal method's own declared PHP return type.
      *

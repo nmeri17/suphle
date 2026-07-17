@@ -3,9 +3,10 @@
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
 use Suphle\Services\BaseCoordinator;
-use Suphle\Routing\Attributes\{Route, HttpMethod};
+use Suphle\Routing\Attributes\{Route, HttpMethod, RoutePrefix};
 use Suphle\Response\Format\Json;
 
+#[RoutePrefix("/urls")]
 class TestUrlController extends BaseCoordinator
 {
     #[Route("test-url", method: HttpMethod::GET)]

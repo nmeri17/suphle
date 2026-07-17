@@ -2,14 +2,14 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-use Suphle\Services\ServiceCoordinator;
-use Suphle\Routing\Attributes\{Route, RoutePrefix, HttpMethod, PreMiddleware};
+use Suphle\Services\BaseCoordinator;
+use Suphle\Routing\Attributes\{Route, RoutePrefix, HttpMethod, PreMiddleware, ClearMiddleware};
 use Suphle\Response\Format\{Json, Markup};
-use Suphle\Auth\RequestScrutinizers\AuthenticateMetaFunnel;
+use Suphle\Auth\Middleware\AuthenticateHandler;
 
 #[RoutePrefix('secure')]
-#[PreMiddleware(AuthenticateMetaFunnel::class)]
-class SecureCoordinator extends ServiceCoordinator
+#[PreMiddleware(AuthenticateHandler::class)]
+class SecureCoordinator extends BaseCoordinator
 {
     #[Route('dashboard')]
     public function dashboard(): Markup
@@ -24,7 +24,7 @@ class SecureCoordinator extends ServiceCoordinator
     }
 
     #[Route('public')]
-    #[PreMiddleware(null)] // Override class-level middleware
+    #[ClearMiddleware(AuthenticateHandler::class)]
     public function publicEndpoint(): Json
     {
         return new Json(['message' => 'public data']);

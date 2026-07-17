@@ -3,10 +3,11 @@
 namespace Suphle\Tests\Integration\Routing\Flows;
 
 use Suphle\Routing\Attributes\HttpMethod;
-use Suphle\Contracts\Config\Router;
+use Suphle\Contracts\Config\Router as RouterContract;
+
+use Suphle\Config\Router;
 use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock};
-use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\FlowCoordinator;
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Coordinators\FlowCoordinator};
 
 class FlowTest extends ModuleLevelTest
 {
@@ -14,7 +15,7 @@ class FlowTest extends ModuleLevelTest
     {
         return [
             $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
-                $container->replaceWithMock(Router::class, RouterMock::class, [
+                $container->replaceWithMock(RouterContract::class, Router::class, [
                     "getCoordinatorClassesToScan" => [
                         FlowCoordinator::class
                     ]

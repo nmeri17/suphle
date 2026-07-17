@@ -2,7 +2,7 @@
 
 namespace Suphle\Tests\Integration\Generic;
 
-use Suphle\Contracts\Config\{Router, ModuleFiles};
+use Suphle\Contracts\Config\{ ModuleFiles};
 
 use Suphle\Config\AscendingHierarchy;
 
@@ -10,16 +10,13 @@ use Suphle\File\FileSystemReader;
 
 use Suphle\Hydration\Container;
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\Config\RouterMock;
-
 trait CommonBinds
 {
     protected function simpleBinds(): array
     {
-
         return array_merge(parent::simpleBinds(), [
 
-            Router::class => RouterMock::class
+            //
         ]);
     }
 

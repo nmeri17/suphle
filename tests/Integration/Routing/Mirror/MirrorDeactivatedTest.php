@@ -2,11 +2,13 @@
 
 namespace Suphle\Tests\Integration\Routing\Mirror;
 
-use Suphle\Contracts\Config\Router;
+use Suphle\Contracts\Config\Router as RouterContract;
+
+use Suphle\Config\Router;
 
 use Suphle\Testing\Proxies\WriteOnlyContainer;
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{ Meta\ModuleOneDescriptor, Config\RouterMock};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{ Meta\ModuleOneDescriptor};
 
 use Suphle\Tests\Integration\Routing\TestsRouter;
 
@@ -18,11 +20,11 @@ class MirrorDeactivatedTest extends TestsRouter
         return [
             $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-                $container->replaceWithMock(Router::class, RouterMock::class, [
+                $container->replaceWithMock(RouterContract::class, Router::class, [
 
-                    "browserEntryRoute" => $this->getEntryCollection(),
+                    "getCoordinatorClassesToScan" => [$this->getEntryCollection()],
 
-                    "mirrorsCollections" => false
+                    "mirrorsCollections" => false // this is now on a coordinator basis. so link one where a route was disabled
                 ]);
             })
         ];

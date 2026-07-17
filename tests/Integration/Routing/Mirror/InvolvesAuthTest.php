@@ -2,22 +2,23 @@
 
 namespace Suphle\Tests\Integration\Routing\Mirror;
 
-use Suphle\Contracts\Config\Router;
+use Suphle\Contracts\Config\Router as RouterContract;
+
+use Suphle\Config\Router;
 
 use Suphle\Auth\Storage\TokenStorage;
-
-use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
 
 use Suphle\Testing\{Condiments\BaseDatabasePopulator, TestTypes\ModuleLevelTest};
 
 use Suphle\Testing\Proxies\{WriteOnlyContainer, SecureUserAssertions};
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Routes\Auth\SecureBrowserCollection, Config\RouterMock};
+use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
+
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Routes\Auth\SecureBrowserCollection};
 
 class InvolvesAuthTest extends ModuleLevelTest
 {
-    use BaseDatabasePopulator;
-    use SecureUserAssertions;
+    use BaseDatabasePopulator, SecureUserAssertions;
 
     protected function getModules(): array
     {
@@ -26,11 +27,10 @@ class InvolvesAuthTest extends ModuleLevelTest
             $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
                 $container->replaceWithMock(
-                    Router::class,
-                    RouterMock::class,
+                    RouterContract::class, Router::class,
                     [
 
-                        "browserEntryRoute" => SecureBrowserCollection::class
+                        "getCoordinatorClassesToScan" => [] // use auth coordinator
                     ]
                 );
             })

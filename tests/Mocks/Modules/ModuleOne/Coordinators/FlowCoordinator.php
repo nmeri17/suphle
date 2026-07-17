@@ -2,8 +2,9 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-use Suphle\Services\ServiceCoordinator;
-use Suphle\Routing\Attributes\{Route, CollectionFlow, SingleFlow, CollectionFlowOperation, SingleFlowOperation};
+use Suphle\Services\BaseCoordinator;
+use Suphle\Routing\Attributes\{Route, CollectionFlow, SingleFlow, CollectionFlowOperation, SingleFlowOperation, RoutePrefix};
+use Suphle\Flows\Structures\RangeContext;
 use Suphle\Response\Format\Json;
 use Suphle\Services\Structures\ModellessPayload;
 
@@ -11,7 +12,8 @@ use Suphle\Tests\Mocks\Modules\ModuleOne\PayloadReaders\ReadsId;
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\{DummyModels, BlankUpdateless};
 
-class FlowCoordinator extends ServiceCoordinator
+#[RoutePrefix("/flows")]
+class FlowCoordinator extends BaseCoordinator
 {
     public function __construct(protected readonly DummyModels $dummyModels, protected readonly BlankUpdateless $blankService)
     {
@@ -131,8 +133,8 @@ class FlowCoordinator extends ServiceCoordinator
     #[CollectionFlow(
         target: 'isbn/between',
         source: 'data',
-        operation: CollectionFlowOperation::IN_RANGE,
-        rangeContext: ['min', 'max']
+        operation: CollectionFlowOperation::RANGE,
+        rangeContext: new RangeContext('max', 'min')
     )]
     public function getCatalogRange(): Json
     {
@@ -160,7 +162,7 @@ class FlowCoordinator extends ServiceCoordinator
     }
 
     // Collection node - Custom service
-    #[Route('catalog/service')]
+    /*#[Route('catalog/service')]
     #[CollectionFlow(
         target: 'segment',
         source: 'data',
@@ -176,5 +178,5 @@ class FlowCoordinator extends ServiceCoordinator
                 ['id' => 2, 'name' => 'Service Book 2']
             ]
         ]);
-    }
+    }*/
 }

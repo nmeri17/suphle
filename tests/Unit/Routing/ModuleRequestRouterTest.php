@@ -36,7 +36,7 @@ class ModuleRequestRouterTest extends IsolatedComponentTest
             "coordinator" => "UserCoordinator",
             "handler" => "showUser",
             "pre_middleware" => [],
-            "middleware" => ["AuthMiddleware"],
+            "middleware" => ["AuthenticateHandler"], // should this be fqcn?
             "module_name" => "ModuleOne",
             "view_name" => null
         ]];

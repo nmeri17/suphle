@@ -1,17 +1,12 @@
 <?php
-
 namespace Suphle\Tests\Integration\Routing\Documentation;
 
 use Suphle\Testing\TestTypes\ModuleLevelTest;
 use Suphle\Contracts\Config\Router as RouterConfig;
 use Suphle\Testing\Proxies\WriteOnlyContainer;
-use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
-use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\BaseCoordinator;
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Coordinators\BaseCoordinator};
 
-/**
- * Confirms the whole pipeline works together and spits out valid JSON at an actual endpoint.
- */
-class OpenApiRendererIntegrationTest extends ModuleLevelTest
+class OpenApiHttpTest extends ModuleLevelTest
 {
     protected function getModules(): array
     {

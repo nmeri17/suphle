@@ -2,7 +2,9 @@
 
 namespace Suphle\Tests\Integration\Middleware;
 
-use Suphle\Contracts\Config\Router;
+use Suphle\Contracts\Config\Router as RouterContract;
+
+use Suphle\Config\Router;
 
 use Suphle\Request\PayloadStorage;
 
@@ -12,7 +14,7 @@ use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
 use Suphle\Tests\Integration\Middleware\Helpers\MocksMiddleware;
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Routes\Middlewares\MultiTagSamePattern, Config\RouterMock};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Routes\Middlewares\MultiTagSamePattern};
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares\{BlankMiddlewareHandler, BlankMiddleware2Handler, BlankMiddleware3Handler};
 
@@ -27,9 +29,9 @@ class TagBehaviorTest extends ModuleLevelTest
 
             $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-                $container->replaceWithMock(Router::class, RouterMock::class, [
+                $container->replaceWithMock(RouterContract::class, Router::class, [
 
-                    "browserEntryRoute" => MultiTagSamePattern::class
+                    "getCoordinatorClassesToScan" => [] // this multi collection behavior is no longer feasible. just use a random one involving middlw
                 ]);
             })
         ];

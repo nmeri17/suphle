@@ -2,7 +2,9 @@
 
 namespace Suphle\Tests\Integration\Services\CoodinatorManager;
 
-use Suphle\Contracts\{Config\Router, Presentation\BaseRenderer, Response\RendererManager, Requests\ValidationEvaluator};
+use Suphle\Contracts\{Config\Router as RouterContract, Presentation\BaseRenderer, Response\RendererManager, Requests\ValidationEvaluator};
+
+use Suphle\Config\Router;
 
 use Suphle\Response\RoutedRendererManager;
 
@@ -18,7 +20,7 @@ use Suphle\Exception\{Diffusers\ValidationFailureDiffuser, Explosives\Validation
 
 use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock, Routes\ValidatorCollection, Coordinators\ValidatorCoordinator};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Coordinators\ValidatorCoordinator};
 
 class HttpValidationTest extends ModuleLevelTest
 {
@@ -48,9 +50,9 @@ class HttpValidationTest extends ModuleLevelTest
 
             $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-                $container->replaceWithMock(Router::class, RouterMock::class, [
+                $container->replaceWithMock(RouterContract::class, Router::class, [
 
-                    "browserEntryRoute" => ValidatorCollection::class
+                    "getCoordinatorClassesToScan" => ValidatorCollection::class
                 ]);
             })
         ];

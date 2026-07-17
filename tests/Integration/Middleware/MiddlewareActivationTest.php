@@ -2,21 +2,21 @@
 
 namespace Suphle\Tests\Integration\Middleware;
 
-use Suphle\Contracts\Config\Router;
+use Suphle\Contracts\Config\Router as RouterContract;
 
-use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
+use Suphle\Config\Router;
 
 use Suphle\Testing\{ TestTypes\ModuleLevelTest, Condiments\BaseDatabasePopulator };
 
 use Suphle\Testing\Proxies\{ WriteOnlyContainer, SecureUserAssertions };
 
+use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
+
 use Suphle\Tests\Integration\Middleware\Helpers\MocksMiddleware;
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{ Meta\ModuleOneDescriptor, Config\RouterMock};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{ Meta\ModuleOneDescriptor};
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares\{ BlankMiddlewareHandler, BlankMiddleware2Handler};
-
-use Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares\Collectors\{BlankCollectionMetaFunnel, BlankMiddleware2Collector};
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Prefix\{ActualEntry, Secured\MisleadingEntry};
 
@@ -48,9 +48,9 @@ class MiddlewareActivationTest extends ModuleLevelTest
 
             $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-                $container->replaceWithMock(Router::class, RouterMock::class, [
+                $container->replaceWithMock(RouterContract::class, Router::class, [
 
-                    "browserEntryRoute" => MisleadingEntry::class
+                    "getCoordinatorClassesToScan" => [] // any midw coodt will suffice
                 ]);
             })
         ];
@@ -86,7 +86,7 @@ class MiddlewareActivationTest extends ModuleLevelTest
     }
 
     public function test_can_deactivate_middleware()
-    {
+    {// refactor to use ClearMiddleware instead
 
         $this->actingAs($this->contentVisitor);
 

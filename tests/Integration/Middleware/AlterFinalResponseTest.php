@@ -2,7 +2,9 @@
 
 namespace Suphle\Tests\Integration\Middleware;
 
-use Suphle\Contracts\Config\Router;
+use Suphle\Contracts\Config\Router as RouterContract;
+
+use Suphle\Config\Router;
 
 use Suphle\Middleware\Handlers\FinalHandlerWrapper;
 
@@ -10,7 +12,7 @@ use Suphle\Response\Format\Json;
 
 use Suphle\Testing\{ TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer };
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock, Middlewares\AlterFinalResponse};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Middlewares\AlterFinalResponse};
 
 class AlterFinalResponseTest extends ModuleLevelTest
 {
@@ -22,7 +24,7 @@ class AlterFinalResponseTest extends ModuleLevelTest
 
                 $finalName = FinalHandlerWrapper::class;
 
-                $container->replaceWithMock(Router::class, RouterMock::class, [
+                $container->replaceWithMock(RouterContract::class, Router::class, [
 
                     "defaultMiddleware" => [
                         AlterFinalResponse::class,

@@ -1,13 +1,15 @@
 <?php
 namespace Suphle\Tests\Integration\Routing\RouteDetector\Prefix;
 
-use Suphle\Contracts\Config\Router;
+use Suphle\Contracts\Config\Router as RouterContract;
+
+use Suphle\Config\Router;
 
 use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
 use Suphle\Tests\Integration\Routing\RouteDetector\RouteDetectorAsserter;
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Config\RouterMock, Routes\Prefix\ActualEntry, Meta\ModuleOneDescriptor};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Config\RouterMock, Meta\ModuleOneDescriptor};
 
 class PrefixDetectorTest extends ModuleLevelTest {
     
@@ -19,11 +21,9 @@ class PrefixDetectorTest extends ModuleLevelTest {
         return [
             $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-                $container->replaceWithMock(Router::class, RouterMock::class, [
+                $container->replaceWithMock(RouterContract::class, Router::class, [
 
-                    "mirrorsCollections" => false,
-
-                    "browserEntryRoute" => ActualEntry::class
+                    // "mirrorsCollections" => false // i doubt the necessity of this in the first place
                 ]);
             })
         ];

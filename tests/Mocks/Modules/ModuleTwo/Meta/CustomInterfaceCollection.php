@@ -4,9 +4,9 @@ namespace Suphle\Tests\Mocks\Modules\ModuleTwo\Meta;
 
 use Suphle\Hydration\Structures\BaseInterfaceCollection;
 
-use Suphle\Contracts\{Events, Config\Router, Auth\UserContract};
+use Suphle\Contracts\{Events, Auth\UserContract};
 
-use Suphle\Tests\Mocks\Modules\ModuleTwo\{Config\RouterMock, Events\AssignListeners};
+use Suphle\Tests\Mocks\Modules\ModuleTwo\{ Events\AssignListeners};
 
 use Suphle\Tests\Mocks\Interactions\ModuleTwo;
 
@@ -16,10 +16,9 @@ class CustomInterfaceCollection extends BaseInterfaceCollection
 {
     public function getConfigs(): array
     {
-
         return array_merge(parent::getConfigs(), [
 
-            Router::class => RouterMock::class
+            //
         ]);
     }
 

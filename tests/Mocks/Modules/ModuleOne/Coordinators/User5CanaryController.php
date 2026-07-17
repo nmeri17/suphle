@@ -3,12 +3,13 @@
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
 use Suphle\Services\BaseCoordinator;
-use Suphle\Routing\Attributes\{Route, HttpMethod, CanaryState};
+use Suphle\Routing\Attributes\{Route, HttpMethod, CanaryState, RoutePrefix};
 use Suphle\Response\Format\Json;
 use Suphle\Request\RequestDetails;
 use Suphle\Contracts\IO\Session;
 use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Canaries\CanaryForUser5;
 
+#[RoutePrefix("/canary")]
 #[CanaryState([CanaryForUser5::class])]
 class User5CanaryController extends BaseCoordinator
 {

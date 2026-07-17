@@ -2,21 +2,24 @@
 
 namespace Suphle\Tests\Integration\Routing\Mirror;
 
-use Suphle\Tests\Integration\Routing\TestsRouter;
-use Suphle\Testing\Proxies\WriteOnlyContainer;
-use Suphle\Contracts\Config\Router;
-use Suphle\Tests\Mocks\Modules\ModuleOne\Config\RouterMock;
+use Suphle\Contracts\Config\Router as RouterContract;
 
-/**
- * Tests for API route mirroring functionality
- */
+use Suphle\Config\Router;
+
+use Suphle\Testing\Proxies\WriteOnlyContainer;
+use Suphle\Tests\Integration\Routing\TestsRouter;
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor};
+
 class MirrorActivatedTest extends TestsRouter
 {
     protected function getModules(): array
     {
         return [
-            $this->replicateModule(\Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
-                $container->replaceWithMock(Router::class, RouterMock::class, []);
+            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+                $container->replaceWithMock(RouterContract::class, Router::class, [
+
+                    "getCoordinatorClassesToScan" => [] // point to that which has these routes
+                ]);
             })
         ];
     }

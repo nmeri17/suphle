@@ -4,13 +4,15 @@ namespace Suphle\Tests\Integration\Flows;
 
 use Suphle\Flows\OuterFlowWrapper;
 
-use Suphle\Contracts\Config\Router;
+use Suphle\Contracts\Config\Router as RouterContract;
+
+use Suphle\Config\Router;
 
 use Suphle\Testing\{Proxies\WriteOnlyContainer, Condiments\EmittedEventsCatcher};
 
 use Suphle\Tests\Integration\Flows\Jobs\RouteBranches\JobFactory;
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Coordinators\FlowCoordinator, Meta\ModuleOneDescriptor, Config\RouterMock};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Coordinators\FlowCoordinator, Meta\ModuleOneDescriptor};
 
 class OuterFlowWrapperTest extends JobFactory
 {
@@ -23,7 +25,7 @@ class OuterFlowWrapperTest extends JobFactory
 
             $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-                $container->replaceWithMock(Router::class, RouterMock::class, [
+                $container->replaceWithMock(RouterContract::class, Router::class, [
 
                     "getCoordinatorClassesToScan" => [FlowCoordinator::class]
                 ]);

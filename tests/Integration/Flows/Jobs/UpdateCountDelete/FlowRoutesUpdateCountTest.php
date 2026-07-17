@@ -2,7 +2,9 @@
 
 namespace Suphle\Tests\Integration\Flows\Jobs\UpdateCountDelete;
 
-use Suphle\Contracts\{Config\Router, Auth\AuthStorage};
+use Suphle\Contracts\{Config\Router as RouterContract, Auth\AuthStorage};
+
+use Suphle\Config\Router;
 
 use Suphle\Flows\{OuterFlowWrapper, Jobs\UpdateCountDelete};
 
@@ -18,10 +20,9 @@ use Suphle\Testing\Proxies\WriteOnlyContainer;
 
 use Suphle\Tests\Integration\Flows\Jobs\RouteBranches\JobFactory;
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{ Routes\Flows\FlowRoutes, Meta\ModuleOneDescriptor, Config\RouterMock };
+use Suphle\Tests\Mocks\Modules\ModuleOne\{ Routes\Flows\FlowRoutes, Meta\ModuleOneDescriptor};
 
-use DateTime;
-use DateInterval;
+use DateTime, DateInterval;
 
 class FlowRoutesUpdateCountTest extends JobFactory
 {
@@ -43,10 +44,10 @@ class FlowRoutesUpdateCountTest extends JobFactory
 
             $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-                $container->replaceWithMock(Router::class, RouterMock::class, [
+                /*$container->replaceWithMock(RouterContract::class, Router::class, [
 
                     // "browserEntryRoute" => FlowRoutes::class // removed FlowRoutes
-                ]);
+                ]);*/
             })
         ];
     }
@@ -78,7 +79,7 @@ class FlowRoutesUpdateCountTest extends JobFactory
 
             "renderer" => $this->replaceConstructorArguments(Json::class, [], [
 
-                "getCoordinator" => $this->positiveDouble(BaseCoordinator::class)
+                "getCoordinator" => $this->positiveDouble(BaseCoordinator::class) // not sure this is still valid as this has likely been moved to either route details or the flow
             ])
         ];
     }

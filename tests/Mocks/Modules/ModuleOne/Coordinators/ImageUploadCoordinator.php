@@ -2,13 +2,13 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-use Suphle\Services\{ServiceCoordinator, Decorators\ValidationRules};
+use Suphle\Services\{BaseCoordinator, Decorators\ValidationRules};
 use Suphle\Routing\Attributes\{Route, HttpMethod, RoutePrefix};
 use Suphle\Response\Format\Json;
 use Suphle\Tests\Mocks\Modules\ModuleOne\PayloadReaders\ImagePayloadReader;
 
-#[RoutePrefix('')]
-class ImageUploadCoordinator extends ServiceCoordinator
+#[RoutePrefix('/images')]
+class ImageUploadCoordinator extends BaseCoordinator
 {
     #[Route("apply-all", HttpMethod::POST)]
     #[ValidationRules([

@@ -17,11 +17,12 @@ trait SecureUserAssertions
     /**
      * @param {storageName} When none is specified, we just want to retrieve bound authStorage mechanism
     */
-    protected function getAuthStorage(?string $storageName = null): AuthStorage // can be called with null (courtesy of member methods receiving null defaults), and no argument
-    {if (is_null($storageName)) {
+    protected function getAuthStorage(?string $storageName = null): AuthStorage
+    { // can be called with null (courtesy of member methods receiving null defaults), and no argument
+        if (is_null($storageName)) {
 
-        $storageName = $this->GENERIC_STORAGE;
-    }
+            $storageName = $this->GENERIC_STORAGE;
+        }
 
         $container = $this->getContainer();
 

@@ -16,7 +16,7 @@ class OpenApiRendererImplementationTest extends IsolatedComponentTest
     public function test_markup_renderer_schema_resolution()
     {
         $analyzer = $this->getContainer()->getClass(RendererContentShape::class);
-        $schema = $analyzer->getStandardFormatSchema(Markup::class);
+        $schema = $analyzer->rendererTypeSummary(Markup::class);
         
         $this->assertIsArray($schema);var_dump($schema);
         $this->assertArrayHasKey('type', $schema);
@@ -27,7 +27,7 @@ class OpenApiRendererImplementationTest extends IsolatedComponentTest
     public function test_hotwire_stream_renderer_schema_resolution()
     {
         $analyzer = $this->getContainer()->getClass(RendererContentShape::class);
-        $schema = $analyzer->getStandardFormatSchema(BaseHotwireStream::class);
+        $schema = $analyzer->rendererTypeSummary(BaseHotwireStream::class);
         
         $this->assertIsArray($schema);
         $this->assertEquals('string', $schema['type']);
@@ -51,7 +51,7 @@ class OpenApiRendererImplementationTest extends IsolatedComponentTest
         ];
 
         foreach ($renderers as $rendererClass) {
-            $schema = $analyzer->getStandardFormatSchema($rendererClass);
+            $schema = $analyzer->rendererTypeSummary($rendererClass);
             
             $this->assertIsArray($schema);
             $this->assertArrayHasKey('type', $schema);

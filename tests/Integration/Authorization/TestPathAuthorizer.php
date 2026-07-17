@@ -2,17 +2,19 @@
 
 namespace Suphle\Tests\Integration\Authorization;
 
-use Suphle\Auth\RequestScrutinizers\PathAuthorizationScrutinizer;
+use Suphle\Auth\Middleware\PathAuthorizationScrutinizer;
 
-use Suphle\Contracts\{Auth\UserContract, Config\Router};
+use Suphle\Contracts\{Auth\UserContract, Config\Router as RouterContract};
 
-use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
+use Suphle\Config\Router;
 
 use Suphle\Testing\{Condiments\BaseDatabasePopulator, TestTypes\ModuleLevelTest};
 
 use Suphle\Testing\Proxies\{SecureUserAssertions, WriteOnlyContainer};
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Routes\Auth\AuthorizeRoutes, Config\RouterMock};
+use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
+
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Routes\Auth\AuthorizeRoutes};
 
 abstract class TestPathAuthorizer extends ModuleLevelTest
 {
@@ -35,9 +37,9 @@ abstract class TestPathAuthorizer extends ModuleLevelTest
         return [
             $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-                $container->replaceWithMock(Router::class, RouterMock::class, [
+                $container->replaceWithMock(RouterContract::class, Router::class, [
 
-                    "browserEntryRoute" => AuthorizeRoutes::class
+                    "getCoordinatorClassesToScan" => [AuthorizeRoutes::class]
                 ]);
             })
         ];

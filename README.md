@@ -81,6 +81,14 @@ Then, visit any of the routes available at:
 
 They don't require any database connection and only demonstrate the relatively basic ability to route incoming requests to an attached action handler, taking higher-level constraints like modules and prefixing into account.
 
+Where database access is needed, it would need to be initiated using,
+
+```bash
+php suphle_cli bridge:laravel "migrate:fresh --seed"
+```
+
+You might observe the use of `suphle_cli` here while the dependent projects use `suphle` although they are powered by identical behavior.
+
 If you're window shopping, a *sort of* example application resides in the `tests/Mocks` folder. Emphasis is laid on "sort of" since `ModuleOne` there, is for testing majority of the framework's feature set and doesn't necessarily reflect what you'd expect from a real life Suphle module.
 
 ## Contributing to the Starter project

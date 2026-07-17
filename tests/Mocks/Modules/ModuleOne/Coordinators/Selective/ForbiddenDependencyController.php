@@ -2,11 +2,13 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\Selective;
 
-use Suphle\Services\ServiceCoordinator;
+use Suphle\Services\BaseCoordinator;
+use Suphle\Routing\Attributes\{Route, RoutePrefix, HttpMethod};
 
 use Suphle\Hydration\Container;
 
-class ForbiddenDependencyController extends ServiceCoordinator
+#[RoutePrefix("/forbid")]
+class ForbiddenDependencyController extends BaseCoordinator
 {
     public function __construct(protected readonly Container $container)
     {

@@ -1,11 +1,14 @@
 <?php
 namespace Suphle\Tests\Integration\Routing\RouteDetector\Prefix;
 
-use Suphle\Contracts\Config\Router;
+use Suphle\Contracts\Config\Router as RouterContract;
+
+use Suphle\Config\Router;
+
 use Suphle\Routing\RouteDetectorService;
 use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 use Suphle\Tests\Integration\Routing\RouteDetector\RouteDetectorAsserter;
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Config\RouterMock, Coordinators\TestCoordinator, Meta\ModuleOneDescriptor};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{ Coordinators\TestCoordinator, Meta\ModuleOneDescriptor};
 
 class DetectTagTest extends ModuleLevelTest {
     
@@ -14,7 +17,7 @@ class DetectTagTest extends ModuleLevelTest {
     protected function getModules(): array {
         return [
             $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
-                $container->replaceWithMock(Router::class, RouterMock::class, [
+                $container->replaceWithMock(RouterContract::class, Router::class, [
                     "getCoordinatorClassesToScan" => [TestCoordinator::class]
                 ]);
             })

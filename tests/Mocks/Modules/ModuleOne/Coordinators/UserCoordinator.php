@@ -6,12 +6,12 @@ use Suphle\Routing\Attributes\{Route, RoutePrefix, CanaryRoute, HttpMethod, Cana
 use Suphle\Response\Format\{Json, Redirect, Reload, Markup};
 use Suphle\Tests\Mocks\Modules\ModuleOne\Middleware\AuthMiddleware;
 use Suphle\Tests\Mocks\Modules\ModuleOne\Canary\{BetaUserCanary, SpecialUserCanary};
-use Suphle\Coordinators\ServiceCoordinator;
-use Suphle\Auth\RequestScrutinizers\AuthenticateHandler;
+use Suphle\Services\BaseCoordinator;
+use Suphle\Auth\Middleware\AuthenticateHandler;
 
 #[CanaryState([BetaUserCanary::class, SpecialUserCanary::class])]
 #[RoutePrefix('api/v1/users')]
-class UserCoordinator extends ServiceCoordinator
+class UserCoordinator extends BaseCoordinator
 {
     #[Route('/')]
     #[PreMiddleware(AuthenticateHandler::class)]
@@ -47,14 +47,14 @@ class UserCoordinator extends ServiceCoordinator
     #[Route('/{id}', method: HttpMethod::PUT)]
     public function update(): Json
     {
-        $id = $this->pathPlaceholders->getSegmentValue('id');
+        $id = $this->routeInfo->getSegmentValue('id');
         return new Json(['status' => 'updated', 'id' => $id]);
     }
 
     #[Route('/{id}', method: HttpMethod::DELETE)]
     public function destroy(): Json
     {
-        $id = $this->pathPlaceholders->getSegmentValue('id');
+        $id = $this->routeInfo->getSegmentValue('id');
         return new Json(['status' => 'deleted', 'id' => $id]);
     }
 

@@ -155,26 +155,24 @@ abstract class RouteAnalysisService
         );
 
         // 2. Aggregate Pre-Middleware (Class + Method)
-        $allPre = array_merge(
+        $allPre = array_unique(array_merge(
             $classPreMiddleware,
 
             $this->findMiddlewareList($method, PreMiddleware::class, $toClear)
-        );
-        $finalPre = array_values(array_diff(array_unique($allPre), $toClear));
+        ));
 
-        $allMidw = array_merge(
+        $allMidw = array_unique(array_merge(
             $classMiddleware,
 
             $this->findMiddlewareList($method, Middleware::class, $toClear)
-        );
-        $finalMidw = array_values(array_diff(array_unique($allMidw), $toClear));
+        ));
 
         return [
             "method" => ($routeArgs[1] ?? HttpMethod::GET)->value,
             "path" => $this->buildFullPath($routePrefix, $routeArgs[0] ?? ""),
             "handler" => $method->getName(),
-            "middleware" => $finalMidw,
-            "pre_middleware" => $finalPre, 
+            "middleware" => $allMidw,
+            "pre_middleware" => $allPre, 
             "view_name" => $routeArgs[2] ?? null,
             "coordinator" => $coordinatorClass,
             "placeholders" => $this->extractPlaceholders($routeArgs[0] ?? ""),
@@ -183,7 +181,8 @@ abstract class RouteAnalysisService
             "flows" => $this->getMethodFlows($method),
             "response_shape" => $this->getResponseShape($method),
             "module_name" => $moduleName,
-            "canary_state" => $canaryState
+            "canary_state" => $canaryState,
+            "renderer" => $method->getReturnType()->getName()
         ];
     }
 
@@ -271,7 +270,10 @@ abstract class RouteAnalysisService
     ): array
     {
         $attributes = $reflection instanceof ReflectionClass ?
-            $this->objectDetails->getClassAttributes($reflection->getName(), $middlewareMarker) :
+
+            $this->objectDetails->getClassAttributes(
+                $reflection->getName(), $middlewareMarker
+            ) :
             $reflection->getAttributes($middlewareMarker);
         
         $list = [];
@@ -279,7 +281,12 @@ abstract class RouteAnalysisService
         foreach ($attributes as $attr) {
             $instance = $attr->newInstance();
             // Index by handler class, value is the array of args
-            $list[$instance->handlerClass] = $instance->args;
+            $middlewareName = $instance->handlerClass;
+
+            if (!array_key_exists($middlewareName, $list))
+                $list[$middlewareName] = [];
+
+            $list[$middlewareName] += $instance->args;
         }
         foreach ($exclude as $clearedHandler)
             

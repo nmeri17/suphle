@@ -1,31 +1,31 @@
 <?php
 
-namespace Suphle\Tests\Unit\Routing\Documentation;
+namespace Suphle\Tests\Integration\Routing\Documentation;
 
 use Suphle\Routing\{AttributeRouteScanner, Documentation\OpenApiGeneratorService, Analysis\RendererContentShape};
 use Suphle\Contracts\Database\ModelSchemaDetector;
 use Suphle\Hydration\Container;
-use Suphle\Testing\TestTypes\IsolatedComponentTest;
-use Suphle\Tests\Integration\Generic\CommonBinds;
+use Suphle\Testing\TestTypes\ModuleLevelTest;
+use Suphle\Contracts\Config\Router as RouterConfig;
+use Suphle\Testing\Proxies\WriteOnlyContainer;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\{BaseCoordinator, EmploymentEditCoordinator};
 
-class OpenApiGeneratorServiceTest extends IsolatedComponentTest
+class OpenApiGeneratorServiceTest extends ModuleLevelTest
 {
-    use CommonBinds;
-
-    private function getSut(): OpenApiGeneratorService
+    protected function getModules(): array
     {
-        return $this->replaceConstructorArguments(OpenApiGeneratorService::class, []);
+        return [new ModuleOneDescriptor(new Container)];
+    }
+    private function getOpenApiService($constructorArgs = []): OpenApiGeneratorService
+    {
+        return $this->replaceConstructorArguments(OpenApiGeneratorService::class, $constructorArgs);
     }
 
-    /**
-     * Main helper - uses real analysis flow
-     */
     private function getAnalyzedRoute(string $methodName, string $coordinatorClass = BaseCoordinator::class): array
     {
         $container = $this->getContainer();
 
-        /** @var RendererContentShape $analyzer */
         $analyzer = $container->getClass(RendererContentShape::class);
 
         // This triggers model discovery + schema registration as side effect
@@ -43,32 +43,39 @@ class OpenApiGeneratorServiceTest extends IsolatedComponentTest
 
     public function test_transform_placeholders_to_path_parameters()
     {
-        $routeData = $this->getAnalyzedRoute('multiPlaceholders');
+        $spec = $this->stubMethodForOpenApi('multiPlaceholders')
 
-        $this->massProvide([
-            AttributeRouteScanner::class => $this->positiveDouble(AttributeRouteScanner::class, [
-                "scanModulesByPath" => [$routeData]
-            ])
-        ]);
+        ->generateOpenApiSpec("http://localhost"); // when
 
-        $spec = $this->getSut()->generateOpenApiSpec("http://localhost");
         $operation = $spec['paths']['/segment/{id}/segment/{id2}']['get'] ?? [];
 
+        // then
         $this->assertCount(2, $operation['parameters'] ?? []);
         $this->assertEquals('id', $operation['parameters'][0]['name']);
     }
 
-    public function test_filters_out_payload_readers_and_services_from_parameters()
-    {
-        $routeData = $this->getAnalyzedRoute('incorrectActionInjection');
+    protected function stubMethodForOpenApi (string $methodName, $constructorArgs = []):OpenApiGeneratorService {
+        $routeData = $this->getAnalyzedRoute($methodName);
 
-        $this->massProvide([
+        $routeScanner = [
             AttributeRouteScanner::class => $this->positiveDouble(AttributeRouteScanner::class, [
-                "scanModulesByPath" => [$routeData]
+                "scanModulesByPath" => [$routeData] // given
             ])
-        ]);
+        ];
 
-        $spec = $this->getSut()->generateOpenApiSpec("http://localhost");
+        $this->massProvide($routeScanner);
+
+        return $this->getOpenApiService(array_merge($routeScanner, $constructorArgs, [
+
+            RendererContentShape::class => $this->getContainer()->getClass(RendererContentShape::class) // keep them in sync so it doesn't stub this
+        ]));
+    }
+
+    public function test_filters_out_payload_readers_and_services_from_parameters() {
+
+        $spec = $this->stubMethodForOpenApi('incorrectActionInjection')
+
+        ->generateOpenApiSpec("http://localhost"); // when
         $operation = $spec['paths']['/incorrect-action']['post'] ?? [];
 
         foreach ($operation['parameters'] ?? [] as $param) {
@@ -77,17 +84,11 @@ class OpenApiGeneratorServiceTest extends IsolatedComponentTest
         }
     }
 
-    public function test_generates_valid_operation_ids()
-    {
-        $routeData = $this->getAnalyzedRoute('indexHandler');
+    public function test_generates_valid_operation_ids() {
 
-        $this->massProvide([
-            AttributeRouteScanner::class => $this->positiveDouble(AttributeRouteScanner::class, [
-                "scanModulesByPath" => [$routeData]
-            ])
-        ]);
+        $spec = $this->stubMethodForOpenApi('indexHandler')
+        ->generateOpenApiSpec("http://localhost"); // when
 
-        $spec = $this->getSut()->generateOpenApiSpec("http://localhost");
         $operation = $spec['paths']['/']['get'] ?? [];
 
         $this->assertEquals('get_indexHandler', $operation['operationId'] ?? '');
@@ -119,23 +120,27 @@ class OpenApiGeneratorServiceTest extends IsolatedComponentTest
     }
 
     public function test_harvests_model_schemas_during_analysis()
-    {
-        // Trigger analysis
-        $this->getAnalyzedRoute('getEmploymentDetails', EmploymentEditCoordinator::class);
+    {//dd(\Suphle\Tests\Mocks\Models\Eloquent\Employment::all());
+        $this->getAnalyzedRoute('getEmploymentDetails', EmploymentEditCoordinator::class); // when
 
-        $sut = $this->getSut();
-        $schemas = $sut->getSchemaDetector()?->getGeneratedSchemas() ?? [];   // expose this if needed
+        $sut = $this->getContainer()->getClass(ModelSchemaDetector::class);
+        $schemas = $sut->getGeneratedSchemas() ?? [];
 
         $this->assertArrayHasKey('Employment', $schemas);   // adjust key based on your normalization
     }
 
-    // ====================== VALIDATION & MISC TESTS ======================
-
     public function test_validation_rules_string_parsing_logic()
     {
-        $this->dataProvider($this->validationRuleProvider(...), function (string $rules, array $expected) {
-            $this->assertEquals($expected, $this->getSut()->buildSchemaFromRules($rules));
-        });
+        $this->dataProvider(
+            $this->validationRuleProvider(...),
+            function (string $rules, array $expected) {
+
+                $this->assertEquals(
+                    $expected,
+                    $this->getOpenApiService()->buildSchemaFromRules($rules)
+                );
+            }
+        );
     }
 
     public function validationRuleProvider(): array
@@ -161,7 +166,7 @@ class OpenApiGeneratorServiceTest extends IsolatedComponentTest
 
     public function test_maps_server_url()
     {
-        $spec = $this->getSut()->generateOpenApiSpec("https://api.suphle.io");
+        $spec = $this->getOpenApiService()->generateOpenApiSpec("https://api.suphle.io");
         $this->assertEquals("https://api.suphle.io", $spec['servers'][0]['url']);
     }
 }

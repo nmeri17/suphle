@@ -6,11 +6,13 @@ use Suphle\Flows\{UmbrellaSaver, Structures\RouteUmbrella};
 
 use Suphle\Flows\Structures\PendingFlowDetails;
 
-use Suphle\Contracts\{IO\CacheManager, Config\Router, Presentation\BaseRenderer};
+use Suphle\Contracts\{IO\CacheManager, Presentation\BaseRenderer, Config\Router as RouterContract};
+
+use Suphle\Config\Router;
 
 use Suphle\Testing\{Proxies\WriteOnlyContainer, Utilities\ArrayAssertions};
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\OriginCollection, Meta\ModuleOneDescriptor, Config\RouterMock};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{ Meta\ModuleOneDescriptor};
 
 class IntraModuleTest extends JobFactory
 {
@@ -25,10 +27,10 @@ class IntraModuleTest extends JobFactory
 
             $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-                $container->replaceWithMock(Router::class, RouterMock::class, [
+                /*$container->replaceWithMock(RouterContract::class, Router::class, [
 
-                    "browserEntryRoute" => OriginCollection::class
-                ]);
+                    //
+                ]);*/
             })
         ];
     }

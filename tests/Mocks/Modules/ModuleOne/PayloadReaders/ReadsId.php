@@ -9,8 +9,8 @@ class ReadsId extends ModellessPayload
     protected function convertToDomainObject()
     {
 
-        $this->pathPlaceholders->allNumericToPositive();
+        $this->routeInfo->allNumericToPositive();
 
-        return $this->pathPlaceholders->getSegmentValue("id");
+        return $this->routeInfo->getSegmentValue("id");
     }
 }

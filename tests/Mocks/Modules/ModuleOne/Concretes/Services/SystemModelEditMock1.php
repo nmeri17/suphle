@@ -30,7 +30,7 @@ class SystemModelEditMock1 implements SystemModelEdit
         return [$baseModel];
     }
 
-    public function unrelatedToUpdate()
+    public function unrelatedToUpdate():void
     {
     }
 }

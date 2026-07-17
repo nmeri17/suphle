@@ -2,17 +2,17 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-use Suphle\Services\{ServiceCoordinator, Decorators\ValidationRules};
+use Suphle\Services\{BaseCoordinator, Decorators\ValidationRules};
 use Suphle\Routing\Attributes\{Route, HttpMethod, RoutePrefix};
 use Suphle\Response\Format\{Json, Markup, Redirect};
 
-#[RoutePrefix('')]
-class ValidatorCoordinator extends ServiceCoordinator
+#[RoutePrefix('/validators')]
+class ValidatorCoordinator extends BaseCoordinator
 {
-    #[Route("get-without")]
-    public function getWithout(): Json
+    #[Route("get-without", HttpMethod::GET)]
+    public function handleGet(): Markup
     {
-        return new Json([]);
+        return new Markup("secure-some.edit-form", ["message" => "mercy"]);
     }
 
     #[Route("post-without", HttpMethod::POST)]
@@ -30,7 +30,7 @@ class ValidatorCoordinator extends ServiceCoordinator
 
     #[Route("post-with-html", HttpMethod::POST)]
     #[ValidationRules(["foo" => "required"])]
-    public function postWithHtml(): Redirect
+    public function postWithValidatorRedirect(): Redirect
     {
         return new Redirect(fn () => "/");
     }

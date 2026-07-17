@@ -162,9 +162,9 @@ class OpenApiGeneratorService
 
     protected function buildResponses(array $route, ?array $responseSchema = null): array
     {
-        $rendererClass = $route['renderer'];
+        $rendererClass = $route["renderer"];
         
-        $contentTypeSchema = $this->staticMethodShape->getStandardFormatSchema($rendererClass);
+        $contentTypeSchema = $this->staticMethodShape->rendererTypeSummary($rendererClass);
 
         $contentType = is_array($contentTypeSchema)
             && ($contentTypeSchema['contentMediaType'] ?? null)

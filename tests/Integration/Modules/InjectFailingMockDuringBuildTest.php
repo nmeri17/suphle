@@ -4,13 +4,13 @@ namespace Suphle\Tests\Integration\Modules;
 
 use Suphle\Security\CSRF\CsrfGenerator;
 
-use Suphle\Contracts\Config\Router;
+use Suphle\Contracts\Config\Router as RouterContract;
 
-use Suphle\Exception\Explosives\ValidationFailure;
+use Suphle\Config\Router;
 
 use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock, Routes\ValidatorCollection, Coordinators\ValidatorCoordinator};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Routes\ValidatorCollection, Coordinators\ValidatorCoordinator};
 
 class InjectFailingMockDuringBuildTest extends ModuleLevelTest
 {
@@ -25,9 +25,9 @@ class InjectFailingMockDuringBuildTest extends ModuleLevelTest
 
             $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-                $container->replaceWithMock(Router::class, RouterMock::class, [
+                $container->replaceWithMock(RouterContract::class, Router::class, [
 
-                    "browserEntryRoute" => ValidatorCollection::class
+                    "getCoordinatorClassesToScan" => [ValidatorCoordinator::class]
                 ])
                 ->replaceWithMock(ValidatorCoordinator::class, ValidatorCoordinator::class, [
 

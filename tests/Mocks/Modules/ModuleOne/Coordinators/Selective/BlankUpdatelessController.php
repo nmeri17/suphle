@@ -2,11 +2,13 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\Selective;
 
-use Suphle\Services\ServiceCoordinator;
+use Suphle\Routing\Attributes\{Route, RoutePrefix, HttpMethod};
+use Suphle\Services\BaseCoordinator;
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\BlankUpdateless;
 
-class BlankUpdatelessController extends ServiceCoordinator
+#[RoutePrefix("/blank")]
+class BlankUpdatelessController extends BaseCoordinator
 {
     public function __construct(protected readonly BlankUpdateless $dependency)
     {

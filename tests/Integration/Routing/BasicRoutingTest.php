@@ -2,8 +2,11 @@
 
 namespace Suphle\Tests\Integration\Routing;
 
-use Suphle\Routing\{RouteManager, Attributes\HttpMethod};
-use Suphle\Contracts\{Config\Router, Presentation\BaseRenderer};
+use Suphle\Routing\{Attributes\HttpMethod};
+use Suphle\Contracts\{Config\Router as RouterContract, Presentation\BaseRenderer};
+
+use Suphle\Config\Router;
+
 use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock};
 use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\{TestCoordinator, PrefixedCoordinator};
@@ -14,7 +17,7 @@ class BasicRoutingTest extends ModuleLevelTest
     {
         return [
             $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
-                $container->replaceWithMock(Router::class, RouterMock::class, [
+                $container->replaceWithMock(RouterContract::class, Router::class, [
                     "getCoordinatorClassesToScan" => [
                         TestCoordinator::class,
                         PrefixedCoordinator::class

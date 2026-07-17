@@ -8,13 +8,15 @@ use Suphle\Response\Format\Json;
 
 use Suphle\Middleware\MiddlewareQueue;
 
-use Suphle\Contracts\{Presentation\BaseRenderer, Response\RendererManager, Config\Router};
+use Suphle\Contracts\{Presentation\BaseRenderer, Response\RendererManager, Config\Router as RouterContract};
+
+use Suphle\Config\Router;
 
 use Suphle\Exception\Explosives\{DevError\NoCompatibleValidator, ValidationFailure};
 
 use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock, Validators\ValidatorOne, Routes\ValidatorCollection, Coordinators\ValidatorCoordinator};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Validators\ValidatorOne, Coordinators\ValidatorCoordinator};
 
 class ValidatorRawErrorsTest extends ModuleLevelTest
 {
@@ -27,9 +29,9 @@ class ValidatorRawErrorsTest extends ModuleLevelTest
 
             $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-                $container->replaceWithMock(Router::class, RouterMock::class, [
+                $container->replaceWithMock(RouterContract::class, Router::class, [
 
-                    "browserEntryRoute" => ValidatorCollection::class
+                    "getCoordinatorClassesToScan" => ValidatorCollection::class
                 ]);
             })
         ];

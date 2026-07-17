@@ -2,13 +2,14 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-use Suphle\Services\ServiceCoordinator;
-use Suphle\Routing\Attributes\{Route, HttpMethod};
+use Suphle\Services\BaseCoordinator;
+use Suphle\Routing\Attributes\{Route, HttpMethod, RoutePrefix};
 use Suphle\Response\Format\Json;
 
-class BlankController extends ServiceCoordinator
+#[RoutePrefix("/blank")]
+class BlankController extends BaseCoordinator
 {
-    #[Route("outer")]
+    #[Route("/outer")]
     public function getEmptyArray(): Json
     {
         return new Json([]);

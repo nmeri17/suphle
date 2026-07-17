@@ -4,13 +4,15 @@ namespace Suphle\Tests\Integration\Services\CoodinatorManager;
 
 use Suphle\Security\CSRF\CsrfGenerator;
 
-use Suphle\Contracts\Config\Router;
+use Suphle\Contracts\Config\Router as RouterContract;
+
+use Suphle\Config\Router;
 
 use Suphle\Exception\Explosives\ValidationFailure;
 
 use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock, Routes\ValidatorCollection, Coordinators\ValidatorCoordinator};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock, Coordinators\ValidatorCoordinator};
 
 class ValidatorCoordinatorNotRunTest extends ModuleLevelTest
 {
@@ -25,7 +27,7 @@ class ValidatorCoordinatorNotRunTest extends ModuleLevelTest
 
                 $container->replaceWithMock(Router::class, RouterMock::class, [
 
-                    "browserEntryRoute" => ValidatorCollection::class
+                    "getCoordinatorClassesToScan" => ValidatorCollection::class
                 ]);
             })
         ];

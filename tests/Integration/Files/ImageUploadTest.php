@@ -2,7 +2,9 @@
 
 namespace Suphle\Tests\Integration\Files;
 
-use Suphle\Contracts\Config\Router;
+use Suphle\Contracts\Config\Router as RouterContract;
+
+use Suphle\Config\Router;
 
 use Suphle\Contracts\IO\Image\{InferiorOperationHandler, ThumbnailOperationHandler};
 
@@ -14,7 +16,7 @@ use Suphle\Testing\{TestTypes\ModuleLevelTest, Condiments\FilesystemCleaner};
 
 use Suphle\Testing\Proxies\{WriteOnlyContainer, Extensions\TestResponseBridge};
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\ImageUploadCollection, Meta\ModuleOneDescriptor, Config\RouterMock};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\ImageUploadCoordinator, Meta\ModuleOneDescriptor};
 
 class ImageUploadTest extends ModuleLevelTest
 {
@@ -31,9 +33,9 @@ class ImageUploadTest extends ModuleLevelTest
 
             $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-                $container->replaceWithMock(Router::class, RouterMock::class, [
+                $container->replaceWithMock(RouterContract::class, Router::class, [
 
-                    "browserEntryRoute" => ImageUploadCollection::class
+                    "getCoordinatorClassesToScan" => [ImageUploadCoordinator::class]
                 ]);
             })
         ];

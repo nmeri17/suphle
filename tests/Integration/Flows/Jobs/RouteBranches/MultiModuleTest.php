@@ -2,11 +2,13 @@
 
 namespace Suphle\Tests\Integration\Flows\Jobs\RouteBranches;
 
-use Suphle\Contracts\Config\Router;
+use Suphle\Contracts\Config\Router as RouterContract;
+
+use Suphle\Config\Router;
 
 use Suphle\Testing\Proxies\WriteOnlyContainer;
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\FlowRoutes, Config\RouterMock};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\FlowRoutes};
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
@@ -28,10 +30,10 @@ class MultiModuleTest extends JobFactory
             ModuleOneDescriptor::class,
             function (WriteOnlyContainer $container) {
 
-                $container->replaceWithMock(Router::class, RouterMock::class, [
+                /*$container->replaceWithMock(RouterContract::class, Router::class, [
 
                     // "browserEntryRoute" => FlowRoutes::class
-                ]);
+                ]);*/
             }
         );
     }

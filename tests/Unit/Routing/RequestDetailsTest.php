@@ -11,13 +11,7 @@ use Suphle\Testing\TestTypes\IsolatedComponentTest;
 
 use Suphle\Tests\Integration\Generic\CommonBinds;
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\Config\RouterMock;
-
-use AllModules\ModuleOne\Coordinators\{
-    V3\ApiV3Coordinator,
-    V2\ApiV2Coordinator,
-    V1\ApiV1Coordinator
-};
+use AllModules\ModuleOne\Coordinators\{ V3\ApiV3Coordinator, V2\ApiV2Coordinator, V1\ApiV1Coordinator};
 
 class RequestDetailsTest extends IsolatedComponentTest {
     use RequestDetailsMocker;

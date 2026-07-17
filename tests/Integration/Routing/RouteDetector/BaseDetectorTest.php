@@ -1,11 +1,11 @@
 <?php
 namespace Suphle\Tests\Integration\Routing\RouteDetector;
 
-use Suphle\Contracts\Config\Router;
+use Suphle\Contracts\Config\Router as RouterContract;
 
 use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Config\RouterMock, Meta\ModuleOneDescriptor};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor};
 
 class BaseDetectorTest extends ModuleLevelTest {
     
@@ -17,10 +17,10 @@ class BaseDetectorTest extends ModuleLevelTest {
         return [
             $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-                $container->replaceWithMock(Router::class, RouterMock::class, [
+                /*$container->replaceWithMock(RouterContract::class, Router::class, [
 
                     "mirrorsCollections" => false
-                ]);
+                ]);*/
             })
         ];
     }

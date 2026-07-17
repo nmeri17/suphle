@@ -2,35 +2,24 @@
 
 namespace Suphle\Tests\Integration\Routing\Versioning;
 
-use Suphle\Testing\TestTypes\ModuleLevelTest;
-use Suphle\Testing\Proxies\WriteOnlyContainer;
-use Suphle\Contracts\Config\Router;
+use Suphle\Contracts\Config\Router as RouterContract;
+
+use Suphle\Config\Router;
+
+use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
-use Suphle\Tests\Mocks\Modules\ModuleOne\Config\RouterMock;
 use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\{
     ProductsV1Coordinator,
     ProductsV2Coordinator
 };
 
-/**
- * Demonstrates the Suphle API versioning pattern:
- *
- * - A V2 coordinator can extend its V1 counterpart
- * - It defines a new #[RoutePrefix] for the v2 URL namespace
- * - PHP Reflection naturally exposes inherited public methods INCLUDING their #[Route] attributes
- * - The scanner registers all inherited routes under the child coordinator's prefix automatically
- * - Only the overridden method (store) differs between versions
- * - V1 routes remain completely untouched
- *
- * No route definitions need to be copy-pasted between versions.
- */
 class CoordinatorVersioningTest extends ModuleLevelTest
 {
     protected function getModules(): array
     {
         return [
             $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
-                $container->replaceWithMock(Router::class, RouterMock::class, [
+                $container->replaceWithMock(RouterContract::class, Router::class, [ // confirm whether presence of this doesn't translate to deleting th other ones within this ns
                     "getCoordinatorClassesToScan" => [
                         ProductsV1Coordinator::class,
                         ProductsV2Coordinator::class,

@@ -147,7 +147,7 @@ trait ModuleHttpTest
     {
 
         return $this->entrance->getActiveContainer()
-
+// below no longer exists
         ->getClass(MiddlewareRegistry::class)->getFunnelsForInteracted();
     }
 

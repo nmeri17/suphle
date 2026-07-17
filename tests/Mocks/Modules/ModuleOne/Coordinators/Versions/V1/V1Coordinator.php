@@ -2,12 +2,12 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\Versions\V1;
 
-use Suphle\Services\ServiceCoordinator;
+use Suphle\Services\BaseCoordinator;
 use Suphle\Routing\Attributes\{Route, RoutePrefix, HttpMethod};
 use Suphle\Response\Format\Json;
 
 #[RoutePrefix('api/v1')]
-class V1Coordinator extends ServiceCoordinator
+class V1Coordinator extends BaseCoordinator
 {
     #[Route('/cascade')]
     public function cascade(): Json

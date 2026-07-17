@@ -18,12 +18,12 @@ class ComputedPrefixTest extends ModuleLevelTest {
         return [
             $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-                $container->replaceWithMock(Router::class, RouterMock::class, [
+                /*$container->replaceWithMock(Router::class, RouterMock::class, [
 
-                    "mirrorsCollections" => false,
+                    // "mirrorsCollections" => false,
 
-                    "browserEntryRoute" => OuterCollection::class
-                ]);
+                    "browserEntryRoute" => OuterCollection::class // no longer exists. i even wonder whether the test is still relevant since we never use the old trie strategy
+                ]);*/
             })
         ];
     }

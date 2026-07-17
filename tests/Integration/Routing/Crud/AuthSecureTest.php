@@ -2,20 +2,21 @@
 
 namespace Suphle\Tests\Integration\Routing\Crud;
 
-use Suphle\Contracts\Config\Router;
+use Suphle\Contracts\Config\Router as RouterContract;
 
-use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
+use Suphle\Config\Router;
 
 use Suphle\Testing\{Condiments\BaseDatabasePopulator, TestTypes\ModuleLevelTest};
 
 use Suphle\Testing\Proxies\{SecureUserAssertions, WriteOnlyContainer};
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Routes\Crud\AuthenticateCrudCollection, Config\RouterMock};
+use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
+
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Routes\Crud\AuthenticateCrudCollection};
 
 class AuthSecureTest extends ModuleLevelTest
 {
-    use BaseDatabasePopulator;
-    use SecureUserAssertions;
+    use BaseDatabasePopulator, SecureUserAssertions;
 
     protected function getModules(): array
     {
@@ -24,11 +25,9 @@ class AuthSecureTest extends ModuleLevelTest
             $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
                 $container->replaceWithMock(
-                    Router::class,
-                    RouterMock::class,
+                    RouterContract::class, Router::class,
                     [
-
-                        "browserEntryRoute" => AuthenticateCrudCollection::class
+                        "getCoordinatorClassesToScan" => [AuthenticateCrudCollection::class] // no longer exists
                     ]
                 );
             })

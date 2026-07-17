@@ -4,15 +4,15 @@ namespace Suphle\Tests\Integration\Modules;
 
 use Suphle\Security\CSRF\CsrfGenerator;
 
-use Suphle\Contracts\Config\Router;
+use Suphle\Contracts\Config\Router as RouterContract;
 
-use Suphle\Exception\Explosives\ValidationFailure;
-
-use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
+use Suphle\Config\Router;
 
 use Suphle\Response\Format\Json;
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock, Coordinators\ValidatorCoordinator};
+use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
+
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Coordinators\ValidatorCoordinator};
 
 class InjectGoodMockDuringBuildTest extends ModuleLevelTest
 {
@@ -27,7 +27,7 @@ class InjectGoodMockDuringBuildTest extends ModuleLevelTest
 
             $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-                $container->replaceWithMock(Router::class, RouterMock::class, [
+                $container->replaceWithMock(RouterContract::class, Router::class, [
                         
                     "getCoordinatorClassesToScan" => [ValidatorCoordinator::class]
                 ])
@@ -36,7 +36,7 @@ class InjectGoodMockDuringBuildTest extends ModuleLevelTest
                     ValidatorCoordinator::class,
                     [
 
-                        "getWithout" => $this->returnCallback(function () {
+                        "handleGet" => $this->returnCallback(function () {
 
                             $this->indicator = 10;
 
@@ -45,7 +45,7 @@ class InjectGoodMockDuringBuildTest extends ModuleLevelTest
                     ],
                     [
 
-                    "getWithout" => [0, []] // then // if that method actually runs, this ought to cause the test to fail
+                    "handleGet" => [0, []] // then // if that method actually runs, this ought to cause the test to fail
                     ]
                 );
             })

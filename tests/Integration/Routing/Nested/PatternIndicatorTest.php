@@ -17,7 +17,7 @@ class PatternIndicatorTest extends ModuleLevelTest
 
             $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-                $container->replaceWithMock(Router::class, RouterMock::class, [
+                $container->replaceWithMock(RouterContract::class, Router::class, [
 
                     "browserEntryRoute" => UpperCollection::class
                 ]);
@@ -35,7 +35,7 @@ class PatternIndicatorTest extends ModuleLevelTest
 
     public function test_nested_route_accesses_parent_auth()
     {
-
+// confirm relevance by searching for occurences and determine whether behavior is already covered by another test
         $this->get("/prefix/retain-auth") // when
 
         ->assertUnauthorized(); // then

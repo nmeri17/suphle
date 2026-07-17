@@ -2,9 +2,9 @@
 
 namespace Suphle\Routing\Analysis;
 
-use PhpParser\{ParserFactory, NodeFinder, Node, Expr};
-use PhpParser\Expr\{MethodCall, Variable, Assign, ClassConstFetch, StaticCall, PropertyFetch};
-use PhpParser\Node\{Identifier, Name, Stmt\Return_, Stmt\Class_, Stmt\ClassMethod};
+use PhpParser\{ParserFactory, NodeFinder, Node};
+use PhpParser\Node\Expr\{MethodCall, Variable, Assign, ClassConstFetch, StaticCall, PropertyFetch};
+use PhpParser\Node\{Identifier, Name, Expr, Stmt\Return_, Stmt\Class_, Stmt\ClassMethod};
 use PhpParser\ParserAbstract;
 use ReflectionMethod, ReflectionClass, ReflectionNamedType, ReflectionException;
 
@@ -142,9 +142,7 @@ trait AstHelper
         $methodCalls = $this->nodeFinder->findInstanceOf($methodStmts, MethodCall::class);
 
         foreach ($methodCalls as $call) {
-            if ($call->var instanceof PropertyFetch &&
-                $call->var->var instanceof Variable &&
-                $call->var->var->name === 'this') {
+            if ($this->isCalledOnThisProperty($call)) {
 
                 $propertyName = $call->var->name->name ?? null;
 
@@ -158,6 +156,13 @@ trait AstHelper
         }
 
         return null;
+    }
+    // checking if a method call's receiver is $this->something
+    protected function isCalledOnThisProperty(MethodCall $call): bool {
+
+        return $call->var instanceof PropertyFetch &&
+            $call->var->var instanceof Variable &&
+            $call->var->var->name === 'this';
     }
 
     /**
@@ -199,6 +204,49 @@ trait AstHelper
             }
         } catch (Throwable) {
             // Silent failure - let guessing take over
+        }
+
+        return null;
+    }
+    /**
+     * Extracts the terminal ORM method name from a service method's return
+     * expression without fully resolving it — we only need the method name
+     * (first/get/paginate/etc.), not the full schema, since ESD handles
+     * schema generation once given the builder class + terminal.
+     *
+     * Handles both direct chains ($query->first()) and variable indirection
+     * ($result = $query->get(); return $result;) by delegating variable
+     * tracing to findVariableAssignment().
+     */
+    protected function extractOrmTerminal(?Expr $expr): ?string
+    {
+        if (!$expr) return null;
+
+        // Unwrap variable indirection: $result = $query->get(); return $result;
+        if ($expr instanceof Variable && is_string($expr->name)) {
+            $assigned = $this->findVariableAssignment($expr->name, $this->actionMethod);
+            return $this->extractOrmTerminal($assigned);
+        }
+
+        // Direct chain: return $query->with(...)->get();
+        // The outermost MethodCall name IS the terminal.
+        if ($expr instanceof MethodCall && $expr->name instanceof Identifier) {
+            return $expr->name->toString();
+        }
+
+        // Ternary: return $cond ? $query->first() : $query->get();
+        // Collect both — caller handles oneOf if they differ.
+        // We return the if-branch terminal here; caller iterates all returns
+        // so both branches surface as separate shapes naturally.
+        if ($expr instanceof Ternary) {
+            return $this->extractOrmTerminal($expr->if ?? $expr->cond);
+        }
+
+        if ($expr instanceof Match_) {
+            foreach ($expr->arms as $arm) {
+                $t = $this->extractOrmTerminal($arm->body);
+                if ($t) return $t;
+            }
         }
 
         return null;

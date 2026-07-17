@@ -4,11 +4,11 @@ namespace Suphle\Tests\Mocks\Modules\ModuleThree\Meta;
 
 use Suphle\Hydration\Structures\BaseInterfaceCollection;
 
-use Suphle\Contracts\Config\{Router, Flows};
+use Suphle\Contracts\Config\{ Flows};
 
 use Suphle\Contracts\{Events, Auth\UserContract, Presentation\HtmlParser};
 
-use Suphle\Tests\Mocks\Modules\ModuleThree\Config\{RouterMock, FlowMock};
+use Suphle\Tests\Mocks\Modules\ModuleThree\Config\{ FlowMock};
 
 use Suphle\Tests\Mocks\Modules\ModuleThree\{Events\AssignListeners, Concretes\CustomBladeAdapter};
 
@@ -20,12 +20,9 @@ class CustomInterfaceCollection extends BaseInterfaceCollection
 {
     public function getConfigs(): array
     {
-
         return array_merge(parent::getConfigs(), [
 
-            Flows::class => FlowMock::class,
-
-            Router::class => RouterMock::class
+            Flows::class => FlowMock::class
         ]);
     }
 

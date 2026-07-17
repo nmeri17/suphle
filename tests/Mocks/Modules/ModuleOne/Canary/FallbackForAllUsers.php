@@ -13,7 +13,7 @@ class FallbackForAllUsers implements CanaryEvaluator
     }
 
     public function willLoad(): ?string
-    {
+    {// no conditional here so this does nothing cuz the concept of fallback is no longer valid
         // Always fallback if no other canary matches
         return 'fallback';
     }

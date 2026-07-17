@@ -1,15 +1,15 @@
 <?php
 namespace Suphle\Tests\Unit\Routing;
 
-use Suphle\Contracts\Config\Router;
+use Suphle\Contracts\Config\Router as RouterContract;
+
+use Suphle\Config\Router;
 
 use Suphle\Request\RequestDetails;
 
 use Suphle\Hydration\Container;
 
 use Suphle\Tests\Integration\Generic\CommonBinds;
-
-use Suphle\Tests\Mocks\Modules\ModuleOne\Config\RouterMock;
 
 trait RequestDetailsMocker {
     use CommonBinds;
@@ -19,9 +19,8 @@ trait RequestDetailsMocker {
 
         $this->massProvide([
 
-            Router::class => $this->positiveDouble(
-                RouterMock::class,
-                $stubMethods
+            RouterContract::class => $this->positiveDouble(
+                Router::class, $stubMethods
             )
         ]);
     }

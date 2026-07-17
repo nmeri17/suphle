@@ -2,7 +2,9 @@
 
 namespace Suphle\Tests\Integration\Auth;
 
-use Suphle\Contracts\{Auth\AuthStorage, Config\Router};
+use Suphle\Contracts\{Auth\AuthStorage, Config\Router as RouterContract};
+
+use Suphle\Config\Router;
 
 use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
 
@@ -10,14 +12,13 @@ use Suphle\Testing\{TestTypes\ModuleLevelTest, Condiments\BaseDatabasePopulator}
 
 use Suphle\Testing\Proxies\{WriteOnlyContainer, SecureUserAssertions};
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor,Config\RouterMock};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor};
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\ApiRoutes\{V2\ApiUpdate2Entry};
 
 class BrowserVersioningTest extends ModuleLevelTest
 {
-    use BaseDatabasePopulator;
-    use SecureUserAssertions;
+    use BaseDatabasePopulator, SecureUserAssertions;
 
     protected function getModules(): array
     {
@@ -26,15 +27,9 @@ class BrowserVersioningTest extends ModuleLevelTest
             $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
                 $container->replaceWithMock(
-                    Router::class,
-                    RouterMock::class,
+                    RouterContract::class, Router::class,
                     [
-
-                        "apiStack" => [
-
-                            "v2" => ApiUpdate2Entry::class
-
-                        ]
+                        "getCoordinatorClassesToScan" => ApiUpdate2Entry::class
                     ]
                 );
             })

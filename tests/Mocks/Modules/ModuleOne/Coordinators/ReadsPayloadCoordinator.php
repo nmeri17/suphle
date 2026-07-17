@@ -2,13 +2,13 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-use Suphle\Services\ServiceCoordinator;
+use Suphle\Services\BaseCoordinator;
 use Suphle\Routing\Attributes\{Route, RoutePrefix};
 use Suphle\Response\Format\Json;
 use Suphle\Request\PayloadStorage;
 
-#[RoutePrefix('')]
-class ReadsPayloadCoordinator extends ServiceCoordinator
+#[RoutePrefix('/payload')]
+class ReadsPayloadCoordinator extends BaseCoordinator
 {
     public function __construct(protected readonly PayloadStorage $payloadStorage)
     {

@@ -2,7 +2,9 @@
 
 namespace Suphle\Tests\Integration\Auth;
 
-use Suphle\Contracts\{Auth\AuthStorage, Config\Router};
+use Suphle\Contracts\{Auth\AuthStorage, Config\Router as RouterContract};
+
+use Suphle\Config\Router;
 
 use Suphle\Auth\Storage\SessionStorage;
 
@@ -12,12 +14,11 @@ use Suphle\Testing\{TestTypes\ModuleLevelTest, Condiments\BaseDatabasePopulator}
 
 use Suphle\Testing\Proxies\{WriteOnlyContainer, SecureUserAssertions};
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Routes\Auth\SecureBrowserCollection, Config\RouterMock};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Routes\Auth\SecureBrowserCollection};
 
 class BrowserAuthModuleBasedTest extends ModuleLevelTest
 {
-    use BaseDatabasePopulator;
-    use SecureUserAssertions;
+    use BaseDatabasePopulator, SecureUserAssertions;
 
     protected function getModules(): array
     {
@@ -26,11 +27,9 @@ class BrowserAuthModuleBasedTest extends ModuleLevelTest
             $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
                 $container->replaceWithMock(
-                    Router::class,
-                    RouterMock::class,
+                    RouterContract::class, Router::class,
                     [
-
-                        "browserEntryRoute" => SecureBrowserCollection::class
+                        "getCoordinatorClassesToScan" => SecureBrowserCollection::class
                     ]
                 );
             })

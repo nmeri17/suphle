@@ -6,7 +6,7 @@ use Suphle\Request\PayloadStorage;
 
 trait AnalyzerUtils
 {
-    public function getStandardFormatSchema(string $rendererClass): ?array
+    public function rendererTypeSummary(string $rendererClass): ?array
     {
         if (is_subclass_of($rendererClass, Markup::class)) {
             return [

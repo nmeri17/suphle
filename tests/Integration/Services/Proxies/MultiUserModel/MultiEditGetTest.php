@@ -2,7 +2,7 @@
 
 namespace Suphle\Tests\Integration\Services\Proxies\MultiUserModel;
 
-use Suphle\Contracts\{Services\Models\IntegrityModel, Config\Router};
+use Suphle\Contracts\{Services\Models\IntegrityModel};
 
 use Suphle\Contracts\Modules\DescriptorInterface;
 
@@ -58,10 +58,10 @@ class MultiEditGetTest extends InvestigateSystemCrash
 
         return $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-            $container->replaceWithMock(Router::class, RouterMock::class, [
+            /*$container->replaceWithMock(Router::class, RouterMock::class, [
 
-                "browserEntryRoute" => AuthorizeRoutes::class
-            ]);
+                "getCoordinatorClassesToScan" => UserCoordinator::class // check for who's using target prem
+            ]);*/
         });
     }
 

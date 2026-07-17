@@ -5,7 +5,7 @@ namespace Suphle\Adapters\Orms\Eloquent\Models;
 use Suphle\Services\Structures\ModelfulPayload;
 use Suphle\Hydration\Structures\ObjectDetails;
 use Suphle\Routing\Analysis\AstHelper;
-use Suphle\Contracts\{Database\ModelSchemaDetector, Config\Database as DatabaseConfig};
+use Suphle\Contracts\{Database\ModelSchemaDetector, Config\Database as DatabaseConfig, Database\OrmDialect};
 use Suphle\File\FileSystemReader;
 use Suphle\Adapters\Orms\Eloquent\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -22,6 +22,7 @@ class EloquentSchemaDetector implements ModelSchemaDetector
         protected readonly ObjectDetails $objectDetails,
         protected readonly DatabaseConfig $databaseConfig,
         protected readonly FileSystemReader $fileReader,
+        protected readonly OrmDialect $ormBridge
     ) {
         $this->setNodeFinder();
     }
@@ -249,7 +250,7 @@ class EloquentSchemaDetector implements ModelSchemaDetector
         }
 
         $instance = $this->objectDetails->noConstructor($className);
-        $builder  = $instance->getConnection()->getSchemaBuilder();
+        $builder = $this->ormBridge->getConnection()->getSchemaBuilder();
         $table    = $instance->getTable();
         $hidden   = $instance->getHidden();
 
@@ -293,6 +294,16 @@ class EloquentSchemaDetector implements ModelSchemaDetector
         ];
     }
 
+    protected function mapDbType(string $type): string
+    {
+        return match ($type) {
+            'integer', 'bigint', 'smallint' => 'integer',
+            'boolean'                        => 'boolean',
+            'decimal', 'float', 'double'    => 'number',
+            default                          => 'string',
+        };
+    }
+
     // -------------------------------------------------------------------------
     // MODEL REGISTRY / HARVESTING
     // -------------------------------------------------------------------------
@@ -334,16 +345,6 @@ class EloquentSchemaDetector implements ModelSchemaDetector
         }
 
         return $out;
-    }
-
-    protected function mapDbType(string $type): string
-    {
-        return match ($type) {
-            'integer', 'bigint', 'smallint' => 'integer',
-            'boolean'                        => 'boolean',
-            'decimal', 'float', 'double'    => 'number',
-            default                          => 'string',
-        };
     }
 
     protected function isModelfulPayload(string $class): bool
