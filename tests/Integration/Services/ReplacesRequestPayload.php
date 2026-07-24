@@ -4,7 +4,7 @@ namespace Suphle\Tests\Integration\Services;
 
 use Suphle\Hydration\Container;
 
-use Suphle\Routing\PathPlaceholders;
+use Suphle\Routing\Structures\RouteInfo;
 
 use Suphle\Request\{PayloadStorage, RequestDetails};
 
@@ -27,7 +27,7 @@ trait ReplacesRequestPayload
 
         $requestObjects = [
 
-            PathPlaceholders::class => $this->positiveDouble(PathPlaceholders::class, [
+            RouteInfo::class => $this->positiveDouble(RouteInfo::class, [
 
                 "getSegmentValue" => $segmentValue
             ]),

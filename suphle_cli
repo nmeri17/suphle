@@ -6,7 +6,7 @@
 
 	use Suphle\Tests\Mocks\PublishedTestModules;
 
-	(new CliRunnerAccessor(new PublishedTestModules))
+	(new CliRunnerAccessor(new PublishedTestModules, false, "Suphle", "v2"))
 
 	->forwardCommandsToRunner(__DIR__);
 ?>

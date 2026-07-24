@@ -50,11 +50,7 @@ class EmptyModulesTest extends IsolatedComponentTest
     protected function setConsoleRunner(): self
     {
 
-        $runnerAccessor = new CliRunnerAccessor(
-            new FrontDoor([]),
-            "SuphleTest",
-            true
-        );
+        $runnerAccessor = new CliRunnerAccessor(new FrontDoor([]), true, "SuphleTest" );
 
         $runnerAccessor->forwardCommandsToRunner(
             $this->fileConfig->getRootPath()

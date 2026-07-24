@@ -46,6 +46,9 @@ class Router implements RouterConfig
 
     public function matchesApi (string $path):bool {
 
-        return str_contains(strtolower($path), "/api/");
+        $lowerPath = strtolower($path);
+
+        return $lowerPath === "api" || // root
+        str_starts_with($lowerPath, "api/");
     }
 }

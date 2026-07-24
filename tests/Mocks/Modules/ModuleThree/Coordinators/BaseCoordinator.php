@@ -2,14 +2,15 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleThree\Coordinators;
 
-use Suphle\Services\ServiceCoordinator;
-use Suphle\Routing\Attributes\{Route, HttpMethod};
+use Suphle\Services\BaseCoordinator as SuphleCoordinator;
+use Suphle\Routing\Attributes\{Route, HttpMethod, RoutePrefix};
 use Suphle\Response\Format\Json;
 use Suphle\Tests\Mocks\Modules\ModuleThree\PayloadReaders\ReadsId;
 
-class BaseCoordinator extends ServiceCoordinator
-{
-    #[Route("module-three/{id}")]
+#[RoutePrefix("/module-three")]
+class BaseCoordinator extends SuphleCoordinator {
+    
+    #[Route("/{id}")]
     public function checkPlaceholder(ReadsId $payloadReader): Json
     {
         return new Json([

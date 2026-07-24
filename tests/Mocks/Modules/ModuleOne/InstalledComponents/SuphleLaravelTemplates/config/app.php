@@ -1,7 +1,5 @@
 <?php
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\InstalledComponents\SuphleLaravelTemplates\ServiceProviders\RegistersRouteProvider;
-
 return [
 
     /*
@@ -177,7 +175,6 @@ return [
         App\Providers\AuthServiceProvider::class,
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,*/
-        RegistersRouteProvider::class,
 
     ],
 

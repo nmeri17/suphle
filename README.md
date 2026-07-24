@@ -81,10 +81,10 @@ Then, visit any of the routes available at:
 
 They don't require any database connection and only demonstrate the relatively basic ability to route incoming requests to an attached action handler, taking higher-level constraints like modules and prefixing into account.
 
-Where database access is needed, it would need to be initiated using,
+Where database access is needed, it would need to be initiated by first creating a database (`suphle`), using your preferred DBMS (e.g phpmyadmin). Afterwards, run from the terminal:
 
 ```bash
-php suphle_cli bridge:laravel "migrate:fresh --seed"
+php suphle_cli bridge:laravel "migrate:fresh"
 ```
 
 You might observe the use of `suphle_cli` here while the dependent projects use `suphle` although they are powered by identical behavior.

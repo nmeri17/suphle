@@ -16,7 +16,7 @@ use InvalidArgumentException;
 #[InterceptsCalls]
 #[VariableDependencies([
 
-    "setPayloadStorage", "setPlaceholderStorage"
+    "setPayloadStorage", "setRouteInfo"
 ])]
 class DatalessErrorThrower implements ServiceErrorCatcher
 {

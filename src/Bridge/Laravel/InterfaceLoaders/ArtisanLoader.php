@@ -12,11 +12,9 @@ use Illuminate\{Console\Application, Events\Dispatcher};
 
 class ArtisanLoader extends BaseInterfaceLoader
 {
-    public function __construct(protected readonly LaravelContainer $laravelContainer)
-    {
-
-        //
-    }
+    public function __construct(
+        protected readonly LaravelContainer $laravelContainer
+    ) { }
 
     public function bindArguments(): array
     {
@@ -28,6 +26,11 @@ class ArtisanLoader extends BaseInterfaceLoader
 
             Dispatcher::class => $this->laravelContainer->make(Dispatcher::class)
         ];
+    }
+
+    public function afterBind ($initialized):void {
+
+        $initialized->setContainerCommandLoader(); // this releases all the sub/internal commands. laravel doesn't log them into the symfony registry cuz they want to handle it themselves. without giving symfony this loader, it never delegates to laravel when it receives the low-level commands eg db:wipe
     }
 
     public function concreteName(): string

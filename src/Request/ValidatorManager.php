@@ -4,7 +4,7 @@ namespace Suphle\Request;
 
 use Suphle\Contracts\Requests\{RequestValidator, FileInputReader};
 
-use Suphle\Routing\RouteInfo;
+use Suphle\Routing\Structures\RouteInfo;
 
 class ValidatorManager
 {

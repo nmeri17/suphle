@@ -2,11 +2,11 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Canaries;
 
-use Suphle\Contracts\Routing\CanaryGateway;
+use Suphle\Contracts\Routing\CanaryEvaluator;
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\CanaryCollections\DefaultCollection;
 
-class DefaultCanary implements CanaryGateway
+class DefaultCanary implements CanaryEvaluator
 {
     public function willLoad(): bool
     {

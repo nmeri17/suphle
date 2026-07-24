@@ -10,10 +10,13 @@ use Suphle\Contracts\Bridge\LaravelContainer;
 
 use Illuminate\Support\Facades\Facade;
 
+use Illuminate\Foundation\Bootstrap\LoadConfiguration;
+
 class LaravelAppLoader extends BaseInterfaceLoader
 {
     public function __construct(
-        protected readonly ComponentEntry $componentEntry
+        protected readonly ComponentEntry $componentEntry,
+        protected readonly LoadConfiguration $configLoader
     ) {
 
         //
@@ -40,6 +43,8 @@ class LaravelAppLoader extends BaseInterfaceLoader
         $this->injectBindings($initialized); // required for below call
 
         $initialized->overrideAppHelper();
+
+        $this->configLoader->bootstrap($initialized);
 
         $initialized->runContainerBootstrappers();
     }

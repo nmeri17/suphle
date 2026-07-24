@@ -2,11 +2,11 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Canaries;
 
-use Suphle\Contracts\{Routing\CanaryGateway, Auth\AuthStorage};
+use Suphle\Contracts\{Routing\CanaryEvaluator, Auth\AuthStorage};
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\CanaryCollections\CollectionForUser5;
 
-class CanaryForUser5 implements CanaryGateway
+class CanaryForUser5 implements CanaryEvaluator
 {
     public function __construct(protected readonly AuthStorage $authStorage)
     {

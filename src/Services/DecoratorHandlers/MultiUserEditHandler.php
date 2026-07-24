@@ -10,7 +10,7 @@ use Suphle\Request\PayloadStorage;
 
 use Suphle\Routing\{CollectionMetaQueue, CollectionMetaFunnel};
 
-use Suphle\Auth\RequestScrutinizers\AuthorizeMetaFunnel;
+use Suphle\Auth\Middleware\PathAuthorization;
 
 use Suphle\Hydration\Structures\ObjectDetails;
 
@@ -135,7 +135,7 @@ class MultiUserEditHandler extends BaseInjectionModifier
 
         $matchingFunnels = $this->collectionMetaQueue->findRoutedFunnels(function (CollectionMetaFunnel $funnel) {
 
-            return $funnel instanceof AuthorizeMetaFunnel;
+            return $funnel instanceof PathAuthorization;
         });
 
         if (empty($matchingFunnels)) { // doesn't confirm current route is authorized since that would have already occured during routing if funnels are present

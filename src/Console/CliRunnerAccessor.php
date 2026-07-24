@@ -15,13 +15,15 @@ class CliRunnerAccessor
 
     public function __construct(
         ModuleHandlerIdentifier $handlerIdentifier,
+        protected readonly bool $isTestEnv = false,
         string $runnerName = "Suphle",
-        protected readonly bool $isTestEnv = false
+        string $runnerVersion = "",
     ) {
         // without running this in the constructor, we'll need an additional method to boot modules before they can provide paths
         $this->runner = new CliRunner(
             $handlerIdentifier,
-            new SymfonyCli($runnerName, "v2") // it's important that one instance is hard-coded for this client. If they're dynamically hydrated for each container, those instances will miss commands bound to this instance. Alternatively, we'd have to cycle through each module, no module container (both live and test mode), to bind the copy commands were bound to. It's not worth it
+
+            new SymfonyCli($runnerName, $runnerVersion) // it's important that one instance is hard-coded for this client. If they're dynamically hydrated for each container, those instances will miss commands bound to this instance. Alternatively, we'd have to cycle through each module, no module container (both live and test mode), to bind the copy commands were bound to. It's not worth it
         );
 
         $this->runner->extractAvailableCommands();

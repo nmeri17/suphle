@@ -1,7 +1,7 @@
 <?php
 namespace Suphle\Tests\Unit\Routing;
 
-use Suphle\Routing\{RouteInfoExecutor, PathPlaceholders, Structures\RouteInfo};
+use Suphle\Routing\{RouteInfoExecutor, RouteInfo, Structures\RouteInfo};
 
 use Suphle\Middleware\MiddlewareQueue;
 
@@ -53,7 +53,7 @@ class RouteInfoExecutorTest extends IsolatedComponentTest {
         // Then
         $this->assertSame($mockRenderer, $result); // Verify the conductor returns the queue result
         
-        $placeholders = $container->getClass(PathPlaceholders::class);
+        $placeholders = $container->getClass(RouteInfo::class);
         $this->assertEquals("42", $placeholders->getSegmentValue("id"));
     }
 }

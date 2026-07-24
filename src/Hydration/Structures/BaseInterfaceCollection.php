@@ -18,7 +18,7 @@ use Suphle\Contracts\Bridge\{LaravelContainer, LaravelArtisan};
 
 use Suphle\Contracts\Auth\{AuthStorage, ModuleLoginHandler, ColumnPayloadComparer};
 
-use Suphle\Contracts\Config\{Auth as AuthContract, Database, DecoratorProxy, ExceptionInterceptor, ComponentTemplates, Laravel as LaravelConfig, Console as ConsoleContract, Flows as FlowConfig, ContainerConfig as IContainerConfig, CacheClient as CacheConfig};
+use Suphle\Contracts\Config\{Auth as AuthContract, Database, DecoratorProxy, ExceptionInterceptor, ComponentTemplates, Laravel as LaravelConfig, Console as ConsoleContract, Flows as FlowConfig, ContainerConfig as IContainerConfig, CacheClient as CacheConfig, Router as RouterContract};
 
 use Suphle\Contracts\IO\Image\{ImageThumbnailClient, InferiorImageClient, ImageLocator, InferiorOperationHandler, ThumbnailOperationHandler};
 
@@ -46,7 +46,7 @@ use Suphle\Queues\AdapterLoader as QueueAdapterLoader;
 
 use Suphle\Request\{ValidatorLoader, NativeFileReader, DefaultRequestListener};
 
-use Suphle\Config\{Auth, Laravel, ExceptionConfig, Console as CliConsole, PDOMysqlKeys, DefaultFlowConfig, ProxyManagerConfig, DefaultCacheConfig, DefaultTemplateConfig, ContainerConfig};
+use Suphle\Config\{Auth, Laravel, ExceptionConfig, Console as CliConsole, PDOMysqlKeys, DefaultFlowConfig, ProxyManagerConfig, DefaultCacheConfig, DefaultTemplateConfig, ContainerConfig, Router};
 
 use Suphle\Modules\ControllerModuleApi;
 
@@ -180,7 +180,9 @@ class BaseInterfaceCollection implements InterfaceCollection
 
             FlowConfig::class => DefaultFlowConfig::class,
 
-            LaravelConfig::class => Laravel::class
+            LaravelConfig::class => Laravel::class,
+
+            RouterContract::class => Router::class
         ];
     }
 }

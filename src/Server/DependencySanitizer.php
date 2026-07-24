@@ -13,7 +13,7 @@ use Suphle\IO\{Http\BaseHttpRequest, Mailing\MailBuilder};
 
 use Suphle\Request\PayloadStorage;
 
-use Suphle\Services\{ServiceCoordinator, ConditionalFactory};
+use Suphle\Services\{BaseCoordinator, ConditionalFactory};
 
 use Suphle\Services\Structures\{ModelfulPayload, ModellessPayload};
 
@@ -146,7 +146,7 @@ class DependencySanitizer
 
         return $this->objectMeta->stringInClassTree(
             $className,
-            ServiceCoordinator::class
+            BaseCoordinator::class
         );
     }
 

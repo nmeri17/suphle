@@ -2,13 +2,13 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Routes\Canaries;
 
-use Suphle\Contracts\Routing\CanaryGateway;
+use Suphle\Contracts\Routing\CanaryEvaluator;
 
 use Suphle\Request\PayloadStorage;
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\CanaryCollections\CollectionRequestHasFoo;
 
-class CanaryRequestHasFoo implements CanaryGateway
+class CanaryRequestHasFoo implements CanaryEvaluator
 {
     public function __construct(protected readonly PayloadStorage $payloadStorage)
     {

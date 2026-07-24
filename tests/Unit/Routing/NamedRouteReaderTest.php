@@ -5,7 +5,7 @@ namespace Suphle\Tests\Unit\Routing;
 use PHPUnit\Framework\TestCase;
 use Suphle\Routing\NamedRouteReader;
 use Suphle\Routing\AttributeRouteManager;
-use Suphle\Routing\PathPlaceholders;
+use Suphle\Routing\Structures\RouteInfo;
 use Suphle\Routing\Structures\RouteInfo;
 use Suphle\Routing\Attributes\HttpMethod;
 
@@ -18,7 +18,7 @@ class NamedRouteReaderTest extends TestCase
     protected function setUp(): void
     {
         $this->routeManager = $this->createMock(AttributeRouteManager::class);
-        $this->placeholders = $this->createMock(PathPlaceholders::class);
+        $this->placeholders = $this->createMock(RouteInfo::class);
         
         $this->reader = new NamedRouteReader($this->routeManager, $this->placeholders);
     }

@@ -2,7 +2,7 @@
 
 namespace Suphle\Tests\Integration\Services\DependencySanitization;
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\BaseCoordinator;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Services\BaseCoordinator;
 
 use InvalidArgumentException;
 

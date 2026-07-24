@@ -4,7 +4,9 @@ namespace Suphle\Adapters\Orms\Eloquent;
 
 use Suphle\Hydration\{BaseInterfaceLoader, Container};
 
-use Suphle\Contracts\{ Config\Auth, Bridge\LaravelContainer, Database\OrmDialect, Auth\AuthStorage};
+use Suphle\Contracts\Config\{Auth, Database};
+
+use Suphle\Contracts\{Bridge\LaravelContainer, Database\OrmDialect, Auth\AuthStorage};
 
 use Suphle\Adapters\Orms\Eloquent\Models\BaseModel;
 
@@ -16,7 +18,8 @@ class OrmLoader extends BaseInterfaceLoader
         protected readonly Auth $authContract,
         protected readonly AuthStorage $authStorage,
         protected readonly LaravelContainer $laravelContainer,
-        protected readonly Container $container
+        protected readonly Container $container,
+        protected readonly Database $databaseConfig
     ) {
 
         //
@@ -41,6 +44,8 @@ class OrmLoader extends BaseInterfaceLoader
         );
 
         BaseModel::shouldBeStrict();
+
+        $this->laravelContainer->useDatabasePath($this->databaseConfig->componentInstallPath()); // used by cli runner eg migrate, to read elsewhere from the component installation path, enabling eg migrate commands to point to our global folder
     }
 
     public function concreteName(): string

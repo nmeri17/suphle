@@ -34,11 +34,7 @@ abstract class CommandLineTest extends TestVirginContainer
 
         $this->monitorModuleContainers();
 
-        $runnerAccessor = new CliRunnerAccessor(
-            $this->entrance,
-            "SuphleTest",
-            true
-        );
+        $runnerAccessor = new CliRunnerAccessor($this->entrance, true, "SuphleTest");
 
         $runnerAccessor->forwardCommandsToRunner($this->getRunnerPath());
 
