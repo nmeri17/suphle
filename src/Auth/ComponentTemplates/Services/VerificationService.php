@@ -1,11 +1,11 @@
 <?php
-namespace _modules_shell\_module_name\SuphleIdentity\Services;
+namespace _modules_shell\_module_name\InstalledComponents\SuphleIdentity\Services;
 
 use Suphle\Services\Structures\BaseErrorCatcherService;
 use Suphle\Services\Decorators\{InterceptsCalls, VariableDependencies, DomainService};
 use Suphle\Contracts\Services\CallInterceptors\SystemModelEdit;
 use _database_namespace_\User; // auto-ejected during project init
-use DateTime
+use DateTimeImmutable;
 
 #[InterceptsCalls(SystemModelEdit::class)]
 #[VariableDependencies(["setPayloadStorage"])]
@@ -16,9 +16,13 @@ class VerificationService implements SystemModelEdit {
 
     public function updateModels(object $user): bool {
 
+        if (!is_null($user->email_verified_at)) return false;
+
         return $user->update([
-            
-            "email_verified_at" => (new DateTime())->format('Y-m-d H:i:s')
+
+            "verification_token" => null,
+
+            "email_verified_at" => (new DateTimeImmutable())->format("Y-m-d H:i:s")
         ]);
     }
 

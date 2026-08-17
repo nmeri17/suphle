@@ -17,6 +17,6 @@ class DocsDetails {
 
     	$uri = $this->payloadStorage->getUri();
         
-        return $this->openApiService->generateOpenApiSpec($uri->getScheme() . '://' . $uri->getHost());
+        return $this->openApiService->generateOpenApiSpec($uri->getScheme() . '://' . $uri->getHost()); // $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'];
 	}
 }

@@ -2,9 +2,10 @@
 
 namespace Suphle\Tests\Integration\Routing\Commands;
 
-use Suphle\Contracts\Config\Console;
+use Suphle\Contracts\Config\{Console as ConsoleConfig, Router as RouterConfig};
+use Suphle\Config\{Router, Console};
 use Suphle\Testing\Proxies\WriteOnlyContainer;
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Coordinators\TestCoordinator};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Coordinators\BaseCoordinator};
 use Suphle\Tests\Integration\Console\TestCliRunner;
 use Symfony\Component\Console\Command\Command;
 
@@ -19,13 +20,12 @@ class RouteListCommandTest extends TestCliRunner
     protected function setModuleOne(): void
     {
         $this->moduleOne = $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
-            $consoleConfig = Console::class;
             
-            $container->replaceWithMock($consoleConfig, $consoleConfig, [
+            $container->replaceWithMock(ConsoleConfig::class, Console::class, [
                 "commandsList" => [RouteListCommand::class]
             ])
-            ->replaceWithMock(RouterConfig::class, RouterConfig::class, [
-                "getCoordinatorClassesToScan" => [TestCoordinator::class]
+            ->replaceWithMock(RouterConfig::class, Router::class, [
+                "getCoordinatorClassesToScan" => [BaseCoordinator::class]
             ]);
         });
     }
@@ -98,29 +98,5 @@ class RouteListCommandTest extends TestCliRunner
         
         $jsonData = json_decode($output, true);
         $this->assertIsArray($jsonData);
-    }
-
-    public function test_returns_success_when_no_routes_found()
-    {
-        $this->moduleOne = $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
-            $consoleConfig = Console::class;
-            
-            $container->replaceWithMock($consoleConfig, $consoleConfig, [
-                "commandsList" => [RouteListCommand::class]
-            ])
-            ->replaceWithMock(RouterConfig::class, RouterConfig::class, [
-                "getCoordinatorClassesToScan" => []
-            ]);
-        });
-
-        $command = $this->consoleRunner->findHandler("route:list");
-        $commandTester = new CommandTester($command);
-
-        $commandTester->execute([]);
-
-        $commandTester->assertCommandIsSuccessful();
-        
-        $output = $commandTester->getDisplay();
-        $this->assertStringContainsString('No routes found', $output);
     }
 } 

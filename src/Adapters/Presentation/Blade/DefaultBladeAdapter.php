@@ -146,9 +146,8 @@ class DefaultBladeAdapter implements HtmlParser
 
         $this->laravelContainer::setInstance($this->laravelContainer); // without this, the call creates a fresh container without all the bindings above
 
-        $this->bladeCompiler->anonymousComponentPath(
-            $this->fileConfig->defaultViewPath() // requires presence of a composer.json with at least one psr4 namespace for guessing namespace to use
-        );
+        foreach ($this->viewPaths as $path)
+            $this->bladeCompiler->anonymousComponentPath($path); // requires presence of a composer.json with at least one psr4 namespace for guessing namespace to use
 
         $this->laravelContainer->instance(
             BladeCompiler::class,

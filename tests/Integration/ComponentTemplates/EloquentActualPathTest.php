@@ -6,15 +6,11 @@ use Suphle\Contracts\Config\{ComponentTemplates, Database};
 
 use Suphle\Contracts\IO\EnvAccessor;
 
-use Suphle\ComponentTemplates\Commands\InstallComponentCommand;
-
 use Suphle\Adapters\Orms\Eloquent\ComponentEntry as EloquentComponentEntry;
 
 use Suphle\Testing\{ TestTypes\InstallComponentTest, Proxies\WriteOnlyContainer};
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\DatabaseMock};
-
-use Suphle\Tests\Mocks\Interactions\ModuleOne;
 
 use Suphle\Tests\Integration\ComponentTemplates\Models\User as GeneratedUser;
 
@@ -80,14 +76,5 @@ class EloquentActualPathTest extends InstallComponentTest
         $this->assertTrue(class_exists(GeneratedUser::class));
 
         $this->assertNotEmptyDirectory($this->getModelDirectory(), true);
-    }
-
-    protected function getCommandOptions(): array
-    {
-
-        return [
-
-            InstallComponentCommand::HYDRATOR_MODULE_OPTION => ModuleOne::class
-        ];
     }
 }

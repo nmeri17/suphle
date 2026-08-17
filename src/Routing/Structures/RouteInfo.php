@@ -13,9 +13,11 @@ class RouteInfo
     use SanitizesIntegerInput;
 
     private array $parameters = [];
+    
+    public bool $isMirror = false;
 
     public function __construct(
-        public readonly string $path,
+        public readonly string $path, // this value is being reset to its computed equivalent after the objects pass through route harvester and the array is rehydrated into routeInfos
         public readonly HttpMethod $method,
         public readonly string $controllerClass,
         public readonly string $controllerMethod,
@@ -23,15 +25,9 @@ class RouteInfo
         public readonly array $middlewares = [],
         public readonly string $moduleName = "",
         public readonly ?array $canaryInfo = null,
-        public readonly ?string $viewName = null,
-        public readonly ?array $flows = null
+        public readonly ?array $flows = null,
     ) {
         //
-    }
-
-    public function getFullPath(): string
-    {
-        return $this->path;
     }
 
     public function matches(string $requestPath, string $requestMethod): bool
@@ -49,15 +45,14 @@ class RouteInfo
 
     private function pathMatches(string $requestPath): bool
     {
-        // Convert route pattern to regex
         $pattern = $this->convertPathToRegex($this->path);
         
         if (preg_match($pattern, $requestPath, $matches)) {
-            // Extract parameters
+            
             $this->extractParameters($matches);
+
             return true;
         }
-        
         return false;
     }
 

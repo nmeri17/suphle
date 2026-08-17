@@ -17,18 +17,24 @@ trait ArrayAssertions
 
     protected function assertArrayHasPath (array $payload, string $path) {
 
-        if (str_contains($path, ".")) {
-
-            $segments = explode(".", $path);
-
-            $current = array_shift($segments);
-
-            return $this->assertArrayHasPath(
-
-                $payload[$current], implode(".", $segments)
-            );
-        }
+        if (!str_contains($path, "."))
         
-        return $this->assertArrayHasKey($path, $payload);
+            return $this->assertArrayHasKey($path, $payload);
+
+        $segments = explode(".", $path);
+
+        $current = array_shift($segments);
+
+        return $this->assertArrayHasPath(
+
+            $payload[$current], implode(".", $segments)
+        );
+    }
+
+    protected function assertArrayHasKeys (array $toVerify, array $payload):void {
+
+        foreach ($toVerify as $key => $value)
+
+            $this->assertArrayHasKey($key, $payload);
     }
 }

@@ -12,7 +12,7 @@ use Suphle\Contracts\Modules\DescriptorInterface;
 
 use Suphle\Testing\TestTypes\InvestigateSystemCrash;
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Concretes\Services\DatalessErrorThrower, Meta\ModuleOneDescriptor};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Concretes\Services\DatalessErrorThrower, Concretes\Services\ProtectedReadonlyService, Meta\ModuleOneDescriptor};
 
 class ServiceErrorCatcherTest extends InvestigateSystemCrash
 {
@@ -89,5 +89,22 @@ class ServiceErrorCatcherTest extends InvestigateSystemCrash
         $this->expectException(NotFoundException::class); // then
 
         $this->container->getClass($this->serviceName)->terminateRequest(); // when
+    }
+
+    public function test_wrapped_service_deps_can_have_any_visibility () {
+
+        // given sut has protected, ctor promoted deps
+
+        $this->assertWontBroadcast(function () {
+
+            $sutName = ProtectedReadonlyService::class;
+
+            $sut = $this->container->getClass($sutName); // when
+            
+            // then
+            $this->assertInstanceOf($sutName, $sut);
+
+            $this->assertNotSame($sutName, $sut::class); // verify it was actually proxified
+        });
     }
 }

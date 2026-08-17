@@ -5,11 +5,11 @@ namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 use Suphle\Routing\Attributes\{Route, RoutePrefix, CanaryRoute, HttpMethod, CanaryState, PreMiddleware};
 use Suphle\Response\Format\{Json, Redirect, Reload, Markup};
 use Suphle\Tests\Mocks\Modules\ModuleOne\Middleware\AuthMiddleware;
-use Suphle\Tests\Mocks\Modules\ModuleOne\Canary\{BetaUserCanary, SpecialUserCanary};
+use Suphle\Tests\Mocks\Modules\ModuleOne\Canary\{BetaUserCanary, CanaryForUser5};
 use Suphle\Services\BaseCoordinator;
 use Suphle\Auth\Middleware\AuthenticateHandler;
 
-#[CanaryState([BetaUserCanary::class, SpecialUserCanary::class])]
+#[CanaryState([BetaUserCanary::class, CanaryForUser5::class])]
 #[RoutePrefix('api/v1/users')]
 class UserCoordinator extends BaseCoordinator
 {
@@ -19,8 +19,8 @@ class UserCoordinator extends BaseCoordinator
     {
         $canary = $this->requestDetails->getCanaryState();
         return match ($canary) {
-            'beta'    => new Json(['users' => ['Jane', 'John'], 'flag' => 'BETA']),
-            'special' => new Json(['users' => ['Jane', 'John'], 'flag' => 'SPECIAL']),
+            BetaUserCanary::MARKER    => new Json(['users' => ['Jane', 'John'], 'flag' => 'BETA']),
+            CanaryForUser5::MARKER => new Json(['users' => ['Jane', 'John'], 'flag' => 'SPECIAL']),
             default   => new Json(['users' => ['Jane', 'John'], 'flag' => 'STABLE']),
         };
     }

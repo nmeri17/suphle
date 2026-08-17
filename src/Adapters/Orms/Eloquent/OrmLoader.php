@@ -46,6 +46,12 @@ class OrmLoader extends BaseInterfaceLoader
         BaseModel::shouldBeStrict();
 
         $this->laravelContainer->useDatabasePath($this->databaseConfig->componentInstallPath()); // used by cli runner eg migrate, to read elsewhere from the component installation path, enabling eg migrate commands to point to our global folder
+
+        /*this bit is specific to laravel 9 and below. if you ever upgrade to 12, get rid of it as it serves to silence the error thrown in esd:263 where we have 'type' => $this->mapDbType($builder->getColumnType($table, $col)). replace with $builder->getColumnType($table, $col);*/
+        $platform = $initialized->getConnection()->getDoctrineSchemaManager()
+        ->getDatabasePlatform();
+
+        $platform->registerDoctrineTypeMapping('enum', 'string');
     }
 
     public function concreteName(): string

@@ -66,7 +66,7 @@ class RouteListingService
     protected function formatResponse(array $route): string
     {
         $type = $route['response_shape']['type'] ?? 'mixed';
-        $view = isset($route['view_name']) ? " ({$route['view_name']})" : "";
+
         return "<fg=magenta>$type</>$view";
     }
 

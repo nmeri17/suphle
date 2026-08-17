@@ -16,11 +16,13 @@ return new class () extends Migration {
 
             $table->string("email", 70)->unique();
 
-            $table->timestamp("email_verified_at");
+            $table->timestamp("email_verified_at")->nullable();
 
             $table->string("password", 90);
 
             $table->boolean("is_admin")->default(false);
+
+            $table->string("verification_token")->nullable();
 
             $table->timestampsTz();
         });

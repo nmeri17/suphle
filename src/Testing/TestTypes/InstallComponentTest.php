@@ -85,25 +85,29 @@ abstract class InstallComponentTest extends CommandLineTest
     /**
      * For use as dataProvider
      *
-     * @return Each installation state along with argument expected to be received by the ejector, ComponentEjector, not the individual entries
+     * @return Each installation state along with argument expected to be received by the ejector, ComponentEjector, not the individual entries. Useful when mocking it
     */
     public function overrideOptions(): array
     {
 
-        $entryName = $this->componentEntry();
+        $entryArr = [$this->componentEntry()];
+
+        $overwriteFlag = "--" .InstallComponentCommand::OVERWRITE_OPTION;
 
         return [
             [[], null],
+            [ [$overwriteFlag], null ],
             [
-
-                ["--" .InstallComponentCommand::OVERWRITE_OPTION], null
-            ],
-            [
-
-                [
-                    "--" .InstallComponentCommand::OVERWRITE_OPTION => [$entryName]
-                ], [$entryName]
+                [$overwriteFlag => $entryArr], $entryArr
             ]
         ];
+    }
+
+    protected function getCommandOptions(array $otherOverrides = []): array {
+
+        return array_merge([
+
+            InstallComponentCommand::HYDRATOR_MODULE_OPTION => current($this->getModules())->exportsImplements()
+        ], $otherOverrides);
     }
 }

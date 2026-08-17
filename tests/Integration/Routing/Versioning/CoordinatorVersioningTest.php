@@ -6,12 +6,11 @@ use Suphle\Contracts\Config\Router as RouterContract;
 
 use Suphle\Config\Router;
 
+use Suphle\Routing\AttributeRouteScanner;
+
 use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
-use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\{
-    ProductsV1Coordinator,
-    ProductsV2Coordinator
-};
+use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\{ProductsV1Coordinator, ProductsV2Coordinator};
 
 class CoordinatorVersioningTest extends ModuleLevelTest
 {
@@ -90,13 +89,11 @@ class CoordinatorVersioningTest extends ModuleLevelTest
     {
         // V2 defines only store() explicitly but index() + show() are inherited.
         // After scanning, three distinct routes should be found under /api/v2/products.
-        $routeManager = $this->getContainer()->getClass(
-            \Suphle\Routing\AttributeRouteManager::class
-        );
+        $routeManager = $this->getContainer()->getClass(AttributeRouteScanner::class);
 
-        $allRoutes = $routeManager->getAllRoutes();
+        $allRoutes = $routeManager->scanAllModules();
 
-        $v2Routes = array_filter($allRoutes, fn($r) => str_starts_with($r->getFullPath(), 'api/v2/products'));
+        $v2Routes = array_filter($allRoutes, fn($r) => str_starts_with($r["path"], 'api/v2/products'));
 
         $this->assertCount(3, array_values($v2Routes),
             'V2 coordinator should have 3 routes: 2 inherited (index, show) + 1 overridden (store)'

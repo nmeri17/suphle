@@ -2,7 +2,7 @@
 
 namespace Suphle\Routing\Crud;
 
-use Suphle\File\FolderCloner;
+use Suphle\File\{FolderCloner, FolderTemplatePlaceholders};
 
 use Suphle\Contracts\Config\{Database, ModuleFiles};
 
@@ -10,6 +10,8 @@ use Suphle\Contracts\{Modules\DescriptorInterface, Database\OrmDialect, Presenta
 
 class ResourceBootstrapper
 {
+    use FolderTemplatePlaceholders;
+
     protected array $moduleList;
 
     public function __construct(
@@ -27,12 +29,7 @@ class ResourceBootstrapper
     public function outputResourceTemplates(string $resourceName, ?bool $isApi): bool
     {
 
-        $contentsReplacement = $this->getContentReplacements($resourceName);
-
-        // Add a specific replacement for the RoutePrefix attribute logic
-        $contentsReplacement["_mirror_config"] = $isApi 
-        ? 'mirrorPrefix: "api/v1"' // If it's an API resource, we definitely want a prefix
-        : '';
+        $contentsReplacement = $this->getContentReplacements($resourceName, $isApi);
 
         $this->folderCloner->setEntryReplacements(
             $contentsReplacement,
@@ -62,23 +59,15 @@ class ResourceBootstrapper
         return $genericTransfer && $databaseTransfer && $viewTransfer;
     }
 
-    protected function getContentReplacements(string $resourceName): array
-    {
+    protected function getContentReplacements(string $resourceName, ?bool $isApi): array {
 
-        return [
-
-            "_module_name" => @end(explode(
-                "\\",
-                $this->descriptor->exportsImplements()
-            )),
+        return array_merge($this->moduleResourceValues($resourceName), [
 
             "_database_namespace" => $this->databaseConfig->componentInstallNamespace(),
 
-            "_resource_name" => $resourceName,
-
-            "_resource_route" => strtoupper($resourceName),
-
-            "_modules_shell" => $this->fileConfig->modulesNamespace()
+            // Add a specific replacement for the RoutePrefix attribute logic
+            "_mirror_config" => $isApi ? 'mirrorPrefix: "api/v1"': // If it's an API resource, we definitely want a prefix
+                ''
         ];
     }
 }

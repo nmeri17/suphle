@@ -1,13 +1,15 @@
 <?php
-namespace _modules_shell\_module_name\SuphleIdentity\Coordinators;
+namespace _modules_shell\_module_name\Coordinators;
 
 use Suphle\Services\{BaseCoordinator, Decorators\ValidationRules};
 use Suphle\Routing\Attributes\{RoutePrefix, Route, HttpMethod};
 use Suphle\Contracts\Presentation\BaseRenderer;
 use Suphle\Response\Format\Json;
 use Suphle\Auth\BaseAuthService;
-use _modules_shell\_module_name\SuphleIdentity\Services\{RegisterService, VerificationService};
-use _modules_shell\_module_name\SuphleIdentity\Payloads\{RegistrationReader, VerificationBuilder};
+use _modules_shell\_module_name\InstalledComponents\SuphleIdentity\Services\{RegisterService, VerificationService};
+use _modules_shell\_module_name\InstalledComponents\SuphleIdentity\Payloads\{RegistrationReader, VerificationBuilder};
+
+use _database_namespace_\{User, PasswordResetToken};
 
 #[RoutePrefix("api/v1/auth")]
 class ApiAuthCoordinator extends BaseCoordinator {
@@ -25,7 +27,7 @@ class ApiAuthCoordinator extends BaseCoordinator {
     ])]
     public function apiLogin(): Json {
 
-        $token = $this->authService->tryGetJsonToken();
+        $token = $this->loginService->tryGetJsonToken();
 
         return $token ?
             new Json(["token" => $token]) :
@@ -35,22 +37,25 @@ class ApiAuthCoordinator extends BaseCoordinator {
     #[Route("register", HttpMethod::POST)]
     #[ValidationRules([
         "name" => "required",
-        "email" => "required|email|unique:users,email",
+        "email" => "required|email|unique:". User::TABLE_NAME. ",email",
         "password" => "required|min:8"
     ])]
     public function apiRegister(RegistrationReader $reader): Json {
 
         return $this->registerService->updateModels((object) $reader->getDomainObject()) ?
 
-            new Json(["status" => "success"], 201) : 
+            new Json([
+                "status" => "success",
+                "message" => "Registration successful. Please verify your email."
+            ], 201) : 
             new Json(["error" => "Registration failed"], 400);
     }
 
-    #[Route("verify-email/", HttpMethod::POST)]
+    #[Route("/verify-email", HttpMethod::POST)]
     #[ValidationRules([
         "token" => "required|string|size:64"
     ])]
-    public function apiVerifyEmail(VerificationBuilder $builder): BaseRenderer {
+    public function apiVerifyEmail(VerificationBuilder $builder):Json {
 
         $user = $builder->getBuilder()->first();
 

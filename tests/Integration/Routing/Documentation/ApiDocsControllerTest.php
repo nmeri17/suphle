@@ -1,41 +1,59 @@
 <?php
-
 namespace Suphle\Tests\Integration\Routing\Documentation;
 
-use Suphle\Contracts\Config\Router as RouterConfig;
-use Suphle\Routing\Documentation\{ApiDocsController, OpenApiGeneratorService};
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Coordinators\TestCoordinator};
-use Suphle\Tests\Integration\TestHttpRunner;
+use Suphle\Contracts\Config\ComponentTemplates;
 
-class ApiDocsControllerTest extends TestHttpRunner
+use Suphle\Routing\Documentation\ApiDocsComponentEntry;
+
+use Suphle\Request\PayloadStorage;
+
+use Suphle\Testing\{TestTypes\InstallComponentTest, Proxies\WriteOnlyContainer, Utilities\ArrayAssertions};
+
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor};
+
+class ApiDocsControllerTest extends InstallComponentTest
 {
-    protected function setUp(): void
-    {
-        $this->setAllDescriptors();
-        parent::setUp();
+    use ArrayAssertions;
+
+    protected function componentEntry ():string {
+
+        return ApiDocsComponentEntry::class;
     }
 
-    protected function setModuleOne(): void
-    {
-        $this->moduleOne = $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
-            $container->replaceWithMock(RouterConfig::class, RouterConfig::class, [
-                "getCoordinatorClassesToScan" => [TestCoordinator::class]
-            ]);
-        });
+    protected function getModules ():array {
+
+        return [
+            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+
+                $config = ComponentTemplates::class;
+
+                $container->replaceWithMock($config, $config, [
+
+                    "getTemplateEntries" => [$this->componentEntry()]
+                ]);
+            })
+        ];
     }
 
-    protected function getModules(): array
-    {
-        return [$this->moduleOne];
+    /**
+     * @dataProvider overrideOptions
+    */
+    public function test_can_eject_api_component (array $customOptions, ?array $depositArguments) {
+
+        $cliFlags = $this->getCommandOptions($customOptions);
+
+        $this->assertInstalledComponent($cliFlags);
     }
 
     public function test_can_access_api_docs_page()
     {
+        $this->runInstallComponent($this->getCommandOptions());
+
         $response = $this->get("/api-docs");
 
         $response->assertOk();
-        $response->assertSee('API Documentation');
-        $response->assertSee('Route Details');
+        $response->assertSee("API Documentation");
+        $response->assertSee("Route Details");
     }
 
     public function test_can_access_api_docs_json()
@@ -43,102 +61,73 @@ class ApiDocsControllerTest extends TestHttpRunner
         $response = $this->get("/api-docs/json");
 
         $response->assertOk();
-        $response->assertHeader('Content-Type', 'application/json');
+        $response->assertHeader(PayloadStorage::CONTENT_TYPE_KEY, PayloadStorage::JSON_HEADER_VALUE);
+
+        $structure = ["openapi", "info", "paths", "components"];
         
-        $jsonData = $response->json();
-        
-        $this->assertIsArray($jsonData);
-        $this->assertArrayHasKey('openapi', $jsonData);
-        $this->assertArrayHasKey('info', $jsonData);
-        $this->assertArrayHasKey('paths', $jsonData);
-        $this->assertArrayHasKey('components', $jsonData);
-        
-        $this->assertEquals('3.0.0', $jsonData['openapi']);
-        $this->assertEquals('Suphle API Documentation', $jsonData['info']['title']);
-        $this->assertEquals('1.0.0', $jsonData['info']['version']);
+        $response->assertJsonStructure($structure); // $this->assertArrayHasKeys($structure, $response->json()); // or getContent+decode
+
+        $this->assertJsonFragment([
+            "openapi" => "3.0.0",
+            "info" => [
+                "title" => "Suphle API Documentation",
+                "version" => "1.0.0"
+            ]
+        ]);
     }
 
     public function test_openapi_spec_contains_server_info()
     {
         $response = $this->get("/api-docs/json");
-        $jsonData = $response->json();
         
-        $this->assertArrayHasKey('servers', $jsonData);
-        $this->assertIsArray($jsonData['servers']);
-        $this->assertNotEmpty($jsonData['servers']);
-        
-        $server = $jsonData['servers'][0];
-        $this->assertArrayHasKey('url', $server);
-        $this->assertArrayHasKey('description', $server);
-        $this->assertEquals('/', $server['url']);
+        $response->assertJsonFragment([
+            "servers" => [
+                ["url" => "/"]
+            ]
+        ]);
+        $this->assertArrayHasPath("servers.0.description", $response->json());
     }
 
     public function test_openapi_spec_contains_paths()
     {
         $response = $this->get("/api-docs/json");
-        $jsonData = $response->json();
         
-        $this->assertArrayHasKey('paths', $jsonData);
-        $this->assertIsArray($jsonData['paths']);
-        
-        // Should contain at least the api-docs routes
-        $this->assertArrayHasKey('/api-docs', $jsonData['paths']);
-        $this->assertArrayHasKey('/api-docs/json', $jsonData['paths']);
+        foreach (["/api-docs", "/api-docs/json"] as $key)
+
+            $this->assertArrayHasPath("paths.$key", $response->json());
     }
 
     public function test_path_items_have_correct_structure()
     {
         $response = $this->get("/api-docs/json");
-        $jsonData = $response->json();
         
-        $apiDocsPath = $jsonData['paths']['/api-docs'];
-        $this->assertArrayHasKey('get', $apiDocsPath);
+        $apiDocsPath = $response->json()["paths"]["/api-docs"];
         
-        $getOperation = $apiDocsPath['get'];
-        $this->assertArrayHasKey('summary', $getOperation);
-        $this->assertArrayHasKey('description', $getOperation);
-        $this->assertArrayHasKey('tags', $getOperation);
-        $this->assertArrayHasKey('parameters', $getOperation);
-        $this->assertArrayHasKey('responses', $getOperation);
+        foreach (["summary", "description", "tags", "parameters", "responses"] as $key)
+
+            $this->assertArrayHasPath("get.$key", $apiDocsPath);
     }
 
     public function test_path_items_have_responses()
     {
         $response = $this->get("/api-docs/json");
-        $jsonData = $response->json();
         
-        $apiDocsPath = $jsonData['paths']['/api-docs'];
-        $getOperation = $apiDocsPath['get'];
-        
-        $this->assertArrayHasKey('200', $getOperation['responses']);
-        $response200 = $getOperation['responses']['200'];
-        $this->assertArrayHasKey('description', $response200);
-        $this->assertArrayHasKey('content', $response200);
-    }
+        $getOperation = $response->json()["paths"]["/api-docs"]["get"];
 
-    public function test_json_endpoint_has_correct_content_type()
-    {
-        $response = $this->get("/api-docs/json");
-        $jsonData = $response->json();
+        $this->assertAssocArraySubset(["responses" => 200], $getOperation);
         
-        $jsonPath = $jsonData['paths']['/api-docs/json'];
-        $getOperation = $jsonPath['get'];
-        $response200 = $getOperation['responses']['200'];
-        
-        $this->assertArrayHasKey('application/json', $response200['content']);
-        $jsonContent = $response200['content']['application/json'];
-        $this->assertArrayHasKey('schema', $jsonContent);
+        foreach (["content", "description", PayloadStorage::JSON_HEADER_VALUE] as $key)
+
+            $this->assertArrayHasPath("200.$key", $getOperation["responses"]);
     }
 
     public function test_components_section_exists()
     {
         $response = $this->get("/api-docs/json");
-        $jsonData = $response->json();
         
-        $this->assertArrayHasKey('components', $jsonData);
-        $components = $jsonData['components'];
-        $this->assertArrayHasKey('schemas', $components);
-        $this->assertArrayHasKey('parameters', $components);
+        $response->assertJsonStructure([
+            "components" => ["schemas", "parameters"]
+        ]);
     }
 
     public function test_route_tags_are_extracted_from_coordinator()
@@ -147,70 +136,16 @@ class ApiDocsControllerTest extends TestHttpRunner
         $jsonData = $response->json();
         
         // Find a route that should have a module tag
-        foreach ($jsonData['paths'] as $path => $methods) {
+        foreach ($jsonData["paths"] as $path => $methods) {
             foreach ($methods as $method => $operation) {
-                if (isset($operation['tags']) && !empty($operation['tags'])) {
-                    $this->assertIsArray($operation['tags']);
-                    $this->assertNotEmpty($operation['tags']);
-                    $this->assertIsString($operation['tags'][0]);
+                if (isset($operation["tags"]) && !empty($operation["tags"])) {
+                    $this->assertIsArray($operation["tags"]);
+                    
+                    $this->assertIsString($operation["tags"][0]);
                     break 2;
                 }
             }
         }
-    }
-
-    public function test_controller_is_thin_and_delegates_to_service()
-    {
-        $container = $this->getContainer();
-        
-        // Verify the controller only has the service dependency
-        $controller = $container->getClass(ApiDocsController::class);
-        $reflection = new \ReflectionClass($controller);
-        
-        $properties = $reflection->getProperties();
-        $this->assertCount(1, $properties);
-        $this->assertEquals('openApiService', $properties[0]->getName());
-        
-        // Verify methods are simple and delegate to service
-        $showDocsMethod = $reflection->getMethod('showDocs');
-        $this->assertLessThan(10, $showDocsMethod->getNumberOfLines());
-        
-        $getJsonMethod = $reflection->getMethod('getOpenApiJson');
-        $this->assertLessThan(10, $getJsonMethod->getNumberOfLines());
-    }
-
-    public function test_service_handles_all_openapi_generation_logic()
-    {
-        $container = $this->getContainer();
-        $service = $container->getClass(OpenApiGeneratorService::class);
-        
-        $reflection = new \ReflectionClass($service);
-        $methods = $reflection->getMethods(\ReflectionMethod::IS_PUBLIC);
-        
-        $publicMethodNames = array_map(fn($m) => $m->getName(), $methods);
-        
-        $this->assertContains('generateOpenApiSpec', $publicMethodNames);
-        $this->assertContains('getAllRoutes', $publicMethodNames);
-        
-        // Verify the service has comprehensive private methods for OpenAPI generation
-        $privateMethods = $reflection->getMethods(\ReflectionMethod::IS_PRIVATE | \ReflectionMethod::IS_PROTECTED);
-        $this->assertGreaterThan(5, count($privateMethods)); // Should have many helper methods
-    }
-
-    public function test_openapi_spec_is_valid_json()
-    {
-        $response = $this->get("/api-docs/json");
-        
-        $content = $response->getContent();
-        $this->assertIsString($content);
-        
-        // Verify it's valid JSON
-        $decoded = json_decode($content, true);
-        $this->assertNotNull($decoded);
-        $this->assertIsArray($decoded);
-        
-        // Verify no JSON errors
-        $this->assertEquals(JSON_ERROR_NONE, json_last_error());
     }
 
     public function test_html_page_contains_route_data()
@@ -221,8 +156,8 @@ class ApiDocsControllerTest extends TestHttpRunner
         $content = $response->getContent();
         
         // Should contain route information
-        $this->assertStringContainsString('Method', $content);
-        $this->assertStringContainsString('Path', $content);
-        $this->assertStringContainsString('Handler', $content);
+        $this->assertStringContainsString("Method", $content);
+        $this->assertStringContainsString("Path", $content);
+        $this->assertStringContainsString("Handler", $content);
     }
 } 

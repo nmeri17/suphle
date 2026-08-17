@@ -123,13 +123,4 @@ class ExceptionComponentTest extends InstallComponentTest
 
         $this->runInstallComponent($commandOptions); // re-set the files there since the previous command didn't write anything to disk, while above assertInstalledComponent deleted them
     }
-
-    protected function getCommandOptions(array $otherOverrides = []): array
-    {
-
-        return array_merge([
-
-            InstallComponentCommand::HYDRATOR_MODULE_OPTION => ModuleOne::class
-        ], $otherOverrides);
-    }
 }

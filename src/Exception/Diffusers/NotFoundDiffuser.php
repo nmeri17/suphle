@@ -4,7 +4,7 @@ namespace Suphle\Exception\Diffusers;
 
 use Suphle\Contracts\Exception\ExceptionHandler;
 
-use Suphle\Contracts\Presentation\{HtmlParser, BaseRenderer};
+use Suphle\Contracts\Presentation\BaseRenderer;
 
 use Suphle\Hydration\DecoratorHydrator;
 
@@ -12,7 +12,7 @@ use Suphle\Request\RequestDetails;
 
 use Suphle\Response\Format\{ Markup, Json};
 
-use Suphle\Exception\{ComponentEntry, Explosives\NotFoundException};
+use Suphle\Exception\Explosives\NotFoundException;
 
 use Throwable;
 
@@ -22,9 +22,7 @@ class NotFoundDiffuser implements ExceptionHandler
 
     public function __construct(
         protected readonly RequestDetails $requestDetails,
-        protected readonly ComponentEntry $componentEntry,
         protected readonly DecoratorHydrator $decoratorHydrator,
-        protected readonly HtmlParser $htmlParser
     ) {
 
         //
@@ -73,12 +71,6 @@ class NotFoundDiffuser implements ExceptionHandler
         $this->decoratorHydrator->scopeInjecting(
             $renderer,
             self::class
-        );
-
-        $this->htmlParser->findInPath(
-            $this->componentEntry->userLandMirror() . "Markup".
-
-            DIRECTORY_SEPARATOR
         );
 
         return $renderer;

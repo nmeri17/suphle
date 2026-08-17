@@ -1,44 +1,38 @@
 <?php
 namespace Suphle\Routing;
 
-use Suphle\Routing\Analysis\ResponseSchemaAnalyzer;
+use Suphle\Routing\{Structures\RouteInfo};
 
-use Suphle\Contracts\Config\Router as RouterConfig;
-
-use Suphle\Hydration\Container;
-
-use RuntimeException;
+use RuntimeException, InvalidArgumentException;
 
 class NamedRouteReader
 {
     public function __construct(
         protected readonly AttributeRouteScanner $routeScanner,
-        private readonly ResponseSchemaAnalyzer $analyzerService,
-        private readonly RouteInfo $placeholders
+        protected readonly RouteInfo $placeholders
     ) {}
 
     /**
-     * Look up a named route and bind wildcard interpolations if passed
+     * Look up a named route and bind wildcard interpolations if passed. when segment is missing in array, it will attempt reading that value from ri
+     * 
+     * @param {useMirror} when true, returns the api variant (if the route supports it)
      */
-    public function expandRoute(string $viewName, array $parameters = []): string
+    public function expandRoute(string $coordinatorClass, string $methodName, array $parameters = [], bool $useMirror = false): string
     {
-        $allRoutes = $this->routeScanner->scanModulesByPath(
-            fn (Container $container) => $container->getClass(RouterConfig::class)
-            ->getCoordinatorPath(),
-            
-            $this->analyzerService->analyzeCoordinator(...)
-        );
 
-        foreach ($allRoutes as $route) {
-            if ($route->viewName === $viewName) {
-                return $this->interpolatePath($route->getFullPath(), $parameters);
+        foreach ($this->routeScanner->scanAllModules() as $route) {
+            if (
+                $route["coordinator"] === $coordinatorClass &&
+                $route["handler"] === $methodName &&
+                ($route["is_mirror"] ?? false) === $useMirror
+            ) {
+                return $this->interpolatePath($route["path"], $parameters);
             }
         }
-
-        throw new RuntimeException(sprintf('Named route "%s" not found', $viewName));
+        throw new RuntimeException(sprintf('Named route "%s::%s" not found', $coordinatorClass, $methodName));
     }
 
-    private function interpolatePath(string $path, array $parameters): string
+    protected function interpolatePath(string $path, array $parameters): string
     {
         // Replace {param} placeholders with actual values from $parameters or RouteInfo
         return preg_replace_callback('/\{([^}]+)\}/', function ($matches) use ($parameters) {
@@ -53,7 +47,7 @@ class NamedRouteReader
                 return $currentValue;
             }
 
-            throw new \InvalidArgumentException(sprintf('Missing required parameter "%s" for named route', $paramName));
+            throw new InvalidArgumentException(sprintf('Missing required parameter "%s" for named route', $paramName));
         }, $path);
     }
 }

@@ -4,17 +4,15 @@ namespace Suphle\Exception\Diffusers;
 
 use Suphle\Contracts\Exception\{ExceptionHandler, BroadcastableException};
 
-use Suphle\Contracts\Presentation\{BaseRenderer, HtmlParser};
+use Suphle\Contracts\Presentation\BaseRenderer;
 
 use Suphle\Hydration\Container;
-
-use Suphle\Response\ModifiesRendererTemplate;
 
 use Suphle\Request\RequestDetails;
 
 use Suphle\Response\Format\{ Markup, Json};
 
-use Suphle\Exception\{ComponentEntry, DetectedExceptionManager};
+use Suphle\Exception\DetectedExceptionManager;
 
 use Suphle\Exception\Explosives\DevError\InvalidImplementor;
 
@@ -22,7 +20,6 @@ use Throwable;
 
 class GenericDiffuser implements ExceptionHandler
 {
-    use ModifiesRendererTemplate;
 
     protected Throwable $origin;
 
@@ -30,10 +27,8 @@ class GenericDiffuser implements ExceptionHandler
 
     public function __construct(
         protected readonly RequestDetails $requestDetails,
-        protected readonly ComponentEntry $componentEntry,
         protected readonly DetectedExceptionManager $exceptionDetector,
         protected readonly Container $container,
-        protected readonly HtmlParser $htmlParser
     ) {
 
         //
@@ -62,8 +57,6 @@ class GenericDiffuser implements ExceptionHandler
         } else {
             $this->renderer = new Markup($this->newMarkupName, []);
         }
-
-        $this->setMarkupDetails();
 
         $this->renderer->setRawResponse([
 

@@ -45,17 +45,6 @@ class EloquentDontChangePathTest extends InstallComponentTest
         return EloquentComponentEntry::class;
     }
 
-    protected function getCommandOptions(array $otherOverrides = []): array
-    {
-
-        return array_merge([
-
-            InstallComponentCommand::HYDRATOR_MODULE_OPTION => ModuleOne::class,
-
-            "--" .InstallComponentCommand::OVERWRITE_OPTION => [null] // without this, it won't try to eject
-        ], $otherOverrides);
-    }
-
     protected function componentIsInstalled(): bool // prevent it from overwriting our contents
     {return false;
     }
@@ -84,7 +73,10 @@ class EloquentDontChangePathTest extends InstallComponentTest
         ]);
 
         // when
-        $this->assertInstalledComponent($this->getCommandOptions(), true);
+        $this->assertInstalledComponent($this->getCommandOptions([
+
+            "--" .InstallComponentCommand::OVERWRITE_OPTION => [null] // without this, it won't try to eject
+        ]), true);
     }
 
     protected function getDefaultInstallLocation(): string

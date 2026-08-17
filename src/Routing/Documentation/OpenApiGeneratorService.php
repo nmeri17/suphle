@@ -15,15 +15,19 @@ class OpenApiGeneratorService
         protected readonly ModelSchemaDetector $schemaDetector,
     ) { }
 
-    public function generateOpenApiSpec (string $baseUrl): array // $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'];
-    {
+    public function generateOpenApiSpec (
+        string $baseUrl = "http://localhost",
+        string $docName = "Suphle API Documentation",
+        string $docVersion = "1.0.0"
+    ): array {
+    
         $routes = $this->getAllRoutes();
         
         $spec = [
             'openapi' => '3.0.0',
             'info' => [
-                'title' => 'Suphle API Documentation',
-                'version' => '1.0.0'
+                'title' => $docName,
+                'version' => $docVersion
             ],
             'paths' => [],
             'components' => [
@@ -63,7 +67,7 @@ class OpenApiGeneratorService
 
     protected function buildPathItem(array $route, ?array $responseSchema = null): array
     {
-        $isMirror = $route['is_mirror'] ?? false;
+        $isMirror = @$route['is_mirror'] ?? false;
     
         $pathItem = [
             'summary' => ($isMirror ? '[API] ' : '') . ($route['summary'] ?? ucfirst($route['handler'])),
@@ -72,7 +76,8 @@ class OpenApiGeneratorService
                 : ($route['description'] ?? ''),
             'tags' => [
                 class_basename($route['coordinator']),
-                $isMirror ? 'API' : 'Web' // Additional tagging for filtering in Swagger UI
+                $isMirror ? 'API' : 'Web' ,// Additional tagging for filtering in Swagger UI
+                $route["module_name"]
             ],
             'parameters' => $this->buildParameters($route),
             'responses' => $this->buildResponses($route, $responseSchema),

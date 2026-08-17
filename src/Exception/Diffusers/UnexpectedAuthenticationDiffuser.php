@@ -26,7 +26,7 @@ class UnexpectedAuthenticationDiffuser implements ExceptionHandler
     public function prepareRendererData(): void
     {
         $this->renderer = new Json([
-            'error' => 'UnexpectedAuthentication',
+            'error' => UnexpectedAuthentication::class,
             'message' => 'This route is only accessible to guest users. You are already authenticated.'
         ]);
 

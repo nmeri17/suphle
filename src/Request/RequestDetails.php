@@ -25,10 +25,7 @@ class RequestDetails
     protected ?string $canaryState = null;
 
     public function __construct(protected readonly Router $routeConfig)
-    {
-
-        //
-    }
+    { }
 
     public static function setLoopInput (?ServerRequestInterface $contextualRequest):void {
 
@@ -122,6 +119,12 @@ class RequestDetails
         $this->httpMethod = $method;
     }
 
+    public function getHttpMethod():string
+    {
+
+        return $this->httpMethod;
+    }
+
     protected function deriveHttpMethod(): void
     {
 
@@ -147,7 +150,7 @@ class RequestDetails
     public function matchesMethod(string $method): bool
     {
 
-        return preg_match("/" . $this->httpMethod . "/i", $method);
+        return strtolower($method) == $this->httpMethod;
     }
 
     public function isGetRequest(): bool

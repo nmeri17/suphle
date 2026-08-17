@@ -15,7 +15,7 @@ class Markup extends BaseHtmlRenderer implements MirrorableRenderer
     public function __construct(
         public readonly string $markupName,
 
-        public iterable $rawResponse
+        public iterable $rawResponse = []
     ) {
         $this->setHeaders(self::STATUS_CODE, [
             PayloadStorage::CONTENT_TYPE_KEY => PayloadStorage::HTML_HEADER_VALUE
@@ -24,13 +24,13 @@ class Markup extends BaseHtmlRenderer implements MirrorableRenderer
 
     public function render(): string
     {
+        if ($this->routeInfo->isMirror) $this->setWantsJson(); // can't be called in ctor since ri wouldn't have been injected yet
+
         if (!$this->wantsJson) {
             return $this->htmlParser->parseRenderer($this);
         }
 
-        $this->setHeaders(200, [
-            PayloadStorage::CONTENT_TYPE_KEY => PayloadStorage::JSON_HEADER_VALUE
-        ]);
+        $this->setHeaders($this->statusCode, $this->routeInfo->mirrorHeader);
 
         return $this->renderJson();
     }

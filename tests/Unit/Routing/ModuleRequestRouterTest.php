@@ -2,8 +2,8 @@
 namespace Suphle\Tests\Unit\Routing;
 
 use Suphle\Hydration\Container;
-use Suphle\Routing\{ModuleRequestRouter, RouteInfoExecutor};
-use Suphle\Routing\Attributes\HttpMethod;
+use Suphle\Routing\{ModuleRequestRouter, RouteInfoExecutor, Attributes\HttpMethod};
+
 use Suphle\Request\RequestDetails;
 use Suphle\Modules\Structures\ActiveDescriptors;
 use Suphle\Contracts\{Modules\DescriptorInterface, Presentation\BaseRenderer};
@@ -14,7 +14,7 @@ class ModuleRequestRouterTest extends IsolatedComponentTest
 {
     use RequestDetailsMocker;
 
-    protected bool $usesRealDecorator = false;
+    //protected bool $usesRealDecorator = false;
 
     /**
      * Data provider for common route details structure returned by RAS
@@ -23,22 +23,20 @@ class ModuleRequestRouterTest extends IsolatedComponentTest
     {
         return [[
             "path" => "/api/v1/test",
-            "method" => "GET",
+            "method" => HttpMethod::GET,
             "coordinator" => "TestCoordinator",
             "handler" => "someMethod",
             "pre_middleware" => [],
             "middleware" => [],
             "module_name" => "ModuleOne",
-            "view_name" => "test_view"
         ], [
             "path" => "/api/v1/users/{id}",
-            "method" => "GET",
+            "method" => HttpMethod::GET,
             "coordinator" => "UserCoordinator",
             "handler" => "showUser",
             "pre_middleware" => [],
             "middleware" => ["AuthenticateHandler"], // should this be fqcn?
             "module_name" => "ModuleOne",
-            "view_name" => null
         ]];
     }
 
@@ -72,7 +70,7 @@ class ModuleRequestRouterTest extends IsolatedComponentTest
 
         // Then
         $this->assertNotNull($routeInfo);
-        $this->assertEquals("123", $routeInfo->getAllParameters()["id"]);
+        $this->assertEquals("123", $routeInfo->getAllSegmentValues()["id"]);
     }
 
     public function test_triggerInfoModule_delegates_to_executor_in_descriptor_container()

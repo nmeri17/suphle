@@ -103,34 +103,42 @@ abstract class RouteAnalysisService
 
             $primaryRoute = $this->analyzeMethod(
                 $method, 
-                $routeAttrs[0], 
+                $routeAttrs[0] ?? $routeAttrs["path"], 
                 $prefixInstance->prefix, 
                 $canaryState, 
                 $classPreMiddleware,
                 $classMiddleware,
                 $coordinatorClass,
-                $moduleName
+                $moduleName,
             );
             $allRouteDetails[] = $primaryRoute;
 
-            // 2. Mirror Fork
-            if ($prefixInstance->mirrorPrefix && !in_array($method->getName(), $prefixInstance->excludeMethods)) {
-                $mirrorRoute = $primaryRoute;
-                $mirrorRoute["path"] = $this->buildFullPath($prefixInstance->mirrorPrefix, $primaryRoute["path"]);
-                $mirrorRoute["is_mirror"] = true;
+            if (
+                $prefixInstance->mirrorPrefix &&
 
-                if ($prefixInstance->mirrorAuthenticator) {
-                    // Prepend the authenticator to the already-resolved pre_middleware
-                    $mirrorRoute["pre_middleware"] = array_values(array_unique(array_merge(
-                        [$prefixInstance->mirrorAuthenticator], 
-                        $primaryRoute["pre_middleware"]
-                    )));
-                }
-                $allRouteDetails[] = $mirrorRoute;
-            }
+                !in_array($method->getName(), $prefixInstance->excludeMethods)
+            )
+                $allRouteDetails[] = $this->getMirrorFork($primaryRoute, $prefixInstance); 
         }
 
         return $allRouteDetails;
+    }
+
+    protected function getMirrorFork (array $mirrorRoute, RoutePrefix $prefixInstance):array {
+
+        $mirrorRoute["path"] = $this->buildFullPath($prefixInstance->mirrorPrefix, $mirrorRoute["path"]);
+        $mirrorRoute["is_mirror"] = true;
+
+        $mirrorRoute["mirror_header"] = $prefixInstance->mirrorHeader;
+
+        if ($prefixInstance->mirrorAuthenticator) {
+            // Prepend the authenticator to the already-resolved pre_middleware
+            $mirrorRoute["pre_middleware"] = array_values(array_unique(array_merge(
+                [$prefixInstance->mirrorAuthenticator], 
+                $mirrorRoute["pre_middleware"]
+            )));
+        }
+        return $mirrorRoute;
     }
 
     /**
@@ -167,15 +175,16 @@ abstract class RouteAnalysisService
             $this->findMiddlewareList($method, Middleware::class, $toClear)
         ));
 
+        $pathArg = $routeArgs[0] ?? $routeArgs["path"];
+
         return [
-            "method" => ($routeArgs[1] ?? HttpMethod::GET)->value,
-            "path" => $this->buildFullPath($routePrefix, $routeArgs[0] ?? ""),
+            "method" => ($routeArgs[1] ?? $routeArgs["method"] ?? HttpMethod::GET)->value, // return value can be assoc or numeric, depending on how args were declared
+            "path" => $this->buildFullPath($routePrefix, $pathArg),
             "handler" => $method->getName(),
             "middleware" => $allMidw,
-            "pre_middleware" => $allPre, 
-            "view_name" => $routeArgs[2] ?? null,
+            "pre_middleware" => $allPre,
             "coordinator" => $coordinatorClass,
-            "placeholders" => $this->extractPlaceholders($routeArgs[0] ?? ""),
+            "placeholders" => $this->extractPlaceholders($pathArg),
             "validation_rules" => $this->getValidationRules($method),
             "parameters" => $this->getMethodParameters($method),
             "flows" => $this->getMethodFlows($method),

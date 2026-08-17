@@ -1,69 +1,42 @@
 <?php
-
 namespace Suphle\Tests\Integration\Auth;
 
-use Suphle\Contracts\{Auth\AuthStorage, Config\Router as RouterContract};
+use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\SecureCoordinatorV2;
 
-use Suphle\Config\Router;
+class BrowserVersioningTest extends BaseAuthTest {
 
-use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
+    protected string $coordinatorName = SecureCoordinatorV2::class;
 
-use Suphle\Testing\{TestTypes\ModuleLevelTest, Condiments\BaseDatabasePopulator};
-
-use Suphle\Testing\Proxies\{WriteOnlyContainer, SecureUserAssertions};
-
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor};
-
-use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\ApiRoutes\{V2\ApiUpdate2Entry};
-
-class BrowserVersioningTest extends ModuleLevelTest
-{
-    use BaseDatabasePopulator, SecureUserAssertions;
-
-    protected function getModules(): array
-    {
-
-        return [
-            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
-
-                $container->replaceWithMock(
-                    RouterContract::class, Router::class,
-                    [
-                        "getCoordinatorClassesToScan" => ApiUpdate2Entry::class
-                    ]
-                );
-            })
-        ];
-    }
-
-    protected function getActiveEntity(): string
-    {
-
-        return EloquentUser::class;
-    }
-
-    public function test_original_pattern_requires_auth()
+    public function test_overridden_pattern_requires_auth()
     {
 
         // given no given user
 
-        $this->get("/api/v1/cascade") // when
+        $responseAsserter = $this->get("/secure/data"); // when
 
-        ->assertUnauthorized(); // then
+        $responseAsserter->assertUnauthorized(); // then
     }
 
-    /**
-     * This is expected behavior since lower ones are not loaded and thus can't know its auth requirements
-     *
-     * @depends test_original_pattern_requires_auth
-    */
-    public function test_overriden_pattern_doesnt_require_auth()
+    public function test_session_impersonate()
     {
 
-        // given no given user
+        [$user1, $user2] = $this->replicator->getRandomEntities(2);
 
-        $responseAsserter = $this->get("/api/v2/cascade"); // when
+        $this->actingAs($user1); // given
 
-        $responseAsserter->assertOk(); // then
+        $sut = $this->getAuthStorage();
+
+        $sut->imitate($user2->getId()); // when
+
+        $this->assertAuthenticatedAs($user2); // then
+
+        $this->assertTrue($sut->getPreviousUser() == $user1->getId()); // int/string comparison
+    }
+
+    public function test_nested_route_can_unlink_auth()
+    {
+        $this->get("/secure/unlink") // when
+
+        ->assertOk(); // then
     }
 }

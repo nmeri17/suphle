@@ -1,5 +1,5 @@
 <?php
-namespace _modules_shell\_module_name\SuphleIdentity\Payloads;
+namespace _modules_shell\_module_name\InstalledComponents\SuphleIdentity\Payloads;
 
 use Suphle\Services\Structures\ModelfulPayload;
 
@@ -20,6 +20,6 @@ class VerificationBuilder extends ModelfulPayload {
 
     protected function onlyFields(): array
     {
-        return ["id", static::TOKEN_COL];
+        return ["id", static::TOKEN_COL, "email_verified_at"];
     }
 }

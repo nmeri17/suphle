@@ -4,9 +4,9 @@ namespace Suphle\Modules;
 
 use Suphle\Contracts\Modules\{DescriptorInterface, ControllerModule};
 
-use Suphle\Contracts\{Hydration\InterfaceCollection, Database\OrmDialect};
+use Suphle\Contracts\{Hydration\InterfaceCollection, Database\OrmDialect, Config\ComponentTemplates, Presentation\HtmlParser};
 
-use Suphle\Hydration\{Container, ExternalPackageManagerHydrator};
+use Suphle\Hydration\Container;
 
 use Suphle\Hydration\Structures\{BaseInterfaceCollection, ContainerBooter, ObjectDetails};
 
@@ -18,11 +18,7 @@ abstract class ModuleDescriptor implements DescriptorInterface
 
     protected bool $hasPreparedExpatriates = false;
 
-    public function __construct(protected readonly Container $container)
-    {
-
-        //
-    }
+    public function __construct(protected readonly Container $container) {}
 
     /**
      * @param {dependencies} [Interactions\Interface => new ModuleDescriptor]
@@ -79,6 +75,24 @@ abstract class ModuleDescriptor implements DescriptorInterface
         $this->container->whenTypeAny()->needsAny($bindings)
 
         ->getClass(OrmDialect::class); // without forcing an ORM hydration using our config, this module's laravel container will create a random, unconfigured db accessor object that will take the place of any existing connection
+
+        $this->registerComponentViews(); // placed here instead of earlier cuz some classes inside this call require the bindings above to have ran
+    }
+
+    protected function registerComponentViews ():void {
+
+        $container = $this->container;
+
+        $templateEntries = $container->getClass(ComponentTemplates::class)->getTemplateEntries();
+
+        $htmlParser = $container->getClass(HtmlParser::class);
+
+        foreach ($templateEntries as $entry) {
+
+            $path = $container->getClass($entry)->userLandMirror() . "Markup". DIRECTORY_SEPARATOR;
+
+            if (file_exists($path)) $htmlParser->findInPath($path);
+        }
     }
 
     public function getContainer(): Container

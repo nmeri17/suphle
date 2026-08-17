@@ -12,17 +12,17 @@ use Suphle\Tests\Integration\Generic\CommonBinds;
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\{ThrowsException, Services\SystemModelEditMock1};
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\Authentication\CustomBrowserRepo;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\ProductsV2Coordinator;
+
+use Suphle\Routing\Attributes\RoutePrefix;
 
 use ProxyManager\Factory\AccessInterceptorValueHolderFactory as AccessInterceptor;
 
-use Throwable;
-use ReflectionAttribute;
+use Throwable, ReflectionAttribute;
 
 class DecoratorTest extends IsolatedComponentTest
 {
-    use CommonBinds;
-    use ArrayAssertions;
+    use CommonBinds, ArrayAssertions;
 
     private DecoratorHydrator $hydrator;
 
@@ -60,12 +60,13 @@ class DecoratorTest extends IsolatedComponentTest
         }
     }
 
-    public function test_catches_error() // proof of concept
-    {$awesomeClass = new ThrowsException();
+    public function test_catches_error() {// proof of concept
+    
+        $awesomeClass = new ThrowsException();
 
         $sut = (new AccessInterceptor())->createProxy($awesomeClass, [
 
-            "awesomeMethod" => function ($proxy, $concrete, $method, $parameters, &$earlyReturn) { // we control this, only releasing concrete method and paramters
+            "awesomeMethod" => function ($proxy, $concrete, $method, $parameters, &$earlyReturn) { // we control this, only releasing concrete method and parameters
 
                 try {
                     $result = $concrete->$method();
@@ -98,8 +99,8 @@ class DecoratorTest extends IsolatedComponentTest
 
         $allRules = $this->container->getClass(CallbackDetails::class)
         ->getMethodAttributes(
-            CustomBrowserRepo::class,
-            "successLogin", // given // attributes on this method
+            ProductsV2Coordinator::class,
+            "store", // given // attributes on this method
 
             ValidationRules::class
         );
@@ -108,7 +109,7 @@ class DecoratorTest extends IsolatedComponentTest
 
         $this->assertAssocArraySubset([
 
-            "password" => "required|numeric|min:9"
+            "field" => "required"
         ], $mostRecent); // then
     }
 }

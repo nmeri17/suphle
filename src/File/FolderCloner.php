@@ -11,12 +11,11 @@ class FolderCloner
     protected array $contentsReplacement;
     protected array $copiedFiles = [];
 
-    public function __construct(protected readonly FileSystemReader $fileSystemReader)
-    {
+    public function __construct(protected readonly FileSystemReader $fileSystemReader) {}
 
-        //
-    }
-
+    /**
+     * @param {folderReplacements} given contents will be used to replace folder tokenised name eg when there are actually folders on candidate have placeholdered names
+     * */
     public function setEntryReplacements(
         array $fileReplacements,
         array $folderReplacements,

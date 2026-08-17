@@ -45,7 +45,7 @@ class OpenApiGeneratorServiceTest extends ModuleLevelTest
     {
         $spec = $this->stubMethodForOpenApi('multiPlaceholders')
 
-        ->generateOpenApiSpec("http://localhost"); // when
+        ->generateOpenApiSpec(); // when
 
         $operation = $spec['paths']['/segment/{id}/segment/{id2}']['get'] ?? [];
 
@@ -75,7 +75,7 @@ class OpenApiGeneratorServiceTest extends ModuleLevelTest
 
         $spec = $this->stubMethodForOpenApi('incorrectActionInjection')
 
-        ->generateOpenApiSpec("http://localhost"); // when
+        ->generateOpenApiSpec(); // when
         $operation = $spec['paths']['/incorrect-action']['post'] ?? [];
 
         foreach ($operation['parameters'] ?? [] as $param) {

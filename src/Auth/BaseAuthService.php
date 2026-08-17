@@ -7,12 +7,22 @@ use Suphle\Auth\Storage\{TokenStorage, SessionStorage};
 
 use Suphle\Contracts\Config\Auth as AuthConfig;
 
+use Suphle\Services\Decorators\{InterceptsCalls, VariableDependencies, DomainService};
+
+use Suphle\Services\Structures\BaseErrorCatcherService;
+
+#[InterceptsCalls]
+#[VariableDependencies(["setPayloadStorage"])]
+#[DomainService]
 class BaseAuthService {
+
+    use BaseErrorCatcherService;
 
     public function __construct(
         protected readonly ColumnPayloadComparer $comparer,
         protected readonly SessionStorage $sessionStorage,
-        protected readonly TokenStorage $tokenStorage
+        protected readonly TokenStorage $tokenStorage,
+        protected readonly AuthConfig $authConfig
     ) {}
 
     public function tryGetJsonToken():?string {
@@ -51,11 +61,9 @@ class BaseAuthService {
         };
     }
 
+    // wrapper since configs can't be injected on coordinator side
     public function authRequiredUrl ():string {
 
-        return function (AuthConfig $config) {
-
-            return $config->mark
-        };
+        return $this->authConfig->markupRedirect();
     }
 }

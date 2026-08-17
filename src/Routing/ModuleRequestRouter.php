@@ -25,7 +25,7 @@ class ModuleRequestRouter implements HighLevelRequestHandler
         $this->foundRoute = $this->getRouteInfo(
             $routeList, $this->requestDetails->getPath(),
 
-            $this->requestDetails->getMethod(), $literal
+            $this->requestDetails->getHttpMethod(), $literal
         );
 
         return !is_null($this->foundRoute);
@@ -46,10 +46,12 @@ class ModuleRequestRouter implements HighLevelRequestHandler
                 preMiddlewares: $details["pre_middleware"],
                 middlewares: $details["middleware"],
                 moduleName: $details["module_name"],
-                viewName: @$details["view_name"],
+
                 flows: @$details["flows"],
-                canaryInfo: @$details["canary_state"]
+                canaryInfo: @$details["canary_state"],
+                mirrorHeader: @$details["mirror_header"],
             );
+            $routeInfo->isMirror = @$details["is_mirror"];
 
             if (!$literal && $routeInfo->matches($path, $method)) return $routeInfo;
 

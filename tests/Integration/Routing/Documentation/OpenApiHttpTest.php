@@ -1,9 +1,12 @@
 <?php
 namespace Suphle\Tests\Integration\Routing\Documentation;
 
-use Suphle\Testing\TestTypes\ModuleLevelTest;
 use Suphle\Contracts\Config\Router as RouterConfig;
-use Suphle\Testing\Proxies\WriteOnlyContainer;
+
+use Suphle\Config\Router;
+
+use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
+
 use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Coordinators\BaseCoordinator};
 
 class OpenApiHttpTest extends ModuleLevelTest
@@ -15,8 +18,7 @@ class OpenApiHttpTest extends ModuleLevelTest
                 ModuleOneDescriptor::class,
                 function (WriteOnlyContainer $container) {
                     $container->replaceWithMock(
-                        RouterConfig::class,
-                        RouterConfig::class,
+                        RouterConfig::class, Router::class,
                         [
                             "getCoordinatorClassesToScan" => [
                                 BaseCoordinator::class

@@ -4,11 +4,9 @@ namespace Suphle\Exception\Diffusers;
 
 use Suphle\Contracts\Exception\ExceptionHandler;
 
-use Suphle\Contracts\Presentation\{HtmlParser, BaseRenderer};
+use Suphle\Contracts\Presentation\BaseRenderer;
 
 use Suphle\Request\RequestDetails;
-
-use Suphle\Response\ModifiesRendererTemplate;
 
 use Suphle\Exception\{ComponentEntry, Explosives\UnauthorizedServiceAccess};
 
@@ -16,7 +14,6 @@ use Throwable;
 
 class UnauthorizedDiffuser implements ExceptionHandler
 {
-    use ModifiesRendererTemplate;
 
     public const ERRORS_PRESENCE = "authorization_failure_message";
 
@@ -29,7 +26,6 @@ class UnauthorizedDiffuser implements ExceptionHandler
 
     public function __construct(
         protected readonly ComponentEntry $componentEntry,
-        protected readonly HtmlParser $htmlParser,
         protected readonly BaseRenderer $renderer
     ) {
 
@@ -47,8 +43,6 @@ class UnauthorizedDiffuser implements ExceptionHandler
 
     public function prepareRendererData(): void
     {
-
-        $this->setMarkupDetails();
 
         $this->renderer->setRawResponse(static::RAW_RESPONSE)->setHeaders(403, []);
     }

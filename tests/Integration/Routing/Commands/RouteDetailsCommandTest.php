@@ -4,7 +4,7 @@ namespace Suphle\Tests\Integration\Routing\Commands;
 
 use Suphle\Contracts\Config\Console;
 use Suphle\Testing\Proxies\WriteOnlyContainer;
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Coordinators\TestCoordinator};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Coordinators\BaseCoordinator};
 use Suphle\Tests\Integration\Console\TestCliRunner;
 use Symfony\Component\Console\Command\Command;
 
@@ -25,7 +25,7 @@ class RouteDetailsCommandTest extends TestCliRunner
                 "commandsList" => [RouteDetailsCommand::class]
             ])
             ->replaceWithMock(RouterConfig::class, RouterConfig::class, [
-                "getCoordinatorClassesToScan" => [TestCoordinator::class]
+                "getCoordinatorClassesToScan" => [BaseCoordinator::class]
             ]);
         });
     }

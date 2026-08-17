@@ -8,6 +8,8 @@ use Suphle\Middleware\MiddlewareRegistry;
 
 use Suphle\Request\PayloadStorage;
 
+use Suphle\Routing\NamedRouteReader;
+
 use Suphle\Testing\Condiments\DirectHttpTest;
 
 use Suphle\Testing\Proxies\Extensions\{TestResponseBridge, MiddlewareManipulator};
@@ -16,12 +18,21 @@ use Suphle\Exception\Explosives\NotFoundException;
 
 trait ModuleHttpTest
 {
-    use DirectHttpTest;
-    use ExaminesHttpResponse;
+    use DirectHttpTest, ExaminesHttpResponse;
 
     private array $staticHeaders = [];
 
     private ?MiddlewareRegistry $mockMiddlewareRegistry = null;
+
+    protected function expandUrl (
+        string $coordinatorClass, string $handlingMethod, array $parameters,
+        bool $getMirror
+    ):string {
+
+        return $this->getContainer()->getClass(NamedRouteReader::class)
+
+        ->expandRoute($coordinatorClass, $handlingMethod, $parameters, $getMirror);
+    }
 
     public function withHeaders(array $headers): self
     {

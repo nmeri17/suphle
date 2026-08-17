@@ -1,5 +1,4 @@
 <?php
-
 namespace Suphle\Response\Format;
 
 use Suphle\Hydration\Structures\CallbackDetails;
@@ -8,14 +7,13 @@ use Suphle\Services\Decorators\VariableDependencies;
 
 use Suphle\Request\PayloadStorage;
 
-use Suphle\Contracts\IO\Session;
+use Suphle\Contracts\{IO\Session, Presentation\MirrorableRenderer};
+
+use Suphle\Routing\Structures\RouteInfo;
 
 use Suphle\Response\RoutedRendererManager;
 
-use Closure;
-use Throwable;
-
-use Suphle\Contracts\Presentation\MirrorableRenderer;
+use Closure, Throwable;
 
 #[VariableDependencies(["setCallbackDetails", "setSession" ])]
 class Redirect extends GenericRenderer implements MirrorableRenderer
@@ -26,6 +24,8 @@ class Redirect extends GenericRenderer implements MirrorableRenderer
     protected CallbackDetails $callbackDetails;
 
     protected Session $sessionClient;
+
+    protected RouteInfo $routeInfo;
 
     protected int $statusCode = self::STATUS_CODE;
 
@@ -51,6 +51,11 @@ class Redirect extends GenericRenderer implements MirrorableRenderer
     public function setSession(Session $sessionClient): void
     {
         $this->sessionClient = $sessionClient;
+    }
+
+    public function setRouteInfo(RouteInfo $routeInfo): void {
+
+        $this->routeInfo = $routeInfo;
     }
 
     protected function renderRedirect(callable $callback): void
@@ -91,13 +96,13 @@ class Redirect extends GenericRenderer implements MirrorableRenderer
     {
         $this->renderRedirect($this->destination);
 
+        if ($this->routeInfo->isMirror) $this->setWantsJson();
+
         if ($this->wantsJson) {
             // API/mobile clients cannot follow a browser redirect.
             // Return the resolved destination URL as JSON so the client
             // can navigate programmatically.
-            $this->setHeaders(200, [
-                PayloadStorage::CONTENT_TYPE_KEY => PayloadStorage::JSON_HEADER_VALUE
-            ]);
+            $this->setHeaders(Json::STATUS_CODE, $this->routeInfo->mirrorHeader);
 
             return json_encode(
                 ['redirect' => $this->headers[PayloadStorage::LOCATION_KEY] ?? null],

@@ -2,45 +2,22 @@
 
 namespace Suphle\Tests\Integration\Routing\Mirror;
 
-use Suphle\Contracts\Config\Router as RouterContract;
+use Suphle\Auth\Storage\{TokenStorage, SessionStorage};
 
-use Suphle\Config\Router;
+use Suphle\Tests\Integration\Auth\BaseAuthTest;
 
-use Suphle\Auth\Storage\TokenStorage;
-
-use Suphle\Testing\{Condiments\BaseDatabasePopulator, TestTypes\ModuleLevelTest};
-
-use Suphle\Testing\Proxies\{WriteOnlyContainer, SecureUserAssertions};
-
-use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
-
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Routes\Auth\SecureBrowserCollection};
-
-class InvolvesAuthTest extends ModuleLevelTest
+class InvolvesAuthTest extends BaseAuthTest
 {
-    use BaseDatabasePopulator, SecureUserAssertions;
-
-    protected function getModules(): array
+    public function test_mirrored_route_detects_auth()
     {
 
-        return [
-            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
+        $user = $this->replicator->getRandomEntity();
 
-                $container->replaceWithMock(
-                    RouterContract::class, Router::class,
-                    [
+        $this->actingAs($user, SessionStorage::class); // given
 
-                        "getCoordinatorClassesToScan" => [] // use auth coordinator
-                    ]
-                );
-            })
-        ];
-    }
+        $this->get("/api/v1/segment") // when
 
-    protected function getActiveEntity(): string
-    {
-
-        return EloquentUser::class;
+        ->assertUnauthorized(); // then
     }
 
     public function test_auth_storage_changes()
