@@ -31,7 +31,7 @@ trait ModuleHttpTest
 
         return $this->getContainer()->getClass(NamedRouteReader::class)
 
-        ->expandRoute($coordinatorClass, $handlingMethod, $parameters, $getMirror);
+        ->expressUrl($coordinatorClass, $handlingMethod, $parameters, $getMirror);
     }
 
     public function withHeaders(array $headers): self

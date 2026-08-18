@@ -23,7 +23,7 @@ class NamedRouteReaderTest extends IsolatedComponentTest {
 
         $reader = $this->getNamedReader($url, $method); // then
 
-        $this->assertEquals($url, $reader->expandRoute($this->coordinator, $method)); // when
+        $this->assertEquals($url, $reader->expressUrl($this->coordinator, $method)); // when
     }
 
     /**
@@ -59,7 +59,7 @@ class NamedRouteReaderTest extends IsolatedComponentTest {
 
         $this->assertEquals( // when
             "/segment/5/segment/profile",
-            $reader->expandRoute($this->coordinator, $method, [
+            $reader->expressUrl($this->coordinator, $method, [
                 "id" => 5, "id2" => "profile"
             ])
         );
@@ -83,7 +83,7 @@ class NamedRouteReaderTest extends IsolatedComponentTest {
 
         $this->assertEquals( // when
             "/segment/acme-corp/segment/dashboard",
-            $reader->expandRoute($this->coordinator, $method, [
+            $reader->expressUrl($this->coordinator, $method, [
 
                 "id2" => "dashboard" // Didn't pass id explicitly
             ])
@@ -96,7 +96,7 @@ class NamedRouteReaderTest extends IsolatedComponentTest {
 
         $this->expectException(RuntimeException::class); // then
 
-        $reader->expandRoute($this->coordinator, "missingMethod"); // when
+        $reader->expressUrl($this->coordinator, "missingMethod"); // when
     }
 
     public function test_throws_exception_if_parameter_missing()
@@ -114,7 +114,7 @@ class NamedRouteReaderTest extends IsolatedComponentTest {
 
         $this->expectException(InvalidArgumentException::class);
 
-        $reader->expandRoute($this->coordinator, $method); // Neither passed nor in placeholders
+        $reader->expressUrl($this->coordinator, $method); // Neither passed nor in placeholders
     }
 
     public function test_can_select_mirrored_route_variant()
@@ -148,12 +148,12 @@ class NamedRouteReaderTest extends IsolatedComponentTest {
 
         $this->assertEquals(
             "/api/v1/products/5",
-            $reader->expandRoute($coordinator, $method, ["id" => 5], true)
+            $reader->expressUrl($coordinator, $method, ["id" => 5], true)
         );
 
         $this->assertEquals(
             "/products/5",
-            $reader->expandRoute($coordinator, $method, ["id" => 5])
+            $reader->expressUrl($coordinator, $method, ["id" => 5])
         );
     }
 }

@@ -17,7 +17,7 @@ class NamedRouteReader
      * 
      * @param {useMirror} when true, returns the api variant (if the route supports it)
      */
-    public function expandRoute(string $coordinatorClass, string $methodName, array $parameters = [], bool $useMirror = false): string
+    public function expressUrl(string $coordinatorClass, string $methodName, array $parameters = [], bool $useMirror = false): string
     {
 
         foreach ($this->routeScanner->scanAllModules() as $route) {

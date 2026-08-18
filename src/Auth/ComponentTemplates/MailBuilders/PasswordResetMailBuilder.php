@@ -15,7 +15,7 @@ class PasswordResetMailBuilder extends MailBuilder
 
     public function sendMessage(): void
     {
-        $resetLink = $this->routeReader->expandRoute(
+        $resetLink = $this->routeReader->expressUrl(
             PasswordResetCoordinator::class, "showResetForm",
             ["token" => $this->payload["token"]]
         );

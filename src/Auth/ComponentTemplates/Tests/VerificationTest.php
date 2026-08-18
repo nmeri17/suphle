@@ -28,7 +28,7 @@ class VerificationTest extends BaseAuthTest {
 
     protected function getVerifyUrl (string $token):string {
 
-        return $this->routeReader->expandRoute(
+        return $this->routeReader->expressUrl(
             BrowserAuthCoordinator::class, "verifyEmail", compact("token")
         );
     }
@@ -67,7 +67,7 @@ class VerificationTest extends BaseAuthTest {
             "email_verified_at"  => null,
         ]);
 
-        $url = $this->routeReader->expandRoute(ApiAuthCoordinator::class, "apiVerifyEmail");
+        $url = $this->routeReader->expressUrl(ApiAuthCoordinator::class, "apiVerifyEmail");
 
         $this->postJson($url, ["token" => $token]) // when
             ->assertStatus(200);

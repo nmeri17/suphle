@@ -15,7 +15,7 @@ class VerificationMailBuilder extends MailBuilder
     
     public function sendMessage(): void
     {
-        $verificationLink = $this->routeReader->expandRoute(BrowserAuthCoordinator::class, "verifyEmail", [
+        $verificationLink = $this->routeReader->expressUrl(BrowserAuthCoordinator::class, "verifyEmail", [
                 
                 "token" => $this->payload["verification_token"]
         ]);
