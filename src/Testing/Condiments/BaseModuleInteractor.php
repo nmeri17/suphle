@@ -2,9 +2,9 @@
 
 namespace Suphle\Testing\Condiments;
 
-use Suphle\Contracts\IO\{Session, CacheManager};
+use Suphle\Contracts\IO\{Session, CacheManager, MailClient};
 
-use Suphle\Contracts\Queues\Adapter as QueueAdapter;
+use Suphle\Contracts\{Queues\Adapter as QueueAdapter, Routing\MiddlewareRegistry};
 
 use Suphle\Hydration\Container;
 
@@ -14,7 +14,7 @@ use Suphle\Server\ModuleWorkerAccessor;
 
 use Suphle\Adapters\{Session\InMemorySession, Cache\InMemoryCache};
 
-use Suphle\Testing\Proxies\ExceptionBroadcasters;
+use Suphle\Testing\Proxies\{ExceptionBroadcasters, Extensions\MailDetailsCatcher, Extensions\MiddlewareManipulator};
 
 trait BaseModuleInteractor
 {
@@ -74,6 +74,10 @@ trait BaseModuleInteractor
         $this->massProvide(array_merge([
 
             CacheManager::class => new InMemoryCache(),
+
+            MailClient::class => $this->replaceConstructorArguments(MailDetailsCatcher::class, []),
+
+            MiddlewareRegistry::class => $this->getContainer()->getClass(MiddlewareManipulator::class), // if this doesn't work, it'll likely be due to the fact that payloadStorage used to hydrate it is different (and earlier) from that used for the eventual request. if that's the case, we'd have to use a setter at both sites instead of constructor
 
             Session::class => new InMemorySession(),
 

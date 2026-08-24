@@ -10,7 +10,7 @@ use _database_namespace_\PasswordResetToken;
 // user requests reset. clicking link sent to their mail returns to us the token which is used to hydrate associated user. new password is entered and process is complete
 class PasswordResetTest extends BaseAuthTest
 {
-    use MailAsserter; // check whose setup is going to run
+    use MailAsserter;
 
     public function test_reset_request_creates_token_for_existing_user(): void
     {

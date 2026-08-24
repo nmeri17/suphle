@@ -2,21 +2,21 @@
 
 namespace Suphle\Tests\Integration\Routing;
 
-use Suphle\Routing\RouteManager;
+use Suphle\Routing\{ModuleRequestRouter, Structures\RouteInfo};
 
-use Suphle\Contracts\{Config\Router, Presentation\BaseRenderer};
+use Suphle\Contracts\Config\Router;
 
 use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\BrowserNoPrefix, Meta\ModuleOneDescriptor, Config\RouterMock};
+use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
-class TestsRouter extends ModuleLevelTest
-{
-    protected function getEntryCollection(): string // see BasicRoutingTest for new design for this
-    {
+use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\{BaseCoordinator, ApiEntryCoordinator};
 
-        return BrowserNoPrefix::class;
-    }
+class TestsRouter extends ModuleLevelTest {
+
+    protected array $coordinators = [
+        BaseCoordinator::class, ApiEntryCoordinator::class
+    ];
 
     protected function getModules(): array
     {
@@ -24,12 +24,15 @@ class TestsRouter extends ModuleLevelTest
         return [
             $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-                // $container->replaceWithMock(RouterContract::class, Router::class, []);
+                $container->replaceWithMock(RouterContract::class, Router::class, [
+                    
+                    "getCoordinatorClassesToScan" => $this->coordinators
+                ]);
             })
         ];
     }
 
-    protected function fakeRequest(string $url, string $httpMethod = "get", array $payload = null): ?BaseRenderer
+    protected function findRouteInfo(string $url, string $httpMethod = "get", array $payload = null): ?RouteInfo
     {
 
         if (is_null($payload)) {
@@ -38,10 +41,37 @@ class TestsRouter extends ModuleLevelTest
             $this->$httpMethod($url, $payload);
         }
 
-        $router = $this->getContainer()->getClass(RouteManager::class);
+        return $this->container->getClass(ModuleRequestRouter::class)->getFoundRoute();
+    }
 
-        $router->findRenderer();
+    public function pathsAndPlaceholders(): array
+    {
 
-        return $router->getActiveRenderer();
+        return [
+            ["/segment", []],
+
+            ["/segment-segment/5", ["id" => "5"]],
+
+            ["segment/5/segment/10", ["id" => "5", "id2" => "10"]]
+        ];
+    }
+
+    public function pathsToHandler(): array
+    {
+
+        return [
+            [ "indexHandler", "/"],
+
+            [ "plainSegment", "/segment"],
+            [ "plainSegment", "/segment/"],
+
+            [ "simplePair", "/segment/5"],
+            [ "simplePair", "/segment/5/"],
+
+            [ "hyphenatedSegments", "/segment-segment/5"],
+            [ "hyphenatedSegments", "/segment-segment/5/"],
+
+            [ "underscoredSegments", "/segment_segment/5"]
+        ];
     }
 }

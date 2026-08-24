@@ -2,8 +2,6 @@
 
 namespace Suphle\Tests\Integration\Authorization;
 
-use Suphle\Routing\PreMiddlewareRegistry;
-
 class NonAdminPathAuthorizerTest extends TestPathAuthorizer
 {
     private $user;
@@ -14,22 +12,12 @@ class NonAdminPathAuthorizerTest extends TestPathAuthorizer
         $this->user = $this->makeUser();
     }
 
-    public function test_absent_authorization_fails()
-    {
-
-        $this->actingAs($this->user); // given
-
-        $this->get("/admin-entry"); // when
-
-        $this->assertFalse($this->authorizationSuccess()); // then
-    }
-
     public function test_absent_nested_authorization_fails()
     {
 
         $this->actingAs($this->user); // given
 
-        $this->get("/admin/retain"); // when
+        $this->get("/employment/retain"); // when
 
         $this->assertFalse($this->authorizationSuccess()); // then
     }
@@ -39,22 +27,8 @@ class NonAdminPathAuthorizerTest extends TestPathAuthorizer
 
         $this->actingAs($this->user); // given
 
-        $this->get("/admin/secede"); // when
+        $this->get("/employment/secede"); // when
 
         $this->assertTrue($this->authorizationSuccess()); // then
-    }
-
-    public function test_unlock_returns_empty_rule_list()
-    {
-
-        $this->actingAs($this->user); // given
-
-        $this->get("/admin/secede"); // when
-
-        $routedFunnels = $this->getContainer()->getClass(PreMiddlewareRegistry::class)
-
-        ->getFunnelsForInteracted();
-
-        $this->assertEmpty($routedFunnels); // then
     }
 }

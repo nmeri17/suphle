@@ -1,25 +1,25 @@
 <?php
-
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
-use Suphle\Services\BaseCoordinator;
-use Suphle\Routing\Attributes\{Route, HttpMethod, PreMiddleware, RoutePrefix};
+use Suphle\Services\{BaseCoordinator, Decorators\ValidationRules};
+use Suphle\Routing\Attributes\{Route, HttpMethod, Middleware, RoutePrefix, ClearMiddleware};
 use Suphle\Response\Format\Json;
-use Suphle\Auth\Middleware\AuthenticateHandler;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares\{BlankMiddlewareHandler};
 
 #[RoutePrefix("/middleware")]
-class MiddlewareCoordinator extends BaseCoordinator
-{
-    #[Route('/secure')]
-    #[PreMiddleware(AuthenticateHandler::class)]
-    public function secure(): Json
+#[Middleware(BlankMiddlewareHandler::class)]
+class MiddlewareCoordinator extends BaseCoordinatory {
+
+    #[Route("/segment")]
+    public function plainSegment(): Json
     {
-        return new Json(['message' => 'Secure content']);
+        return new Json(["message" => "plain Segment"]);
     }
 
-    #[Route('/public')]
-    public function public(): Json
+    #[Route("secede")]
+    #[ClearMiddleware(BlankMiddlewareHandler::class)]
+    public function secede(): Json
     {
-        return new Json(['message' => 'Public content']);
+        return new Json([]);
     }
-} 
+}

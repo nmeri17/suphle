@@ -11,7 +11,7 @@ use Suphle\Request\PayloadStorage;
 */
 class MiddlewareNexts
 {
-    public function __construct(protected readonly Middleware $currentMiddleware, protected readonly ?\Suphle\Middleware\MiddlewareNexts $nextHandler)
+    public function __construct(protected readonly Middleware $currentMiddleware, protected readonly ?MiddlewareNexts $nextHandler)
     {
 
         //

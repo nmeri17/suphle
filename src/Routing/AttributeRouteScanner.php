@@ -37,7 +37,9 @@ class AttributeRouteScanner
 
         foreach ($this->activeDescriptors->getOriginalDescriptors() as $module) {
 
-            if (!is_null($moduleToScan) && $moduleToScan != $module) continue;
+            $runningModuleName = $module->exportsImplements();
+
+            if (!is_null($moduleToScan) && $moduleToScan != $runningModuleName) continue;
 
             $container = $module->getContainer();
 
@@ -57,7 +59,7 @@ class AttributeRouteScanner
                     if ($className) {
                         $allResults = array_merge(
                             $allResults,
-                            $onClassFound($className, $module->exportsImplements())
+                            $onClassFound($className, $runningModuleName)
                         );
                     }
                 }

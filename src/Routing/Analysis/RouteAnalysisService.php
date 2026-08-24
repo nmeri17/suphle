@@ -6,6 +6,8 @@ use Suphle\Hydration\{Container, Structures\ObjectDetails};
 
 use Suphle\Routing\Attributes\{Route, RoutePrefix, CanaryState, HttpMethod, PreMiddleware, Middleware, ClearMiddleware, FlowDefinition};
 
+use Suphle\Routing\Structures\RouteInfo;
+
 use Suphle\Auth\Middleware\{AuthenticateHandler, PathAuthorization};
 
 use Suphle\Services\Decorators\ValidationRules;
@@ -178,18 +180,27 @@ abstract class RouteAnalysisService
         $pathArg = $routeArgs[0] ?? $routeArgs["path"];
 
         return [
-            "method" => ($routeArgs[1] ?? $routeArgs["method"] ?? HttpMethod::GET)->value, // return value can be assoc or numeric, depending on how args were declared
+            "method" => $routeArgs[1] ?? $routeArgs["method"] ?? HttpMethod::GET, // return value can be assoc or numeric, depending on how args were declared
             "path" => $this->buildFullPath($routePrefix, $pathArg),
             "handler" => $method->getName(),
             "middleware" => $allMidw,
+
             "pre_middleware" => $allPre,
+
             "coordinator" => $coordinatorClass,
-            "placeholders" => $this->extractPlaceholders($pathArg),
+
+            "placeholders" => RouteInfo::extractPlaceholders($pathArg),
+
             "validation_rules" => $this->getValidationRules($method),
+
             "parameters" => $this->getMethodParameters($method),
+
             "flows" => $this->getMethodFlows($method),
+
             "response_shape" => $this->getResponseShape($method),
+            
             "module_name" => $moduleName,
+            
             "canary_state" => $canaryState,
             "renderer" => $method->getReturnType()->getName()
         ];
@@ -308,12 +319,6 @@ abstract class RouteAnalysisService
     {
         $attr = $method->getAttributes(ValidationRules::class);
         return !empty($attr) ? ($attr[0]->getArguments()[0] ?? []) : [];
-    }
-
-    protected function extractPlaceholders(string $pattern): array
-    {
-        preg_match_all("/\{([^}]+)\}/", $pattern, $matches);
-        return $matches[1] ?? [];
     }
 
     protected function buildFullPath(string $prefix, string $pattern): string

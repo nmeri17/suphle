@@ -22,7 +22,7 @@ class ModuleRequestRouter implements HighLevelRequestHandler
 
     public function canSetHandlingModule (array $routeList, bool $literal = false):bool {
 
-        $this->foundRoute = $this->getRouteInfo(
+        $this->foundRoute = $this->findRouteInfo(
             $routeList, $this->requestDetails->getPath(),
 
             $this->requestDetails->getHttpMethod(), $literal
@@ -31,7 +31,7 @@ class ModuleRequestRouter implements HighLevelRequestHandler
         return !is_null($this->foundRoute);
     }
 
-    protected function getRouteInfo(array $routeList, string $path, string $method, bool $literal): ?RouteInfo {
+    protected function findRouteInfo(array $routeList, string $path, string $method, bool $literal): ?RouteInfo {
 
         foreach ($routeList as $details) {/*
             "placeholders" => $this->extractPlaceholders($routeArgs[0] ?? ""),

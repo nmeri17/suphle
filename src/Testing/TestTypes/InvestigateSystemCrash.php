@@ -14,17 +14,16 @@ use Suphle\Testing\Condiments\{ BaseModuleInteractor, ModuleReplicator};
 
 use Suphle\Testing\Proxies\{ModuleHttpTest, Extensions\FrontDoor};
 
+use Suphle\Testing\Utilities\ArrayAssertions;
+
 use PHPUnit\Framework\{ ExpectationFailedException, MockObject\Stub\Stub};
 
-use Throwable;
-use Exception;
+use Throwable, Exception;
 
 abstract class InvestigateSystemCrash extends TestVirginContainer
 { // extending from this for sub classes to have access to [dataProvider]
 
-    use BaseModuleInteractor;
-    use ModuleReplicator;
-    use ModuleHttpTest;
+    use BaseModuleInteractor, ModuleReplicator, ModuleHttpTest, ArrayAssertions;
 
     protected const BRIDGE_NAME = ModuleExceptionBridge::class;
 
@@ -200,10 +199,10 @@ abstract class InvestigateSystemCrash extends TestVirginContainer
     }
 
     /**
-     * Compares renderer handlers
+     * Compares data received by handling renderer
      * This can only run if exception was caught i.e. not during app shutdown
     */
-    protected function assertExceptionUsesRenderer(BaseRenderer $renderer, callable $flammable): void
+    protected function assertExceptionFlushesData(iterable $data, callable $flammable): void
     {
 
         if ($this->softenDisgraceful) {
@@ -220,10 +219,7 @@ abstract class InvestigateSystemCrash extends TestVirginContainer
 
             $resolvedRenderer = $this->entrance->underlyingRenderer();
 
-            $this->assertTrue(
-                $renderer->matchesHandler($resolvedRenderer->getHandler()),
-                "Failed asserting that exception '". $exception::class . "' was handled with given renderer"
-            );
+            $this->assertAssocArraySubset($data, $renderer->getRawResponse());
         }
     }
 

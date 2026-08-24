@@ -1,53 +1,38 @@
 <?php
-
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
 use Suphle\Request\PayloadStorage;
 use Suphle\Services\{BaseCoordinator, Decorators\ValidationRules};
-use Suphle\Routing\Attributes\{Route, HttpMethod, PreMiddleware, RoutePrefix};
+use Suphle\Routing\Attributes\{Route, HttpMethod, PreMiddleware, RoutePrefix, ClearMiddleware};
 use Suphle\Response\Format\Json;
 use Suphle\Auth\Middleware\PathAuthorization;
 use Suphle\Tests\Mocks\Modules\ModuleOne\{Concretes\Services\EmploymentEditMock, PayloadReaders\BaseEmploymentBuilder};
 use Suphle\Tests\Mocks\Modules\ModuleOne\Authorization\Paths\{EmploymentEditRule, AdminRule};
 
 #[RoutePrefix("/employment")]
+#[PreMiddleware(PathAuthorization::class)]
 class EmploymentEditCoordinator extends BaseCoordinator
 {
     public function __construct(
         protected readonly EmploymentEditMock $editService,
         protected readonly PayloadStorage $payloadStorage
-    ) {
-        //
-    }
+    ) { }
 
     #[Route("retain")]
-    #[PreMiddleware(PathAuthorization::class)]
     public function retain(): Json
     {
         return new Json([]);
     }
 
-    #[Route("additional-rule")]
-    #[PreMiddleware(PathAuthorization::class)]
-    public function additionalRule(): Json
-    {
-        return new Json([]);
-    }
-
     #[Route("secede")]
+    #[ClearMiddleware(PathAuthorization::class)]
     public function secede(): Json
     {
         return new Json([]);
     }
 
-    #[Route("gmulti-edit/{id}")]
-    #[PreMiddleware(PathAuthorization::class)]
-    public function gmultiEdit(): Json
-    {
-        return new Json([]);
-    }
-
     #[Route("gmulti-edit-unauth")]
+    #[ClearMiddleware(PathAuthorization::class)]
     public function gmultiEditUnauth(): Json
     {
         return new Json([]);
@@ -62,8 +47,7 @@ class EmploymentEditCoordinator extends BaseCoordinator
         ]);
     }
 
-    #[Route("pmulti-edit/{id}")]
-    #[PreMiddleware(PathAuthorization::class)]
+    #[Route("pmulti-edit/{id}", method: HttpMethod::POST)]
     #[ValidationRules([
         "id" => "required|numeric|exists:employment,id",
         "salary" => "numeric|min:20000"
@@ -76,5 +60,12 @@ class EmploymentEditCoordinator extends BaseCoordinator
                 $this->payloadStorage->only(["salary"])
             )
         ]);
+    }
+
+    #[Route("admin-entry")]
+    #[PreMiddleware(AdminRule::class)]
+    public function adminEntry(): Json
+    {
+        return new Json([]);
     }
 }

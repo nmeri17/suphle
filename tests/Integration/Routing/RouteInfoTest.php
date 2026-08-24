@@ -2,11 +2,7 @@
 
 namespace Suphle\Tests\Integration\Routing;
 
-use Suphle\Routing\{RouteInfo, RouteManager, PatternIndicator, CollectionMethodToUrl};
-
-use Suphle\Request\RequestDetails;
-
-use Suphle\Tests\Mocks\Modules\ModuleOne\Routes\BrowserNoPrefix;
+use Suphle\Routing\Structures\RouteInfo;
 
 class RouteInfoTest extends TestsRouter
 {
@@ -16,61 +12,46 @@ class RouteInfoTest extends TestsRouter
     public function test_replaceInPattern(string $activePath, array $expectedPlaceholders)
     {
 
-        $this->setHttpParams($activePath);
-
-        $sut = $this->getContainer()->getClass(RouteInfo::class);
-
-        $this->buildRouter($sut) // given
-
-        ->findRenderer(); // when
-
-        $sut->exchangeTokenValues($activePath);
+        $matchingRouteInfo = $this->findRouteInfo($activePath);
 
         $this->assertSame(
             $expectedPlaceholders,
-            $sut->getAllSegmentValues()
+            $matchingRouteInfo->getAllSegmentValues()
         ); // then
-    }
-
-    public function pathsAndPlaceholders(): array
-    {
-
-        return [
-            ["/segment", []],
-
-            ["/segment-segment/5", ["id" => "5"]],
-
-            ["segment/5/segment/10", ["id" => "5", "id2" => "10"]]
-        ];
-    }
-
-    private function buildRouter(RouteInfo $routeInfo): RouteManager
-    {
-
-        $container = $this->getContainer();
-
-        return $this->replaceConstructorArguments(RouteManager::class, [ // pulling some dependencies from container so their constructors can run
-
-            "routeInfo" => $routeInfo,
-
-            "requestDetails" => $container->getClass(RequestDetails::class),
-
-            "patternIndicator" => $this->negativeDouble(PatternIndicator::class),
-
-            "urlReplacer" => $container->getClass(CollectionMethodToUrl::class)
-        ], [
-
-            "getCoordinatorClassesToScan" => [BrowserNoPrefix::class]
-        ]);
     }
 
     public function test_can_extract_all_method_segments()
     {
 
-        $sut = $this->getContainer()->getClass(CollectionMethodToUrl::class);
+        $segments = RouteInfo::extractPlaceholders("segment/{id}/segment2/{id2}/"); // when
 
-        $segments = $sut->splitIntoSegments("SEGMENT/id/SEGMENT2/?(id2/?)?"); // when
+        $this->assertSame(["id", "id2"], $segments); // then
+    }
 
-        $this->assertSame(["SEGMENT", "id", "SEGMENT2", "id2"], $segments); // then
+    public function test_placeholder_doesnt_catch_longer_path()
+    {
+
+        $matchingRouteInfo = $this->findRouteInfo("/5");
+
+        $this->assertNotNull($matchingRouteInfo); // sanity check
+
+        $matchingRouteInfo = $this->findRouteInfo("/5/invalid"); // when
+
+        $this->assertNull($matchingRouteInfo); // then
+    }
+
+    public function test_multiple_requests_reveal_different_placeholders ()
+    {
+
+        foreach ([17, 16] as $idToSend) {
+
+            $this->get("/$idToSend"); // when
+
+            $idBeingRead = $this->getContainer()->getClass(RouteInfo::class)
+
+            ->getSegmentValue("id");
+
+            $this->assertEquals($idBeingRead, $idToSend); // then
+        }
     }
 }

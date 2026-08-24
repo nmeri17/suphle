@@ -5,7 +5,7 @@ use Suphle\Flows\Structures\{RouteUserNode, ServiceContext, GeneratedUrlExecutio
 
 use Suphle\Routing\Attributes\{FlowDefinition, CollectionFlow, SingleFlow, CollectionFlowOperation, SingleFlowOperation};
 
-use Suphle\Routing\{RouteInfoExecutor, Structures\RouteInfo};
+use Suphle\Routing\{RouteInfoExecutor, NamedRouteReader, Structures\RouteInfo};
 
 use Suphle\Services\Decorators\VariableDependenciesHandler;
 use Suphle\Hydration\Container;
@@ -13,12 +13,10 @@ use Suphle\Request\PayloadStorage;
 
 use Illuminate\Support\Arr;
 
-use Exception;
-use Throwable;
+use Exception, Throwable;
 
 #[VariableDependenciesHandler([
-    "setContainer",
-    "setPayloadStorage"
+    "setContainer", "setPayloadStorage", "setRouteExpressor"
 ])]
 class FlowHydrator
 {
@@ -27,6 +25,8 @@ class FlowHydrator
     protected Container $container;
 
     protected RouteInfo $routeDetails;
+
+    protected NamedRouteReader $routeExpressor;
 
     protected iterable $previousResponse;
 
@@ -47,6 +47,12 @@ class FlowHydrator
     {
 
         $this->payloadStorage = $payloadStorage;
+    }
+
+    public function setRouteExpressor(NamedRouteReader $expressor): void
+    {
+
+        $this->routeExpressor = $expressor;
     }
 
     public function setRequestDetails(iterable $previousResponse, RouteInfo $routeDetails ): void {
@@ -248,7 +254,7 @@ class FlowHydrator
                 ->handleFoundRoute($this->routeDetails);
 
             return new GeneratedUrlExecution(
-                $this->routeDetails->getPathFromStack(),
+                $this->routeExpressor->expressFromInfo($this->routeDetails),
                 $renderer
             );
 

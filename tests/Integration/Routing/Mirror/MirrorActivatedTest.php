@@ -1,53 +1,31 @@
 <?php
-
 namespace Suphle\Tests\Integration\Routing\Mirror;
 
-use Suphle\Contracts\Config\Router as RouterContract;
-
-use Suphle\Config\Router;
-
-use Suphle\Testing\Proxies\WriteOnlyContainer;
 use Suphle\Tests\Integration\Routing\TestsRouter;
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor};
+use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
+
+use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\{ProductsV1Coordinator, BaseCoordinator};
 
 class MirrorActivatedTest extends TestsRouter
 {
-    protected function getModules(): array
-    {
-        return [
-            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
-                $container->replaceWithMock(RouterContract::class, Router::class, [
-
-                    "getCoordinatorClassesToScan" => [] // point to that which has these routes
-                ]);
-            })
-        ];
-    }
+    protected array $coordinators = [
+        BaseCoordinator::class, ProductsV1Coordinator::class
+    ];
 
     public function test_can_switch_to_api_collection()
     {
-        $matchingRenderer = $this->fakeRequest("/api/v1/api-segment"); // when
+        $matchingRouteInfo = $this->findRouteInfo("/api/v1/products"); // when
 
-        $this->assertNotNull($matchingRenderer);
+        $this->assertNotNull($matchingRouteInfo);
 
-        $this->assertTrue($matchingRenderer->matchesHandler("segmentHandler")); // then
+        $this->assertTrue($matchingRouteInfo->handlerMatches("index")); // then
     }
 
-    public function test_can_detect_browser_route()
+    public function test_only_enabled_works()
     {
-        $matchingRenderer = $this->fakeRequest("/api/v1/segment"); // when
 
-        $this->assertNotNull($matchingRenderer);
+        $matchingRouteInfo = $this->findRouteInfo("/api/v1/segment"); // when
 
-        $this->assertTrue($matchingRenderer->matchesHandler("plainSegment")); // then
-    }
-
-    public function test_can_override_browser_route()
-    {
-        $matchingRenderer = $this->fakeRequest("/api/v1/segment/5"); // when
-
-        $this->assertNotNull($matchingRenderer);
-
-        $this->assertTrue($matchingRenderer->matchesHandler("simplePairOverride")); // then
+        $this->assertNull($matchingRouteInfo); // then
     }
 }

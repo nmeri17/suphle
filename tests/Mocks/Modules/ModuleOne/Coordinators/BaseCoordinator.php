@@ -17,31 +17,31 @@ class BaseCoordinator extends SuphleController
         return new Json(["message" => "Hello World!"]);
     }
 
-    #[Route("segment")]
+    #[Route("/segment")]
     public function plainSegment(): Json
     {
         return new Json(["message" => "plain Segment"]);
     }
 
-    #[Route("segment/{id}")]
+    #[Route("/segment/{id}")]
     public function simplePair(): Json
     {
         return new Json([]);
     }
 
-    #[Route("segment-segment/{id}")]
+    #[Route("/segment-segment/{id}")]
     public function hyphenatedSegments(): Json
     {
         return new Json([]);
     }
 
-    #[Route("segment_segment/{id}")]
+    #[Route("/segment_segment/{id}")]
     public function underscoredSegments(): Json
     {
         return new Json([]);
     }
 
-    #[Route("segment/{id}/segment/{id2}")]
+    #[Route("/segment/{id}/segment/{id2}")]
     public function multiPlaceholders(): Json
     {
         return new Json([]);
@@ -53,81 +53,15 @@ class BaseCoordinator extends SuphleController
         return new Json([]);
     }
 
-    #[Route("no-tag")]
-    public function noTag(): Json
+    #[Route('/test-method/{id}', method: HttpMethod::PUT)]
+    public function update(): Json
     {
-        return new Json([]);
+        return new Json(['status' => 'updated', 'id' => 5]);
     }
 
-    #[Route("first-single")]
-    public function firstSingle(): Json
+    #[Route('/test-method/{id}', method: HttpMethod::DELETE)]
+    public function destroy(): Json
     {
-        return new Json([]);
-    }
-
-    #[Route("fourth-single")]
-    public function fourthSingle(): Json
-    {
-        return new Json([]);
-    }
-
-    #[Route("fifth-single")]
-    public function fifthSingle(): Json
-    {
-        return new Json([]);
-    }
-
-    #[Route("negotiate")]
-    public function negotiate(): Json
-    {
-        return new Json([]);
-    }
-
-    #[Route("first-untag")]
-    public function firstUntag(): Json
-    {
-        return new Json([]);
-    }
-
-    #[Route("second-untag")]
-    public function secondUntag(): Json
-    {
-        return new Json([]);
-    }
-
-    #[Route("third-untag")]
-    public function thirdUntag(): Json
-    {
-        return new Json([]);
-    }
-
-    #[Route("retain")]
-    public function retain(): Json
-    {
-        return new Json([]);
-    }
-
-    #[Route("additional-tag")]
-    public function additionalTag(): Json
-    {
-        return new Json([]);
-    }
-
-    #[Route("segment/{id}")]
-    public function segmentId(): Json
-    {
-        return new Json([]);
-    }
-
-    #[Route("segment/{id}/segment/{id2}")]
-    public function segmentIdSegmentId2(): Json
-    {
-        return new Json([]);
-    }
-
-    #[Route("admin-entry")]
-    public function adminEntry(): Json
-    {
-        return new Json([]);
+        return new Json(['status' => 'deleted', 'id' => 5]);
     }
 }

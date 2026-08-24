@@ -2,7 +2,9 @@
 
 namespace Suphle\Tests\Integration\Services\Proxies\MultiUserModel;
 
-use Suphle\Contracts\{Services\Models\IntegrityModel};
+use Suphle\Contracts\{Services\Models\IntegrityModel, Config\Router as RouterContract};
+
+use Suphle\Config\Router;
 
 use Suphle\Contracts\Modules\DescriptorInterface;
 
@@ -10,15 +12,15 @@ use Suphle\Exception\Explosives\EditIntegrityException;
 
 use Suphle\Services\DecoratorHandlers\MultiUserEditHandler;
 
-use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
-
 use Suphle\Testing\{TestTypes\InvestigateSystemCrash, Condiments\BaseDatabasePopulator};
 
 use Suphle\Testing\Proxies\{WriteOnlyContainer, SecureUserAssertions};
 
+use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
+
 use Suphle\Tests\Mocks\Models\Eloquent\{Employment, Employer};
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Auth\AuthorizeRoutes, Meta\ModuleOneDescriptor, Config\RouterMock};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Coordinators\EmploymentEditCoordinator, Meta\ModuleOneDescriptor};
 
 class MultiEditGetTest extends InvestigateSystemCrash
 {
@@ -58,10 +60,10 @@ class MultiEditGetTest extends InvestigateSystemCrash
 
         return $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-            /*$container->replaceWithMock(Router::class, RouterMock::class, [
+            $container->replaceWithMock(RouterContract::class, Router::class, [
 
-                "getCoordinatorClassesToScan" => UserCoordinator::class // check for who's using target prem
-            ]);*/
+                "getCoordinatorClassesToScan" => EmploymentEditCoordinator::class
+            ]);
         });
     }
 

@@ -18,7 +18,7 @@ class SystemModelController extends BaseCoordinator
     }
 
     #[ValidationRules([])] // Empty since test doesn't require routing to this controller
-    #[Route("/handlePut", HttpMethod::PUT)]
+    #[Route("/handle-put", HttpMethod::PUT)]
     public function handlePutRequest(object $builder):Json {
         $contents  = ["message" => "failed"];
 
@@ -30,7 +30,7 @@ class SystemModelController extends BaseCoordinator
         return new Json($contents);
     }
 
-    #[Route("/handlePut2", HttpMethod::PUT)]
+    #[Route("/handle-put2", HttpMethod::PUT)]
     public function putOtherServiceMethod():Json
     {
 

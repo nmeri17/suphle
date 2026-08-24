@@ -1,35 +1,32 @@
 <?php
-
 namespace Suphle\Testing\Proxies\Extensions;
 
-use Suphle\Middleware\{MiddlewareRegistry, PatternMiddleware};
+use Suphle\Middleware\BaseMiddlewareRegistry;
 
-class MiddlewareManipulator extends MiddlewareRegistry
+class MiddlewareManipulator extends BaseMiddlewareRegistry
 {
     protected bool $stackAlwaysEmpty = false;
 
     protected array $preExclude = [], $preInclude = [];
 
     /**
-     * Whenever router decides on the active pattern, it'll ultimately include middlewares applied here
+     * these must be called before an routing takes place. handlers given here will be processed before those on the actual route
      *
-     * We're using this instead of updating the default middleware list, since the eventual module may have custom config we are unwilling to override with whatever mock we'll set as default
-     *
-     * @param {collectors} CollectionMetaFunnel[]
+     * @param {handlers} middlewares[]
     */
-    public function addToActiveStack(array $collectors): void
+    public function addToActiveStack(array $handlers): void
     {
 
-        $this->preInclude = $collectors;
+        $this->preInclude = $handlers;
     }
 
     /**
-     * @param {collectorNames} CollectionMetaFunnel::class[]
+     * @param {handlerNames} middlewares::class[]
     */
-    public function disableCollectors(array $collectorNames): void
+    public function disableCollectors(array $handlerNames): void
     {
 
-        $this->preExclude = $collectorNames;
+        $this->preExclude = $handlerNames;
     }
 
     public function disableAll(): void
@@ -38,28 +35,36 @@ class MiddlewareManipulator extends MiddlewareRegistry
         $this->stackAlwaysEmpty = true;
     }
 
-    /**
-     * {@inheritdoc}
-    */
-    public function getFunnelsForInteracted(?array $interactedPatterns = null): array
-    {
+    protected function setMergedStack(): void {
 
         if ($this->stackAlwaysEmpty) {
-            return [];
+            $this->mergedStack = [];
+
+            return;
         }
 
-        $stack = $this->preInclude;
+        $stack = $this->hydrateMap($this->preInclude);
 
-        $parentStack = parent::getFunnelsForInteracted($interactedPatterns); // no longer exists. i think it should be read from route details
+        parent::setMergedStack();
 
-        foreach ($parentStack as $index => $collector) {
+        $parentStack = $this->mergedStack;
 
-            if (in_array($collector::class, $this->preExclude)) {
+        foreach ($parentStack as $index => $handler) {
+
+            if (in_array($handler::class, $this->preExclude)) {
 
                 unset($parentStack[$index]);
             }
         }
+        $this->mergedStack = [...$stack, ...$parentStack];
+    }
 
-        return [...$stack, ...$parentStack];
+    public function getNotUsed(array $toFilter): array {
+
+        $allHandlers = array_map(
+            $this->mergedStack, fn ($handler) => $handler::class
+        );
+
+        return array_filter($toFilter, fn ($handler) => !in_array($handler, $allHandlers));
     }
 }

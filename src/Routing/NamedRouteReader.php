@@ -35,7 +35,7 @@ class NamedRouteReader
     protected function interpolatePath(string $path, array $parameters): string
     {
         // Replace {param} placeholders with actual values from $parameters or RouteInfo
-        return preg_replace_callback('/\{([^}]+)\}/', function ($matches) use ($parameters) {
+        return preg_replace_callback(RouteInfo::PLACEHOLDER_PATTERN, function ($matches) use ($parameters) {
             $paramName = $matches[1];
             
             if (array_key_exists($paramName, $parameters)) {
@@ -49,5 +49,10 @@ class NamedRouteReader
 
             throw new InvalidArgumentException(sprintf('Missing required parameter "%s" for named route', $paramName));
         }, $path);
+    }
+
+    public function expressFromInfo(RouteInfo $routeInfo): string
+    {
+        return $this->interpolatePath($routeInfo->path, $routeInfo->getAllSegmentValues());
     }
 }

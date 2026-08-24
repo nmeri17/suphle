@@ -3,20 +3,27 @@ namespace Suphle\Middleware;
 
 use Suphle\Hydration\Container;
 use Suphle\Request\PayloadStorage;
-use Suphle\Contracts\Config\Router as RouterConfig;
-use Suphle\Contracts\Presentation\BaseRenderer;
 
-class MiddlewareQueue
+use Suphle\Contracts\{Presentation\BaseRenderer, Routing\MiddlewareRegistry, Config\Router as RouterConfig};
+
+class BaseMiddlewareRegistry implements MiddlewareRegistry
 {
-    protected array $mergedStack = [];
+    protected array $mergedStack = [],
+
+    $preMiddleware = [], $middleware = [];
 
     public function __construct(
         protected readonly Container $container,
         protected readonly RouterConfig $routerConfig,
         protected readonly PayloadStorage $payloadStorage,
-        protected readonly array $boundPreMidw,
-        protected readonly array $boundMidw
     ) {}
+
+    public function setRawHandlers (array $preMiddleware, array $middleware):self {
+
+        $this->preMiddleware = $preMiddleware;
+
+        $this->middleware = $middleware;
+    }
 
     public function runStack(): BaseRenderer
     {
@@ -36,24 +43,20 @@ class MiddlewareQueue
     protected function setMergedStack(): void {
 
         $this->mergedStack = array_merge(
-            $this->hydrateMap($this->boundPreMidw ),
-            $this->hydrateMap($this->boundMidw ),
-            array_map(
-                fn () => $this->container->getClass(...),
-
-                $this->routerConfig->defaultMiddleware()
-            )
+            $this->hydrateMap($this->preMiddleware ),
+            $this->hydrateMap($this->middleware ), // offers dev opportunity to override regular request handling
+            $this->hydrateMap($this->routerConfig->defaultMiddleware())
         );
     }
 
-    protected function hydrateMap (array $midwList):array {
+    protected function hydrateMap (array $middlewareList):array {
 
         $hydrated = [];
-        foreach ($middlewareMap as $handlerClass => $args) {
+        foreach ($middlewareList as $handlerClass => $args) {
             
             $concrete = $this->container->getClass($handlerClass);
 
-            $concrete->setUserArgs($args);
+            $concrete->setArgs($args);
 
             $hydrated[] = $concrete;
         }

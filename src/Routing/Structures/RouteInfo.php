@@ -12,6 +12,8 @@ class RouteInfo
 {
     use SanitizesIntegerInput;
 
+    public const PLACEHOLDER_PATTERN = "/\{([^}]+)\}/";
+
     private array $parameters = [];
     
     public bool $isMirror = false;
@@ -47,19 +49,22 @@ class RouteInfo
     {
         $pattern = $this->convertPathToRegex($this->path);
         
-        if (preg_match($pattern, $requestPath, $matches)) {
-            
-            $this->extractParameters($matches);
+        if (!preg_match($pattern, $requestPath, $matches)) return false;
 
-            return true;
-        }
-        return false;
+        array_shift($matches); // pop full match
+            
+        $this->mapParameters($matches);
+
+        return true;
+        
     }
 
+    /**
+     * Replace {param} with regex capture groups eg path "/products/{category}/{id}" produces something like \/products\/([^\/]+)\/([^\/]+) (characters are added and escaped for it to be a valid regex). when a live url eg "/products/shoes/42" is matched against this, those capture groups know what part of the string to extract
+    */ 
     private function convertPathToRegex(string $path): string
     {
-        // Replace {param} with regex capture groups
-        $pattern = preg_replace('/\{([^}]+)\}/', '([^/]+)', $path);
+        $pattern = preg_replace(self::PLACEHOLDER_PATTERN, '([^/]+)', $path);
         
         // Escape forward slashes and add start/end anchors
         $pattern = str_replace('/', '\/', $pattern);
@@ -67,35 +72,30 @@ class RouteInfo
         return '/^' . $pattern . '$/';
     }
 
-    private function extractParameters(array $matches): void
+    private function mapParameters(array $matches): void
     {
-        // Extract parameter names from the original path
-        preg_match_all('/\{([^}]+)\}/', $this->path, $paramNames);
+        $paramNames = self::extractPlaceholders($this->path);
         
-        // Map parameter names to values
-        for ($i = 0; $i < count($paramNames[1]); $i++) {
-            $paramName = $paramNames[1][$i];
-            $paramValue = $matches[$i + 1] ?? null;
+        foreach ($paramNames as $index => $paramName) {
+
+            $paramValue = $matches[$index] ?? null;
             
             if ($paramValue !== null) {
                 $this->parameters[$paramName] = $paramValue;
             }
         }
     }
-    public function getPathFromStack(): string
+
+    public static function extractPlaceholders(string $pattern): array
     {
-        $url = $this->path;
+        preg_match_all(self::PLACEHOLDER_PATTERN, $pattern, $matches);
 
-        foreach ($this->parameters as $key => $value) {
-            $url = str_replace("{{$key}}", $value, $url);
-        }
+        return $matches[1] ?? [];
+    }
 
-        // Optional: Check if any placeholders remain unreplaced
-        if (preg_match('/\{([^}]+)\}/', $url)) {
-            throw new InvalidArgumentException("Missing parameters for route: $url");
-        }
+    public function handlerMatches(string $incomingHandler): bool {
 
-        return $url;
+        return $incomingHandler == $this->controllerMethod;
     }
 
     public function setSegmentValues(array $values): void

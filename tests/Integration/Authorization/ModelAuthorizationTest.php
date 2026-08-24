@@ -4,7 +4,7 @@ namespace Suphle\Tests\Integration\Authorization;
 
 use Suphle\Contracts\Config\{Auth as AuthContract, Router as RouterContract};
 
-use Suphle\Config\Router;
+use Suphle\Config\{Router, Auth};
 
 use Suphle\Exception\Explosives\UnauthorizedServiceAccess;
 
@@ -30,13 +30,8 @@ class ModelAuthorizationTest extends ModuleLevelTest
 
             $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
 
-                $container/*->replaceWithMock(RouterContract::class, Router::class, [ // previous coordinator has been deleted
-
-                    "getCoordinatorClassesToScan" => UserCoordinator::class
-                ])*/
-                ->replaceWithMock(
-                    AuthContract::class,
-                    AuthContract::class,
+                $container->replaceWithMock(
+                    AuthContract::class, Auth::class,
                     [
 
                         "getModelObservers" => [

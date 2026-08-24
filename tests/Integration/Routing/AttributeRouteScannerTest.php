@@ -9,7 +9,7 @@ use Suphle\Config\Router;
 
 use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{ Meta\ModuleOneDescriptor};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{ Meta\ModuleOneDescriptor, Coordinators\Selective\ForbiddenDependencyController};
 
 class AttributeRouteScannerTest extends ModuleLevelTest {
 
@@ -35,7 +35,7 @@ class AttributeRouteScannerTest extends ModuleLevelTest {
 
             "analyzeCoordinator" => [["path" => "/found"]]
         ], [
-            "analyzeCoordinator" => [1, [$this->stringContains("TestCoordinator"), "ModuleOne"]]
+            "analyzeCoordinator" => [1, [$this->stringContains("BaseCoordinator"), "ModuleOne"]]
         ]);
 
         $this->massProvide([
@@ -72,11 +72,9 @@ class AttributeRouteScannerTest extends ModuleLevelTest {
 
         foreach ($routes as $route) {
 
-            $coordinator = $route['coordinator'] ?? '';
+            if (!$hasNested) {
 
-            if (str_contains($coordinator, 'SubCoordinator') || str_contains($coordinator, 'Nested')) {
-
-                $hasNested = true;
+                $hasNested = $route['coordinator'] == ForbiddenDependencyController::class;
 
                 break;
             }

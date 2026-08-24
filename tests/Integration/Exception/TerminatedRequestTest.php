@@ -28,10 +28,13 @@ class TerminatedRequestTest extends InvestigateSystemCrash
 
     public function test_exceptions_uses_assigned_handler()
     {
+        $url = "/non-existent";
 
-        $this->assertExceptionUsesRenderer( // then
+        $this->get($url); // given // just to populate requestDetails
 
-            new Markup("missingHandler", ""),
+        $this->assertExceptionFlushesData( // then
+
+            ["message" => $url . " Not Found"],
             function (): never {
 
                 throw new NotFoundException(); // when
@@ -42,9 +45,9 @@ class TerminatedRequestTest extends InvestigateSystemCrash
     public function test_exceptions_without_assigned_handler_uses_default()
     {
 
-        $this->assertExceptionUsesRenderer( // then
+        $this->assertExceptionFlushesData( // then
 
-            new Markup("genericHandler", "errors.default"),
+            ["exception" => Exception::class],
             function (): never {
 
                 throw new Exception(); // when

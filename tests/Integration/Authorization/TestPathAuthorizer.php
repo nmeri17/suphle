@@ -2,7 +2,7 @@
 
 namespace Suphle\Tests\Integration\Authorization;
 
-use Suphle\Auth\Middleware\PathAuthorizationScrutinizer;
+use Suphle\Auth\Middleware\PathAuthorization;
 
 use Suphle\Contracts\{Auth\UserContract, Config\Router as RouterContract};
 
@@ -14,7 +14,7 @@ use Suphle\Testing\Proxies\{SecureUserAssertions, WriteOnlyContainer};
 
 use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Routes\Auth\AuthorizeRoutes};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Coordinators\EmploymentEditCoordinator};
 
 abstract class TestPathAuthorizer extends ModuleLevelTest
 {
@@ -39,7 +39,7 @@ abstract class TestPathAuthorizer extends ModuleLevelTest
 
                 $container->replaceWithMock(RouterContract::class, Router::class, [
 
-                    "getCoordinatorClassesToScan" => [AuthorizeRoutes::class]
+                    "getCoordinatorClassesToScan" => [EmploymentEditCoordinator::class]
                 ]);
             })
         ];
@@ -61,16 +61,11 @@ abstract class TestPathAuthorizer extends ModuleLevelTest
     }
 
     // can't move this to setUp since this object is updated after request is updated
-    protected function getAuthorizer(): PathAuthorizationScrutinizer
-    {
-
-        return $this->getContainer()->getClass(PathAuthorizationScrutinizer::class);
-    }
-
     protected function authorizationSuccess(): bool
     {
 
-        return $this->getAuthorizer()->passesActiveRules();
+        return $this->getContainer()->getClass(PathAuthorization::class)
+        ->passesActiveRules();
     }
 
     abstract protected function setUser(): void;

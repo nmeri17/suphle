@@ -234,9 +234,4 @@ abstract class ModuleHandlerIdentifier
     {
         return $this->httpRoutes;
     }
-
-    public function getCachedRoutes(): ?array
-    {
-        return $this->httpRoutes;
-    }
 }
