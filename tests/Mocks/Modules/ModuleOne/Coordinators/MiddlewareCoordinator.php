@@ -8,7 +8,7 @@ use Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares\{BlankMiddlewareHandler};
 
 #[RoutePrefix("/middleware")]
 #[Middleware(BlankMiddlewareHandler::class)]
-class MiddlewareCoordinator extends BaseCoordinatory {
+class MiddlewareCoordinator extends BaseCoordinator {
 
     #[Route("/segment")]
     public function plainSegment(): Json

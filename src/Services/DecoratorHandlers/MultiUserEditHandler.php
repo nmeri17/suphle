@@ -2,13 +2,11 @@
 
 namespace Suphle\Services\DecoratorHandlers;
 
-use Suphle\Contracts\{Services\CallInterceptors\MultiUserModelEdit, Database\OrmDialect, Config\DecoratorProxy, Auth\AuthStorage};
-
-use Suphle\Queues\AdapterManager;
+use Suphle\Contracts\{Services\CallInterceptors\MultiUserModelEdit, Database\OrmDialect, Config\DecoratorProxy, Auth\AuthStorage, Routing\Middleware};
 
 use Suphle\Request\PayloadStorage;
 
-use Suphle\Routing\{CollectionMetaQueue, CollectionMetaFunnel};
+use Suphle\Routing\Structures\RouteInfo;
 
 use Suphle\Auth\Middleware\PathAuthorization;
 
@@ -41,7 +39,7 @@ class MultiUserEditHandler extends BaseInjectionModifier
         protected readonly ErrorCatcherHandler $errorDecoratorHandler,
         DecoratorProxy $proxyConfig,
         ObjectDetails $objectMeta,
-        protected readonly CollectionMetaQueue $collectionMetaQueue,
+        protected readonly RouteInfo $routeInfo,
         protected readonly AuthStorage $authStorage
     ) {
 
@@ -133,16 +131,21 @@ class MultiUserEditHandler extends BaseInjectionModifier
         array $argumentList
     ) {
 
-        $matchingFunnels = $this->collectionMetaQueue->findRoutedFunnels(function (CollectionMetaFunnel $funnel) {
-
-            return $funnel instanceof PathAuthorization;
-        });
-
-        if (empty($matchingFunnels)) { // doesn't confirm current route is authorized since that would have already occured during routing if funnels are present
-
+        if (
+            in_array(PathAuthorization::class, $this->routeInfo->preMiddlewares) ||
+            $this->hasParentAuth()
+        )
             throw new EditIntegrityException(EditIntegrityException::NO_AUTHORIZER);
-        }
 
         return $concrete->getResource(...$argumentList); // we're not wrapping in error catcher since we want request termination if getting editable resource failed; there's nothing to fallback to
+    }
+    protected function hasParentAuth ():bool {
+
+        $matchTag = array_filter($this->routeInfo->preMiddlewares, function (string $middleware) {
+
+            return $this->objectMeta->stringInClassTree($middleware, PathAuthorization::class);
+        });
+
+        return !empty($matchTag);
     }
 }

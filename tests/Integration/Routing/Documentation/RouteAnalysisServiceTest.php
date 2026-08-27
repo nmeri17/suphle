@@ -5,10 +5,13 @@ use Suphle\Routing\Analysis\RendererContentShape;
 
 use Suphle\Hydration\Container;
 
+use Suphle\Routing\Attributes\HttpMethod;
+
+use Suphle\Auth\Middleware\{AuthenticateHandler, MustBeGuestHandler};
+
 use Suphle\Testing\TestTypes\ModuleLevelTest;
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Coordinators\PrefixedCoordinator};
-use ReflectionClass;
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Coordinators\SecureCoordinator};
 
 class RouteAnalysisServiceTest extends ModuleLevelTest {
 
@@ -18,37 +21,42 @@ class RouteAnalysisServiceTest extends ModuleLevelTest {
     }
 
     public function test_analyzeCoordinator_resolves_prefixes_and_methods() {
-        $analyzer = $this->getContainer()->getClass(RendererContentShape::class);
-        
-        // When
-        $routes = $analyzer->analyzeCoordinator(PrefixedCoordinator::class, "ModuleOne");
+
+        $target = $this->routesByCoordinator("/secure/dashboard");
 
         // Then
-        $this->assertCount(1, $routes);
-        $this->assertStringStartsWith("/admin", $routes[0]["path"]);
-        $this->assertEquals("GET", strtoupper($routes[0]["method"]));
+        $this->assertNotEmpty($target);
+        
+        $this->assertSame(HttpMethod::GET, $target["method"]);
+    }
+
+    protected function routesByCoordinator (?string $targetPath = null, string $coordinatorName = SecureCoordinator::class):array {
+
+        $routes = $this->getContainer()->getClass(RendererContentShape::class)
+
+        ->analyzeCoordinator(// When
+            $coordinatorName, $this->modules[0]->exportsImplements()
+        );
+        if (is_null($targetPath)) return $routes;
+
+        return array_filter(
+            $routes, fn (array $entry) => $entry["path"] == $targetPath
+        );
     }
 
     public function test_analyzeMethod_merges_middleware_correctly() {
 
-        $analyzer = $this->getContainer()->getClass(RendererContentShape::class);
+        $target = $this->routesByCoordinator("/secure/dashboard");
 
-        $routes = $analyzer->analyzeCoordinator(PrefixedCoordinator::class, "ModuleOne");
-        
-        $this->assertIsArray($routes[0]["middleware"]);
-        $this->assertIsArray($routes[0]["pre_middleware"]);
+        // Then
+        $this->assertSame([AuthenticateHandler::class], $target["pre_middleware"]);
     }
 
     public function test_static_analyzer_detects_renderer_shapes() {
-        
-        $analyzer = $this->getContainer()->getClass(RendererContentShape::class);
-        $reflection = new ReflectionClass(PrefixedCoordinator::class);
-        $method = $reflection->getMethod("methodReturningJson");
 
-        // When
-        $shape = $analyzer->getResponseShape($method);
-
+        $shape = $this->routesByCoordinator("/secure/data")["response_shape"];
+var_dump($shape["properties"]); // assert this also when we see what its contents are
         // Then
-        $this->assertEquals("object", $shape["type"]);
+        $this->assertSame("object", $shape["type"]);
     }
 }

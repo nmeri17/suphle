@@ -11,13 +11,15 @@ use Suphle\Tests\Mocks\Modules\ModuleOne\Canary\{BetaUserCanary, CanaryRequestHa
 #[CanaryState([BetaUserCanary::class, CanaryRequestHasFoo::class, CanaryForUser5::class])]
 class CanaryCoordinator extends BaseCoordinator
 {
-    #[Route("/beta")]
+    #[Route("/by-condition")]
     public function beta(): Json
     {
         $data = match ($this->requestDetails->getCanaryState()) {
-            "beta" => ["beta" => true, "feature" => "experimental"],
-            "foo" => ["profile" => "FOO user profile!"],
-            'user5' => ['profile' => 'USER5 user profile!'],
+            BetaUserCanary::MARKER => ["beta" => true, "feature" => "experimental"],
+            CanaryRequestHasFoo::MARKER => ["profile" => "FOO user profile!"],
+            
+            CanaryForUser5::MARKER => ['profile' => 'USER5 user profile!'],
+            
             default => ["stable" => true, "feature" => "production"]
         };
 
