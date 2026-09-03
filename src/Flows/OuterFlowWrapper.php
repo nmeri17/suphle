@@ -6,7 +6,9 @@ use Suphle\Flows\Jobs\{RouteBranches, UpdateCountDelete};
 
 use Suphle\Flows\Structures\{RouteUserNode, AccessContext, PendingFlowDetails, RouteUmbrella};
 
-use Suphle\Contracts\{Events, Response\BaseResponseManager, IO\CacheManager, Auth\AuthStorage, Modules\HighLevelRequestHandler, Presentation\BaseRenderer};
+use Suphle\Contracts\{Response\BaseResponseManager, IO\CacheManager, Auth\AuthStorage, Modules\HighLevelRequestHandler, Presentation\BaseRenderer};
+
+use Suphle\Events\EventPropagator;
 
 use Suphle\Queues\AdapterManager;
 
@@ -33,7 +35,7 @@ class OuterFlowWrapper implements BaseResponseManager, HighLevelRequestHandler
         protected readonly AdapterManager $queueManager,
         protected readonly UmbrellaSaver $flowSaver,
         protected readonly Container $container,
-        protected readonly Events $eventManager,
+        protected readonly EventPropagator $eventEmitter,
         protected readonly ActiveDescriptors $descriptorsHolder
     ) {
 
@@ -135,7 +137,7 @@ class OuterFlowWrapper implements BaseResponseManager, HighLevelRequestHandler
 
         $routeDetails = $this->routeUserNode->routeDetails;
 
-        $this->eventManager->emit(
+        $this->eventEmitter->emit(
             $routeDetails->controllerClass,
             $routeDetails->controllerMethod,
             $cachedResponse // event handler can then inject payloadStorage/routeInfo

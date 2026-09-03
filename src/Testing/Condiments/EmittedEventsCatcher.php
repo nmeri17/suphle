@@ -1,17 +1,13 @@
 <?php
-
 namespace Suphle\Testing\Condiments;
 
-use Suphle\Events\{EventSubscription, ModuleLevelEvents};
+use Suphle\Events\ModuleLevelEvents;
 
 trait EmittedEventsCatcher
 {
     abstract protected function getModules(): array;
 
-    protected function assertHandledEvent(
-        string $emitter,
-        string $eventName = null
-    ): void {
+    protected function assertHandledEvent(string $emitter, string $eventName): void {
 
         $subscription = $this->getEventSubscription($emitter);
 
@@ -20,12 +16,8 @@ trait EmittedEventsCatcher
             "Failed to assert that '$emitter' fired any event"
         );
 
-        if (is_null($eventName)) {
-            return;
-        }
-
-        $this->assertNotEmpty(
-            $subscription->getMatchingUnits($eventName),
+        $this->assertNotNull(
+            @$subscription[$eventName],
             "Failed to assert that '$emitter' emitted an event named '$eventName'"
         );
     }
@@ -43,29 +35,15 @@ trait EmittedEventsCatcher
         }
 
         $this->assertEmpty(
-            $subscription->getMatchingUnits($eventName),
+            @$subscription[$eventName],
             "Did not expect '$emitter' to fire event '$eventName'"
         );
     }
 
-    private function getEventSubscription(string $sender): ?EventSubscription
-    {
+    private function getEventSubscription(string $sender):?array {
 
-        $allSent = $this->getContainer()
+        return @$this->getContainer()
 
-        ->getClass(ModuleLevelEvents::class)->getFiredEvents();
-
-        if (array_key_exists($sender, $allSent)) {
-
-            $subscription = $allSent[$sender];
-
-            if (is_null($subscription)) { // was event fired without any paired handlers?
-                $subscription = new EventSubscription("", $this->getContainer());
-            } // so the asserters don't mistake false positive
-
-            return $subscription;
-        }
-
-        return null;
+        ->getClass(ModuleLevelEvents::class)->getFiredEvents()[$sender];
     }
 }
