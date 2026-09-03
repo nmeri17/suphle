@@ -3,9 +3,9 @@ namespace _modules_shell\_module_name\InstalledComponents\SuphleIdentity\Service
 
 use Suphle\Services\Structures\BaseErrorCatcherService;
 use Suphle\Services\Decorators\{InterceptsCalls, VariableDependencies, DomainService};
-use Suphle\Contracts\{Events, Services\CallInterceptors\SystemModelEdit};
+use Suphle\Contracts\Services\CallInterceptors\SystemModelEdit;
 
-use Suphle\Events\EmitProxy;
+use Suphle\Events\{EmitProxy, EventPropagator};
 
 use _database_namespace_\User;
 
@@ -19,7 +19,7 @@ class RegisterService implements SystemModelEdit {
     public const USER_REGISTERED = "user_registered";
 
     public function __construct(
-        protected readonly Events $eventManager
+        protected readonly EventPropagator $eventEmitter
     ) {}
 
     public function updateModels(object $data): User {

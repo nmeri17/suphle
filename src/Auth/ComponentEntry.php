@@ -3,7 +3,7 @@ namespace Suphle\Auth;
 
 use Suphle\File\{FolderTemplatePlaceholders, FolderCloner};
 
-use Suphle\Contracts\Config\{Database, ModuleFiles, Router};
+use Suphle\Contracts\Config\{Database, ModuleFiles, Router, Events};
 
 use Suphle\Contracts\Modules\DescriptorInterface;
 
@@ -18,7 +18,8 @@ class ComponentEntry extends BaseComponentEntry {
         protected readonly DescriptorInterface $descriptor,
         protected readonly ModuleFiles $fileConfig,
         protected readonly FolderCloner $folderCloner,
-        protected readonly Router $routerConfig
+        protected readonly Router $routerConfig,
+        protected readonly Events $eventConfig
     ) {}
 
     /**
@@ -43,13 +44,19 @@ class ComponentEntry extends BaseComponentEntry {
 
         $this->folderCloner->setEntryReplacements($content, [], $content);
 
+        $modulePath = $this->fileConfig->activeModulePath();
+
         foreach ([
             "Coordinators" => $this->routerConfig->getCoordinatorPath(),
 
             "Database" => $this->databaseConfig->componentInstallPath(),
 
             "Tests" => implode(DIRECTORY_SEPARATOR, [
-                $this->fileConfig->activeModulePath(), "Tests", "Auth"
+                $modulePath, "Tests", "Auth",
+            ]),
+            "Listeners" => implode(DIRECTORY_SEPARATOR, [
+                
+                $modulePath, $this->eventConfig->getListenersPath()
             ])
         ] as $folder => $destination)
             
@@ -63,6 +70,8 @@ class ComponentEntry extends BaseComponentEntry {
         return array_merge($this->moduleResourceValues($resourceName), [
 
             "_database_namespace" => $this->databaseConfig->componentInstallNamespace(),
+
+            "_event_listeners" => $this->eventConfig->getListenersPath()
         ]);
     }
 }
