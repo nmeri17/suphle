@@ -2,66 +2,52 @@
 
 namespace Suphle\Tests\Integration\Modules;
 
-use Suphle\Contracts\Config\{Router as RouterContract, Auth as AuthContract};
+use Suphle\Modules\ModuleHandlerIdentifier;
 
 use Suphle\Flows\OuterFlowWrapper;
-
-use Suphle\Config\{Auth, Router};
 
 use Suphle\Testing\{Condiments\DirectHttpTest, Proxies\WriteOnlyContainer};
 
 use Suphle\Tests\Integration\Flows\Jobs\RouteBranches\JobFactory;
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\OriginCollection, Meta\ModuleOneDescriptor};
-
 class ModuleHandlerIdentifierTest extends JobFactory
 {
-    use DirectHttpTest, DoublesHandlerIdentifier;
-
-    protected function setUp(): void
-    {
-
-        $this->setDummyRenderer();
-
-        parent::setUp();
-    }
-
-    // no need to create these. We're not interested in using any
-    protected function setAllDescriptors(): void
-    {
-    }
-
-    protected function getModules(): array
-    {
-
-        return [
-
-            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
-
-                $container->replaceWithMock(RouterContract::class, Router::class, [
-
-                    "browserEntryRoute" => OriginCollection::class
-                ]);
-            })
-        ];
-    }
+    use DirectHttpTest;
 
     public function test_saved_flow_triggers_flow_handler()
     {
 
+        $sut = $this->getHandlerIdentifier();
+
         $this->handleDefaultPendingFlowDetails(); // given
 
-        //$this->assertHandledByFlow($this->userUrl);
+        $postsUrl = "/posts/5";
 
-        $this->setHttpParams($this->userUrl); // when
+        $this->setHttpParams($postsUrl); // when
 
-        $this->getHandlerIdentifier([], [
+        $sut->respondFromHandler(); // then
 
-            "flowRequestHandler" => [$this->atLeastOnce(), [ // then
+        $this->assertHandledByFlow($postsUrl); // if this fails, the stub prevented it from getting to that point so delete
+    }
 
-                $this->callback(fn ($argument) => is_a($argument, OuterFlowWrapper::class))
-            ]]
-        ])
-        ->respondFromHandler();
+    protected function getHandlerIdentifier(): ModuleHandlerIdentifier
+    {
+
+        $identifier = $this->replaceConstructorArguments(
+            ModuleHandlerIdentifier::class,
+            [], [
+
+                "getModules" => $this->modules,
+            ], [
+
+                "flowRequestHandler" => [$this->atLeastOnce(), [ // then
+
+                    $this->callback(fn ($argument) => is_a($argument, OuterFlowWrapper::class))
+                ]]
+            ],
+            true, true, true
+        );
+
+        return $identifier;
     }
 }

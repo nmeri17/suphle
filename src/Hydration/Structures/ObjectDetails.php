@@ -195,6 +195,17 @@ class ObjectDetails
         return $attributesList;
     }
 
+    public function getMethodsWithAttributes(string $className, string $filterToAttribute): array {
+        
+        return array_filter(
+            $this->getReflectedClass($className)
+                ->getMethods(ReflectionMethod::IS_PUBLIC),
+
+            fn (ReflectionMethod $method):bool => !empty($method->getAttributes($filterToAttribute))
+        );
+    }
+
+
     /**
     * @return FQCN or "" if no class is found in file
     */

@@ -99,9 +99,9 @@ abstract class RouteAnalysisService
 
         $allRouteDetails = [];
 
-        foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
-            $routeAttrs = $method->getAttributes(Route::class);
-            if (empty($routeAttrs)) continue;
+        foreach ($this->objectDetails->getMethodsWithAttributes($coordinatorClass, Route::class) as $method) {
+            
+            $routeAttrs = $method->getAttributes();
 
             $primaryRoute = $this->analyzeMethod(
                 $method, 
@@ -198,9 +198,9 @@ abstract class RouteAnalysisService
             "flows" => $this->getMethodFlows($method),
 
             "response_shape" => $this->getResponseShape($method),
-            
+
             "module_name" => $moduleName,
-            
+
             "canary_state" => $canaryState,
             "renderer" => $method->getReturnType()->getName()
         ];

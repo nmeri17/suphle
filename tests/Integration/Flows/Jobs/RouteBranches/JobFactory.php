@@ -4,21 +4,25 @@ namespace Suphle\Tests\Integration\Flows\Jobs\RouteBranches;
 
 use Suphle\Flows\{ Jobs\RouteBranches, Structures\PendingFlowDetails};
 
-use Suphle\Routing\Attributes\FlowDefinition;
+use Suphle\Routing\Attributes\{FlowDefinition, HttpMethod};
 
-use Suphle\Contracts\{Auth\UserContract, Presentation\BaseRenderer, Database\OrmDialect};
+use Suphle\Routing\Structures\RouteInfo;
+
+use Suphle\Contracts\{Presentation\BaseRenderer, Config\Router as RouterContract, Modules\DescriptorInterface};
+
+use Suphle\Contracts\Auth\{UserContract, AuthStorage};
 
 use Suphle\Hydration\Container;
 
 use Suphle\Response\Format\Json;
 
+use Suphle\Config\Router;
+
 use Suphle\Testing\Condiments\{QueueInterceptor, BaseDatabasePopulator};
 
-use Suphle\Testing\Proxies\SecureUserAssertions;
+use Suphle\Testing\{Proxies\SecureUserAssertions, Proxies\WriteOnlyContainer, TestTypes\ModuleLevelTest};
 
-use Suphle\Tests\Integration\Modules\ModuleDescriptor\DescriptorCollection;
-
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Coordinators\FlowCoordinator, Concretes\Services\DummyModels};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Coordinators\FlowCoordinator, Meta\ModuleOneDescriptor};
 
 use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
 
@@ -27,7 +31,7 @@ use ReflectionMethod, ReflectionAttribute;
 /**
  * This doesn't send the originating requests. It helps for mocking the task of an originated flow, executing that task, then verifying its behavior under certain conditions
 */
-abstract class JobFactory extends DescriptorCollection
+abstract class JobFactory extends ModuleLevelTest
 {
     use QueueInterceptor, BaseDatabasePopulator, SecureUserAssertions {
 
@@ -36,17 +40,9 @@ abstract class JobFactory extends DescriptorCollection
 
     protected Container $container;
 
-    protected EloquentUser $contentOwner;
+    protected EloquentUser $contentOwner, $contentVisitor;
 
-    protected EloquentUser $contentVisitor;
-
-    protected string $userUrl = "/user-content/5";
-
-    protected string // corresponds to the content generated after using [flowUrl] to create a context
-    $flowUrl = "user-content/id";
-
-    protected string // this is expected to exist in one of the module entry collections
-    $originDataName = "all_users";
+    protected string $originDataName = "data"; // this is expected to exist in one of the module entry coordinators
 
     protected string $originMethod = "getCatalog"; // Default
 
@@ -78,29 +74,57 @@ abstract class JobFactory extends DescriptorCollection
         return 5;
     }
 
+    protected function getModules ():array {
+
+        return [
+            $this->createFlowModule(ModuleOneDescriptor::class, [$this->rendererController])
+        ];
+    }
+
+    protected function createFlowModule(string $descriptorname, array $coordinators):DescriptorInterface
+    {
+
+        return $this->replicateModule(
+            $descriptorname,
+            function (WriteOnlyContainer $container) {
+
+                $container->replaceWithMock(RouterContract::class, Router::class, [
+
+                    "getCoordinatorClassesToScan" => $coordinators
+                ]);
+            }
+        );
+    }
+
     protected function getPrecedingRenderer(): BaseRenderer
     {
-        return $this->positiveDouble(Json::class, [
-            "getRawResponse" => [
-                $this->originDataName => [
-                    ["id" => 1, "name" => "Book 1"], // Mock data
-                    ["id" => 2, "name" => "Book 2"]
-                ]
-            ],// these are no longer read from here
-            // Pull the real #[CollectionFlow] or #[SingleFlow] from the coordinator
-            "getFlows" => $this->extractAttributes(FlowCoordinator::class, $this->originMethod),
-            "getCoordinator" => $this->positiveDouble(FlowCoordinator::class),
-            "getHandler" => $this->originMethod
+        return new Json([
+            $this->originDataName => [
+                ["id" => 1, "name" => "Book 1"],
+                ["id" => 2, "name" => "Book 2"],
+                ["id" => 3, "name" => "Book 3"]
+            ]
         ]);
     }
 
-    protected function extractAttributes(string $class, string $method): array
+    protected function makePendingFlowDetails(?UserContract $user = null, string $storageName = null): PendingFlowDetails
     {
-        $reflection = new ReflectionMethod($class, $method);
-        return array_map(
-            fn($attr) => $attr->newInstance(),
-            $reflection->getAttributes(FlowDefinition::class, ReflectionAttribute::IS_INSTANCEOF)
-        );
+        $storage = $this->getAuthStorage($storageName);
+
+        if (is_null($user)) $storage->logout();
+
+        return $this->container->whenType(PendingFlowDetails::class)->needsAny([
+
+            BaseRenderer::class => $this->getPrecedingRenderer(),
+
+            RouteInfo::class => new RouteInfo(
+                "catalog/{id}",
+                HttpMethod::GET,
+                $this->rendererController,
+                $this->originMethod
+            ),
+            AuthStorage::class => $storage
+        ])->getClass(PendingFlowDetails::class);
     }
 
     protected function makeRouteBranches(PendingFlowDetails $context): RouteBranches
@@ -117,28 +141,6 @@ abstract class JobFactory extends DescriptorCollection
         $this->container->refreshClass($jobName);
 
         return $jobInstance;
-    }
-
-    protected function makePendingFlowDetails(?UserContract $user = null, string $storageName = null): PendingFlowDetails
-    {
-
-        $storage = $this->getAuthStorage($storageName);
-
-        if (!is_null($user)) {
-
-            $storage->startSession($user->getId()); // creates a collection of 10 models in preceding renderer, then assigns the given user as their owner in the flow we are going to make
-
-            $storage->setHydrator($this->container->getClass(
-                OrmDialect::class
-            )->getUserHydrator());
-        } else {
-            $storage->logout();
-        }
-
-        return new PendingFlowDetails(
-            $this->getPrecedingRenderer(),
-            $storage
-        );
     }
 
     /**

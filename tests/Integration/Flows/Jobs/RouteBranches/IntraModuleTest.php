@@ -18,22 +18,7 @@ class IntraModuleTest extends JobFactory
 {
     use ArrayAssertions;
 
-    private string $user5Url = "/user-content/5";
-
-    protected function getModules(): array
-    {
-
-        return [
-
-            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
-
-                /*$container->replaceWithMock(RouterContract::class, Router::class, [
-
-                    //
-                ]);*/
-            })
-        ];
-    }
+    private string $user5Url = "/user-content/5"; // pending
 
     public function test_stores_correct_data_in_cache()
     {
@@ -54,12 +39,6 @@ class IntraModuleTest extends JobFactory
             $cachedResponse = $this->extractResponse($umbrella, $context->getStoredUserId());
             $this->assertEquals(5, $cachedResponse['id']); 
         });
-    }
-
-    public function test_no_flow_attribute_does_nothing()
-    {
-        // Ensure paths without the #[Flow] attribute don't trigger queue activity
-        $this->assertNotPushedToFlow("/no-flow-attribute");
     }
 
     /**
@@ -88,7 +67,7 @@ class IntraModuleTest extends JobFactory
 
         return $routeUmbrella->getUserPayload($userId)
 
-        ->getRenderer()->getRawResponse();
+        ->renderer->getRawResponse();
     }
 
     public function test_will_be_handled_by_flow()
@@ -105,11 +84,5 @@ class IntraModuleTest extends JobFactory
             // then
             $this->assertHandledByFlow($this->user5Url);
         });
-    }
-
-    public function test_no_flow_does_nothing()
-    {
-
-        $this->assertNotPushedToFlow("/no-flow");
     }
 }

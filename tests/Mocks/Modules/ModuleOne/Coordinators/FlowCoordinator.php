@@ -3,22 +3,22 @@
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators;
 
 use Suphle\Services\BaseCoordinator;
-use Suphle\Routing\Attributes\{Route, CollectionFlow, SingleFlow, CollectionFlowOperation, SingleFlowOperation, RoutePrefix};
+use Suphle\Routing\Attributes\{Route, CollectionFlow, SingleFlow, CollectionFlowOperation, SingleFlowOperation, RoutePrefix, PreMiddleware};
 use Suphle\Flows\Structures\RangeContext;
+
+use Suphle\Auth\Middleware\AuthenticateHandler;
+
 use Suphle\Response\Format\Json;
-use Suphle\Services\Structures\ModellessPayload;
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\PayloadReaders\ReadsId;
-
-use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\{DummyModels, BlankUpdateless};
+use Suphle\Tests\Mocks\Modules\ModuleOne\Services\{DummyModels, BlankUpdateless};
 
 #[RoutePrefix("/flows")]
 class FlowCoordinator extends BaseCoordinator
 {
-    public function __construct(protected readonly DummyModels $dummyModels, protected readonly BlankUpdateless $blankService)
-    {
-        //
-    }
+    public function __construct(
+        protected readonly DummyModels $dummyModels,
+        protected readonly BlankUpdateless $blankService
+    ) {}
 
     #[Route("no-flow")]
     public function noFlow(): Json
@@ -32,44 +32,14 @@ class FlowCoordinator extends BaseCoordinator
         return new Json([]);
     }
 
-    #[Route("preloaded")]
-    public function preloaded(): Json
-    {
-        return new Json([]);
-    }
-
     #[Route("flow-with-flow/{id}")]
     public function flowWithFlow(): Json
     {
         return new Json([]);
     }
 
-    #[Route("internal-flow/{id}")]
-    public function internalFlow(): Json
-    {
-        return new Json([]);
-    }
-
     #[Route("combine-flows")]
     public function combineFlows(): Json
-    {
-        return new Json([]);
-    }
-
-    #[Route("single-node")]
-    public function singleNode(): Json
-    {
-        return new Json([]);
-    }
-
-    #[Route("from-service")]
-    public function fromService(): Json
-    {
-        return new Json([]);
-    }
-
-    #[Route("pipe-to")]
-    public function pipeTo(): Json
     {
         return new Json([]);
     }
@@ -81,21 +51,31 @@ class FlowCoordinator extends BaseCoordinator
     }
 
     #[Route("user-content/{id}")]
+    #[PreMiddleware(AuthenticateHandler::class)]
     public function userContent(): Json
     {
         return new Json([]);
     }
 
     #[Route("flow-to-module3")]
+    #[CollectionFlow(
+        target: "/module-three/{id}",
+        source: 'data',
+        operation: CollectionFlowOperation::PIPE_TO
+    )]
     public function flowToModule3(): Json
     {
-        return new Json([]);
+        return new Json([
+            'data' => [
+                ['id' => 1, 'name' => 'Cross-module 1']
+            ]
+        ]);
     }
 
     // Collection node - Iterative operation
     #[Route('catalog/{id}')]
     #[CollectionFlow(
-        target: 'books/{id}',
+        target: 'posts/{id}',
         source: 'data',
         operation: CollectionFlowOperation::PIPE_TO
     )]

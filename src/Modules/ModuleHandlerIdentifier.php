@@ -16,8 +16,6 @@ use Suphle\Contracts\{ Auth\ModuleLoginHandler, Presentation\BaseRenderer, Respo
 
 use Suphle\Contracts\Modules\{HighLevelRequestHandler, DescriptorInterface};
 
-use Suphle\Events\ModuleLevelEvents;
-
 use Suphle\Exception\Explosives\{ValidationFailure, NotFoundException};
 
 use Suphle\Request\RequestDetails;

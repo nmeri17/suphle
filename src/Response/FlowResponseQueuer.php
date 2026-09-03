@@ -25,13 +25,18 @@ class FlowResponseQueuer
 
     public function saveSubBranches(BaseRenderer $renderer, RouteInfo $routeDetails): void
     {
+        $pendingFlow = $this->container->whenType(PendingFlowDetails::class)->needsAny([
+
+            BaseRenderer::class => $renderer,
+
+            RouteInfo::class => $routeDetails,
+
+            AuthStorage::class => $this->authStorage
+        ])->getClass(PendingFlowDetails::class);
 
         $this->queueManager->addTask(RouteBranches::class, [
 
-            PendingFlowDetails::class => new PendingFlowDetails(
-                $renderer, $routeDetails
-                $this->authStorage
-            ),
+            PendingFlowDetails::class => $pendingFlow,
 
             ActiveDescriptors::class => $this->descriptorsHolder
         ]);

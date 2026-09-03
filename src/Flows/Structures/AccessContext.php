@@ -1,36 +1,12 @@
 <?php
-
 namespace Suphle\Flows\Structures;
 
 class AccessContext
 {
-    public function __construct(protected readonly string $path, protected readonly RouteUserNode $unitPayload, protected readonly RouteUmbrella $umbrella, protected readonly string $userId)
-    {
-
-        //
-    }
-
-    public function getRouteUmbrella(): RouteUmbrella
-    {
-
-        return $this->umbrella;
-    }
-
-    public function getPath(): string
-    {
-
-        return $this->path;
-    }
-
-    public function getUser(): string
-    {
-
-        return $this->userId;
-    }
-
-    public function getRouteUserNode(): RouteUserNode
-    {
-
-        return $this->unitPayload;
-    }
+    public function __construct (
+        public readonly string $path,
+        public readonly RouteUserNode $unitPayload,
+        public readonly RouteUmbrella $umbrella,
+        public readonly string $userId
+    ) {}
 }

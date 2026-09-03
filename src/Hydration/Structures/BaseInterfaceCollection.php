@@ -4,13 +4,13 @@ namespace Suphle\Hydration\Structures;
 
 use Suphle\Contracts\Hydration\{InterfaceCollection, DecoratorChain};
 
-use Suphle\Contracts\{Events, Queues\Adapter as QueueAdapter, Modules\ControllerModule, Response\RendererManager, Routing\MiddlewareRegistry };
+use Suphle\Contracts\{Queues\Adapter as QueueAdapter, Modules\ControllerModule, Response\RendererManager, Routing\MiddlewareRegistry };
 
 use Suphle\Contracts\Exception\{FatalShutdownAlert, AlertAdapter};
 
 use Suphle\Contracts\IO\{Session, MailClient, EnvAccessor, CacheManager};
 
-use Suphle\Contracts\Requests\{RequestValidator, FileInputReader, RequestEventsListener};
+use Suphle\Contracts\Requests\{RequestValidator, FileInputReader};
 
 use Suphle\Contracts\Database\{OrmDialect, OrmReplicator, OrmTester, EntityDetails, ModelSchemaDetector};
 
@@ -18,7 +18,7 @@ use Suphle\Contracts\Bridge\{LaravelContainer, LaravelArtisan};
 
 use Suphle\Contracts\Auth\{AuthStorage, ModuleLoginHandler, ColumnPayloadComparer};
 
-use Suphle\Contracts\Config\{Auth as AuthContract, Database, DecoratorProxy, ExceptionInterceptor, ComponentTemplates, Laravel as LaravelConfig, Console as ConsoleContract, Flows as FlowConfig, ContainerConfig as IContainerConfig, CacheClient as CacheConfig, Router as RouterContract};
+use Suphle\Contracts\Config\{Auth as AuthContract, Database, DecoratorProxy, ExceptionInterceptor, ComponentTemplates, Console as ConsoleContract, Flows as FlowConfig, ContainerConfig as IContainerConfig, CacheClient as CacheConfig, Router as RouterContract, Events as EventContract};
 
 use Suphle\Contracts\IO\Image\{ImageThumbnailClient, InferiorImageClient, ImageLocator, InferiorOperationHandler, ThumbnailOperationHandler};
 
@@ -48,11 +48,9 @@ use Suphle\Queues\AdapterLoader as QueueAdapterLoader;
 
 use Suphle\Request\{ValidatorLoader, NativeFileReader, DefaultRequestListener};
 
-use Suphle\Config\{Auth, Laravel, ExceptionConfig, Console as CliConsole, PDOMysqlKeys, DefaultFlowConfig, ProxyManagerConfig, DefaultCacheConfig, DefaultTemplateConfig, ContainerConfig, Router};
+use Suphle\Config\{Auth, ExceptionConfig, Console as CliConsole, PDOMysqlKeys, DefaultFlowConfig, ProxyManagerConfig, DefaultCacheConfig, DefaultTemplateConfig, ContainerConfig, Router, EventsConfig};
 
 use Suphle\Modules\ControllerModuleApi;
-
-use Suphle\Events\EventManager;
 
 use Suphle\Bridge\Laravel\InterfaceLoaders\{LaravelAppLoader, ArtisanLoader};
 
@@ -112,8 +110,6 @@ class BaseInterfaceCollection implements InterfaceCollection
 
             EnvAccessor::class => DatabaseEnvReader::class,
 
-            Events::class => EventManager::class,
-
             FatalShutdownAlert::class => MailShutdownAlert::class,
 
             FileInputReader::class => NativeFileReader::class,
@@ -135,8 +131,6 @@ class BaseInterfaceCollection implements InterfaceCollection
             OrmTester::class => EloquentTester::class,
 
             RendererManager::class => RoutedRendererManager::class,
-
-            RequestEventsListener::class => DefaultRequestListener::class,
 
             Session::class => CacheDrivenSession::class,
 
@@ -174,7 +168,7 @@ class BaseInterfaceCollection implements InterfaceCollection
 
             ConsoleContract::class => CliConsole::class,
 
-            IContainerConfig::class => ContainerConfig::class,
+            EventContract::class => EventsConfig::class,
 
             Database::class => PDOMysqlKeys::class,
 
@@ -184,7 +178,7 @@ class BaseInterfaceCollection implements InterfaceCollection
 
             FlowConfig::class => DefaultFlowConfig::class,
 
-            LaravelConfig::class => Laravel::class,
+            IContainerConfig::class => ContainerConfig::class,
 
             RouterContract::class => Router::class
         ];

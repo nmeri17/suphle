@@ -1,0 +1,29 @@
+<?php
+
+namespace Suphle\Tests\Mocks\Modules\ModuleOne\Services;
+
+use Suphle\Services\Decorators\DomainService;
+
+use Suphle\Contracts\Auth\AuthStorage;
+
+// these methods are redundant to the class btw
+#[DomainService]
+class BlankUpdateless
+{
+    public function __construct(protected readonly AuthStorage $authStorage)
+    {
+
+    }
+
+    public function getUserId(): ?string
+    {
+
+        return $this->authStorage->getId();
+    }
+
+    public function modelsToUpdate (object $baseModel): array
+    {
+
+        return [];
+    }
+}

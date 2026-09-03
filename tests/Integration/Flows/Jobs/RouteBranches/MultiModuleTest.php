@@ -2,40 +2,31 @@
 
 namespace Suphle\Tests\Integration\Flows\Jobs\RouteBranches;
 
-use Suphle\Contracts\Config\Router as RouterContract;
-
-use Suphle\Config\Router;
-
-use Suphle\Testing\Proxies\WriteOnlyContainer;
-
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Flows\FlowRoutes};
+use Suphle\Hydration\Container;
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleOneDescriptor;
 
+use Suphle\Tests\Mocks\Modules\ModuleThree\Meta\ModuleThreeDescriptor;
+
+use Suphle\Tests\Mocks\Interactions\ModuleOne;
+
 class MultiModuleTest extends JobFactory
 {
-    protected function getModules(): array
-    {
+
+    protected function getModules ():array {
+
+        $moduleOne = $this->createFlowModule(ModuleOneDescriptor::class, [$this->rendererController]);
+
+        $moduleThree = (new ModuleThreeDescriptor(new Container()))
+
+        ->sendExpatriates([
+
+            ModuleOne::class => $moduleOne
+        ]);
 
         return [
-
-            $this->moduleOne, $this->moduleThree
+            $moduleOne, $moduleThree
         ];
-    }
-
-    protected function setModuleOne(): void
-    {
-
-        $this->moduleOne = $this->replicateModule(
-            ModuleOneDescriptor::class,
-            function (WriteOnlyContainer $container) {
-
-                /*$container->replaceWithMock(RouterContract::class, Router::class, [
-
-                    // "browserEntryRoute" => FlowRoutes::class
-                ]);*/
-            }
-        );
     }
 
     public function test_handle_flows_in_other_modules()

@@ -2,9 +2,7 @@
 
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Concretes;
 
-use Suphle\Events\EmitProxy;
-
-use Suphle\Contracts\Events;
+use Suphle\Events\{EmitProxy, EventPropagator};
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\Meta\ModuleApi;
 
@@ -21,11 +19,8 @@ class LocalSender
     EMPTY_PAYLOAD_EVENT = "no_payload";
 
     public function __construct(
-        protected readonly Events $eventManager
-    ) {
-
-        //
-    }
+        protected readonly EventPropagator $eventEmitter
+    ) { }
 
     public function sendLocalEvent($payload): void
     {

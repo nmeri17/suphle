@@ -144,13 +144,14 @@ class OuterFlowWrapper implements BaseResponseManager, HighLevelRequestHandler
 
     private function queueBranches(): void
     {
+        $pendingFlow = $this->container->whenType(PendingFlowDetails::class)->needsAny([
+
+            BaseRenderer::class => $this->responseRenderer()
+        ])->getClass(PendingFlowDetails::class);
 
         $this->queueManager->addTask(RouteBranches::class, [
 
-            PendingFlowDetails::class => new PendingFlowDetails(
-                $this->responseRenderer(),
-                $this->authStorage
-            ),
+            PendingFlowDetails::class => $pendingFlow,
 
             ActiveDescriptors::class => $this->descriptorsHolder
         ]);

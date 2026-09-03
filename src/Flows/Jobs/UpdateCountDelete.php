@@ -19,13 +19,13 @@ class UpdateCountDelete implements Task
     {
         $accessed = $this->theAccessed;
 
-        $routeUmbrella = $accessed->getRouteUmbrella();
+        $routeUmbrella = $accessed->umbrella;
 
-        $accessingUser = $accessed->getUser();
+        $accessingUser = $accessed->userId;
 
-        $mainFlow = $accessed->getRouteUserNode();
+        $mainFlow = $accessed->unitPayload;
 
-        $urlPattern = $accessed->getPath();
+        $urlPattern = $accessed->path;
 
         // $mainFlow->getMaxHits($accessingUser, $urlPattern)-1
         if ($mainFlow->hasExceededMaxHits()) { // this task only runs when a flow has been accessed. If maxHits = 0, we don't want to access it on the next visit

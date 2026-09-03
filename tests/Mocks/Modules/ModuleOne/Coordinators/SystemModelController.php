@@ -6,7 +6,7 @@ use Suphle\Services\{BaseCoordinator, Decorators\ValidationRules};
 use Suphle\Routing\Attributes\{Route, RoutePrefix, HttpMethod};
 use Suphle\Response\Format\Json;
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\SystemModelEditMock1;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Services\SystemModelEditMock1;
 
 #[RoutePrefix("/sme")]
 class SystemModelController extends BaseCoordinator

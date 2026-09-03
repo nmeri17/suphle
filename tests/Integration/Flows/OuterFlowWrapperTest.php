@@ -1,8 +1,5 @@
 <?php
-
 namespace Suphle\Tests\Integration\Flows;
-
-use Suphle\Flows\OuterFlowWrapper;
 
 use Suphle\Contracts\Config\Router as RouterContract;
 
@@ -12,26 +9,11 @@ use Suphle\Testing\{Proxies\WriteOnlyContainer, Condiments\EmittedEventsCatcher}
 
 use Suphle\Tests\Integration\Flows\Jobs\RouteBranches\JobFactory;
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Coordinators\FlowCoordinator, Meta\ModuleOneDescriptor};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor};
 
 class OuterFlowWrapperTest extends JobFactory
 {
     use EmittedEventsCatcher;
-
-    protected function getModules(): array
-    {
-
-        return [
-
-            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
-
-                $container->replaceWithMock(RouterContract::class, Router::class, [
-
-                    "getCoordinatorClassesToScan" => [FlowCoordinator::class]
-                ]);
-            })
-        ];
-    }
 
     public function test_will_queueBranches_after_returning_flow_request()
     {
@@ -43,6 +25,6 @@ class OuterFlowWrapperTest extends JobFactory
         $this->handleDefaultPendingFlowDetails(); 
 
         // 3. THEN: Verify the queue received a task for ID 1 (first item in catalog)
-        $this->assertPushedToFlow("books/1"); 
+        $this->assertPushedToFlow("posts/1"); 
     }
 }

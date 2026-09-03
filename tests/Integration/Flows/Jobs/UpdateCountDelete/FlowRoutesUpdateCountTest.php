@@ -2,25 +2,25 @@
 
 namespace Suphle\Tests\Integration\Flows\Jobs\UpdateCountDelete;
 
-use Suphle\Contracts\{Config\Router as RouterContract, Auth\AuthStorage};
+use Suphle\Contracts\{Config\Router as RouterContract};
 
 use Suphle\Config\Router;
 
-use Suphle\Flows\{OuterFlowWrapper, Jobs\UpdateCountDelete};
+use Suphle\Flows\{OuterFlowWrapper, UmbrellaSaver};
 
-use Suphle\Flows\Structures\{AccessContext, RouteUserNode, RouteUmbrella};
-
-use Suphle\Hydration\Structures\ObjectDetails;
+use Suphle\Flows\Structures\RouteUserNode;
 
 use Suphle\Response\Format\Json;
 
-use Suphle\Services\BaseCoordinator;
+use Suphle\Routing\{Structures\RouteInfo, Attributes\HttpMethod};
+
+use Suphle\Auth\Storage\{SessionStorage, TokenStorage};
 
 use Suphle\Testing\Proxies\WriteOnlyContainer;
 
 use Suphle\Tests\Integration\Flows\Jobs\RouteBranches\JobFactory;
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{ Routes\Flows\FlowRoutes, Meta\ModuleOneDescriptor};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Coordinators\FlowCoordinator};
 
 use DateTime, DateInterval;
 
@@ -31,123 +31,100 @@ class FlowRoutesUpdateCountTest extends JobFactory
 
     public function setUp(): void
     {
-
         parent::setUp();
 
         $this->aMinuteBehind = (new DateTime())->sub(new DateInterval("PT1M"));
     }
 
-    protected function getModules(): array
-    {
-
-        return [
-
-            $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
-
-                /*$container->replaceWithMock(RouterContract::class, Router::class, [
-
-                    // "browserEntryRoute" => FlowRoutes::class // removed FlowRoutes
-                ]);*/
-            })
-        ];
-    }
-
     public function test_empties_cache_entry()
     {
+        $this->handleDefaultPendingFlowDetails(); // given
 
-        $this->handleUpdateCountDelete(); // given and when
+        $this->get($this->resourceUrl); // when
+        $this->processQueuedTasks();
 
         $this->assertNotHandledByFlow($this->resourceUrl); // then
     }
 
-    private function handleUpdateCountDelete(): void
-    {
-
-        $this->makeUpdateCountDelete($this->makeAccessContext(
-            $this->replaceConstructorArguments(RouteUserNode::class, $this->userNodeArguments())
-        ))->handle(); // will push it into cache storage since hit is still =0
-
-        $this->get($this->resourceUrl); // push delete task to queue
-
-        $this->processQueuedTasks(); // execute delete task
-    }
-
-    private function userNodeArguments(): array
-    {
-
-        return [
-
-            "renderer" => $this->replaceConstructorArguments(Json::class, [], [
-
-                "getCoordinator" => $this->positiveDouble(BaseCoordinator::class) // not sure this is still valid as this has likely been moved to either route details or the flow
-            ])
-        ];
-    }
-
-    private function makeAccessContext(RouteUserNode $unitPayload): AccessContext
-    {
-
-        $container = $this->getContainer();
-
-        $objectMeta = $container->getClass(ObjectDetails::class);
-
-        $routeUmbrella = new RouteUmbrella($this->resourceUrl, $objectMeta);
-
-        $routeUmbrella->setAuthMechanism($container->getClass(AuthStorage::class)::class);
-
-        return new AccessContext(
-            $this->resourceUrl,
-            $unitPayload,
-            $routeUmbrella,
-            OuterFlowWrapper::ALL_USERS
-        );
-    }
-
-    private function makeUpdateCountDelete($dependency): UpdateCountDelete
-    {
-
-        $jobName = UpdateCountDelete::class;
-
-        return $this->getContainer()->whenType($jobName)
-
-        ->needsArguments([ $dependency::class => $dependency ])
-
-        ->getClass($jobName);
-    }
-
     public function test_empties_cache_entry_after_max_hits()
     {
-        // 1. GIVEN: A cached flow set to 1 max hit
-        $this->setupCachedResource(maxHits: 1);
+        $this->seedCache($this->buildUserNode(maxHits: 1)); // given
 
-        // 2. WHEN: We access the resource
-        $this->get($this->resourceUrl); 
-        $this->processQueuedTasks(); // Executes UpdateCountDelete
+        $this->get($this->resourceUrl);
+        $this->processQueuedTasks();
 
-        // 3. THEN: The flow should no longer be handled (deleted)
-        $this->assertNotHandledByFlow($this->resourceUrl);
+        $this->assertNotHandledByFlow($this->resourceUrl); // then
     }
 
     public function test_retains_cache_if_hits_remaining()
     {
-        // GIVEN: 2 hits allowed
-        $this->setupCachedResource(maxHits: 2);
+        $this->seedCache($this->buildUserNode(maxHits: 2)); // given
 
-        // WHEN: Access once
         $this->get($this->resourceUrl);
         $this->processQueuedTasks();
 
-        // THEN: Still exists
-        $this->assertHandledByFlow($this->resourceUrl);
+        $this->assertHandledByFlow($this->resourceUrl); // then
     }
 
-    private function setupCachedResource(int $maxHits): void
+    public function test_wont_empty_cache_entry()
     {
-        $context = $this->makeAccessContext($maxHits);
-        
-        // Manually trigger the job that "warms" the cache
-        $this->getContainer()->getClass(UpdateCountDelete::class)
-            ->handle($context); 
+        $this->seedCache($this->buildUserNode(maxHits: 3)); // given: survives two full access+accounting passes (hits>=maxHits-1: 0>=2 false, 1>=2 false)
+
+        $this->get($this->resourceUrl);
+        $this->processQueuedTasks(); // first pass
+
+        $this->assertHandledByFlow($this->resourceUrl);
+
+        $this->get($this->resourceUrl);
+        $this->processQueuedTasks(); // second pass
+
+        $this->assertHandledByFlow($this->resourceUrl); // then
+    }
+
+    public function test_expired_node_wont_be_handled_by_flow()
+    {
+        $this->dataProvider([
+
+            $this->expiredContexts(...)
+        ], function (RouteUserNode $node) {
+
+            $this->seedCache($node); // given
+
+            $this->assertNotHandledByFlow($this->resourceUrl); // then — notExpired() gate in getUserPayload() rejects it before any queueing happens
+        });
+    }
+
+    protected function seedCache (RouteUserNode $nodeContent):void {
+
+        $this->getContainer()->getClass(UmbrellaSaver::class)
+        ->saveNewUmbrella(
+            $this->resourceUrl, $nodeContent, $this->makePendingFlowDetails()
+        );
+    }
+
+    public function expiredContexts(): array
+    {
+        return [
+            [$this->buildUserNode(maxHits: 200, expiresAt: $this->aMinuteBehind)],
+            [$this->buildUserNode(maxHits: 1, expiresAt: $this->aMinuteBehind)]
+        ];
+    }
+
+    private function buildUserNode(int $maxHits, ?DateTime $expiresAt = null): RouteUserNode
+    {
+        $node = new RouteUserNode(
+            new Json([]),
+            new RouteInfo("posts/{id}", HttpMethod::GET, FlowCoordinator::class, "posts")
+        );
+
+        $node->setMetaDetails($expiresAt ?? $this->futureExpiry(), $maxHits);
+
+        return $node;
+    }
+
+    private function futureExpiry(): DateTime
+    {
+        return (new DateTime())->add(new DateInterval("PT10M"));
     }
 
     public function test_wildcard_is_locked_to_mechanism()
@@ -164,60 +141,5 @@ class FlowRoutesUpdateCountTest extends JobFactory
 
         // 3. EXPECT: System should NOT find the session-based cache entry
         $this->assertNotHandledByFlow($url);
-    }
-
-    public function test_wont_empty_cache_entry()
-    {
-
-        $this->makeUpdateCountDelete($this->makeAccessContext(
-            $this->replaceConstructorArguments(
-                RouteUserNode::class,
-                $this->userNodeArguments(),
-                ["getMaxHits" => 2]
-            ) // default [getExpiresAt] + this should retain the node
-        ))->handle(); // given
-
-        $this->assertHandledByFlow($this->resourceUrl); // when
-
-        $this->assertHandledByFlow($this->resourceUrl); // then
-    }
-
-    public function test_expired_node_wont_be_handled_by_flow()
-    {
-
-        $this->dataProvider([
-
-            $this->expiredContexts(...)
-        ], function (RouteUserNode $payload) {
-
-            $this->makeUpdateCountDelete($this->makeAccessContext($payload))->handle(); // given
-
-            $this->assertNotHandledByFlow($this->resourceUrl); // then
-        });
-    }
-
-    public function expiredContexts(): array
-    {
-
-        return [
-            [
-                $this->replaceConstructorArguments(
-                    RouteUserNode::class,
-                    $this->userNodeArguments(),
-                    [
-
-                    "getMaxHits" => 200,
-
-                    "getExpiresAt" => $this->aMinuteBehind
-                    ]
-                )
-            ],
-            [
-                $this->replaceConstructorArguments(RouteUserNode::class, $this->userNodeArguments(), [
-
-                    "getExpiresAt" => $this->aMinuteBehind
-                ])
-            ]
-        ];
     }
 }

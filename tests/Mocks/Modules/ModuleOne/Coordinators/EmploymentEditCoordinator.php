@@ -6,7 +6,7 @@ use Suphle\Services\{BaseCoordinator, Decorators\ValidationRules};
 use Suphle\Routing\Attributes\{Route, HttpMethod, PreMiddleware, RoutePrefix, ClearMiddleware};
 use Suphle\Response\Format\Json;
 use Suphle\Auth\Middleware\PathAuthorization;
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Concretes\Services\EmploymentEditMock, PayloadReaders\BaseEmploymentBuilder};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Services\EmploymentEditMock, PayloadReaders\BaseEmploymentBuilder};
 use Suphle\Tests\Mocks\Modules\ModuleOne\Authorization\Paths\{EmploymentEditRule, AdminRule};
 
 #[RoutePrefix("/employment")]

@@ -51,6 +51,6 @@ class ModulesBooter
             ));
         }
 
-        $this->eventManager->bootReactiveLogger($descriptorsHolder);
+        $this->eventManager->bootReactiveLogger();
     }
 }
