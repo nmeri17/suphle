@@ -3,9 +3,7 @@ namespace Suphle\Request;
 
 use Suphle\Services\Decorators\BindsAsSingleton;
 
-use Suphle\Contracts\Events;
-
-use Suphle\Events\EmitProxy;
+use Suphle\Events\{EmitProxy, EventPropagator};
 
 use GuzzleHttp\Psr7\ServerRequest; // the nyholm equivalent is not extendable
 
@@ -32,7 +30,7 @@ class PayloadStorage extends ServerRequest
 
     public function __construct(
         protected readonly RequestDetails $requestDetails,
-        protected readonly Events $eventManager // used on refresh ie on receipt of new payload. see indicateRefresh
+        protected readonly EventPropagator $eventEmitter // used on refresh ie on receipt of new payload. see indicateRefresh
     ) {
 
         $this->setPsrOrigin($requestDetails->getContextualRequest());

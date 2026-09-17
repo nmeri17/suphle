@@ -5,6 +5,9 @@ use Suphle\Contracts\{Presentation\BaseRenderer, Modules\HighLevelRequestHandler
 
 use Suphle\Request\RequestDetails;
 use Suphle\Routing\{RouteInfoExecutor, Structures\RouteInfo};
+
+use Suphle\Hydration\DecoratorHydrator;
+
 use Suphle\Modules\Structures\ActiveDescriptors;
 use Suphle\Exception\Explosives\NotFoundException;
 
@@ -18,6 +21,7 @@ class ModuleRequestRouter implements HighLevelRequestHandler
 
     public function __construct(
         protected readonly RequestDetails $requestDetails,
+        protected readonly DecoratorHydrator $decoratorHydrator
     ) {}
 
     public function canSetHandlingModule (array $routeList, bool $literal = false):bool {
@@ -62,9 +66,12 @@ class ModuleRequestRouter implements HighLevelRequestHandler
         return null;
     }
 
-    public function triggerInfoModule (ActiveDescriptors $descriptorsList):BaseRenderer {
+    public function setActiveModule (ActiveDescriptors $descriptorsList):void {
 
         $this->descriptor = $descriptorsList->findMatchingExports($this->foundRoute->moduleName);
+    }
+
+    public function triggerInfoModule ():BaseRenderer {
 
         return $this->renderer = $this->descriptor->getContainer()
 
@@ -75,8 +82,11 @@ class ModuleRequestRouter implements HighLevelRequestHandler
     
     public function handlingRenderer(): ?BaseRenderer {
 
+        $this->decoratorHydrator->scopeInjecting($this->renderer, self::class);
+
         return $this->renderer;
     }
+    
     public function getActiveModule():DescriptorInterface {
 
         return $this->descriptor;

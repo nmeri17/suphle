@@ -3,7 +3,7 @@ namespace Suphle\Tests\Integration\Auth;
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\SecureCoordinatorV2;
 
-class BrowserVersioningTest extends BaseAuthTest {
+class BrowserVersioningTest extends AuthTestBase {
 
     protected string $coordinatorName = SecureCoordinatorV2::class;
 
@@ -12,7 +12,7 @@ class BrowserVersioningTest extends BaseAuthTest {
 
         // given no given user
 
-        $responseAsserter = $this->get("/secure/data"); // when
+        $responseAsserter = $this->get(self::ROUTE_PREFIX. "/data"); // when
 
         $responseAsserter->assertUnauthorized(); // then
     }
@@ -35,7 +35,7 @@ class BrowserVersioningTest extends BaseAuthTest {
 
     public function test_nested_route_can_unlink_auth()
     {
-        $this->get("/secure/unlink") // when
+        $this->get(self::ROUTE_PREFIX. "/unlink") // when
 
         ->assertOk(); // then
     }

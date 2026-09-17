@@ -14,7 +14,7 @@ class SecureCoordinator extends BaseCoordinator
     #[Route("dashboard")]
     public function dashboard(): Markup
     {
-        return new Markup("generic.default", ["user" => "service returning user"]);
+        return new Markup("generic.default", ["data" => ["service returning user"]]);
     }
 
     #[Route("data")]

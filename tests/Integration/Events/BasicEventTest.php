@@ -8,7 +8,7 @@ use Suphle\Tests\Integration\Events\BaseTypes\EventTestCreator;
 
 use Suphle\Tests\Mocks\Interactions\ModuleOne;
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Concretes\LocalSender, Events\LocalReceiver};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Concretes\LocalSender, Listeners\LocalReceiver};
 
 class BasicEventTest extends EventTestCreator
 {

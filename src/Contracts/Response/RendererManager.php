@@ -6,6 +6,8 @@ use Suphle\Request\PayloadStorage;
 
 use Suphle\Contracts\Presentation\BaseRenderer;
 
+use Suphle\Routing\Structures\RouteInfo;
+
 use Suphle\Exception\Explosives\{ValidationFailure, Generic\NoCompatibleValidator};
 
 interface RendererManager
@@ -22,7 +24,7 @@ interface RendererManager
     /**
      * @throws ValidationFailure
     */
-    public function mayBeInvalid(?BaseRenderer $renderer = null): self;
+    public function mayBeInvalid(RouteInfo $routeDetails): self;
 
     public function invokePreviousRenderer(array $toMerge = []): BaseRenderer;
 

@@ -6,15 +6,16 @@ use Suphle\Tests\Mocks\Interactions\ModuleOne;
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\{LocalSender, BCounter, SenderExtension };
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\UpdatefulEmitter;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Services\UpdatefulEmitter;
 
 class ModuleApi implements ModuleOne
 {
-    public function __construct(protected readonly LocalSender $localSender, protected readonly BCounter $bCounter, protected readonly SenderExtension $localSenderExtended, protected readonly UpdatefulEmitter $errorEditService)
-    {
-
-        //
-    }
+    public function __construct(
+        protected readonly LocalSender $localSender,
+        protected readonly BCounter $bCounter,
+        protected readonly SenderExtension $localSenderExtended,
+        protected readonly UpdatefulEmitter $errorEditService
+    ) { }
 
     public function setBCounterValue(int $newCount): void
     {
@@ -44,14 +45,6 @@ class ModuleApi implements ModuleOne
     {
 
         $this->localSender->cascadingEntry($value);
-    }
-
-    public function sendConcatEvents(int $value): void
-    {
-
-        $this->localSender->sendConcatHalf($value);
-
-        $this->localSender->sendLocalEventNoPayload();
     }
 
     public function sendExtendedEvent(int $value): void

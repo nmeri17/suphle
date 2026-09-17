@@ -6,7 +6,7 @@ use Suphle\Tests\Integration\Events\BaseTypes\EventTestCreator;
 
 use Suphle\Tests\Mocks\Interactions\ModuleOne;
 
-use Suphle\Tests\Mocks\Modules\ModuleThree\{Meta\ModuleThreeDescriptor, Events\EventsHandler};
+use Suphle\Tests\Mocks\Modules\ModuleThree\{Meta\ModuleThreeDescriptor, Listeners\EventsHandler, Listeners\IncompatibleEventsHandler};
 
 class CoupledExternalTest extends EventTestCreator
 {
@@ -38,10 +38,14 @@ class CoupledExternalTest extends EventTestCreator
     public function test_local_bind_cant_react_to_external_emission()
     {
 
-        $this->createMockEventReceiver([
+        $this->eventReceiverName = IncompatibleEventsHandler::class;
 
-            "handleImpossibleEmit" => [0, [$this->payload]]
-        ]); // then
+        $this->doubledEventReceiver = $this->positiveDouble(
+            $this->eventReceiverName, [], [
+
+                "handleImpossibleEmit" => [0, [$this->payload]] // then
+            ]
+        );
 
         $this->parentSetUp(); // given
 

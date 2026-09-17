@@ -2,10 +2,19 @@
 
 namespace Suphle\Tests\Integration\Events;
 
-use Suphle\Tests\Integration\Events\BaseTypes\TestLocalReceiver;
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Listeners\LocalReceiver};
 
-class LocalPayloadTest extends TestLocalReceiver
+use Suphle\Tests\Integration\Events\BaseTypes\EventTestCreator;
+
+class LocalPayloadTest extends EventTestCreator
 {
+    protected string $eventReceiverName = LocalReceiver::class;
+
+    protected function setModuleOne(): void
+    {
+
+        $this->moduleOne = $this->bindMockedEventReceiver(ModuleOneDescriptor::class);
+    }
     public function test_can_receive_emitted_payload()
     {
 

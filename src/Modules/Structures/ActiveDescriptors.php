@@ -19,8 +19,11 @@ class ActiveDescriptors
 
     public function firstOriginalContainer(): Container
     {
+        $descriptor = current($this->originalDescriptors);
 
-        return current($this->originalDescriptors)->getContainer();
+        $descriptor->warmModuleContainer();
+
+        return $descriptor->getContainer();
     }
 
     public function getOriginalDescriptors(): array

@@ -2,13 +2,11 @@
 
 namespace Suphle\Middleware\Handlers;
 
-use Suphle\Middleware\MiddlewareNexts;
+use Suphle\Middleware\{MiddlewareNexts, BaseMiddleware};
 
-use Suphle\Request\PayloadStorage;
+use Suphle\Request\{PayloadStorage, RequestDetails};
 
-use Suphle\Request\RequestDetails;
-
-use Suphle\Contracts\{Auth\AuthStorage, Presentation\BaseRenderer, Routing\Middleware};
+use Suphle\Contracts\{Auth\AuthStorage, Presentation\BaseRenderer};
 
 use Suphle\Auth\Storage\SessionStorage;
 
@@ -16,13 +14,13 @@ use Suphle\Exception\Explosives\DevError\CsrfException;
 
 use Suphle\Security\CSRF\CsrfGenerator;
 
-class CsrfMiddleware implements Middleware
+class CsrfMiddleware extends BaseMiddleware
 {
-    public function __construct(protected readonly CsrfGenerator $generator, protected readonly RequestDetails $requestDetails, protected readonly AuthStorage $authStorage)
-    {
-
-        //
-    }
+    public function __construct(
+        protected readonly CsrfGenerator $generator, 
+        protected readonly RequestDetails $requestDetails, 
+        protected readonly AuthStorage $authStorage
+    ) {}
 
     public function process(PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler): BaseRenderer
     {

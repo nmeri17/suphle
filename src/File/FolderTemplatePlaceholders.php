@@ -16,7 +16,7 @@ trait FolderTemplatePlaceholders {
 
             "_resource_name" => $resourceName,
 
-            "_resource_route" => strtoupper($resourceName),
+            "_resource_route" => strtolower($resourceName),
 
             "_modules_shell" => $this->fileConfig->modulesNamespace()
         ];

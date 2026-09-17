@@ -76,9 +76,12 @@ abstract class ModuleDescriptor implements DescriptorInterface
 
         ->getClass(OrmDialect::class); // without forcing an ORM hydration using our config, this module's laravel container will create a random, unconfigured db accessor object that will take the place of any existing connection
 
-        $this->registerComponentViews(); // placed here instead of earlier cuz some classes inside this call require the bindings above to have ran
+        $this->registerComponentViews(); // leaving this in cuz the optimisation from explicit reg is not worth the dx squeeze
     }
 
+    /**
+     * Only necessary to be called on modules doing view work. When needed, must be called immediately after parent::registerConcreteBindings cuz its own dependencies require the bindings in registerConcreteBindings to have ran
+     */
     protected function registerComponentViews ():void {
 
         $container = $this->container;

@@ -6,9 +6,9 @@ use Suphle\Testing\TestTypes\IsolatedComponentTest;
 
 use Suphle\Tests\Integration\Generic\CommonBinds;
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\ConditionalFactoryMock;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Services\ConditionalFactoryMock;
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\ConditionalHandlers\{FieldBGreater, FieldAGreater, BothFieldsEqual};
+use Suphle\Tests\Mocks\Modules\ModuleOne\ConditionalHandlers\{FieldBGreater, FieldAGreater, BothFieldsEqual};
 
 class ConditionalFactoryTest extends IsolatedComponentTest
 {

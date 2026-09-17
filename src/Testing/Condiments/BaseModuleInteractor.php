@@ -68,6 +68,7 @@ trait BaseModuleInteractor
         $this->entrance->setRequestPath($requestPath, $httpMethod);
     }
 
+    // container is not ripe for use as at this point
     protected function provideTestEquivalents(): void
     {
 
@@ -76,8 +77,6 @@ trait BaseModuleInteractor
             CacheManager::class => new InMemoryCache(),
 
             MailClient::class => $this->replaceConstructorArguments(MailDetailsCatcher::class, []),
-
-            MiddlewareRegistry::class => $this->getContainer()->getClass(MiddlewareManipulator::class), // if this doesn't work, it'll likely be due to the fact that payloadStorage used to hydrate it is different (and earlier) from that used for the eventual request. if that's the case, we'd have to use a setter at both sites instead of constructor
 
             Session::class => new InMemorySession(),
 

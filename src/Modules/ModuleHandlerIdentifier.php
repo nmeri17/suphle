@@ -60,17 +60,17 @@ abstract class ModuleHandlerIdentifier
         $this->descriptorsHolder = new ActiveDescriptors($this->descriptorInstances);
 
         $this->container = $this->descriptorsHolder->firstOriginalContainer();
-
-        $this->container->setEssentials();
     }
 
     abstract protected function getModules(): array;
 
     public function bootModules(): void
     {
-        $this->container->getClass(ModulesBooter::class)
+        $this->container->whenTypeAny()->needsAny([
 
-        ->bootOuterModules($this->descriptorsHolder);
+            ActiveDescriptors::class => $this->descriptorsHolder
+        ])
+        ->getClass(ModulesBooter::class)->bootOuterModules();
 
         $this->cacheAppRoutes();
     }
@@ -158,9 +158,11 @@ abstract class ModuleHandlerIdentifier
 
         if (!$moduleRouter->canSetHandlingModule($this->httpRoutes)) return null;
 
+        $moduleRouter->setActiveModule($this->descriptorsHolder);
+
         $this->routedModule = $moduleRouter->getActiveModule();
 
-        return $moduleRouter->triggerInfoModule($this->descriptorsHolder);
+        return $moduleRouter->triggerInfoModule();
     }
 
     public function flowRequestHandler(OuterFlowWrapper $wrapper): BaseRenderer

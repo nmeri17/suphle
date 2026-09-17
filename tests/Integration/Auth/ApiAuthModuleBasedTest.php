@@ -5,7 +5,7 @@ use Suphle\Auth\Storage\{SessionStorage, TokenStorage};
 
 use Suphle\Exception\Explosives\UnexpectedAuthentication;
 
-class ApiAuthModuleBasedTest extends BaseAuthTest {
+class ApiAuthModuleBasedTest extends AuthTestBase {
 
     public function test_cant_access_api_auth_route_with_session()
     {
@@ -14,7 +14,7 @@ class ApiAuthModuleBasedTest extends BaseAuthTest {
 
         $this->actingAs($user, SessionStorage::class); // given
 
-        $this->get("/dashboard") // when
+        $this->get(self::ROUTE_PREFIX. "/dashboard") // when
 
         ->assertUnauthorized(); // then
     }
@@ -26,7 +26,7 @@ class ApiAuthModuleBasedTest extends BaseAuthTest {
 
         $token = $this->actingAs($user, TokenStorage::class); // given
 
-        $responseAsserter = $this->get("/strictly-guest", [], [
+        $responseAsserter = $this->get(self::ROUTE_PREFIX. "/strictly-guest", [], [
 
             "Authorization" => "Bearer $token"
         ]); // when

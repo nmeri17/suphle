@@ -46,7 +46,7 @@ class PDOMysqlKeys implements DatabaseContract
     protected function addParallelSuffix(string $databaseName): string
     {
 
-        return is_null($this->parallelToken) ? $databaseName :
+        return empty($this->parallelToken) ? $databaseName :
 
         $databaseName. "_". $this->parallelToken;
     }

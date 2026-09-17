@@ -1,7 +1,7 @@
 <?php
-namespace _database_namespace_\Factories;
+namespace _database_namespace\Factories;
 
-use _database_namespace_\{User, PasswordResetToken};
+use _database_namespace\{User, PasswordResetToken};
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 

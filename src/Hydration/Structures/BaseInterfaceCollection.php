@@ -4,7 +4,7 @@ namespace Suphle\Hydration\Structures;
 
 use Suphle\Contracts\Hydration\{InterfaceCollection, DecoratorChain};
 
-use Suphle\Contracts\{Queues\Adapter as QueueAdapter, Modules\ControllerModule, Response\RendererManager, Routing\MiddlewareRegistry };
+use Suphle\Contracts\{Queues\Adapter as QueueAdapter, Modules\ControllerModule, Response\RendererManager, Routing\MiddlewareRegistry, Presentation\HtmlParser };
 
 use Suphle\Contracts\Exception\{FatalShutdownAlert, AlertAdapter};
 
@@ -62,6 +62,8 @@ use Psr\Http\Client\ClientInterface as OutgoingRequest;
 
 use GuzzleHttp\Client as GuzzleClient;
 
+use Symfony\Component\Mailer\{Mailer, MailerInterface};
+
 class BaseInterfaceCollection implements InterfaceCollection
 {
     protected array $delegateInstances = [];
@@ -114,11 +116,15 @@ class BaseInterfaceCollection implements InterfaceCollection
 
             FileInputReader::class => NativeFileReader::class,
 
+            HtmlParser::class => DefaultBladeAdapter::class,
+
             ImageLocator::class => LocalSaver::class,
 
             InferiorOperationHandler::class => DefaultInferiorHandler::class,
 
             InferiorImageClient::class => NativeReducerClient::class,
+
+            MailerInterface::class => Mailer::class,
 
             ModelSchemaDetector::class => EloquentSchemaDetector::class,
 

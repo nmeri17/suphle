@@ -1,13 +1,7 @@
 <?php
-
 namespace Suphle\Routing\Analysis;
 
-
 use Suphle\Routing\AttributeRouteScanner;
-
-use Suphle\Hydration\Container;
-
-use Suphle\Contracts\Config\Router as RouterConfig;
 
 use Suphle\Services\Decorators\BindsAsSingleton;
 use ReflectionClass;
@@ -16,21 +10,13 @@ use ReflectionClass;
 class RouteListingService
 {
     public function __construct(
-        protected readonly AttributeRouteScanner $routeScanner,
-
-        protected readonly ResponseSchemaAnalyzer $analyzerService
+        protected readonly AttributeRouteScanner $routeScanner
     ) {}
  
     public function getFormattedRows(?string $targetModule = null): array
     {
-        $allRoutes = $this->routeScanner->scanModulesByPath(
-            fn (Container $container) => $container->getClass(RouterConfig::class)
-            ->getCoordinatorPath(),
-            
-            $this->analyzerService->analyzeCoordinator(...),
+        $allRoutes = $this->routeScanner->scanAllModules($targetModule);
 
-            $targetModule
-        );
         $rows = [];
 
         foreach ($allRoutes as $route) {

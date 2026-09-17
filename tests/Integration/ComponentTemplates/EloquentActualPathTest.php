@@ -34,12 +34,23 @@ class EloquentActualPathTest extends InstallComponentTest
                 ]) // given. this, and template containing namespace that should parse to GeneratedUser
                 ->replaceWithConcrete(
                     Database::class,
-                    $this->replaceConstructorArguments(DatabaseMock::class, [ // refrain from using Models so the real thing doesn't get whacked
+                    $this->replaceConstructorArguments(DatabaseMock::class, [
 
-                        $envAccessor => $this->positiveDouble($envAccessor, ["getField" => "dummy"])
+                        $envAccessor => $this->positiveDouble($envAccessor, [
+                            "getField" => $this->returnCallback(function($field) { 
+
+                                return match($field) {
+                                    "DATABASE_HOST" => "localhost",
+                                    "DATABASE_NAME" => "suphle",
+                                    "DATABASE_USER" => "root",
+                                    "DATABASE_PASS" => "",
+                                    default => ""
+                                };
+                            })
+                        ])
                     ], [
 
-                        "componentInstallPath" => $this->getModelDirectory(),
+                        "componentInstallPath" => $this->getModelDirectory(), // refrain from using Models so the real thing doesn't get whacked
 
                         "componentInstallNamespace" => __NAMESPACE__. "\\". $this->destinationFolder
                     ])

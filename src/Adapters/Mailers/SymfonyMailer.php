@@ -4,13 +4,13 @@ namespace Suphle\Adapters\Mailers;
 
 use Suphle\Contracts\IO\MailClient;
 
-use Symfony\Component\{Mime\Message, Mailer\Mailer};
+use Symfony\Component\{Mime\Message, Mailer\MailerInterface};
 
 class SymfonyMailer implements MailClient
 {
     public function __construct(
         protected readonly Message $bodyWriter,
-        protected readonly Mailer $sender
+        protected readonly MailerInterface $sender
     ) {
 
         //

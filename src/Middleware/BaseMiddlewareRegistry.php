@@ -23,6 +23,8 @@ class BaseMiddlewareRegistry implements MiddlewareRegistry
         $this->preMiddleware = $preMiddleware;
 
         $this->middleware = $middleware;
+
+        return $this;
     }
 
     public function runStack(): BaseRenderer
@@ -42,10 +44,15 @@ class BaseMiddlewareRegistry implements MiddlewareRegistry
 
     protected function setMergedStack(): void {
 
+        $normalisedDefaults = [];
+
+        foreach ($this->routerConfig->defaultMiddleware() as $middlewareName) // match same format as customs which can have attributes
+            $normalisedDefaults[$middlewareName] = [];
+
         $this->mergedStack = array_merge(
             $this->hydrateMap($this->preMiddleware ),
-            $this->hydrateMap($this->middleware ), // offers dev opportunity to override regular request handling
-            $this->hydrateMap($this->routerConfig->defaultMiddleware())
+            $this->hydrateMap($this->middleware ),
+            $this->hydrateMap($normalisedDefaults)
         );
     }
 

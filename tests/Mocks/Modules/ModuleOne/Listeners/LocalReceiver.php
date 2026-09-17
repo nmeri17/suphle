@@ -45,13 +45,6 @@ class LocalReceiver
         $this->payload = $payload;
     }
 
-    #[EventListener(EmitterService::EMPTY_PAYLOAD_EVENT)]
-    public function unionHandler($payload = null): void
-    {
-
-        $this->payload = $payload;
-    }
-
     #[EventListener(EmitterService::CONCAT_EVENT)]
     public function unionConcatHandler($payload = null): void
     {

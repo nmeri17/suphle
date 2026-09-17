@@ -100,7 +100,7 @@ class RoutedRendererManager implements RendererManager, BaseResponseManager, Val
 
         return $this->renderer = call_user_func_array(
             [
-                $this->routeDetails->controllerClass,
+                $this->container->getClass($this->routeDetails->controllerClass),
                 $this->routeDetails->controllerMethod
             ],
             $this->handlerParameters

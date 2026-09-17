@@ -23,15 +23,13 @@ class Container implements ClassHydrationBehavior
     CLASS_CONSTRUCTOR = "__construct";
 
     protected array $provisionedNamespaces = [];
-    protected array // NamespaceUnit[]
-
-    $hydratingForStack = [];
-    protected array // String[]. Doubles as a dependency chain. @see [lastHydratedFor] for main usage
-
-    $internalMethodHydrate = [];
+    protected array $hydratingForStack = []; // NamespaceUnit[]
+    protected array $internalMethodHydrate = [];// String[]. Doubles as a dependency chain. @see [lastHydratedFor] for main usage
     protected array $hydratedClassConsumers = []; // Used when [getMethodParameters] is called directly without going through instance methods such as [instantiateConcrete]
 
     protected bool $hydratingArguments = false;
+
+    public bool $hasEssentialsInited = false;
 
     protected IContainerConfig $config;
 
@@ -43,10 +41,8 @@ class Container implements ClassHydrationBehavior
 
     protected ObjectDetails $objectMeta;
 
-    protected ?string $provisionContext;
-    protected ?string // the active Type before calling needs. Nullable since it's reset after a needsAny cycle
-
-    $provisionSpace; // same as above, but for namespaces
+    protected ?string $provisionContext; // the active Type before calling needs. Nullable since it's reset after a needsAny cycle
+    protected ?string $provisionSpace; // same as above, but for namespaces
 
     protected ?ContainerTelescope $telescope = null;
 

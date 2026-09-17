@@ -101,11 +101,11 @@ abstract class RouteAnalysisService
 
         foreach ($this->objectDetails->getMethodsWithAttributes($coordinatorClass, Route::class) as $method) {
             
-            $routeAttrs = $method->getAttributes();
+            $routeAttribute = $method->getAttributes(Route::class)[0];
 
             $primaryRoute = $this->analyzeMethod(
                 $method, 
-                $routeAttrs[0] ?? $routeAttrs["path"], 
+                $routeAttribute, 
                 $prefixInstance->prefix, 
                 $canaryState, 
                 $classPreMiddleware,
@@ -135,10 +135,10 @@ abstract class RouteAnalysisService
 
         if ($prefixInstance->mirrorAuthenticator) {
             // Prepend the authenticator to the already-resolved pre_middleware
-            $mirrorRoute["pre_middleware"] = array_values(array_unique(array_merge(
+            $mirrorRoute["pre_middleware"] = array_values(array_merge(
                 [$prefixInstance->mirrorAuthenticator], 
                 $mirrorRoute["pre_middleware"]
-            )));
+            ));
         }
         return $mirrorRoute;
     }
@@ -164,18 +164,17 @@ abstract class RouteAnalysisService
             $method->getAttributes(ClearMiddleware::class)
         );
 
-        // 2. Aggregate Pre-Middleware (Class + Method)
-        $allPre = array_unique(array_merge(
+        $allPre = array_merge(
             $classPreMiddleware,
 
-            $this->findMiddlewareList($method, PreMiddleware::class, $toClear)
-        ));
+            $this->findMiddlewareList($method, PreMiddleware::class, $toClear) // being on the right allows for overridding middleware inherited from parent, without redefinition
+        );
 
-        $allMidw = array_unique(array_merge(
+        $allMidw = array_merge(
             $classMiddleware,
 
             $this->findMiddlewareList($method, Middleware::class, $toClear)
-        ));
+        );
 
         $pathArg = $routeArgs[0] ?? $routeArgs["path"];
 
@@ -202,7 +201,10 @@ abstract class RouteAnalysisService
             "module_name" => $moduleName,
 
             "canary_state" => $canaryState,
-            "renderer" => $method->getReturnType()->getName()
+
+            "renderer" => $method->getReturnType()->getName(),
+
+            "is_mirror" => false
         ];
     }
 

@@ -7,12 +7,12 @@ use Suphle\Response\Format\{Redirect, Reload, Markup};
 use Suphle\Routing\Attributes\{RoutePrefix, Route, HttpMethod};
 use Suphle\Contracts\Presentation\BaseRenderer;
 use Suphle\Security\CSRF\CsrfGenerator;
+use Suphle\Exception\Explosives\NotFoundException;
 use _modules_shell\_module_name\InstalledComponents\SuphleIdentity\Services\{PasswordResetService, PasswordUpdateService};
 use _modules_shell\_module_name\InstalledComponents\SuphleIdentity\Payloads\{PasswordResetRequestBuilder, PasswordResetBuilder};
 use _database_namespace_\{User, PasswordResetToken};
-use Suphle\Exception\Explosives\NotFoundException;
 
-#[RoutePrefix("resets")]
+#[RoutePrefix("/_resource_route/resets")]
 class PasswordResetCoordinator extends BaseCoordinator
 {
 

@@ -6,7 +6,7 @@ use Suphle\Tests\Integration\Events\BaseTypes\EventTestCreator;
 
 use Suphle\Tests\Mocks\Interactions\ModuleOne;
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Events\ReboundReceiver, Meta\ModuleOneDescriptor};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Listeners\ReboundReceiver, Meta\ModuleOneDescriptor};
 
 class CascadeTest extends EventTestCreator
 {

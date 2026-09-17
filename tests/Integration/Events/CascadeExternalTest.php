@@ -6,7 +6,7 @@ use Suphle\Tests\Integration\Events\BaseTypes\EventTestCreator;
 
 use Suphle\Tests\Mocks\Interactions\ModuleOne;
 
-use Suphle\Tests\Mocks\Modules\ModuleThree\{Meta\ModuleThreeDescriptor, Events\EventsHandler};
+use Suphle\Tests\Mocks\Modules\ModuleThree\{Meta\ModuleThreeDescriptor, Listeners\EventsHandler};
 
 class CascadeExternalTest extends EventTestCreator
 {

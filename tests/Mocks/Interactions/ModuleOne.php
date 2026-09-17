@@ -18,8 +18,6 @@ interface ModuleOne
 
     public function cascadeEntryEvent(int $value): void;
 
-    public function sendConcatEvents(int $value): void;
-
     public function sendExtendedEvent(int $value): void;
 
     public function multiModuleCascadeEvent(bool $value);

@@ -1,7 +1,7 @@
 <?php
-namespace _database_namespace_\Migrations;
+namespace _database_namespace\Migrations;
 
-use _database_namespace_\{PasswordResetToken, User};
+use _database_namespace\{PasswordResetToken, User};
 
 use Illuminate\Database\{Migrations\Migration, Schema\Blueprint};
 

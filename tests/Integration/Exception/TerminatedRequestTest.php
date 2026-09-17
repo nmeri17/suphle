@@ -44,6 +44,7 @@ class TerminatedRequestTest extends InvestigateSystemCrash
 
     public function test_exceptions_without_assigned_handler_uses_default()
     {
+        $this->get(""); // just to populate requestDetails
 
         $this->assertExceptionFlushesData( // then
 

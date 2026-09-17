@@ -97,7 +97,7 @@ class ModuleLevelEvents
 
             $this->handlersRegistry, function (array $entry) use ($eventName, $emitterClass) {
 
-                return $entry["emitter"] == $emitterClass &&
+                return $this->objectDetails->stringInClassTree($emitterClass, $entry["emitter"]) &&
 
                 !$entry["is_outer_module"] &&
 

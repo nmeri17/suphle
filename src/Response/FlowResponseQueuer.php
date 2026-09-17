@@ -1,10 +1,11 @@
 <?php
-
 namespace Suphle\Response;
 
 use Suphle\Contracts\{Auth\AuthStorage, Presentation\BaseRenderer};
 
 use Suphle\Routing\Structures\RouteInfo;
+
+use Suphle\Hydration\Container;
 
 use Suphle\Queues\AdapterManager;
 
@@ -17,11 +18,9 @@ class FlowResponseQueuer
     public function __construct(
         protected readonly AdapterManager $queueManager,
         protected readonly AuthStorage $authStorage,
-        protected readonly ActiveDescriptors $descriptorsHolder
-    ) {
-
-        //
-    }
+        protected readonly ActiveDescriptors $descriptorsHolder,
+        protected readonly Container $container
+    ) { }
 
     public function saveSubBranches(BaseRenderer $renderer, RouteInfo $routeDetails): void
     {

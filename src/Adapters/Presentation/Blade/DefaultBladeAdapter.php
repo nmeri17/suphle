@@ -4,7 +4,7 @@ namespace Suphle\Adapters\Presentation\Blade;
 
 use Suphle\Contracts\{Config\ModuleFiles, Bridge\LaravelContainer};
 
-use Suphle\Contracts\Presentation\{HtmlParser};
+use Suphle\Contracts\Presentation\HtmlParser;
 
 use Suphle\Response\Format\BaseHtmlRenderer;
 
@@ -21,9 +21,6 @@ use Illuminate\Support\Facades\{ View as ViewFacade, Blade as BladeFacade};
 
 use Illuminate\Contracts\View\Factory as BladeViewFactoryInterface;
 
-/**
- * Not binding this by default since it can't register any layout bindings, thus it can't load any error pages when the main/intended request fails
-*/
 #[BindsAsSingleton(HtmlParser::class)]
 class DefaultBladeAdapter implements HtmlParser
 {
@@ -78,8 +75,11 @@ class DefaultBladeAdapter implements HtmlParser
         ->render();
     }
 
-    public function bindComponentTags(): void
-    {
+    public function bindComponentTags(): void {}
+
+    protected function getTemplateGlobalVars():array {
+
+        return ["namedRoutes" => $this->namedRouteReader];
     }
 
     public function setViewFactory(): void
@@ -95,7 +95,9 @@ class DefaultBladeAdapter implements HtmlParser
             $this->laravelContainer->make(Dispatcher::class)
         );
 
-        $this->viewFactory->share('namedRoutes', $this->namedRouteReader);
+        foreach ($this->getTemplateGlobalVars() as $key => $var)
+
+            $this->viewFactory->share($key, $var);
 
         $this->bindInstancesToLaravelContainer();
     }

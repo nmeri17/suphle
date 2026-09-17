@@ -14,9 +14,11 @@ use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Coordinators\SecureCoordinator};
 
-class BaseAuthTest extends ModuleLevelTest
+abstract class AuthTestBase extends ModuleLevelTest
 {
     use BaseDatabasePopulator, SecureUserAssertions;
+
+    protected const ROUTE_PREFIX = "/secure";
 
     protected string $coordinatorName = SecureCoordinator::class;
 

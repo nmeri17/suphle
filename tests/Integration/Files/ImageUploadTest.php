@@ -16,13 +16,15 @@ use Suphle\Testing\{TestTypes\ModuleLevelTest, Condiments\FilesystemCleaner};
 
 use Suphle\Testing\Proxies\{WriteOnlyContainer, Extensions\TestResponseBridge};
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\ImageUploadCoordinator, Meta\ModuleOneDescriptor};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Coordinators\ImageUploadCoordinator, Meta\ModuleOneDescriptor};
 
 class ImageUploadTest extends ModuleLevelTest
 {
     use FilesystemCleaner;
 
     private string $resourceOwner = "users";
+
+    protected const URL_PREFIX = "/images";
 
     protected bool $debugCaughtExceptions = true; // it's important to leave this in, otherwise the test, test_giving_no_operation_throws_error, will swallow error, causing test to "fail"
 
@@ -46,13 +48,13 @@ class ImageUploadTest extends ModuleLevelTest
 
         $this->expectException(UnmodifiedImageException::class); // then
 
-        $this->sendUploadRequest("/apply-none"); // when
+        $this->sendUploadRequest(self::URL_PREFIX. "/apply-none"); // when
     }
 
     public function test_can_save_multiple_operations()
     {
 
-        $response = $this->getDecodedResponse("/apply-all"); // when
+        $response = $this->getDecodedResponse(self::URL_PREFIX. "/apply-all"); // when
 
         // then
         foreach ([
@@ -72,7 +74,7 @@ class ImageUploadTest extends ModuleLevelTest
     {
 
         return $this->postJson(
-            "/api/v1/$url",
+            "$url",
             [ // using mirroring to bypass csrf errors
 
                 "belonging_resource" => $this->resourceOwner,

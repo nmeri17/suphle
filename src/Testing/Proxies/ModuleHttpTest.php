@@ -26,7 +26,21 @@ trait ModuleHttpTest
 
     protected function setUp ():void {
 
-        $this->mockMiddlewareRegistry = $this->getContainer()->getClass(MiddlewareRegistry::class);
+        parent::setUp();
+
+        $this->setMidRegistry();
+    }
+
+    private function setMidRegistry ():void {
+
+        $registryName = MiddlewareRegistry::class;
+
+        $container = $this->getContainer();
+
+        $this->mockMiddlewareRegistry = $container->whenTypeAny()->needsAny([
+
+            $registryName => $container->getClass(MiddlewareManipulator::class), // if this doesn't work, it'll likely be due to the fact that payloadStorage used to hydrate it is different (and earlier) from that used for the eventual request. if that's the case, we'd have to use a setter at both sites instead of constructor
+        ])->getClass($registryName);
     }
 
     protected function expandUrl (

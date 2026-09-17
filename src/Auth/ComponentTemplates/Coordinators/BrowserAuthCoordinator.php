@@ -13,7 +13,7 @@ use _modules_shell\_module_name\InstalledComponents\SuphleIdentity\Payloads\{Reg
 use _database_namespace_\{User, PasswordResetToken};
 use Suphle\Exception\Explosives\NotFoundException;
 
-#[RoutePrefix("/auth")]
+#[RoutePrefix("/_resource_route")]
 class BrowserAuthCoordinator extends BaseCoordinator {
 
     public function __construct(

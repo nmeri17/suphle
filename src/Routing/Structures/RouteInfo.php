@@ -28,6 +28,7 @@ class RouteInfo
         public readonly string $moduleName = "",
         public readonly ?array $canaryInfo = null,
         public readonly ?array $flows = null,
+        public readonly ?array $mirrorHeader = null,
     ) {
         //
     }

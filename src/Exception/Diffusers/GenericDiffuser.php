@@ -25,14 +25,13 @@ class GenericDiffuser implements ExceptionHandler
 
     protected string $newMarkupName = "default";
 
+    protected BaseRenderer $renderer;
+
     public function __construct(
         protected readonly RequestDetails $requestDetails,
         protected readonly DetectedExceptionManager $exceptionDetector,
         protected readonly Container $container,
-    ) {
-
-        //
-    }
+    ) { }
 
     public function setContextualData(Throwable $origin): void
     {

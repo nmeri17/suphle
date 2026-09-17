@@ -14,7 +14,7 @@ use Suphle\Queues\AdapterManager;
 
 use Suphle\Request\RequestDetails;
 
-use Suphle\Hydration\Container;
+use Suphle\Hydration\{Container, DecoratorHydrator};
 
 use Suphle\Modules\Structures\ActiveDescriptors;
 
@@ -36,7 +36,8 @@ class OuterFlowWrapper implements BaseResponseManager, HighLevelRequestHandler
         protected readonly UmbrellaSaver $flowSaver,
         protected readonly Container $container,
         protected readonly EventPropagator $eventEmitter,
-        protected readonly ActiveDescriptors $descriptorsHolder
+        protected readonly ActiveDescriptors $descriptorsHolder,
+        protected readonly DecoratorHydrator $decoratorHydrator
     ) {
 
         //
@@ -115,7 +116,7 @@ class OuterFlowWrapper implements BaseResponseManager, HighLevelRequestHandler
     {
 
         $this->queueManager->addTask(UpdateCountDelete::class, [
-            "theAccessed" => new AccessContext(
+            AccessContext::class => new AccessContext(
                 $this->dataPath(),
                 $this->routeUserNode,
                 $this->routeUmbrella,
@@ -161,8 +162,11 @@ class OuterFlowWrapper implements BaseResponseManager, HighLevelRequestHandler
 
     public function responseRenderer(): BaseRenderer
     {
+        $renderer = $this->routeUserNode->renderer;
 
-        return $this->routeUserNode->renderer;
+        $this->decoratorHydrator->scopeInjecting($renderer, self::class);
+
+        return $renderer;
     }
 
     public function handlingRenderer(): ?BaseRenderer

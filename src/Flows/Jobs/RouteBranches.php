@@ -89,6 +89,8 @@ class RouteBranches implements Task
 
             return false;
 
+        $this->moduleRouter->setActiveModule($this->descriptorsHolder);
+
         $this->activeModule = $this->moduleRouter->getActiveModule();
 
         return true;

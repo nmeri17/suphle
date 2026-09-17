@@ -219,7 +219,7 @@ abstract class InvestigateSystemCrash extends TestVirginContainer
 
             $resolvedRenderer = $this->entrance->underlyingRenderer();
 
-            $this->assertAssocArraySubset($data, $renderer->getRawResponse());
+            $this->assertAssocArraySubset($data, $resolvedRenderer->getRawResponse());
         }
     }
 

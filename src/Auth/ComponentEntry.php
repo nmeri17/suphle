@@ -38,7 +38,7 @@ class ComponentEntry extends BaseComponentEntry {
 
     public function eject(): void {
 
-        $content = $this->getContentReplacements();
+        $content = $this->getContentReplacements("Auth");
 
         $source = $this->templatesLocation();
 

@@ -4,9 +4,9 @@ namespace Suphle\Tests\Integration\Routing\Mirror;
 
 use Suphle\Auth\Storage\{TokenStorage, SessionStorage};
 
-use Suphle\Tests\Integration\Auth\BaseAuthTest;
+use Suphle\Tests\Integration\Auth\AuthTestBase;
 
-class InvolvesAuthTest extends BaseAuthTest
+class InvolvesAuthTest extends AuthTestBase
 {
     public function test_mirrored_route_detects_auth()
     {

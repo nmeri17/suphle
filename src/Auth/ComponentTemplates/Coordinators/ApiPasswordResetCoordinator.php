@@ -14,7 +14,7 @@ use _database_namespace_\{User, PasswordResetToken};
 
 use Suphle\Exception\Explosives\NotFoundException;
 
-#[RoutePrefix("api/v1/resets")]
+#[RoutePrefix("api/v1/_resource_route/resets")]
 class ApiPasswordResetCoordinator extends BaseCoordinator
 {
     public function __construct(

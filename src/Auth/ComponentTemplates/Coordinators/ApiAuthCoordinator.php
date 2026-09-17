@@ -11,7 +11,7 @@ use _modules_shell\_module_name\InstalledComponents\SuphleIdentity\Payloads\{Reg
 
 use _database_namespace_\{User, PasswordResetToken};
 
-#[RoutePrefix("api/v1/auth")]
+#[RoutePrefix("api/v1/_resource_route")]
 class ApiAuthCoordinator extends BaseCoordinator {
 
     public function __construct(

@@ -6,7 +6,7 @@ use Suphle\Tests\Integration\Events\BaseTypes\EventTestCreator;
 
 use Suphle\Tests\Mocks\Interactions\{ModuleOne, ModuleTwo, ModuleThree};
 
-use Suphle\Tests\Mocks\Modules\ModuleTwo\{Meta\ModuleTwoDescriptor, Events\ExternalReactor};
+use Suphle\Tests\Mocks\Modules\ModuleTwo\{Meta\ModuleTwoDescriptor, Listeners\ExternalReactor};
 
 class DecoupledExternalTest extends EventTestCreator
 {
