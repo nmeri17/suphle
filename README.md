@@ -8,7 +8,7 @@ High-level details about what Suphle's capabilities are and why it was built hav
 
 ---
 
-## 🦾 Support the v2 Production Sprint (Through September)
+## 🦾 suphle v2 Production Sprint
 
 Suphle is an independent open-source project moving toward its v2 production milestone. Unlike traditional architectures where a single service failure tanks an entire page, Suphle introduces native, decoupled architectural resilience. It is built to eliminate the boilerplate and fragile glue-code common in enterprise PHP applications:
 
@@ -32,22 +32,6 @@ Version 2 strips away legacy inheritance dependencies, overhauling this engine i
 
 ---
 
-### 🚀 Sponsorship Tiers & Milestone Roadmap
-
-We are running a hard sprint through **September** to finalize test coverage, revamp documentation UI, and launch two real-world pipeline applications to showcase these capabilities. Choose a tier that matches your scale:
-
-| Tier | Investment | Target Backer | Core Benefits |
-| :--- | :--- | :--- | :--- |
-| **🏆 Premier Enterprise Partner** | **$2,500** *(One-Time)* | Mid-to-Large Corps / Hosting Providers | Ultimate visibility. Large logo at the absolute top of this README, the official documentation UI header, and all v2 release announcements. |
-| **⚡ Core Infrastructure Sponsor** | **$1,000** *(One-Time)* | Dev Shops / Tech Startups | Prominent logo placement on this README, the documentation site footer, and dedicated attribution in the launch release notes. |
-| **🛡️ Elite Backer** | **$500** *(One-Time)* | Senior Consultants / Independent Engineers | Dedicated medium logo/text-link attribution on the project website and prominent recognition in our foundational `SPONSORS.md` index. |
-| **🔬 Architecture Insider** | **$100** *(One-Time)* | Senior Developers / Architects | Code-level access. Read-access to the private repositories of our two real-world pipeline showcase applications *while they are being built* to study Suphle's design patterns in production. |
-| **🌱 Ecosystem Booster** | **$25** *(One-Time)* | Open-Source Enthusiasts | Permanent name credit within the repository's foundational `SPONSORS.md` file. |
-
-### 💳
-[Click Here to Process Your Sponsorship via Selar](https://selar.com/showlove/suphle)
-
-*Note: This is our sole, verified gateway for funding. To prevent security friction or identity confusion, please do not engage with unverified third-party outreach representatives.*
 
 ## Testing
 
