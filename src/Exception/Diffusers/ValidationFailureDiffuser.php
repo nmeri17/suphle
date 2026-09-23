@@ -52,13 +52,7 @@ class ValidationFailureDiffuser implements ExceptionHandler
             self::PAYLOAD_KEY => $this->payloadStorage->fullPayload()
         ]);
 
-        if ($this->validationEvaluator->shouldSetCode(
-            $this->requestDetails,
-            $this->renderer
-        )) {
-
-            $this->renderer->setHeaders(422, []);
-        }
+        $this->renderer->setHeaders(422, []);
     }
 
     protected function validationErrors(): array

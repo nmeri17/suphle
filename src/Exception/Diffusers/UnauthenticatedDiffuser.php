@@ -2,7 +2,7 @@
 
 namespace Suphle\Exception\Diffusers;
 
-use Suphle\Contracts\{Exception\ExceptionHandler, Config\AuthConfig, Presentation\BaseRenderer};
+use Suphle\Contracts\{Exception\ExceptionHandler, Config\Auth as AuthConfig, Presentation\BaseRenderer};
 
 use Suphle\Request\RequestDetails;
 

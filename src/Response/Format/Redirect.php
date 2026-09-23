@@ -15,7 +15,7 @@ use Suphle\Response\RoutedRendererManager;
 
 use Closure, Throwable;
 
-#[VariableDependencies(["setCallbackDetails", "setSession" ])]
+#[VariableDependencies(["setCallbackDetails", "setSession", "setRouteInfo" ])]
 class Redirect extends GenericRenderer implements MirrorableRenderer
 {
 
@@ -72,7 +72,9 @@ class Redirect extends GenericRenderer implements MirrorableRenderer
             if ($nextDestination === false) {
                 $nextDestination = $this->navigateBack();
             }
-        } catch (Throwable) {
+        } catch (Throwable $exception) {
+            var_dump($exception->getMessage());
+
             $nextDestination = $this->navigateBack();
         }
 

@@ -1,10 +1,9 @@
 <?php
-
 namespace Suphle\Contracts\Requests;
 
 use Suphle\Contracts\Presentation\BaseRenderer;
 
-use Suphle\Request\RequestDetails;
+use Suphle\Exception\Explosives\{ValidationFailure, DevError\NoCompatibleValidator};
 
 interface ValidationEvaluator
 {
@@ -12,5 +11,13 @@ interface ValidationEvaluator
 
     public function validationRenderer(array $failureDetails): BaseRenderer;
 
-    public function shouldSetCode(RequestDetails $requestDetails, BaseRenderer $renderer): bool;
+    /**
+     * @throws NoCompatibleValidator
+    */
+    public function eligibleToValidate(): bool;
+
+    /**
+     * @throws ValidationFailure
+    */
+    public function executeValidatorManager():void;
 }

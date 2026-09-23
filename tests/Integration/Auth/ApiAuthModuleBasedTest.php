@@ -1,7 +1,7 @@
 <?php
 namespace Suphle\Tests\Integration\Auth;
 
-use Suphle\Auth\Storage\{SessionStorage, TokenStorage};
+use Suphle\Auth\Storage\{SessionStorage};
 
 use Suphle\Exception\Explosives\UnexpectedAuthentication;
 
@@ -14,7 +14,7 @@ class ApiAuthModuleBasedTest extends AuthTestBase {
 
         $this->actingAs($user, SessionStorage::class); // given
 
-        $this->get(self::ROUTE_PREFIX. "/dashboard") // when
+        $this->get($this->expandUrl("dashboard", $this->coordinatorName, true)) // when
 
         ->assertUnauthorized(); // then
     }
@@ -24,12 +24,11 @@ class ApiAuthModuleBasedTest extends AuthTestBase {
 
         $user = $this->replicator->getRandomEntity();
 
-        $token = $this->actingAs($user, TokenStorage::class); // given
+        $this->actingAs($user); // given
 
-        $responseAsserter = $this->get(self::ROUTE_PREFIX. "/strictly-guest", [], [
+        $url = $this->expandUrl("guestEndpoint");
 
-            "Authorization" => "Bearer $token"
-        ]); // when
+        $responseAsserter = $this->get($url); // when
 
         $responseAsserter->assertUnauthorized(); // then
 

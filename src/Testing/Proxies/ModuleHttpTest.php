@@ -24,6 +24,8 @@ trait ModuleHttpTest
 
     private MiddlewareRegistry $mockMiddlewareRegistry;
 
+    protected string $coordinatorClass;
+
     protected function setUp ():void {
 
         parent::setUp();
@@ -44,13 +46,16 @@ trait ModuleHttpTest
     }
 
     protected function expandUrl (
-        string $coordinatorClass, string $handlingMethod, array $parameters,
-        bool $getMirror
+        string $handlingMethod, array $parameters = [],
+        string $coordinatorName = null, bool $getMirror = false
     ):string {
 
         return $this->getContainer()->getClass(NamedRouteReader::class)
 
-        ->expressUrl($coordinatorClass, $handlingMethod, $parameters, $getMirror);
+        ->expressUrl(
+            $coordinatorName ?? $this->coordinatorName, $handlingMethod,
+            $parameters, $getMirror
+        );
     }
 
     public function withHeaders(array $headers): self

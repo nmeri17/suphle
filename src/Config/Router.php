@@ -4,7 +4,7 @@ namespace Suphle\Config;
 
 use Suphle\Contracts\Config\Router as RouterConfig;
 
-use Suphle\Middleware\Handlers\{FinalHandlerWrapper, CsrfMiddleware};
+use Suphle\Middleware\Handlers\{FinalHandlerWrapper, CsrfMiddleware, ValidationRulesMiddleware};
 
 class Router implements RouterConfig
 {
@@ -15,6 +15,7 @@ class Router implements RouterConfig
     public function defaultMiddleware(): array
     {
         return [
+            ValidationRulesMiddleware::class,
             CsrfMiddleware::class,
             FinalHandlerWrapper::class
         ];

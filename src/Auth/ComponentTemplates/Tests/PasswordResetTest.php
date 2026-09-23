@@ -5,12 +5,14 @@ use Suphle\Testing\Condiments\MailAsserter;
 
 use _modules_shell\_module_name\Coordinators\PasswordResetCoordinator;
 
-use _database_namespace_\PasswordResetToken;
+use _database_namespace\PasswordResetToken;
 
 // user requests reset. clicking link sent to their mail returns to us the token which is used to hydrate associated user. new password is entered and process is complete
-class PasswordResetTest extends BaseAuthTest
+class PasswordResetTest extends AuthTestBase
 {
     use MailAsserter;
+
+    protected string $coordinatorName = PasswordResetCoordinator::class;
 
     public function test_reset_request_creates_token_for_existing_user(): void
     {
@@ -48,15 +50,15 @@ class PasswordResetTest extends BaseAuthTest
         ]);
 
         $this->get(
-            $this->expandUrl(PasswordResetCoordinator::class, "showResetForm", ["token" => $token])
-            ) // when
-            ->assertStatus(200); // then
+            $this->expandUrl("showResetForm", ["token" => $token])
+        ) // when
+        ->assertStatus(200); // then
     }
 
     public function test_reset_form_rejects_invalid_token(): void
     {
         $this->get(
-            $this->expandUrl(PasswordResetCoordinator::class, "showResetForm", ["token" => "bogustoken"])
+            $this->expandUrl("showResetForm", ["token" => "bogustoken"])
         )
         ->assertStatus(404);
     }

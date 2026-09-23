@@ -10,13 +10,13 @@ use Suphle\Contracts\Exception\{FatalShutdownAlert, AlertAdapter};
 
 use Suphle\Contracts\IO\{Session, MailClient, EnvAccessor, CacheManager};
 
-use Suphle\Contracts\Requests\{RequestValidator, FileInputReader};
+use Suphle\Contracts\Requests\{RequestValidator, FileInputReader, ValidationEvaluator};
 
 use Suphle\Contracts\Database\{OrmDialect, OrmReplicator, OrmTester, EntityDetails, ModelSchemaDetector};
 
 use Suphle\Contracts\Bridge\{LaravelContainer, LaravelArtisan};
 
-use Suphle\Contracts\Auth\{AuthStorage, ModuleLoginHandler, ColumnPayloadComparer};
+use Suphle\Contracts\Auth\{AuthStorage, ColumnPayloadComparer};
 
 use Suphle\Contracts\Config\{Auth as AuthContract, Database, DecoratorProxy, ExceptionInterceptor, ComponentTemplates, Console as ConsoleContract, Flows as FlowConfig, ContainerConfig as IContainerConfig, CacheClient as CacheConfig, Router as RouterContract, Events as EventContract};
 
@@ -30,9 +30,9 @@ use Suphle\IO\{Mailing\MailClientLoader, Env\DatabaseEnvReader};
 
 use Suphle\IO\Cache\AdapterLoader as CacheAdapterLoader;
 
-use Suphle\Auth\{LoginHandlerInterfaceLoader, EmailPasswordComparer, Storage\SessionStorage};
+use Suphle\Auth\{ EmailPasswordComparer, Storage\SessionStorage};
 
-use Suphle\Middleware\BaseMiddlewareRegistry;
+use Suphle\Middleware\{BaseMiddlewareRegistry, ValidationRulesHandler};
 
 use Suphle\Adapters\Orms\Eloquent\{ UserEntityLoader, ModelReplicator, OrmLoader, DatabaseTester as EloquentTester};
 
@@ -82,8 +82,6 @@ class BaseInterfaceCollection implements InterfaceCollection
             LaravelArtisan::class => ArtisanLoader::class,
 
             MailClient::class => MailClientLoader::class,
-
-            ModuleLoginHandler::class => LoginHandlerInterfaceLoader::class,
 
             OrmDialect::class => OrmLoader::class,
 
@@ -141,6 +139,8 @@ class BaseInterfaceCollection implements InterfaceCollection
             Session::class => CacheDrivenSession::class,
 
             ThumbnailOperationHandler::class => DefaultThumbnailHandler::class,
+
+            ValidationEvaluator::class => ValidationRulesHandler::class
         ];
     }
 

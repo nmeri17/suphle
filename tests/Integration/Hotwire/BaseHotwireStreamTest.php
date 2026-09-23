@@ -2,11 +2,11 @@
 
 namespace Suphle\Tests\Integration\Hotwire;
 
-use Suphle\Contracts\{Requests\CoodinatorManager, Config\Router as RouterContract, Response\RendererManager, Presentation\HtmlParser};
+use Suphle\Contracts\{Config\Router as RouterContract, Requests\ValidationEvaluator, Presentation\HtmlParser};
 
 use Suphle\Config\Router;
 
-use Suphle\Adapters\Presentation\Hotwire\{HotwireRendererManager, HotwireAsserter, Formats\BaseHotwireStream};
+use Suphle\Adapters\Presentation\Hotwire\{HotwireValidatorHandler, HotwireAsserter, Formats\BaseHotwireStream};
 
 use Suphle\Adapters\Presentation\Blade\DefaultBladeAdapter;
 
@@ -38,16 +38,13 @@ class BaseHotwireStreamTest extends ModuleLevelTest
         BaseDatabasePopulator::setUp as databaseAllSetup;
     }
 
-    //protected bool $debugCaughtExceptions = true;
-
-    protected const INITIAL_URL = "/init-post",
-    DUAL_REDIRECT = "/hotwire-redirect",
-    DUAL_RELOAD = "/hotwire-reload",
-    POST_METHOD = "post", PUT_METHOD = "put";
+    protected const POST_METHOD = "post", PUT_METHOD = "put";
 
     protected array $csrfField;
 
     protected Employment $employment1, $employment2;
+
+    protected string $coordinatorName = HotwireCoordinator::class;
 
     protected function setUp(): void
     {
@@ -67,10 +64,10 @@ class BaseHotwireStreamTest extends ModuleLevelTest
             $this->replicateModule(ModuleOneDescriptor::class, function (WriteOnlyContainer $container) {
                 $container->replaceWithMock(RouterContract::class, Router::class, [
                     "getCoordinatorClassesToScan" => [
-                        HotwireCoordinator::class
+                        $this->coordinatorName
                     ]
                 ])
-                ->replaceWithMock(RendererManager::class, HotwireRendererManager::class);
+                ->replaceWithMock(ValidationEvaluator::class, HotwireValidatorHandler::class);
             })
         ];
     }
@@ -86,7 +83,7 @@ class BaseHotwireStreamTest extends ModuleLevelTest
     public function test_regular_renderer_failure_yields_non_hotwire_response(?string $agentHeader)
     {
         $this->sendFailRedirect(
-            "/regular-markup",
+            $this->expandUrl("regularFormResponse"),
             self::POST_METHOD,
             $agentHeader
         );
@@ -101,7 +98,7 @@ class BaseHotwireStreamTest extends ModuleLevelTest
 
     protected function sendFailRedirect(string $url, string $httpMethod, ?string $agentHeader = null): TestResponseBridge
     {
-        $this->get(self::INITIAL_URL);
+        $this->warmHotwireForPost($url);
 
         // Omit required field1/field2 payloads to explicitly force a validation drop
         return $this->$httpMethod($url, array_merge($this->csrfField, [
@@ -109,16 +106,21 @@ class BaseHotwireStreamTest extends ModuleLevelTest
         ]), [
             PayloadStorage::ACCEPTS_KEY => $agentHeader
         ])
-        ->assertRedirect(self::INITIAL_URL);
+        ->assertRedirect($this->expandUrl("loadForm"));
+    }
+
+    protected function warmHotwireForPost ():void {
+
+        $this->warmHotwireForPost();
     }
 
     public function urlsToHotwireRequests(): array
     {
         return [
             [
-                self::DUAL_REDIRECT, self::POST_METHOD
+                $this->expandUrl("hotwireRedirect"), self::POST_METHOD
             ], [
-                self::DUAL_RELOAD, self::PUT_METHOD
+                $this->expandUrl("hotwireReload"), self::PUT_METHOD
             ]
         ];
     }
@@ -140,7 +142,7 @@ class BaseHotwireStreamTest extends ModuleLevelTest
             string $httpMethod,
             callable $outputAsserter
         ) {
-            $this->get(self::INITIAL_URL);
+            $this->warmHotwireForPost();
 
             $response = $this->$httpMethod($url, array_merge($this->csrfField, [
                 "id" => $this->employment1->id, // Triggers validation failure due to missing field1/field2
@@ -162,7 +164,7 @@ class BaseHotwireStreamTest extends ModuleLevelTest
     {
         return [ 
             [
-                self::DUAL_REDIRECT, self::POST_METHOD,
+                $this->expandUrl("hotwireRedirect"), self::POST_METHOD,
                 function (TestResponseBridge $response) {
                     $this->assertStreamNode(BaseHotwireStream::REPLACE_ACTION, "#form-container"); 
 
@@ -174,7 +176,7 @@ class BaseHotwireStreamTest extends ModuleLevelTest
                     );
                 }
             ], [
-                self::DUAL_RELOAD, self::PUT_METHOD,
+                $this->expandUrl("hotwireReload"), self::PUT_METHOD,
                 function (TestResponseBridge $response) {
                     $this->assertStreamNode(BaseHotwireStream::REPLACE_ACTION, "#form-container");
 
@@ -209,10 +211,10 @@ class BaseHotwireStreamTest extends ModuleLevelTest
     {
         return [
             [
-                self::DUAL_REDIRECT, self::POST_METHOD,
+                $this->expandUrl("hotwireRedirect"), self::POST_METHOD,
                 "hotwire/form-fragment"
             ], [
-                self::DUAL_RELOAD, self::PUT_METHOD,
+                $this->expandUrl("hotwireReload"), self::PUT_METHOD,
                 "hotwire/form-fragment"
             ]
         ];
@@ -251,7 +253,7 @@ class BaseHotwireStreamTest extends ModuleLevelTest
     {
         return [
             [
-                self::DUAL_REDIRECT, self::POST_METHOD,
+                $this->expandUrl("hotwireRedirect"), self::POST_METHOD,
                 function (TestResponseBridge $response) {
                     // 100 represents the fixed mock model identity returned via updateModels
                     $this->assertStreamNode(BaseHotwireStream::REPLACE_ACTION, "100");
@@ -263,7 +265,7 @@ class BaseHotwireStreamTest extends ModuleLevelTest
                     $this->assertEmploymentSuccessContent($response, BaseHotwireStream::BEFORE_ACTION);
                 }
             ], [
-                self::DUAL_RELOAD, self::PUT_METHOD,
+                $this->expandUrl("hotwireReload"), self::PUT_METHOD,
                 function (TestResponseBridge $response) {
                     $this->assertStreamNode(BaseHotwireStream::AFTER_ACTION, "100");
                     $this->assertStreamNode(BaseHotwireStream::UPDATE_ACTION, "101");
@@ -288,7 +290,8 @@ class BaseHotwireStreamTest extends ModuleLevelTest
         $this->dataProvider([
             $this->hotwireSuccessContent(...)
         ], function (string $url, string $httpMethod, callable $outputAsserter) {
-            $this->get(self::INITIAL_URL);
+            
+            $this->warmHotwireForPost();
 
             $responseAsserter = $this->$httpMethod($url, array_merge($this->csrfField, [
                 "id" => $this->employment1->id,
@@ -312,7 +315,8 @@ class BaseHotwireStreamTest extends ModuleLevelTest
         $this->dataProvider([
             $this->regularSuccessContent(...)
         ], function (string $url, string $httpMethod, int $statusCode, array $expectedHeaders) {
-            $this->get(self::INITIAL_URL);
+            
+            $this->warmHotwireForPost();
 
             $response = $this->$httpMethod($url, array_merge($this->csrfField, [
                 "id" => $this->employment1->id,
@@ -331,13 +335,13 @@ class BaseHotwireStreamTest extends ModuleLevelTest
     {
         return [
             [
-                self::DUAL_REDIRECT, self::POST_METHOD,
+                $this->expandUrl("hotwireRedirect"), self::POST_METHOD,
                 Redirect::STATUS_CODE,
                 [
                     PayloadStorage::LOCATION_KEY => "/"
                 ]
             ], [
-                self::DUAL_RELOAD, self::PUT_METHOD,
+                $this->expandUrl("hotwireReload"), self::PUT_METHOD,
                 Reload::STATUS_CODE,
                 [
                     PayloadStorage::CONTENT_TYPE_KEY => PayloadStorage::HTML_HEADER_VALUE
@@ -348,9 +352,9 @@ class BaseHotwireStreamTest extends ModuleLevelTest
 
     public function test_dual_renderer_correctly_wraps_content()
     {
-        $this->get(self::INITIAL_URL);
+        $this->warmHotwireForPost();
 
-        $responseAsserter = $this->post(self::DUAL_REDIRECT, array_merge($this->csrfField, [
+        $responseAsserter = $this->post($this->expandUrl("hotwireRedirect"), array_merge($this->csrfField, [
             "id" => $this->employment1->id,
             "field1" => "valid string data",
             "field2" => 12
@@ -376,7 +380,8 @@ class BaseHotwireStreamTest extends ModuleLevelTest
         $this->dataProvider([
             $this->deleteNodeUrls(...)
         ], function (string $url, callable $outputAsserter) {
-            $this->get(self::INITIAL_URL);
+            
+            $this->warmHotwireForPost();
 
             $responseAsserter = $this->delete($url, array_merge($this->csrfField, [
                 "id" => $this->employment1->id
@@ -398,14 +403,14 @@ class BaseHotwireStreamTest extends ModuleLevelTest
     {
         return [
             [
-                "/delete-single", function (TestResponseBridge $response) {
+                $this->expandUrl("deleteSingle"), function (TestResponseBridge $response) {
                     $this->assertStreamNode(
                         BaseHotwireStream::REMOVE_ACTION,
                         "employment_1" // Resolved directly from EmploymentId2Builder fallback value
                     );
                 }
             ], [
-                "/combine-delete", function (TestResponseBridge $response) {
+                $this->expandUrl("combineDelete"), function (TestResponseBridge $response) {
                     $this->assertStreamNode(
                         BaseHotwireStream::REMOVE_ACTION,
                         "employment_1"
@@ -421,9 +426,9 @@ class BaseHotwireStreamTest extends ModuleLevelTest
 
     public function test_hotwire_failure_honors_custom_turbo_target_payload()
     {
-        $this->get(self::INITIAL_URL);
+        $this->warmHotwireForPost();
 
-        $response = $this->post(self::DUAL_REDIRECT, array_merge($this->csrfField, [
+        $response = $this->post($this->expandUrl("hotwireRedirect"), array_merge($this->csrfField, [
             "id" => $this->employment1->id,
             "_turbo_target" => "#custom-login-zone" // Dynamic override input field
         ]), [

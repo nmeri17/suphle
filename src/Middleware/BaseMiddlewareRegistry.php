@@ -8,9 +8,7 @@ use Suphle\Contracts\{Presentation\BaseRenderer, Routing\MiddlewareRegistry, Con
 
 class BaseMiddlewareRegistry implements MiddlewareRegistry
 {
-    protected array $mergedStack = [],
-
-    $preMiddleware = [], $middleware = [];
+    protected array $mergedStack = [];
 
     public function __construct(
         protected readonly Container $container,
@@ -18,19 +16,10 @@ class BaseMiddlewareRegistry implements MiddlewareRegistry
         protected readonly PayloadStorage $payloadStorage,
     ) {}
 
-    public function setRawHandlers (array $preMiddleware, array $middleware):self {
-
-        $this->preMiddleware = $preMiddleware;
-
-        $this->middleware = $middleware;
-
-        return $this;
-    }
-
-    public function runStack(): BaseRenderer
+    public function runStack(array $preMiddleware, array $middleware): BaseRenderer
     {
         if (empty($this->mergedStack)) {
-            $this->setMergedStack();
+            $this->setMergedStack($preMiddleware, $middleware);
         }
 
         $stack = $this->mergedStack;
@@ -42,7 +31,7 @@ class BaseMiddlewareRegistry implements MiddlewareRegistry
         );
     }
 
-    protected function setMergedStack(): void {
+    protected function setMergedStack(array $preMiddleware, array $middleware): void {
 
         $normalisedDefaults = [];
 
@@ -50,8 +39,8 @@ class BaseMiddlewareRegistry implements MiddlewareRegistry
             $normalisedDefaults[$middlewareName] = [];
 
         $this->mergedStack = array_merge(
-            $this->hydrateMap($this->preMiddleware ),
-            $this->hydrateMap($this->middleware ),
+            $this->hydrateMap($preMiddleware ),
+            $this->hydrateMap($middleware ),
             $this->hydrateMap($normalisedDefaults)
         );
     }

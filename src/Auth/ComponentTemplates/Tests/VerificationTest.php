@@ -2,10 +2,12 @@
 namespace _modules_shell\_module_name\Tests\Auth;
 
 use _modules_shell\_module_name\Coordinators\{BrowserAuthCoordinator, ApiAuthCoordinator};
-use _database_namespace_\User;
+use _database_namespace\User;
 use DateTime;
 
 class VerificationTest extends BaseAuthTest {
+
+    protected string $coordinatorName = BrowserAuthCoordinator::class;
 
     public function test_user_can_verify_email_with_valid_token(): void
     {
@@ -28,9 +30,7 @@ class VerificationTest extends BaseAuthTest {
 
     protected function getVerifyUrl (string $token):string {
 
-        return $this->routeReader->expressUrl(
-            BrowserAuthCoordinator::class, "verifyEmail", compact("token")
-        );
+        return $this->expandUrl("verifyEmail", compact("token"));
     }
 
     protected function getToken ():string {

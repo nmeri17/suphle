@@ -30,7 +30,7 @@ class UnexpectedAuthenticationDiffuser implements ExceptionHandler
             'message' => 'This route is only accessible to guest users. You are already authenticated.'
         ]);
 
-        $this->renderer->setHeaders(403, []);
+        $this->renderer->setHeaders(401, []);
     }
 
     public function getRenderer(): BaseRenderer

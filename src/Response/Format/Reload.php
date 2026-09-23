@@ -23,4 +23,9 @@ class Reload extends GenericRenderer
             ->invokePreviousRenderer()
             ->render();
     }
+
+    public function setRendererManager(RendererManager $rendererManager): void
+    {
+        $this->rendererManager = $rendererManager;
+    }
 }

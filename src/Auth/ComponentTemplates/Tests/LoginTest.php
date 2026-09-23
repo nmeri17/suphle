@@ -5,7 +5,7 @@ use Suphle\Auth\Storage\TokenStorage;
 
 use Suphle\Testing\Proxies\SecureUserAssertions;
 
-class LoginTest extends BaseAuthTest {
+class LoginTest extends AuthTestBase {
 
     use SecureUserAssertions;
 

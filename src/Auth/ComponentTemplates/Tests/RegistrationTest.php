@@ -3,9 +3,9 @@ namespace _modules_shell\_module_name\Tests\Auth;
 
 use Suphle\Testing\Condiments\MailAsserter;
 
-use _database_namespace_\User;
+use _database_namespace\User;
 
-class RegistrationTest extends BaseAuthTest {
+class RegistrationTest extends AuthTestBase {
 
     use MailAsserter;
 

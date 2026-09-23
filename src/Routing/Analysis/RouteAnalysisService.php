@@ -164,16 +164,12 @@ abstract class RouteAnalysisService
             $method->getAttributes(ClearMiddleware::class)
         );
 
-        $allPre = array_merge(
-            $classPreMiddleware,
-
-            $this->findMiddlewareList($method, PreMiddleware::class, $toClear) // being on the right allows for overridding middleware inherited from parent, without redefinition
+        $allPre = $this->findMiddlewareList(
+            $method, PreMiddleware::class, $classPreMiddleware, $toClear
         );
 
-        $allMidw = array_merge(
-            $classMiddleware,
-
-            $this->findMiddlewareList($method, Middleware::class, $toClear)
+        $allMidw = $this->findMiddlewareList(
+            $method, Middleware::class, $classMiddleware, $toClear
         );
 
         $pathArg = $routeArgs[0] ?? $routeArgs["path"];
@@ -284,10 +280,12 @@ abstract class RouteAnalysisService
     /**
      * Scans for multiple instances of PreMiddleware attributes 
      * and returns them as [midwName => [args]]
+     * @param {exclude}:Array, flat list
      */
     protected function findMiddlewareList(
         ReflectionClass|ReflectionMethod $reflection,
         string $middlewareMarker,
+        array $inherited = [],
         array $exclude = []
     ): array
     {
@@ -297,24 +295,22 @@ abstract class RouteAnalysisService
                 $reflection->getName(), $middlewareMarker
             ) :
             $reflection->getAttributes($middlewareMarker);
-        
-        $list = [];
 
         foreach ($attributes as $attr) {
             $instance = $attr->newInstance();
             // Index by handler class, value is the array of args
             $middlewareName = $instance->handlerClass;
 
-            if (!array_key_exists($middlewareName, $list))
-                $list[$middlewareName] = [];
+            if (!array_key_exists($middlewareName, $inherited))
+                $inherited[$middlewareName] = [];
 
-            $list[$middlewareName] += $instance->args;
+            $inherited[$middlewareName] += $instance->args;
         }
         foreach ($exclude as $clearedHandler)
             
-            unset($list[$clearedHandler]);
+            unset($inherited[$clearedHandler]);
 
-        return $list;
+        return $inherited;
     }
 
     protected function getValidationRules(ReflectionMethod $method): array

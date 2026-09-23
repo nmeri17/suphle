@@ -6,9 +6,9 @@ use Suphle\Hydration\Container;
 use Suphle\Testing\{TestTypes\ModuleLevelTest, Condiments\BaseDatabasePopulator};
 
 use _modules_shell\_module_name\Meta\_module_nameDescriptor;
-use _database_namespace_\User;
+use _database_namespace\User;
 
-class BaseAuthTest extends ModuleLevelTest
+class AuthTestBase extends ModuleLevelTest
 {
     use BaseDatabasePopulator;
 
