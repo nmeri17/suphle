@@ -7,7 +7,7 @@ use Suphle\Contracts\Services\CallInterceptors\SystemModelEdit;
 
 use Suphle\Events\{EmitProxy, EventPropagator};
 
-use _database_namespace_\User;
+use _database_namespace\User;
 
 #[InterceptsCalls(SystemModelEdit::class)]
 #[VariableDependencies(["setPayloadStorage"])]

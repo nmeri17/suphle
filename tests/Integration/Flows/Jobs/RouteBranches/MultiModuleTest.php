@@ -15,7 +15,7 @@ class MultiModuleTest extends JobFactory
 
     protected function getModules ():array {
 
-        $moduleOne = $this->createFlowModule(ModuleOneDescriptor::class, [$this->rendererController]);
+        $moduleOne = $this->createFlowModule(ModuleOneDescriptor::class, [$this->coordinatorName]);
 
         $moduleThree = (new ModuleThreeDescriptor(new Container()))
 

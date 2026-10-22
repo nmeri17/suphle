@@ -22,7 +22,7 @@ class PasswordResetTest extends AuthTestBase
 
         $userMail = $user->email;
 
-        $this->post("/resets/mail", ["email" => $userMail]); // when
+        $this->post($this->expandUrl("sendResetMail"), ["email" => $userMail]); // when
 
         $this->databaseApi->assertDatabaseHas(PasswordResetToken::TABLE_NAME, [ // then
             "user_id" => $user->id,
@@ -33,7 +33,7 @@ class PasswordResetTest extends AuthTestBase
 
     public function test_reset_request_fails_for_nonexistent_email(): void
     {
-        $this->post("/resets/mail", [
+        $this->post($this->expandUrl("sendResetMail"), [
             "email" => "ghost@nowhere.com",
         ])->assertStatus(422); // validation: exists:users,email fails
     }
@@ -76,11 +76,11 @@ class PasswordResetTest extends AuthTestBase
             "token"   => $token,
         ]);
 
-        $this->post("/resets/new-password", [ // when
+        $this->post($this->expandUrl("updatePassword"), [ // when
             "token"                 => $token,
             "password"              => "newpassword123",
             "password_confirmation" => "newpassword123",
-        ])->assertRedirect("/resets/password-updated"); // then
+        ])->assertRedirect($this->expandUrl("passwordUpdated")); // then
 
         $this->databaseApi->assertDatabaseMissing(PasswordResetToken::TABLE_NAME, [
             "token" => $token,

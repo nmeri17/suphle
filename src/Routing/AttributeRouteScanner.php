@@ -40,7 +40,7 @@ class AttributeRouteScanner
      */
     public function scanModulesByPath(callable $pathToScan, callable $onClassFound, ?string $moduleToScan = null): array
     {
-        $allResults = [];
+        $allResults = []; // must be a flat list of all routes/methods irrespective of parent file
 
         foreach ($this->activeDescriptors->getOriginalDescriptors() as $module) {
 
@@ -55,35 +55,49 @@ class AttributeRouteScanner
             if (!empty($testCoordinators))
 
                 $routeList = $this->scanFixedRoutes($testCoordinators, $runningModuleName);
-
             else {
-                $phpFiles = $this->getModulePhpFiles($container, $pathToScan);
+                $phpFilesMatcher = $this->getModulePhpFiles($container, $pathToScan);
 
-                $routeList = $this->iteratePhpFileHandles($phpFiles, $onClassFound, $runningModuleName);
+                if (is_null($phpFilesMatcher)) continue;
+
+                $routeList = $this->iteratePhpFileHandles($phpFilesMatcher, $onClassFound, $runningModuleName);
             }
-            $allResults = array_merge($allResults, ...$routeList );// either path returns a collection of routes under each file, whereas what we want is a flat list of all routes irrespective of parent file
+            $allResults = array_merge($allResults, $routeList );
         }
         return $allResults;
     }
 
+    /**
+     * @return aggregated list of all routes from each file eg. [
+     *      0 => [details for method one],
+            1 => [details for method two]
+     *  ]
+     * */
     protected function scanFixedRoutes (array $testCoordinators, string $runningModuleName):array {
 
-        return array_map(
-
+        $filesRoutes = array_map( /*[
+              0 => [ // coordinator 1
+                    0 => [details for method one],
+                    1 => [details for method two]
+                    ...
+                ]
+                ...
+          ]*/
             fn ($coordinatorName) => $this->analyzerService->analyzeCoordinator(
                 $coordinatorName, $runningModuleName
             ),
             $testCoordinators
         );
+        return array_merge(...$filesRoutes); // flatten them by spreading each file's list
     }
 
-    protected function getModulePhpFiles (Container $container, callable $pathToScan):RegexIterator {
+    protected function getModulePhpFiles (Container $container, callable $pathToScan):?RegexIterator {
 
         $moduleRoot = $container->getClass(ModuleFiles::class)->activeModulePath();
 
         $dir = $moduleRoot . DIRECTORY_SEPARATOR . trim($pathToScan($container), DIRECTORY_SEPARATOR);
 
-        if (!is_dir($dir)) return [];
+        if (!is_dir($dir)) return null;
 
         $directory = new RecursiveDirectoryIterator($dir);
         $iterator = new RecursiveIteratorIterator($directory);
@@ -91,15 +105,21 @@ class AttributeRouteScanner
         return new RegexIterator($iterator, '/^.+\.php$/i', RecursiveRegexIterator::GET_MATCH);
     }
 
-    protected function iteratePhpFileHandles (iterable $phpFiles, callable $onClassFound, string $runningModuleName):array {
+    protected function iteratePhpFileHandles (RegexIterator $phpFilesMatcher, callable $onClassFound, string $runningModuleName):array {
 
-        return array_map(function($fileInfo) use ($onClassFound, $runningModuleName) {
+        $analyzedFileDetails = [];
+
+        foreach ($phpFilesMatcher as $fileInfo) {
             
             $className = $this->objectMeta->classNameFromFile($fileInfo[0]);
             
-            if (!$className) return;
+            if (!$className) continue;
             
-            return $onClassFound($className, $runningModuleName);
-        }, $phpFiles);
+            $analyzedFileDetails = array_merge(
+                $analyzedFileDetails,
+                $onClassFound($className, $runningModuleName)
+            );
+        }
+        return $analyzedFileDetails;
     }
 }

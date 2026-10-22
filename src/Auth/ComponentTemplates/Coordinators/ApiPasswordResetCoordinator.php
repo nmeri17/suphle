@@ -10,7 +10,7 @@ use _modules_shell\_module_name\InstalledComponents\SuphleIdentity\Services\{Pas
 
 use _modules_shell\_module_name\InstalledComponents\SuphleIdentity\Payloads\{PasswordResetRequestBuilder, PasswordResetBuilder};
 
-use _database_namespace_\{User, PasswordResetToken};
+use _database_namespace\{User, PasswordResetToken};
 
 use Suphle\Exception\Explosives\NotFoundException;
 

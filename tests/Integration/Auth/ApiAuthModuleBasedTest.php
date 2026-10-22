@@ -14,7 +14,7 @@ class ApiAuthModuleBasedTest extends AuthTestBase {
 
         $this->actingAs($user, SessionStorage::class); // given
 
-        $this->get($this->expandUrl("dashboard", $this->coordinatorName, true)) // when
+        $this->get($this->expandUrl("dashboard", [], $this->coordinatorName, true)) // when
 
         ->assertUnauthorized(); // then
     }

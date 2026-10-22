@@ -3,7 +3,7 @@ namespace _modules_shell\_module_name\InstalledComponents\SuphleIdentity\Payload
 
 use Suphle\Services\Structures\ModelfulPayload;
 
-use _database_namespace_\User;
+use _database_namespace\User;
 
 class VerificationBuilder extends ModelfulPayload {
 

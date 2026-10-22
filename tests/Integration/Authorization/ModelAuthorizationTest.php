@@ -12,7 +12,7 @@ use Suphle\Testing\Proxies\{SecureUserAssertions, WriteOnlyContainer};
 
 use Suphle\Testing\{Condiments\BaseDatabasePopulator, TestTypes\ModuleLevelTest};
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Config\RouterMock, Authorization\Models\EmploymentAuthorizer, Routes\Auth\AuthorizeRoutes};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Authorization\Models\EmploymentAuthorizer};
 
 use Suphle\Tests\Mocks\Models\Eloquent\Employment;
 

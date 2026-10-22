@@ -46,7 +46,7 @@ abstract class JobFactory extends ModuleLevelTest
 
     protected string $originMethod = "getCatalog"; // Default
 
-    protected string $rendererController = FlowCoordinator::class;
+    protected string $coordinatorName = FlowCoordinator::class;
 
     protected function setUp(): void
     {
@@ -77,7 +77,7 @@ abstract class JobFactory extends ModuleLevelTest
     protected function getModules ():array {
 
         return [
-            $this->createFlowModule(ModuleOneDescriptor::class, [$this->rendererController])
+            $this->createFlowModule(ModuleOneDescriptor::class, [$this->coordinatorName])
         ];
     }
 
@@ -86,7 +86,7 @@ abstract class JobFactory extends ModuleLevelTest
 
         return $this->replicateModule(
             $descriptorname,
-            function (WriteOnlyContainer $container) {
+            function (WriteOnlyContainer $container) use ($coordinators) {
 
                 $container->replaceWithMock(RouterContract::class, Router::class, [
 
@@ -120,7 +120,7 @@ abstract class JobFactory extends ModuleLevelTest
             RouteInfo::class => new RouteInfo(
                 "catalog/{id}",
                 HttpMethod::GET,
-                $this->rendererController,
+                $this->coordinatorName,
                 $this->originMethod
             ),
             AuthStorage::class => $storage

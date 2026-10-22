@@ -3,7 +3,7 @@
 namespace _modules_shell\_module_name\InstalledComponents\SuphleIdentity\Payloads;
 
 use Suphle\Services\Structures\ModelfulPayload;
-use _database_namespace_\PasswordResetToken;
+use _database_namespace\PasswordResetToken;
 
 class PasswordResetBuilder extends ModelfulPayload
 {

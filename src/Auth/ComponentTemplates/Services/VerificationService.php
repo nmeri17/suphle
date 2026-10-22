@@ -4,7 +4,7 @@ namespace _modules_shell\_module_name\InstalledComponents\SuphleIdentity\Service
 use Suphle\Services\Structures\BaseErrorCatcherService;
 use Suphle\Services\Decorators\{InterceptsCalls, VariableDependencies, DomainService};
 use Suphle\Contracts\Services\CallInterceptors\SystemModelEdit;
-use _database_namespace_\User; // auto-ejected during project init
+use _database_namespace\User; // auto-ejected during project init
 use DateTimeImmutable;
 
 #[InterceptsCalls(SystemModelEdit::class)]

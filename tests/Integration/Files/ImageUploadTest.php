@@ -24,7 +24,7 @@ class ImageUploadTest extends ModuleLevelTest
 
     private string $resourceOwner = "users";
 
-    protected const URL_PREFIX = "/images";
+    protected string $coordinatorName = ImageUploadCoordinator::class;
 
     protected bool $debugCaughtExceptions = true; // it's important to leave this in, otherwise the test, test_giving_no_operation_throws_error, will swallow error, causing test to "fail"
 
@@ -37,7 +37,7 @@ class ImageUploadTest extends ModuleLevelTest
 
                 $container->replaceWithMock(RouterContract::class, Router::class, [
 
-                    "getCoordinatorClassesToScan" => [ImageUploadCoordinator::class]
+                    "getCoordinatorClassesToScan" => [$this->coordinatorName]
                 ]);
             })
         ];
@@ -48,13 +48,13 @@ class ImageUploadTest extends ModuleLevelTest
 
         $this->expectException(UnmodifiedImageException::class); // then
 
-        $this->sendUploadRequest(self::URL_PREFIX. "/apply-none"); // when
+        $this->sendUploadRequest( $this->expandUrl("applyNoOptimization")); // when
     }
 
     public function test_can_save_multiple_operations()
     {
 
-        $response = $this->getDecodedResponse(self::URL_PREFIX. "/apply-all"); // when
+        $response = $this->getDecodedResponse($this->expandUrl("applyAllOptimizations")); // when
 
         // then
         foreach ([
@@ -74,8 +74,7 @@ class ImageUploadTest extends ModuleLevelTest
     {
 
         return $this->postJson(
-            "$url",
-            [ // using mirroring to bypass csrf errors
+            $url, [
 
                 "belonging_resource" => $this->resourceOwner,
 
@@ -97,7 +96,7 @@ class ImageUploadTest extends ModuleLevelTest
 
         $operation = "thumbnail";
 
-        $decoded = $this->getDecodedResponse("/apply-crop"); // when
+        $decoded = $this->getDecodedResponse($this->expandUrl("applyThumbnail")); // when
 
         $this->assertArrayHasKey($operation, $decoded);
 

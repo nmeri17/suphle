@@ -12,7 +12,7 @@ class BrowserVersioningTest extends AuthTestBase {
 
         // given no given user
 
-        $responseAsserter = $this->get(self::ROUTE_PREFIX. "/data"); // when
+        $responseAsserter = $this->get($this->expandUrl("apiData")); // when
 
         $responseAsserter->assertUnauthorized(); // then
     }
@@ -35,7 +35,7 @@ class BrowserVersioningTest extends AuthTestBase {
 
     public function test_nested_route_can_unlink_auth()
     {
-        $this->get(self::ROUTE_PREFIX. "/unlink") // when
+        $this->get($this->expandUrl("unlinkRoute")) // when
 
         ->assertOk(); // then
     }

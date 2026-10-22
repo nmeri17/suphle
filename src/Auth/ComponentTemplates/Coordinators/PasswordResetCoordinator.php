@@ -10,7 +10,7 @@ use Suphle\Security\CSRF\CsrfGenerator;
 use Suphle\Exception\Explosives\NotFoundException;
 use _modules_shell\_module_name\InstalledComponents\SuphleIdentity\Services\{PasswordResetService, PasswordUpdateService};
 use _modules_shell\_module_name\InstalledComponents\SuphleIdentity\Payloads\{PasswordResetRequestBuilder, PasswordResetBuilder};
-use _database_namespace_\{User, PasswordResetToken};
+use _database_namespace\{User, PasswordResetToken};
 
 #[RoutePrefix("/_resource_route/resets")]
 class PasswordResetCoordinator extends BaseCoordinator

@@ -10,7 +10,7 @@ use Suphle\Auth\BaseAuthService;
 use _modules_shell\_module_name\InstalledComponents\SuphleIdentity\Services\{RegisterService, VerificationService};
 use _modules_shell\_module_name\InstalledComponents\SuphleIdentity\Payloads\{RegistrationReader, VerificationBuilder};
 
-use _database_namespace_\{User, PasswordResetToken};
+use _database_namespace\{User, PasswordResetToken};
 use Suphle\Exception\Explosives\NotFoundException;
 
 #[RoutePrefix("/_resource_route")]

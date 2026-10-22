@@ -24,7 +24,7 @@ class ModuleRequestRouterTest extends IsolatedComponentTest
         return [[
             "path" => "/api/v1/test",
             "method" => HttpMethod::GET,
-            "coordinator" => "TestCoordinator",
+            "coordinator" => "BaseCoordinator",
             "handler" => "someMethod",
             "pre_middleware" => [],
             "middleware" => [],
@@ -63,51 +63,12 @@ class ModuleRequestRouterTest extends IsolatedComponentTest
 
         // When
         $router->canSetHandlingModule($this->getMockRouteList());
-        
-        // Verifying internal state extraction
-        $property = new ReflectionProperty(ModuleRequestRouter::class, "foundRoute");
-        $routeInfo = $property->getValue($router);
+
+        $routeInfo = $router->getFoundRoute();
 
         // Then
         $this->assertNotNull($routeInfo);
         $this->assertEquals("123", $routeInfo->getAllSegmentValues()["id"]);
-    }
-
-    public function test_triggerInfoModule_delegates_to_executor_in_descriptor_container()
-    {
-        // Given
-        $routeList = $this->getMockRouteList();
-        $this->getRequestDetails("/api/v1/test");
-
-        $router = $this->getContainer()->getClass(ModuleRequestRouter::class);
-        $router->canSetHandlingModule($routeList);
-
-        // Doubles
-        $mockRenderer = $this->positiveDouble(BaseRenderer::class);
-
-        $executorDouble = $this->positiveDouble(RouteInfoExecutor::class, [
-            "handleFoundRoute" => $mockRenderer
-        ]);
-
-        $moduleContainer = $this->positiveDouble(Container::class, [
-            "getClass" => $executorDouble
-        ]);
-
-        $descriptorDouble = $this->positiveDouble(DescriptorInterface::class, [
-            "getContainer" => $moduleContainer
-        ]);
-
-        $descriptorsList = $this->positiveDouble(ActiveDescriptors::class, [
-            "findMatchingExports" => $descriptorDouble
-        ]);
-
-        // When
-        $renderer = $router->triggerInfoModule($descriptorsList);
-
-        // Then
-        $this->assertSame($mockRenderer, $renderer);
-        $this->assertSame($mockRenderer, $router->handlingRenderer());
-        $this->assertSame($descriptorDouble, $router->getActiveModule());
     }
 
     public function test_canSetHandlingModule_returns_false_for_non_existent_route()

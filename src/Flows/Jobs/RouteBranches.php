@@ -31,18 +31,21 @@ class RouteBranches implements Task
 
     public function handle(): void
     {
+        $this->modulesBooter->bootOuterModules($this->descriptorsHolder);
+            
+        $this->container = $this->descriptorsHolder->firstOriginalContainer();
+
+        $this->httpRoutes = $this->container->getClass(AttributeRouteScanner::class)->scanAllModules();
+
+        $this->processFlowDefinitions();
+    }
+    protected function processFlowDefinitions () {
+
         $routeDetails = $this->flowDetails->routeDetails;
 
-        // V2: Get attributes instead of iterating $outgoingRenderer->getFlow()
         $reflection = new ReflectionMethod($routeDetails->controllerClass, $routeDetails->controllerMethod);
 
         $attributes = $reflection->getAttributes(FlowDefinition::class, ReflectionAttribute::IS_INSTANCEOF);
-
-        $this->modulesBooter->bootOuterModules($this->descriptorsHolder);
-            
-        $this->container = $this->descriptorsHolder->getOriginalDescriptors()->getContainer();
-
-        $this->httpRoutes = $this->container->getClass(AttributeRouteScanner::class)->scanAllModules();
 
         foreach ($attributes as $attr) {
             $flowInstance = $attr->newInstance();
@@ -66,10 +69,10 @@ class RouteBranches implements Task
         $patternMechanism = $this->cacheManager->getItem($mechanismPath);
 
         if (is_null($patternMechanism)) {
-            $this->cacheManager->saveItem($mechanismPath, $this->flowDetails->getAuthStorage());
+            $this->cacheManager->saveItem($mechanismPath, $this->flowDetails->authStorage);
             return true;
         }
-        return $patternMechanism == $this->flowDetails->getAuthStorage();
+        return $patternMechanism == $this->flowDetails->authStorage;
     }
 
     protected function getMechanismPath(string $urlPattern): string
@@ -85,7 +88,7 @@ class RouteBranches implements Task
 
         $this->moduleRouter = $this->container->getClass(ModuleRequestRouter::class);
 
-        if (!$moduleRouter->canSetHandlingModule($this->httpRoutes, true))
+        if (!$this->moduleRouter->canSetHandlingModule($this->httpRoutes, true))
 
             return false;
 
@@ -103,7 +106,7 @@ class RouteBranches implements Task
         $hydrator = $container->getClass(FlowHydrator::class);
 
         $hydrator->setRequestDetails(
-            $this->flowDetails->getRenderer()->getRawResponse(),
+            $this->flowDetails->renderer->getRawResponse(),
             
             $this->moduleRouter->getFoundRoute()
         );

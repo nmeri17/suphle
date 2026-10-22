@@ -33,8 +33,10 @@ class ValidationRulesHandler implements ValidationEvaluator {
 
         $this->validatorManager = $this->container->getClass(ValidatorManager::class); // lazily setting this since it incurs a ton of hydration irrelevant to every request
 
+        $validators = $this->getValidationAttributes();
+
         $this->validatorManager->setActionRules(
-            end($this->getValidationAttributes())->newInstance()->rules // use only the latest
+            end($validators)->newInstance()->rules // use only the latest
         );
 
         if (!$this->validatorManager->isValidated())

@@ -5,7 +5,7 @@ use _modules_shell\_module_name\Coordinators\{BrowserAuthCoordinator, ApiAuthCoo
 use _database_namespace\User;
 use DateTime;
 
-class VerificationTest extends BaseAuthTest {
+class VerificationTest extends AuthTestBase {
 
     protected string $coordinatorName = BrowserAuthCoordinator::class;
 
@@ -67,7 +67,7 @@ class VerificationTest extends BaseAuthTest {
             "email_verified_at"  => null,
         ]);
 
-        $url = $this->routeReader->expressUrl(ApiAuthCoordinator::class, "apiVerifyEmail");
+        $url = $this->expandUrl("apiVerifyEmail", ApiAuthCoordinator::class);
 
         $this->postJson($url, ["token" => $token]) // when
             ->assertStatus(200);

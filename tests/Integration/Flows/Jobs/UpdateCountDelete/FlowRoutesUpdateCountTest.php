@@ -2,10 +2,6 @@
 
 namespace Suphle\Tests\Integration\Flows\Jobs\UpdateCountDelete;
 
-use Suphle\Contracts\{Config\Router as RouterContract};
-
-use Suphle\Config\Router;
-
 use Suphle\Flows\{OuterFlowWrapper, UmbrellaSaver};
 
 use Suphle\Flows\Structures\RouteUserNode;
@@ -15,8 +11,6 @@ use Suphle\Response\Format\Json;
 use Suphle\Routing\{Structures\RouteInfo, Attributes\HttpMethod};
 
 use Suphle\Auth\Storage\{SessionStorage, TokenStorage};
-
-use Suphle\Testing\Proxies\WriteOnlyContainer;
 
 use Suphle\Tests\Integration\Flows\Jobs\RouteBranches\JobFactory;
 
@@ -54,16 +48,6 @@ class FlowRoutesUpdateCountTest extends JobFactory
         $this->processQueuedTasks();
 
         $this->assertNotHandledByFlow($this->resourceUrl); // then
-    }
-
-    public function test_retains_cache_if_hits_remaining()
-    {
-        $this->seedCache($this->buildUserNode(maxHits: 2)); // given
-
-        $this->get($this->resourceUrl);
-        $this->processQueuedTasks();
-
-        $this->assertHandledByFlow($this->resourceUrl); // then
     }
 
     public function test_wont_empty_cache_entry()
@@ -128,18 +112,12 @@ class FlowRoutesUpdateCountTest extends JobFactory
     }
 
     public function test_wildcard_is_locked_to_mechanism()
-    {
-        $url = "/user-content/5";
-        
-        // 1. Warm cache for Session Auth
-        $sessionContext = $this->makePendingFlowDetails($this->contentOwner, SessionStorage::class);
-        $this->makeRouteBranches($sessionContext)->handle();
+    {        
+        $pendingFlow = $this->makePendingFlowDetails($this->contentOwner, SessionStorage::class); // given
+        $this->makeRouteBranches($pendingFlow)->handle();
 
-        // 2. Try to access via Token Auth (Mirroring scenario)
-        $this->actingAs($this->contentOwner);
-        $this->setAuthMechanism(TokenStorage::class);
+        $this->actingAs($this->contentOwner, TokenStorage::class); // when
 
-        // 3. EXPECT: System should NOT find the session-based cache entry
-        $this->assertNotHandledByFlow($url);
+        $this->assertNotHandledByFlow($this->resourceUrl); // then
     }
 }

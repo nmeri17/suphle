@@ -6,7 +6,7 @@ use Suphle\Services\Structures\BaseErrorCatcherService;
 use Suphle\Services\Decorators\{InterceptsCalls, VariableDependencies, DomainService};
 use Suphle\Contracts\Services\CallInterceptors\SystemModelEdit;
 use Suphle\Events\{EmitProxy, EventPropagator};
-use _database_namespace_\{User, PasswordResetToken};
+use _database_namespace\{User, PasswordResetToken};
 
 #[InterceptsCalls(SystemModelEdit::class)]
 #[VariableDependencies(["setPayloadStorage"])]

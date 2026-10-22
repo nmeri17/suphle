@@ -1,6 +1,8 @@
 <?php
 namespace _modules_shell\_module_name\Tests\Auth;
 
+use _modules_shell\_module_name\Coordinators\BrowserAuthCoordinator;
+
 use Suphle\Testing\Condiments\MailAsserter;
 
 use _database_namespace\User;
@@ -9,13 +11,13 @@ class RegistrationTest extends AuthTestBase {
 
     use MailAsserter;
 
-    protected const REGISTER_URL = "/auth/register";
+    protected string $coordinatorName = BrowserAuthCoordinator::class;
 
     public function test_user_can_register(): void
     {
         $email = "newuser@example.com"; // given
 
-        $this->post(self::REGISTER_URL, [ // when
+        $this->post($this->expandUrl("handleRegister"), [ // when
             "name"                  => "Test User",
             "email"                 => $email,
             "password"              => "password123",
@@ -30,7 +32,7 @@ class RegistrationTest extends AuthTestBase {
     {
         $email = "tokenuser@example.com"; // given
 
-        $this->post(self::REGISTER_URL, [
+        $this->post($this->expandUrl("handleRegister"), [
             "name"                  => "Token User",
             "email"                 => $email,
             "password"              => "password123",
@@ -50,7 +52,7 @@ class RegistrationTest extends AuthTestBase {
     {
         $existing = $this->replicator->getRandomEntity();
 
-        $this->post(self::REGISTER_URL, [
+        $this->post($this->expandUrl("handleRegister"), [
             "name"                  => "Dupe User",
             "email"                 => $existing->email,
             "password"              => "password123",

@@ -10,11 +10,11 @@ use Suphle\Tests\Mocks\Models\Eloquent\User as EloquentUser;
 
 use Suphle\Testing\{TestTypes\ModuleLevelTest, Condiments\BaseDatabasePopulator};
 
-use Suphle\Testing\Proxies\{WriteOnlyContainer, SecureUserAssertions};
+use Suphle\Testing\Proxies\{WriteOnlyContainer, SecureUserAssertions, Extensions\TestResponseBridge};
 
 use Suphle\Tests\Mocks\Models\Eloquent\{Employment, Employer};
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Routes\Auth\AuthorizeRoutes, Meta\ModuleOneDescriptor};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Coordinators\EmploymentEditCoordinator, Meta\ModuleOneDescriptor};
 
 class ModelPathAuthorizationTest extends ModuleLevelTest
 {
@@ -30,6 +30,8 @@ class ModelPathAuthorizationTest extends ModuleLevelTest
     protected UserContract $admin;
 
     protected int $randomEmploymentId;
+
+    protected string $coordinatorName = EmploymentEditCoordinator::class;
 
     protected function setUp(): void
     {
@@ -66,7 +68,7 @@ class ModelPathAuthorizationTest extends ModuleLevelTest
 
                 $container->replaceWithMock(RouterContract::class, Router::class, [
 
-                    "getCoordinatorClassesToScan" => [AuthorizeRoutes::class] // invalid. find who now has these routes
+                    "getCoordinatorClassesToScan" => [$this->coordinatorName]
                 ]);
             })
         ];
@@ -83,9 +85,17 @@ class ModelPathAuthorizationTest extends ModuleLevelTest
 
         $this->actingAs($this->admin); // given
 
-        $this->get(self::EDIT_PATH . $this->employment->id) // when
+        $this->sendEditRequest($this->employment->id) // when
 
         ->assertOk(); // then
+    }
+
+    protected function sendEditRequest (string $employmentId):TestResponseBridge {
+
+        return $this->get($this->expandUrl("getEmploymentDetails", [
+
+            "id" => $employmentId
+        ]));
     }
 
     public function test_nested_missing_all_rules_fails()
@@ -93,7 +103,7 @@ class ModelPathAuthorizationTest extends ModuleLevelTest
 
         $this->actingAs($this->admin); // given
 
-        $this->get(self::EDIT_PATH . $this->randomEmploymentId) // when
+        $this->sendEditRequest($this->randomEmploymentId) // when
 
         ->assertForbidden(); // then
     }

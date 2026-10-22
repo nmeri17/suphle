@@ -15,9 +15,14 @@ class InvolvesAuthTest extends AuthTestBase
 
         $this->actingAs($user, SessionStorage::class); // given
 
-        $this->get("/api/v1/segment") // when
+        $this->get($this->mirrorDashboardUrl()) // when
 
         ->assertUnauthorized(); // then
+    }
+
+    protected function mirrorDashboardUrl ():string {
+
+        return $this->expandUrl("dashboard", [], null, true);
     }
 
     public function test_auth_storage_changes()
@@ -27,7 +32,7 @@ class InvolvesAuthTest extends AuthTestBase
 
         $requestToken = $this->actingAs($this->replicator->getRandomEntity(), $tokenClass); // given
 
-        $this->get("/api/v1/segment", [], [
+        $this->get($this->mirrorDashboardUrl(), [], [
 
             TokenStorage::AUTHORIZATION_HEADER => "Bearer ". $requestToken
         ]) // when
