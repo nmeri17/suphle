@@ -14,6 +14,8 @@ use Suphle\Request\RequestDetails;
 
 use Suphle\Testing\Proxies\{ConfigureExceptionBridge, ExceptionBroadcasters};
 
+use Psr\Http\Message\ServerRequestInterface;
+
 /**
  * Used for tests that mostly require a Container. Boots and provides this container to them
 */
@@ -130,9 +132,10 @@ abstract class IsolatedComponentTest extends TestVirginContainer
         }
     }
 
-    protected function setRequestPath(string $requestPath, string $httpMethod): void
+    protected function setRequestPath(string $requestPath, string $httpMethod, ?ServerRequestInterface $contextualRequest = null): void
     {
+        $this->container->getClass(RequestDetails::class)
 
-        RequestDetails::fromContainer($this->container, $requestPath, $httpMethod);
+        ->detailsToCompute($requestPath, $httpMethod, $contextualRequest);
     }
 }

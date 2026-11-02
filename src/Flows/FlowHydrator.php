@@ -293,7 +293,7 @@ class FlowHydrator
     protected function updatePayloadStorage(array $updates): self
     {
 
-        $this->payloadStorage->mergePayload($updates);
+        $this->payloadStorage->setUpserts($updates);
 
         return $this;
     }

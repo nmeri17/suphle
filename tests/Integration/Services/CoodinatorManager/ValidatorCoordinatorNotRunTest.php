@@ -18,6 +18,8 @@ class ValidatorCoordinatorNotRunTest extends ModuleLevelTest
 {
     protected bool $debugCaughtExceptions = true;
 
+    protected string $coordinatorName = ValidatorCoordinator::class;
+
     protected function getModules(): array
     {
 
@@ -27,7 +29,7 @@ class ValidatorCoordinatorNotRunTest extends ModuleLevelTest
 
                 $container->replaceWithMock(Router::class, RouterMock::class, [
 
-                    "getCoordinatorClassesToScan" => ValidatorCollection::class
+                    "getCoordinatorClassesToScan" => [ValidatorCoordinator::class]
                 ]);
             })
         ];
@@ -39,7 +41,7 @@ class ValidatorCoordinatorNotRunTest extends ModuleLevelTest
         $this->expectException(ValidationFailure::class);
 
         // given @see validation rules
-        $this->get("/get-without")->assertOk();
+        $this->get($this->expandUrl("handleGet"))->assertOk();
 
         $this->massProvide([
 
@@ -53,7 +55,7 @@ class ValidatorCoordinatorNotRunTest extends ModuleLevelTest
             )
         ]);
 
-        $this->post("/post-with-json", [
+        $this->post($this->expandUrl("postWithValidator"), [
 
             CsrfGenerator::TOKEN_FIELD => $this->getContainer()
 

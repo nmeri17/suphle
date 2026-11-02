@@ -14,7 +14,7 @@ class RouteBranches implements Task
 {
     final public const FLOW_MECHANISMS = "flow_wildcards";
 
-    protected array $httpRoutes;
+    protected array $httpRoutes, $allRequestDetails;
 
     protected Container $container;
 
@@ -32,6 +32,8 @@ class RouteBranches implements Task
     public function handle(): void
     {
         $this->modulesBooter->bootOuterModules($this->descriptorsHolder);
+
+        $this->allRequestDetails = $this->descriptorsHolder->hydrateFromAll(RequestDetails::class);
             
         $this->container = $this->descriptorsHolder->firstOriginalContainer();
 
@@ -82,9 +84,11 @@ class RouteBranches implements Task
 
     private function findManagerForPattern(string $pattern): bool
     {
-        $modules = $this->descriptorsHolder->getOriginalDescriptors();
+        foreach ($this->allRequestDetails as $requestDetail)
 
-        RequestDetails::fromModules($modules, $pattern, HttpMethod::GET->value);
+            $requestDetail->detailsToCompute(
+                $pattern, HttpMethod::GET->value, null
+            );
 
         $this->moduleRouter = $this->container->getClass(ModuleRequestRouter::class);
 

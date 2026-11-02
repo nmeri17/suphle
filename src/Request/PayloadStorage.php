@@ -3,18 +3,14 @@ namespace Suphle\Request;
 
 use Suphle\Services\Decorators\BindsAsSingleton;
 
-use Suphle\Events\{EmitProxy, EventPropagator};
-
 use GuzzleHttp\Psr7\ServerRequest; // the nyholm equivalent is not extendable
 
 use Psr\Http\Message\ServerRequestInterface;
 
 #[BindsAsSingleton]
-class PayloadStorage extends ServerRequest
-{
-    use SanitizesIntegerInput, EmitProxy;
+class PayloadStorage extends ServerRequest {
 
-    final public const JSON_HEADER_VALUE = "application/json",
+    public const JSON_HEADER_VALUE = "application/json",
 
     HTML_HEADER_VALUE = "text/html",
 
@@ -24,71 +20,45 @@ class PayloadStorage extends ServerRequest
 
     ON_REFRESH = "new_request";
 
-    protected array $payload = [];
-
-    protected bool $shouldIndicateRefresh = false;
+    protected array $upserts = [];
 
     public function __construct(
-        protected readonly RequestDetails $requestDetails,
-        protected readonly EventPropagator $eventEmitter // used on refresh ie on receipt of new payload. see indicateRefresh
-    ) {
+        protected readonly RequestDetails $requestDetails
+    ) { }
 
-        $this->setPsrOrigin($requestDetails->getContextualRequest());
-    }
+    protected function getPsrOrigin():?ServerRequestInterface {
 
-    public function setPsrOrigin(?ServerRequestInterface $psrOrigin): void
-    {
-
-        if (is_null($psrOrigin)) return;
-
-        $this->psrOrigin = $psrOrigin;
-
-        $this->assignActivePayload();
+        return $this->requestDetails->getContextualRequest();
     }
 
     public function getCookieParams():array {
 
-        return $this->psrOrigin->getCookieParams();
+        return $this->getPsrOrigin()?->getCookieParams();
     }
 
-    protected function assignActivePayload(): void
+    public function fullPayload():array
     {
+        if (!$psrOrigin = $this->getPsrOrigin()) return [];
 
-        if ($this->requestDetails->isGetRequest()) {
+        if ($this->requestDetails->isGetRequest())
 
-            $this->setFullPayload($this->psrOrigin->getQueryParams());
-        } else {
-            $this->setFullPayload($this->psrOrigin->getParsedBody());
-        }
+            $data = $psrOrigin->getQueryParams();
+
+        $data = $psrOrigin->getParsedBody();
+
+        return array_merge($data, $this->upserts);
     }
 
-    public function setFullPayload(array $payload): void
+    public function setUpserts(array $upserts): void
     {
 
-        $this->payload = $payload;
-
-        $this->indicateRefresh();
-    }
-
-    public function fullPayload(): array
-    {
-
-        return $this->payload;
-    }
-
-    public function mergePayload(array $upserts): void
-    {
-
-        $this->payload = array_merge($this->payload, $upserts);
+        $this->upserts = $upserts;
     }
 
     public function acceptsJson(): bool
     {
 
-        return $this->matchesHeader(
-            self::ACCEPTS_KEY,
-            self::JSON_HEADER_VALUE
-        );
+        return $this->matchesHeader(self::ACCEPTS_KEY, self::JSON_HEADER_VALUE);
     }
 
     public function matchesHeader(string $name, string $expectedValue): bool
@@ -106,7 +76,7 @@ class PayloadStorage extends ServerRequest
     public function hasKey(string $property): bool
     {
 
-        return array_key_exists($property, $this->payload);
+        return array_key_exists($property, $this->fullPayload());
     }
 
     public function keyHasContent(string $property): bool
@@ -120,7 +90,7 @@ class PayloadStorage extends ServerRequest
     public function getKey(string $property)
     {
 
-        return $this->payload[$property];
+        return $this->fullPayload()[$property];
     }
 
     public function matchesContent(string $property, $expectedValue): bool
@@ -131,19 +101,10 @@ class PayloadStorage extends ServerRequest
         $this->getKey($property) == $expectedValue;
     }
 
-    /**
-     * Should be called before the readers start calling [getKey]
-    */
-    public function allNumericToPositive(): void
-    {
-
-        $this->payload = $this->allInputToPositive($this->payload);
-    }
-
     public function getKeyForPositiveInt(string $key): int
     {
 
-        return $this->positiveIntValue($this->payload[$key]);
+        return $this->positiveIntValue($this->fullPayload()[$key]);
     }
 
     public function only(array $include): array
@@ -156,20 +117,5 @@ class PayloadStorage extends ServerRequest
     {
 
         return array_filter($this->fullPayload(), fn ($key) => !in_array($key, $exclude), ARRAY_FILTER_USE_KEY);
-    }
-
-    public function setRefreshMode(bool $mode): void
-    {
-
-        $this->shouldIndicateRefresh = $mode;
-    }
-
-    public function indicateRefresh(): void
-    {
-
-        if ($this->shouldIndicateRefresh) {
-
-            $this->emitHelper(self::ON_REFRESH, $this);
-        }
     }
 }

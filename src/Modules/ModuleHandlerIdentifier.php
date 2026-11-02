@@ -36,7 +36,7 @@ abstract class ModuleHandlerIdentifier
 
     protected ?Container $container = null;
 
-    protected array $descriptorInstances;
+    protected array $descriptorInstances, $allRequestDetails;
 
     protected ActiveDescriptors $descriptorsHolder;
 
@@ -73,6 +73,8 @@ abstract class ModuleHandlerIdentifier
         ->getClass(ModulesBooter::class)->bootOuterModules();
 
         $this->cacheAppRoutes();
+
+        $this->allRequestDetails = $this->descriptorsHolder->hydrateFromAll(RequestDetails::class);
     }
 
     public function cacheAppRoutes(): void {
@@ -88,15 +90,13 @@ abstract class ModuleHandlerIdentifier
         string $requestPath, string $httpMethod = null, // when null, RequestDetails::deriveHttpMethod will detect it
 
         ServerRequestInterface $contextualRequest = null
-    ): void
-    {
-        RequestDetails::setLoopInput($contextualRequest);
+    ): void {
 
-        RequestDetails::fromModules(
-            $this->descriptorInstances,
-            $requestPath,
-            $httpMethod
-        );
+        foreach ($this->allRequestDetails as $requestDetail)
+
+            $requestDetail->detailsToCompute(
+                $requestPath, $httpMethod, $contextualRequest
+            );
     }
 
     /**

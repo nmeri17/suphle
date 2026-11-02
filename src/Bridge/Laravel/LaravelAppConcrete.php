@@ -8,8 +8,6 @@ use Suphle\Services\Decorators\BindsAsSingleton;
 
 use Suphle\Bridge\Laravel\DefaultExceptionHandler;
 
-use Suphle\Request\{RequestDetails, PayloadStorage};
-
 use Illuminate\Http\Request as LaravelRequest;
 
 use Illuminate\Foundation\Application;
@@ -35,9 +33,7 @@ class LaravelAppConcrete extends Application implements LaravelContainer
     private static bool $hasSetApp = false;
 
     public function __construct(
-        protected readonly RequestDetails $requestDetails,
         protected readonly ConfigRepo $configRepo,
-        protected readonly PayloadStorage $payloadStorage,
         string $basePath
     ) {
 
@@ -57,11 +53,6 @@ class LaravelAppConcrete extends Application implements LaravelContainer
             "app" => $this,
 
             "config" => $this->configRepo,
-
-            LaravelContainer::INCOMING_REQUEST_KEY => $this->provideRequest(
-                $this->requestDetails,
-                $this->payloadStorage
-            )
         ];
     }
 
@@ -90,22 +81,6 @@ class LaravelAppConcrete extends Application implements LaravelContainer
 
             $this->singleton($alias, $concrete);
         }
-    }
-
-    public function provideRequest(
-        RequestDetails $requestDetails,
-        PayloadStorage $payloadStorage
-    ): LaravelRequest {
-
-        return LaravelRequest::create(
-            $requestDetails->getPath()?? "", // in case this container is requested outside a http context
-
-            "", // this should come from routeInfo but i don't think they need the accurate values anymore
-            $payloadStorage->fullPayload(),
-            $_COOKIE, /*$payloadStorage->getCookieParams/getUploadedFiles/getServerParams(). Can't use these psr equivalents cuz they're strongly typed and these methods return null if called outside a request context, as it's often is here*/
-            $_FILES,
-            $_SERVER
-        );
     }
 
     public function runContainerBootstrappers(): void

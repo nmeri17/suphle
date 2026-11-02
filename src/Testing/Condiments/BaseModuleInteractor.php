@@ -16,6 +16,8 @@ use Suphle\Adapters\{Session\InMemorySession, Cache\InMemoryCache};
 
 use Suphle\Testing\Proxies\{ExceptionBroadcasters, Extensions\MailDetailsCatcher, Extensions\MiddlewareManipulator};
 
+use Psr\Http\Message\ServerRequestInterface;
+
 trait BaseModuleInteractor
 {
     use ExceptionBroadcasters;
@@ -62,10 +64,10 @@ trait BaseModuleInteractor
         }
     }
 
-    protected function setRequestPath(string $requestPath, string $httpMethod): void
+    protected function setRequestPath(string $requestPath, string $httpMethod, ?ServerRequestInterface $contextualRequest = null): void
     {
 
-        $this->entrance->setRequestPath($requestPath, $httpMethod);
+        $this->entrance->setRequestPath($requestPath, $httpMethod, $contextualRequest);
     }
 
     // container is not ripe for use as at this point

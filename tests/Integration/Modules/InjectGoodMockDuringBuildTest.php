@@ -20,6 +20,8 @@ class InjectGoodMockDuringBuildTest extends ModuleLevelTest
 
     protected int $indicator = 0;
 
+    protected string $coordinatorName = ValidatorCoordinator::class;
+
     protected function getModules(): array
     {
 
@@ -57,7 +59,7 @@ class InjectGoodMockDuringBuildTest extends ModuleLevelTest
 
         $this->assertSame($this->indicator, 0); // given
 
-        $response = $this->get("/get-without");
+        $response = $this->get($this->expandUrl("handleGet"));
         
         if ($response->status() === 500) {
             echo $response->content();

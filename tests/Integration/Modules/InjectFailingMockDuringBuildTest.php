@@ -10,13 +10,15 @@ use Suphle\Config\Router;
 
 use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Routes\ValidatorCollection, Coordinators\ValidatorCoordinator};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Coordinators\ValidatorCoordinator};
 
 class InjectFailingMockDuringBuildTest extends ModuleLevelTest
 {
     // protected bool $debugCaughtExceptions = true;
 
     protected int $indicator = 0;
+
+    protected string $coordinatorName = ValidatorCoordinator::class;
 
     protected function getModules(): array
     {
@@ -53,7 +55,7 @@ class InjectFailingMockDuringBuildTest extends ModuleLevelTest
 
         $this->assertSame($this->indicator, 0); // given
 
-        $this->post("/post-with-json", [
+        $this->post($this->expandUrl("postWithValidator"), [
 
             CsrfGenerator::TOKEN_FIELD => $this->getContainer()
 

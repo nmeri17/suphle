@@ -10,6 +10,10 @@ use Suphle\Testing\Proxies\Extensions\InjectedUploadedFiles;
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
+use GuzzleHttp\Psr7\ServerRequest;
+
+use Psr\Http\Message\ServerRequestInterface;
+
 trait DirectHttpTest
 {
     use MockFacilitator;
@@ -26,21 +30,10 @@ trait DirectHttpTest
     */
     protected function setHttpParams(string $requestPath, string $httpMethod = "get", ?array $payload = [], array $headers = []): void
     {
+        $contextualRequest = (new ServerRequest($httpMethod, $requestPath, $headers))
+            ->withParsedBody( $payload);
 
-        $this->setRequestPath($requestPath, $httpMethod);
-
-        $payloadStorage = $this->getContainer()->getClass(PayloadStorage::class);
-
-        $payloadStorage->setFullPayload($payload);
-
-        foreach ($headers as $key => $value) {
-
-            $payloadStorage = $payloadStorage->withHeader($key, $value);
-        }
-        $this->massProvide([
-
-            PayloadStorage::class => $payloadStorage
-        ]);
+        $this->setRequestPath($requestPath, $httpMethod, $contextualRequest);
     }
 
     /**
@@ -59,7 +52,7 @@ trait DirectHttpTest
         ]);
     }
 
-    abstract protected function setRequestPath(string $requestPath, string $httpMethod): void;
+    abstract protected function setRequestPath(string $requestPath, string $httpMethod, ?ServerRequestInterface $contextualRequest = null): void;
 
     protected function setJsonParams(string $requestPath, array $payload, string $httpMethod = "post"): bool
     {

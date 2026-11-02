@@ -45,4 +45,12 @@ class ActiveDescriptors
 
         return null;
     }
+
+    public function hydrateFromAll (string $className):array {
+
+        return array_map(function (DescriptorInterface $descriptor) use ($className) {
+
+            return $descriptor->getContainer()->getClass($className);
+        }, $this->originalDescriptors);
+    }
 }

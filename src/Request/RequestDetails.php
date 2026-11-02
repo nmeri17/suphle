@@ -14,143 +14,78 @@ use InvalidArgumentException;
 #[BindsAsSingleton]
 class RequestDetails
 {
-    protected ?string $permanentPath = null,
-    
-    $httpMethod = null;
+    protected string $requestPath;
 
-    protected array $queryParameters = [];
+    protected ?string $forceHttpMethod = null;
 
-    protected static ?ServerRequestInterface $contextualRequest = null;
+    protected ?ServerRequestInterface $contextualRequest = null;
 
-    protected ?string $canaryState = null;
+    protected ?string $canaryState = null; // cfr
 
     public function __construct(protected readonly Router $routeConfig)
     { }
 
-    public static function setLoopInput (?ServerRequestInterface $contextualRequest):void {
+    public function detailsToCompute(
+        string $requestPath, ?string $forceHttpMethod,
+        ?ServerRequestInterface $contextualRequest
+    ):void {
+        $this->requestPath = $requestPath;
 
-        self::$contextualRequest = $contextualRequest;
-    }
+        $this->forceHttpMethod = $forceHttpMethod;
 
-    public function getContextualRequest ():?ServerRequestInterface {
-
-        return self::$contextualRequest;
+        $this->contextualRequest = $contextualRequest;
     }
 
     public function getPath(): ?string
     {
+        $components = parse_url($this->requestPath);
 
-        return $this->permanentPath;
-    }
-
-    public function setPath(string $requestPath): void
-    {
-
-        $this->permanentPath = $requestPath;
-    }
-
-    public function setQueries(array $queryParameters): void
-    {
-
-        $this->queryParameters = $queryParameters;
+        return @$components["path"];
     }
 
     public function getQueryParameters(): array
     {
-
-        return $this->queryParameters;
-    }
-
-    public static function fromModules(array $descriptors, string $requestPath, ?string $forceHttpMethod): void
-    {
-
-        foreach ($descriptors as $descriptor) {
-
-            static::fromContainer(
-                $descriptor->getContainer(),
-                $requestPath,
-                $forceHttpMethod
-            );
-        }
-    }
-
-    public static function fromContainer(Container $container, string $requestPath, ?string $forceHttpMethod): ?RequestDetails
-    {
-
-        $components = parse_url($requestPath);
-
-        $pathComponent = @$components["path"];
-
-        if (is_null($pathComponent)) {
-            return null;
-        }
-
-        $instance = static::newRequestInstance($container); // using static instead of self so any sub-class (e.g. a mock) will be called
-
-        $instance->setPath($pathComponent);
+        $components = parse_url($this->requestPath);
 
         parse_str($components["query"] ?? "", $queryParameters);
 
-        $instance->setQueries($queryParameters);
-
-        if (!is_null($forceHttpMethod)) {
-
-            $instance->setHttpMethod($forceHttpMethod);
-        } else {
-            $instance->deriveHttpMethod();
-        }
-
-        return $instance;
-    }
-
-    public static function newRequestInstance(Container $container): RequestDetails
-    {
-
-        $selfName = self::class;
-
-        $container->refreshClass($selfName);
-
-        return $container->getClass($selfName); // automatically binds it
-    }
-
-    protected function setHttpMethod(string $method): void
-    {
-
-        $this->httpMethod = $method;
+        return $queryParameters;
     }
 
     public function getHttpMethod():string
     {
+        if (!is_null($this->forceHttpMethod)) return $this->forceHttpMethod;
 
-        return $this->httpMethod;
+        return $this->deriveHttpMethod();
     }
 
-    protected function deriveHttpMethod(): void
-    {
+    protected function deriveHttpMethod():string {
 
-        $hiddenField = "_method";
+        $methodInPayload = "_method";
 
-        $postPayload = self::$contextualRequest->getParsedBody() ?? [];
+        $methodInHeader = "REQUEST_METHOD";
 
-        $serverPayload = self::$contextualRequest->getServerParams();
+        $postPayload = $this->contextualRequest->getParsedBody() ?? [];
 
-        if (array_key_exists($hiddenField, $postPayload)) {
+        $serverPayload = $this->contextualRequest->getServerParams();
 
-            $methodName = $postPayload[$hiddenField];
-        } elseif (array_key_exists("REQUEST_METHOD", $serverPayload)) {
+        if (array_key_exists($methodInPayload, $postPayload)) {
 
-            $methodName = $serverPayload["REQUEST_METHOD"];
+            $methodName = $postPayload[$methodInPayload];
+        } elseif (array_key_exists($methodInHeader, $serverPayload)) {
+
+            $methodName = $serverPayload[$methodInHeader];
         } else {
             $methodName = "get";
         }
 
-        $this->httpMethod = strtolower((string) $methodName);
+        return strtolower((string) $methodName);
     }
 
     public function matchesMethod(string $method): bool
     {
 
-        return strtolower($method) == $this->httpMethod;
+        return strtolower($method) == $this->getHttpMethod();
     }
 
     public function isGetRequest(): bool
@@ -178,6 +113,11 @@ class RequestDetails
     }
 
     public function isApiRoute():bool { // not reliable checking this from SessionStorage cuz what if it's an unprotected route or not found
-        return $this->routeConfig->matchesApi($this->permanentPath);
+        return $this->routeConfig->matchesApi($this->getPath());
+    }
+
+    public function getContextualRequest ():?ServerRequestInterface {
+
+        return $this->contextualRequest;
     }
 }
