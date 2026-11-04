@@ -10,7 +10,7 @@ use Suphle\Exception\Explosives\EditIntegrityException;
 
 use Suphle\Testing\{TestTypes\ModuleLevelTest, Condiments\BaseDatabasePopulator};
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\{EmploymentEditMock, EmploymentEditError};
+use Suphle\Tests\Mocks\Modules\ModuleOne\Services\{EmploymentEditMock, EmploymentEditError};
 
 use Suphle\Tests\Mocks\Models\Eloquent\Employment;
 

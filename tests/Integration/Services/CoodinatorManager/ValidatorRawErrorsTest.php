@@ -4,23 +4,25 @@ namespace Suphle\Tests\Integration\Services\CoodinatorManager;
 
 use Suphle\Request\ValidatorManager;
 
-use Suphle\Response\Format\Json;
+use Suphle\Routing\{Structures\RouteInfo, Attributes\HttpMethod};
 
-use Suphle\Middleware\MiddlewareQueue;
-
-use Suphle\Contracts\{Presentation\BaseRenderer, Response\RendererManager, Config\Router as RouterContract};
+use Suphle\Contracts\{Response\RendererManager, Config\Router as RouterContract};
 
 use Suphle\Config\Router;
+
+use Suphle\Middleware\Handlers\FinalHandlerWrapper;
 
 use Suphle\Exception\Explosives\{DevError\NoCompatibleValidator, ValidationFailure};
 
 use Suphle\Testing\{TestTypes\ModuleLevelTest, Proxies\WriteOnlyContainer};
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Validators\ValidatorOne, Coordinators\ValidatorCoordinator};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor, Coordinators\ValidatorCoordinator};
 
 class ValidatorRawErrorsTest extends ModuleLevelTest
 {
     protected bool $debugCaughtExceptions = true;
+
+    protected string $coordinatorName = ValidatorCoordinator::class;
 
     protected function getModules(): array
     {
@@ -31,7 +33,7 @@ class ValidatorRawErrorsTest extends ModuleLevelTest
 
                 $container->replaceWithMock(RouterContract::class, Router::class, [
 
-                    "getCoordinatorClassesToScan" => ValidatorCollection::class
+                    "getCoordinatorClassesToScan" => [$this->coordinatorName]
                 ]);
             })
         ];
@@ -40,7 +42,7 @@ class ValidatorRawErrorsTest extends ModuleLevelTest
     public function test_get_thows_no_errors_on_rule_absence()
     {
 
-        $this->get("/get-without") // when
+        $this->get($this->expandUrl("handleGet")) // when
 
         ->assertOk(); // then
     }
@@ -63,7 +65,9 @@ class ValidatorRawErrorsTest extends ModuleLevelTest
 
         return [
 
-            ["/post-with-json"], ["/post-with-html"]
+            [$this->expandUrl("postWithValidator")],
+
+            [$this->expandUrl("postWithValidatorRedirect")]
         ];
     }
 
@@ -74,7 +78,7 @@ class ValidatorRawErrorsTest extends ModuleLevelTest
 
         // given @see coordinator validator rules
 
-        $this->post("/post-without"); // when
+        $this->post($this->expandUrl("postNoValidator")); // when
     }
 
 
@@ -83,21 +87,20 @@ class ValidatorRawErrorsTest extends ModuleLevelTest
 
         $this->expectException(ValidationFailure::class); // then
 
-        $this->massProvide([BaseRenderer::class => $this->getRenderer()]);
+        $this->massProvide([RouteInfo::class => $this->getRouteInfo("postWithValidator")]);
 
         $this->getContainer()->getClass(RendererManager::class)
 
-        ->mayBeInvalid(); // when
+        ->handleValidRequest(); // when
     }
 
-    protected function getRenderer(): BaseRenderer
+    protected function getRouteInfo(string $controllerMethod):RouteInfo
     {
 
-        $renderer = new Json([]);
-
-        $renderer->setCoordinatorClass($this->positiveDouble(ValidatorCoordinator::class));
-
-        return $renderer;
+        return new RouteInfo(
+            "", HttpMethod::POST,
+            $this->coordinatorName, $controllerMethod
+        );
     }
 
     public function test_failure_prevents_middleware_running()
@@ -106,13 +109,13 @@ class ValidatorRawErrorsTest extends ModuleLevelTest
         $this->middlewareWillRun(1);
 
         // given @see validation rules
-        $this->get("/get-without");
+        $this->get($this->expandUrl("handleGet"));
 
         $this->expectException(ValidationFailure::class);
 
         $this->middlewareWillRun(0); // after it's been wiped
 
-        $this->post("/post-with-json"); // when
+        $this->post($this->expandUrl("postWithValidator")); // when
     }
 
     protected function middlewareWillRun(int $numTimes): void
@@ -120,12 +123,9 @@ class ValidatorRawErrorsTest extends ModuleLevelTest
 
         $this->massProvide([
 
-            MiddlewareQueue::class => $this->positiveDouble(MiddlewareQueue::class, [
+            FinalHandlerWrapper::class => $this->positiveDouble(FinalHandlerWrapper::class, [ ], [
 
-                "runStack" => $this->getRenderer()
-            ], [
-
-                "runStack" => [$numTimes, []] // then
+                "process" => [$numTimes, []] // then
             ])
         ]);
     }

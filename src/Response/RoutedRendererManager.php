@@ -78,15 +78,15 @@ class RoutedRendererManager implements RendererManager, BaseResponseManager
             );
         }
 
+        $controllerMethod = $this->routeDetails->controllerMethod;
+
+        $className = $this->routeDetails->controllerClass;
+
         return $this->renderer = call_user_func_array(
             [
-                $this->container->getClass($this->routeDetails->controllerClass),
-                $this->routeDetails->controllerMethod
+                $this->container->getClass($className), $controllerMethod
             ],
-            $this->container->getMethodParameters(
-                $this->routeDetails->controllerMethod,
-                $this->routeDetails->controllerClass
-            )
+            $this->container->getMethodParameters($controllerMethod, $className)
         );
     }
 

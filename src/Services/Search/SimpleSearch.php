@@ -28,8 +28,10 @@ class SimpleSearch
         $this->ormDialect = $ormDialect;
     }
 
-    public function convertToQuery($baseModel, array $nonColumns)
+    // helper that works best for foo => bar. like and != need to passed to a custom builder after this
+    public function convertToQuery($baseModel, array $nonColumns):?object
     {
+        $baseModel = null;
 
         foreach ($this->getConstraints($nonColumns) as $parameter => $value) {
 
