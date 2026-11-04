@@ -18,12 +18,13 @@ trait ReplacesRequestPayload
         return [new ModuleOneDescriptor(new Container())];
     }
 
+    // using this instead of filling request object directly since no routing occurs. we just call the services directly -- just a shortcut to creating routes
     protected function stubRequestObjects(int $segmentValue, array $payload = [], array $requestStubs = []): void
     {
 
         $payloadStorage = $this->positiveDouble(PayloadStorage::class);
 
-        $payloadStorage->mergePayload($payload);
+        $payloadStorage->setUpserts($payload);
 
         $requestObjects = [
 

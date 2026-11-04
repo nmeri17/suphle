@@ -13,7 +13,7 @@ class AltersPayloadStorage extends BaseMiddleware
     public function process(PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler): BaseRenderer
     {
 
-        $payloadStorage->mergePayload($this->payloadUpdates());
+        $payloadStorage->setUpserts($this->payloadUpdates());
 
         return $requestHandler->handle($payloadStorage);
     }

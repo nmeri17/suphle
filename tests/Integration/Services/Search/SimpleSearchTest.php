@@ -8,7 +8,7 @@ use Suphle\Request\PayloadStorage;
 
 use Suphle\Testing\TestTypes\ModuleLevelTest;
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\Services\Search\SimpleSearchService;
+use Suphle\Tests\Mocks\Modules\ModuleOne\Services\Search\SimpleSearchService;
 
 use Suphle\Tests\Integration\Services\ReplacesRequestPayload;
 
