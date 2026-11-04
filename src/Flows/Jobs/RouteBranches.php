@@ -16,8 +16,6 @@ class RouteBranches implements Task
 
     protected array $httpRoutes, $allRequestDetails;
 
-    protected Container $container;
-
     protected DescriptorInterface $activeModule;
 
     protected ModuleRequestRouter $moduleRouter;
@@ -26,7 +24,9 @@ class RouteBranches implements Task
         protected readonly PendingFlowDetails $flowDetails,
         protected readonly ModulesBooter $modulesBooter,
         protected readonly ActiveDescriptors $descriptorsHolder,
-        protected readonly CacheManager $cacheManager
+        protected readonly CacheManager $cacheManager,
+        protected readonly AttributeRouteScanner $routeScanner,
+        protected readonly ModuleRequestRouter $moduleRouter
     ) {}
 
     public function handle(): void
@@ -34,10 +34,8 @@ class RouteBranches implements Task
         $this->modulesBooter->bootOuterModules($this->descriptorsHolder);
 
         $this->allRequestDetails = $this->descriptorsHolder->hydrateFromAll(RequestDetails::class);
-            
-        $this->container = $this->descriptorsHolder->firstOriginalContainer();
 
-        $this->httpRoutes = $this->container->getClass(AttributeRouteScanner::class)->scanAllModules();
+        $this->httpRoutes = $this->routeScanner->scanAllModules();
 
         $this->processFlowDefinitions();
     }
@@ -86,11 +84,7 @@ class RouteBranches implements Task
     {
         foreach ($this->allRequestDetails as $requestDetail)
 
-            $requestDetail->detailsToCompute(
-                $pattern, HttpMethod::GET->value, null
-            );
-
-        $this->moduleRouter = $this->container->getClass(ModuleRequestRouter::class);
+            $requestDetail->detailsToCompute($pattern, HttpMethod::GET->value);
 
         if (!$this->moduleRouter->canSetHandlingModule($this->httpRoutes, true))
 
@@ -117,7 +111,6 @@ class RouteBranches implements Task
 
         $this->setHydratorDependencies($hydrator, $container);
 
-        // V2: Replacing runNodes with runAttribute
         $hydrator->runAttribute($flowInstance, $this->flowDetails);
     }
 

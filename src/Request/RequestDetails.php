@@ -27,7 +27,7 @@ class RequestDetails
 
     public function detailsToCompute(
         string $requestPath, ?string $forceHttpMethod,
-        ?ServerRequestInterface $contextualRequest
+        ?ServerRequestInterface $contextualRequest=null
     ):void {
         $this->requestPath = $requestPath;
 
