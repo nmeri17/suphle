@@ -1,20 +1,15 @@
 <?php
 namespace _modules_shell\_module_name\InstalledComponents\SuphleIdentity\Services;
 
-use Suphle\Services\Structures\BaseErrorCatcherService;
-use Suphle\Services\Decorators\{InterceptsCalls, VariableDependencies, DomainService};
-use Suphle\Contracts\Services\CallInterceptors\SystemModelEdit;
+use Suphle\Services\Structures\BaseSystemModelEdit;
 
 use Suphle\Events\{EmitProxy, EventPropagator};
 
 use _database_namespace\User;
 
-#[InterceptsCalls(SystemModelEdit::class)]
-#[VariableDependencies(["setPayloadStorage"])]
-#[DomainService(mutation: true)]
-class RegisterService implements SystemModelEdit {
+class RegisterService extends BaseSystemModelEdit {
 
-    use BaseErrorCatcherService, EmitProxy;
+    use EmitProxy;
 
     public const USER_REGISTERED = "user_registered";
 

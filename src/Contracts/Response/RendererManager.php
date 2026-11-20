@@ -1,13 +1,15 @@
 <?php
 namespace Suphle\Contracts\Response;
 
-use Suphle\Request\PayloadStorage;
-
 use Suphle\Contracts\Presentation\BaseRenderer;
 
 interface RendererManager
 {
-    public function handleValidRequest(PayloadStorage $payloadStorage): BaseRenderer;
+    public function handleValidRequest(): BaseRenderer;
 
-    public function invokePreviousRenderer(array $toMerge = []): BaseRenderer;
+    public function rendererDataOnError(array $toMerge = []): BaseRenderer;
+
+    public function fallbackShouldJson ():bool;
+
+    public function scopeRenderer (BaseRenderer $renderer):void;
 }

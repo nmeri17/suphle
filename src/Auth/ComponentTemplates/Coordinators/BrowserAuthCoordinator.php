@@ -40,7 +40,7 @@ class BrowserAuthCoordinator extends BaseCoordinator {
     public function handleLogin(): BaseRenderer {
 
         return match ($this->loginService->tryStartUserSession()) {
-            null => new Reload(),
+            null => new Reload(["message" => "Failed to login"]),
 
             default => new Redirect($this->loginService->successRedirect("/dashboard"))
         };
@@ -67,7 +67,7 @@ class BrowserAuthCoordinator extends BaseCoordinator {
 
             new Redirect($this->loginService->successRedirect("/check-verify-mail")): // or dashboard
 
-            new Reload();
+            new Reload(["message" => "Failed to create user"]);
     }
 
     #[Route("register-complete")]

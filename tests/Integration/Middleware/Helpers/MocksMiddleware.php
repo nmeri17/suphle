@@ -13,18 +13,12 @@ trait MocksMiddleware
         array $constructorArguments = []
     ): Middleware {
 
-        return $this->positiveDouble($className, [
+        return $this->replaceConstructorArguments($className, $constructorArguments, [
 
             "process" => $this->returnCallback(fn ($request, $requestHandler) => $requestHandler->handle($request))
         ], [
 
             "process" => [$numTimes, []]
-        ], $constructorArguments);
-    }
-
-    protected function provideMiddleware(array $middlewareList): void
-    {
-
-        $this->getContainer()->whenTypeAny()->needsAny($middlewareList);
+        ]);
     }
 }

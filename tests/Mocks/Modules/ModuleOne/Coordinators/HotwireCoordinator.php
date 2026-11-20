@@ -26,7 +26,7 @@ class HotwireCoordinator extends BaseCoordinator
 
     #[Route("regular-markup", method: HttpMethod::POST)]
     #[ValidationRules([
-        'field1' => 'required|string',
+        'id' => 'required|string',
         'field2' => 'required|integer|min:1'
     ])]
     public function regularFormResponse(BaseEmploymentBuilder $employmentBuilder): Redirect
@@ -39,7 +39,7 @@ class HotwireCoordinator extends BaseCoordinator
 
     #[Route("hotwire-redirect", method: HttpMethod::POST)]
     #[ValidationRules([
-        'field1' => 'required|string',
+        'id' => 'required|string',
         'field2' => 'required|integer|min:1'
     ])]
     public function hotwireRedirect(BaseEmploymentBuilder $employmentBuilder): RedirectHotwireStream
@@ -64,7 +64,7 @@ class HotwireCoordinator extends BaseCoordinator
 
     #[Route("hotwire-reload", method: HttpMethod::PUT)]
     #[ValidationRules([
-        'field1' => 'required|string',
+        'id' => 'required|string',
         'field2' => 'required|integer|min:1'
     ])]
     public function hotwireReload(BaseEmploymentBuilder $employmentBuilder): ReloadHotwireStream

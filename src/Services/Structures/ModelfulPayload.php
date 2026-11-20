@@ -6,13 +6,11 @@ use Suphle\Contracts\Database\OrmDialect;
 
 use Suphle\Services\Decorators\VariableDependencies;
 
-use Suphle\Request\PayloadStorage;
-
-use Suphle\Routing\Structures\RouteInfo;
+use Suphle\Request\{PayloadStorage, RequestDetails};
 
 #[VariableDependencies([
 
-    "setPayloadStorage", "setRouteInfo",
+    "setPayloadStorage", "setRequestDetails",
 
     "setOrmDialect"
 ])]
@@ -22,7 +20,7 @@ abstract class ModelfulPayload
 
     protected OrmDialect $ormDialect;
 
-    protected RouteInfo $routeInfo;
+    protected RequestDetails $requestDetails;
 
     public function setPayloadStorage(PayloadStorage $payloadStorage): void
     {
@@ -30,10 +28,10 @@ abstract class ModelfulPayload
         $this->payloadStorage = $payloadStorage;
     }
 
-    public function setRouteInfo(RouteInfo $routeInfo): void
+    public function setRequestDetails(RequestDetails $requestDetails): void
     {
 
-        $this->routeInfo = $routeInfo;
+        $this->requestDetails = $requestDetails;
     }
 
     public function setOrmDialect(OrmDialect $ormDialect): void

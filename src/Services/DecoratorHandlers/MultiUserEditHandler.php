@@ -4,9 +4,7 @@ namespace Suphle\Services\DecoratorHandlers;
 
 use Suphle\Contracts\{Services\CallInterceptors\MultiUserModelEdit, Database\OrmDialect, Config\DecoratorProxy, Auth\AuthStorage, Routing\Middleware};
 
-use Suphle\Request\PayloadStorage;
-
-use Suphle\Routing\Structures\RouteInfo;
+use Suphle\Request\{PayloadStorage, RouteRule, RequestDetails};
 
 use Suphle\Auth\Middleware\PathAuthorization;
 
@@ -39,7 +37,7 @@ class MultiUserEditHandler extends BaseInjectionModifier
         protected readonly ErrorCatcherHandler $errorDecoratorHandler,
         DecoratorProxy $proxyConfig,
         ObjectDetails $objectMeta,
-        protected readonly RouteInfo $routeInfo,
+        protected readonly RequestDetails $requestDetails,
         protected readonly AuthStorage $authStorage
     ) {
 
@@ -131,21 +129,23 @@ class MultiUserEditHandler extends BaseInjectionModifier
         array $argumentList
     ) {
 
-        if (
-            in_array(PathAuthorization::class, $this->routeInfo->preMiddlewares) ||
-            $this->hasParentAuth()
-        )
+        if (!$this->hasRouteRule() )
             throw new EditIntegrityException(EditIntegrityException::NO_AUTHORIZER);
 
         return $concrete->getResource(...$argumentList); // we're not wrapping in error catcher since we want request termination if getting editable resource failed; there's nothing to fallback to
     }
-    protected function hasParentAuth ():bool {
+    protected function hasRouteRule ():bool {
 
-        $matchTag = array_filter($this->routeInfo->preMiddlewares, function (string $middleware) {
+        foreach(
+            $this->requestDetails->getComputedDetails()->preMiddlewares as
+        
+            $middlewareName => $midwArgs
+        ) {
+            foreach ($midwArgs as $rule) {
 
-            return $this->objectMeta->stringInClassTree($middleware, PathAuthorization::class);
-        });
-
-        return !empty($matchTag);
+                if (is_a($rule, RouteRule::class, true)) return true; // string based comparison
+            }
+        }
+        return false;
     }
 }

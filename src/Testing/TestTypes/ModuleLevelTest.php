@@ -15,6 +15,8 @@ abstract class ModuleLevelTest extends TestVirginContainer
     use ModuleReplicator, ConfigureExceptionBridge, ModuleHttpTest, BaseModuleInteractor {
 
         ConfigureExceptionBridge::setUp as mufflerSetup;
+
+        ModuleHttpTest::setUp as httpSetup;
     }
 
     protected bool $useTestComponents = true;
@@ -40,6 +42,8 @@ abstract class ModuleLevelTest extends TestVirginContainer
         $this->bootMockEntrance($entrance);
 
         $this->mufflerSetup(); // useTestComponents shouldn't prevent this because then, we can't even tell why request possibly failed
+
+        $this->httpSetup();
     }
 
     /**

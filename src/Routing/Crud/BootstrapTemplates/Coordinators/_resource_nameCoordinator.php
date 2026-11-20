@@ -45,9 +45,9 @@ class _resource_nameCoordinator extends BaseCoordinator
     ])]
     public function store(_resource_nameSavePayload $payload): Reload
     {
-        $this->accessor->createSingle($payload->getDomainObject());
+        $result = $this->accessor->createSingle($payload->getDomainObject());
         
-        return new Reload();
+        return new Reload(["message" => $result]);
     }
 
     #[Route("{id}", HttpMethod::PUT)]
@@ -61,15 +61,15 @@ class _resource_nameCoordinator extends BaseCoordinator
         // We use the builder for the WHERE clause and the payload for the DATA
         // MultiUserModelEdit interceptor will automatically validate _collision_protect
         
-        $this->accessor->updateResource(
+        $result = $this->accessor->updateResource(
             $builder->getBuilder(), 
             $payload->getDomainObject()
         );
         
-        return new Reload();
+        return new Reload(["message" => $result]);
     }
 
-    #[Route("{/id}")]
+    #[Route("/{id}")]
     public function show(Base_resource_nameBuilder $builder): Markup
     {
         return new Markup('_resource_name.show', [

@@ -38,8 +38,6 @@ class PasswordResetCoordinator extends BaseCoordinator
     {
         $user = $builder->getBuilder()->first();
 
-        if (!$user) return new Reload();
-
         $this->resetService->updateModels($user);
 
         return new Redirect(fn () => "/resets/mail-success");

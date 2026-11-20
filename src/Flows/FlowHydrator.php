@@ -9,7 +9,8 @@ use Suphle\Routing\{RouteInfoExecutor, NamedRouteReader, Structures\RouteInfo};
 
 use Suphle\Services\Decorators\VariableDependenciesHandler;
 use Suphle\Hydration\Container;
-use Suphle\Request\PayloadStorage;
+
+use Suphle\Request\{PayloadStorage, RequestDetails};
 
 use Illuminate\Support\Arr;
 
@@ -24,7 +25,7 @@ class FlowHydrator
 
     protected Container $container;
 
-    protected RouteInfo $routeDetails;
+    protected RequestDetails $requestDetails;
 
     protected NamedRouteReader $routeExpressor;
 
@@ -32,10 +33,7 @@ class FlowHydrator
 
     public function __construct(
         protected readonly UmbrellaSaver $flowSaver
-    ) {
-
-        //
-    }
+    ) { }
 
     public function setContainer(Container $container): void
     {
@@ -55,11 +53,11 @@ class FlowHydrator
         $this->routeExpressor = $expressor;
     }
 
-    public function setRequestDetails(iterable $previousResponse, RouteInfo $routeDetails ): void {
+    public function setRequestDetails(iterable $previousResponse, RequestDetails $requestDetails ): void {
 
         $this->previousResponse = $previousResponse;
 
-        $this->routeDetails = $routeDetails;
+        $this->requestDetails = $requestDetails;
     }
 
     // for given url, generate all renderer units and lodge in new umbrella
@@ -84,13 +82,13 @@ class FlowHydrator
 
             $unitPayload = new RouteUserNode(
 
-                $generationUnit->getRenderer(), $this->routeDetails
+                $generationUnit->renderer, $generationUnit->routeInfo
             );
 
             $unitPayload->setMetaDetails($flow->ttl, $flow->maxHits);
 
             $this->flowSaver->saveNewUmbrella(
-                $generationUnit->getRequestPath(),
+                $generationUnit->requestPath,
                 $unitPayload,
                 $originatingFlowDetails
             );
@@ -249,13 +247,16 @@ class FlowHydrator
 
         try {
 
+            $routeInfo = $this->requestDetails->getRouteInfo();
+
             $renderer = $this->container
                 ->getClass(RouteInfoExecutor::class)
-                ->handleFoundRoute($this->routeDetails);
+                ->handleFoundRoute($routeInfo);
 
             return new GeneratedUrlExecution(
-                $this->routeExpressor->expressFromInfo($this->routeDetails),
-                $renderer
+                $this->routeExpressor->expressFromInfo($routeInfo),
+                
+                $renderer, $routeInfo
             );
 
         } catch (Throwable) {
@@ -285,7 +286,7 @@ class FlowHydrator
     protected function updatePlaceholders(array $updates): self
     {
 
-        $this->routeDetails->setSegmentValues($updates);
+        $this->requestDetails->getRouteInfo()->setSegmentValues($updates);
 
         return $this;
     }

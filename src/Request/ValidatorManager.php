@@ -1,10 +1,7 @@
 <?php
-
 namespace Suphle\Request;
 
 use Suphle\Contracts\Requests\{RequestValidator, FileInputReader};
-
-use Suphle\Routing\Structures\RouteInfo;
 
 class ValidatorManager
 {
@@ -12,9 +9,9 @@ class ValidatorManager
 
     public function __construct(
         protected readonly RequestValidator $validator,
-        protected readonly RouteInfo $routeInfo,
         protected readonly PayloadStorage $payloadStorage,
-        protected readonly FileInputReader $fileInputReader
+        protected readonly FileInputReader $fileInputReader,
+        protected readonly RequestDetails $requestDetails
     ) {
 
         //
@@ -24,8 +21,10 @@ class ValidatorManager
     {
 
         $mergedPayload = array_merge(
-            $this->routeInfo->getAllSegmentValues(),
+            $this->requestDetails->getComputedDetails()->getAllSegmentValues(),
+
             $this->payloadStorage->fullPayload(),
+            
             $this->fileInputReader->getFileObjects()
         );
 

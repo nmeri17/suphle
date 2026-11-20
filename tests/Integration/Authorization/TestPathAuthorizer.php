@@ -23,6 +23,8 @@ abstract class TestPathAuthorizer extends ModuleLevelTest
         BaseDatabasePopulator::setUp as databaseAllSetup;
     }
 
+    protected string $coordinatorName = EmploymentEditCoordinator::class;
+
     protected function setUp(): void
     {
 
@@ -39,7 +41,7 @@ abstract class TestPathAuthorizer extends ModuleLevelTest
 
                 $container->replaceWithMock(RouterContract::class, Router::class, [
 
-                    "getCoordinatorClassesToScan" => [EmploymentEditCoordinator::class]
+                    "getCoordinatorClassesToScan" => [$this->coordinatorName]
                 ]);
             })
         ];
@@ -58,14 +60,6 @@ abstract class TestPathAuthorizer extends ModuleLevelTest
 
             "is_admin" => $makeAdmin
         ])->first();
-    }
-
-    // can't move this to setUp since this object is updated after request is updated
-    protected function authorizationSuccess(): bool
-    {
-
-        return $this->getContainer()->getClass(PathAuthorization::class)
-        ->passesActiveRules();
     }
 
     abstract protected function setUser(): void;

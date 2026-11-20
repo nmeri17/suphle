@@ -1,8 +1,7 @@
 <?php
-
 namespace Suphle\Exception\Diffusers;
 
-use Suphle\Contracts\{Exception\ExceptionHandler, Presentation\BaseRenderer};
+use Suphle\Contracts\{Exception\ExceptionHandler, Presentation\BaseRenderer, Response\RendererManager};
 
 use Suphle\Request\RequestDetails;
 
@@ -17,11 +16,8 @@ class UnverifiedAccountDiffuser implements ExceptionHandler
     protected BaseRenderer $renderer;
 
     public function __construct(
-        protected readonly RequestDetails $requestDetails
-    ) {
-
-        //
-    }
+        protected readonly RendererManager $rendererManager
+    ) { }
 
     public function setContextualData(Throwable $origin): void
     {
@@ -35,7 +31,7 @@ class UnverifiedAccountDiffuser implements ExceptionHandler
     public function prepareRendererData(): void
     {
 
-        if ($this->requestDetails->isApiRoute()) {
+        if ($this->rendererManager->fallbackShouldJson()) {
 
             $this->renderer = $this->getTokenRenderer();
         } else {

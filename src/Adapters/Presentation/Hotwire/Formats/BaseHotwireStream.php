@@ -2,7 +2,7 @@
 namespace Suphle\Adapters\Presentation\Hotwire\Formats;
 
 use Suphle\Contracts\{Presentation\BaseRenderer, IO\Session};
-use Suphle\Contracts\Presentation\MirrorableRenderer;
+
 use Suphle\Request\PayloadStorage;
 
 use Suphle\Response\Format\BaseHtmlRenderer;
@@ -15,8 +15,7 @@ use Suphle\Adapters\Presentation\Hotwire\HotwireStreamBuilder;
 
     "setPayloadStorage"
 ])]
-abstract class BaseHotwireStream extends BaseHtmlRenderer implements MirrorableRenderer
-{
+abstract class BaseHotwireStream extends BaseHtmlRenderer {
 
     public const TURBO_INDICATOR = "text/vnd.turbo-stream.html",
 
@@ -36,21 +35,13 @@ abstract class BaseHotwireStream extends BaseHtmlRenderer implements MirrorableR
 
     protected BaseRenderer $fallbackRenderer;
 
-    protected string $markupName;
+    public string $markupName;
 
     protected int $statusCode = 200;
 
     public function setPayloadStorage(PayloadStorage $payloadStorage): void
     {
         $this->payloadStorage = $payloadStorage;
-    }
-
-    public function setSession(Session $sessionClient): void
-    {
-	
-		parent::setSession($sessionClient);
-
-        $this->fallbackRenderer->setSession($sessionClient);
     }
 
     public function isHotwireRequest(): bool
@@ -60,14 +51,6 @@ abstract class BaseHotwireStream extends BaseHtmlRenderer implements MirrorableR
             PayloadStorage::ACCEPTS_KEY,
             self::TURBO_INDICATOR
         );
-    }
-
-    public function setWantsJson(): void
-    {
-        if ($this->fallbackRenderer instanceof MirrorableRenderer) {
-
-            $this->fallbackRenderer->setWantsJson();
-        }
     }
 
     public function addAppend(iterable $data, callable $target, string $markupName): self

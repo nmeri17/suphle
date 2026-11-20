@@ -1,13 +1,9 @@
 <?php
-namespace Suphle\Middleware;
+namespace Suphle\Request;
 
 use Suphle\Hydration\{Container, Structures\CallbackDetails};
 
 use Suphle\Contracts\{Requests\ValidationEvaluator, Presentation\BaseRenderer, IO\Session, Response\RendererManager};
-
-use Suphle\Routing\Structures\RouteInfo;
-
-use Suphle\Request\{PayloadStorage, RequestDetails, ValidatorManager};
 
 use Suphle\Services\Decorators\ValidationRules; 
 
@@ -22,7 +18,6 @@ class ValidationRulesHandler implements ValidationEvaluator {
         protected readonly RequestDetails $requestDetails, 
         protected readonly Container $container,
         protected readonly Session $sessionClient,
-        protected readonly RouteInfo $routeDetails,
         protected readonly RendererManager $rendererManager
     ) {} 
 
@@ -48,9 +43,11 @@ class ValidationRulesHandler implements ValidationEvaluator {
 
     protected function getValidationAttributes ():array {
 
-        $coodinator = $this->routeDetails->controllerClass;
+        $routeInfo = $this->requestDetails->getComputedDetails();
 
-        $handlingMethod = $this->routeDetails->controllerMethod;
+        $coodinator = $routeInfo->controllerClass;
+
+        $handlingMethod = $routeInfo->controllerMethod;
 
         return $this->callbackDetails->getMethodAttributes(
 
@@ -66,15 +63,17 @@ class ValidationRulesHandler implements ValidationEvaluator {
         if (!empty($this->getValidationAttributes())) {
             return true;
         }
+        $routeInfo = $this->requestDetails->getComputedDetails();
+
+        $coodinatorName = $routeInfo->controllerClass;
+
+        $controllerMethod = $routeInfo->controllerMethod;
 
         if ($this->requestDetails->isGetRequest()) {
             return false;
         }
 
-        throw new NoCompatibleValidator(
-            $this->routeDetails->controllerClass,
-            $this->routeDetails->controllerMethod
-        );
+        throw new NoCompatibleValidator($coodinatorName, $controllerMethod);
     }
 
     public function getValidatorErrors(): array
@@ -86,6 +85,6 @@ class ValidationRulesHandler implements ValidationEvaluator {
     public function validationRenderer(array $failureDetails): BaseRenderer
     {
 
-        return $this->rendererManager->invokePreviousRenderer($failureDetails);
+        return $this->rendererManager->rendererDataOnError($failureDetails);
     }
 }

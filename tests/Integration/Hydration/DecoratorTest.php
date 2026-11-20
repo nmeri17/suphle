@@ -10,7 +10,7 @@ use Suphle\Testing\{TestTypes\IsolatedComponentTest, Utilities\ArrayAssertions};
 
 use Suphle\Tests\Integration\Generic\CommonBinds;
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\Concretes\{ThrowsException, Services\SystemModelEditMock1};
+use Suphle\Tests\Mocks\Modules\ModuleOne\{Concretes\ThrowsException, Services\SystemModelEditMock1};
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\ProductsV2Coordinator;
 

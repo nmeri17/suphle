@@ -9,8 +9,6 @@ class Json extends GenericRenderer
 
     public const STATUS_CODE = 200;
 
-    protected bool $shouldDeferValidationFailure = false;
-
     protected int $statusCode = self::STATUS_CODE;
 
     public function __construct(array $data)
@@ -25,13 +23,5 @@ class Json extends GenericRenderer
     public function render(): string
     {
         return $this->renderJson();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function deferValidationContent(): bool
-    {
-        return false;
     }
 }

@@ -1,17 +1,13 @@
 <?php
 namespace _modules_shell\_module_name\Services\Eloquent;
 
-use Suphle\Contracts\Services\{CallInterceptors\MultiUserModelEdit, Models\IntegrityModel};
-use Suphle\Services\Structures\BaseErrorCatcherService;
-use Suphle\Services\Decorators\{InterceptsCalls, VariableDependencies, DomainService};
+use Suphle\Contracts\Services\Models\IntegrityModel;
+
+use Suphle\Services\Structures\BaseMultiUserModelEdit;
+
 use _database_namespace\_resource_name;
 
-#[DomainService(mutation: true)]
-#[InterceptsCalls(MultiUserModelEdit::class)]
-#[VariableDependencies(["setPayloadStorage", "setRouteInfo"])]
-class _resource_nameAccessor implements MultiUserModelEdit
-{
-    use BaseErrorCatcherService;
+class _resource_nameAccessor extends BaseMultiUserModelEdit {
 
     public function __construct(protected readonly _resource_name $blankModel) {}
 

@@ -1,30 +1,15 @@
 <?php
-
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Services;
 
-use Suphle\Services\Structures\BaseErrorCatcherService;
-use Suphle\Services\Decorators\{DomainService, InterceptsCalls};
-use Suphle\Contracts\Services\CallInterceptors\SystemModelEdit;
-use Suphle\Tests\Mocks\Modules\ModuleOne\PayloadReaders\{BaseEmploymentBuilder, EmploymentId2Builder};
+use Suphle\Services\Structures\BaseSystemModelEdit;
 
-#[DomainService(mutation: true)]
-#[InterceptsCalls(SystemModelEdit::class)]
-class EmploymentService implements SystemModelEdit
-{
-    use BaseErrorCatcherService;
+use Suphle\Tests\Mocks\Modules\ModuleOne\PayloadReaders\EmploymentId2Builder;
 
-    /**
-     * The single, required strict Mutative Action contract method.
-     * Suphle automatically wraps this method in a managed database transaction.
-     */
-    public function updateModels(object $payload): array
+class EmploymentService extends BaseSystemModelEdit {
+    
+    public function updateModels(object $builder): array
     {
-        return [
-            "data" => [
-                "id" => method_exists($payload, 'getId') ? $payload->getId() : 100,
-                "status" => "persisted"
-            ]
-        ];
+        return $builder->update($this->payloadStorage->fullPayload());
     }
 
     /**

@@ -56,6 +56,12 @@ class BaseHotwireStreamTest extends ModuleLevelTest
         ];
 
         [$this->employment1, $this->employment2] = $this->replicator->getRandomEntities(2);
+
+        $this->massProvide([ // using replaceWithConcrete in getModules violates cuz no container is present yet
+            ValidationEvaluator::class =>
+
+            $this->getContainer()->getClass(HotwireValidatorHandler::class)
+        ]);
     }
 
     protected function getModules(): array
@@ -66,8 +72,7 @@ class BaseHotwireStreamTest extends ModuleLevelTest
                     "getCoordinatorClassesToScan" => [
                         $this->coordinatorName
                     ]
-                ])
-                ->replaceWithMock(ValidationEvaluator::class, HotwireValidatorHandler::class);
+                ]);
             })
         ];
     }
@@ -111,7 +116,7 @@ class BaseHotwireStreamTest extends ModuleLevelTest
 
     protected function warmHotwireForPost ():void {
 
-        $this->warmHotwireForPost();
+        $this->get($this->expandUrl("loadForm"));
     }
 
     public function urlsToHotwireRequests(): array
@@ -125,12 +130,15 @@ class BaseHotwireStreamTest extends ModuleLevelTest
         ];
     }
 
-    /**
-     * @dataProvider urlsToHotwireRequests
-     */
-    public function test_regular_request_to_dual_failure_reverts_to_previous(string $url, string $httpMethod)
+    public function test_regular_request_to_dual_failure_reverts_to_previous()
     {
-        $this->sendFailRedirect($url, $httpMethod, "");
+        $this->dataProvider([
+            $this->urlsToHotwireRequests(...)
+        ], function (
+            string $url, string $httpMethod,
+        ) {
+            $this->sendFailRedirect($url, $httpMethod, "");
+        });
     }
 
     public function test_hotwire_to_dual_failure_filters_current()
@@ -166,7 +174,7 @@ class BaseHotwireStreamTest extends ModuleLevelTest
             [
                 $this->expandUrl("hotwireRedirect"), self::POST_METHOD,
                 function (TestResponseBridge $response) {
-                    $this->assertStreamNode(BaseHotwireStream::REPLACE_ACTION, "#form-container"); 
+                    $this->assertStreamNode($response, BaseHotwireStream::REPLACE_ACTION, "#form-container"); 
 
                     $this->assertEmploymentFormError(
                         $response,
@@ -178,7 +186,7 @@ class BaseHotwireStreamTest extends ModuleLevelTest
             ], [
                 $this->expandUrl("hotwireReload"), self::PUT_METHOD,
                 function (TestResponseBridge $response) {
-                    $this->assertStreamNode(BaseHotwireStream::REPLACE_ACTION, "#form-container");
+                    $this->assertStreamNode($response, BaseHotwireStream::REPLACE_ACTION, "#form-container");
 
                     $this->assertEmploymentFormError(
                         $response,
@@ -222,6 +230,8 @@ class BaseHotwireStreamTest extends ModuleLevelTest
 
     public function test_hotwire_to_dual_failure_parses_only_one_partial()
     {
+        $this->warmHotwireForPost();
+
         $this->dataProvider([
             $this->hotwireFailureToParse(...)
         ], function (
@@ -229,13 +239,13 @@ class BaseHotwireStreamTest extends ModuleLevelTest
             string $httpMethod,
             string $markupName
         ) {
-            $this->massProvide([
+            $this->massProvide([ // left inside the loop to be asserted for each case
                 HtmlParser::class => $this->positiveDouble(DefaultBladeAdapter::class, [
                     "parseRenderer" => "page contents"
                 ], [
                     "parseRenderer" => [1, [
                         $this->callback(function ($subject) use ($markupName) {
-                            return str_contains($subject->getMarkupName(), $markupName);
+                            return str_contains($subject->markupName, $markupName);
                         })
                     ]]
                 ])
@@ -256,10 +266,10 @@ class BaseHotwireStreamTest extends ModuleLevelTest
                 $this->expandUrl("hotwireRedirect"), self::POST_METHOD,
                 function (TestResponseBridge $response) {
                     // 100 represents the fixed mock model identity returned via updateModels
-                    $this->assertStreamNode(BaseHotwireStream::REPLACE_ACTION, "100");
+                    $this->assertStreamNode($response, BaseHotwireStream::REPLACE_ACTION, "100");
                     
                     // 101 represents the secondary layout item id returned via fetchAlternateFragmentData
-                    $this->assertStreamNode(BaseHotwireStream::BEFORE_ACTION, "101");
+                    $this->assertStreamNode($response, BaseHotwireStream::BEFORE_ACTION, "101");
 
                     $this->assertEmploymentSuccessContent($response, BaseHotwireStream::REPLACE_ACTION);
                     $this->assertEmploymentSuccessContent($response, BaseHotwireStream::BEFORE_ACTION);
@@ -267,8 +277,8 @@ class BaseHotwireStreamTest extends ModuleLevelTest
             ], [
                 $this->expandUrl("hotwireReload"), self::PUT_METHOD,
                 function (TestResponseBridge $response) {
-                    $this->assertStreamNode(BaseHotwireStream::AFTER_ACTION, "100");
-                    $this->assertStreamNode(BaseHotwireStream::UPDATE_ACTION, "101");
+                    $this->assertStreamNode($response, BaseHotwireStream::AFTER_ACTION, "100");
+                    $this->assertStreamNode($response, BaseHotwireStream::UPDATE_ACTION, "101");
 
                     $this->assertEmploymentSuccessContent($response, BaseHotwireStream::AFTER_ACTION);
                     $this->assertEmploymentSuccessContent($response, BaseHotwireStream::UPDATE_ACTION);
@@ -405,18 +415,18 @@ class BaseHotwireStreamTest extends ModuleLevelTest
             [
                 $this->expandUrl("deleteSingle"), function (TestResponseBridge $response) {
                     $this->assertStreamNode(
-                        BaseHotwireStream::REMOVE_ACTION,
+                        $response, BaseHotwireStream::REMOVE_ACTION,
                         "employment_1" // Resolved directly from EmploymentId2Builder fallback value
                     );
                 }
             ], [
                 $this->expandUrl("combineDelete"), function (TestResponseBridge $response) {
                     $this->assertStreamNode(
-                        BaseHotwireStream::REMOVE_ACTION,
+                        $response, BaseHotwireStream::REMOVE_ACTION,
                         "employment_1"
                     );
                     $this->assertStreamNode(
-                        BaseHotwireStream::AFTER_ACTION,
+                        $response, BaseHotwireStream::AFTER_ACTION,
                         "200" // Extracted dynamically from fetchAncillaryRecord model payload resolver
                     );
                 }
@@ -428,16 +438,22 @@ class BaseHotwireStreamTest extends ModuleLevelTest
     {
         $this->warmHotwireForPost();
 
-        $response = $this->post($this->expandUrl("hotwireRedirect"), array_merge($this->csrfField, [
+        $replaceTarget = "#custom-login-zone";
+
+        $payload = array_merge($this->csrfField, [
             "id" => $this->employment1->id,
-            "_turbo_target" => "#custom-login-zone" // Dynamic override input field
-        ]), [
+            
+            "_turbo_target" => $replaceTarget // Dynamic override input field
+        ]);
+
+        $response = $this->post($this->expandUrl("hotwireRedirect"), $payload, [
+
             PayloadStorage::ACCEPTS_KEY => BaseHotwireStream::TURBO_INDICATOR
         ]);
 
         $response->assertUnprocessable();
         
         // Asserts that the response custom-targeted the container passed in payload storage
-        $this->assertStreamNode(BaseHotwireStream::REPLACE_ACTION, "#custom-login-zone");
+        $this->assertStreamNode($response, BaseHotwireStream::REPLACE_ACTION, $replaceTarget);
     }
 }

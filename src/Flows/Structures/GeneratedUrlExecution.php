@@ -1,32 +1,21 @@
 <?php
-
 namespace Suphle\Flows\Structures;
 
 use Suphle\Contracts\Presentation\BaseRenderer;
 
+use Suphle\Routing\Structures\RouteInfo;
+
 class GeneratedUrlExecution
 {
-    public function __construct(protected string $requestPath, protected readonly BaseRenderer $renderer)
-    {
-
-        //
-    }
+    public function __construct(
+        public string $requestPath,
+        public readonly BaseRenderer $renderer,
+        public readonly RouteInfo $routeInfo
+    ) { }
 
     public function changeUrl(string $newPath): void
     {
 
         $this->requestPath = $newPath;
-    }
-
-    public function getRenderer(): BaseRenderer
-    {
-
-        return $this->renderer;
-    }
-
-    public function getRequestPath(): string
-    {
-
-        return $this->requestPath;
     }
 }

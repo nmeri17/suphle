@@ -8,7 +8,7 @@ use Suphle\Adapters\Mailers\SymfonyMailer;
 
 use Suphle\Contracts\IO\EnvAccessor;
 
-use Symfony\Component\Mailer\{Transport, Mailer};
+use Symfony\Component\Mailer\{Transport, Mailer, MailerInterface};
 
 use Symfony\Component\Mime\{Email, Message};
 
@@ -27,9 +27,9 @@ class MailClientLoader extends BaseInterfaceLoader
 
         return [
 
-            Message::class => new Email(),
+            Message::class => new Email,
 
-            Mailer::class => new Mailer(Transport::fromDsn($connection))
+            MailerInterface::class => new Mailer(Transport::fromDsn($connection))
         ];
     }
 

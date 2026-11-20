@@ -55,6 +55,8 @@ class InjectFailingMockDuringBuildTest extends ModuleLevelTest
 
         $this->assertSame($this->indicator, 0); // given
 
+        $this->get($this->expandUrl("handleGet"));
+
         $this->post($this->expandUrl("postWithValidator"), [
 
             CsrfGenerator::TOKEN_FIELD => $this->getContainer()

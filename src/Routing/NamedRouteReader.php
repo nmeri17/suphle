@@ -1,7 +1,9 @@
 <?php
 namespace Suphle\Routing;
 
-use Suphle\Routing\{Structures\RouteInfo};
+use Suphle\Routing\Structures\RouteInfo;
+
+use Suphle\Request\RequestDetails;
 
 use RuntimeException, InvalidArgumentException;
 
@@ -9,7 +11,7 @@ class NamedRouteReader
 {
     public function __construct(
         protected readonly AttributeRouteScanner $routeScanner,
-        protected readonly RouteInfo $placeholders
+        protected readonly RequestDetails $requestDetails
     ) {}
 
     /**
@@ -42,8 +44,9 @@ class NamedRouteReader
                 return $parameters[$paramName];
             }
 
-            $currentValue = $this->placeholders->getSegmentValue($paramName);
-            if ($currentValue !== null) {
+            $currentValue = $this->requestDetails->getComputedDetails()->getSegmentValue($paramName);
+            
+            if (!is_null($currentValue)) {
                 return $currentValue;
             }
 

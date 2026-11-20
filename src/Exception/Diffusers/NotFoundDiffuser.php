@@ -4,7 +4,7 @@ namespace Suphle\Exception\Diffusers;
 
 use Suphle\Contracts\Exception\ExceptionHandler;
 
-use Suphle\Contracts\Presentation\BaseRenderer;
+use Suphle\Contracts\{Presentation\BaseRenderer, Response\RendererManager};
 
 use Suphle\Hydration\DecoratorHydrator;
 
@@ -23,6 +23,7 @@ class NotFoundDiffuser implements ExceptionHandler
     public function __construct(
         protected readonly RequestDetails $requestDetails,
         protected readonly DecoratorHydrator $decoratorHydrator,
+        protected readonly RendererManager $rendererManager
     ) {
 
         //
@@ -40,7 +41,7 @@ class NotFoundDiffuser implements ExceptionHandler
     public function prepareRendererData(): void
     {
 
-        if ($this->requestDetails->isApiRoute()) {
+        if ($this->rendererManager->fallbackShouldJson()) {
 
             $this->renderer = new Json([]);
         } else {

@@ -17,9 +17,9 @@ class AdminPathAuthorizerTest extends TestPathAuthorizer
 
         $this->actingAs($this->user); // given
 
-        $this->get("/admin-entry"); // when
+        $this->get($this->expandUrl("adminEntry")) // when
 
-        $this->assertTrue($this->authorizationSuccess()); // then
+        ->assertOk(); // then
     }
 
     public function test_present_nested_authorization_succeeds()
@@ -27,8 +27,8 @@ class AdminPathAuthorizerTest extends TestPathAuthorizer
 
         $this->actingAs($this->user); // given
 
-        $this->get("/admin/retain"); // when
+        $this->get($this->expandUrl("retain")) // when
 
-        $this->assertTrue($this->authorizationSuccess()); // then
+        ->assertOk(); // then
     }
 }

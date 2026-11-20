@@ -18,8 +18,6 @@ class RouteBranches implements Task
 
     protected DescriptorInterface $activeModule;
 
-    protected ModuleRequestRouter $moduleRouter;
-
     public function __construct(
         protected readonly PendingFlowDetails $flowDetails,
         protected readonly ModulesBooter $modulesBooter,
@@ -66,13 +64,17 @@ class RouteBranches implements Task
 
     protected function patternMatchesMechanism(string $mechanismPath): bool
     {
-        $patternMechanism = $this->cacheManager->getItem($mechanismPath);
+        $hydratedAuthMech = $this->cacheManager->getItem($mechanismPath);
 
-        if (is_null($patternMechanism)) {
-            $this->cacheManager->saveItem($mechanismPath, $this->flowDetails->authStorage);
+        $flowAuth = $this->flowDetails->authStorage;
+
+        if (is_null($hydratedAuthMech)) {
+
+            $this->cacheManager->saveItem($mechanismPath, $flowAuth);
+
             return true;
         }
-        return $patternMechanism == $this->flowDetails->authStorage;
+        return $hydratedAuthMech == $flowAuth;
     }
 
     protected function getMechanismPath(string $urlPattern): string
@@ -103,10 +105,14 @@ class RouteBranches implements Task
 
         $hydrator = $container->getClass(FlowHydrator::class);
 
+        $requestDetail = $container->getClass(RequestDetails::class);
+
+        $requestDetail->setRouteInfo($this->moduleRouter->getFoundRoute());
+
         $hydrator->setRequestDetails(
             $this->flowDetails->renderer->getRawResponse(),
             
-            $this->moduleRouter->getFoundRoute()
+            $requestDetail
         );
 
         $this->setHydratorDependencies($hydrator, $container);

@@ -15,14 +15,7 @@ class LocalFileDownload extends Redirect
     public function __construct(
         protected Closure $deriveFilePath,
         protected ?Closure $fallbackRedirect = null
-    ) {
-    }
-
-    protected function serializableProperties(): array
-    {
-
-        return [ "deriveFilePath", "fallbackRedirect" ];
-    }
+    ) { }
 
     public function render(): string
     {

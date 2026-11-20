@@ -1,22 +1,9 @@
 <?php
-
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Services;
 
-use Suphle\Services\Structures\BaseErrorCatcherService;
+use Suphle\Services\Structures\BaseSystemModelEdit;
 
-use Suphle\Contracts\Services\CallInterceptors\SystemModelEdit;
-
-use Suphle\Services\Decorators\{InterceptsCalls, VariableDependencies, DomainService};
-
-#[InterceptsCalls(SystemModelEdit::class)]
-#[VariableDependencies([
-
-    "setPayloadStorage", "setRouteInfo"
-])]
-#[DomainService(mutation: true)]
-class SystemModelEditMock1 implements SystemModelEdit
-{
-    use BaseErrorCatcherService;
+class SystemModelEditMock1 extends BaseSystemModelEdit {
 
     public function updateModels(object $baseModel):bool
     {
@@ -24,7 +11,7 @@ class SystemModelEditMock1 implements SystemModelEdit
         return true;
     }
 
-    public function modelsToUpdate (object $baseModel): array
+    public function modelsToUpdate (object $baseModel):iterable
     {
 
         return [$baseModel];

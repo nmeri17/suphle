@@ -4,8 +4,6 @@ namespace Suphle\Services\Structures;
 
 use Suphle\Services\Decorators\VariableDependencies;
 
-use Suphle\Routing\Structures\RouteInfo;
-
 use Suphle\Request\PayloadStorage;
 
 /**
@@ -16,8 +14,6 @@ trait BaseErrorCatcherService
     protected ?string $erroneousMethod = null;
 
     protected PayloadStorage $payloadStorage;
-
-    protected RouteInfo $routeInfo;
 
     public function rethrowAs(): array
     {
@@ -59,11 +55,5 @@ trait BaseErrorCatcherService
     {
 
         $this->payloadStorage = $payloadStorage;
-    }
-
-    public function setRouteInfo(RouteInfo $routeInfo): void
-    {
-
-        $this->routeInfo = $routeInfo;
     }
 }

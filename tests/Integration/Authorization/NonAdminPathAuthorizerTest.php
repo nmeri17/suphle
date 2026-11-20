@@ -4,7 +4,7 @@ namespace Suphle\Tests\Integration\Authorization;
 
 class NonAdminPathAuthorizerTest extends TestPathAuthorizer
 {
-    private $user;
+    protected $user;
 
     protected function setUser(): void
     {
@@ -17,9 +17,9 @@ class NonAdminPathAuthorizerTest extends TestPathAuthorizer
 
         $this->actingAs($this->user); // given
 
-        $this->get("/employment/retain"); // when
+        $this->get($this->expandUrl("retain")) // when
 
-        $this->assertFalse($this->authorizationSuccess()); // then
+        ->assertForbidden(); // then
     }
 
     public function test_unlock_works()
@@ -27,8 +27,8 @@ class NonAdminPathAuthorizerTest extends TestPathAuthorizer
 
         $this->actingAs($this->user); // given
 
-        $this->get("/employment/secede"); // when
+        $this->get($this->expandUrl("secede")) // when
 
-        $this->assertTrue($this->authorizationSuccess()); // then
+        ->assertOk(); // then
     }
 }

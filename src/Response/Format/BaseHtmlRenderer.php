@@ -4,11 +4,11 @@ namespace Suphle\Response\Format;
 
 use Suphle\Contracts\{Presentation\HtmlParser, IO\Session};
 
-use Suphle\Routing\Structures\RouteInfo;
+use Suphle\Request\RequestDetails;
 
 use Suphle\Services\Decorators\VariableDependencies;
 
-#[VariableDependencies(["setHtmlParser", "setSession", "setRouteInfo" ])]
+#[VariableDependencies(["setHtmlParser", "setSession", "setRequestDetails" ])]
 abstract class BaseHtmlRenderer extends GenericRenderer
 {
     public const STATUS_CODE = 200;
@@ -19,7 +19,7 @@ abstract class BaseHtmlRenderer extends GenericRenderer
 
     protected Session $sessionClient;
 
-    protected RouteInfo $routeInfo;
+    protected RequestDetails $requestDetails;
 
     public function setHtmlParser(HtmlParser $parser): void {
 
@@ -32,9 +32,9 @@ abstract class BaseHtmlRenderer extends GenericRenderer
         $this->sessionClient = $sessionClient;
     }
 
-    public function setRouteInfo(RouteInfo $routeInfo): void {
+    public function setRequestDetails(RequestDetails $requestDetails): void {
 
-        $this->routeInfo = $routeInfo;
+        $this->requestDetails = $requestDetails;
     }
 
     public function getHeaders(): array

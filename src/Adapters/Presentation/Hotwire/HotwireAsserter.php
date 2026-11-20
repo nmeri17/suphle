@@ -1,8 +1,5 @@
 <?php
-
 namespace Suphle\Adapters\Presentation\Hotwire;
-
-use Suphle\Contracts\Presentation\BaseRenderer;
 
 use Suphle\Adapters\Presentation\Hotwire\Formats\{BaseHotwireStream, RedirectHotwireStream};
 
@@ -13,14 +10,14 @@ trait HotwireAsserter
     /**
      * Doesn't confirm element presence within the frame since we have no APIs for drilling through DOM trees
     */
-    protected function assertStreamNode(string $hotwireAction, ?string $targets = null): void
+    protected function assertStreamNode(TestResponseBridge $response, string $hotwireAction, ?string $targets = null): void
     {
 
-        $renderer = $this->getContainer()->getClass(BaseRenderer::class);
-
+        $renderer = $response->lastRenderer;
+        
         if (!$renderer instanceof BaseHotwireStream) {
 
-            $this->fail(BaseHotwireStream::class." not found");
+            $this->fail("Request not handled by ". BaseHotwireStream::class);
         }
 
         $foundAction = false;

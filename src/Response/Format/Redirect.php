@@ -5,31 +5,24 @@ use Suphle\Hydration\Structures\CallbackDetails;
 
 use Suphle\Services\Decorators\VariableDependencies;
 
-use Suphle\Request\PayloadStorage;
+use Suphle\Request\{PayloadStorage, RequestDetails};
 
-use Suphle\Contracts\{IO\Session, Presentation\MirrorableRenderer};
-
-use Suphle\Routing\Structures\RouteInfo;
-
-use Suphle\Response\RoutedRendererManager;
+use Suphle\Contracts\Response\RendererManager;
 
 use Closure, Throwable;
 
-#[VariableDependencies(["setCallbackDetails", "setSession", "setRouteInfo" ])]
-class Redirect extends GenericRenderer implements MirrorableRenderer
-{
+#[VariableDependencies(["setCallbackDetails", "setRendererManager", "setRequestDetails" ])]
+class Redirect extends GenericRenderer {
 
     public const STATUS_CODE = 302;
 
     protected CallbackDetails $callbackDetails;
 
-    protected Session $sessionClient;
+    protected RendererManager $rendererManager;
 
-    protected RouteInfo $routeInfo;
+    protected RequestDetails $requestDetails;
 
     protected int $statusCode = self::STATUS_CODE;
-
-    protected bool $wantsJson = false;
 
     /**
      * @param destination Since PDO instances can't be serialized, when using this renderer with PDO in scope, wrap this parameter in a curried/doubly wrapped function
@@ -39,23 +32,21 @@ class Redirect extends GenericRenderer implements MirrorableRenderer
      */
     public function __construct(
         protected ?Closure $destination
-    ) {
-        //
-    }
+    ) { }
 
     public function setCallbackDetails(CallbackDetails $callbackDetails): void
     {
         $this->callbackDetails = $callbackDetails;
     }
 
-    public function setSession(Session $sessionClient): void
+    public function setRendererManager(RendererManager $rendererManager): void
     {
-        $this->sessionClient = $sessionClient;
+        $this->rendererManager = $rendererManager;
     }
 
-    public function setRouteInfo(RouteInfo $routeInfo): void {
+    public function setRequestDetails(RequestDetails $requestDetails): void {
 
-        $this->routeInfo = $routeInfo;
+        $this->requestDetails = $requestDetails;
     }
 
     protected function renderRedirect(callable $callback): void
@@ -85,38 +76,24 @@ class Redirect extends GenericRenderer implements MirrorableRenderer
     {
         $this->setHeaders(self::STATUS_CODE, []); // override 500 written by error handler
 
-        return $this->sessionClient->getValue(RoutedRendererManager::PREVIOUS_GET_URL);
-    }
-
-    public function setWantsJson(): void
-    {
-        $this->wantsJson = true;
-        $this->shouldDeferValidationFailure = false;
+        return $this->rendererManager->getPreviousUrl();
     }
 
     public function render(): string
     {
         $this->renderRedirect($this->destination);
 
-        if ($this->routeInfo->isMirror) $this->setWantsJson();
+        $routeInfo = $this->requestDetails->getComputedDetails();
 
-        if ($this->wantsJson) {
-            // API/mobile clients cannot follow a browser redirect.
-            // Return the resolved destination URL as JSON so the client
-            // can navigate programmatically.
-            $this->setHeaders(Json::STATUS_CODE, $this->routeInfo->mirrorHeader);
+        if (!$routeInfo?->isMirror) return "";
 
-            return json_encode(
-                ['redirect' => $this->headers[PayloadStorage::LOCATION_KEY] ?? null],
-                JSON_THROW_ON_ERROR
-            );
-        }
+        $this->rawResponse = [
 
-        return "";
-    }
+            "redirect" => $this->headers[PayloadStorage::LOCATION_KEY] ?? null
+        ];
 
-    protected function serializableProperties(): array
-    {
-        return ["destination"];
+        $this->setHeaders(Json::STATUS_CODE, $routeInfo->mirrorHeader);
+
+        return $this->renderJson();        
     }
 }

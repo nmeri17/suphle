@@ -22,7 +22,8 @@ trait ExaminesHttpResponse
 
         return new TestResponseBridge(
             $response,
-            $this->getContainer()->getClass(Session::class)
+            $this->getContainer()->getClass(Session::class),
+            $renderer
         );
     }
 }

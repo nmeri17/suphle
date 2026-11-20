@@ -23,8 +23,6 @@ class ModelPathAuthorizationTest extends ModuleLevelTest
         BaseDatabasePopulator::setUp as databaseAllSetup;
     }
 
-    protected const EDIT_PATH = "/admin/gmulti-edit/";
-
     protected Employment $employment;
 
     protected UserContract $admin;
@@ -80,17 +78,16 @@ class ModelPathAuthorizationTest extends ModuleLevelTest
         return Employment::class;
     }
 
-    public function test_nested_can_add_more_locks()
+    public function test_creator_can_access_item()
     {
 
         $this->actingAs($this->admin); // given
 
-        $this->sendEditRequest($this->employment->id) // when
-
+        $this->fetchEmployment($this->employment->id) // when
         ->assertOk(); // then
     }
 
-    protected function sendEditRequest (string $employmentId):TestResponseBridge {
+    protected function fetchEmployment (string $employmentId):TestResponseBridge {
 
         return $this->get($this->expandUrl("getEmploymentDetails", [
 
@@ -98,12 +95,12 @@ class ModelPathAuthorizationTest extends ModuleLevelTest
         ]));
     }
 
-    public function test_nested_missing_all_rules_fails()
+    public function test_non_creator_cant_access_item()
     {
 
         $this->actingAs($this->admin); // given
 
-        $this->sendEditRequest($this->randomEmploymentId) // when
+        $this->fetchEmployment($this->randomEmploymentId) // when
 
         ->assertForbidden(); // then
     }

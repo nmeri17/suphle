@@ -1,24 +1,11 @@
 <?php
-
 namespace Suphle\Tests\Mocks\Modules\ModuleOne\Services;
-
-use Suphle\Contracts\Services\CallInterceptors\MultiUserModelEdit;
 
 use Suphle\Contracts\Services\Models\IntegrityModel;
 
-use Suphle\Services\Structures\BaseErrorCatcherService;
+use Suphle\Services\Structures\BaseMultiUserModelEdit;
 
-use Suphle\Services\Decorators\{InterceptsCalls, VariableDependencies, DomainService};
-
-#[InterceptsCalls(MultiUserModelEdit::class)]
-#[DomainService(mutation: true)]
-#[VariableDependencies([
-
-    "setPayloadStorage", "setRouteInfo"
-])]
-class EmploymentEditMock implements MultiUserModelEdit
-{
-    use BaseErrorCatcherService;
+class EmploymentEditMock extends BaseMultiUserModelEdit {
 
     public function getResource(object $builder): IntegrityModel
     {

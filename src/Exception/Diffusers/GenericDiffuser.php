@@ -4,7 +4,7 @@ namespace Suphle\Exception\Diffusers;
 
 use Suphle\Contracts\Exception\{ExceptionHandler, BroadcastableException};
 
-use Suphle\Contracts\Presentation\BaseRenderer;
+use Suphle\Contracts\{Presentation\BaseRenderer, Response\RendererManager};
 
 use Suphle\Hydration\Container;
 
@@ -20,7 +20,6 @@ use Throwable;
 
 class GenericDiffuser implements ExceptionHandler
 {
-
     protected Throwable $origin;
 
     protected string $newMarkupName = "default";
@@ -31,6 +30,7 @@ class GenericDiffuser implements ExceptionHandler
         protected readonly RequestDetails $requestDetails,
         protected readonly DetectedExceptionManager $exceptionDetector,
         protected readonly Container $container,
+        protected readonly RendererManager $rendererManager
     ) { }
 
     public function setContextualData(Throwable $origin): void
@@ -50,7 +50,7 @@ class GenericDiffuser implements ExceptionHandler
             );
         }
 
-        if ($this->requestDetails->isApiRoute()) {
+        if ($this->rendererManager->fallbackShouldJson()) {
 
             $this->renderer = new Json([]);
         } else {

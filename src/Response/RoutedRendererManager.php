@@ -9,9 +9,9 @@ use Suphle\Contracts\{Presentation\BaseRenderer, IO\Session};
 
 use Suphle\Contracts\Response\{BaseResponseManager, RendererManager};
 
-use Suphle\Response\Format\Redirect;
+use Suphle\Response\Format\{Redirect, Json};
 
-use Suphle\Request\{ PayloadStorage, RequestDetails};
+use Suphle\Request\{RequestDetails, PayloadStorage};
 
 use Suphle\Routing\Structures\RouteInfo;
 
@@ -28,7 +28,7 @@ class RoutedRendererManager implements RendererManager, BaseResponseManager
         protected readonly Session $sessionClient,
         protected readonly FlowResponseQueuer $flowQueuer,
         protected readonly RequestDetails $requestDetails,
-        protected readonly RouteInfo $routeDetails
+        protected readonly PayloadStorage $payloadStorage
     ) {}
 
     public function responseRenderer(): BaseRenderer
@@ -39,10 +39,11 @@ class RoutedRendererManager implements RendererManager, BaseResponseManager
 
     public function afterRender($data = null): void
     {
+        $routeInfo = $this->requestDetails->getComputedDetails();
 
-        if (!is_null($this->routeDetails->flows)) {// the first organic request needs to trigger the flows below it
+        if (!is_null($routeInfo->flows)) {// the first organic request needs to trigger the flows below it
 
-            $this->flowQueuer->saveSubBranches($this->renderer, $this->routeDetails);
+            $this->flowQueuer->saveSubBranches($this->renderer, $routeInfo);
         }
 
         if ($this->shouldStoreRenderer())
@@ -52,7 +53,7 @@ class RoutedRendererManager implements RendererManager, BaseResponseManager
 
     protected function setCanaryState():void
     {
-        $canaryList = $this->routeDetails->canaryInfo; // this would have been better impl on requestDetails for it to be read lazily. unfortunately, that would require passing a container as well for canary hydration, which is beyond his scope
+        $canaryList = $this->requestDetails->getComputedDetails()->canaryInfo; // this would have been better impl on requestDetails for it to be read lazily. unfortunately, that would require passing a container as well for canary hydration, which is beyond his scope
 
         if (is_null($canaryList)) return;
 
@@ -66,7 +67,7 @@ class RoutedRendererManager implements RendererManager, BaseResponseManager
         }
     }
 
-    public function handleValidRequest(PayloadStorage $payloadStorage): BaseRenderer
+    public function handleValidRequest(): BaseRenderer
     {
         $this->setCanaryState();
 
@@ -77,10 +78,11 @@ class RoutedRendererManager implements RendererManager, BaseResponseManager
                 $this->requestDetails->getPath()
             );
         }
+        $routeInfo = $this->requestDetails->getComputedDetails();
 
-        $controllerMethod = $this->routeDetails->controllerMethod;
+        $controllerMethod = $routeInfo->controllerMethod;
 
-        $className = $this->routeDetails->controllerClass;
+        $className = $routeInfo->controllerClass;
 
         return $this->renderer = call_user_func_array(
             [
@@ -97,34 +99,37 @@ class RoutedRendererManager implements RendererManager, BaseResponseManager
         !$this->requestDetails->isApiRoute();
     }
 
+    public function fallbackShouldJson ():bool {
+
+        return $this->requestDetails->getComputedDetails()?->isMirror ||
+            $this->requestDetails->isApiRoute() ||
+            $this->payloadStorage->acceptsJson();
+    }
+
     /**
      * Checks for whether current or previous should be rendered, depending on currently active renderer
      *
      * Expects current request to contain same placeholder values used for executing that preceding request
     */
-    public function invokePreviousRenderer(array $toMerge = []): BaseRenderer
+    public function rendererDataOnError(array $toMerge = []): BaseRenderer
     {
 
-        if (!$this->renderer->deferValidationContent()) {// if current request is something like json, write validation errors to it
+        if ($this->fallbackShouldJson()) $renderer = new Json($toMerge);
+        else {
 
-            $previousRenderer = $this->renderer;
+            $backUrl = $this->getPreviousUrl();
 
-            $previousRenderer->forceArrayShape($toMerge);
-        } else {
+            $renderer = new Redirect(fn () => $backUrl);
 
-            $previousRenderer = new Redirect(fn () => $this->getPreviousUrl());
-
-            foreach ($toMerge as $key => $value) {
+            foreach ($toMerge as $key => $value)
 
                 $this->sessionClient->setFlashValue($key, $value);
-            }
-
-            $this->scopeRenderer($previousRenderer);
         }
+        $this->scopeRenderer($renderer);
 
-        return $previousRenderer;
+        return $renderer;
     }
-    protected function scopeRenderer (BaseRenderer $renderer):void {
+    public function scopeRenderer (BaseRenderer $renderer):void {
 
         $this->container->getClass(DecoratorHydrator::class)->scopeInjecting($renderer, self::class);
     }

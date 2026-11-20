@@ -1,12 +1,7 @@
 <?php
-
 namespace Suphle\Tests\Integration\Services\CoodinatorManager;
 
-use Suphle\Request\ValidatorManager;
-
-use Suphle\Routing\{Structures\RouteInfo, Attributes\HttpMethod};
-
-use Suphle\Contracts\{Response\RendererManager, Config\Router as RouterContract};
+use Suphle\Contracts\Config\Router as RouterContract;
 
 use Suphle\Config\Router;
 
@@ -87,20 +82,7 @@ class ValidatorRawErrorsTest extends ModuleLevelTest
 
         $this->expectException(ValidationFailure::class); // then
 
-        $this->massProvide([RouteInfo::class => $this->getRouteInfo("postWithValidator")]);
-
-        $this->getContainer()->getClass(RendererManager::class)
-
-        ->handleValidRequest(); // when
-    }
-
-    protected function getRouteInfo(string $controllerMethod):RouteInfo
-    {
-
-        return new RouteInfo(
-            "", HttpMethod::POST,
-            $this->coordinatorName, $controllerMethod
-        );
+        $this->post($this->expandUrl("postWithValidator")); // when
     }
 
     public function test_failure_prevents_middleware_running()

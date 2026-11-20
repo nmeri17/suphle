@@ -10,7 +10,7 @@ use Suphle\Tests\Mocks\Modules\ModuleOne\{Services\EmploymentEditMock, PayloadRe
 use Suphle\Tests\Mocks\Modules\ModuleOne\Authorization\Paths\{EmploymentEditRule, AdminRule};
 
 #[RoutePrefix("/employment")]
-#[PreMiddleware(PathAuthorization::class)]
+#[PreMiddleware(PathAuthorization::class, [EmploymentEditRule::class])]
 class EmploymentEditCoordinator extends BaseCoordinator
 {
     public function __construct(
@@ -39,7 +39,6 @@ class EmploymentEditCoordinator extends BaseCoordinator
     }
 
     #[Route("gmulti-edit/{id}")]
-    #[PreMiddleware(PathAuthorization::class)]
     public function getEmploymentDetails(BaseEmploymentBuilder $employmentBuilder): Json
     {
         return new Json([
@@ -63,7 +62,7 @@ class EmploymentEditCoordinator extends BaseCoordinator
     }
 
     #[Route("admin-entry")]
-    #[PreMiddleware(AdminRule::class)]
+    #[PreMiddleware(PathAuthorization::class, [AdminRule::class])]
     public function adminEntry(): Json
     {
         return new Json([]);

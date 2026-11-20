@@ -2,11 +2,9 @@
 
 namespace Suphle\Exception\Diffusers;
 
-use Suphle\Contracts\Exception\ExceptionHandler;
+use Suphle\Contracts\{Exception\ExceptionHandler, Presentation\BaseRenderer, Response\RendererManager};
 
-use Suphle\Contracts\Presentation\BaseRenderer;
-
-use Suphle\Request\RequestDetails;
+use Suphle\Response\Format\{Json, Markup};
 
 use Suphle\Exception\{ComponentEntry, Explosives\UnauthorizedServiceAccess};
 
@@ -24,13 +22,13 @@ class UnauthorizedDiffuser implements ExceptionHandler
 
     protected string $newMarkupName = "authorization-failure";
 
+    protected BaseRenderer $renderer;
+
     public function __construct(
         protected readonly ComponentEntry $componentEntry,
-        protected readonly BaseRenderer $renderer
-    ) {
 
-        //
-    }
+        protected readonly RendererManager $rendererManager
+    ) { }
 
     /**
      * @param {origin} UnauthorizedServiceAccess
@@ -41,8 +39,18 @@ class UnauthorizedDiffuser implements ExceptionHandler
         //
     }
 
+    /**
+    * {@inheritdoc}
+    */
     public function prepareRendererData(): void
     {
+
+        if ($this->rendererManager->fallbackShouldJson()) {
+
+            $this->renderer = new Json([]);
+        } else {
+            $this->renderer = new Markup($this->newMarkupName, []);
+        }
 
         $this->renderer->setRawResponse(static::RAW_RESPONSE)->setHeaders(403, []);
     }

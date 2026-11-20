@@ -5,11 +5,9 @@ use Suphle\Contracts\Config\Router;
 
 use Suphle\Services\Decorators\BindsAsSingleton;
 
-use Suphle\Hydration\Container;
+use Suphle\Routing\Structures\RouteInfo;
 
 use Psr\Http\Message\ServerRequestInterface;
-
-use InvalidArgumentException;
 
 #[BindsAsSingleton]
 class RequestDetails
@@ -21,6 +19,8 @@ class RequestDetails
     protected ?ServerRequestInterface $contextualRequest = null;
 
     protected ?string $canaryState = null; // cfr
+
+    protected ?RouteInfo $routeInfo = null;
 
     public function __construct(protected readonly Router $routeConfig)
     { }
@@ -34,6 +34,21 @@ class RequestDetails
         $this->forceHttpMethod = $forceHttpMethod;
 
         $this->contextualRequest = $contextualRequest;
+    }
+
+    public function getComputedDetails ():?RouteInfo {
+
+        return $this->routeInfo;
+    }
+
+    /**
+     * the engine for computing the context received in `detailsToCompute` sits outside this class. but it ultimately produces RouteInfo, which is a marker object. it's not reasonable to read all those values dynamically (as is done here or on payloadStorage) hence we're planting it on this class as a shortcut. we don't even have any other context to set aside from this routeInfo itself
+     * 
+     * It should always be read through this proxy rather than bound to a constructor, except maybe during contextual binding of short-lived marker objects eg flows
+    */
+    public function setRouteInfo (RouteInfo $routeInfo):void {
+
+        $this->routeInfo = $routeInfo;
     }
 
     public function getPath(): ?string

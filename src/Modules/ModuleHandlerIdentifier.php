@@ -188,9 +188,9 @@ abstract class ModuleHandlerIdentifier
 
             $this->identifiedHandler->hydrateHandler($originalException);
         }
-        catch (Throwable $exception) { // if we can't hydrate the handler
+        catch (Throwable $handlerException) { // if we can't hydrate the handler, we can only throw here. the internal call can't have its own try-catch
 
-            throw $originalException;
+            throw $handlerException;
         }
     }
 

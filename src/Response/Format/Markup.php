@@ -2,16 +2,12 @@
 
 namespace Suphle\Response\Format;
 
-use Suphle\Contracts\Presentation\MirrorableRenderer;
 use Suphle\Request\PayloadStorage;
 
 /*
  * Should not be used in conjuction with form submissions. Form actions should leave the request's originator
 */
-class Markup extends BaseHtmlRenderer implements MirrorableRenderer
-{
-    protected bool $wantsJson = false;
-
+class Markup extends BaseHtmlRenderer {
     public function __construct(
         public readonly string $markupName,
 
@@ -24,20 +20,15 @@ class Markup extends BaseHtmlRenderer implements MirrorableRenderer
 
     public function render(): string
     {
-        if ($this->routeInfo->isMirror) $this->setWantsJson(); // can't be called in ctor since ri wouldn't have been injected yet
+        $routeInfo = $this->requestDetails->getComputedDetails();
 
-        if (!$this->wantsJson) {
+        if (is_null($routeInfo) || !$routeInfo->isMirror) { // 404?
+
             return $this->htmlParser->parseRenderer($this);
         }
 
-        $this->setHeaders($this->statusCode, $this->routeInfo->mirrorHeader);
+        $this->setHeaders($this->statusCode, $routeInfo->mirrorHeader);
 
         return $this->renderJson();
-    }
-
-    public function setWantsJson(): void
-    {
-        $this->wantsJson = true;
-        $this->shouldDeferValidationFailure = false;
     }
 }

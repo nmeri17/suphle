@@ -4,9 +4,7 @@ namespace Suphle\Services\Structures;
 
 use Suphle\Services\Decorators\VariableDependencies;
 
-use Suphle\Request\PayloadStorage;
-
-use Suphle\Routing\Structures\RouteInfo;
+use Suphle\Request\{PayloadStorage, RequestDetails};
 
 use Suphle\Services\IndicatesCaughtException;
 
@@ -15,12 +13,12 @@ use Throwable;
 /**
  * Aside handling requests that don't map to models/entities, this is useful for things like callback endpoints where a user is waiting for feedback on our end, but obviously not on the automated, calling service's end. In such cases, mere validation errors won't cut it. We need to respond to the waiting services with something to complete user flow
 */
-#[VariableDependencies([ "setPayloadStorage", "setRouteInfo"])]
+#[VariableDependencies([ "setPayloadStorage", "setRequestDetails"])]
 abstract class ModellessPayload extends IndicatesCaughtException
 {
     protected PayloadStorage $payloadStorage;
 
-    protected RouteInfo $routeInfo;
+    protected RequestDetails $requestDetails;
 
     protected ?Throwable $exception = null;
 
@@ -30,10 +28,10 @@ abstract class ModellessPayload extends IndicatesCaughtException
         $this->payloadStorage = $payloadStorage;
     }
 
-    public function setRouteInfo(RouteInfo $routeInfo): void
+    public function setRequestDetails(RequestDetails $requestDetails): void
     {
 
-        $this->routeInfo = $routeInfo;
+        $this->requestDetails = $requestDetails;
     }
 
     /**

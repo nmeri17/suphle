@@ -63,12 +63,13 @@ class PayloadStorage extends ServerRequest {
 
     public function matchesHeader(string $name, string $expectedValue): bool
     {
+        $psrOrigin = $this->getPsrOrigin();
 
-        if (!$this->hasHeader($name)) {
+        if (!$psrOrigin?->hasHeader($name)) {
             return false;
         }
 
-        $currentValue = str_replace("/", "\/", $this->getHeaderLine($name));
+        $currentValue = str_replace("/", "\/", $psrOrigin->getHeaderLine($name));
 
         return preg_match("/^$currentValue$/i", $expectedValue);
     }

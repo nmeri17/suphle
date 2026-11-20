@@ -15,9 +15,9 @@ class ReloadHotwireStream extends BaseHotwireStream
 
     protected int $statusCode = self::STATUS_CODE;
 
-    public function __construct()
+    public function __construct(public iterable $rawResponse = [])
     {
-        $this->fallbackRenderer = new Reload();
+        $this->fallbackRenderer = new Reload($rawResponse);
     }
 
     public function setRendererManager(RendererManager $rendererManager): void

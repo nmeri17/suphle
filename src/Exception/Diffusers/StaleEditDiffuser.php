@@ -14,7 +14,7 @@ use Throwable;
 
 class StaleEditDiffuser implements ExceptionHandler
 {
-    private Throwable $renderer;
+    protected BaseRenderer $renderer;
 
     public function __construct(
         protected readonly RendererManager $rendererManager
@@ -35,13 +35,11 @@ class StaleEditDiffuser implements ExceptionHandler
     public function prepareRendererData(): void
     {
 
-        $this->renderer = $this->rendererManager
-
-        ->invokePreviousRenderer([
+        $this->renderer = $this->rendererManager->rendererDataOnError([
 
             "errors" => [["message" => "Another user recently updated this resource"]]
-        ])
-        ->setHeaders(400, []);
+        ]);
+        $this->renderer->setHeaders(400, []);
     }
 
     public function getRenderer(): BaseRenderer

@@ -4,16 +4,19 @@ namespace Suphle\Tests\Mocks\Modules\ModuleOne\Authorization\Paths;
 
 use Suphle\Contracts\Auth\AuthStorage;
 
-use Suphle\Request\RouteRule;
+use Suphle\Request\{RouteRule, RequestDetails};
 
-use Suphle\Routing\PathPlaceholders;
+use Suphle\Routing\Structures\RouteInfo;
 
 use Suphle\Tests\Mocks\Models\Eloquent\Employment;
 
 class EmploymentEditRule extends RouteRule
 {
-    public function __construct(AuthStorage $authStorage, private readonly Employment $model, private readonly PathPlaceholders $pathPlaceholders)
-    {
+    public function __construct(
+        AuthStorage $authStorage,
+        protected readonly Employment $model,
+        protected readonly RequestDetails $requestDetails
+    ) {
 
         parent::__construct($authStorage);
     }
@@ -28,7 +31,7 @@ class EmploymentEditRule extends RouteRule
     {
 
         $employment = $this->model->find(
-            $this->pathPlaceholders->getSegmentValue("id")
+            $this->requestDetails->getComputedDetails()->getSegmentValue("id")
         );
 
         return $employment->employer->user_id;

@@ -35,7 +35,7 @@ class MiddlewareManipulator extends BaseMiddlewareRegistry
         $this->stackAlwaysEmpty = true;
     }
 
-    protected function setMergedStack(): void {
+    protected function setMergedStack(array $preMiddleware, array $middleware): void {
 
         if ($this->stackAlwaysEmpty) {
             $this->mergedStack = [];
@@ -45,7 +45,7 @@ class MiddlewareManipulator extends BaseMiddlewareRegistry
 
         $stack = $this->hydrateMap($this->preInclude);
 
-        parent::setMergedStack();
+        parent::setMergedStack($preMiddleware, $middleware);
 
         $parentStack = $this->mergedStack;
 
@@ -62,7 +62,7 @@ class MiddlewareManipulator extends BaseMiddlewareRegistry
     public function getNotUsed(array $toFilter): array {
 
         $allHandlers = array_map(
-            $this->mergedStack, fn ($handler) => $handler::class
+            fn ($handler) => $handler::class, $this->mergedStack
         );
 
         return array_filter($toFilter, fn ($handler) => !in_array($handler, $allHandlers));

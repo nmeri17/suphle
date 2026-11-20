@@ -11,16 +11,23 @@ use Suphle\Contracts\Response\RendererManager;
 #[VariableDependencies([ "setRendererManager" ])]
 class Reload extends GenericRenderer
 {
-    public const STATUS_CODE = 200;
+    public const STATUS_CODE = 302;
 
     protected RendererManager $rendererManager;
 
-    protected int $statusCode = self::STATUS_CODE;
+    public function __construct(
+
+        public iterable $rawResponse = []
+    ) {
+        $this->setHeaders(self::STATUS_CODE, [
+            PayloadStorage::LOCATION_KEY => "" // will later pick previous url
+        ]);
+    }
 
     public function render(): string
     {
         return $this->rendererManager
-            ->invokePreviousRenderer()
+            ->rendererDataOnError($this->rawResponse)
             ->render();
     }
 

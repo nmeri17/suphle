@@ -28,8 +28,6 @@ trait ModuleHttpTest
 
     protected function setUp ():void {
 
-        parent::setUp();
-
         $this->setMidRegistry();
     }
 

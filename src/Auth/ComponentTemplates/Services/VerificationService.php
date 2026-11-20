@@ -1,18 +1,11 @@
 <?php
 namespace _modules_shell\_module_name\InstalledComponents\SuphleIdentity\Services;
 
-use Suphle\Services\Structures\BaseErrorCatcherService;
-use Suphle\Services\Decorators\{InterceptsCalls, VariableDependencies, DomainService};
-use Suphle\Contracts\Services\CallInterceptors\SystemModelEdit;
+use Suphle\Services\Structures\BaseSystemModelEdit;
 use _database_namespace\User; // auto-ejected during project init
 use DateTimeImmutable;
 
-#[InterceptsCalls(SystemModelEdit::class)]
-#[VariableDependencies(["setPayloadStorage"])]
-#[DomainService(mutation: true)]
-class VerificationService implements SystemModelEdit {
-
-    use BaseErrorCatcherService;
+class VerificationService extends BaseSystemModelEdit {
 
     public function updateModels(object $user): bool {
 

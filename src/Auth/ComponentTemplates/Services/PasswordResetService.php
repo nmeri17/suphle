@@ -1,19 +1,12 @@
 <?php
-
 namespace _modules_shell\_module_name\InstalledComponents\SuphleIdentity\Services;
 
-use Suphle\Services\Structures\BaseErrorCatcherService;
-use Suphle\Services\Decorators\{InterceptsCalls, VariableDependencies, DomainService};
-use Suphle\Contracts\Services\CallInterceptors\SystemModelEdit;
+use Suphle\Services\Structures\BaseSystemModelEdit;
 use Suphle\Events\{EmitProxy, EventPropagator};
 use _database_namespace\{User, PasswordResetToken};
 
-#[InterceptsCalls(SystemModelEdit::class)]
-#[VariableDependencies(["setPayloadStorage"])]
-#[DomainService(mutation: true)]
-class PasswordResetService implements SystemModelEdit
-{
-    use BaseErrorCatcherService, EmitProxy;
+class PasswordResetService extends BaseSystemModelEdit {
+    use EmitProxy;
 
     public const RESET_REQUESTED = "password_reset_requested";
 
@@ -38,7 +31,7 @@ class PasswordResetService implements SystemModelEdit
         return true;
     }
 
-    public function modelsToUpdate(object $user): array
+    public function modelsToUpdate(object $user):iterable
     {
         return [$user];
     }

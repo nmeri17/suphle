@@ -24,10 +24,10 @@ class CsrfMiddleware extends BaseMiddleware
 
     public function process(PayloadStorage $payloadStorage, ?MiddlewareNexts $requestHandler): BaseRenderer
     {
-        if (
+        if (// get request = skip csrf; api req =skip
             $this->requestDetails->isGetRequest() ||
 
-            !$this->requestDetails->isApiRoute()
+            $this->requestDetails->isApiRoute()
         ) {
 
             return $requestHandler->handle($payloadStorage);

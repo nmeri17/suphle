@@ -16,13 +16,15 @@ use Suphle\Tests\Integration\Middleware\Helpers\MocksMiddleware;
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\{Meta\ModuleOneDescriptor};
 
-use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinator\{MiddlewareCoordinator, BaseCoordinator};
+use Suphle\Tests\Mocks\Modules\ModuleOne\Coordinators\{MiddlewareCoordinator, BaseCoordinator};
 
 use Suphle\Tests\Mocks\Modules\ModuleOne\Middlewares\{BlankMiddlewareHandler, IgnoresLowerMiddleware};
 
 class TagBehaviorTest extends ModuleLevelTest
 {
     use MocksMiddleware;
+
+    protected string $coordinatorName = MiddlewareCoordinator::class;
 
     protected function getModules(): array
     {
@@ -44,14 +46,14 @@ class TagBehaviorTest extends ModuleLevelTest
 
         // given => @see [getModules]
         // then
-        $this->provideMiddleware([
+        $this->massProvide([
 
             BlankMiddlewareHandler::class => $this->getMiddlewareMock(BlankMiddlewareHandler::class, 1),
 
             IgnoresLowerMiddleware::class => $this->getMiddlewareMock(IgnoresLowerMiddleware::class, 0)
         ]);
 
-        $this->get("/middleware/segment"); // when
+        $this->get($this->expandUrl("plainSegment")); // when
     }
 
     public function test_can_untag_patterns()
@@ -59,12 +61,12 @@ class TagBehaviorTest extends ModuleLevelTest
 
         // given => @see [getModules]
         // then
-        $this->provideMiddleware([
+        $this->massProvide([
 
             BlankMiddlewareHandler::class => $this->getMiddlewareMock(BlankMiddlewareHandler::class, 0)
         ]);
 
-        $this->get("/middleware/secede"); // when
+        $this->get($this->expandUrl("secede")); // when
     }
 
     public function test_final_middleware_has_no_request_handler()
@@ -76,7 +78,7 @@ class TagBehaviorTest extends ModuleLevelTest
 
         $lastMiddleware = end($middlewareList);
 
-        $this->provideMiddleware([
+        $this->massProvide([
 
             $lastMiddleware => $this->positiveDouble($lastMiddleware, [
 
@@ -92,7 +94,7 @@ class TagBehaviorTest extends ModuleLevelTest
             ]) // then
         ]);
 
-        $this->get("/middleware/segment"); // when
+        $this->get($this->expandUrl("plainSegment")); // when
     }
 
     public function test_can_activate_middleware()
@@ -102,7 +104,7 @@ class TagBehaviorTest extends ModuleLevelTest
 
         $this->withMiddleware($handlers); // given
 
-        $this->get("/segment") // when
+        $this->get($this->expandUrl("plainSegment", [], BaseCoordinator::class)) // when
 
         ->assertOk(); // sanity checks
 
@@ -115,7 +117,7 @@ class TagBehaviorTest extends ModuleLevelTest
 
         $this->withoutMiddleware($expectedMiddleware); // given
 
-        $this->get("/middleware/segment") // when
+        $this->get($this->expandUrl("plainSegment")) // when
 
         ->assertOk(); // sanity checks
 

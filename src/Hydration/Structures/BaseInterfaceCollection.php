@@ -32,7 +32,7 @@ use Suphle\IO\Cache\AdapterLoader as CacheAdapterLoader;
 
 use Suphle\Auth\{ EmailPasswordComparer, Storage\SessionStorage};
 
-use Suphle\Middleware\{BaseMiddlewareRegistry, ValidationRulesHandler};
+use Suphle\Middleware\{BaseMiddlewareRegistry};
 
 use Suphle\Adapters\Orms\Eloquent\{ UserEntityLoader, ModelReplicator, OrmLoader, DatabaseTester as EloquentTester};
 
@@ -46,7 +46,7 @@ use Suphle\Adapters\Presentation\Blade\DefaultBladeAdapter;
 
 use Suphle\Queues\AdapterLoader as QueueAdapterLoader;
 
-use Suphle\Request\{ValidatorLoader, NativeFileReader, DefaultRequestListener};
+use Suphle\Request\{ValidatorLoader, NativeFileReader, DefaultRequestListener, ValidationRulesHandler};
 
 use Suphle\Config\{Auth, ExceptionConfig, Console as CliConsole, PDOMysqlKeys, DefaultFlowConfig, ProxyManagerConfig, DefaultCacheConfig, DefaultTemplateConfig, ContainerConfig, Router, EventsConfig};
 
